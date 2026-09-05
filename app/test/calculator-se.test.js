@@ -271,6 +271,16 @@ describe("Self Employed engine: the checks are breakable", () => {
 // carrying that same loss, double-counting it; and the Forecast personal
 // allowance check compared the sheet's own IF(C39<=0,0,...) floor against
 // calculateExpectedTax's unfloored figure.
+//
+// A fifth, related bug surfaced once the engine's own Income Tax!E6 was
+// floored to match the template's IF(E5<=0,0,...): the JS engine had never
+// applied that floor, always handing back the unfloored personal allowance,
+// and checkCompliance's own "Tax: Personal allowance after taper" check
+// compared against that same unfloored figure -- two wrongs that agreed with
+// each other on every loss-making book, so the check could not fail no
+// matter which side was wrong. Flooring the engine's E6 alone (without
+// flooring the check) turned that silent agreement into a false failure on
+// this very fixture; flooring both is what makes the check test anything.
 describe("Self Employed engine: a loss-making book with no [expected] table", () => {
   it("reports no compliance mismatches", () => {
     const { scenario, expected, results } = loadFixture("se-loss-no-expected");
@@ -313,6 +323,15 @@ describe("Self Employed engine: a loss-making book with no [expected] table", ()
         "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
       ].sort(),
     );
+  });
+
+  it("fails on the Income Tax personal allowance and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["Income Tax"].E6 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Tax: Personal allowance after taper"]);
   });
 });
 

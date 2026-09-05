@@ -2037,7 +2037,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
-    check("Tax: Personal allowance after taper", tax.E6 || 0, expectedTax.personal_allowance);
+    // E6 = IF(E5<=0,0,MAX(0,Admin!N$4-MAX(0,E5-Admin!N$5)/2)): a loss year
+    // has no taxable profit to set an allowance against, so the sheet floors
+    // this at nil rather than showing the allowance unused. calculateExpectedTax
+    // has no such floor, so the comparison applies it, the same as the
+    // Profit Forecast's own personal allowance check below.
+    check("Tax: Personal allowance after taper", tax.E6 || 0, profit <= 0 ? 0 : expectedTax.personal_allowance);
     check("Tax at additional rate", tax.E10 || 0, expectedTax.income_tax_additional);
 
     // The bands and rates the sheet actually applies, not the ones it is
