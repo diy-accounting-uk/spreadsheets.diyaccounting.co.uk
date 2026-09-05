@@ -493,6 +493,12 @@ each rebasing on the last.
   verified) and the agreement halves. Follow-up in T4b: `app/lib/book-checks/ltd.js`'s bank layout
   copy comes from `ltd-layout.js`.
 
+- T24 `2c16fb69`, merged 2026-09-05: `payrollYearOf` derives the payroll year from the period as
+  the writer does; the Payslips calendar keys move to the package's values on every book path.
+- For T2, from SE S2: the sidecar option is `options.templates`, not `templatePaths`; and
+  `bookFieldCells("ltd")` in `xlsx-exporter.js` carries only the entity and stock entries, so T2
+  builds Ltd's ledger and register entries there (add `app/lib/xlsx-exporter.js` to T2's files).
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially

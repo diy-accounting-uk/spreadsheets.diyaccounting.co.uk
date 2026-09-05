@@ -476,6 +476,8 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   sheet gives `2 * B12 - B10`, not `2 * B12 - B10/2`. The basic-taxi master's Class 2 rate joined
   the others at 3.5 on the merge.
 
+- For T9, from SE S2: the sidecar option is `options.templates`, not `templatePaths`.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

@@ -432,6 +432,11 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S2 `cce2aaee`, `be4672a7`, merged 2026-09-05: `app/lib/anchors/run.js` (`validateAnchors`,
+  `AnchorError`, `textAt`), `anchors/bst.js`, the four multi-file extractors recording the map,
+  `overtypedCells(set, options)` with `options.templates` and `isInputCell(file, sheet, cell)`;
+  BST `--file`, `--source-dir` and `overtyped.json` byte-identical; browser suite green bar the
+  bst-latest A3. Taxi T9 and Ltd T2 note the option name `templates`.
 - S6 `9215c63a`, merged 2026-09-05: `app/lib/products.js` (`PRODUCTS`, `productModule`), the MCP
   server named `diya-gl`, `extractBookFromFile` with the product from the book or the sniff and a
   `PackageMismatchError`; BST `--file` output byte-identical; the browser suite is 161 with S1's
