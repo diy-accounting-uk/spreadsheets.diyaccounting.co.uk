@@ -10,17 +10,12 @@
 // Every module below is imported as it stands. Nothing here is a browser fork.
 
 // Reading a populated workbook back into diya-gl data.
-export {
-  extractBstTransactions,
-  extractMetadata,
-  bstExtractionMap,
-  bstBookFieldCells,
-  isBstInputCell,
-  validateBstAnchors,
-  BstAnchorError,
-  normaliseLine,
-  taxTablesForPackage,
-} from "./xlsx-exporter.js";
+export { extractBstTransactions, extractMetadata, bstExtractionMap, bookFieldCells, isBstInputCell, normaliseLine, taxTablesForPackage } from "./xlsx-exporter.js";
+
+// The anchor guard: the runner, BST's own table and its two-line wrapper,
+// and the one error class every product's table throws.
+export { validateAnchors, AnchorError } from "./anchors/run.js";
+export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader.js";
@@ -73,20 +68,52 @@ export {
 export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
 
 // The checks and the report shape.
-export { reportSections, checkCompliance, cellLabels, profitBridge, standardReads, CELL_MAP, TAX_SHEET, PRODUCT } from "../products/bst.js";
+export {
+  reportSections,
+  checkCompliance,
+  cellLabels,
+  profitBridge,
+  standardReads,
+  CELL_MAP,
+  HEADLINES,
+  TAX_SHEET,
+  PRODUCT,
+} from "../products/bst.js";
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
+// The product map: every product module diya-gl carries, and the lookup
+// export.js, generate.js and the MCP tools select one through.
+export { PRODUCTS, productModule } from "./products.js";
+
 // Editing it.
-export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
+export {
+  addSaleLine,
+  addPurchaseLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+  changeLineBankAccount,
+} from "./diya-gl-edits.js";
 
 // The book checks and warnings over D itself, and their fix-it helpers.
-export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./book-checks.js";
+export { runBookChecks, bookChecksJson, previewHelper, applyHelper, previewBookHelper, applyBookHelper } from "./book-checks.js";
+export { bankBalancesByMonth } from "./book-checks/se.js";
 
 // The year-at-a-glance headline figures, derived from R.
-export { headlinesFromReport } from "./bst-headlines.js";
+export { headlinesFromReport } from "./headlines.js";
 
 // Saving it back out as a workbook or the package zip.
-export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
+export {
+  saveWorkbook,
+  saveWorkbookFiles,
+  savePackageZip,
+  productOf,
+  taxYearFileName,
+  loadTaxDataForBook,
+  BookFieldError,
+  SingleFileOnlyError,
+} from "./product-workbook.js";
 
 // The resource-loader contract a caller has to satisfy.
 export {

@@ -11,19 +11,20 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "child_process";
 import JSZip from "jszip";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, cpSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/bst-workbook.js";
+import { loadTaxDataForBook } from "../lib/product-workbook.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const NODE = process.execPath;
 const EXPORT_BIN = resolve(ROOT, "app", "bin", "export.js");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
+const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
 
 const tempDirs = [];
 function tempDir(prefix) {
@@ -64,6 +65,18 @@ async function zipOf(xlsxPath) {
   zip.file(basename(xlsxPath), readFileSync(xlsxPath));
   const buffer = await zip.generateAsync({ type: "nodebuffer" });
   const zipPath = xlsxPath.replace(/\.xlsx$/, ".zip");
+  writeFileSync(zipPath, buffer);
+  return zipPath;
+}
+
+// A multi-file package zipped flat, the way a customer's own download
+// ships it -- every workbook in the directory, at the zip root.
+async function packageZipOf(dir, zipPath) {
+  const zip = new JSZip();
+  for (const name of readdirSync(dir).filter((file) => file.endsWith(".xlsx"))) {
+    zip.file(name, readFileSync(resolve(dir, name)));
+  }
+  const buffer = await zip.generateAsync({ type: "nodebuffer" });
   writeFileSync(zipPath, buffer);
   return zipPath;
 }
@@ -326,10 +339,42 @@ describe("export.js --file mode", () => {
     expect(err.stderr).toContain('sheet "Debtors & Creditors" not found');
   }, 30000);
 
-  it("rejects --file for a package other than bst", () => {
-    const err = runExpectingFailure(["app/bin/export.js", "--package", "taxi", "--file", BST_XLSX]);
+  it("reads an SE package zip with --package se to the same bytes as --source-dir", async () => {
+    const zipDir = tempDir("export-file-se-zip-");
+    const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
+
+    const sourceDirOutput = tempDir("export-file-se-source-out-");
+    run(["app/bin/export.js", "--package", "se", "--source-dir", SE_PACKAGE_DIR, "--output-dir", sourceDirOutput]);
+
+    const fileOutput = tempDir("export-file-se-file-out-");
+    run(["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", fileOutput]);
+
+    expect(readFileSync(resolve(fileOutput, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
+    expect(readFileSync(resolve(fileOutput, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
+    // T1's input-cell predicate widens the sidecar to SE; until then the
+    // package carries nothing typed over a template formula.
+    const overtypedPath = resolve(fileOutput, "overtyped.json");
+    if (existsSync(overtypedPath)) {
+      expect(JSON.parse(readFileSync(overtypedPath, "utf8"))).toEqual({});
+    }
+  }, 30000);
+
+  it("settles the product by content when --package is omitted", () => {
+    const bstOutput = tempDir("export-file-sniff-bst-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", bstOutput]);
+
+    const sniffedOutput = tempDir("export-file-sniff-out-");
+    run(["app/bin/export.js", "--file", BST_XLSX, "--output-dir", sniffedOutput]);
+
+    for (const name of ["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]) {
+      expect(readFileSync(resolve(sniffedOutput, name)).equals(readFileSync(resolve(bstOutput, name))), name).toBe(true);
+    }
+  }, 30000);
+
+  it("refuses a --package that disagrees with the file", () => {
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "se", "--file", BST_XLSX]);
     expect(err.status).toBe(1);
-    expect(err.stderr).toContain("--file mode supports --package bst only");
+    expect(err.stderr).toContain("--package se was given but the file is a Basic Sole Trader workbook");
   });
 
   it("rejects --source-dir and --file given together", () => {
@@ -499,7 +544,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
     expect(err.status).toBe(1);
     expect(err.stderr).toContain('"version": 1');
     expect(err.stderr).toContain("found 2");
-  });
+  }, 30000);
 });
 
 describe("package.json export-bst alias", () => {

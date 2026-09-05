@@ -17,30 +17,16 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import {
-  generateSpreadsheet,
-  packageNaming,
-  renameMonthTabs,
-  rewriteVatinterfaceFormulas,
-  renameExternalLinkSheetNames,
-  reorientPayslipsAdminMonthSheets,
-  reorientPayslipsMonthTabPeriods,
-  realignPayslipsPaymentSchedule,
-  monthEnd,
-} from "../lib/generator.js";
-import { payrollYearStart } from "../lib/payslips-layout.js";
+import { generateSpreadsheet, packageNaming, applyYearEndSequence, monthEnd } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { saveBstWorkbook } from "../lib/bst-workbook.js";
+import { saveWorkbook } from "../lib/product-workbook.js";
+import { productModule } from "../lib/products.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
 import { PRODUCT as LTD } from "../products/ltd.js";
-import * as bstMod from "../products/bst.js";
-import * as taxiMod from "../products/taxi.js";
-import * as seMod from "../products/se.js";
-import * as ltdMod from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -85,22 +71,6 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
   const outDir = resolve(outputDir, dirName);
   mkdirSync(outDir, { recursive: true });
 
-  const TAB_RENAME_FILES = new Set([
-    "Sales.xlsx",
-    "Purchases.xlsx",
-    "Currentaccount.xlsx",
-    "Savingaccount.xlsx",
-    "Cashaccount.xlsx",
-    "Creditcardaccount.xlsx",
-    "Payslips.xlsx",
-  ]);
-
-  // Workbooks with no month tabs of their own that still address the
-  // ledgers' month tabs by name across a link: the hub reads every month's
-  // totals, and the asset workbook's reconciliation reads the two ledgers'
-  // annual fixed asset rows off their final month tab.
-  const LINK_RENAME_FILES = new Set(["Financialaccounts.xlsx", "Fixedassets.xlsx"]);
-
   if (productMeta.template.files) {
     for (const templateFile of productMeta.template.files) {
       let buffer = readFileSync(resolve(productDir, templateFile));
@@ -111,31 +81,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
         buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
       }
 
-      if (yearEndMonth && templateFile.endsWith(".xlsx") && TAB_RENAME_FILES.has(templateFile)) {
-        buffer = await renameMonthTabs(buffer, yearEndMonth);
-        buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
-      }
-
-      // The Payslips Admin sheet names the month tab each payroll month belongs
-      // on, which the printed payslip joins through, so it moves with the tabs.
-      if (yearEndMonth && sheetsConfig?.payslipsAdmin) {
-        buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
-        // Each month tab's monthly payroll block already covers a month of the
-        // payroll year. The tab's name is the accounting period's month, so on
-        // another year end that is the month the block moves to.
-        buffer = await reorientPayslipsMonthTabPeriods(buffer, endDate, payrollYearStart(new Date(ty.start).getUTCFullYear()));
-        // Each PAYE schedule row then takes the tab holding the payroll paid
-        // in its tax month rather than the tab the rename left it pointing at.
-        buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
-      }
-
-      if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
-        buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
-      }
-
-      if (yearEndMonth && LINK_RENAME_FILES.has(templateFile)) {
-        buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
-      }
+      buffer = await applyYearEndSequence(buffer, templateFile, sheetsConfig, yearEndMonth, endDate, ty);
 
       writeFileSync(resolve(outDir, templateFile), buffer);
     }
@@ -334,12 +280,11 @@ async function main() {
 
   // If --data provided, inject diya-gl data into the generated package and recalculate
   if (dataDir && results.length > 0) {
-    const PRODUCT_MODULES = { bst: bstMod, taxi: taxiMod, se: seMod, ltd: ltdMod };
-    const productMod = PRODUCT_MODULES[packageFilter];
-    if (!productMod) {
+    if (!PRODUCTS[packageFilter]) {
       console.error(`--data requires --package (not 'all'). Got: ${packageFilter}`);
       process.exit(1);
     }
+    const productMod = productModule(packageFilter);
 
     const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
 
@@ -356,9 +301,9 @@ async function main() {
     console.log(`\n=== Injecting diya-gl data into ${lastResult.dirName} ===`);
 
     if (packageFilter === "bst") {
-      // saveBstWorkbook takes the tax data this run selected rather than
+      // saveWorkbook takes the tax data this run selected rather than
       // deriving it from the book, so --years still decides the year.
-      const { workbook, filename } = await saveBstWorkbook(book, lines, { taxData: lastResult.taxData });
+      const { workbook, filename } = await saveWorkbook(book, lines, { taxData: lastResult.taxData });
       await runSpreadsheet(workbook, {}, reads, {
         saveRecalculatedTo: resolve(finalOutputDir, filename),
       });
