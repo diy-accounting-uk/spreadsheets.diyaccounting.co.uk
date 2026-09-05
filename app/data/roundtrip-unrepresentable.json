@@ -235,9 +235,19 @@
       "reason": "The two single-file templates have no VAT rate cell. Their Sales tabs total a gross sales value with no rate beside it, so nothing on any sheet says whether the business charges VAT."
     },
     {
+      "path": "entityInformation.organizationAddressLine",
+      "products": ["taxi"],
+      "reason": "The Taxi Business Details sheet writes only the trader's name (C5), the trade description (C8), the postcode (C17) and the UTR (O5); the address line has no cell of the form's own and stays in the book only."
+    },
+    {
       "path": "entityInformation.organizationTelephone",
       "products": ["bst", "taxi"],
       "reason": "The Business Details sheet takes a name, a description, an address, a town and a postcode, with no telephone box; and these two products ship no Salesinvoice workbook, whose letterhead is where the multi-file packages keep the number."
+    },
+    {
+      "path": "entityInformation.organizationTown",
+      "products": ["taxi"],
+      "reason": "The Taxi Business Details sheet writes only the trader's name (C5), the trade description (C8), the postcode (C17) and the UTR (O5); the town has no cell of the form's own and stays in the book only."
     },
     {
       "path": "entityInformation.taxAuthorityIdentifier",

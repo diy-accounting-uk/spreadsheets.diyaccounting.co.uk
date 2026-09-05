@@ -19,7 +19,7 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R3 and R4 re-dispatched 2026-09-05 after the BrickWork master regained its date order. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 re-dispatched a third time after the Taxi export gained the UTR and the round-trip declaration stopped naming taxi. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. Main carries one stray code commit (`c1923823`, Taxi T20's fixture, committed by an
 agent in the primary tree); PR #61 reverts it on main and waits on the operator: merge to keep main
@@ -34,15 +34,14 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-S4 | S4 `link-caches.js`, the calculator's leaf cells, the stale-cache state | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable, `.worktrees/spreadsheets/se-s4` |
 | SE-T1 | T1 SE anchor table and input-cell predicate | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t1` |
 | SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t2` |
 | SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T2 | blocked-to-start | Sonnet, wave 7 |
-| SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S4 | blocked-to-start | Opus, wave 7 |
+| SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t7` |
 | SE-T8 | T8 SE forms as layout modules: SA103S, SA103F, VAT, computation | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7 | blocked-to-start | Sonnet, wave 7, after SE-T7 |
 | SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, TX-T16 | blocked-to-start | Sonnet, wave 8 |
 | SE-T10 | T10 SE render coverage and unrepresentable list | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T16 | blocked-to-start | Haiku, wave 9 |
-| SE-T11 | T11 SE equivalence, formats, round trips (A1–A9, E3–E5) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-S4, SE-T14 | blocked-to-start | Opus, wave 8 |
+| SE-T11 | T11 SE equivalence, formats, round trips (A1–A9, E3–E5) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T14 | blocked-to-start | Opus, wave 8 |
 | SE-T12 | T12 SE edit and warning proofs in the browser | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T11 | blocked-to-start | Sonnet, wave 9 |
 | SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T12 | blocked-to-start | Fable, wave 10 |
 | SE-T14 | T14 CLI and MCP on SE; `changeLineBankAccount` joins the edit map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T2 | blocked-to-start | Sonnet, wave 7 |
@@ -56,7 +55,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | — | ready-to-start | R3 (generate-taxi, skip-commit) running on the branch |
 | LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T1 | blocked-to-start | Sonnet, wave 6 |
-| LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S4, LT-T2 | blocked-to-start | Opus, wave 7 |
+| LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T2 | blocked-to-start | Opus, wave 7 |
 | LT-T6b | Ltd T6 settlement helpers proved on Ltd books | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 7 |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 6 |
 | LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, SE-T8 | blocked-to-start | Opus, wave 8 |

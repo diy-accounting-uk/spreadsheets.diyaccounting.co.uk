@@ -1947,7 +1947,12 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
 //   unmapped rather than assumed to be today's £1,000,000.
 // - Class 1 employee NI (main/upper rate, primary threshold, UEL): no
 //   app/data/*.toml carries the employee side, only Ltd's employer_ni block.
-function taxTablesFromRateData(raw) {
+// - tax.vat.*: only for a product whose sheets carry a VAT rate cell of
+//   their own (VAT_RATE_CELLS). BST and Taxi have none -- their book's own
+//   entityInformation.diya-gl:vatRegistered stays absent for the same
+//   reason -- so restating the year file's VAT rates on their books would
+//   carry a rate the package never entered.
+function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   const tax = {};
   const set = (table, field, value) => {
     if (value === undefined) return;
@@ -1993,7 +1998,7 @@ function taxTablesFromRateData(raw) {
   }
 
   const vat = raw.vat;
-  if (vat) {
+  if (vat && includeVat) {
     set("vat", "standardRate", vat.standard_rate);
     set("vat", "registrationThreshold", vat.registration_threshold);
   }
@@ -2046,7 +2051,7 @@ export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
   const filePath = resolvePath(taxDataDir(), fileName);
   if (!fileExists(filePath)) return {};
   const raw = parseTOML(readSchemaFile(filePath, "utf8"));
-  return taxTablesFromRateData(raw);
+  return taxTablesFromRateData(raw, { includeVat: Boolean(VAT_RATE_CELLS[product]) });
 }
 
 function numberAt(xml, cellRef, sharedStrings) {

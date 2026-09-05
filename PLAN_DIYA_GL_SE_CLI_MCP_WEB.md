@@ -432,6 +432,13 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S4 `adad372c`, `2468cd38`, `87642dd4`, `5fc50081`, `6183ddb6`, merged 2026-09-05: `xlsx-parts.js`,
+  `link-caches.js` (`refreshLinkCaches`, `resultsReader`, `classifyLinkCell`, `LINK_ORDER.se`), the
+  SE calculator's leaf cells (543 addressed, 539 covered, 4 blank; the brief's 356/15 was wrong),
+  the writer refreshing every SE cache, `drift.js` with the stale state; all 38 link parts over
+  `se-latest` and `ltd-latest` byte-identical. A writer save computes no formula, so saved-mode
+  agreement is the 554 link-cache cells, not the report. Ltd T4b adds the `ltd` line under
+  `LINK_ORDER` and replaces the derived order in `link-cache.test.js`.
 - S8 `55add52d`, `317effde`, merged 2026-09-05: `scripts/example-books.json` is the list, the bundle
   build generates `books/examples.js` (gitignored) as `window.DiyaGlExamples` keyed by product, the
   shell reads it and the manifest's `examples` field is gone; the id grep finds only the generated

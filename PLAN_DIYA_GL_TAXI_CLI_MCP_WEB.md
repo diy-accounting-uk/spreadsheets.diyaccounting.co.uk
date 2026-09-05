@@ -505,6 +505,10 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   The per-row array also fixed the SE opening fixed assets' cost and depreciation lines clobbering
   each other's attribution.
 
+- After T6, `app/data/roundtrip-unrepresentable.json` no longer lists taxi under
+  `entityInformation.taxRegistrationNumber`: the export carries the UTR from `O5`, and the scorecard
+  refuses a declaration that explains nothing. R3 re-dispatched.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
