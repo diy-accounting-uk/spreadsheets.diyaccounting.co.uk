@@ -23,10 +23,10 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
-import { s1, s2, s2ForPackage, s3Se, s3SeYearEnd, canonical, parseFigure, SCENARIOS_SE } from "./r-sources.js";
+import { s1, s2ForPackage, s3Se, s3SeYearEnd, canonical, parseFigure, SCENARIOS_SE } from "./r-sources.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.js";
 import { calculateSeCells } from "../../app/lib/calculators/se.js";
-import { savePackageZip } from "../../app/lib/product-workbook.js";
+import { savePackageZip, taxYearFileName } from "../../app/lib/product-workbook.js";
 import { linkCacheValues, HUB_FILE } from "../../app/lib/link-caches.js";
 import { canonicalValue } from "../../app/lib/report-serializer.js";
 import { parse as parseTOML } from "smol-toml";
@@ -57,6 +57,38 @@ test.afterAll(async () => {
 
 function seUrl(search) {
   return `${baseUrl}/books/se.html${search || ""}`;
+}
+
+// ── S2 for a Self Employed book, on the tax data the page itself reads ────
+// The page loads the tax year file taxYearFileName names for the book's own
+// period; report.js's bare --data path instead extracts what the book.toml's
+// [tax] section happens to carry, which report.js's own log calls the
+// imprecise route ("use --years for precise rates"). So every comparison
+// here asks report.js for the same year file, which is what s2ForPackage
+// takes a year-end for.
+
+function periodEndOf(bookDir) {
+  const { book } = loadDiyaGlData(path.join(ROOT, bookDir));
+  return new Date(book.documentInfo.periodCoveredEnd).toISOString().slice(0, 10);
+}
+
+function seReport(example) {
+  return s2ForPackage(example.bookDir, periodEndOf(example.bookDir), example.scenario, "se");
+}
+
+const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
+const MS_PER_DAY = 86400000;
+
+function excelSerialAsDate(serial) {
+  return new Date(EXCEL_EPOCH_MS + serial * MS_PER_DAY).toISOString().slice(0, 10);
+}
+
+// What a figure R holds should print as: whole pounds inside a form box, the
+// penny the double rounds to everywhere else, and the raw value for a rate
+// or a count.
+function expectedForUnit(entry, wholePounds) {
+  if (entry.unit !== "money") return entry.value;
+  return wholePounds ? Math.round(Number(entry.value)) : Number(entry.value).toFixed(2);
 }
 
 // ── Getting each of the three books onto the page ─────────────────────────
@@ -118,11 +150,11 @@ async function triggerSaveDownload(page, menuItemName) {
 
 // ── The page sweep: every data-r-key on every view, both drill levels ─────
 // Keeps each element's class alongside its text, so A4 reads a check/ key's
-// verdict off the class rather than the prose a check item prints, and
-// records which view the figure came from so no view can silently render
-// nothing R can be joined to.
+// verdict off the class rather than the prose a check item prints, and keeps
+// each view's own key set alongside the running one, so a figure two views
+// both print still counts for both.
 
-async function collectRenderedFigures(page, view, running) {
+async function collectRenderedFigures(page, view, running, keysByView) {
   const found = await page.evaluate(() => {
     return Array.from(document.querySelectorAll("[data-r-key]")).map((el) => ({
       raw: el.getAttribute("data-r-key"),
@@ -135,17 +167,20 @@ async function collectRenderedFigures(page, view, running) {
     }));
   });
   for (const { raw, text, className, wholePounds } of found) {
-    for (const key of raw.split(" || ")) running.set(key, { text, className, wholePounds, view });
+    for (const key of raw.split(" || ")) {
+      running.set(key, { text, className, wholePounds, view });
+      keysByView.get(view).add(key);
+    }
   }
 }
 
-async function openEveryMonth(page, running) {
+async function openEveryMonth(page, running, keysByView) {
   const monthCount = await page.locator(".year-row").count();
   for (let i = 0; i < monthCount; i++) {
     await page.locator(".year-row").nth(i).click();
     const entriesToggle = page.locator("#entries-toggle");
     if (await entriesToggle.count()) await entriesToggle.click();
-    await collectRenderedFigures(page, "year", running);
+    await collectRenderedFigures(page, "year", running, keysByView);
   }
 }
 
@@ -154,13 +189,14 @@ async function sweepPage(page, example) {
   const viewIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
 
   const running = new Map();
+  const keysByView = new Map(viewIds.map((view) => [view, new Set()]));
   for (const view of viewIds) {
     await page.locator(`.tab-btn[data-view="${view}"]`).click();
     await expect(page.locator(`.tab-btn[data-view="${view}"]`)).toHaveAttribute("aria-selected", "true");
-    await collectRenderedFigures(page, view, running);
-    if (view === "year") await openEveryMonth(page, running);
+    await collectRenderedFigures(page, view, running, keysByView);
+    if (view === "year") await openEveryMonth(page, running, keysByView);
   }
-  return { rendered: running, viewIds };
+  return { rendered: running, viewIds, keysByView };
 }
 
 // ── A1, A2: the diya-gl download is the book, byte for byte ───────────────
@@ -184,11 +220,25 @@ test.describe("DIYA-GL books page — the Self Employed diya-gl download (A1, A2
     const zip = await JSZip.loadAsync(bytes);
     const pageReportText = await zip.file("report.json").async("string");
 
+    const yearEnd = periodEndOf(FEATURED.bookDir);
     const outputDir = path.join(TARGET_DIR, "r-advanced");
-    execFileSync(process.execPath, ["app/bin/report.js", "--package", "se", "--data", FEATURED.bookDir, "--output-dir", outputDir], {
-      cwd: ROOT,
-      stdio: "pipe",
-    });
+    execFileSync(
+      process.execPath,
+      [
+        "app/bin/report.js",
+        "--package",
+        "se",
+        "--data",
+        FEATURED.bookDir,
+        "--years",
+        taxYearFileName(new Date(yearEnd), "se"),
+        "--year-end",
+        yearEnd,
+        "--output-dir",
+        outputDir,
+      ],
+      { cwd: ROOT, stdio: "pipe" },
+    );
 
     expect(pageReportText).toBe(fs.readFileSync(path.join(outputDir, "report.json"), "utf-8"));
   });
@@ -244,17 +294,15 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
 test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS_SE) {
     test(`${example.scenario}: every rendered figure matches S2`, async ({ page }) => {
-      const s2Map = s2(example.bookDir, example.scenario, "se");
-      const { rendered, viewIds } = await sweepPage(page, example);
+      const s2Map = seReport(example);
+      const { rendered, viewIds, keysByView } = await sweepPage(page, example);
 
       let compared = 0;
       const mismatches = [];
-      const comparedByView = new Map(viewIds.map((view) => [view, 0]));
       for (const [key, { text, className, wholePounds, view }] of rendered) {
         const s2Entry = s2Map.get(key);
         if (!s2Entry) continue; // A5 (books-render-coverage) proves every rendered key is one S2 carries.
         compared++;
-        comparedByView.set(view, (comparedByView.get(view) || 0) + 1);
 
         if (key.startsWith("check/")) {
           const classNames = String(className).split(/\s+/);
@@ -265,9 +313,29 @@ test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
           continue;
         }
 
+        // The PAYE remittance schedule's dates sit in the sheet as Excel day
+        // serials, which R records under the money unit; the page prints the
+        // day each one names, so the two meet on the date.
+        const isoDate = /^\d{4}-\d{2}-\d{2}$/.exec(String(text).trim());
+        if (isoDate && Number.isFinite(Number(s2Entry.value))) {
+          const fromSerial = excelSerialAsDate(Number(s2Entry.value));
+          if (fromSerial !== isoDate[0]) {
+            mismatches.push(`${key} (${view}): rendered "${isoDate[0]}", S2's serial ${s2Entry.value} is ${fromSerial}`);
+          }
+          continue;
+        }
+
         if (!["money", "rate", "count"].includes(s2Entry.unit)) continue; // text/date/identifier: A5 covers presence, not value.
         const parsed = parseFigure(text);
-        const expectedValue = wholePounds && s2Entry.unit === "money" ? Math.round(Number(s2Entry.value)) : s2Entry.value;
+        // Both sides hold the same double here -- the page and report.js run
+        // the one engine -- so a money figure meets R at the penny that
+        // double itself rounds to. canonical()'s own working-precision step
+        // is for the Excel side of A3, where the two engines' float noise
+        // has to be absorbed before the penny is chosen; applied to a figure
+        // sitting exactly on a half penny it can pick the penny above while
+        // the browser's formatter, which only ever sees the double, prints
+        // the one below.
+        const expectedValue = expectedForUnit(s2Entry, wholePounds);
         const renderedCanonical = canonical(parsed.value, s2Entry.unit);
         const expectedCanonical = canonical(expectedValue, s2Entry.unit);
         if (renderedCanonical !== expectedCanonical) {
@@ -277,7 +345,7 @@ test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
 
       // Home is a navigation list, not a set of figures; every other view of
       // the manifest prints at least one figure R carries.
-      const silentViews = viewIds.filter((view) => view !== "home" && !comparedByView.get(view));
+      const silentViews = viewIds.filter((view) => view !== "home" && ![...keysByView.get(view)].some((key) => s2Map.has(key)));
       console.log(`A4 (${example.scenario}): ${compared} figures compared across ${viewIds.length} views`);
 
       expect(mismatches, `A4 mismatches:\n${mismatches.join("\n")}`).toEqual([]);
@@ -304,7 +372,7 @@ test.describe("DIYA-GL books page — the fixture holds (A6)", () => {
   for (const example of SCENARIOS_SE) {
     test(`${example.scenario}: S1's totals equal S2's cells`, () => {
       const expected = s1(example.scenario);
-      const s2Map = s2(example.bookDir, example.scenario, "se");
+      const s2Map = seReport(example);
 
       let compared = 0;
       const mismatches = [];
@@ -491,7 +559,7 @@ function checkBoxes(rows, boxes, s2Map, problems) {
 
 test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
   test("SA103S prints the 2026 short-return boxes, each keyed to its cell", async ({ page }) => {
-    const s2Map = s2(FEATURED.bookDir, FEATURED.scenario, "se");
+    const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);
 
     const expenses = LAYOUT.forms.sa103s.sections.find((section) => section.collapseBelow);
@@ -505,7 +573,7 @@ test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
   });
 
   test("SA103F prints the 2026 full-return boxes, each keyed to its cell", async ({ page }) => {
-    const s2Map = s2(FEATURED.bookDir, FEATURED.scenario, "se");
+    const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);
 
     const problems = [];
@@ -514,7 +582,7 @@ test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
   });
 
   test("the VAT return prints all nine boxes for each of the five quarters", async ({ page }) => {
-    const s2Map = s2(FEATURED.bookDir, FEATURED.scenario, "se");
+    const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);
 
     const vat = LAYOUT.forms.vat;
@@ -531,7 +599,7 @@ test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
   });
 
   test("the Income Tax computation prints the working sheet's own lines in order", async ({ page }) => {
-    const s2Map = s2(FEATURED.bookDir, FEATURED.scenario, "se");
+    const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);
 
     // A band line renders as a rate row -- a label, its ceiling and its rate
