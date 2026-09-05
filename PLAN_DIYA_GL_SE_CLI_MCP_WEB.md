@@ -432,6 +432,26 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
+  by the 2026 number with `cell`, `rule` or `cell: null`, the expenses section's `collapseBelow` on
+  the VAT threshold, the VAT block per `VATQtr` sheet, the computation in SA110 order), `se-forms.js`
+  rendering all four through `helpers.form`, the four view entries, one script tag in `se.html`.
+  SA103F boxes 51 to 54 and the `.n` sub-boxes are `cell: null` because the calculator never
+  populates them.
+- T14 `edfbba21`, `ebba7cb2`, `97a7beba`, merged 2026-09-05: `changeLineBankAccount` in the edit
+  map (ten edits now), `extractLines` on the engine for the page's SE upload, the SE `--file` and
+  MCP tests with byte identity between `save_workbook` and `savePackageZip`. The settlement test's
+  seven-edit list became an `arrayContaining` on the merge. The SE page's `upload.validate` still
+  refuses an upload; wiring `extractLines` there is T11's page work.
+- T4 `53d653de`, merged 2026-09-05: `HEADLINES` in `se.js` (turnover B9 with grants and interest as
+  the second line, cost of sales B17, admin expenses B35, tax `Income Tax!E18`, assets from the
+  Schedule's K1, StockControl AB30, the two bank closing balances and closing debtors, fourteen
+  expense lines), two breakability proofs; the SE page shows the strip. `CELL_MAP`'s label for
+  `Profit & Loss Account!B22` reads "Light, Heat, Power" where the sheet says "Premises Rent Rates
+  Power"; T16 relabels it with the SE Short rows.
+- T17 `f86b224f`, merged 2026-09-05: `se-workbook.test.js` compares a save against the generate path
+  plus the same link-cache refresh, and the two "leaves out" cases compare every part except the
+  link caches; no writer defect.
 - T2 `234f4f5e`, `af692871`, `74474967`, `40ba13bb`, merged 2026-09-05: the SE writer leaves out an
   entry with no cell (each former throw covered by a T5 rule), the bundle carries the ten SE
   templates, the saved nine-file package proved against `--data` and, under LibreOffice, against a
