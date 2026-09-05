@@ -28,6 +28,7 @@ import {
   scoreReportDocuments,
   scoreReportDocumentsByKind,
   scoreDataHalves,
+  collapseDaySummedLines,
   flattenBook,
   unrepresentableScope,
   periodFrameOffset,
@@ -414,6 +415,98 @@ describe("scoreDataHalves", () => {
     expect(score.book).toMatchObject({ equal: 1, differing: 1, missing: 1 });
     expect(score.book.differingPaths).toEqual(["documentInfo.defaultCurrency"]);
     expect(score.book.missingPaths).toEqual(["accounts.sales.4000.accountMainDescription"]);
+  });
+});
+
+// ── Taxi's day-summed Sales journal ─────────────────────────────────────────
+//
+// app/products/taxi.js's cellWrites gathers every fixture line landing on
+// one calendar day before it writes a cell: two fares on the same day join
+// one E cell as their combined total (examples/basic-taxi-driver's TXN-0002
+// and TXN-0202, both on 2025-04-07), so the round trip is lossy by design at
+// that one day. collapseDaySummedLines folds the fixture side to match, so a
+// lost line is only counted when the day's own combined total goes missing.
+
+describe("collapseDaySummedLines", () => {
+  const FARE = { sourceJournalID: "sales", postingDate: "2025-04-07", accountMainID: "4000", amount: 200, entryNumber: "TXN-0002" };
+  const SECOND_FARE = { ...FARE, amount: 45, entryNumber: "TXN-0202" };
+  const GRANT = { sourceJournalID: "sales", postingDate: "2025-09-15", accountMainID: "4001", amount: 500, entryNumber: "TXN-0203" };
+
+  it("sums same-day, same-account lines on a journal the product day-sums", () => {
+    const collapsed = collapseDaySummedLines([FARE, SECOND_FARE, GRANT], "taxi");
+    expect(collapsed).toHaveLength(2);
+    const fareGroup = collapsed.find((line) => line.accountMainID === "4000");
+    expect(fareGroup.amount).toBe(245);
+    const grantGroup = collapsed.find((line) => line.accountMainID === "4001");
+    expect(grantGroup.amount).toBe(500);
+  });
+
+  it("leaves a journal the product does not list untouched", () => {
+    const purchase = { sourceJournalID: "purchases", postingDate: "2025-04-07", accountMainID: "5100", amount: 10 };
+    const collapsed = collapseDaySummedLines([purchase, { ...purchase, amount: 20 }], "taxi");
+    expect(collapsed).toHaveLength(2);
+  });
+
+  it("leaves every line untouched for a product with no day-summed journal", () => {
+    const collapsed = collapseDaySummedLines([FARE, SECOND_FARE], "bst");
+    expect(collapsed).toHaveLength(2);
+  });
+
+  it("leaves every line untouched when no product is given", () => {
+    expect(collapseDaySummedLines([FARE, SECOND_FARE])).toHaveLength(2);
+  });
+});
+
+describe("scoreDataHalves against a day-summed journal", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  function writePair(fixtureLines, exportLines) {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-daysum-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    writeFileSync(join(fixture, "lines.jsonl"), fixtureLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(exported, "lines.jsonl"), exportLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(fixture, "book.toml"), "");
+    writeFileSync(join(exported, "book.toml"), "");
+    return { fixture, exported };
+  }
+
+  const FARE = { sourceJournalID: "sales", postingDate: "2025-04-07", accountMainID: "4000", amount: 200, entryNumber: "TXN-0002" };
+  const SECOND_FARE = { ...FARE, amount: 45, entryNumber: "TXN-0202" };
+  const SUMMED_ROW = { sourceJournalID: "sales", postingDate: "2025-04-07", accountMainID: "4000", amount: 245 };
+
+  it("does not count the day's own combined total as a lost or coarse-unmatched line", () => {
+    const { fixture, exported } = writePair([FARE, SECOND_FARE], [SUMMED_ROW]);
+    const taxiScope = unrepresentableScope("taxi", null);
+    const score = scoreDataHalves(fixture, exported, taxiScope);
+    expect(score.linesLost).toBe(0);
+    expect(score.groupedFixtureLines).toBe(1);
+    expect(score.coarseMatches).toBe(1);
+    expect(score.accountMatches).toBe(1);
+    // The raw fixture count is untouched -- only the grouped comparison
+    // absorbs the day sum.
+    expect(score.fixtureLines).toBe(2);
+  });
+
+  it("still counts a real loss once the day's combined total itself goes missing", () => {
+    const { fixture, exported } = writePair([FARE, SECOND_FARE], []);
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("taxi", null));
+    expect(score.linesLost).toBe(1);
+    expect(score.coarseMatches).toBe(0);
+  });
+
+  it("scores the same two lines as one lost and one unmatched for a product with no day-summed journal", () => {
+    const { fixture, exported } = writePair([FARE, SECOND_FARE], [SUMMED_ROW]);
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("bst", null));
+    expect(score.linesLost).toBe(1);
+    expect(score.coarseMatches).toBe(0);
   });
 });
 
