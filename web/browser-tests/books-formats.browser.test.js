@@ -141,7 +141,7 @@ async function waitForLoaded(page) {
 }
 
 async function readSnapshotTotal(page) {
-  return page.evaluate(() => window.DIYA_BST_SNAPSHOT.annual.sales);
+  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.annual.sales);
 }
 
 async function readDownload(download) {
@@ -255,7 +255,7 @@ test.describe("DIYA-GL books page — every way in", () => {
   });
 });
 
-// loadFromFile's own book-building for an uploaded workbook (bst-data.js)
+// The manifest's own book-building for an uploaded workbook (products/bst.js)
 // is deliberately lighter than the CLI's extractBook: it has no access to
 // the real per-cell chart labels, the Fixed Assets register or the Admin
 // sheet's tax snapshot that extractBook() reads Node-side, off the
@@ -408,10 +408,10 @@ test.describe("DIYA-GL books page — breakability", () => {
     const beforeReport = JSON.parse(await (await JSZip.loadAsync(before.bytes)).file("report.json").async("string"));
 
     await page.evaluate(async () => {
-      const edited = window.DIYA_BST_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
+      const edited = window.DIYA_BOOKS_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
       await window.DiyaGlBooksPage.setLines(edited, "test: bump the first line by £500");
     });
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
     const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const afterReport = JSON.parse(await (await JSZip.loadAsync(after.bytes)).file("report.json").async("string"));

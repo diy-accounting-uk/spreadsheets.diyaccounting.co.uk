@@ -11,8 +11,8 @@
 // mountHeadlines(container, opts) paints the strip into container and
 // returns { refresh(snapshot) } so a caller can repaint after every load or
 // edit without re-mounting. opts carries three things this module never
-// computes for itself: the books-page snapshot bst-data.js builds
-// (window.DIYA_BST_SNAPSHOT's shape), the pure headlinesFromReport()
+// computes for itself: the books-page snapshot data.js builds
+// (window.DIYA_BOOKS_SNAPSHOT's shape), the pure headlinesFromReport()
 // function from app/lib/headlines.js (so the browser and the Node test
 // derive the same tiles from the same R keys), and formatMoney (the page's
 // own currency formatter, so the strip's figures render exactly like every
@@ -21,7 +21,7 @@
 // This module builds its own minimal R document from the snapshot's
 // already-calculated sub-objects (annual, fixedAssets, stock, debtors,
 // incomeTax) rather than from a raw sheet/cell results map, because the
-// snapshot bst-data.js assembles carries only those derived views, not the
+// snapshot data.js assembles carries only those derived views, not the
 // full results object the R keys nominally come from. Every value the
 // adapter reads traces back to the same calculated figures those keys
 // name -- see reportFromSnapshot() below.
@@ -866,10 +866,13 @@
     );
   }
 
+  // opts.report is R itself when the caller has it (the page passes the
+  // report its snapshot already carries); otherwise the minimal R above is
+  // rebuilt from the snapshot's derived figures.
   function mountHeadlines(container, opts) {
     var formatMoney = opts.formatMoney;
     function paint(snapshot) {
-      var report = reportFromSnapshot(snapshot);
+      var report = opts.report || reportFromSnapshot(snapshot);
       var headlines = opts.headlinesFromReport(report);
       container.innerHTML = renderStrip(headlines, snapshot, formatMoney);
       bindInteractions(container);

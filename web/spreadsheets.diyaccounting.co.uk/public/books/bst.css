@@ -1,0 +1,7 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2025-2026 DIY Accounting Ltd */
+
+/* books/bst.css -- the Basic Sole Trader page's sheet: the shared books
+   sheet, with room for rules of its own below. */
+
+@import url("books.css");

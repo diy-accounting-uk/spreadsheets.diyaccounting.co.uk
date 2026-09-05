@@ -268,7 +268,7 @@ test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
     await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Basic_Sole_Trader.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
-    const drift = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.drift);
+    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift);
     expect(drift).toEqual([]);
   });
 
@@ -277,7 +277,7 @@ test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
     await uploadFile(page, corrupted, "corrupted-motor-expenses.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
-    const drift = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.drift.map((d) => d.id));
+    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
     expect(drift).toEqual(["Profit & Loss Acc!C15"]);
 
     await page.locator('.tab-btn[data-view="profit-loss"]').click();
@@ -293,7 +293,7 @@ test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
     await uploadFile(page, corrupted, "corrupted-debtors-total.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
-    const drift = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.drift.map((d) => d.id));
+    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
     expect(drift).toEqual(["Debtors & Creditors!C29"]);
 
     await page.locator('.tab-btn[data-view="debtors-creditors"]').click();

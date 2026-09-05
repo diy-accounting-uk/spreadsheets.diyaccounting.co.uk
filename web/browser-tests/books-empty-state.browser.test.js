@@ -97,7 +97,7 @@ test.describe("DIYA-GL books page — new-book form", () => {
     // No as-read layer to compare against, so no drift is possible, and
     // every check on a book with no lines to fail passes.
     const snapshot = await page.evaluate(() => {
-      const s = window.DIYA_BST_SNAPSHOT;
+      const s = window.DIYA_BOOKS_SNAPSHOT;
       return {
         driftCount: s.drift.length,
         checksFailing: s.checks.filter((c) => c.result !== "pass").length,
