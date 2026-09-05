@@ -646,7 +646,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   green. Its corrected A4 shows one red: `products/{se,bst,taxi,ltd}.js` `fmt()` formats section
   values on the raw double (`se.js:1650`, `bst.js:382`, `taxi.js:539`, `ltd.js:2125`), board row
   SE-T23, the precursor of merging this.
-- SE-T19 `87a0e211`, `07c558fb` on `claude/wt-se-t19`, not yet merged: `data.js` sniffs every upload
+- SE-T19 `87a0e211`, `07c558fb`, merged into `claude/diya-gl-wave-2` at `8a80d84c` (2026-09-06): `data.js` sniffs every upload
   through the engine's `sniffProduct` over one workbook set; a lone package part raises
   `PackagePartError` by name; the three products' `upload` hooks take the set; `extractBook` takes
   a `readRateData` reader so the browser rebuilds `book.tax` (`taxTablesForPackage` async);
