@@ -43,7 +43,7 @@ const TRANSFER_SIBLING_ACCOUNTS = Object.fromEntries(
 // for, receipts and payments apart. Cashaccount analyses four fewer
 // receipt codes than the three statement books, and no payment X. These
 // are the lists bankLayout() lays the columns out from in
-// app/products/ltd.js; cellWrites() refuses to write a code outside them,
+// app/lib/ltd-layout.js; cellWrites() refuses to write a code outside them,
 // which is the failure this check catches before the writer runs.
 function analysedCodes(fileName) {
   const transfers = Object.values(BANK_TRANSFER_CODES).filter(function (code) {
