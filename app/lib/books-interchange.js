@@ -33,6 +33,7 @@
 import JSZip from "jszip";
 import { extractBook, extractLines, bstExtractionMap, productIdOf, SCHEMA_PRODUCT_NAMES } from "./xlsx-exporter.js";
 import { validateBstAnchors } from "./anchors/bst.js";
+import { validateTaxiAnchors } from "./anchors/taxi.js";
 import { AnchorError } from "./anchors/run.js";
 import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
 import { buildSheetMap } from "./spreadsheet-runner.js";
@@ -236,6 +237,12 @@ function packagePartOf(sheetNames) {
 // guard because the Self Employed hub carries a Business Details and an SE
 // Short sheet of its own: what tells it apart is SE Full, Wagesinterface and
 // StockControl, which the single-file templates have not got.
+//
+// A set of one workbook is either Basic Sole Trader or Taxi Driver, told
+// apart by which product's anchor table it passes; a workbook that fails
+// both is reported against the Basic Sole Trader table, since that is the
+// one every single-file upload was checked against before Taxi's table
+// existed.
 async function sniffProduct(set, name) {
   if (set.has(PACKAGE_HUB)) {
     if (set.has("Bank.xlsx")) return "se";
@@ -248,8 +255,20 @@ async function sniffProduct(set, name) {
   const part = packagePartOf(sheetNames);
   if (part) throw new PackagePartError(workbookName, part);
 
-  await validateBstAnchors(await set.bytes(workbookName));
-  return "bst";
+  const bytes = await set.bytes(workbookName);
+  try {
+    await validateBstAnchors(bytes);
+    return "bst";
+  } catch (bstAnchorError) {
+    if (!(bstAnchorError instanceof AnchorError)) throw bstAnchorError;
+    try {
+      await validateTaxiAnchors(bytes);
+      return "taxi";
+    } catch (taxiAnchorError) {
+      if (!(taxiAnchorError instanceof AnchorError)) throw taxiAnchorError;
+      throw bstAnchorError;
+    }
+  }
 }
 
 // A workbook uploaded on its own is addressed by the name it arrived under,

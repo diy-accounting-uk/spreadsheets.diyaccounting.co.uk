@@ -30,6 +30,8 @@ import {
 } from "../lib/books-interchange.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { buildFileReportDocument } from "../bin/export.js";
+import { validateBstAnchors } from "../lib/anchors/bst.js";
+import { validateTaxiAnchors } from "../lib/anchors/taxi.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
@@ -39,6 +41,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const BST_XLSX_PATH = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
 const BST_XLSX_BYTES = readFileSync(BST_XLSX_PATH);
+const TAXI_XLSX_PATH = resolve(ROOT, "examples", "taxi-latest", "GB_Accounts_Taxi_Driver.xlsx");
+const TAXI_XLSX_BYTES = readFileSync(TAXI_XLSX_PATH);
 const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
 const LTD_PACKAGE_DIR = resolve(ROOT, "examples", "ltd-latest");
 const SE_TEMPLATE_DIR = resolve(ROOT, "app", "templates", "se");
@@ -366,6 +370,73 @@ describe.skip("the SE anchor table (T1 registers it; these two are proved once i
     expect(caught.findings.length).toBe(1);
     expect(caught.message).toContain("Sales.xlsx");
     expect(caught.message).toContain('sheet "Apr" cell B2');
+  });
+});
+
+describe("the Taxi anchor table", () => {
+  it("accepts examples/taxi-latest", async () => {
+    const source = await readBookSource(TAXI_XLSX_BYTES, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
+    expect(source.product).toBe("taxi");
+  });
+
+  it("refuses a BST workbook by name", async () => {
+    let caught;
+    try {
+      await validateTaxiAnchors(BST_XLSX_BYTES);
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(AnchorError);
+    expect(caught.message).toContain('sheet "Draft Tax calculation" not found');
+  });
+
+  it("refuses a Taxi workbook against the BST table naming PurchasesStock", async () => {
+    let caught;
+    try {
+      await validateBstAnchors(TAXI_XLSX_BYTES);
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(AnchorError);
+    expect(caught.message).toContain('sheet "PurchasesStock" not found');
+  });
+
+  it("names a retyped header", async () => {
+    const zip = await JSZip.loadAsync(TAXI_XLSX_BYTES);
+    const workbookXml = await zip.file("xl/workbook.xml").async("string");
+    const relsXml = await zip.file("xl/_rels/workbook.xml.rels").async("string");
+    const sheetMatch = workbookXml.match(/<sheet name="SalesApr"[^>]*r:id="(rId\d+)"/);
+    expect(sheetMatch, '"SalesApr" is on the Taxi workbook').not.toBeNull();
+    const relMatch = relsXml.match(new RegExp(`Id="${sheetMatch[1]}"[^>]*Target="worksheets/([^"]+)"`));
+    expect(relMatch).not.toBeNull();
+    const sheetPath = `xl/worksheets/${relMatch[1]}`;
+    const sheetXml = await zip.file(sheetPath).async("string");
+    const sstXml = await zip.file("xl/sharedStrings.xml").async("string");
+    const cellMatch = sheetXml.match(/<c r="E2"[^>]*t="s"[^>]*><v>(\d+)<\/v><\/c>/);
+    expect(cellMatch, "SalesApr!E2 is a shared string in the fixture").not.toBeNull();
+    const uniqueMatch = sstXml.match(/uniqueCount="(\d+)"/);
+    const newIndex = Number(uniqueMatch[1]);
+    const patchedSst = sstXml
+      .replace(/<\/sst>/, "<si><t>Takings</t></si></sst>")
+      .replace(/count="(\d+)"/, (match, count) => `count="${Number(count) + 1}"`)
+      .replace(/uniqueCount="(\d+)"/, `uniqueCount="${newIndex + 1}"`);
+    const patchedSheet = sheetXml.replace(cellMatch[0], `<c r="E2" t="s"><v>${newIndex}</v></c>`);
+    zip.file(sheetPath, patchedSheet);
+    zip.file("xl/sharedStrings.xml", patchedSst);
+    const patchedBytes = await zip.generateAsync({ type: "uint8array" });
+
+    let caught;
+    try {
+      await validateTaxiAnchors(patchedBytes);
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(AnchorError);
+    expect(caught.findings.length).toBe(1);
+    expect(caught.message).toContain("SalesApr");
+    expect(caught.message).toContain("cell E2");
+    expect(caught.message).toContain("Gross takings including tips");
+    expect(caught.message).toContain("Takings");
   });
 });
 
