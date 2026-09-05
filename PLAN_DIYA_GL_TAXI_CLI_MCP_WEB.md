@@ -469,6 +469,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   form (the sheet's 35 is the form's 37, the sheet's 36 has no 2026 box); `O106` carries a formula;
   `B17`, not `B16`, holds the total liability; Kestrel has a register.
 
+- T5 `c7b6e63a` to `a22e8d66`, merged 2026-09-05: the autumn-start master (six traded months, a
+  grant so the forecast's unscaled other income is proved), the calculator's Forecast spread, the
+  Forecast checks, `months_traded` on every Taxi fixture; Kestrel's three forecast and income-tax
+  expectations follow T4's other income (145,258). The brief's C24 closed form was wrong: the
+  sheet gives `2 * B12 - B10`, not `2 * B12 - B10/2`. The basic-taxi master's Class 2 rate joined
+  the others at 3.5 on the merge.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
