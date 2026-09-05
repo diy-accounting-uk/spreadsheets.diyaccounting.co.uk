@@ -291,17 +291,11 @@ describe("Self Employed engine: the read scope", () => {
         "Vat.xlsx!Vatinterface!I5",
         "Vat.xlsx!Vatinterface!K4",
         "Vat.xlsx!Vatinterface!K5",
-        // The tax code column: a scenario TOML names no code for an
-        // employee, so every row of the block keeps the placeholder space
-        // the template ships there.
-        "Payslips.xlsx!Jul!D51",
-        "Payslips.xlsx!Jul!D52",
-        "Payslips.xlsx!Jul!D53",
+        // The tax code column: the three employees on the payroll each carry
+        // a code, so only the two rows no employee sits on keep the
+        // placeholder space the template ships there.
         "Payslips.xlsx!Jul!D54",
         "Payslips.xlsx!Jul!D55",
-        "Payslips.xlsx!Aug!D51",
-        "Payslips.xlsx!Aug!D52",
-        "Payslips.xlsx!Aug!D53",
         "Payslips.xlsx!Aug!D54",
         "Payslips.xlsx!Aug!D55",
         // A monthly block row no employee sits on: the template ships the
