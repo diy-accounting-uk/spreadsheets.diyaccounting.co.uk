@@ -1581,6 +1581,10 @@ export function unitFor(sheet, cell) {
   if (sheet.startsWith("Sales.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : "money";
   if (sheet === "Vat.xlsx!Vatinterface") return column === "B" || column === "C" ? "date" : column === "M" ? "rate" : "money";
   if (sheet.startsWith("Vat.xlsx!VATQtr")) return cell === "G5" || cell === "G7" ? "date" : "money";
+  // Payslips!Payment: B the tax month end, C the day the payment falls due,
+  // both an Excel day serial; D the National Insurance due, E the income
+  // tax and I the whole amount payable are money.
+  if (sheet === "Payslips.xlsx!Payment") return column === "B" || column === "C" ? "date" : "money";
   if (sheet === "Payslips.xlsx!Admin") {
     if (cell === "N1") return "text";
     if (column === "A") return "text";

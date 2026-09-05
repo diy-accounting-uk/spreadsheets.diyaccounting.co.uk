@@ -26,7 +26,7 @@ import { loadScenario } from "../lib/scenario-loader.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
-import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor } from "../products/se.js";
+import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor, unitFor } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -348,6 +348,22 @@ describe("Self Employed engine: the read scope", () => {
       for (const cell of Object.keys(cells)) if (!labels[`${sheet}!${cell}`]?.unit) undeclared.push(`${sheet}!${cell}`);
     }
     expect(undeclared).toEqual([]);
+  });
+
+  // Payslips!Payment's B and C columns hold the tax month's end and due
+  // dates as Excel day serials, one row per month (WAGES_MONTH_ROWS, 4 to
+  // 15); D, E and I are the amounts the schedule pays. A serial carrying the
+  // money unit compares to the penny like any other amount instead of the
+  // day it names, which a reconciliation comparing R against a rendered
+  // page can never satisfy for a date.
+  it("gives Payslips.xlsx!Payment its date columns and money columns their own unit", () => {
+    for (let row = 4; row <= 15; row++) {
+      expect(unitFor("Payslips.xlsx!Payment", `B${row}`)).toBe("date");
+      expect(unitFor("Payslips.xlsx!Payment", `C${row}`)).toBe("date");
+      expect(unitFor("Payslips.xlsx!Payment", `D${row}`)).toBe("money");
+      expect(unitFor("Payslips.xlsx!Payment", `E${row}`)).toBe("money");
+      expect(unitFor("Payslips.xlsx!Payment", `I${row}`)).toBe("money");
+    }
   });
 });
 
