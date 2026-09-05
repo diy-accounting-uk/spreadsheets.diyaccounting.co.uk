@@ -59,6 +59,15 @@ const BST_EXAMPLES = [
   { button: /bst-sp-sixty/, dataDir: "examples/sp-sixty-driving/bst", outDir: "sp-sixty" },
 ];
 
+// The three example books all cover 2025-04-01 to 2026-03-31 (se-2025-2026).
+// Without --years, report.js's --data mode extracts tax data straight off
+// the book (extractTaxDataFromBook), which carries no tax_year field at
+// all; the page instead loads the full se-2025-2026.toml (loadTaxDataForBook),
+// so every check gated on taxData.tax_year (the payroll calendar, the PAYE
+// schedule dates, the 31 January filing deadline) runs on the page but not
+// in a --years-less S2, and would show up as invented. Passing --years
+// keeps S2 and the page computing the same checks.
+const SE_YEARS = "se-2025-2026";
 const SE_EXAMPLES = [
   { button: /se-scenario-advanced/, dataDir: "examples/precision-code-ltd/advanced", outDir: "se-advanced" },
   { button: /se-brickwork-pro-nonvat/, dataDir: "examples/brickwork-pro/se-nonvat", outDir: "se-brickwork-nonvat" },
@@ -68,9 +77,11 @@ const SE_EXAMPLES = [
 const BST_DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/bst.json"), "utf-8"));
 const SE_DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/se.json"), "utf-8"));
 
-function s2KeysFor(outDir, dataDir, product = "bst") {
+function s2KeysFor(outDir, dataDir, product = "bst", years) {
   const outputDir = path.join(targetDir, outDir);
-  execFileSync(process.execPath, ["app/bin/report.js", "--package", product, "--data", dataDir, "--output-dir", outputDir], {
+  const args = ["app/bin/report.js", "--package", product, "--data", dataDir, "--output-dir", outputDir];
+  if (years) args.push("--years", years);
+  execFileSync(process.execPath, args, {
     cwd: process.cwd(),
     stdio: "pipe",
   });
@@ -78,8 +89,35 @@ function s2KeysFor(outDir, dataDir, product = "bst") {
   return new Set(report.values.map((v) => v.key));
 }
 
-const BST_VIEWS = ["year", "profit-loss", "stock", "debtors-creditors", "fixed-assets", "income-tax", "sa103s", "business-details", "admin"];
-const SE_VIEWS = ["home", "year", "bank", "payroll", "profit-loss", "quarterly", "forecast", "stock", "ledgers", "fixed-assets", "income-tax", "sa103s", "sa103f", "vat", "business-details", "admin"];
+const BST_VIEWS = [
+  "year",
+  "profit-loss",
+  "stock",
+  "debtors-creditors",
+  "fixed-assets",
+  "income-tax",
+  "sa103s",
+  "business-details",
+  "admin",
+];
+const SE_VIEWS = [
+  "home",
+  "year",
+  "bank",
+  "payroll",
+  "profit-loss",
+  "quarterly",
+  "forecast",
+  "stock",
+  "ledgers",
+  "fixed-assets",
+  "income-tax",
+  "sa103s",
+  "sa103f",
+  "vat",
+  "business-details",
+  "admin",
+];
 
 // Every data-r-key on the page right now, across whichever views have been
 // visited so far -- a single attribute may carry several keys (a figure
@@ -112,6 +150,18 @@ async function openEveryMonth(page, runningKeys) {
   }
 }
 
+// The Profit & Loss statement's month columns (C to N) sit behind
+// #pl-months-toggle (products/se.js renderProfitLoss); collapsed by default,
+// so the sweep opens it before collecting that view's keys.
+async function openMonthsToggleIfPresent(page) {
+  const toggle = page.locator("#pl-months-toggle");
+  if (await toggle.count()) {
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+      await toggle.click();
+    }
+  }
+}
+
 async function sweepPage(page, exampleButton, htmlFile, views) {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${baseUrl}/books/${htmlFile}`, { waitUntil: "domcontentloaded" });
@@ -121,6 +171,7 @@ async function sweepPage(page, exampleButton, htmlFile, views) {
   const runningKeys = new Set();
   for (const view of views) {
     await page.locator(`.tab-btn[data-view="${view}"]`).click();
+    await openMonthsToggleIfPresent(page);
     await collectRenderedKeys(page, runningKeys);
     if (view === "year") {
       await openEveryMonth(page, runningKeys);
@@ -159,7 +210,10 @@ test.describe("DIYA-GL BST page — render-key coverage (A5)", () => {
 test.describe("DIYA-GL SE page — render-key coverage (A5)", () => {
   for (const example of SE_EXAMPLES) {
     test(`${example.outDir}: every S2 key is rendered or declared, nothing invented`, async ({ page }) => {
-      const s2Keys = s2KeysFor(example.outDir, example.dataDir, "se");
+      // Twelve months each cycling five journals (SE's year view) takes longer
+      // than BST's sweep to settle.
+      test.setTimeout(240_000);
+      const s2Keys = s2KeysFor(example.outDir, example.dataDir, "se", SE_YEARS);
       const renderedKeys = await sweepPage(page, example.button, "se.html", SE_VIEWS);
 
       const missing = [...s2Keys].filter((k) => !renderedKeys.has(k) && !(k in SE_DECLARED));
@@ -171,7 +225,7 @@ test.describe("DIYA-GL SE page — render-key coverage (A5)", () => {
   }
 
   test("every declared key carries a reason, and the list is short next to S2's own size", async () => {
-    const s2Keys = s2KeysFor("se-advanced-declared-check", "examples/precision-code-ltd/advanced", "se");
+    const s2Keys = s2KeysFor("se-advanced-declared-check", "examples/precision-code-ltd/advanced", "se", SE_YEARS);
     for (const [key, reason] of Object.entries(SE_DECLARED)) {
       expect(typeof reason === "string" && reason.trim().length > 0, `"${key}" carries no reason`).toBe(true);
     }
