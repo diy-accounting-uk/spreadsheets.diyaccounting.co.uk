@@ -642,7 +642,7 @@ describe("extractTaxiTransactions — the Purchases block", () => {
         accountMainID: "5100",
         amount: 52,
         detailComment: "Shell",
-        entryNumber: "EXP-0006",
+        entryNumber: "PUR-0001",
       },
     ]);
   });

@@ -378,7 +378,7 @@ describe("scoreDataHalves", () => {
 
   it("matches lines on every field the encoding claims to carry", () => {
     const inventory = { fields: [{ field: "entryNumber", products: ["bst"], reason: "renumbered on the way out" }] };
-    const { fixture, exported } = writePair([{ ...LINE, entryNumber: "PC-0007" }], [{ ...LINE, entryNumber: "EXP-0001" }]);
+    const { fixture, exported } = writePair([{ ...LINE, entryNumber: "PC-0007" }], [{ ...LINE, entryNumber: "SAL-0001" }]);
     expect(scoreDataHalves(fixture, exported).wholeLineMatches).toBe(0);
     expect(scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory)).wholeLineMatches).toBe(1);
   });

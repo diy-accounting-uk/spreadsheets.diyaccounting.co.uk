@@ -663,11 +663,6 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
     await expect(marked, "the mark is re-applied on every render, not stamped in once").toHaveCount(1);
 
     await page.locator('.tab-btn[data-view="year"]').click();
-    // The last month's purchases, because the extractors number each journal
-    // from EXP-0001 of its own: every line whose number a shorter journal
-    // also reached shares it, and the grid shows a line it cannot address on
-    // its own as a figure rather than a field. The purchases journal is the
-    // longest, so its later months are the addressable ones.
     const month = page.locator(".year-row").last();
     if ((await month.getAttribute("aria-expanded")) !== "true") await month.click();
     const entriesToggle = page.locator("#entries-toggle");
