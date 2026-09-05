@@ -498,6 +498,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   `costOfSales.label`, and the `vehicle` tile keys; only SP Sixty logs miles, so the actual-costs
   branch is proved by removing the route cell from R.
 
+- T9 `e222ec2c`, merged 2026-09-05: the Taxi extraction map (`bstExtractionMap("taxi")`, an array of
+  lines per row so a fare and its own other income both resolve), `isTaxiInputCell` (Sales C and D
+  only, since E and F carry the week subtotal formulas), `taxiBookFieldCells`, and the sidecar's
+  baseline generated for the book's own year; `overtyped.json` for `examples/taxi-latest` is `{}`.
+  The per-row array also fixed the SE opening fixed assets' cost and depreciation lines clobbering
+  each other's attribution.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
