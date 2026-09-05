@@ -234,9 +234,19 @@ export const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
 // the Schedule writer below.
 export const HP_AGREEMENT_ROWS = [8, 10];
 
-// targetStartYear is the year the package's tax year opens in, which for a
-// 5 April year end is the year before the one its directory names.
-export function cellWrites(scenario, targetStartYear) {
+// One entry the writer left out of the package, named the way a check names
+// its offender: what it was, when, under which code, for how much, and why
+// none of the nine workbooks had a cell to hold it.
+function skipped(kind, entry, why) {
+  return { kind: kind, date: entry.date, code: entry.code, amount: entry.amount, why: why };
+}
+
+// Every cell the writer puts in the package, and everything it left out, in
+// one pass. targetStartYear is the year the package's tax year opens in,
+// which for a 5 April year end is the year before the one its directory
+// names.
+function composeWrites(scenario, targetStartYear) {
+  const skips = [];
   const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
@@ -334,7 +344,10 @@ export function cellWrites(scenario, targetStartYear) {
       for (const tx of transactions) {
         const acct = tx.account || "1200";
         const fileName = BANK_ACCOUNT_FILES[acct];
-        if (!fileName) throw new Error(`cellWrites: bank entry dated ${tx.date} names unknown account "${acct}"`);
+        if (!fileName) {
+          skips.push(skipped("bank", tx, `no workbook in the package keeps account "${acct}"`));
+          continue;
+        }
         const targetWrites = fileName === "Cash.xlsx" ? cashWrites : bankWrites;
         if (!targetWrites[sheetName]) targetWrites[sheetName] = {};
         const sheet = targetWrites[sheetName];
@@ -346,7 +359,8 @@ export function cellWrites(scenario, targetStartYear) {
         }
 
         if (tx.direction !== "in" && tx.direction !== "out") {
-          throw new Error(`cellWrites: bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
+          skips.push(skipped("bank", tx, "the entry is neither a receipt nor a payment"));
+          continue;
         }
         const layout = BANK_LAYOUTS[fileName];
         const isReceipt = tx.direction === "in";
@@ -354,7 +368,8 @@ export function cellWrites(scenario, targetStartYear) {
         const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
         const code = isReceipt ? tx.code : paymentCodeFor(tx.code);
         if (!analysedCodes.has(code)) {
-          throw new Error(`cellWrites: ${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code "${tx.code}"`);
+          skips.push(skipped("bank", tx, `${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under this code`));
+          continue;
         }
 
         const rowKey = `${fileName}:${sheetName}`;
@@ -547,10 +562,17 @@ export function cellWrites(scenario, targetStartYear) {
     const nextRow = { motor: 0, computer: 0 };
     for (const asset of scenario.opening_fixed_assets) {
       const rows = EXISTING_ASSET_ROWS[asset.category];
-      if (!rows) throw new Error(`cellWrites: unknown opening_fixed_assets category "${asset.category}"`);
+      const assetEntry = { code: asset.category, amount: asset.cost };
+      if (!rows) {
+        skips.push(skipped("openingFixedAsset", assetEntry, "the Schedule carries no block for this asset category"));
+        continue;
+      }
       const row = rows[nextRow[asset.category]++];
-      if (row === undefined)
-        throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
+      if (row === undefined) {
+        const why = `the Schedule's ${asset.category} block holds ${rows.length} assets brought forward`;
+        skips.push(skipped("openingFixedAsset", assetEntry, why));
+        continue;
+      }
       // Written left-to-right (C, then E, then F). setCellValue/setCellString
       // in spreadsheet-runner.js replaces a matched cell together with every
       // self-closing sibling up to the row's next already-closed cell -- an
@@ -588,12 +610,10 @@ export function cellWrites(scenario, targetStartYear) {
   if (faPurchases.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    if (faPurchases.length > NEW_PLANT_ROWS.length) {
-      throw new Error(
-        `cellWrites: ${faPurchases.length} "fa" purchase(s) exceed the ${NEW_PLANT_ROWS.length} Schedule New Plant & Machinery rows`,
-      );
+    for (const tx of faPurchases.slice(NEW_PLANT_ROWS.length)) {
+      skips.push(skipped("assetPurchase", tx, `the Schedule holds ${NEW_PLANT_ROWS.length} assets bought during the year`));
     }
-    faPurchases.forEach((tx, i) => {
+    faPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
       const d = parseDate(tx.date);
       // Left-to-right column order (B, then C, then E) -- see the opening
@@ -619,12 +639,11 @@ export function cellWrites(scenario, targetStartYear) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
     const disposalRows = [...existingAssetRowsUsed.motor, ...existingAssetRowsUsed.computer];
-    if (fsDisposals.length > disposalRows.length) {
-      throw new Error(
-        `cellWrites: ${fsDisposals.length} "fs" disposal(s) but only ${disposalRows.length} existing fixed asset row(s) to attach them to`,
-      );
+    for (const tx of fsDisposals.slice(disposalRows.length)) {
+      const why = `${disposalRows.length} asset(s) brought forward have a row for a disposal to be written on`;
+      skips.push(skipped("assetDisposal", tx, why));
     }
-    fsDisposals.forEach((tx, i) => {
+    fsDisposals.slice(0, disposalRows.length).forEach((tx, i) => {
       const row = disposalRows[i];
       const d = parseDate(tx.date);
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -635,12 +654,11 @@ export function cellWrites(scenario, targetStartYear) {
   if (scenario.hp_agreements) {
     if (!fixedAssetsWrites.HPfinance) fixedAssetsWrites.HPfinance = {};
     const hp = fixedAssetsWrites.HPfinance;
-    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
-      throw new Error(
-        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
-      );
+    for (const agreement of scenario.hp_agreements.slice(HP_AGREEMENT_ROWS.length)) {
+      const entry = { date: agreement.date, code: agreement.reference, amount: agreement.amount_financed };
+      skips.push(skipped("hpAgreement", entry, `the HPfinance sheet carries ${HP_AGREEMENT_ROWS.length} rows for agreements`));
     }
-    scenario.hp_agreements.forEach((agreement, i) => {
+    scenario.hp_agreements.slice(0, HP_AGREEMENT_ROWS.length).forEach((agreement, i) => {
       const row = HP_AGREEMENT_ROWS[i];
       const d = parseDate(agreement.date);
       hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -727,7 +745,32 @@ export function cellWrites(scenario, targetStartYear) {
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   if (Object.keys(salesinvoiceWrites).length > 0) result["Salesinvoice.xlsx"] = salesinvoiceWrites;
-  return result;
+  return { writes: result, skips: skips };
+}
+
+/**
+ * The cells the package's workbooks carry, keyed file, then sheet, then cell.
+ *
+ * @param {Object} scenario - the scenario diyaGlToScenario builds from a book
+ * @param {number} [targetStartYear] - the year the package's tax year opens in
+ * @returns {Object}
+ */
+export function cellWrites(scenario, targetStartYear) {
+  return composeWrites(scenario, targetStartYear).writes;
+}
+
+/**
+ * What a save would leave out of the package: an entry none of the nine
+ * workbooks has a cell for. A save never stops half way through, so each of
+ * these is dropped and named here. The book checks report the same
+ * conditions before a save is offered, so this is the second net, not the
+ * first.
+ *
+ * @param {Object} scenario - the scenario diyaGlToScenario builds from a book
+ * @returns {Array<{kind: string, date: string, code: string, amount: number, why: string}>}
+ */
+export function writerSkips(scenario) {
+  return composeWrites(scenario).skips;
 }
 
 // ── Standard reads for reconciliation ──────────────────────────────────────
