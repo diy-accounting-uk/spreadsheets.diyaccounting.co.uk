@@ -7,6 +7,7 @@
 
 import JSZip from "jszip";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
+import { textAt } from "./anchors/run.js";
 import {
   BST_PURCHASE_CODE_MAP,
   TAXI_PURCHASE_CODE_MAP,
@@ -21,7 +22,6 @@ import {
   payslipsMonthEntryRows,
   payslipsWagesPaidCell,
 } from "./payslips-layout.js";
-import { findXlsx } from "./xlsx-reader.js";
 import { parseCellRef } from "./template-formula-map.js";
 import { readFileSync as readSchemaFile, existsSync as fileExists } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
@@ -82,7 +82,7 @@ function excelSerialToDate(serial) {
   return `${y}-${m}-${d}`;
 }
 
-const BST_SALES_SHEETS = [
+export const BST_SALES_SHEETS = [
   "SalesApr",
   "SalesMay",
   "SalesJun",
@@ -96,7 +96,7 @@ const BST_SALES_SHEETS = [
   "SalesFeb",
   "SalesMar",
 ];
-const BST_PURCHASE_SHEETS = [
+export const BST_PURCHASE_SHEETS = [
   "PurchasesApr",
   "PurchasesMay",
   "PurchasesJun",
@@ -134,7 +134,7 @@ const CALENDAR_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 // month figures restate the transaction rows, and the two entered cells are
 // the only thing on the sheet a book has to carry: the year's opening trade
 // debtors and trade creditors.
-const BST_LEDGER_SHEET = "Debtors & Creditors";
+export const BST_LEDGER_SHEET = "Debtors & Creditors";
 const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", tradeCreditors: "F3" };
 
 // A BST Sales tab, read off its own header rows: A the sale date, B the
@@ -225,13 +225,9 @@ function monthSheetsInPeriodOrder(sheetMap) {
 
 // A cell's text, or undefined where the sheet holds nothing there. An absent
 // field is left off the exported line rather than written as an empty string,
-// which is what makes a dropped field countable.
-function textAt(xml, cellRef, sharedStrings) {
-  const value = readCellValue(xml, cellRef, sharedStrings);
-  if (value === null || value === undefined) return undefined;
-  const text = String(value).trim();
-  return text === "" ? undefined : text;
-}
+// which is what makes a dropped field countable. Lives in anchors/run.js,
+// which the anchor guard also reads cells through, and is imported back here
+// so every extractor below keeps calling it the same way.
 
 // The account a row belongs to. The carrier column names it outright where a
 // writer filled the sheet; a book filled in by hand carries no such code, so
@@ -240,115 +236,12 @@ function accountAt(xml, row, sharedStrings, reverseMap, codeStr, fallback) {
   return textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || reverseMap[codeStr] || fallback;
 }
 
-// ─── BST anchor guard ───────────────────────────────────────────────────
-//
-// The BST extractors above and extractBook() below read fixed cell
-// addresses on the strength of the sheet names and header labels the
-// current template ships with — they never check the labels are still
-// there. A customer's own file (the --file mode in app/bin/export.js) is
-// not a fixture this repo controls, so before any of those reads run, this
-// guard confirms every sheet the extractors open still exists and every
-// header cell they key their column reads on still carries the text the
-// template ships. A mismatch is a named error stating the sheet and the
-// anchor expected — never a silent short export, never a bare stack trace.
-//
-// Kept to what the BST path actually reads: extractBstTransactions() and
-// extractBook()'s entity/tax blocks. A later phase's row-mapping exposure
-// builds on this list, so keep additions here rather than duplicating them.
-
-// Every sheet extractBstTransactions() and extractBook() open by name.
-export const BST_REQUIRED_SHEETS = [
-  "Business Details",
-  "Admin",
-  "PurchasesStock",
-  BST_LEDGER_SHEET,
-  "Fixed Assets",
-  ...BST_SALES_SHEETS,
-  ...BST_PURCHASE_SHEETS,
-];
-
-// The header cell each extractor reads a column by position from, and the
-// text the current template prints there. SalesApr/PurchasesApr stand for
-// all twelve month tabs of each kind — the template repeats the same header
-// row on every one, so checking the sheets exist (BST_REQUIRED_SHEETS above)
-// plus one representative header block is what catches both a renamed sheet
-// and a reshuffled column, without reading the same header text 24 times.
-export const BST_HEADER_ANCHORS = [
-  { sheet: "Business Details", cell: "C3", label: "Your name" },
-  { sheet: "SalesApr", cell: "A1", label: "Sales    Date" },
-  { sheet: "SalesApr", cell: "B1", label: "Customer Name" },
-  { sheet: "SalesApr", cell: "C2", label: "Sales Invoice or reference" },
-  { sheet: "SalesApr", cell: "F2", label: "Gross Sales Value" },
-  { sheet: "PurchasesApr", cell: "A2", label: "Purchase Date" },
-  { sheet: "PurchasesApr", cell: "B2", label: "Supplier" },
-  { sheet: "PurchasesApr", cell: "C2", label: "Purchase Reference / Invoice Number" },
-  { sheet: "PurchasesApr", cell: "E2", label: "Enter Expense Code Letter" },
-  { sheet: "PurchasesApr", cell: "F2", label: "Enter Mileage on purchases" },
-  { sheet: "PurchasesApr", cell: "G2", label: "Total Purchase Value incl Vat" },
-  { sheet: "Admin", cell: "D21", label: "Higher rate allowance up to" },
-  { sheet: "Admin", cell: "D22", label: "Lower rate allowance over" },
-  { sheet: "PurchasesStock", cell: "B4", label: "Opening Stock" },
-  { sheet: "PurchasesStock", cell: "D2", label: "Physical     Stock Value" },
-  { sheet: BST_LEDGER_SHEET, cell: "C1", label: "Sales not yet received" },
-  { sheet: BST_LEDGER_SHEET, cell: "F1", label: "Purchases still   to be paid" },
-  { sheet: BST_LEDGER_SHEET, cell: "B3", label: "Owed start year" },
-  { sheet: BST_LEDGER_SHEET, cell: "E3", label: "Owed start year" },
-  { sheet: BST_LEDGER_SHEET, cell: "B29", label: "Amount owed by customers" },
-  { sheet: BST_LEDGER_SHEET, cell: "E29", label: "Amount owed    to suppliers" },
-  { sheet: "Fixed Assets", cell: "C2", label: "Asset Description" },
-  { sheet: "Fixed Assets", cell: "E2", label: "Original Cost" },
-  { sheet: "Fixed Assets", cell: "B66", label: "Plant & Machinery" },
-];
-
-/**
- * A missing or mismatched anchor: which sheets are absent and which header
- * cells no longer carry the label the extractors expect. Carries the full
- * list so a caller can print every finding at once rather than the first.
- */
-export class BstAnchorError extends Error {
-  constructor(missingSheets, mismatchedHeaders) {
-    const lines = [
-      ...missingSheets.map((sheet) => `sheet "${sheet}" not found`),
-      ...mismatchedHeaders.map(
-        ({ sheet, cell, label, found }) =>
-          `sheet "${sheet}" cell ${cell}: expected header "${label}", found ${found === undefined ? "nothing" : JSON.stringify(found)}`,
-      ),
-    ];
-    super(`This file does not match the current Basic Sole Trader template:\n${lines.map((line) => `  - ${line}`).join("\n")}`);
-    this.name = "BstAnchorError";
-    this.missingSheets = missingSheets;
-    this.mismatchedHeaders = mismatchedHeaders;
-  }
-}
-
-/**
- * Confirm every sheet and header label the BST extractors key on is present
- * before any of them run. Throws BstAnchorError naming every anchor that
- * failed; returns nothing on success.
- * @param {Buffer} xlsxBuffer
- */
-export async function validateBstAnchors(xlsxBuffer) {
-  const zip = await JSZip.loadAsync(xlsxBuffer);
-  const sheetMap = await buildSheetMap(zip);
-  const sharedStrings = await loadSharedStrings(zip);
-
-  const missingSheets = BST_REQUIRED_SHEETS.filter((sheet) => !sheetMap.has(sheet));
-  const missingSheetSet = new Set(missingSheets);
-
-  const mismatchedHeaders = [];
-  for (const anchor of BST_HEADER_ANCHORS) {
-    if (missingSheetSet.has(anchor.sheet)) continue; // already named above
-    const sheetPath = sheetMap.get(anchor.sheet);
-    const xml = await zip.file(sheetPath).async("string");
-    const found = textAt(xml, anchor.cell, sharedStrings);
-    if (found !== anchor.label) mismatchedHeaders.push({ ...anchor, found });
-  }
-
-  if (missingSheets.length > 0 || mismatchedHeaders.length > 0) {
-    throw new BstAnchorError(missingSheets, mismatchedHeaders);
-  }
-}
-// ─── end BST anchor guard ───────────────────────────────────────────────
+// The anchor guard (which sheets and header cells a BST file must still
+// carry before any extractor reads it) lives in app/lib/anchors/bst.js and
+// app/lib/anchors/run.js: BST_ANCHORS is the table, validateAnchors() is the
+// runner that reads it, AnchorError is the one error class every product's
+// table throws, and the guard's own BST entry point is a two-line wrapper so
+// every existing BST caller and test keeps calling it by the same name.
 
 /**
  * Extract transaction lines from a single-file BST product.
@@ -463,8 +356,14 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
 // the day rows carry a day's trade, and a day row is the one holding the date
 // in both A and B -- the two named rows caption column B and the subtotal row
 // carries no date at all. C names the customer, D takes the day's business
-// miles and E the gross takings.
-const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E" };
+// miles, E the gross takings and F any other income the row also carries.
+const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E", otherIncome: "F" };
+
+// The account a Sales tab's other-income column posts to, and the captions
+// the rental and other-income rows carry in column B.
+const TAXI_OTHER_INCOME_ACCOUNT = "4001";
+const TAXI_RENTAL_CAPTION = "Rental due";
+const TAXI_OTHER_INCOME_CAPTION = "Any other income";
 
 // A Taxi Driver Purchases tab, read off its own row 2 and 3 headings: A the
 // purchase date, B the supplier, C the invoice reference, D the expense code
@@ -482,6 +381,29 @@ const TAXI_OTHER_EXPENSES_ACCOUNT = "6200";
 // The Taxi Driver chart has one sales account, and the Sales tabs carry no
 // analysis code to say otherwise.
 const TAXI_SALES_ACCOUNT = "4000";
+
+// Which cell of a Taxi row extractTaxiTransactions() reads each line field
+// from, recorded through extractionMap.recordLine() the same way the BST
+// regions are, under the field names every product's records carry
+// (postingDate, detailComment, amount, ...) rather than TAXI_SALES_COLUMNS'
+// and TAXI_PURCHASE_COLUMNS' column-purpose names. A day row shares its row
+// with the other-income line its own F column can carry, so the two are
+// recorded as separate regions -- see bstExtractionMap()'s lineForCell(),
+// which picks whichever of a row's recorded regions actually holds the cell
+// asked for.
+const TAXI_DAY_ROW_REGION = { postingDate: "A", detailComment: "C", measurableQuantity: "D", amount: "E" };
+const TAXI_DAY_ROW_OTHER_INCOME_REGION = { amount: "F", detailComment: "C" };
+const TAXI_RENTAL_ROW_REGION = { postingDate: "A", amount: "E" };
+const TAXI_OTHER_INCOME_ROW_REGION = { postingDate: "A", amount: "F" };
+const TAXI_PURCHASE_ROW_REGION = {
+  postingDate: "A",
+  detailComment: "B",
+  documentReference: "C",
+  expenseCode: "D",
+  measurableQuantity: "E",
+  amount: "F",
+  accountMainID: ACCOUNT_ID_COLUMN,
+};
 
 // The rows a sheet holds, in the order it holds them. A Taxi Sales tab
 // interleaves trade with captions and subtotals, so it is read row by row
@@ -510,8 +432,14 @@ function enteredNumber(xml, cellRef, sharedStrings) {
  * way, banding it against every mile claimed ahead of it, so a row that
  * crosses the higher-rate limit is claimed at the two rates either side of it
  * exactly as the sheet claims it.
+ *
+ * @param {Buffer} xlsxBuffer
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read so a caller can trace an exported line back to the
+ *   sheet cell it came from. Omitting it changes nothing about the lines
+ *   returned.
  */
-export async function extractTaxiTransactions(xlsxBuffer) {
+export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
   const zip = await JSZip.loadAsync(xlsxBuffer);
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
@@ -520,6 +448,9 @@ export async function extractTaxiTransactions(xlsxBuffer) {
   const lines = [];
   let entryNum = 1;
   let milesToDate = 0;
+  const record = (line, sheetName, columns, row) => {
+    if (extractionMap) extractionMap.recordLine(line, { sheet: sheetName, columns }, row, lines.length - 1);
+  };
 
   for (const month of MONTH_SHEETS) {
     const salesPath = sheetMap.get(`Sales${month}`);
@@ -527,31 +458,75 @@ export async function extractTaxiTransactions(xlsxBuffer) {
       const xml = await zip.file(salesPath).async("string");
       for (const row of rowNumbers(xml)) {
         const dateVal = enteredNumber(xml, `A${row}`, sharedStrings);
+        if (dateVal === undefined) continue;
+
+        // A day row holds a number in B (the day of month, unread beyond
+        // this test); the rental and other-income rows caption B with text
+        // instead, and the subtotal row's date cells carry a formula, which
+        // enteredNumber never reports as a number entered.
         const day = enteredNumber(xml, `B${row}`, sharedStrings);
-        if (dateVal === undefined || day === undefined) continue;
+        const caption = day === undefined ? textAt(xml, `B${row}`, sharedStrings) : undefined;
+        const isDay = day !== undefined;
+        const isRental = caption === TAXI_RENTAL_CAPTION;
+        const isOtherIncomeRow = caption === TAXI_OTHER_INCOME_CAPTION;
+        if (!isDay && !isRental && !isOtherIncomeRow) continue;
 
-        const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
-        const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
-        if (takings === undefined && miles === undefined) continue;
+        const names = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
 
-        const line = {
-          sourceJournalID: "sales",
-          postingDate: excelSerialToDate(dateVal),
-          accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
-          // A day the driver logged miles on but took no fare still counts
-          // its miles towards the claim, so it posts at nil rather than not
-          // at all.
-          amount: takings ?? 0,
-          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-        };
-        const customer = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
-        if (customer) line.detailComment = customer;
-        if (miles !== undefined) {
-          line.measurableQuantity = miles;
-          line.measurableUnitOfMeasure = "miles";
-          milesToDate += miles;
+        if (isDay) {
+          const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
+          if (takings !== undefined || miles !== undefined) {
+            const line = {
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
+              // A day the driver logged miles on but took no fare still counts
+              // its miles towards the claim, so it posts at nil rather than not
+              // at all.
+              amount: takings ?? 0,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            };
+            if (names) line.detailComment = names;
+            if (miles !== undefined) {
+              line.measurableQuantity = miles;
+              line.measurableUnitOfMeasure = "miles";
+              milesToDate += miles;
+            }
+            lines.push(line);
+            record(line, `Sales${month}`, TAXI_DAY_ROW_REGION, row);
+          }
         }
-        lines.push(line);
+
+        if (isRental) {
+          const rental = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          if (rental !== undefined) {
+            const line = {
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: TAXI_SALES_ACCOUNT,
+              amount: rental,
+              detailComment: TAXI_RENTAL_CAPTION,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            };
+            lines.push(line);
+            record(line, `Sales${month}`, TAXI_RENTAL_ROW_REGION, row);
+          }
+        }
+
+        const otherIncome = enteredNumber(xml, `${TAXI_SALES_COLUMNS.otherIncome}${row}`, sharedStrings);
+        if (otherIncome !== undefined && (isDay || isOtherIncomeRow)) {
+          const line = {
+            sourceJournalID: "sales",
+            postingDate: excelSerialToDate(dateVal),
+            accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
+            amount: otherIncome,
+            detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
+            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+          };
+          lines.push(line);
+          record(line, `Sales${month}`, isDay ? TAXI_DAY_ROW_OTHER_INCOME_REGION : TAXI_OTHER_INCOME_ROW_REGION, row);
+        }
       }
     }
 
@@ -593,6 +568,7 @@ export async function extractTaxiTransactions(xlsxBuffer) {
       const reference = textAt(xml, `${TAXI_PURCHASE_COLUMNS.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       lines.push(line);
+      record(line, `Purchases${month}`, TAXI_PURCHASE_ROW_REGION, row);
     }
   }
 
@@ -608,7 +584,7 @@ const ADMIN_MILEAGE_RATE_CELLS = { higher_rate_limit: "F21", higher_rate_pence: 
 
 /**
  * A workbook the mileage rates were to be read from with no Admin sheet on
- * it. Named the way BstAnchorError is, because it is the same finding: a file
+ * it. Named the way AnchorError is, because it is the same finding: a file
  * that does not match the template the extractors were written against.
  */
 export class AdminSheetMissingError extends Error {
@@ -635,10 +611,8 @@ async function adminMileageRates(sheetMap, zip, sharedStrings) {
 // The same rates for a multi-file package, where the Admin sheet sits in
 // Financialaccounts.xlsx -- the workbook the Purchases mileage formulas reach
 // through their own external link ([2]Admin!$F$21 and the rest).
-async function seAdminMileageRates(sourceDir) {
-  const { readFileSync } = await import("fs");
-  const { resolve } = await import("path");
-  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Financialaccounts.xlsx")));
+async function seAdminMileageRates(set) {
+  const zip = await set.zip("Financialaccounts.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   return adminMileageRates(sheetMap, zip, sharedStrings);
@@ -646,11 +620,13 @@ async function seAdminMileageRates(sourceDir) {
 
 /**
  * Extract transaction lines from a multi-file SE/Ltd product.
+ * @param {Object} set - the populated package's workbooks
+ * @param {string} product - se or ltd
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read; the file name is "Sales.xlsx" or "Purchases.xlsx",
+ *   whichever the row came from
  */
-export async function extractMultiFileTransactions(sourceDir, product) {
-  const { readFileSync, readdirSync } = await import("fs");
-  const { resolve } = await import("path");
-
+export async function extractMultiFileTransactions(set, product, extractionMap) {
   const reversePurchase = buildReverseCodeMap(product === "ltd" ? LTD_PURCHASE_CODE_MAP : SE_PURCHASE_CODE_MAP);
   // Ltd: E=code, F=amount; SE: F=code, G=amount. Column C is the invoice
   // reference on both journals in both products. The description column sits
@@ -667,7 +643,17 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   // VAT on an unregistered book's every line.
   const salesDescriptionCol = product === "ltd" ? "D" : "E";
   const purchasesDescriptionCol = product === "ltd" ? "D" : "E";
-  const cisColumn = product === "ltd" ? "AK" : null;
+  // Both multi-file purchases journals keep the tax a contractor withheld
+  // from a sub-contractor's invoice in their own "CIS Certificates / Tax
+  // Paid" column, and both sales journals keep the tax a contractor withheld
+  // from this business's own invoice under "Sub contractors only / CIS Tax
+  // Deducted". The columns sit at different letters per product: Ltd's are
+  // AK and V, SE's are AD and W. On SE the sales column feeds a running
+  // year-to-date total in X, which the tax return reads (Income Tax!E12 and
+  // SE Full!D231 both read Mar!X1); the Ltd sheet keeps no such running
+  // total, and its trial balance reads each month's V1 directly.
+  const purchasesCisColumn = product === "ltd" ? "AK" : "AD";
+  const salesCisColumn = product === "ltd" ? "V" : "W";
   // SE's Sales sheet gives D to the day's business miles (see the codeCol
   // comment above). A sales row's miles sit beside a real sale rather than
   // pricing it the way a Purchases mileage-log row does, so they carry as an
@@ -681,15 +667,14 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   // files the claim under Motor Expenses. The export prices such a row back
   // the same way, banding it against every mile claimed ahead of it.
   const purchasesMileageCol = product === "se" ? "D" : null;
-  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(sourceDir) : null;
+  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(set) : null;
   const salesMilesByMonth = new Map();
   let milesToDate = 0;
   const lines = [];
   let entryNum = 1;
 
   // Sales.xlsx: one sheet per month of the accounting period
-  const salesPath = resolve(sourceDir, "Sales.xlsx");
-  const salesZip = await JSZip.loadAsync(readFileSync(salesPath));
+  const salesZip = await set.zip("Sales.xlsx");
   const salesSheetMap = await buildSheetMap(salesZip);
   const salesStrings = await loadSharedStrings(salesZip);
 
@@ -698,9 +683,21 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   const ratePercent = firstSalesXml === null ? 0 : readCellValue(firstSalesXml, VAT_RATE_CELLS[product], salesStrings);
   const taxRate = typeof ratePercent === "number" ? ratePercent / 100 : 0;
 
+  const salesRegionColumns = {
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": "C",
+    "amount": amountCol,
+    "accountMainID": ACCOUNT_ID_COLUMN,
+    ...(salesDescriptionCol ? { lineItemComment: salesDescriptionCol } : {}),
+    ...(salesMileageCol ? { measurableQuantity: salesMileageCol } : {}),
+    "diya-gl:cisDeduction": salesCisColumn,
+  };
+
   for (const sheetName of salesMonths) {
     const sheetPath = salesSheetMap.get(sheetName);
     const xml = await salesZip.file(sheetPath).async("string");
+    const region = { sheet: sheetName, sourceJournalID: "sales", columns: salesRegionColumns };
 
     for (let row = 5; row <= 300; row++) {
       const dateVal = readCellValue(xml, `A${row}`, salesStrings);
@@ -733,19 +730,34 @@ export async function extractMultiFileTransactions(sourceDir, product) {
           salesMilesByMonth.set(sheetName, (salesMilesByMonth.get(sheetName) || 0) + miles);
         }
       }
+      const cisSuffered = numberAt(xml, `${salesCisColumn}${row}`, salesStrings);
+      if (cisSuffered) line["diya-gl:cisDeduction"] = cisSuffered;
       lines.push(line);
+      if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Sales.xlsx");
     }
   }
 
   // Purchases.xlsx: one sheet per month of the accounting period
-  const purchasesPath = resolve(sourceDir, "Purchases.xlsx");
-  const purchasesZip = await JSZip.loadAsync(readFileSync(purchasesPath));
+  const purchasesZip = await set.zip("Purchases.xlsx");
   const purchasesSheetMap = await buildSheetMap(purchasesZip);
   const purchasesStrings = await loadSharedStrings(purchasesZip);
+
+  const purchasesRegionColumns = {
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": "C",
+    "amount": amountCol,
+    "accountMainID": ACCOUNT_ID_COLUMN,
+    "expenseCode": codeCol,
+    ...(purchasesDescriptionCol ? { lineItemComment: purchasesDescriptionCol } : {}),
+    ...(purchasesMileageCol ? { measurableQuantity: purchasesMileageCol } : {}),
+    "diya-gl:cisDeduction": purchasesCisColumn,
+  };
 
   for (const sheetName of monthSheetsInPeriodOrder(purchasesSheetMap)) {
     const sheetPath = purchasesSheetMap.get(sheetName);
     const xml = await purchasesZip.file(sheetPath).async("string");
+    const region = { sheet: sheetName, sourceJournalID: "purchases", columns: purchasesRegionColumns };
 
     // The month's own C2 pools the Sales sheet's miles with the Purchases
     // ones before it bands anything, so the sales side of the month counts
@@ -791,11 +803,10 @@ export async function extractMultiFileTransactions(sourceDir, product) {
       if (reference) line.documentReference = reference;
       const description = textAt(xml, `${purchasesDescriptionCol}${row}`, purchasesStrings);
       if (description) line.lineItemComment = description;
-      // The Ltd purchases journal keeps the tax withheld from a CIS
-      // sub-contractor in its own certificates column.
-      const cisDeduction = cisColumn ? numberAt(xml, `${cisColumn}${row}`, purchasesStrings) : undefined;
-      if (cisDeduction) line["diya-gl:cisDeduction"] = cisDeduction;
+      const cisWithheld = numberAt(xml, `${purchasesCisColumn}${row}`, purchasesStrings);
+      if (cisWithheld) line["diya-gl:cisDeduction"] = cisWithheld;
       lines.push(line);
+      if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Purchases.xlsx");
     }
   }
 
@@ -834,30 +845,48 @@ const BANK_FILES = {
  * Payments: rows 6+, columns per BANK_FILES[product] payment layout
  * Opening balance: A1 (code "BC")
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd
  * @param {{start: string, end: string}} period - the accounting period the package covers
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read; the file name is the account's own file (Bank.xlsx,
+ *   Cash.xlsx, or one of the Ltd statement files)
  */
-export async function extractBankTransactions(sourceDir, product, period) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
-
+export async function extractBankTransactions(set, product, period, extractionMap) {
   const bankFiles = BANK_FILES[product] || BANK_FILES.se;
   const lines = [];
   let entryNum = 1;
+  const RECEIPT_COLUMNS = {
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": BANK_RECEIPT_REFERENCE_COLUMN,
+    "lineItemComment": BANK_RECEIPT_COMMENT_COLUMN,
+    "diya-gl:bankCode": "E",
+    "amount": "F",
+  };
 
   for (const { file, accountID, payment } of bankFiles) {
-    const filePath = resolve(sourceDir, file);
-    if (!existsSync(filePath)) continue;
+    if (!set.has(file)) continue;
 
-    const zip = await JSZip.loadAsync(readFileSync(filePath));
+    const zip = await set.zip(file);
     const sheetMap = await buildSheetMap(zip);
     const sharedStrings = await loadSharedStrings(zip);
     let obEmitted = false;
 
+    const paymentColumns = {
+      "postingDate": payment.date,
+      "detailComment": payment.supplier,
+      "documentReference": payment.reference,
+      "lineItemComment": payment.comment,
+      "diya-gl:bankCode": payment.code,
+      "amount": payment.amount,
+    };
+
     for (const sheetName of monthSheetsInPeriodOrder(sheetMap)) {
       const sheetPath = sheetMap.get(sheetName);
       const xml = await zip.file(sheetPath).async("string");
+      const receiptRegion = { sheet: sheetName, sourceJournalID: "bank", columns: RECEIPT_COLUMNS };
+      const paymentRegion = { sheet: sheetName, sourceJournalID: "bank", columns: paymentColumns };
 
       // The account's opening balance is a bare amount in A1 with no date
       // cell beside it, entered once and carried forward by formula on every
@@ -908,6 +937,7 @@ export async function extractBankTransactions(sourceDir, product, period) {
         const comment = textAt(xml, `${BANK_RECEIPT_COMMENT_COLUMN}${row}`, sharedStrings);
         if (comment) line.lineItemComment = comment;
         lines.push(line);
+        if (extractionMap) extractionMap.recordLine(line, receiptRegion, row, lines.length - 1, file);
       }
 
       // Payments: rows 6+, columns per the file's payment layout
@@ -937,6 +967,7 @@ export async function extractBankTransactions(sourceDir, product, period) {
         const comment = textAt(xml, `${payment.comment}${row}`, sharedStrings);
         if (comment) line.lineItemComment = comment;
         lines.push(line);
+        if (extractionMap) extractionMap.recordLine(line, paymentRegion, row, lines.length - 1, file);
       }
     }
   }
@@ -952,26 +983,38 @@ export async function extractBankTransactions(sourceDir, product, period) {
  * layout module the writers fill the block through, keyed by the tab's place
  * in the package's year -- reading fixed rows instead loses every 5- and
  * 6-week month outright.
+ * @param {Object} set - the populated package's workbooks
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read, file "Payslips.xlsx". The posting date sits one row
+ *   above the block (wagesPaidCell) rather than beside the entry row, so it
+ *   is not one of the region's own columns and carries no line attribution.
  */
-export async function extractPayrollTransactions(sourceDir) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
+export async function extractPayrollTransactions(set, extractionMap) {
+  if (!set.has("Payslips.xlsx")) return [];
 
-  const filePath = resolve(sourceDir, "Payslips.xlsx");
-  if (!existsSync(filePath)) return [];
-
-  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const zip = await set.zip("Payslips.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
   let entryNum = 1;
 
   const columns = PAYSLIPS_ENTRY_COLUMNS;
+  const payrollRegionColumns = {
+    "detailComment": columns.name,
+    "amount": columns.grossPay,
+    "diya-gl:incomeTax": columns.incomeTax,
+    "diya-gl:employeeNI": columns.employeeNI,
+    "diya-gl:employerNI": columns.employerNI,
+    "diya-gl:netPay": columns.netPay,
+    "documentReference": columns.reference,
+    "accountMainID": ACCOUNT_ID_COLUMN,
+  };
   const monthSheets = monthSheetsInPeriodOrder(sheetMap);
   for (const [monthIndex, sheetName] of monthSheets.entries()) {
     const sheetPath = sheetMap.get(sheetName);
     const xml = await zip.file(sheetPath).async("string");
     const wagesPaidCell = payslipsWagesPaidCell(monthIndex);
+    const region = { sheet: sheetName, sourceJournalID: "payroll", columns: payrollRegionColumns };
 
     for (const row of payslipsMonthEntryRows(monthIndex)) {
       const grossPay = readCellValue(xml, `${columns.grossPay}${row}`, sharedStrings);
@@ -1011,6 +1054,7 @@ export async function extractPayrollTransactions(sourceDir) {
       const reference = textAt(xml, `${columns.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       lines.push(line);
+      if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Payslips.xlsx");
     }
   }
 
@@ -1123,21 +1167,21 @@ const SINGLE_FILE_ASSET_BLOCKS = {
   },
 };
 
-async function scheduleSheet(sourceDir) {
-  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+async function scheduleSheet(set) {
+  const zip = await openWorkbook(set, "Fixedassets.xlsx");
   return zip ? openSheet(zip, "Schedule") : null;
 }
 
 /**
  * The fixed asset register a single-file product's Fixed Assets sheet
  * carries: one entry per filled row of its in-year addition block.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst or taxi
  */
-async function singleFileAssetRegisterFrom(sourceDir, product) {
+async function singleFileAssetRegisterFrom(set, product) {
   const layout = SINGLE_FILE_ASSET_BLOCKS[product];
   if (!layout) return [];
-  const zip = await openWorkbook(sourceDir, findXlsxName(sourceDir));
+  const zip = await openWorkbook(set, singleWorkbookName(set));
   const sheet = zip ? await openSheet(zip, layout.sheet) : null;
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -1161,19 +1205,19 @@ async function singleFileAssetRegisterFrom(sourceDir, product) {
  * row the writer filled in. Assets bought during the year are left out --
  * they reach the Schedule through their own "fa"-coded purchase line, so
  * reading their rows back as opening assets would enter each of them twice.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst, taxi, se or ltd
  */
-async function fixedAssetRegisterFrom(sourceDir, product) {
+async function fixedAssetRegisterFrom(set, product) {
   const blocks = SCHEDULE_EXISTING_ASSET_ROWS[product];
   if (!blocks) {
     // The single-file products have no asset classes and no opening block:
     // their register is the in-year additions their own Fixed Assets sheet
     // records, numbered the same way as the Schedule's below.
-    const singleFile = await singleFileAssetRegisterFrom(sourceDir, product);
+    const singleFile = await singleFileAssetRegisterFrom(set, product);
     return singleFile.map((asset, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
   }
-  const sheet = await scheduleSheet(sourceDir);
+  const sheet = await scheduleSheet(set);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
 
@@ -1233,13 +1277,13 @@ const HP_FINANCE_COLUMNS = {
 /**
  * The hire purchase agreements the HPfinance sheet carries, one entry per
  * row that names an amount financed.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the single-file templates have no HP sheet
  */
-async function hpAgreementsFrom(sourceDir, product) {
+async function hpAgreementsFrom(set, product) {
   const extent = HP_FINANCE_ROWS[product];
   if (!extent) return [];
-  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+  const zip = await openWorkbook(set, "Fixedassets.xlsx");
   const sheet = zip ? await openSheet(zip, "HPfinance") : null;
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -1269,14 +1313,19 @@ async function hpAgreementsFrom(sourceDir, product) {
   return agreements;
 }
 
-async function extractSeOpeningFixedAssets(sourceDir, period) {
-  const sheet = await scheduleSheet(sourceDir);
+const SE_SCHEDULE_COST_COLUMNS = { lineItemComment: "C", amount: "E" };
+const SE_SCHEDULE_DEPRECIATION_COLUMNS = { amount: "F" };
+
+async function extractSeOpeningFixedAssets(set, period, extractionMap) {
+  const sheet = await scheduleSheet(set);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
 
   const lines = [];
   let entryNum = 1;
   let lineNum = 1;
+  const costRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_COST_COLUMNS };
+  const depreciationRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_DEPRECIATION_COLUMNS };
   for (const { rows, accountMainID } of SCHEDULE_EXISTING_ASSET_ROWS.se) {
     for (const row of rows) {
       const cost = readCellValue(xml, `E${row}`, sharedStrings);
@@ -1293,23 +1342,27 @@ async function extractSeOpeningFixedAssets(sourceDir, period) {
         taxCode: "OS",
         taxRate: 0,
       };
-      lines.push({
+      const costLine = {
         ...base,
         amount: cost,
         lineItemComment: typeof description === "string" && description ? description : "Opening fixed asset cost",
         debitCreditCode: "D",
         lineNumber: lineNum++,
         entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
-      });
+      };
+      lines.push(costLine);
+      if (extractionMap) extractionMap.recordLine(costLine, costRegion, row, lines.length - 1, "Fixedassets.xlsx");
       if (typeof accDep === "number" && accDep !== 0) {
-        lines.push({
+        const depreciationLine = {
           ...base,
           amount: accDep,
           lineItemComment: "Accumulated depreciation",
           debitCreditCode: "C",
           lineNumber: lineNum++,
           entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
-        });
+        };
+        lines.push(depreciationLine);
+        if (extractionMap) extractionMap.recordLine(depreciationLine, depreciationRegion, row, lines.length - 1, "Fixedassets.xlsx");
       }
     }
   }
@@ -1321,21 +1374,22 @@ async function extractSeOpeningFixedAssets(sourceDir, period) {
  * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows -- and,
  * for Ltd, the year's stock movement.
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the other two keep no journal
  * @param {{start: string, end: string}} period - the accounting period the package covers
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into for
+ *   the SE Schedule rows only; the Ltd opening-balance and stock-movement
+ *   journals have no source cell of their own to record (OpenAccounts posts
+ *   a fixed cell to more than one account, and the stock movement is a
+ *   derived figure, not a row read)
  */
-export async function extractJournalEntries(sourceDir, product, period) {
-  if (product === "se") return extractSeOpeningFixedAssets(sourceDir, period);
+export async function extractJournalEntries(set, product, period, extractionMap) {
+  if (product === "se") return extractSeOpeningFixedAssets(set, period, extractionMap);
   if (product !== "ltd") return [];
 
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
+  if (!set.has("Financialaccounts.xlsx")) return [];
 
-  const hubPath = resolve(sourceDir, "Financialaccounts.xlsx");
-  if (!existsSync(hubPath)) return [];
-
-  const zip = await JSZip.loadAsync(readFileSync(hubPath));
+  const zip = await set.zip("Financialaccounts.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
 
@@ -1436,14 +1490,12 @@ async function stockMovementJournal(hubZip, openAccountsXml, sharedStrings, peri
  * order names the period. The single-file templates carry one fixed April-March
  * period and never rename their tabs.
  */
-export async function extractPeriodStartMonth(sourceDir, product) {
+export async function extractPeriodStartMonth(set, product) {
   if (product === "bst" || product === "taxi") return CALENDAR_MONTHS.indexOf("Apr");
 
-  const { readFileSync } = await import("fs");
-  const { resolve } = await import("path");
-  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Sales.xlsx")));
+  const zip = await set.zip("Sales.xlsx");
   const first = monthSheetsInPeriodOrder(await buildSheetMap(zip))[0];
-  if (!first) throw new Error(`Sales.xlsx in ${sourceDir} has no month tabs, so its accounting period is unknown`);
+  if (!first) throw new Error("Sales.xlsx has no month tabs, so its accounting period is unknown");
   return CALENDAR_MONTHS.indexOf(first);
 }
 
@@ -1472,6 +1524,31 @@ export function periodCovered(startMonthIndex, lines) {
 }
 
 /**
+ * Every transaction line a package carries, whichever product it is. The
+ * single-file products read their one workbook; the multi-file ones read the
+ * journals first, because the sales and purchases tabs fix the accounting
+ * period the bank balances and the opening journal are dated by.
+ * @param {Object} set - the package's workbooks
+ * @param {"bst"|"taxi"|"se"|"ltd"} product
+ * @param {Object} [extractionMap] - which sheet cell produced which line
+ * @returns {Promise<Array>}
+ */
+export async function extractLines(set, product, extractionMap) {
+  if (product === "bst" || product === "taxi") {
+    const workbook = await set.bytes(singleWorkbookName(set));
+    return product === "taxi" ? extractTaxiTransactions(workbook, extractionMap) : extractBstTransactions(workbook, extractionMap);
+  }
+
+  const journalLines = await extractMultiFileTransactions(set, product, extractionMap);
+  const period = periodCovered(await extractPeriodStartMonth(set, product), journalLines);
+  return journalLines.concat(
+    await extractBankTransactions(set, product, period, extractionMap),
+    await extractPayrollTransactions(set, extractionMap),
+    await extractJournalEntries(set, product, period, extractionMap),
+  );
+}
+
+/**
  * Extract business metadata from a populated xlsx.
  */
 export async function extractMetadata(xlsxBuffer, product) {
@@ -1493,9 +1570,10 @@ export async function extractMetadata(xlsxBuffer, product) {
     };
   }
 
+  const entityCells = ENTITY_CELLS[product];
   return {
-    organizationIdentifier: readCellValue(xml, "C5", sharedStrings) || "",
-    organizationDescription: readCellValue(xml, "C7", sharedStrings) || "",
+    organizationIdentifier: readCellValue(xml, entityCells.organizationIdentifier, sharedStrings) || "",
+    organizationDescription: readCellValue(xml, entityCells.organizationDescription, sharedStrings) || "",
   };
 }
 
@@ -1531,14 +1609,17 @@ const ENTITY_CELLS = {
     organizationTown: "C10",
     organizationPostcode: "C12",
   },
+  // 'SE Short'!C13 reads C8 back as box 1 and C22/F22 read C17 for box 2, so
+  // those are the cells the form actually prints; O8 reads O5 for the UTR
+  // box. The address and town have no cell of the form's own and stay in
+  // the book only.
   taxi: {
     file: null,
     sheet: "Business Details",
     organizationIdentifier: "C5",
-    organizationDescription: "C7",
-    organizationAddressLine: "C8",
-    organizationTown: "C10",
-    organizationPostcode: "C12",
+    organizationDescription: "C8",
+    organizationPostcode: "C17",
+    taxRegistrationNumber: "O5",
   },
   // The SA103F front page runs label then entry down column C: C5 the
   // taxpayer's name and C17, the merged box under the C16 "Description of
@@ -1637,7 +1718,7 @@ const OPENING_SCALAR_CELLS = {
 // Ltd Stock sheet's D30 is the stock the sheet works out for itself from the
 // year's materials, not a figure anyone enters, so reading it back would
 // hand the next pass a number the book never stated.
-const STOCK_CELLS = {
+export const STOCK_CELLS = {
   bst: { sheet: "PurchasesStock", openingValue: "D5", closingValue: "D30" },
   taxi: null,
   se: { sheet: "StockControl", openingValue: "AB6", closingValue: "AB30" },
@@ -1646,7 +1727,18 @@ const STOCK_CELLS = {
 
 // The book schema's own name for each product, which is not the short name
 // the CLI and the directory layout use.
-const SCHEMA_PRODUCT_NAMES = { bst: "BasicSoleTrader", taxi: "TaxiDriver", se: "SelfEmployed", ltd: "Company" };
+export const SCHEMA_PRODUCT_NAMES = { bst: "BasicSoleTrader", taxi: "TaxiDriver", se: "SelfEmployed", ltd: "Company" };
+
+const PRODUCT_IDS_BY_SCHEMA_NAME = new Map(Object.entries(SCHEMA_PRODUCT_NAMES).map(([id, schemaName]) => [schemaName, id]));
+
+/**
+ * The short product id behind a book's own declared product name.
+ * @param {string} schemaName
+ * @returns {string|undefined} undefined for a name no product here carries
+ */
+export function productIdOf(schemaName) {
+  return PRODUCT_IDS_BY_SCHEMA_NAME.get(schemaName);
+}
 
 // The section of the chart of accounts a four-digit code belongs to. The
 // leading digit is the division the templates' own code ranges follow.
@@ -1666,12 +1758,15 @@ async function openSheet(zip, sheetName) {
   return { xml: await zip.file(path).async("string"), sharedStrings: await loadSharedStrings(zip) };
 }
 
-async function openWorkbook(sourceDir, fileName) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
-  const path = resolve(sourceDir, fileName);
-  if (!existsSync(path)) return null;
-  return JSZip.loadAsync(readFileSync(path));
+async function openWorkbook(set, fileName) {
+  return set.has(fileName) ? set.zip(fileName) : null;
+}
+
+// The single-file products carry one workbook, whatever it is named.
+function singleWorkbookName(set) {
+  const [name] = set.names();
+  if (!name) throw new Error("No xlsx workbook found in this package");
+  return name;
 }
 
 // The letters spreadsheet columns run through, far enough right to reach the
@@ -2177,18 +2272,18 @@ const LEDGER_BLOCKS = {
 /**
  * One named ledger the package carries, in the order the book declares it:
  * every opening entry the sheet names, then every closing one.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {Object} hubZip - the single-file workbook, where the ledger lives on it
  * @param {string} product
  * @param {string} ledger - debtors or creditors
  */
-async function ledgerFrom(sourceDir, hubZip, product, ledger) {
+async function ledgerFrom(set, hubZip, product, ledger) {
   const timings = LEDGER_BLOCKS[product]?.[ledger];
   if (!timings) return [];
 
   const entries = [];
   for (const [timing, block] of Object.entries(timings)) {
-    const zip = block.file ? await openWorkbook(sourceDir, block.file) : hubZip;
+    const zip = block.file ? await openWorkbook(set, block.file) : hubZip;
     const sheet = zip ? await openSheet(zip, block.sheet) : null;
     if (!sheet) continue;
     const { xml, sharedStrings } = sheet;
@@ -2243,16 +2338,16 @@ async function stockFrom(hubZip, product) {
  * registers the product keeps (stock, opening balances, fixed assets, hire
  * purchase agreements, employees, directors, members, charges, dividends).
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst, taxi, se or ltd
  * @param {Array} lines - the transaction lines already exported, for the chart of accounts
  * @param {Array} cellMap - the product module's CELL_MAP, retained for callers; no longer consulted for tax
  * @returns {Object} a book that validates against the published v2 book schema
  */
-export async function extractBook(sourceDir, product, lines, cellMap) {
+export async function extractBook(set, product, lines, cellMap) {
   const multiFile = product === "se" || product === "ltd";
-  const hubZip = await openWorkbook(sourceDir, multiFile ? "Financialaccounts.xlsx" : findXlsxName(sourceDir));
-  if (!hubZip) throw new Error(`No workbook to read a book from in ${sourceDir}`);
+  const hubZip = await openWorkbook(set, multiFile ? "Financialaccounts.xlsx" : singleWorkbookName(set));
+  if (!hubZip) throw new Error("This package has no workbook to read a book from");
 
   const entityCells = ENTITY_CELLS[product];
   const entitySheet = await openSheet(hubZip, entityCells.sheet);
@@ -2264,8 +2359,8 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     }
   }
 
-  const salesZip = multiFile ? await openWorkbook(sourceDir, "Sales.xlsx") : hubZip;
-  const purchasesZip = multiFile ? await openWorkbook(sourceDir, "Purchases.xlsx") : hubZip;
+  const salesZip = multiFile ? await openWorkbook(set, "Sales.xlsx") : hubZip;
+  const purchasesZip = multiFile ? await openWorkbook(set, "Purchases.xlsx") : hubZip;
   const salesSheetName = multiFile ? monthSheetsInPeriodOrder(await buildSheetMap(salesZip))[0] : "SalesApr";
   const purchasesSheetName = multiFile ? monthSheetsInPeriodOrder(await buildSheetMap(purchasesZip))[0] : "PurchasesApr";
   const salesSheet = salesSheetName ? await openSheet(salesZip, salesSheetName) : null;
@@ -2283,7 +2378,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   }
 
   if (multiFile) {
-    const salesinvoiceZip = await openWorkbook(sourceDir, "Salesinvoice.xlsx");
+    const salesinvoiceZip = await openWorkbook(set, "Salesinvoice.xlsx");
     const letterhead = salesinvoiceZip ? await openSheet(salesinvoiceZip, "Business Details") : null;
     if (letterhead) {
       for (const [field, cell] of Object.entries(SALESINVOICE_ENTITY_CELLS)) {
@@ -2299,7 +2394,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
 
-  const period = periodCovered(await extractPeriodStartMonth(sourceDir, product), lines);
+  const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {
     documentInfo: {
       entriesType: "journal",
@@ -2313,7 +2408,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     accounts: chartOfAccounts(lines, salesHeadings, purchaseHeadings, product),
   };
 
-  const payslipsZip = multiFile ? await openWorkbook(sourceDir, "Payslips.xlsx") : null;
+  const payslipsZip = multiFile ? await openWorkbook(set, "Payslips.xlsx") : null;
   if (payslipsZip) {
     const employerSheet = await openSheet(payslipsZip, "Employee");
     if (employerSheet) {
@@ -2343,7 +2438,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   if (stock) book.stock = stock;
 
   for (const ledger of ["debtors", "creditors"]) {
-    const entries = await ledgerFrom(sourceDir, hubZip, product, ledger);
+    const entries = await ledgerFrom(set, hubZip, product, ledger);
     if (entries.length > 0) book[ledger] = entries;
   }
 
@@ -2352,17 +2447,17 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     if (openingLedger) book.openingBalances = openingLedger;
   }
 
-  const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
+  const fixedAssets = await fixedAssetRegisterFrom(set, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
 
-  const hpAgreements = await hpAgreementsFrom(sourceDir, product);
+  const hpAgreements = await hpAgreementsFrom(set, product);
   if (hpAgreements.length > 0) book.hpAgreements = hpAgreements;
 
   if (product === "ltd") {
     const openingBalances = await openingBalancesFrom(hubZip);
     if (openingBalances) book.openingBalances = openingBalances;
 
-    const companySecretaryZip = await openWorkbook(sourceDir, "Companysecretary.xlsx");
+    const companySecretaryZip = await openWorkbook(set, "Companysecretary.xlsx");
     if (companySecretaryZip) Object.assign(book, await registersFrom(companySecretaryZip));
   }
 
@@ -2370,66 +2465,161 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   return book;
 }
 
-// ─── BST extraction map ─────────────────────────────────────────────────
+// ─── The extraction map ─────────────────────────────────────────────────
 //
-// Which sheet cell produced which piece of the export. Two halves, because
-// the two questions are answered at different times:
+// Which sheet cell produced which piece of the export, across however many
+// files a product's package carries. Two halves, because the two questions
+// are answered at different times:
 //
-//   - The book fields are fixed by the template. bstBookFieldCells() reads
-//     the same ENTITY_CELLS / STOCK_CELLS / LEDGER_BLOCKS / Admin constants
+//   - The book fields are fixed by the template. bookFieldCells() reads the
+//     same ENTITY_CELLS / STOCK_CELLS / LEDGER_BLOCKS / Admin constants
 //     extractBook() reads, so the answer cannot drift from the extraction.
 //   - The transaction rows depend on the file. A row only becomes a line if
-//     it holds a date and an amount, so extractBstTransactions() records each
-//     one into a map as it reads, rather than anything re-deriving it after.
+//     it holds a date and an amount, so each extractor records one into a
+//     map as it reads, rather than anything re-deriving it after.
+//
+// Every cell is keyed by file as well as sheet and cell: a single-file
+// product (BST, Taxi) carries file: null throughout, matching the file: null
+// already on ENTITY_CELLS.bst and ENTITY_CELLS.taxi above; a multi-file
+// product names the workbook each cell actually sits in, since the same
+// sheet name (a month tab, say) recurs across more than one of its files.
 //
 // Internal to the pipeline: the overtype sidecar and this module's tests are
 // the readers. Nothing here is a promise to a caller outside the repo.
 
 /**
- * Every cell a BST book field is read from, and the dotted path in the book
- * it lands at. Built from the constants extractBook() itself reads.
- * @returns {Array<{sheet: string, cell: string, field: string}>}
+ * Every cell a product's book field is read from, and the dotted path in
+ * the book it lands at. Built from the same constants extractBook() itself
+ * reads, so the answer cannot drift from the extraction.
+ * @param {string} product - bst, taxi, se or ltd
+ * @returns {Array<{file: string|null, sheet: string, cell: string, field: string}>}
  */
-export function bstBookFieldCells() {
+export function bookFieldCells(product) {
   const cells = [];
 
-  const entity = ENTITY_CELLS.bst;
+  const entity = ENTITY_CELLS[product];
   for (const [field, cell] of Object.entries(entity)) {
     if (field === "file" || field === "sheet") continue;
-    cells.push({ sheet: entity.sheet, cell, field: `entityInformation.${field}` });
+    cells.push({ file: entity.file ?? null, sheet: entity.sheet, cell, field: `entityInformation.${field}` });
   }
 
-  const stock = STOCK_CELLS.bst;
-  for (const [field, cell] of Object.entries(stock)) {
-    if (field === "sheet") continue;
-    cells.push({ sheet: stock.sheet, cell, field: `stock.${field}` });
+  const stock = STOCK_CELLS[product];
+  if (stock) {
+    const stockFile = product === "bst" || product === "taxi" ? null : "Financialaccounts.xlsx";
+    for (const [field, cell] of Object.entries(stock)) {
+      if (field === "sheet") continue;
+      cells.push({ file: stockFile, sheet: stock.sheet, cell, field: `stock.${field}` });
+    }
   }
 
-  for (const field of ["tradeDebtors", "tradeCreditors"]) {
-    cells.push({ sheet: BST_OPENING_LEDGER_CELLS.sheet, cell: BST_OPENING_LEDGER_CELLS[field], field: `openingBalances.${field}` });
+  if (product === "bst") {
+    for (const field of ["tradeDebtors", "tradeCreditors"]) {
+      cells.push({
+        file: null,
+        sheet: BST_OPENING_LEDGER_CELLS.sheet,
+        cell: BST_OPENING_LEDGER_CELLS[field],
+        field: `openingBalances.${field}`,
+      });
+    }
   }
 
-  // The Admin sheet names the year whose rates the whole tax block is rebuilt
-  // from, and prices the mileage claims the purchase rows carry.
-  cells.push({ sheet: "Admin", cell: ADMIN_TAX_YEAR_LABEL_CELL, field: "tax (the year the rate tables are rebuilt from)" });
-  for (const cell of Object.values(ADMIN_MILEAGE_RATE_CELLS)) {
-    cells.push({ sheet: "Admin", cell, field: "the mileage rate a mileage-log line is priced at" });
+  if (product === "bst" || product === "taxi") {
+    // The Admin sheet names the year whose rates the whole tax block is
+    // rebuilt from, and prices the mileage claims the purchase rows carry.
+    cells.push({ file: null, sheet: "Admin", cell: ADMIN_TAX_YEAR_LABEL_CELL, field: "tax (the year the rate tables are rebuilt from)" });
+    for (const cell of Object.values(ADMIN_MILEAGE_RATE_CELLS)) {
+      cells.push({ file: null, sheet: "Admin", cell, field: "the mileage rate a mileage-log line is priced at" });
+    }
+  }
+
+  if (product === "se") {
+    for (const [field, cell] of Object.entries(SALESINVOICE_ENTITY_CELLS)) {
+      cells.push({ file: "Salesinvoice.xlsx", sheet: "Business Details", cell, field: `entityInformation.${field}` });
+    }
+    cells.push({
+      file: "Salesinvoice.xlsx",
+      sheet: "Business Details",
+      cell: SALESINVOICE_VAT_NUMBER_CELL,
+      field: `entityInformation.diya-gl:vatNumber`,
+    });
+
+    for (const [field, cell] of Object.entries(PAYSLIPS_EMPLOYER_CELLS)) {
+      cells.push({ file: "Payslips.xlsx", sheet: "Employee", cell, field: `entityInformation.${field}` });
+    }
+
+    // One employee per 26-row block: surname and forenames read into the
+    // book's own employee name, the rest into the fields employeesFrom()
+    // reads. See EMPLOYEE_BASE_ROWS/EMPLOYEE_OFFSETS above.
+    const EMPLOYEE_FIELD_NAMES = {
+      surname: "employees[].name",
+      forenames: "employees[].name",
+      employeeID: "employees[].employeeID",
+      payFrequency: "employees[].payFrequency",
+      niCategory: "employees[].niCategory",
+    };
+    for (const base of EMPLOYEE_BASE_ROWS) {
+      for (const [offsetField, offset] of Object.entries(EMPLOYEE_OFFSETS)) {
+        const field = EMPLOYEE_FIELD_NAMES[offsetField];
+        if (!field) continue; // niNumber: EMPLOYEE_OFFSETS carries the offset but no extractor reads it yet
+        cells.push({ file: "Payslips.xlsx", sheet: "Employee", cell: `D${base + offset}`, field });
+      }
+    }
+
+    for (const [ledger, timings] of Object.entries(LEDGER_BLOCKS.se)) {
+      for (const [timing, block] of Object.entries(timings)) {
+        for (const row of block.rows) {
+          cells.push({
+            file: block.file,
+            sheet: block.sheet,
+            cell: `${block.counterparty}${row}`,
+            field: `${ledger}[].counterparty (${timing})`,
+          });
+          cells.push({ file: block.file, sheet: block.sheet, cell: `${block.invoice}${row}`, field: `${ledger}[].invoice (${timing})` });
+          cells.push({ file: block.file, sheet: block.sheet, cell: `${block.amount}${row}`, field: `${ledger}[].amount (${timing})` });
+        }
+      }
+    }
   }
 
   return cells;
 }
 
-let bookFieldCellsByKey;
+// Business Details!D29 and O29: losses brought forward and goods/services
+// for own use, entered straight onto the SA103S boxes with no book field of
+// their own (see PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md's horizons). bookFieldCells
+// leaves these out because ENTITY_CELLS.taxi does not carry them; the sidecar
+// still needs them named as the customer's own cells, not the template's.
+const TAXI_BUSINESS_DETAILS_MANUAL_CELLS = [
+  { cell: "D29", field: "losses brought forward (no book field)" },
+  { cell: "O29", field: "goods and services for own use (no book field)" },
+];
 
-function bookFieldCellIndex() {
-  if (!bookFieldCellsByKey) {
-    bookFieldCellsByKey = new Map();
-    for (const entry of bstBookFieldCells()) {
-      const key = `${entry.sheet}!${entry.cell}`;
-      if (!bookFieldCellsByKey.has(key)) bookFieldCellsByKey.set(key, entry);
+/**
+ * Every cell a Taxi Driver book field is read from, plus the two Business
+ * Details boxes the book carries no field for: bookFieldCells("taxi") (the
+ * entity cells, the tax-year label and the three mileage-rate cells) with
+ * D29 and O29 joined onto it.
+ * @returns {Array<{file: null, sheet: string, cell: string, field: string}>}
+ */
+export function taxiBookFieldCells() {
+  return [
+    ...bookFieldCells("taxi"),
+    ...TAXI_BUSINESS_DETAILS_MANUAL_CELLS.map(({ cell, field }) => ({ file: null, sheet: "Business Details", cell, field })),
+  ];
+}
+
+const bookFieldCellIndexByProduct = new Map();
+
+function bookFieldCellIndex(product) {
+  if (!bookFieldCellIndexByProduct.has(product)) {
+    const index = new Map();
+    for (const entry of bookFieldCells(product)) {
+      const key = `${entry.file ?? null}!${entry.sheet}!${entry.cell}`;
+      if (!index.has(key)) index.set(key, entry);
     }
+    bookFieldCellIndexByProduct.set(product, index);
   }
-  return bookFieldCellsByKey;
+  return bookFieldCellIndexByProduct.get(product);
 }
 
 /**
@@ -2451,7 +2641,7 @@ export function isBstInputCell(sheet, cellRef) {
     const { col, row } = parseCellRef(cellRef);
     if (row >= region.firstRow && row <= region.lastRow && region.columnLetters.has(col)) return true;
   }
-  return bookFieldCellIndex().has(`${sheet}!${cellRef}`);
+  return bookFieldCellIndex("bst").has(`null!${sheet}!${cellRef}`);
 }
 
 let transactionRegionsBySheet;
@@ -2466,30 +2656,49 @@ function transactionRegionIndex() {
 }
 
 /**
- * A recorder the BST extractors write their row-to-line mapping into, and the
- * lookup side that answers what a given cell fed.
+ * A recorder a product's extractors write their row-to-line mapping into,
+ * and the lookup side that answers what a given cell fed. Keyed by file as
+ * well as sheet and cell, so a cell on a sheet name that recurs across more
+ * than one workbook (a month tab, say) is not confused with its namesake on
+ * another file.
  *
- * Pass it to extractBstTransactions() to have the transaction rows recorded;
- * the book-field half needs no run, being fixed by the template.
+ * bstExtractionMap() is the BST caller's own name for this factory, kept so
+ * the books page (which calls it directly, by this name, through
+ * books-engine.js) does not have to change here; the four multi-file
+ * extractors below build the same shape for SE and Ltd.
+ * @param {string} [bookFieldProduct] - which product's bookFieldCells() the
+ *   field-lookup half answers from; defaults to "bst", this factory's first
+ *   and, for now, only caller
  */
-export function bstExtractionMap() {
+export function bstExtractionMap(bookFieldProduct = "bst") {
   const byRow = new Map();
   const records = [];
-  const fieldCells = bookFieldCellIndex();
+  const fieldCells = bookFieldCellIndex(bookFieldProduct);
 
   return {
-    /** Called by extractBstTransactions() for each row that produced a line. */
-    recordLine(line, region, row, index) {
+    /**
+     * Called by an extractor for each row that produced a line.
+     * @param {Object} line
+     * @param {Object} region - {sheet, columns}; sheet may be a month tab name
+     * @param {number} row
+     * @param {number} index
+     * @param {string|null} [file] - the workbook this row's sheet sits in;
+     *   null for a single-file product
+     */
+    recordLine(line, region, row, index, file = null) {
       const record = {
         index,
         entryNumber: line.entryNumber,
         sourceJournalID: line.sourceJournalID,
+        file,
         sheet: region.sheet,
         row,
         cells: Object.fromEntries(Object.entries(region.columns).map(([field, col]) => [field, `${col}${row}`])),
       };
       records.push(record);
-      byRow.set(`${region.sheet}!${row}`, record);
+      const key = `${file}!${region.sheet}!${row}`;
+      if (!byRow.has(key)) byRow.set(key, []);
+      byRow.get(key).push(record);
     },
 
     /** Every recorded row, in export order. */
@@ -2501,27 +2710,33 @@ export function bstExtractionMap() {
      * The exported line the cell's own row produced, or undefined where that
      * row produced none. `readAs` names the line field the cell was read
      * into, and is null for a cell that merely shares the row (the sheet's
-     * own analysis columns, say).
+     * own analysis columns, say). A row that produced two lines -- a Taxi
+     * Sales day carrying both a fare and other income -- recorded one region
+     * per line against the same row; the region whose own columns hold the
+     * cell asked for is the one answered, not just whichever recorded last.
+     * @param {string|null} file
+     * @param {string} sheet
+     * @param {string} cellRef
      */
-    lineForCell(sheet, cellRef) {
-      const record = byRow.get(`${sheet}!${parseCellRef(cellRef).row}`);
-      if (!record) return undefined;
-      const readAs = Object.entries(record.cells).find(([, ref]) => ref === cellRef)?.[0] ?? null;
+    lineForCell(file, sheet, cellRef) {
+      const ref = parseCellRef(cellRef);
+      if (!ref) return undefined;
+      const rowRecords = byRow.get(`${file}!${sheet}!${ref.row}`);
+      if (!rowRecords) return undefined;
+      const record = rowRecords.find((candidate) => Object.values(candidate.cells).includes(cellRef)) ?? rowRecords[0];
+      const readAs = Object.entries(record.cells).find(([, cell]) => cell === cellRef)?.[0] ?? null;
       return { ...record, readAs };
     },
 
-    /** The book field the cell is read into, or undefined. */
-    fieldForCell(sheet, cellRef) {
-      return fieldCells.get(`${sheet}!${cellRef}`);
+    /**
+     * The book field the cell is read into, or undefined.
+     * @param {string|null} file
+     * @param {string} sheet
+     * @param {string} cellRef
+     */
+    fieldForCell(file, sheet, cellRef) {
+      return fieldCells.get(`${file ?? null}!${sheet}!${cellRef}`);
     },
   };
 }
 // ─── end BST extraction map ─────────────────────────────────────────────
-
-// findXlsx takes a directory and returns a file name; the single-file
-// products need that name to open their one workbook.
-function findXlsxName(sourceDir) {
-  const name = findXlsx(sourceDir);
-  if (!name) throw new Error(`No xlsx file found in ${sourceDir}`);
-  return name;
-}

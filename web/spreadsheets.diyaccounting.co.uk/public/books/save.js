@@ -4,9 +4,9 @@
 // save.js — the current book turned into a download, through the same
 // engine bundle the rest of the page reads from.
 //
-// saveBstWorkbook and saveBstPackageZip are the exact functions the CLI and
-// the MCP server write a workbook through (app/lib/bst-workbook.js), bundled
-// for the browser by scripts/build-books-bundle.mjs. bst.js's save controls
+// saveWorkbook and savePackageZip are the exact functions the CLI and
+// the MCP server write a workbook through (app/lib/product-workbook.js), bundled
+// for the browser by scripts/build-books-bundle.mjs. shell.js's save controls
 // call buildSaveArtifact() then downloadArtifact(); the save browser test
 // calls the same two functions directly against a book it loaded itself, so
 // the shell and the test exercise one save path, not two.
@@ -14,8 +14,8 @@
 // writeDiyaGlZip and writeBookJson (app/lib/books-interchange.js, the same
 // module the CLI's export.js writes through) turn the book into the other
 // two downloads: the diya-gl zip and the single-file JSON. Both need R --
-// bst.js passes it in through extras.report, the same document
-// window.DIYA_BST_SNAPSHOT.report already carries, so nothing here
+// shell.js passes it in through extras.report, the same document
+// window.DIYA_BOOKS_SNAPSHOT.report already carries, so nothing here
 // recomputes a result the page already has.
 
 const ENGINE_MODULE = "./engine/diya-gl-engine.js";
@@ -72,10 +72,10 @@ export async function buildSaveArtifact(book, lines, format, extras) {
     return buildDiyaGlArtifact(engine, book, lines, format, extras || {});
   }
   if (format === "zip") {
-    const { zip, filename } = await engine.saveBstPackageZip(book, lines, { resources });
+    const { zip, filename } = await engine.savePackageZip(book, lines, { resources });
     return { bytes: zip, filename, mimeType: ZIP_MIME };
   }
-  const { workbook, filename } = await engine.saveBstWorkbook(book, lines, { resources });
+  const { workbook, filename } = await engine.saveWorkbook(book, lines, { resources });
   return { bytes: workbook, filename, mimeType: XLSX_MIME };
 }
 
