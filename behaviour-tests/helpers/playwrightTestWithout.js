@@ -4,6 +4,19 @@
 // behaviour-tests/helpers/playwrightTestWithout.js
 import { test as base } from "@playwright/test";
 
+// AWS RUM serves its web client from client.rum.<region>.amazonaws.com;
+// matching by hostname (not a URL-string prefix) stops a lookalike host
+// such as client.rum.evil.com from also being treated as the RUM endpoint.
+function isAwsRumEndpoint(requestUrl) {
+  let hostname;
+  try {
+    hostname = new URL(requestUrl).hostname;
+  } catch {
+    return false;
+  }
+  return hostname.startsWith("client.rum.") && hostname.endsWith(".amazonaws.com");
+}
+
 export const test = base.extend({
   // Respect project/test use: options by applying contextOptions and explicitly enabling recordVideo
   context: async ({ browser, contextOptions }, use, testInfo) => {
@@ -13,7 +26,7 @@ export const test = base.extend({
       const url = route.request().url();
       // block RUM/ GA / gtag / GTM endpoints
       if (
-        url.startsWith("https://client.rum") ||
+        isAwsRumEndpoint(url) ||
         url.startsWith("https://www.google-analytics.com/g/collect") ||
         url.startsWith("https://www.googletagmanager.com/") ||
         url.includes("analytics.js") ||
