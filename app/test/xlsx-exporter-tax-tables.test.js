@@ -158,6 +158,20 @@ describe("taxTablesForPackage", () => {
     const { xml, sharedStrings } = await adminSheetOf(buffer);
     expect(taxTablesForPackage(xml, sharedStrings, "ltd")).toEqual({});
   });
+
+  it("leaves tax.vat unmapped for BST and Taxi -- their sheets carry no VAT rate cell of their own", async () => {
+    // app/data/se-2024-2025.toml carries a [vat] block (SE reads it back
+    // through its own Sales tab rate cell, VAT_RATE_CELLS.se), but BST and
+    // Taxi ship no VAT rate cell at all -- the same absence that leaves
+    // entityInformation.diya-gl:vatRegistered declared absent for both in
+    // roundtrip-unrepresentable.json. Restating the year file's VAT rates on
+    // either book would carry a rate the package never entered.
+    const buffer = await buildWorkbook({ Admin: { B23: "2024-25" } });
+    const { xml, sharedStrings } = await adminSheetOf(buffer);
+    expect(taxTablesForPackage(xml, sharedStrings, "bst").vat).toBeUndefined();
+    expect(taxTablesForPackage(xml, sharedStrings, "taxi").vat).toBeUndefined();
+    expect(taxTablesForPackage(xml, sharedStrings, "se").vat).toEqual({ standardRate: 0.2, registrationThreshold: 90000 });
+  });
 });
 
 // ── The guard: the sheet's own formula results agree with the emitted table ─

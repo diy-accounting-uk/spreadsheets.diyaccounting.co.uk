@@ -78,20 +78,21 @@ const s2Cache = new Map();
  * @param {string} bookDir - a diya-gl data directory, e.g. SCENARIOS[].bookDir
  * @param {string} [name] - a short label for the output directory; derived
  *   from bookDir when omitted
+ * @param {string} [product] - the package report.js computes the book under
  * @returns {Map<string, {value: string, unit: string}>}
  */
-export function s2(bookDir, name) {
-  const resolvedBookDir = path.resolve(ROOT, bookDir);
-  if (s2Cache.has(resolvedBookDir)) return s2Cache.get(resolvedBookDir);
+export function s2(bookDir, name, product = "bst") {
+  const cacheKey = `${path.resolve(ROOT, bookDir)}@${product}`;
+  if (s2Cache.has(cacheKey)) return s2Cache.get(cacheKey);
 
   const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
   const outDir = path.resolve(ROOT, "target", `r-${label}`);
-  execFileSync(process.execPath, ["app/bin/report.js", "--package", "bst", "--data", bookDir, "--output-dir", outDir], {
+  execFileSync(process.execPath, ["app/bin/report.js", "--package", product, "--data", bookDir, "--output-dir", outDir], {
     cwd: ROOT,
     stdio: "pipe",
   });
   const map = readReportMap(outDir);
-  s2Cache.set(resolvedBookDir, map);
+  s2Cache.set(cacheKey, map);
   return map;
 }
 
@@ -216,7 +217,7 @@ export function canonical(value, unit) {
 /**
  * Apply one edit to a diya-gl book directory's own lines in Node, then build
  * report.json exactly the way report.js's --data path and the page's own
- * buildReport (bst-data.js) both do: the same package name, engine, merged
+ * buildReport (data.js) both do: the same package name, engine, merged
  * scenario, checks, scenarioName and yearEnd. A browser edit's report.json
  * is expected to equal this function's `text`, byte for byte, for the same
  * edit applied to the same book.

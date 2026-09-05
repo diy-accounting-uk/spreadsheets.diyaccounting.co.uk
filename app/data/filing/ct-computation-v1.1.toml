@@ -1,0 +1,1033 @@
+# HMRC Prescription of Computations (CT Computations Format), version 1.1, 20 November 2025.
+#
+# Sources:
+# - Corporation Tax technical specifications in XBRL and iXBRL format:
+#   https://www.gov.uk/government/publications/corporation-tax-technical-specifications-xbrl-and-ixbrl
+# - The format PDF:
+#   https://assets.publishing.service.gov.uk/media/691c7cd40dcbf6343e9a2999/ct-computations-format-version-1.1.pdf
+# - Lines and XBRL tags transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 3.
+# - sheetCell: "The tax computation view" paragraph of PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked
+#   against CELL_MAP/standardReads() in app/products/ltd.js.
+#
+# Version 1.1 covers only Section 1 (Accounts Adjustments) and Section 2 (Capital Allowances,
+# summary plus the main pool). It does not yet prescribe a format for trading losses brought
+# forward, taxable total profits, or the financial-year tax-rate rows with marginal relief --
+# HMRC's own words are "with further sections to follow". The Ltd view's CorporationTax!K22,
+# K26, K28 and K35 cells (trading profit, losses b/f, taxable total profits, tax with marginal
+# relief) therefore have no v1.1 computation line to attach to; they stay on the CT600 box side
+# (see ct600-v3.toml boxes 155, 160, 165, 315, 430-440).
+#
+# xbrl is "" where the note lists no tag for that line. sheetCell is present only for the
+# handful of lines the plan's narrative names; the rest are the format's line items with no
+# product cell attached yet.
+version = "1.1"
+versionDate = "2025-11-20"
+source = "https://assets.publishing.service.gov.uk/media/691c7cd40dcbf6343e9a2999/ct-computations-format-version-1.1.pdf"
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Profit/(loss) before tax per statutory accounts"
+xbrl = "ProfitLossPerAccounts"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F49"
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Accounting Non-Taxable Income Deducted Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Accounting Disallowable Expenditure Addback Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Accounting Taxable Income Addback Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Accounting Allowable Expenditure Deducted Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "PPA: invalid to valid correction"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "PPA: change in accounting policy, valid to valid"
+xbrl = "AdjustmentsAccountingAdjustments"
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Revised Figure Before Tax"
+xbrl = "AdjustedProfitOrLossBeforeAccountingPeriodAdjustments"
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Time apportionment figure"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Non-accounting Taxable Income Additions Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Non-accounting Allowable Expenditure Deducted Total"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 1
+partName = "Section 1 Part 1: the summary, and the shape of the computation"
+label = "Adjusted Profit/(Loss)"
+xbrl = "AdjustedProfitForThePeriod / AdjustedLossOfPeriod"
+sheetCell = "Financialaccounts.xlsx!CorporationTax!K12"
+note = "The adjusted profit is what goes to CT600 box 155."
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Investment credit"
+xbrl = "AdjustmentsFrankedInvestmentIncomePerAccounts"
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Investment properties credit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Tangible fixed asset credit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Financial asset credit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Hedging instruments gains"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Preference share dividends receivable"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Interest and other financial receivable"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Non-trading loan relationship credit"
+xbrl = "AdjustmentsNon-tradingLoanRelationshipsCreditsPerAccounts"
+sheetCell = "Financialaccounts.xlsx!CorporationTax!K24"
+note = "Bank interest: the plan's Ltd view moves this to CT600 box 170 rather than adding it back in the trading computation."
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Non-trading credits in respect of intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Trading credits in respect of intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Exempt foreign branch profits"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Joint venture profits"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Partnership profit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "UK property receipts"
+xbrl = "AdjustmentsPropertyReceiptsPerAccounts"
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Overseas property receipts"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Mutual trading income"
+xbrl = "AdjustmentsMutualTradingIncome"
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Defined contribution pension accounting credits"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Defined benefit pension accounting credits"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "RDEC income"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Other income not taxable"
+xbrl = "AdjustmentsOtherIncomeNotTaxable"
+
+[[line]]
+section = 1
+part = 2
+partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Capital Expenditure"
+xbrl = "AdjustmentsCapitalExpenditure"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Expenditure not wholly and exclusively for purpose of trade"
+xbrl = "AdjustmentsOtherExpenditureNotWhollyAndExclusivelyForPurposesOfTradeOrBusiness"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Accountancy, legal & professional fees"
+xbrl = "AdjustmentsAccountancyLegalAndProfessionalFees"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Anti-avoidance adjustments"
+xbrl = "AdjustmentsAnti-avoidanceAdjustments"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Depreciation"
+xbrl = "AdjustmentsDepreciation"
+sheetCell = "Financialaccounts.xlsx!CorporationTax!I8"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Director's remuneration"
+xbrl = "AdjustmentsDirectorsRemuneration"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Donations"
+xbrl = "AdjustmentsDonations"
+sheetCell = "Financialaccounts.xlsx!MnthP&L!B37"
+note = "The sheet does not add this back; the Ltd view shows it as a warning."
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Entertaining"
+xbrl = "AdjustmentsEntertaining"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Interest and other financial charges"
+xbrl = "AdjustmentsInterestAndOtherFinancialCharges"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Leased cars"
+xbrl = "AdjustmentsLeasedCars"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Motor, travel & subsistence"
+xbrl = "AdjustmentsMotorTravelAndSubsistence"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Penalties or fines"
+xbrl = "AdjustmentsPenaltiesAndFines"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Specific provisions not claimable within AP"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Redundancy payments disallowed on cessation of trade"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Remuneration unpaid within 9 months"
+xbrl = "AdjustmentsAdjustmentsForRemunerationUnpaidWithin9Months"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Unwinding of discount on decommissioning provision"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Capital element of Right of Use asset depreciation and lease finance charges"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Share-based payment expense"
+xbrl = "AdjustmentsEmployeeShareAcquisitionAdjustment"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Investment debit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Investment properties debit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Tangible fixed assets debit"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Financial asset debit"
+xbrl = "AdjustmentsBadDebts"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Hedging instruments loss"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Non-trading loan relationship debit"
+xbrl = "AdjustmentsNon-tradingLoanRelationshipsDebitsPerAccounts"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Non-trading debits in respect of intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Trading debits in respect of intangible fixed assets"
+xbrl = ""
+sheetCell = "Financialaccounts.xlsx!CorporationTax!I7"
+note = "Goodwill amortisation add-back. The note lists no XBRL tag for this line."
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Exempt foreign branch losses"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Joint venture loss"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Partnership loss"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "UK property expenses"
+xbrl = "AdjustmentsPropertyExpensesPerAccounts"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Overseas property expenses"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Mutual trading expenditure"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Hybrid capital instrument adjustment"
+xbrl = "AdjustmentsHybridCapitalInstrumentAdjustment"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Hybrid mismatches adjustment applied"
+xbrl = "AdjustmentsHybridMismatchesAdjustmentApplied"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Defined contribution pension accounting debits"
+xbrl = "AdjustmentsPensionContributions"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Defined benefit pension accounting debits"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Other disallowable expenditure"
+xbrl = "AdjustmentsOtherAdditions"
+
+[[line]]
+section = 1
+part = 3
+partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 4
+partName = "Section 1 Part 4: Accounting Taxable Income Addback"
+label = "Income credited directly to reserves"
+xbrl = "AdjustmentsAdjustmentsForReserves"
+
+[[line]]
+section = 1
+part = 4
+partName = "Section 1 Part 4: Accounting Taxable Income Addback"
+label = "Trading credits in respect of intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 4
+partName = "Section 1 Part 4: Accounting Taxable Income Addback"
+label = "Income not otherwise recognised"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 4
+partName = "Section 1 Part 4: Accounting Taxable Income Addback"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Pre-trade expenses"
+xbrl = "AdjustmentsPre-tradingExpenditure"
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Depreciation (allowable element)"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Remuneration unpaid within 9 months now paid"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Share-based payments"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Trading debits in respect of intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Revenue expenditure capitalised"
+xbrl = "AdjustmentsRevenueExpenditureCapitalised"
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Specific provisions claimable"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Adjustments for reserves"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Defined contribution pension employer contribution"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Defined benefit pension employer contribution"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Other allowable expenditure deducted"
+xbrl = "AdjustmentsOtherDeductions"
+
+[[line]]
+section = 1
+part = 5
+partName = "Section 1 Part 5: Accounting Allowable Expenditure Deducted"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "Gains on hedging instruments"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "Total balancing charges from capital allowances"
+xbrl = "TotalBalancingCharges"
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "Trading credits on intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "RDEC"
+xbrl = "AmountOfRDExpenditureCredit"
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "AVEC"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "VGEC"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "Other"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 6
+partName = "Section 1 Part 6: Non-Accounting Taxable Income Additions"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Total Capital Allowances"
+xbrl = "TotalCapitalAllowances"
+sheetCell = "Financialaccounts.xlsx!CorporationTax!K20"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Trading debits on intangible fixed assets"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "SP3/91: Finance lease charge"
+xbrl = "AdjustmentsFinanceLeasingAdjustments"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "R&D enhanced expenditure"
+xbrl = "AdjustmentsAdditionalDeductionForQualifyingRDExpenditureSME"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Patent Box"
+xbrl = "PatentBoxAdjustment"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Losses on hedging instruments"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Foreign tax"
+xbrl = "AdjustmentsForeignTaxAsADeduction"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Land Remediation expenditure"
+xbrl = "AdjustmentsAdditionalDeductionForQualifyingLandRemediationExpenditure"
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "CTA09 Part 12 Relief"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Other"
+xbrl = ""
+
+[[line]]
+section = 1
+part = 7
+partName = "Section 1 Part 7: Non-Accounting Allowable Expenditure Deducted"
+label = "Subtotal"
+xbrl = ""
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Plant and Machinery Allowances"
+xbrl = ""
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Structures and Buildings Allowance"
+xbrl = "StructuresAndBuildingsAllowanceWritingDownAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Business Premises Renovation Allowances"
+xbrl = "BusinessPremisesRenovationAllowancesTotalAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Mineral Extraction Allowances"
+xbrl = "MineralExtractionAllowancesTotalAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Research and Development Allowances"
+xbrl = "ResearchDevelopmentAllowancesAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Know-how Allowances"
+xbrl = "Know-howTotalAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Patent Allowances"
+xbrl = "PatentsPoolTotalAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Dredging Allowances"
+xbrl = "OtherCapitalAllowancesTotalAllowances"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total capital allowances"
+label = "Total Capital Allowances"
+xbrl = "TotalCapitalAllowances"
+sheetCell = "Financialaccounts.xlsx!CorporationTax!K20"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Plant and Machinery Balancing Charges"
+xbrl = ""
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Business Premises Renovation Allowances Balancing Charges"
+xbrl = "BusinessPremisesRenovationAllowancesBalancingCharges"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Mineral Extraction Allowances Balancing Charges"
+xbrl = "MineralExtractionAllowancesTotalBalancingCharges"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Research and Development Allowances Balancing Charges"
+xbrl = "ResearchDevelopmentAllowancesBalancingCharges"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Know-how Allowances Balancing Charges"
+xbrl = "Know-howBalancingCharges"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Patent Allowances Balancing Charges"
+xbrl = "PatentsPoolBalancingCharges"
+
+[[line]]
+section = 2
+part = 1
+partName = "Section 2 Part 1: Summary, total balancing charges"
+label = "Total Balancing Charges"
+xbrl = "TotalBalancingCharges"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Main pool (table heading)"
+xbrl = "PlantAndMachineryMainPoolHeading"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Unrelieved Qualifying Expenditure brought forward"
+xbrl = "MainPoolWrittenDownValue"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Qualifying Expenditure added to the pool"
+xbrl = "MainPoolExpenditureQualifyingForWritingDownAllowance"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Amount allocated to the pool"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Available qualifying expenditure (AQE)"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Additions qualifying for Annual Investment Allowance (AIA)"
+xbrl = "MainPoolExpenditureQualifyingForAnnualInvestmentAllowance"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "AIA limit"
+xbrl = ""
+note = "Show the limit calculation in a footnote."
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "AIA claimed"
+xbrl = "MainPoolAnnualInvestmentAllowance"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "AQE less AIA"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Total disposal receipts (TDR)"
+xbrl = "MainPoolTotalDisposalReceipts"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Balance of qualifying expenditure"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Small Pools Allowance"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "WDA %"
+xbrl = ""
+note = "Footnote required if not 18%."
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "WDA available"
+xbrl = ""
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "WDA claimed"
+xbrl = "MainPoolWritingDownAllowances"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Balancing allowance"
+xbrl = "MainPoolBalancingAllowances"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Balancing charge"
+xbrl = "MainPoolBalancingCharges"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Unrelieved Qualifying Expenditure carried forward"
+xbrl = "MainPoolWrittenDownValue"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Total of FYA and WDA claimed in respect of the main pool"
+xbrl = "MainPoolTotalFYAAndWDA"
+
+[[line]]
+section = 2
+part = "2d"
+partName = "Section 2 Part 2d: Plant and Machinery, main pool"
+label = "Total capital allowances in respect of the main pool"
+xbrl = "MainPoolTotalAllowances"

@@ -104,8 +104,19 @@ export function checkActual(report, name) {
   return toNumber(row.actual);
 }
 
+// A product may print the return's box number after a row's label, as the Taxi
+// sheet does ("Net profit/loss (box 20)"), so a label matches with or without
+// that suffix.
+const BOX_SUFFIX = /\s*\(box [^)]*\)$/;
+
 export function value(report, section, label) {
-  return toNumber(report.sections.get(section)?.get(label));
+  const rows = report.sections.get(section);
+  if (!rows) return null;
+  if (rows.has(label)) return toNumber(rows.get(label));
+  for (const [key, cell] of rows) {
+    if (key.replace(BOX_SUFFIX, "") === label) return toNumber(cell);
+  }
+  return null;
 }
 
 // A label the report no longer carries would drop an indicator and leave the judge passing a
