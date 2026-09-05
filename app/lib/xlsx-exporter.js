@@ -808,12 +808,12 @@ export async function extractBankTransactions(set, product, period, extractionMa
   const lines = [];
   let entryNum = 1;
   const RECEIPT_COLUMNS = {
-    postingDate: "A",
-    detailComment: "B",
-    documentReference: BANK_RECEIPT_REFERENCE_COLUMN,
-    lineItemComment: BANK_RECEIPT_COMMENT_COLUMN,
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": BANK_RECEIPT_REFERENCE_COLUMN,
+    "lineItemComment": BANK_RECEIPT_COMMENT_COLUMN,
     "diya-gl:bankCode": "E",
-    amount: "F",
+    "amount": "F",
   };
 
   for (const { file, accountID, payment } of bankFiles) {
@@ -825,12 +825,12 @@ export async function extractBankTransactions(set, product, period, extractionMa
     let obEmitted = false;
 
     const paymentColumns = {
-      postingDate: payment.date,
-      detailComment: payment.supplier,
-      documentReference: payment.reference,
-      lineItemComment: payment.comment,
+      "postingDate": payment.date,
+      "detailComment": payment.supplier,
+      "documentReference": payment.reference,
+      "lineItemComment": payment.comment,
       "diya-gl:bankCode": payment.code,
-      amount: payment.amount,
+      "amount": payment.amount,
     };
 
     for (const sheetName of monthSheetsInPeriodOrder(sheetMap)) {
@@ -951,14 +951,14 @@ export async function extractPayrollTransactions(set, extractionMap) {
 
   const columns = PAYSLIPS_ENTRY_COLUMNS;
   const payrollRegionColumns = {
-    detailComment: columns.name,
-    amount: columns.grossPay,
+    "detailComment": columns.name,
+    "amount": columns.grossPay,
     "diya-gl:incomeTax": columns.incomeTax,
     "diya-gl:employeeNI": columns.employeeNI,
     "diya-gl:employerNI": columns.employerNI,
     "diya-gl:netPay": columns.netPay,
-    documentReference: columns.reference,
-    accountMainID: ACCOUNT_ID_COLUMN,
+    "documentReference": columns.reference,
+    "accountMainID": ACCOUNT_ID_COLUMN,
   };
   const monthSheets = monthSheetsInPeriodOrder(sheetMap);
   for (const [monthIndex, sheetName] of monthSheets.entries()) {
@@ -2497,7 +2497,13 @@ export function bookFieldCells(product) {
     // One employee per 26-row block: surname and forenames read into the
     // book's own employee name, the rest into the fields employeesFrom()
     // reads. See EMPLOYEE_BASE_ROWS/EMPLOYEE_OFFSETS above.
-    const EMPLOYEE_FIELD_NAMES = { surname: "employees[].name", forenames: "employees[].name", employeeID: "employees[].employeeID", payFrequency: "employees[].payFrequency", niCategory: "employees[].niCategory" };
+    const EMPLOYEE_FIELD_NAMES = {
+      surname: "employees[].name",
+      forenames: "employees[].name",
+      employeeID: "employees[].employeeID",
+      payFrequency: "employees[].payFrequency",
+      niCategory: "employees[].niCategory",
+    };
     for (const base of EMPLOYEE_BASE_ROWS) {
       for (const [offsetField, offset] of Object.entries(EMPLOYEE_OFFSETS)) {
         const field = EMPLOYEE_FIELD_NAMES[offsetField];
@@ -2509,7 +2515,12 @@ export function bookFieldCells(product) {
     for (const [ledger, timings] of Object.entries(LEDGER_BLOCKS.se)) {
       for (const [timing, block] of Object.entries(timings)) {
         for (const row of block.rows) {
-          cells.push({ file: block.file, sheet: block.sheet, cell: `${block.counterparty}${row}`, field: `${ledger}[].counterparty (${timing})` });
+          cells.push({
+            file: block.file,
+            sheet: block.sheet,
+            cell: `${block.counterparty}${row}`,
+            field: `${ledger}[].counterparty (${timing})`,
+          });
           cells.push({ file: block.file, sheet: block.sheet, cell: `${block.invoice}${row}`, field: `${ledger}[].invoice (${timing})` });
           cells.push({ file: block.file, sheet: block.sheet, cell: `${block.amount}${row}`, field: `${ledger}[].amount (${timing})` });
         }

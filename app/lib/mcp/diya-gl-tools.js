@@ -222,7 +222,8 @@ export const TOOLS = {
         product: {
           type: "string",
           enum: ["bst", "taxi", "se", "ltd"],
-          description: "Optional: the product the file is expected to be; checked against the file's own content and refused by name on a disagreement",
+          description:
+            "Optional: the product the file is expected to be; checked against the file's own content and refused by name on a disagreement",
         },
       },
       required: ["path"],

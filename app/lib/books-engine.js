@@ -10,7 +10,15 @@
 // Every module below is imported as it stands. Nothing here is a browser fork.
 
 // Reading a populated workbook back into diya-gl data.
-export { extractBstTransactions, extractMetadata, bstExtractionMap, bookFieldCells, isBstInputCell, normaliseLine, taxTablesForPackage } from "./xlsx-exporter.js";
+export {
+  extractBstTransactions,
+  extractMetadata,
+  bstExtractionMap,
+  bookFieldCells,
+  isBstInputCell,
+  normaliseLine,
+  taxTablesForPackage,
+} from "./xlsx-exporter.js";
 
 // The anchor guard: the runner, BST's own table and its two-line wrapper,
 // and the one error class every product's table throws.
