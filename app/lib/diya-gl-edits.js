@@ -71,9 +71,7 @@ export function addBankLine(book, lines, params) {
     throw new Error(`addBankLine expects debitCreditCode "D" or "C", got "${line.debitCreditCode}"`);
   }
   if (!Object.keys(book?.accounts?.bank || {}).includes(line["diya-gl:bankAccountID"])) {
-    throw new Error(
-      `addBankLine expects a diya-gl:bankAccountID declared in the book's own chart, got "${line["diya-gl:bankAccountID"]}"`,
-    );
+    throw new Error(`addBankLine expects a diya-gl:bankAccountID declared in the book's own chart, got "${line["diya-gl:bankAccountID"]}"`);
   }
   if (!line["diya-gl:bankCode"]) {
     throw new Error("addBankLine expects a diya-gl:bankCode naming the column the entry is analysed under");
