@@ -9,7 +9,7 @@
 
 import { TOOLS, createSession } from "./diya-gl-tools.js";
 
-export const SERVER_INFO = { name: "diya-gl-bst", version: "0.1.0" };
+export const SERVER_INFO = { name: "diya-gl", version: "0.1.0" };
 
 /**
  * Build the JSON-RPC method table for one server session (one loaded book).

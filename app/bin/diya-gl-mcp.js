@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// diya-gl-mcp.js — a stdio MCP server exposing the diya-gl BST pipeline as
-// four tools: extract_book, report, edit_lines, save_workbook. Phase 2 of
-// PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md.
+// diya-gl-mcp.js — a stdio MCP server exposing the diya-gl pipeline as
+// four tools: extract_book, report, edit_lines, save_workbook, over any of
+// the four products (Basic Sole Trader, Taxi Driver, Self Employed, Company).
 //
 // Transport: hand-rolled newline-delimited JSON-RPC 2.0
 // (app/lib/mcp/jsonrpc-stdio.js), not @modelcontextprotocol/sdk. The SDK's

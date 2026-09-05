@@ -76,6 +76,10 @@ export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues
 export { reportSections, checkCompliance, cellLabels, profitBridge, standardReads, CELL_MAP, HEADLINES, TAX_SHEET, PRODUCT } from "../products/bst.js";
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
+// The product map: every product module diya-gl carries, and the lookup
+// export.js, generate.js and the MCP tools select one through.
+export { PRODUCTS, productModule } from "./products.js";
+
 // Editing it.
 export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
 
