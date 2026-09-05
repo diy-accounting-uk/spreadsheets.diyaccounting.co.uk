@@ -133,23 +133,47 @@ async function triggerSaveDownload(page, menuItemName) {
 // ── E3: round trips ──────────────────────────────────────────────────────
 
 test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
-  test("page to package zip to CLI: export.js --file re-extracts the same lines.jsonl", async ({ page }) => {
+  // Package zip -> page -> package zip. The nine workbooks carry no column
+  // for an entry number, a document type or a tax code, so a line that goes
+  // in through the master book comes back out renumbered and without them:
+  // the round trip settles from the first extraction on, not before it. So
+  // the page's package zip goes to the CLI, the CLI's book comes back to the
+  // page, and the second lap has to reproduce both files exactly.
+  test("page to package zip to CLI and back: the second lap writes the same zip and reads the same lines", async ({ page }) => {
     await openAdvancedExample(page);
 
-    const diyaGl = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
-    const pageLinesJsonl = await (await JSZip.loadAsync(diyaGl.bytes)).file("lines.jsonl").async("string");
+    const firstPackage = await triggerSaveDownload(page, "Download package (.zip)");
+    const firstZipPath = path.join(TARGET_DIR, "e3-se-package-1.zip");
+    fs.writeFileSync(firstZipPath, firstPackage.bytes);
 
-    const packageZip = await triggerSaveDownload(page, "Download package (.zip)");
-    const zipPath = path.join(TARGET_DIR, "e3-se-package.zip");
-    fs.writeFileSync(zipPath, packageZip.bytes);
+    const firstExport = path.join(TARGET_DIR, "e3-se-export-1");
+    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", firstZipPath, "--output-dir", firstExport], {
+      cwd: ROOT,
+      stdio: "pipe",
+    });
+    const firstBookToml = fs.readFileSync(path.join(firstExport, "book.toml"), "utf-8");
+    const firstLinesJsonl = fs.readFileSync(path.join(firstExport, "lines.jsonl"), "utf-8");
 
-    const exportOutDir = path.join(TARGET_DIR, "e3-se-export");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", exportOutDir], {
+    await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
+    await dropFile(
+      page,
+      await zipOf({ "book.toml": firstBookToml, "lines.jsonl": firstLinesJsonl, "report.json": "{}\n" }),
+      "e3-se-extracted-diya-gl.zip",
+    );
+    await waitForLoaded(page);
+
+    const secondPackage = await triggerSaveDownload(page, "Download package (.zip)");
+    const secondZipPath = path.join(TARGET_DIR, "e3-se-package-2.zip");
+    fs.writeFileSync(secondZipPath, secondPackage.bytes);
+
+    const secondExport = path.join(TARGET_DIR, "e3-se-export-2");
+    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", secondZipPath, "--output-dir", secondExport], {
       cwd: ROOT,
       stdio: "pipe",
     });
 
-    expect(fs.readFileSync(path.join(exportOutDir, "lines.jsonl"), "utf-8")).toBe(pageLinesJsonl);
+    expect(fs.readFileSync(path.join(secondExport, "lines.jsonl"), "utf-8")).toBe(firstLinesJsonl);
+    expect(Buffer.compare(secondPackage.bytes, firstPackage.bytes)).toBe(0);
   });
 
   test("diya-gl zip to page to diya-gl zip is identical, and so is JSON to page to JSON", async ({ page }) => {
@@ -195,8 +219,12 @@ test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.payslipsOnlyZip.bytes, FIXTURES.payslipsOnlyZip.name);
 
+    // One workbook in a zip is a package zip of a single-file product, so
+    // the sniff hands it to the Basic Sole Trader manifest and its anchor
+    // guard is what names the mismatch.
     const message = page.locator("#empty-state-message");
     await expect(message).toHaveClass(/upload-error/);
+    await expect(message).toContainText("does not match the current Basic Sole Trader template");
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 
