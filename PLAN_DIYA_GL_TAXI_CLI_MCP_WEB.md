@@ -525,6 +525,20 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   the fare-miles helper, Class 2 voluntary below the threshold. The manifest still carries an empty
   `examples` field S8 made redundant; T16 drops it.
 
+- T14 `dd65898d`, `4eb67f1d`, merged 2026-09-05: `products/taxi-takings.js` (the week strip, the day grid,
+  the fare list, the caption rows, the draft row, the mobile cards, keyboard toggles that ask for
+  their own focus back), `taxi.css`, `changeDetail`/`changeMiles` in `books/edits.js` and `addEntry`
+  carrying `documentType` and miles, `taxi-takings-view.test.js` (16). Proved on the BST shell with a
+  Taxi book through the picker; the Playwright spec and its `playwright.config.js` line wait for
+  `taxi.html` (T16) and land with T17. For T17: `subtotals(week)` reads `week.otherIncome` as
+  `groupTakings` builds it (the brief's `days[].other + otherIncome` double counts); May 2025 has
+  four week rows, not five; miles print with `toLocaleString("en-GB")`, not `fmtWhole`; the axe step
+  must await `document.getAnimations()` settling (the `month-reveal` fade reports 4.44:1 on `.btn`
+  mid-animation), and on short viewports scroll `.takings-month` to the scroller's top before axe,
+  because the sticky open `.year-row` obscures interactive rows beneath it (`target-size`).
+  `products/taxi.js:222` never surfaces a sibling module's load error; the view shows "Loading the
+  Taxi views…" until T15's files exist.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
