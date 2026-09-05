@@ -504,43 +504,6 @@ names and use the SE one.
 
 Rules every brief shares:
 
-### Verification ladder
-
-Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
-(`npx vitest run --fileParallelism=false` on the files a row touches); the featured scenario
-`ltd-scenario-full` reconciles RECONCILES through `report.js` in both modes over
-`examples/ltd-latest`; full `npm test` before any push; the browser suites with one worker,
-teed; `generate-ltd` dispatched with skip-commit on the branch (the March, June and February
-year ends plus the latest, the deterministic gates and the judge under OIDC); merge; the
-generate-commit refresh so the committed reports match. Sub-agents commit before they wait
-and never end a turn with a run going.
-
-### Horizons named, not decided
-
-Writing the dividend figures into `Dividend Voucher.docx` (the same JSZip surgery over
-`word/document.xml`; the template's "Dividend Tax Credit" line goes, the credit having
-ended in April 2016); the P60 and FPS renders from the payroll view; the CT600A view for a
-director's loan the year leaves overdrawn; the printed payslip page as a per-employee view; the sales invoice
-workbook as a view; a bank statement balance field in the book so the sheet's A3/A4
-reconciliation can render; the prior-year comparatives (`OpenAccounts` rows 43 to 85) as
-editable book fields; a directors' loan overdrawn warning (section 455 tax) from
-`TrialBalance!EJ39`, which is also what would fill the CT600A; the PDF guides in the browser package; a package saved for a different
-year end than the one it was loaded from; `diyaGlToScenario` turning lines that carry
-`diya-gl:vatPeriodEnd` into `vat_straddling_sales` and `vat_straddling_purchases` (today only
-`extract-scenarios.js` does, so a book's straddling lines reach no S or P sheet on save).
-
-## Briefs
-
-One brief per task row, written for a sub-agent that has this plan, an isolated worktree
-forked from main with the batch branch merged in, and nothing else. Every cell, sheet and
-link named below was read from the shipped `packages/GB Accounts Company 2026-03-31 (Mar26)
-Excel 2007/` XML or from the module the brief names, on 2026-09-04. A brief that codes
-against an SE row that has not landed names the interface it assumes; the SE plan's own
-brief for that row is the contract, and the first thing the sub-agent does is diff the two
-names and use the SE one.
-
-Rules every brief shares:
-
 - Open with `git merge` of the batch branch. Commit before any long run. Wait for a test
   run with one blocking Bash call; never end a turn with a run going.
 - `git add` only the files the brief names. Never `stash`, `reset`, `checkout --` or
