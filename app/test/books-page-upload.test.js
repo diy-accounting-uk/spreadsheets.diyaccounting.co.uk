@@ -130,3 +130,59 @@ describe("books/drift.js reads a unit for every cell the product declares one fo
     expect(captured.length).toBeGreaterThan(50);
   }, 60000);
 });
+
+describe("drift.js emits unique ids", () => {
+  it("emits unique ids when a hub cell reads an external link and the cell itself also drifts", () => {
+    // Test scenario: a hub cell reads an external link that drifts,
+    // and the hub cell itself also drifts
+    const asReadLayer = [
+      {
+        sheet: "Sheet1",
+        cell: "A1",
+        label: "Test Cell",
+        unit: "money",
+        value: 100, // cached value
+      },
+    ];
+
+    const results = {
+      Sheet1: {
+        A1: 105, // computed value differs from cached
+      },
+    };
+
+    const linkLayer = [
+      {
+        file: "Leaf.xlsx",
+        sheet: "Data",
+        cell: "B5",
+        key: "Leaf.xlsx!Data!B5",
+        hubCache: 50,
+        leafValue: 55, // leaf drifted
+        sources: ["Sheet1!A1"], // the hub cell that reads this leaf
+      },
+    ];
+
+    const classify = () => ({ stale: false, drift: true });
+    const linkCells = {
+      Sheet1: {
+        A1: 105, // same as engine results for the hub cell
+      },
+      "Leaf.xlsx!Data": {
+        B5: 105, // engine result for the leaf cell
+      },
+    };
+
+    const drift = page.DiyaGlDrift.driftFromAsRead(asReadLayer, results, false, {
+      layer: linkLayer,
+      cells: linkCells,
+      hubFile: "Financialaccounts.xlsx",
+      classify: classify,
+    });
+
+    const ids = drift.map((e) => e.id);
+    const uniqueIds = new Set(ids);
+
+    expect(uniqueIds.size).toBe(ids.length);
+  });
+});

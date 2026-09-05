@@ -156,6 +156,7 @@
     var prefix = links && links.hubFile ? links.hubFile + "!" : "";
     var drift = [];
     var staleIds = {};
+    var linkedIds = {};
 
     if (links) {
       for (var i = 0; i < links.layer.length; i++) {
@@ -184,6 +185,7 @@
             drift.push(Object.assign({ computed: engineValue, asRead: entry.hubCache, note: STALE_NOTE, state: "stale" }, common));
           }
           if (verdict.drift) {
+            linkedIds[common.id] = true;
             drift.push(Object.assign({ computed: engineValue, asRead: entry.leafValue, note: entry.key, state: "drift" }, common));
           }
         }
@@ -193,7 +195,7 @@
     for (var j = 0; j < asReadLayer.length; j++) {
       var read = asReadLayer[j];
       var id = prefix + read.sheet + "!" + read.cell;
-      if (staleIds[id]) continue;
+      if (staleIds[id] || linkedIds[id]) continue;
       var computedRaw = results[read.sheet] && results[read.sheet][read.cell];
       if (typeof computedRaw !== "number") continue;
       var computed = canonicalise(computedRaw, read.unit);
