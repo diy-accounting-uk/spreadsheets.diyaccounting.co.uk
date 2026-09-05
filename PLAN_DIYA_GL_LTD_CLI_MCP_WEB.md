@@ -472,6 +472,9 @@ each rebasing on the last.
   no per-cell allowance. T11's A7 corrupts `Sales.xlsx!<first>!O1`, since the hub caches no
   `Apr!H1`.
 
+- **T23** (Haiku, after T20, before SE T7 and Taxi T13 hard-code ids): the Ltd rule ids `ltd-*`
+  become `book-ltd-*`, matching SE's `book-*` and Taxi's `book-taxi-*`, with the tests following.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
