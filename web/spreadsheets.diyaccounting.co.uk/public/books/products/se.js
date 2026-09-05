@@ -1333,6 +1333,24 @@
 
   // ============================== new book and upload ==============================
 
+  // The nine workbooks read back as one book, through the same extractBook
+  // the CLI's --file mode runs: a Self Employed book carries the ledgers,
+  // the employees, the fixed asset register, the HP agreements and the
+  // year's rate tables, all of them off workbooks CELL_MAP names no cell on.
+  // The rate tables come from the app/data file the package's own Admin
+  // sheet declares, which a browser reads through the resource loader rather
+  // than off disk. The upload says where it came from, as every other
+  // upload does.
+  async function bookFromWorkbook(set, lines, ctx) {
+    var book = await ctx.engine.extractBook(set, PRODUCT_ID, lines, ctx.productMod.CELL_MAP, {
+      readRateData: function (fileName) {
+        return ctx.resources.readText("data/" + fileName);
+      },
+    });
+    book.documentInfo.entriesComment = "Uploaded from " + ctx.fileName;
+    return book;
+  }
+
   function buildNewBook(values, ctx) {
     var name = values.businessName;
     return {
@@ -1465,11 +1483,13 @@
       },
     },
     upload: {
-      validate: function () {
-        throw new Error(
-          "A Self Employed package is nine workbooks. This page reads one back from a diya-gl zip or a diya-gl JSON file; reading the workbooks themselves is not on this page yet.",
-        );
+      validate: function (engine, set) {
+        return engine.validateAnchors(set, engine.SE_ANCHORS, "Self Employed");
       },
+      extract: function (engine, set) {
+        return engine.extractLines(set, PRODUCT_ID);
+      },
+      bookFromWorkbook: bookFromWorkbook,
     },
     bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
     drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: { "Admin (Generator Injected)": 1 } },

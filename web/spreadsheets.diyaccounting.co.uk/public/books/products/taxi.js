@@ -935,13 +935,19 @@
   // declares.
   var REGISTER_BLOCK = { sheet: "Fixed Assets", firstRow: 47, lastRow: 51 };
 
-  async function readRegister(cells) {
+  // Taxi Driver is one workbook, so the set an upload opens holds one
+  // workbook, whatever name it arrived under.
+  function theWorkbook(set) {
+    return set.names()[0];
+  }
+
+  async function readRegister(set, file) {
     var assets = [];
     for (var row = REGISTER_BLOCK.firstRow; row <= REGISTER_BLOCK.lastRow; row++) {
-      var cost = await cells.readCell(REGISTER_BLOCK.sheet, "D" + row);
+      var cost = await set.readCell(file, REGISTER_BLOCK.sheet, "D" + row);
       if (typeof cost !== "number" || cost === 0) continue;
-      var serial = await cells.readCell(REGISTER_BLOCK.sheet, "A" + row);
-      var description = await cells.readCell(REGISTER_BLOCK.sheet, "B" + row);
+      var serial = await set.readCell(file, REGISTER_BLOCK.sheet, "A" + row);
+      var description = await set.readCell(file, REGISTER_BLOCK.sheet, "B" + row);
       assets.push({
         assetID: "FA-" + (assets.length + 1),
         description: description === undefined || description === "" ? "Vehicle" : String(description),
@@ -955,16 +961,17 @@
   // A book built from the same cells CELL_MAP names: the four entity fields
   // on the Business Details sheet, plus the register block and the Admin
   // period the calculator needs and no CELL_MAP row carries as a book path.
-  async function bookFromWorkbook(cells, lines, ctx) {
+  async function bookFromWorkbook(set, lines, ctx) {
+    var file = theWorkbook(set);
     var entity = { "diya-gl:product": SCHEMA_NAME, "diya-gl:vatRegistered": false };
     var rows = ctx.productMod.CELL_MAP;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
       if (row[4] !== BUSINESS_DETAILS_SECTION || row[3].indexOf(ENTITY_PATH_PREFIX) !== 0) continue;
-      var text = await cells.readCell(row[0], row[1]);
+      var text = await set.readCell(file, row[0], row[1]);
       if (text !== undefined && text !== "") entity[row[3].slice(ENTITY_PATH_PREFIX.length)] = String(text);
     }
-    var adminStart = await cells.readCell(ADMIN_PERIOD_START_CELL.sheet, ADMIN_PERIOD_START_CELL.cell);
+    var adminStart = await set.readCell(file, ADMIN_PERIOD_START_CELL.sheet, ADMIN_PERIOD_START_CELL.cell);
     var period = periodFromAdminSerial(adminStart) || ctx.period;
     return {
       documentInfo: {
@@ -977,7 +984,7 @@
       },
       entityInformation: entity,
       accounts: ctx.accounts,
-      fixedAssets: await readRegister(cells),
+      fixedAssets: await readRegister(set, file),
     };
   }
 
@@ -1069,11 +1076,11 @@
       },
     },
     upload: {
-      validate: function (engine, xlsxBytes) {
-        return engine.validateTaxiAnchors(xlsxBytes);
+      validate: function (engine, set) {
+        return engine.validateAnchors(set, engine.TAXI_ANCHORS, "Taxi Driver");
       },
-      extract: function (engine, xlsxBytes) {
-        return engine.extractTaxiTransactions(xlsxBytes);
+      extract: function (engine, set) {
+        return engine.extractLines(set, "taxi");
       },
       bookFromWorkbook: bookFromWorkbook,
     },
