@@ -15,6 +15,7 @@ import { resolve, dirname, basename } from "path";
 import { tmpdir } from "os";
 import { randomBytes, createHash } from "crypto";
 import { buildSheetMap, loadSharedStrings, readCellValue, escapeXml } from "./xlsx-parts.js";
+import { refreshLinkCaches } from "./link-caches.js";
 
 // ── Find LibreOffice binary ─────────────────────────────────────────────────
 
@@ -284,149 +285,37 @@ export function xslRoundtrip(soffice, userProfile, workDir, xlsxPath) {
 // cache injected into a workbook it wrote itself, so every recalculation
 // starts again from the pristine file the scenario data was written into.
 
-// Maps the [N] prefix a formula uses to the externalLinkN.xml that defines it.
-// The prefix is the position of the <externalReference> in workbook.xml, one
-// based; the file it names comes from the workbook rels.
-async function buildExternalLinkIndex(zip) {
-  const wbFile = zip.file("xl/workbook.xml");
-  const relsFile = zip.file("xl/_rels/workbook.xml.rels");
-  if (!wbFile || !relsFile) return new Map();
-
-  const wbXml = await wbFile.async("string");
-  const relsXml = await relsFile.async("string");
-
-  const ridToTarget = new Map();
-  for (const [, rid, target] of relsXml.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]*)"/g)) {
-    ridToTarget.set(rid, target);
-  }
-
-  const index = new Map();
-  const referencesBlock = wbXml.match(/<externalReferences>([\s\S]*?)<\/externalReferences>/);
-  if (!referencesBlock) return index;
-
-  let position = 0;
-  for (const [, rid] of referencesBlock[1].matchAll(/<externalReference[^>]*r:id="(rId\d+)"/g)) {
-    position += 1;
-    const target = ridToTarget.get(rid);
-    if (!target) continue;
-    const linkPath = `xl/${target.replace(/^\.?\//, "")}`;
-    index.set(position, linkPath);
-  }
-  return index;
-}
-
-function decodeFormulaText(xml) {
-  return xml
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, "&");
-}
-
-function numToCol(n) {
-  let col = "";
-  while (n > 0) {
-    const rem = (n - 1) % 26;
-    col = String.fromCharCode(65 + rem) + col;
-    n = Math.floor((n - 1) / 26);
-  }
-  return col;
-}
-
-function expandRange(fromRef, toRef) {
-  const [, fromCol, fromRow] = /^([A-Z]+)(\d+)$/.exec(fromRef);
-  const [, toCol, toRow] = /^([A-Z]+)(\d+)$/.exec(toRef);
-  const colStart = Math.min(colToNum(fromCol), colToNum(toCol));
-  const colEnd = Math.max(colToNum(fromCol), colToNum(toCol));
-  const rowStart = Math.min(Number(fromRow), Number(toRow));
-  const rowEnd = Math.max(Number(fromRow), Number(toRow));
-  const cells = [];
-  for (let row = rowStart; row <= rowEnd; row++) {
-    for (let col = colStart; col <= colEnd; col++) cells.push(`${numToCol(col)}${row}`);
-  }
-  return cells;
-}
-
-// External references appear in formulas as [3]Mar!$AB$2 or '[1]Mnth P&L'!A1,
-// singly or as the ends of a range.
-const EXTERNAL_REFERENCE_PATTERN =
-  /'\[(\d+)\]([^']+)'!(\$?[A-Z]{1,3}\$?\d{1,7})(?::(\$?[A-Z]{1,3}\$?\d{1,7}))?|\[(\d+)\]([A-Za-z0-9_.&$ -]+?)!(\$?[A-Z]{1,3}\$?\d{1,7})(?::(\$?[A-Z]{1,3}\$?\d{1,7}))?/g;
-
-// Every external cell this workbook's formulas and defined names address,
-// keyed "<link index>|<sheet name>".
-async function collectExternalCellRefs(zip) {
-  const refs = new Map();
-
-  const add = (linkIndex, sheetName, cellRefs) => {
-    const key = `${linkIndex}|${sheetName}`;
-    if (!refs.has(key)) refs.set(key, new Set());
-    const set = refs.get(key);
-    for (const cellRef of cellRefs) set.add(cellRef);
-  };
-
-  const scan = (text) => {
-    for (const match of decodeFormulaText(text).matchAll(EXTERNAL_REFERENCE_PATTERN)) {
-      const quoted = match[1] !== undefined;
-      const linkIndex = Number(quoted ? match[1] : match[5]);
-      const sheetName = quoted ? match[2] : match[6];
-      const first = (quoted ? match[3] : match[7]).replace(/\$/g, "");
-      const last = (quoted ? match[4] : match[8])?.replace(/\$/g, "");
-      add(linkIndex, sheetName, last ? expandRange(first, last) : [first]);
+// A reader over the sibling workbooks on disk beside `fileName`. Each sibling
+// is opened once and its sheets are read as they are first asked for.
+function siblingReader(workDir, fileName) {
+  const siblings = new Map();
+  const open = (file) => {
+    if (!siblings.has(file)) {
+      siblings.set(
+        file,
+        (async () => {
+          const zip = await JSZip.loadAsync(readFileSync(resolve(workDir, file)));
+          return { zip, sheetMap: await buildSheetMap(zip), sharedStrings: await loadSharedStrings(zip), sheetXml: new Map() };
+        })(),
+      );
     }
+    return siblings.get(file);
   };
-
-  const sheetMap = await buildSheetMap(zip);
-  for (const sheetPath of new Set(sheetMap.values())) {
-    const sheetFile = zip.file(sheetPath);
-    if (!sheetFile) continue;
-    const xml = await sheetFile.async("string");
-    for (const formula of xml.matchAll(/<f[^>]*>([\s\S]*?)<\/f>/g)) scan(formula[1]);
-  }
-
-  const wbFile = zip.file("xl/workbook.xml");
-  if (wbFile) {
-    const wbXml = await wbFile.async("string");
-    for (const name of wbXml.matchAll(/<definedName[^>]*>([\s\S]*?)<\/definedName>/g)) scan(name[1]);
-  }
-
-  return refs;
-}
-
-// The sibling workbook a link points at. A LibreOffice save rewrites the
-// target to a path (absolute, relative or file:// URL), so match on basename.
-function resolveLinkTarget(relsXml, workDir) {
-  for (const [, rawTarget] of relsXml.matchAll(/Target="([^"]+)"/g)) {
-    let target = rawTarget;
-    try {
-      target = decodeURIComponent(target);
-    } catch {
-      // leave the raw target alone if it is not percent-encoded
-    }
-    const fileName = target
-      .replace(/^file:\/+/, "")
-      .split(/[/\\]/)
-      .pop();
-    if (!fileName || !fileName.endsWith(".xlsx")) continue;
-    if (existsSync(resolve(workDir, fileName))) return fileName;
-  }
-  return null;
-}
-
-const ERROR_VALUE_PATTERN = /^#(NULL!|DIV\/0!|VALUE!|REF!|NAME\?|NUM!|N\/A)$/;
-
-function externalCacheCell(cellRef, value) {
-  if (typeof value === "number") return `<cell r="${cellRef}"><v>${value}</v></cell>`;
-  if (typeof value === "boolean") return `<cell r="${cellRef}" t="b"><v>${value ? 1 : 0}</v></cell>`;
-  const text = String(value);
-  if (ERROR_VALUE_PATTERN.test(text)) return `<cell r="${cellRef}" t="e"><v>${text}</v></cell>`;
-  const space = text.trim() === text ? "" : ` xml:space="preserve"`;
-  return `<cell r="${cellRef}" t="str"><v${space}>${escapeXml(text)}</v></cell>`;
-}
-
-function cellSortKey(cellRef) {
-  const [, column, row] = /^([A-Z]+)(\d+)$/.exec(cellRef);
-  return [Number(row), colToNum(column)];
+  return {
+    hasTarget: (file) => file !== fileName && existsSync(resolve(workDir, file)),
+    async hasSheet(file, sheetName) {
+      return (await open(file)).sheetMap.has(sheetName);
+    },
+    async readTargetCell(file, sheetName, cellRef) {
+      const sibling = await open(file);
+      if (!sibling.sheetXml.has(sheetName)) {
+        const sheetPath = sibling.sheetMap.get(sheetName);
+        sibling.sheetXml.set(sheetName, sheetPath ? await sibling.zip.file(sheetPath).async("string") : null);
+      }
+      const xml = sibling.sheetXml.get(sheetName);
+      return xml === null ? null : readCellValue(xml, cellRef, sibling.sharedStrings);
+    },
+  };
 }
 
 // Rewrites every external link cache in `fileName` from the current contents
@@ -437,90 +326,7 @@ async function refreshExternalLinkCaches(workDir, fileName) {
   if (!existsSync(filePath)) return false;
 
   const zip = await JSZip.loadAsync(readFileSync(filePath));
-  const linkIndex = await buildExternalLinkIndex(zip);
-  if (linkIndex.size === 0) return false;
-
-  const referencedCells = await collectExternalCellRefs(zip);
-  let changed = false;
-
-  for (const [index, linkPath] of linkIndex) {
-    const linkFile = zip.file(linkPath);
-    if (!linkFile) continue;
-
-    const linkNumber = linkPath.match(/externalLink(\d+)\.xml$/)?.[1];
-    const relsFile = linkNumber && zip.file(`xl/externalLinks/_rels/externalLink${linkNumber}.xml.rels`);
-    if (!relsFile) continue;
-
-    const targetFile = resolveLinkTarget(await relsFile.async("string"), workDir);
-    if (!targetFile || targetFile === fileName) continue;
-
-    const targetZip = await JSZip.loadAsync(readFileSync(resolve(workDir, targetFile)));
-    const targetSheetMap = await buildSheetMap(targetZip);
-    const targetSharedStrings = await loadSharedStrings(targetZip);
-
-    const linkXml = await linkFile.async("string");
-    // sheetId is the position in <sheetNames>, not the workbook's own sheetId.
-    const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
-
-    const sheetXmlCache = new Map();
-    const readTargetCell = async (sheetName, cellRef) => {
-      if (!sheetXmlCache.has(sheetName)) {
-        const sheetPath = targetSheetMap.get(sheetName);
-        sheetXmlCache.set(sheetName, sheetPath ? await targetZip.file(sheetPath).async("string") : null);
-      }
-      const xml = sheetXmlCache.get(sheetName);
-      return xml === null ? null : readCellValue(xml, cellRef, targetSharedStrings);
-    };
-
-    const rewrites = [];
-    for (const block of linkXml.matchAll(/<sheetData\s+sheetId="(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/sheetData>)/g)) {
-      const sheetId = Number(block[1]);
-      const sheetName = sheetNames[sheetId];
-      if (!sheetName || !targetSheetMap.has(sheetName)) continue;
-
-      const cachedCells = new Map();
-      for (const cell of (block[2] || "").matchAll(/<cell r="([A-Z]+\d+)"[^>]*(?:\/>|>[\s\S]*?<\/cell>)/g)) {
-        cachedCells.set(cell[1], cell[0]);
-      }
-
-      const wanted = new Set([...cachedCells.keys(), ...(referencedCells.get(`${index}|${sheetName}`) || [])]);
-      // The cache groups its cells into <row> elements, exactly like a
-      // worksheet. Emitting bare <cell> elements makes LibreOffice discard
-      // the whole link and compute the formulas as blanks.
-      const rows = new Map();
-      for (const cellRef of [...wanted].sort((a, b) => {
-        const [rowA, colA] = cellSortKey(a);
-        const [rowB, colB] = cellSortKey(b);
-        return rowA - rowB || colA - colB;
-      })) {
-        const value = await readTargetCell(sheetName, cellRef);
-        let cellXml;
-        if (value === null || value === undefined) {
-          if (!cachedCells.has(cellRef)) continue;
-          cellXml = cachedCells.get(cellRef);
-        } else {
-          cellXml = externalCacheCell(cellRef, value);
-        }
-        const [row] = cellSortKey(cellRef);
-        if (!rows.has(row)) rows.set(row, []);
-        rows.get(row).push(cellXml);
-      }
-
-      const rendered = [...rows.entries()].map(([row, cells]) => `<row r="${row}">${cells.join("")}</row>`);
-      const replacement = rendered.length
-        ? `<sheetData sheetId="${sheetId}">${rendered.join("")}</sheetData>`
-        : `<sheetData sheetId="${sheetId}"/>`;
-      if (replacement !== block[0]) rewrites.push({ from: block[0], to: replacement });
-    }
-
-    if (rewrites.length === 0) continue;
-
-    let updated = linkXml;
-    for (const { from, to } of rewrites) updated = updated.replace(from, to);
-    zip.file(linkPath, updated, { date: linkFile.date });
-    changed = true;
-  }
-
+  const { changed } = await refreshLinkCaches(zip, siblingReader(workDir, fileName));
   if (!changed) return false;
 
   const outBuffer = await zip.generateAsync({
