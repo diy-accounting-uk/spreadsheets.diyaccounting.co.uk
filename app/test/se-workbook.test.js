@@ -23,6 +23,8 @@ import JSZip from "jszip";
 import { saveWorkbookFiles, savePackageZip, taxYearFileName } from "../lib/product-workbook.js";
 import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad } from "../lib/generator.js";
 import { applyCellWrites, hasLibreOffice } from "../lib/spreadsheet-runner.js";
+import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "../lib/link-caches.js";
+import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { extractBookFromFile } from "../bin/export.js";
 import { cellWrites, writerSkips } from "../products/se.js";
@@ -56,6 +58,35 @@ function workbookNamed(files, name) {
   return Buffer.from(file.bytes);
 }
 
+const LINK_CACHE_PART = /^xl\/externalLinks\/externalLink\d+\.xml$/;
+
+async function partsExcludingLinkCaches(bytes) {
+  const zip = await JSZip.loadAsync(bytes);
+  const parts = new Map();
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (entry.dir || LINK_CACHE_PART.test(name)) continue;
+    parts.set(name, await entry.async("nodebuffer"));
+  }
+  return parts;
+}
+
+// Two composed workbooks agree on everything but their external link caches.
+// A cache is refreshed from the calculator's own figures, which move
+// whenever anything upstream of the link moves, whether or not this file's
+// own cells changed -- so a file whose cellWrites are untouched can still
+// gain a different cache. Nothing else may move: the template, the
+// year-end sequence and every cell the writer itself filled stay put.
+async function sameExceptLinkCaches(bytesA, bytesB) {
+  const partsA = await partsExcludingLinkCaches(bytesA);
+  const partsB = await partsExcludingLinkCaches(bytesB);
+  if (partsA.size !== partsB.size) return false;
+  for (const [name, contentA] of partsA) {
+    const contentB = partsB.get(name);
+    if (!contentB || Buffer.compare(contentA, contentB) !== 0) return false;
+  }
+  return true;
+}
+
 // The year the writes are dated into is the year the book's own period opens
 // in, which for a self-employment year is the year the tax file declares.
 function targetStartYearOf(book) {
@@ -66,12 +97,20 @@ function targetStartYearOf(book) {
 // the year's rates into the sheets that carry them, the year-end sequence,
 // the scenario's cells, and the recalculate-on-open flag every workbook gets.
 // A difference here means the writer and the CLI have drifted apart.
+//
+// The writer (product-workbook.js's composeFiles) also refreshes every
+// link-bearing file's external link caches from the calculator once every
+// file is composed, so the two paths are mirrored here to the same point:
+// generate.js does not refresh (CI recalculates through LibreOffice instead),
+// so composing "the generate path" and then applying that same refresh is
+// what makes the two comparable byte for byte.
 async function packageTheGeneratePathComposes(book, lines, targetStartYear) {
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates/se/meta.toml"), "utf8"));
   const taxYearName = taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
   const taxData = parseTOML(readFileSync(resolve(APP_DIR, `data/${taxYearName}.toml`), "utf8"));
   const endDate = new Date(taxData.tax_year.end);
-  const writes = cellWrites(diyaGlToScenario(book, lines, "se"), targetStartYear);
+  const scenario = diyaGlToScenario(book, lines, "se");
+  const writes = cellWrites(scenario, targetStartYear);
 
   const files = [];
   for (const templateFile of productMeta.template.files) {
@@ -83,6 +122,12 @@ async function packageTheGeneratePathComposes(book, lines, targetStartYear) {
     buffer = await applyYearEndSequence(buffer, templateFile, sheetsConfig, 0, endDate, taxData.tax_year);
     if (writes[templateFile]) buffer = await applyCellWrites(buffer, writes[templateFile]);
     files.push({ name: templateFile, bytes: await setFullCalcOnLoad(buffer) });
+  }
+
+  const reader = resultsReader(calculateLinkCells(book, lines, "se", taxData, scenario));
+  for (const name of LINK_ORDER.se) {
+    const file = files.find((entry) => entry.name === name);
+    file.bytes = (await refreshWorkbookLinkCaches(file.bytes, reader)).bytes;
   }
   return files;
 }
@@ -127,8 +172,11 @@ describe("the nine workbooks a Self Employed book is written into", () => {
 
 describe("an entry none of the nine workbooks has a cell for", () => {
   // Each of these leaves one entry out of the package and writes everything
-  // else. The files the entry never reached are the same bytes they are
-  // without it, so a skip is a hole of exactly one entry, not a save that
+  // else. A file the entry never reached carries the same content as it
+  // does without it -- except its external link cache, which a file
+  // downstream of the change still gets refreshed with, since the
+  // calculator's figures move even where the writer's own cells do not. So
+  // a skip is a hole of exactly one entry's cellWrites, not a save that
   // quietly stopped.
   async function savedWith(dir, change) {
     const original = bookAt(dir);
@@ -136,9 +184,10 @@ describe("an entry none of the nine workbooks has a cell for", () => {
     const before = await saveWorkbookFiles(original.book, original.lines);
     const after = await saveWorkbookFiles(changed.book, changed.lines);
     const skips = writerSkips(diyaGlToScenario(changed.book, changed.lines, "se"));
-    const unmoved = before.files
-      .filter((file, index) => Buffer.compare(Buffer.from(file.bytes), Buffer.from(after.files[index].bytes)) === 0)
-      .map((file) => file.name);
+    const unmoved = [];
+    for (const [index, file] of before.files.entries()) {
+      if (await sameExceptLinkCaches(Buffer.from(file.bytes), Buffer.from(after.files[index].bytes))) unmoved.push(file.name);
+    }
     return { skips, unmoved };
   }
 
@@ -221,11 +270,14 @@ describe("an entry none of the nine workbooks has a cell for", () => {
     expect(skips[0]).toMatchObject({ kind: "assetDisposal", date: "2025-12-01", code: "fs", amount: 900 });
 
     // The second of the three lands on the computer row, the third on
-    // nothing: the Schedule is the same bytes with it and without it.
+    // nothing: the Schedule's own content is the same with it and without
+    // it, though its cache of Sales's running disposal total (which the
+    // third disposal does move) is refreshed regardless.
     const withTwo = await saveWorkbookFiles(book, seated);
     const withThree = await saveWorkbookFiles(book, oneTooMany);
     const schedule = "Fixedassets.xlsx";
-    expect(Buffer.compare(workbookNamed(withTwo.files, schedule), workbookNamed(withThree.files, schedule))).toBe(0);
+    const scheduleSame = await sameExceptLinkCaches(workbookNamed(withTwo.files, schedule), workbookNamed(withThree.files, schedule));
+    expect(scheduleSame, `${schedule} differs outside its link caches`).toBe(true);
     expect(Buffer.compare(workbookNamed(withTwo.files, "Sales.xlsx"), workbookNamed(withThree.files, "Sales.xlsx"))).not.toBe(0);
   }, 600000);
 
