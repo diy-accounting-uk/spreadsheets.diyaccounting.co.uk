@@ -432,6 +432,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S8 `55add52d`, `317effde`, merged 2026-09-05: `scripts/example-books.json` is the list, the bundle
+  build generates `books/examples.js` (gitignored) as `window.DiyaGlExamples` keyed by product, the
+  shell reads it and the manifest's `examples` field is gone; the id grep finds only the generated
+  file. Taxi T16 and Ltd T10 append their rows to the JSON.
 - The BrickWork master `examples/brickwork-pro/lines.jsonl` keeps date order (`31882a5c`): the
   Ltd non-VAT twin and the BST subset read it in file order while the VAT and SE twins sort, so an
   appended line splits the twins' journal shape. Insert in date order; entry numbers are identifiers,
