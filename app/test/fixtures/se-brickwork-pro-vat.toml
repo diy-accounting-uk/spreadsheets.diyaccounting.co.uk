@@ -1460,6 +1460,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-04"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.may]]
 date = 2025-05-28
@@ -1471,6 +1472,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-05"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.jun]]
 date = 2025-06-28
@@ -1482,6 +1484,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-06"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.jul]]
 date = 2025-07-28
@@ -1493,6 +1496,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-07"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.aug]]
 date = 2025-08-28
@@ -1504,6 +1508,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-08"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.sep]]
 date = 2025-09-28
@@ -1515,6 +1520,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-09"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.oct]]
 date = 2025-10-28
@@ -1526,6 +1532,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-10"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.nov]]
 date = 2025-11-28
@@ -1537,6 +1544,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-11"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.dec]]
 date = 2025-12-28
@@ -1548,6 +1556,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-12"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.jan]]
 date = 2026-01-28
@@ -1559,6 +1568,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-01"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -1570,6 +1580,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-02"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [[payroll.mar]]
 date = 2026-03-28
@@ -1581,6 +1592,7 @@ employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-03"
 accountMainID = "5101"
+taxCode = "1257L"
 
 [stock]
 opening = 3000
