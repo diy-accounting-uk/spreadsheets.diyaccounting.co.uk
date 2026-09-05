@@ -195,8 +195,7 @@
   }
 
   function getExamples() {
-    var generated = window.DiyaGlExamples && window.DiyaGlExamples[active.id];
-    return generated || active.examples || [];
+    return (window.DiyaGlExamples && window.DiyaGlExamples[active.id]) || [];
   }
 
   function exampleKeys() {
@@ -549,8 +548,10 @@
   // prepended fresh into view-root on every render (render() has just
   // replaced the whole subtree, so there is never a stale mount to refresh
   // instead). It is fed R itself, the report the snapshot already carries,
-  // reduced through the product's own headline declaration.
+  // reduced through the product's own headline declaration. A product whose
+  // module declares no headline keys shows no strip.
   function mountHeadlinesStrip() {
+    if (!SNAPSHOT.context.productMod.HEADLINES) return;
     var mountEl = document.createElement("div");
     mountEl.id = "headlines-strip-mount";
     els.viewRoot.insertBefore(mountEl, els.viewRoot.firstChild);
