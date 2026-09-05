@@ -1451,7 +1451,7 @@ describe("CIS both ways on the SE journals", () => {
     const dir = await seBrickworkPackage();
     const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "se");
     expect(cisOf(lines)).toEqual([
-      ["sales", "2026-03-30", "Northgate Contracts", 200],
+      ["sales", "2025-05-14", "Northgate Contracts", 200],
       ["purchases", "2025-05-15", "JB Plastering", 1200],
       ["purchases", "2025-08-15", "JB Plastering", 1000],
       ["purchases", "2025-11-15", "Smith Bricklaying", 1000],
@@ -1465,10 +1465,10 @@ describe("CIS both ways on the SE journals", () => {
 
     const path = resolve(dir, "Sales.xlsx");
     const zip = await JSZip.loadAsync(readFileSync(path));
-    const sheetPath = (await buildSheetMap(zip)).get("Mar");
+    const sheetPath = (await buildSheetMap(zip)).get("May");
     const xml = await zip.file(sheetPath).async("string");
-    expect(xml).toContain(`<c r="W7"><v>200</v></c>`);
-    zip.file(sheetPath, xml.replace(`<c r="W7"><v>200</v></c>`, ""));
+    expect(xml).toContain(`<c r="W6"><v>200</v></c>`);
+    zip.file(sheetPath, xml.replace(`<c r="W6"><v>200</v></c>`, ""));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
     const after = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "se");
