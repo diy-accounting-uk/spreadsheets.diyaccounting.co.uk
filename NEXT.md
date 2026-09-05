@@ -19,8 +19,6 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-1 | CodeQL: `decodeXmlEntities` one-pass; `bookWithField` refuses prototype segments; the two XML-escape helpers escape quotes | none | machine | — | in-flight | `../.worktrees/spreadsheets/cq-1` on `claude/wt-cq-1`; Sonnet merges the batch and reruns its tests |
-| SE-T12 | T12 SE edit and warning proofs in the browser | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t12` on `claude/wt-se-t12`; Sonnet merges the batch and reruns its tests |
 | SE-T19 | The SE page accepts the nine-file package: `upload.validate`, `extractLines`, `drift.js` units for element rows; A7 drift and stale-cache proofs | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t19` on `claude/wt-se-t19`; Sonnet merges the batch and reruns its tests |
 | BST-T17 | `form-layouts/bst.json` replaces `products/bst.js` `SA103S_BOXES`; the BST SA103S renders through `helpers.form`; `CONTEXT_BASIC_SOLE_TRADER.md` SA103S tables and the `D106` comments verified against the sheet | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t17` on `claude/wt-bst-t17`; Sonnet merges the batch and reruns its tests |
 | SE-T17 | `diya-gl-loader` gives SE a depreciation table; `extract-scenarios` keeps `total_motor_net` pence; `fmtMoney` rounds as the canonical value does; `Payment!B4:C15` carry a date unit | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T23 | blocked-to-resume | `../.worktrees/spreadsheets/se-t17` on `claude/wt-se-t17` at `8a0cbbd2`; its A4 shows the `fmt()` rounding |

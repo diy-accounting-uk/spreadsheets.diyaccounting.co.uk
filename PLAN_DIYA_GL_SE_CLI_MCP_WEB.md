@@ -629,7 +629,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   never got the interface disclosure T7's manifest spec names; `Bank.xlsx!Mar!A1`,
   `Cash.xlsx!Mar!A1` and every `VATQtr!G5` are rendered without a key. Board row SE-T21.
 
-- T12 `d09bf253`, `9d11a6dd` on `claude/wt-se-t12`, not yet merged (2026-09-05): `books-se-edits.browser.test.js`
+- T12 `d09bf253`, `9d11a6dd`, merged into `claude/diya-gl-wave-2` at `965827c6` (2026-09-05): `books-se-edits.browser.test.js`
   (17: E1 bank amount, payroll gross through the page's `setLines` seam, undo byte for byte; E2 the
   ten T5 rules on the BrickWork non-VAT book, one `fixme`; the four settlement helpers),
   `applyNamedEdit` taking product and tax data, one `playwright.config.js` line. Full browser 213
