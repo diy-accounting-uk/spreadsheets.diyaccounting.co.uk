@@ -432,6 +432,11 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T14 `edfbba21`, `ebba7cb2`, `97a7beba`, merged 2026-09-05: `changeLineBankAccount` in the edit
+  map (ten edits now), `extractLines` on the engine for the page's SE upload, the SE `--file` and
+  MCP tests with byte identity between `save_workbook` and `savePackageZip`. The settlement test's
+  seven-edit list became an `arrayContaining` on the merge. The SE page's `upload.validate` still
+  refuses an upload; wiring `extractLines` there is T11's page work.
 - T4 `53d653de`, merged 2026-09-05: `HEADLINES` in `se.js` (turnover B9 with grants and interest as
   the second line, cost of sales B17, admin expenses B35, tax `Income Tax!E18`, assets from the
   Schedule's K1, StockControl AB30, the two bank closing balances and closing debtors, fourteen
