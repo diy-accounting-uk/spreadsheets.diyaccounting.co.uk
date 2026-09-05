@@ -2788,7 +2788,7 @@
     "json": "the diya-gl JSON",
   };
 
-  // save.js wraps saveBstWorkbook/saveBstPackageZip -- the same functions
+  // save.js wraps saveWorkbook/savePackageZip -- the same functions
   // the CLI and the MCP server write a workbook through -- and
   // writeDiyaGlZip/writeBookJson -- the same functions export.js writes
   // through -- behind the engine bundle and a fetch-backed resource loader,

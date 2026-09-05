@@ -174,6 +174,13 @@ export const MONTH_ORDER = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "no
 // BST sales accounts (excludes 4006 FA sales)
 export const BST_SALES_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004", "4005"]);
 
+// The Taxi Driver chart's one fare account and the account any income the
+// driver takes outside a fare posts to instead. A Sales tab writes a fare to
+// column E and anything else -- a landlord's rental due, a start-up grant --
+// to column F, so the two accounts never mix on the same total.
+export const TAXI_SALES_ACCOUNT = "4000";
+export const TAXI_OTHER_INCOME_ACCOUNT = "4001";
+
 // SE bank accounts (current + cash only)
 export const SE_BANK_ACCOUNTS = new Set(["1200", "1220"]);
 
@@ -608,14 +615,22 @@ export function monthlySalesTotals(salesLines) {
   return [...months.keys()].sort().map((month) => months.get(month));
 }
 
-// A taxi sheet takes the day's gross takings and nothing else: its Sales rows
-// carry a pre-filled date and one amount cell, with no customer or analysis
-// code to write.
+// A taxi sheet takes the day's gross takings and nothing else, except the two
+// caption rows a week keeps for a landlord's rental due and any other
+// income: those need their customer and account fields to reach their own
+// row rather than a day's, so this keeps the two fields on a line that
+// carries the other-income account or one of the two captions and strips
+// them from a plain fare, whose C column the package leaves blank.
 export function takingsOnlySales(grouped) {
   for (const month of Object.keys(grouped.sales)) {
     grouped.sales[month] = grouped.sales[month].map((txn) => {
+      const isCaptioned = txn.account === TAXI_OTHER_INCOME_ACCOUNT || txn.customer === "Rental due" || txn.customer === "Any other income";
       const takings = { date: txn.date, amount: txn.amount };
       if (txn.mileage !== undefined) takings.mileage = txn.mileage;
+      if (isCaptioned) {
+        takings.customer = txn.customer;
+        takings.account = txn.account;
+      }
       return takings;
     });
   }
@@ -881,8 +896,16 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
 // data carries, which is 18% in one year and 14% in the next, and one
 // fixture is reconciled against every year's package, so a profit stated
 // here would be wrong for every year but its own.
+//
+// Turnover (total_sales) is the fare account alone: a 4001 line is other
+// business income, never a fare, and the P&L keeps the two on separate
+// rows (B5 and B24), so mixing them into one total would anchor the
+// turnover check against a figure the sheet never computes.
 export function taxiExpectedFigures(lines) {
-  const figures = { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
+  const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
+  const figures = { total_sales: computeGrossSales(salesLines.filter((line) => line.accountMainID === TAXI_SALES_ACCOUNT)) };
+  const otherIncomeLines = salesLines.filter((line) => line.accountMainID === TAXI_OTHER_INCOME_ACCOUNT);
+  if (otherIncomeLines.length > 0) figures.total_other_income = computeGrossSales(otherIncomeLines);
   const businessMiles = totalBusinessMiles(lines);
   if (businessMiles) figures.total_mileage = businessMiles;
   return figures;
@@ -1200,6 +1223,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
+  if (expected.total_other_income !== undefined) parts.push(`total_other_income = ${expected.total_other_income}`);
   if (expected.gross_profit !== undefined) parts.push(`gross_profit = ${expected.gross_profit}`);
   if (expected.net_profit !== undefined) parts.push(`net_profit = ${expected.net_profit}`);
   if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);

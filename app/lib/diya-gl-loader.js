@@ -14,6 +14,8 @@ import {
   LTD_SALES_CODE_MAP,
   TAXI_PURCHASE_CODE_MAP,
   TAXI_BST_PURCHASE_CODE_MAP,
+  TAXI_SALES_ACCOUNT,
+  TAXI_OTHER_INCOME_ACCOUNT,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -201,7 +203,7 @@ const PRODUCT_FILTERS = {
   ltd: filterFull,
 };
 
-const PURCHASE_CODE_MAPS = {
+export const PURCHASE_CODE_MAPS = {
   bst: BST_PURCHASE_CODE_MAP,
   taxi: TAXI_PURCHASE_CODE_MAP,
   se: SE_PURCHASE_CODE_MAP,
@@ -235,7 +237,12 @@ export function diyaGlToScenario(book, lines, product) {
   // extract cycle byte for byte. compareLines() only breaks a tie between
   // two lines that share an entryNumber (a book with no workbook history
   // of its own, where entryNumber is absent or repeated).
-  if (product === "bst") {
+  //
+  // Taxi has no such row-position dependency -- a day's row comes from its
+  // date, not from arrival order -- but two lines sharing a day join into
+  // one C cell in whatever order taxi.js's cellWrites() meets them, so the
+  // same sort keeps a Taxi day's joined names in entry order too.
+  if (product === "bst" || product === "taxi") {
     filteredLines = [...filteredLines].sort((a, b) => {
       if (a.sourceJournalID !== b.sourceJournalID) return a.sourceJournalID < b.sourceJournalID ? -1 : 1;
       const aEntry = a.entryNumber;
@@ -272,8 +279,17 @@ export function diyaGlToScenario(book, lines, product) {
   const vatRegistered = entity["diya-gl:vatRegistered"] === true;
 
   let totalSales;
-  if (product === "bst" || product === "taxi") {
+  // A Taxi Driver book's 4001 lines are other business income, never a fare:
+  // the P&L keeps them on their own row (B24) apart from turnover (B5), so
+  // computeGrossSales over every sales line -- which BST's one turnover
+  // account can take -- would fold a grant into the fares figure and leave
+  // nothing for the other-income checks to anchor against.
+  let taxiOtherIncomeLines = [];
+  if (product === "bst") {
     totalSales = computeGrossSales(salesLines);
+  } else if (product === "taxi") {
+    totalSales = computeGrossSales(salesLines.filter((l) => l.accountMainID === TAXI_SALES_ACCOUNT));
+    taxiOtherIncomeLines = salesLines.filter((l) => l.accountMainID === TAXI_OTHER_INCOME_ACCOUNT);
   } else {
     // SE/Ltd: net sales for turnover accounts only. The sheet's own analysis
     // columns strip VAT as a flat gross / 1.2, a business the book declares
@@ -317,6 +333,7 @@ export function diyaGlToScenario(book, lines, product) {
 
   // Build expected values
   const expected = { total_sales: totalSales };
+  if (taxiOtherIncomeLines.length > 0) expected.total_other_income = computeGrossSales(taxiOtherIncomeLines);
   const mileageLines = carriesMileage === "all" ? filteredLines : filteredLines.filter((l) => l.sourceJournalID === "purchases");
   const businessMiles = carriesMileage === "none" ? 0 : totalBusinessMiles(mileageLines);
   if (businessMiles) expected.total_mileage = businessMiles;
@@ -619,6 +636,7 @@ export function extractTaxDataFromBook(book, product) {
       // class1* fields are never a fallback for them.
       class2_rate: ni.class2WeeklyRate ?? 0,
       class2_weekly_rate: ni.class2WeeklyRate ?? 0,
+      class2_small_profits_threshold: ni.class2SmallProfitsThreshold,
       class4_lower_rate: ni.class4MainRate ?? 0.06,
       class4_lower_limit: ni.class4LowerProfits ?? 12570,
       class4_upper_rate: ni.class4UpperRate ?? 0.02,
