@@ -20,9 +20,10 @@ leaves a CIS creditor on the closing balance sheet.
 
 The business is on both sides of the scheme. May's invoice to Northgate
 Contracts is sub-contract work of its own, so that contractor withholds 20%
-of it and June's receipt settles the month net of the deduction. That
-deduction is what the self-employment return takes off the tax bill at box 81
-and what the company's own CIS bill is reduced by.
+of it and June's receipt settles the month net of the deduction. The company
+sets that 200 against what it owes HMRC, so the closing CIS creditor is 600
+rather than February's 800; on the sole trader books the same figure is what
+the self-employment return takes off the tax bill.
 
 ## Key Figures
 
