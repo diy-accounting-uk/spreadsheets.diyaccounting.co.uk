@@ -456,6 +456,10 @@ each rebasing on the last.
   raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
   payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
 
+- T22 `d98a634c`, merged 2026-09-05: `runningCosts.label` and `tax.label` in `headlines.js`; Ltd
+  declares "Administrative expenses" and "Corporation tax"; BST byte-identical; the strip needed no
+  change.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially

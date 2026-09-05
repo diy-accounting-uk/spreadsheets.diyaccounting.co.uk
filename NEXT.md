@@ -56,7 +56,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T9 | Taxi T9 extraction map and the sidecar's Taxi baseline | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2, TX-T6 | blocked-to-start | Sonnet, wave 6 |
 | TX-T10 | Taxi T10 anchor table in `anchors/taxi.js` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 6, before LT-T2 in `books-interchange.js` |
 | TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S6 | blocked-to-start | Sonnet, wave 5 |
-| TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T6, LT-T22 | blocked-to-start | Sonnet, wave 5 |
+| TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T6 | blocked-to-start | Sonnet, wave 5 |
 | TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S7, TX-T6 | blocked-to-start | Opus, wave 6 |
 | TX-T14d | Taxi T14 design: the takings view brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable, `.worktrees/spreadsheets/taxi-t14-design` |
 | TX-T14 | Taxi T14 the takings view: year, month, week, day, fares | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T14d, TX-T13 | blocked-to-start | Fable, wave 7 |
@@ -85,7 +85,6 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, TX-T18 | blocked-to-start | Haiku, wave 11 |
 | LT-T20 | Ltd T20 the checks' remainders: TXN-0155's counter leg in the master, E37 and D91 ungated, journal legs exempt from duplicates, results into `bookchecks.json` and the MCP report, every declared dividend loaded | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 3, `.worktrees/spreadsheets/ltd-t20` |
 | LT-T21 | Ltd T21 the CT600 sheet's capital allowance boxes read the working sheet's empty column H; point AA177, AL177 and AA179 at column I in the template and regenerate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Sonnet, with R6; a template change, one reviewed binary commit |
-| LT-T22 | Ltd T22 per-product labels for the running-costs and tax bridge slices (`runningCosts.label`, `tax.label`), so Ltd's pie says Administrative expenses and Corporation tax | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 4, `.worktrees/spreadsheets/ltd-t22` |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
 
 ## Plans not tracked here
