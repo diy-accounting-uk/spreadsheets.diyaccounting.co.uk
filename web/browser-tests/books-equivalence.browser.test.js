@@ -90,7 +90,7 @@ async function sweepPage(page, exampleButton) {
 // XML-escaped in workbook.xml, so the lookup escapes before it matches.
 
 function xmlEscapeAttr(text) {
-  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 async function sheetPathByName(zip, sheetName) {
