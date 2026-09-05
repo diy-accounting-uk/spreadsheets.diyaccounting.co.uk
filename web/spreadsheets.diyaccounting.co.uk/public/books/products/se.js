@@ -903,14 +903,14 @@
       '<div class="panel-card"><h3>The schedule\'s own totals</h3>' +
       helpers.kvRows(scheduleRows) +
       "</div>" +
-      '<div class="panel-card"><h3>Hire purchase</h3>' +
+      '<div class="panel-card"><h3>Hire purchase</h3><div class="se-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
       agreements +
       '</tbody><tfoot><tr class="total"><th colspan="2">Long-term creditor</th><td class="num"' +
       cellRk(snap, helpers, HP_SHEET, HP_TOTAL_CELL) +
       ">" +
       helpers.fmtMoney(cellValue(snap.results, HP_SHEET, HP_TOTAL_CELL)) +
-      '</td><td colspan="4"></td></tr></tfoot></table></div>'
+      '</td><td colspan="4"></td></tr></tfoot></table></div></div>'
     );
   }
 
@@ -1178,10 +1178,10 @@
 
     return (
       "<h2>Payroll</h2>" +
-      '<div class="panel-card"><h3>Every payslip</h3>' +
+      '<div class="panel-card"><h3>Every payslip</h3><div class="se-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
       body +
-      "</tbody></table></div>" +
+      "</tbody></table></div></div>" +
       renderWagesInterface(snap, helpers) +
       renderPayeSchedule(snap, helpers)
     );
@@ -1253,10 +1253,10 @@
       })
       .join("");
     return (
-      '<div class="panel-card"><h3>PAYE remittance schedule</h3>' +
+      '<div class="panel-card"><h3>PAYE remittance schedule</h3><div class="se-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Month</th><th>Tax month end</th><th>Due</th><th>National Insurance</th><th>Income Tax</th><th>Total payable</th></tr></thead><tbody>' +
       body +
-      "</tbody></table></div>"
+      "</tbody></table></div></div>"
     );
   }
 
