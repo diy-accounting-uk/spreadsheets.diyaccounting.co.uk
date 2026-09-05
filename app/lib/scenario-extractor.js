@@ -847,13 +847,17 @@ export function buildGrouped(
       if (purchaseMileage !== undefined) purchase.mileage = purchaseMileage;
       purchases[month].push(purchase);
     } else if (line.sourceJournalID === "bank") {
+      // A line with neither "D" nor "C" cannot be written to a receipts or
+      // payments block -- there is no third block to put it in -- so it is
+      // left out of the calculated bank book here. book-bank-line-has-side
+      // (book-checks/se.js) reads the raw lines independently of this
+      // grouping and is what tells the reader their money went missing;
+      // throwing here would stop that check from ever running.
+      const debitCredit = line.debitCreditCode;
+      if (debitCredit !== "D" && debitCredit !== "C") continue;
       const acctId = line["diya-gl:bankAccountID"];
       if (!bank[acctId]) bank[acctId] = {};
       if (!bank[acctId][month]) bank[acctId][month] = [];
-      const debitCredit = line.debitCreditCode;
-      if (debitCredit !== "D" && debitCredit !== "C") {
-        throw new Error(`Bank line ${line.entryNumber} has no debitCreditCode; cannot tell a receipt from a payment`);
-      }
       bank[acctId][month].push({
         date: line.postingDate,
         source: line.detailComment,

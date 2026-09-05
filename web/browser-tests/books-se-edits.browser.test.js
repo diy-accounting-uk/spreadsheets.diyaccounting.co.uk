@@ -406,18 +406,7 @@ test.describe("DIYA-GL Self Employed page — E2: each rule flips on its own cra
     await expect.poll(() => ruleState(page, id)).toBe("pass");
   });
 
-  // Defect (app/lib/scenario-extractor.js:824): a bank line whose
-  // debitCreditCode is neither "D" nor "C" throws out of diyaGlToScenario
-  // ("Bank line ... has no debitCreditCode; cannot tell a receipt from a
-  // payment") before book-checks.js ever runs, on every load and every
-  // commit alike -- the calculator, not the check, is what a reader meets.
-  // shell.js's commit() catches the throw and refuses the whole edit (a
-  // toast, the book unchanged), so book-bank-line-has-side can never
-  // actually surface in the inspector: the one input it exists to flag
-  // never reaches it. The check should get first look at an offending line
-  // the way book-bank-code-analysed's consequence text describes ("the
-  // package cannot be written" is the fix-it's job to say, not a crash).
-  test.fixme("book-bank-line-has-side: a bank entry that is neither a receipt nor a payment", async ({ page }) => {
+  test("book-bank-line-has-side: a bank entry that is neither a receipt nor a payment", async ({ page }) => {
     await openSeNonVat(page);
     const id = "book-bank-line-has-side";
     const before = await ruleStates(page);
