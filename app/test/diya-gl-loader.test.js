@@ -181,6 +181,17 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
     expect(brickScenario.charges).toBeUndefined();
     expect(brickFixture.charges).toBeUndefined();
   });
+
+  it("dividend.declared sums every voucher a book declares, dated the first one's own board meeting", () => {
+    const { book, lines } = loadDiyaGlData(FULL_DATA);
+    expect(book.dividends).toHaveLength(1);
+    book.dividends = [
+      { boardMeetingDate: book.dividends[0].boardMeetingDate, amount: book.dividends[0].amount },
+      { boardMeetingDate: new Date("2026-06-30"), amount: 4000 },
+    ];
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    expect(scenario.dividend).toEqual({ board_meeting: fullFixture.dividend.board_meeting, declared: fullFixture.dividend.declared + 4000 });
+  });
 });
 
 describe("extractTaxDataFromBook", () => {
