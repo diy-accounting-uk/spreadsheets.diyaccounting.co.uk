@@ -690,31 +690,61 @@ export function fixedAssetAdditions(lines, purchaseCodeMap, capitalCode) {
  * the line's own accountMainID on each entry, which cellWrites() writes to
  * the Payslips ACCOUNT_ID_COLUMN so a payroll row posted to a non-default
  * account (a director paid outside PAYE, say) keeps that account on export
- * instead of falling back to the sheet's default payroll account.
+ * instead of falling back to the sheet's default payroll account. The same
+ * flag carries each entry's taxCode, looked up on the book's employees
+ * table the way diyaGlToScenario (diya-gl-loader.js) looks it up -- a
+ * payroll line names its employee by id or by name, so both are tried.
+ *
+ * A month's entries are ordered by entryNumber. The master's payroll lines
+ * happen to already read that way, but nothing enforces it -- the subset
+ * lines.jsonl a caller regenerates from is canonicalised (sorted by posting
+ * date, journal, then account) before it reaches disk, which can interleave
+ * a month's employees by account code. Sorting here, on the same key
+ * diyaGlToScenario sorts by, keeps the two paths agreeing regardless of
+ * which order the input lines arrive in.
  *
  * @param {Array} lines - parsed lines.jsonl entries (any journal)
  * @param {Object} [options]
- * @param {boolean} [options.carriesSourceFields] - carry each line's own accountMainID
+ * @param {boolean} [options.carriesSourceFields] - carry each line's own accountMainID and taxCode
+ * @param {Array} [options.employees] - the book's employees table, for the taxCode lookup
  * @returns {Object} { apr: [...], may: [...], ... }, {} when none present
  */
-export function buildPayroll(lines, { carriesSourceFields = false } = {}) {
-  const payroll = {};
+export function buildPayroll(lines, { carriesSourceFields = false, employees = [] } = {}) {
+  const taxCodeByEmployee = new Map();
+  for (const employee of employees) {
+    if (!employee.taxCode) continue;
+    taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+    taxCodeByEmployee.set(employee.name, employee.taxCode);
+  }
+  const linesByMonth = {};
   for (const line of lines) {
     if (line.sourceJournalID !== "payroll") continue;
     const month = getMonthKey(line.postingDate);
-    if (!payroll[month]) payroll[month] = [];
-    const entry = {
-      date: line.postingDate,
-      name: line.detailComment,
-      grossPay: line["diya-gl:grossPay"],
-      incomeTax: line["diya-gl:incomeTax"],
-      employeeNI: line["diya-gl:employeeNI"],
-      employerNI: line["diya-gl:employerNI"],
-      netPay: line["diya-gl:netPay"],
-      reference: line.documentReference,
-    };
-    if (carriesSourceFields) entry.accountMainID = line.accountMainID;
-    payroll[month].push(entry);
+    if (!linesByMonth[month]) linesByMonth[month] = [];
+    linesByMonth[month].push(line);
+  }
+  const payroll = {};
+  for (const [month, monthLines] of Object.entries(linesByMonth)) {
+    payroll[month] = [...monthLines]
+      .sort((a, b) => (a.entryNumber < b.entryNumber ? -1 : a.entryNumber > b.entryNumber ? 1 : 0))
+      .map((line) => {
+        const entry = {
+          date: line.postingDate,
+          name: line.detailComment,
+          grossPay: line["diya-gl:grossPay"],
+          incomeTax: line["diya-gl:incomeTax"],
+          employeeNI: line["diya-gl:employeeNI"],
+          employerNI: line["diya-gl:employerNI"],
+          netPay: line["diya-gl:netPay"],
+          reference: line.documentReference,
+        };
+        if (carriesSourceFields) {
+          entry.accountMainID = line.accountMainID;
+          const taxCode = taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment);
+          if (taxCode) entry.taxCode = taxCode;
+        }
+        return entry;
+      });
   }
   return payroll;
 }
@@ -1083,6 +1113,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`netPay = ${e.netPay}`);
         if (e.reference) parts.push(`reference = "${escapeTomlString(e.reference)}"`);
         if (e.accountMainID) parts.push(`accountMainID = "${escapeTomlString(e.accountMainID)}"`);
+        if (e.taxCode) parts.push(`taxCode = "${escapeTomlString(e.taxCode)}"`);
         parts.push("");
       }
     }

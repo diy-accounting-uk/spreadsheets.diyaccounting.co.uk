@@ -593,6 +593,76 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   (`Profit Forecast!C41` 119,957.52 against .53); `Payslips.xlsx!Payment!B4:C15` carry unit `money`
   for day serials.
 
+- SE-T16b `7d45b58c`, `870471b4`, `019c3877`, merged 2026-09-05: `L111` (36) and `L116` (37) already
+  printed the right numbers; the captions were wrong. Box 36's caption is a live formula reading
+  the tax year from `Admin!G2` and the small profits threshold from the new `Admin!N16`, which
+  `generator.js` writes from `class2_small_profits_threshold` and `calculators/se.js` echoes (one
+  `CELL_MAP` row, one cross-check); box 37 took the Class 4 exemption text; the deferment cells
+  `R116`, `U116`, `N118` are blank. Three zip parts changed. `calcChain.xml` untouched (every
+  generated package sets `fullCalcOnLoad`). R5 dispatched again; the refresh adds the "NI Class 2
+  Small Profits Threshold" row to `admin-generator-injected.md` in every SE report.
+
+- SE-T18 `400e27c1`, `43709145`, `94aec6a3`, merged 2026-09-05: no period frame exists for SE. `se.js`
+  `cellWrites` copies dates through (Ltd's shifts), and S2 at 2027-04-05 already reproduces S3's
+  Admin and VAT calendar serials; the shift route changed nothing and broke four date cells. The 46
+  `Vat.xlsx` and five `section/vat-returns/` keys differ because `extract-scenarios.js:148` drops
+  every `diya-gl:vatPeriodEnd` line from the subset books and `diyaGlToScenario` has no straddling
+  path, so S3 carries the fixture's straddling entries and S2 cannot. A3 now adds what those entries
+  contribute through `buildVatinterface`/`vatReturnBoxes` (proved breakable) and names 52 keys, all
+  cleared by the generate-se refresh (50 `Payslips.xlsx`, `Admin!L16` and its section row).
+  `se-period-frame.test.js` (4). `report-serializer.js:191`: a section row naming a source cell
+  carries the cell's value, so `taxable-income` no longer loses `canonicalForUnit`'s working
+  precision. For Ltd T11: frame S2 only where the product's own `cellWrites` shifts; Ltd's `full`
+  book has the same straddling gap and can reuse the contribution shape. The straddling gap is a
+  product defect too (the SE page shows VAT Q5 as nil for a straddling book): board row SE-T20,
+  with `report-generator.js:19` `reportAmount`'s one-step rounding and `generate-se.yml:251`'s
+  scorecard comment.
+
+- T10 `22b0e271`, `994ab82b`, `e1952382`, merged 2026-09-05: the render-coverage sweep parameterised
+  by product, a second describe over `se.html` and the three SE examples (the two BrickWork rows
+  added to `scripts/example-books.json`), `render-unrepresentable/se.json`. The sweep opens
+  `#pl-months-toggle` before collecting and passes `--years se-2025-2026` to S2, since `--data`
+  alone reads no tax year off the book and drops 29 checks the page renders. Eight cases green.
+  The declared list holds 958 keys against BST's 35: the payroll calendar, the Payslips print
+  sheet and its checks, `Salesinvoice.xlsx`, the raw month-tab cells, the report-only `section/*`
+  duplicates, and 248 `Vatinterface` cells and checks declared as a stopgap because the VAT view
+  never got the interface disclosure T7's manifest spec names; `Bank.xlsx!Mar!A1`,
+  `Cash.xlsx!Mar!A1` and every `VATQtr!G5` are rendered without a key. Board row SE-T21.
+
+- T12 `d09bf253`, `9d11a6dd` on `claude/wt-se-t12`, not yet merged (2026-09-05): `books-se-edits.browser.test.js`
+  (17: E1 bank amount, payroll gross through the page's `setLines` seam, undo byte for byte; E2 the
+  ten T5 rules on the BrickWork non-VAT book, one `fixme`; the four settlement helpers),
+  `applyNamedEdit` taking product and tax data, one `playwright.config.js` line. Full browser 213
+  green. Found: `scenario-extractor.js:824` throws on a bank line whose side is neither D nor C
+  before the book checks run, so `book-bank-line-has-side` never surfaces (`shell.js` `commit()`
+  refuses the edit); `edits.js:128` `changeAmount` moves no payroll gross because
+  `diya-gl-loader.js:466` reads `diya-gl:grossPay` first; `checkCompliance` shows four spurious
+  mismatches on a book with no `[expected]` table that nets to a loss (board rows SE-T26, SE-T27).
+- SE-T17 six commits to `d39a96f2` on `claude/wt-se-t17`, not yet merged: the loader derives every
+  product's depreciation table from the book's tax year (new `app/lib/tax-year.js`), throwing when
+  no file covers the period; `extract-scenarios.js` keeps `total_motor_net` pence (the advanced
+  fixture 6434 to 6434.25); `fmtMoney` runs through `canonicalForUnit` (new
+  `app/lib/money-canonical.js` on the engine); `Payment!B4:C15` carry unit `date`. 4993 Node tests
+  green. Its corrected A4 shows one red: `products/{se,bst,taxi,ltd}.js` `fmt()` formats section
+  values on the raw double (`se.js:1650`, `bst.js:382`, `taxi.js:539`, `ltd.js:2125`), board row
+  SE-T23, the precursor of merging this.
+- SE-T19 `87a0e211`, `07c558fb` on `claude/wt-se-t19`, not yet merged: `data.js` sniffs every upload
+  through the engine's `sniffProduct` over one workbook set; a lone package part raises
+  `PackagePartError` by name; the three products' `upload` hooks take the set; `extractBook` takes
+  a `readRateData` reader so the browser rebuilds `book.tax` (`taxTablesForPackage` async);
+  `drift.js` reads units from `cellLabels()`; A7 is four cases, E3 runs the package lap, E4 asserts
+  the part message; `books-page-upload.test.js` (6). Browser 202 green. Found: `xlsx-exporter.js`
+  numbers each extracted journal from `EXP-0001`, so an uploaded SE package's 696 lines carry 511
+  numbers and only purchases rows can be edited (board row SE-T24); `drift.js:147` emits two entries
+  with one id when a link cell drifts and the hub cell also reads short (SE-T25).
+- PR #60 fixes, merged 2026-09-05: the A3 cases disagreed at source, not on stale examples. The
+  fixture path (`buildPayroll`) and the engine now both order a month's payroll by entry number and
+  carry each row's tax code (six fixtures regenerated); the loader's `?? 0` Class 2 fallback
+  throws; each generate workflow's examples artifact and commit carry only its own
+  `examples/<product>-latest/`, because the whole-directory artifact let a later product's commit
+  put stale copies of the others' packages back. The SE sidecar tests build their package from the
+  template, so a template change no longer reads the committed example as overtyped.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row

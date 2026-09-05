@@ -145,10 +145,20 @@ function buildCellIndexByLabel(labels, cellEntries) {
   return byLabel;
 }
 
+// A printed row and the cell it reprints agree at the penny; the sheet's
+// cached float can carry noise past that (417.300000000001 against 417.3).
+function sameFigure(a, b) {
+  if (a === b) return true;
+  const x = Number(a);
+  const y = Number(b);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+  return Math.round(x * 100) === Math.round(y * 100);
+}
+
 function takeSourceCell(byLabel, consumed, label, value) {
   const candidates = (byLabel.get(label) || []).filter((entry) => !consumed.has(entry.key));
   if (candidates.length === 0) return null;
-  const sameValue = candidates.filter((entry) => entry.value === value);
+  const sameValue = candidates.filter((entry) => sameFigure(entry.value, value));
   const chosen = sameValue.length === 1 ? sameValue[0] : candidates.length === 1 ? candidates[0] : null;
   if (!chosen) return null;
   consumed.add(chosen.key);
@@ -189,7 +199,14 @@ function sectionRowEntries(sections, byLabel, consumed, labels) {
       occurrences.set(rowSlug, seen);
       const key = `section/${sectionSlug}/${rowSlug}${seen > 1 ? `#${seen}` : ""}`;
       const source = takeSourceCell(byLabel, consumed, plainLabel(row.label), value);
-      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value };
+      // A row that reprints a cell carries that cell's own value, not the
+      // print: the print is rounded straight to the penny, and a figure a
+      // hair under a half-penny rounds one way out of the sheet's cached
+      // float and the other way out of the engine's, so two runs of the same
+      // figure would disagree at a key the cell's own entry compares clean.
+      // The bridge rows already carry their raw number for the same reason.
+      // The printed value stands for a row that names no cell.
+      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value: source ? source.value : value };
       if (source) entry.source = source.key;
       entries.push(entry);
     }
