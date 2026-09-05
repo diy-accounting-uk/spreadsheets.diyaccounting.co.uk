@@ -457,6 +457,11 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   £7,000 to £7,420 in the calculator and the pinned tests. `taxi-sp-sixty.test.js` and the committed
   SP Sixty reports move with it at R3.
 
+- T14 design `9b4b46e4`, 2026-09-05: the T14 coding brief rewritten to implementation depth. It
+  corrects the takings view text: "Add rental" dates the line the week's last day, not its Sunday;
+  the year table carries no Miles column; and T8's `book-taxi-fare-miles` helper gains
+  `field: "miles"` in T14's scope so the shell's focus route reaches it.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
