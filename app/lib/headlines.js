@@ -86,15 +86,16 @@ function resolveSecondLine(report, spec) {
 // tax and NI, whatever extra slices the product declares (Ltd's
 // dividends), then whatever remains. A negative remainder is a loss year;
 // a negative slice is a refund year. Either way a pie cannot show it
-// honestly, so the page draws a bar instead. The running-costs and tax
-// slices carry the label their own declaration names (BST's "Running
-// costs" and "Tax and NI" by default; Ltd's "Administrative expenses" and
-// "Corporation tax", the words its own sheet uses).
-function turnoverPie(turnover, costOfSales, runningCosts, runningCostsLabel, tax, taxLabel, pieExtra = []) {
+// honestly, so the page draws a bar instead. The cost-of-sales, running-
+// costs and tax slices carry the label their own declaration names (the
+// default "Cost of sales" and "Tax and NI"; Ltd's "Administrative expenses"
+// and "Corporation tax", the words its own sheet uses; Taxi's "vehicle
+// costs", since its cost of sales is the vehicle-cost total).
+function turnoverPie(turnover, costOfSales, costOfSalesLabel, runningCosts, runningCostsLabel, tax, taxLabel, pieExtra = []) {
   const extraTotal = pieExtra.reduce((total, slice) => total + slice.value, 0);
   const kept = turnover.value - costOfSales.value - runningCosts.value - tax.value - extraTotal;
   const slices = [
-    { label: "Cost of sales", value: costOfSales.value, from: costOfSales.from },
+    { label: costOfSalesLabel, value: costOfSales.value, from: costOfSales.from },
     { label: runningCostsLabel, value: runningCosts.value, from: runningCosts.from },
     { label: taxLabel, value: tax.value, from: tax.from },
     ...pieExtra.map((slice) => ({ label: slice.label, value: slice.value, from: slice.from })),
@@ -116,11 +117,27 @@ function turnoverPie(turnover, costOfSales, runningCosts, runningCostsLabel, tax
   return { mode: "pie", slices: withShares };
 }
 
+// A declared list of `[key, label]` pairs, each read as a required cell and
+// labelled for the outgoings pie. Used for a product's `expenseLines` (the
+// pie's own list, added beside its automatic Cost of sales slice) and for
+// `pieLines` (see `outgoingsPie` below).
+function resolveKeyLabelPairs(report, pairs = []) {
+  return pairs.map(([key, label]) => {
+    const figure = readOneCell(report, key, false);
+    return { label, value: figure.value, from: figure.from };
+  });
+}
+
 // The largest spending categories, up to five, with everything else folded
 // into one "Other" slice. Zero-value categories never reach the candidate
 // list, so a book with nothing in a category never shows an empty slice.
-function outgoingsPie(costOfSales, expenseLines, outgoingsTotal) {
-  const candidates = [{ label: "Cost of sales", value: costOfSales.value, from: costOfSales.from }, ...expenseLines].filter(
+// `pieLines`, when declared, replaces the whole candidate list -- Taxi's
+// cost of sales is itself a bundle of the sheet's own vehicle-cost lines
+// (fuel, car hire, ...), so a product that wants those shown individually
+// declares `pieLines` with the full breakdown instead of one combined
+// "Cost of sales" slice, and no `expenseLines` at all.
+function outgoingsPie(costOfSales, expenseLines, outgoingsTotal, pieLines) {
+  const candidates = (pieLines ?? [{ label: "Cost of sales", value: costOfSales.value, from: costOfSales.from }, ...expenseLines]).filter(
     (candidate) => candidate.value !== 0,
   );
   const ranked = [...candidates].sort((a, b) => b.value - a.value);
@@ -141,6 +158,35 @@ function outgoingsPie(costOfSales, expenseLines, outgoingsTotal) {
   };
 }
 
+// A cell whose value is words, not a number -- Taxi's route cell, which the
+// sheet leaves blank (so R carries no entry for it at all) on the
+// actual-costs route. Read if present; absent reads as no value and an
+// empty trail, never an error, since a blank route cell is what the
+// sheet's own formula produces on that route.
+function readOneTextCell(report, key) {
+  const entry = report.values.find((value) => value.key === key);
+  return entry ? { value: entry.value, from: [key] } : { value: undefined, from: [] };
+}
+
+// Taxi's vehicle-comparison tile: the miles driven, the mileage allowance
+// claimed, what the vehicle actually cost to run, the sheet's own
+// comparison figure and which route it took, plus whichever of vehicle
+// costs or the mileage allowance the P&L actually charged. Present only
+// when the product declares `vehicle` and its miles cell is above zero --
+// a book that keeps no mileage log has nothing to compare.
+function resolveVehicle(report, spec) {
+  if (!spec) return undefined;
+  const miles = readOneCell(report, spec.miles, false);
+  if (miles.value <= 0) return undefined;
+  const allowance = readOneCell(report, spec.allowance, false);
+  const running = readOneCell(report, spec.running, false);
+  const compared = readOneCell(report, spec.compared, false);
+  const charged = readOneCell(report, spec.charged, false);
+  const routeText = readOneTextCell(report, spec.route);
+  const route = routeText.value === "MILEAGE ALLOWANCE" ? "mileage" : "actual";
+  return { miles, allowance, running, compared, charged, route };
+}
+
 /**
  * The year-at-a-glance strip's tiles and pies, derived from R and a
  * product's HEADLINES declaration (see app/products/bst.js).
@@ -157,10 +203,17 @@ function outgoingsPie(costOfSales, expenseLines, outgoingsTotal) {
  *   `extra` (`[{label, key}]`, summed into the assets total). tax and
  *   assets may each add `secondLine` (one `{label, key}`, shown beside that
  *   tile's own value, outside every sum -- Ltd's tax-outstanding and
- *   net-assets figures). runningCosts and tax may each add `label` (a
- *   string, the turnover-pie slice's own name -- default "Running costs"
- *   and "Tax and NI"; Ltd names its sheet's own words, "Administrative
- *   expenses" and "Corporation tax"). All default to empty/absent.
+ *   net-assets figures). costOfSales, runningCosts and tax may each add
+ *   `label` (a string, the turnover-pie slice's own name -- default "Cost
+ *   of sales", "Running costs" and "Tax and NI"; Ltd names its sheet's own
+ *   words, "Administrative expenses" and "Corporation tax"; Taxi names its
+ *   own, "vehicle costs"). A product may replace `expenseLines` with
+ *   `pieLines` (the same `[key, label]` shape) to give the outgoings pie
+ *   its full candidate list directly, with no separate combined Cost of
+ *   sales slice -- Taxi's vehicle-cost breakdown. A product may also
+ *   declare `vehicle` (`{miles, allowance, running, compared, route,
+ *   charged}`, each a cell key) for Taxi's mileage-versus-actual-costs
+ *   tile. All default to empty/absent.
  * @returns {{tiles: Object, pies: Object, keys: Object}}
  */
 export function headlinesFromReport(report, declaration) {
@@ -174,6 +227,7 @@ export function headlinesFromReport(report, declaration) {
   const turnoverPieExtra = resolveLines(report, declaration.turnover.pieExtra);
 
   const costOfSales = readKey(report, declaration.costOfSales);
+  const costOfSalesLabel = declaration.costOfSales.label ?? "Cost of sales";
   const runningCosts = readKey(report, declaration.runningCosts);
   const runningCostsLabel = declaration.runningCosts.label ?? "Running costs";
   const outgoingsTotal = addFigures(costOfSales, runningCosts);
@@ -200,10 +254,10 @@ export function headlinesFromReport(report, declaration) {
   const tax = taxSecondLine ? { ...taxFigure, secondLine: taxSecondLine } : taxFigure;
   const taxLabel = declaration.tax.label ?? "Tax and NI";
 
-  const expenseLines = declaration.expenseLines.map(([key, label]) => {
-    const figure = readOneCell(report, key, false);
-    return { label, value: figure.value, from: figure.from };
-  });
+  const expenseLines = resolveKeyLabelPairs(report, declaration.expenseLines);
+  const pieLines = declaration.pieLines ? resolveKeyLabelPairs(report, declaration.pieLines) : undefined;
+
+  const vehicle = resolveVehicle(report, declaration.vehicle);
 
   const tiles = {
     turnover,
@@ -211,10 +265,20 @@ export function headlinesFromReport(report, declaration) {
     assets: { total: assetsTotal, writtenDown, stock, debtors },
     tax,
   };
+  if (vehicle) tiles.vehicle = vehicle;
 
   const pies = {
-    turnover: turnoverPie(turnoverFigure, costOfSales, runningCosts, runningCostsLabel, taxFigure, taxLabel, turnoverPieExtra),
-    outgoings: outgoingsPie(costOfSales, expenseLines, outgoingsTotal),
+    turnover: turnoverPie(
+      turnoverFigure,
+      costOfSales,
+      costOfSalesLabel,
+      runningCosts,
+      runningCostsLabel,
+      taxFigure,
+      taxLabel,
+      turnoverPieExtra,
+    ),
+    outgoings: outgoingsPie(costOfSales, expenseLines, outgoingsTotal, pieLines),
   };
 
   const keys = {
@@ -223,6 +287,7 @@ export function headlinesFromReport(report, declaration) {
     "headline/assets": assetsTotalFigure.value,
     "headline/tax": taxFigure.value,
   };
+  if (vehicle) keys["headline/vehicle-costs"] = vehicle.charged.value;
 
   return { tiles, pies, keys };
 }

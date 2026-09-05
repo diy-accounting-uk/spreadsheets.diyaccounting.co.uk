@@ -376,6 +376,48 @@ export const CELL_MAP = [
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0, "money"],
 ];
 
+// The year-at-a-glance strip's tiles and pies, declared as data rather than
+// read as literal cell keys inside headlines.js (see headlinesFromReport()
+// there for how a declaration like this one is reduced against R). Taxi has
+// no stock and no debtors sheet, so assets carries only the written-down
+// value. `pieLines` gives the outgoings pie its full candidate list --
+// the six vehicle-cost lines (B10's capital allowances included, so the
+// slices sum to B12 plus B22) and the eight general-expense lines -- rather
+// than one combined "Cost of sales" slice. `vehicle` is the
+// mileage-versus-actual-costs tile: present only on a book that keeps a
+// mileage log.
+export const HEADLINES = {
+  turnover: { key: "cell/Profit & Loss Acc!B5" },
+  costOfSales: { key: "cell/Profit & Loss Acc!B12", label: "vehicle costs" },
+  runningCosts: { key: "cell/Profit & Loss Acc!B22", label: "running the business" },
+  assets: { writtenDown: { key: "cell/Fixed Assets!K1", optional: true } },
+  tax: { key: `cell/${TAX_SHEET}!E17`, label: "income tax and Class 4 NI" },
+  pieLines: [
+    ["cell/Profit & Loss Acc!B6", "Fuel"],
+    ["cell/Profit & Loss Acc!B7", "Car hire"],
+    ["cell/Profit & Loss Acc!B8", "Repairs and servicing"],
+    ["cell/Profit & Loss Acc!B9", "Road tax and insurance"],
+    ["cell/Profit & Loss Acc!B10", "Capital allowances"],
+    ["cell/Profit & Loss Acc!B11", "Mileage allowance"],
+    ["cell/Profit & Loss Acc!B14", "Employee costs"],
+    ["cell/Profit & Loss Acc!B15", "Premises"],
+    ["cell/Profit & Loss Acc!B16", "General admin"],
+    ["cell/Profit & Loss Acc!B17", "Advertising"],
+    ["cell/Profit & Loss Acc!B18", "Legal and professional"],
+    ["cell/Profit & Loss Acc!B19", "Interest"],
+    ["cell/Profit & Loss Acc!B20", "Bank charges"],
+    ["cell/Profit & Loss Acc!B21", "Other expenses"],
+  ],
+  vehicle: {
+    miles: "cell/PurchasesMar!A1",
+    allowance: "cell/PurchasesMar!A2",
+    running: "cell/PurchasesMar!I2",
+    compared: "cell/Profit & Loss Acc!J1",
+    route: "cell/Profit & Loss Acc!C1",
+    charged: "cell/Profit & Loss Acc!B12",
+  },
+};
+
 // P&L monthly columns, Apr through Mar (verified against the template:
 // 'Profit & Loss Acc'!C2:N2 read the Admin month-end dates in that order).
 const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
