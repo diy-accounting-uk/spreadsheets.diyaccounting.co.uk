@@ -77,17 +77,16 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> taxi-scenario-basic (Basic taxi driver)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 87 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 71 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 8</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators are consistent with an unregistered sole trader: no VAT anywhere, running costs taken with mileage deliberately nil, capital allowances claimed on the capitalised spend, tax charged on a positive profit and the bridge residue zero. Only minor unexplained profit/turnover variances noted.</p>
+          <p>Indicators match the headline: no VAT boxes for an unregistered trader, running costs taken with mileage deliberately nil, tax charged on the stated profit, and bridge residue zero. Only a labelling wrinkle between the two net profit figures worth a glance.</p>
           <ul>
-            <li><strong>Turnover 36,045.00 vs sales invoiced 36,545.00</strong> (Turnover indicator vs headline scale): 500.00 short of the headline's invoiced sales; same order of magnitude so not blocking, but worth a glance [note]</li>
-            <li><strong>Net profit 28,565.00 vs self assessment starting net profit 29,685.00 and tax profit 29,065.00</strong> (Net profit / self assessment / income tax indicators): Three different profit figures circulate without an explained reconciliation, though the bridge residue is 0.00 [note]</li>
+            <li><strong>Net profit 28,520.00 vs self assessment net profit 29,640.00</strong> (Turnover/net profit indicator and self assessment indicator): The P&amp;L net profit is quoted as 28,520.00 while the self assessment starts from 29,640.00 before the 1,120.00 allowance — the same label carries two figures; worth a glance though the bridge residue is zero. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-02. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -109,36 +108,26 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Diff</th><th>Result</th></tr></thead>
 <tbody>
-<tr><td>Total Sales</td><td>36045</td><td>36045</td><td>0</td><td>PASS</td></tr>
-<tr><td>Other business income</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: Net = Gross - General Expenses</td><td>28565</td><td>28565</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Sales</td><td>36000</td><td>36000</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Net = Gross - General Expenses</td><td>28520</td><td>28520</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: Cost of Sales = vehicle cost lines</td><td>6100</td><td>6100</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: Gross = Turnover - Cost of Sales</td><td>29945</td><td>29945</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Gross = Turnover - Cost of Sales</td><td>29900</td><td>29900</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: Capital Allowances / Mileage Allowance mutually exclusive</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: General expense lines sum = Total</td><td>1380</td><td>1380</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: Q1 turnover = P&amp;L Q1 turnover</td><td>9045</td><td>9045</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: Q1 other income = P&amp;L Q1 other income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>VitalTax: Q1 turnover = P&amp;L Q1 turnover</td><td>9000</td><td>9000</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q1 total allowable expenses = P&amp;L Q1 Cost of Sales + Total Expenses</td><td>3079.999999999996</td><td>3080</td><td>+4.092726157978177e-12</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q2 turnover = P&amp;L Q2 turnover</td><td>9000</td><td>9000</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: Q2 other income = P&amp;L Q2 other income</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q2 total allowable expenses = P&amp;L Q2 Cost of Sales + Total Expenses</td><td>1299.9999999999989</td><td>1300</td><td>+1.1368683772161603e-12</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q3 turnover = P&amp;L Q3 turnover</td><td>9000</td><td>9000</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: Q3 other income = P&amp;L Q3 other income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q3 total allowable expenses = P&amp;L Q3 Cost of Sales + Total Expenses</td><td>1299.9999999999989</td><td>1300</td><td>+1.1368683772161603e-12</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q4 turnover = P&amp;L Q4 turnover</td><td>9000</td><td>9000</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: Q4 other income = P&amp;L Q4 other income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: Q4 total allowable expenses = P&amp;L Q4 Cost of Sales + Total Expenses</td><td>1799.9999999999989</td><td>1800</td><td>+1.1368683772161603e-12</td><td>PASS</td></tr>
-<tr><td>VitalTax: annual turnover = P&amp;L annual turnover</td><td>36045</td><td>36045</td><td>0</td><td>PASS</td></tr>
-<tr><td>VitalTax: annual other income = P&amp;L annual other income</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
+<tr><td>VitalTax: annual turnover = P&amp;L annual turnover</td><td>36000</td><td>36000</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: annual total allowable expenses = P&amp;L Cost of Sales + Total Expenses</td><td>7480</td><td>7480</td><td>0</td><td>PASS</td></tr>
 <tr><td>Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles</td><td>14360</td><td>14360</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: the comparison figure = running costs plus the schedule's allowances</td><td>6100</td><td>6100</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: the route follows the comparison</td><td></td><td></td><td></td><td>PASS</td></tr>
-<tr><td>SA103S: Turnover = P&amp;L Sales</td><td>36045</td><td>36045</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Net profit (pre-capital-allowance) = P&amp;L Net + Capital Allowances</td><td>29685</td><td>29685</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Other business income (box 30) = P&amp;L other income</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Turnover = P&amp;L Sales</td><td>36000</td><td>36000</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Net profit (pre-capital-allowance) = P&amp;L Net + Capital Allowances</td><td>29640</td><td>29640</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed Assets: New asset cost recorded</td><td>8000</td><td>8000</td><td>0</td><td>PASS</td></tr>
-<tr><td>Fixed Assets: written-down value = cost less the allowance</td><td>6880</td><td>6880</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed Assets: WDA claimed = cost x Admin WDA rate</td><td>1120</td><td>1120</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed Assets: Schedule capital allowance total = P&amp;L Capital Allowances</td><td>1120</td><td>1120</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Personal Allowance = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
@@ -149,7 +138,7 @@
 <tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band End = tax data</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>3.5</td><td>3.5</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
@@ -161,40 +150,34 @@
 <tr><td>Admin: Mileage Lower Rate Start = tax data</td><td>10001</td><td>10001</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Mileage Lower Rate Pence = tax data</td><td>0.25</td><td>0.25</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: VAT Registration Threshold = tax data</td><td>90000</td><td>90000</td><td>0</td><td>PASS</td></tr>
-<tr><td>Income Tax</td><td>3299</td><td>3299</td><td>0</td><td>PASS</td></tr>
-<tr><td>NI Class 4 (lower)</td><td>989.7</td><td>989.7</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI</td><td>4289</td><td>4288.7</td><td>-0.3000000000001819</td><td>PASS</td></tr>
-<tr><td>Tax: first payment on account is half the liability</td><td>2144.35</td><td>2144.35</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: second payment on account is half the liability</td><td>2144.35</td><td>2144.35</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>3190</td><td>3190</td><td>0</td><td>PASS</td></tr>
+<tr><td>NI Class 4 (lower)</td><td>957</td><td>957</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI</td><td>4147</td><td>4147</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: Personal allowance after taper</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the basic rate to the lower band</td><td>0.2</td><td>0.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the higher rate above the band</td><td>0.4</td><td>0.4</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the additional rate above the higher band</td><td>0.45</td><td>0.45</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the basic and higher bands at the basic band end</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the higher and additional bands at the higher band end</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax at basic rate</td><td>3299</td><td>3299</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax at basic rate</td><td>3190</td><td>3190</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax at higher rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: Taxable = Profit - Allowance</td><td>16495</td><td>16495</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: IT = Basic + Higher + Additional</td><td>3299</td><td>3299</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: Total = IT + NI</td><td>4288.7</td><td>4288.7</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Profit for tax = Draft Tax E5</td><td>29065</td><td>29065</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: Taxable = Profit - Allowance</td><td>15950</td><td>15950</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: IT = Basic + Higher + Additional</td><td>3190</td><td>3190</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT + NI</td><td>4147</td><td>4147</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Profit for tax = Draft Tax E5</td><td>28520</td><td>28520</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: months of actual trade = P&amp;L months with turnover</td><td>12</td><td>12</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: months of actual trade = the fixture's</td><td>12</td><td>12</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: turnover = the traded months plus the year spread over the rest</td><td>36045</td><td>36045</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: cost of sales = the traded months plus the year spread over the rest</td><td>6099.999999999993</td><td>6100</td><td>+7.275957614183426e-12</td><td>PASS</td></tr>
-<tr><td>Forecast: general expenses = the traded months plus the year spread over the rest</td><td>1380</td><td>1380</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: other business income = P&amp;L other business income</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: turnover = P&amp;L turnover</td><td>36045</td><td>36045</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: turnover = P&amp;L turnover</td><td>36000</td><td>36000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: other business income = P&amp;L other business income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: cost of sales = P&amp;L cost of sales</td><td>6099.999999999993</td><td>6100</td><td>+7.275957614183426e-12</td><td>PASS</td></tr>
 <tr><td>Forecast: general expenses = P&amp;L general expenses</td><td>1380</td><td>1380</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: profit = turnover + other income - cost of sales - expenses</td><td>29065</td><td>29065</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: profit = turnover + other income - cost of sales - expenses</td><td>28520</td><td>28520</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: personal allowance after taper</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: tax at standard rate</td><td>3299</td><td>3299</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: tax at standard rate</td><td>3190</td><td>3190</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: tax at higher rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: National Insurance</td><td>989.7</td><td>989.7</td><td>0</td><td>PASS</td></tr>
-<tr><td>Forecast: tax and NI liability</td><td>4289</td><td>4288.7</td><td>-0.3000000000001819</td><td>PASS</td></tr>
+<tr><td>Forecast: National Insurance</td><td>957</td><td>957</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: tax and NI liability</td><td>4147</td><td>4147</td><td>0</td><td>PASS</td></tr>
 <tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 </tbody>
 </table></div>
@@ -218,24 +201,24 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Month</th><th class="num">Sales entries</th><th class="num">Sales total</th><th class="num">Purchases entries</th><th class="num">Purchases total</th></tr></thead>
 <tbody>
-<tr><td>Apr</td><td class="num">16</td><td class="num">3,045.00</td><td class="num">5</td><td class="num">2,200.00</td></tr>
+<tr><td>Apr</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">5</td><td class="num">2,200.00</td></tr>
 <tr><td>May</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
 <tr><td>Jun</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">8,300.00</td></tr>
 <tr><td>Jul</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">420.00</td></tr>
 <tr><td>Aug</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
-<tr><td>Sep</td><td class="num">16</td><td class="num">3,500.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Sep</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
 <tr><td>Oct</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">420.00</td></tr>
 <tr><td>Nov</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
 <tr><td>Dec</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
 <tr><td>Jan</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">3</td><td class="num">920.00</td></tr>
 <tr><td>Feb</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
 <tr><td>Mar</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
-<tr><td>Year</td><td class="num">182</td><td class="num"><strong>36,545.00</strong></td><td class="num">21</td><td class="num"><strong>14,360.00</strong></td></tr>
+<tr><td>Year</td><td class="num">180</td><td class="num"><strong>36,000.00</strong></td><td class="num">21</td><td class="num"><strong>14,360.00</strong></td></tr>
 </tbody>
 </table></div>
 <h4>Every entry</h4>
 <details class="recon-details" id="sales-journal">
-<summary>Sales journal: 182 entries, 36,545.00</summary>
+<summary>Sales journal: 180 entries, 36,000.00</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
@@ -255,7 +238,6 @@
 <tr><td>2025-04-23</td><td class="num">200.00</td></tr>
 <tr><td>2025-04-24</td><td class="num">200.00</td></tr>
 <tr><td>2025-04-25</td><td class="num">200.00</td></tr>
-<tr><td>2025-04-07</td><td class="num">45.00</td></tr>
 </tbody>
 </table></div>
 <h5>May</h5>
@@ -344,24 +326,23 @@
 </table></div>
 <h5>Sep</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>2025-09-01</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-02</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-03</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-04</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-05</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-08</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-09</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-10</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-11</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-12</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-15</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-16</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-17</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-18</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-19</td><td></td><td></td><td class="num">200.00</td></tr>
-<tr><td>2025-09-15</td><td>Start-up grant</td><td>4001</td><td class="num">500.00</td></tr>
+<tr><td>2025-09-01</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-02</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-03</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-19</td><td class="num">200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Oct</h5>
@@ -609,19 +590,19 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Line</th><th>Cell</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Net profit per the profit and loss account</td><td>Profit &amp; Loss Acc!B23</td><td class="num">28,565</td></tr>
+<tr><td>Net profit per the profit and loss account</td><td>Profit &amp; Loss Acc!B23</td><td class="num">28,520</td></tr>
 <tr><td>Add capital allowances charged in cost of sales</td><td>Profit &amp; Loss Acc!B10</td><td class="num">1,120</td></tr>
-<tr><td>Add other business income (box 10)</td><td>SE Short!O38</td><td class="num">0</td></tr>
-<tr><td>Less net loss for the year (box 22)</td><td>SE Short!O71</td><td class="num">0</td></tr>
-<tr><td>Less annual investment allowance (box 23)</td><td>SE Short!D80</td><td class="num">0</td></tr>
-<tr><td>Less small-balance allowance (box 24)</td><td>SE Short!D85</td><td class="num">0</td></tr>
-<tr><td>Less other capital allowances (box 25)</td><td>SE Short!O80</td><td class="num">-1,120</td></tr>
-<tr><td>Add balancing charges (box 26)</td><td>SE Short!O85</td><td class="num">0</td></tr>
-<tr><td>Add goods and services for own use (box 27)</td><td>SE Short!D94</td><td class="num">0</td></tr>
-<tr><td>Add other business income (box 30)</td><td>SE Short!O99</td><td class="num">500</td></tr>
-<tr><td>Less loss brought forward (box 29)</td><td>SE Short!O94</td><td class="num">0</td></tr>
-<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>29,065</strong></td></tr>
-<tr><td>Tax profit the sheet carries</td><td>Draft Tax calculation!E5</td><td class="num">29,065</td></tr>
+<tr><td>Add other business income (box 9)</td><td>SE Short!O38</td><td class="num">0</td></tr>
+<tr><td>Less net loss for the year (box 21)</td><td>SE Short!O71</td><td class="num">0</td></tr>
+<tr><td>Less annual investment allowance (box 22)</td><td>SE Short!D80</td><td class="num">0</td></tr>
+<tr><td>Less small-balance allowance (box 23)</td><td>SE Short!D85</td><td class="num">0</td></tr>
+<tr><td>Less other capital allowances (box 24)</td><td>SE Short!O80</td><td class="num">-1,120</td></tr>
+<tr><td>Add balancing charges (box 25)</td><td>SE Short!O85</td><td class="num">0</td></tr>
+<tr><td>Add goods and services for own use (box 26)</td><td>SE Short!D94</td><td class="num">0</td></tr>
+<tr><td>Add other business income (box 29)</td><td>SE Short!O99</td><td class="num">0</td></tr>
+<tr><td>Less loss brought forward (box 28)</td><td>SE Short!O94</td><td class="num">0</td></tr>
+<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>28,520</strong></td></tr>
+<tr><td>Tax profit the sheet carries</td><td>Draft Tax calculation!E5</td><td class="num">28,520</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
 </tbody>
 </table></div>
@@ -630,18 +611,18 @@
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
 <tr><td>Business Name</td><td class="num">Basic Taxi Driver</td></tr>
-<tr><td>Description of business</td><td class="num">Owner-driver private hire and taxi services</td></tr>
+<tr><td>Description</td><td class="num">Owner-driver private hire and taxi services</td></tr>
+<tr><td>Address</td><td class="num">17 Station Road</td></tr>
+<tr><td>Town</td><td class="num">Derby</td></tr>
 <tr><td>Postcode</td><td class="num">DE1 2GH</td></tr>
-<tr><td>UTR</td><td class="num">5566778899</td></tr>
-<tr><td>Losses brought forward (box 29)</td><td class="num">—</td></tr>
-<tr><td>Goods and services for own use (box 27)</td><td class="num">—</td></tr>
+<tr><td>UTR</td><td class="num">—</td></tr>
 </tbody>
 </table></div>
 <h4>Profit &amp; Loss Account</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Turnover (Total Fares)</td><td class="num">36,045</td></tr>
+<tr><td>Turnover (Total Fares)</td><td class="num">36,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Fuel</td><td class="num">3,600</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Car Hire / Rental</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Servicing</td><td class="num">0</td></tr>
@@ -649,7 +630,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances</td><td class="num">1,120</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Mileage Allowance</td><td class="num">0</td></tr>
 <tr><td>Cost of Sales (vehicle costs)</td><td class="num">6,100</td></tr>
-<tr><td><strong>Gross Profit</strong></td><td class="num">29,945</td></tr>
+<tr><td><strong>Gross Profit</strong></td><td class="num">29,900</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee Costs</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises Costs</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;General Admin</td><td class="num">480</td></tr>
@@ -659,98 +640,19 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Bank Charges</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Expenses</td><td class="num">0</td></tr>
 <tr><td>Total General Expenses</td><td class="num">1,380</td></tr>
-<tr><td><strong>Net Profit</strong></td><td class="num">28,565</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Any Other Business Income</td><td class="num">500</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Running costs plus capital allowances</td><td class="num">6,100</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Route the sheet takes</td><td class="num">—</td></tr>
-</tbody>
-</table></div>
-<h4>Monthly Takings</h4>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th></th><th class="num">Amount</th></tr></thead>
-<tbody>
-<tr><td>Apr</td><td class="num">3,045</td></tr>
-<tr><td>May</td><td class="num">3,000</td></tr>
-<tr><td>Jun</td><td class="num">3,000</td></tr>
-<tr><td>Jul</td><td class="num">3,000</td></tr>
-<tr><td>Aug</td><td class="num">3,000</td></tr>
-<tr><td>Sep</td><td class="num">3,000</td></tr>
-<tr><td>Oct</td><td class="num">3,000</td></tr>
-<tr><td>Nov</td><td class="num">3,000</td></tr>
-<tr><td>Dec</td><td class="num">3,000</td></tr>
-<tr><td>Jan</td><td class="num">3,000</td></tr>
-<tr><td>Feb</td><td class="num">3,000</td></tr>
-<tr><td>Mar</td><td class="num">3,000</td></tr>
-</tbody>
-</table></div>
-<h4>Monthly Vehicle Costs</h4>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th></th><th class="num">Amount</th></tr></thead>
-<tbody>
-<tr><td>Apr</td><td class="num">1,773.33</td></tr>
-<tr><td>May</td><td class="num">393.33</td></tr>
-<tr><td>Jun</td><td class="num">393.33</td></tr>
-<tr><td>Jul</td><td class="num">393.33</td></tr>
-<tr><td>Aug</td><td class="num">393.33</td></tr>
-<tr><td>Sep</td><td class="num">393.33</td></tr>
-<tr><td>Oct</td><td class="num">393.33</td></tr>
-<tr><td>Nov</td><td class="num">393.33</td></tr>
-<tr><td>Dec</td><td class="num">393.33</td></tr>
-<tr><td>Jan</td><td class="num">393.33</td></tr>
-<tr><td>Feb</td><td class="num">393.33</td></tr>
-<tr><td>Mar</td><td class="num">393.33</td></tr>
-</tbody>
-</table></div>
-<h4>Monthly Running Costs</h4>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th></th><th class="num">Amount</th></tr></thead>
-<tbody>
-<tr><td>Apr</td><td class="num">520</td></tr>
-<tr><td>May</td><td class="num">0</td></tr>
-<tr><td>Jun</td><td class="num">0</td></tr>
-<tr><td>Jul</td><td class="num">120</td></tr>
-<tr><td>Aug</td><td class="num">0</td></tr>
-<tr><td>Sep</td><td class="num">0</td></tr>
-<tr><td>Oct</td><td class="num">120</td></tr>
-<tr><td>Nov</td><td class="num">0</td></tr>
-<tr><td>Dec</td><td class="num">0</td></tr>
-<tr><td>Jan</td><td class="num">620</td></tr>
-<tr><td>Feb</td><td class="num">0</td></tr>
-<tr><td>Mar</td><td class="num">0</td></tr>
-</tbody>
-</table></div>
-<h4>Monthly Other Income</h4>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th></th><th class="num">Amount</th></tr></thead>
-<tbody>
-<tr><td>Apr</td><td class="num">0</td></tr>
-<tr><td>May</td><td class="num">0</td></tr>
-<tr><td>Jun</td><td class="num">0</td></tr>
-<tr><td>Jul</td><td class="num">0</td></tr>
-<tr><td>Aug</td><td class="num">0</td></tr>
-<tr><td>Sep</td><td class="num">500</td></tr>
-<tr><td>Oct</td><td class="num">0</td></tr>
-<tr><td>Nov</td><td class="num">0</td></tr>
-<tr><td>Dec</td><td class="num">0</td></tr>
-<tr><td>Jan</td><td class="num">0</td></tr>
-<tr><td>Feb</td><td class="num">0</td></tr>
-<tr><td>Mar</td><td class="num">0</td></tr>
+<tr><td><strong>Net Profit</strong></td><td class="num">28,520</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Any Other Business Income</td><td class="num">0</td></tr>
 </tbody>
 </table></div>
 <h4>Quarterly Summary</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Turnover</td><td class="num">9,045</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Turnover</td><td class="num">9,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q2 Turnover</td><td class="num">9,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q3 Turnover</td><td class="num">9,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q4 Turnover</td><td class="num">9,000</td></tr>
-<tr><td><strong>Annual Turnover</strong></td><td class="num">36,045</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Other income</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q2 Other income</td><td class="num">500</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q3 Other income</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q4 Other income</td><td class="num">0</td></tr>
-<tr><td><strong>Annual Other income</strong></td><td class="num">500</td></tr>
+<tr><td><strong>Annual Turnover</strong></td><td class="num">36,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Total Allowable Expenses</td><td class="num">3,080</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q2 Total Allowable Expenses</td><td class="num">1,300</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q3 Total Allowable Expenses</td><td class="num">1,300</td></tr>
@@ -763,19 +665,19 @@
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Months of actual trade</td><td class="num">12</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Sales Turnover</td><td class="num">36,045</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Investment Grants</td><td class="num">500</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Sales Turnover</td><td class="num">36,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Investment Grants</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Cost of Sales</td><td class="num">6,100</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast General Expenses</td><td class="num">1,380</td></tr>
-<tr><td><strong>Forecast Profit before Tax</strong></td><td class="num">29,065</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax</td><td class="num">29,065</td></tr>
+<tr><td><strong>Forecast Profit before Tax</strong></td><td class="num">28,520</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax</td><td class="num">28,520</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance</td><td class="num">12,570</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance</td><td class="num">16,495</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate</td><td class="num">3,299</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance</td><td class="num">15,950</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate</td><td class="num">3,190</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;National Insurance</td><td class="num">989.7</td></tr>
-<tr><td><strong>Forecast Tax &amp; NI Liability</strong></td><td class="num">4,288.7</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;National Insurance</td><td class="num">957</td></tr>
+<tr><td><strong>Forecast Tax &amp; NI Liability</strong></td><td class="num">4,147</td></tr>
 </tbody>
 </table></div>
 <h4>Purchase Analysis</h4>
@@ -797,7 +699,6 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance</td><td class="num">1,120</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Balancing Charge</td><td class="num">0</td></tr>
-<tr><td>Written-down value carried forward</td><td class="num">6,880</td></tr>
 </tbody>
 </table></div>
 <h4>Admin (Generator Injected)</h4>
@@ -812,7 +713,7 @@
 <tr><td>Basic Band End</td><td class="num">37,700</td></tr>
 <tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
 <tr><td>Higher Band End</td><td class="num">125,140</td></tr>
-<tr><td>NI Class 2 Weekly Rate</td><td class="num">3.5</td></tr>
+<tr><td>NI Class 2 Weekly Rate</td><td class="num">0</td></tr>
 <tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
 <tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
 <tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
@@ -833,16 +734,17 @@
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
 <tr><td>C5</td><td>Business Name</td><td>Basic Taxi Driver</td><td>entityInformation.organizationIdentifier</td></tr>
-<tr><td>C8</td><td>Description of business</td><td>Owner-driver private hire and taxi services</td><td>entityInformation.organizationDescription</td></tr>
-<tr><td>C17</td><td>Postcode</td><td>DE1 2GH</td><td>entityInformation.organizationPostcode</td></tr>
-<tr><td>O5</td><td>UTR</td><td>5566778899</td><td>entityInformation.taxRegistrationNumber</td></tr>
+<tr><td>C7</td><td>Description</td><td>Owner-driver private hire and taxi services</td><td>entityInformation.organizationDescription</td></tr>
+<tr><td>C8</td><td>Address</td><td>17 Station Road</td><td>entityInformation.organizationAddressLine</td></tr>
+<tr><td>C10</td><td>Town</td><td>Derby</td><td>entityInformation.organizationTown</td></tr>
+<tr><td>C12</td><td>Postcode</td><td>DE1 2GH</td><td>entityInformation.organizationPostcode</td></tr>
 </tbody>
 </table></div>
 <h5>Profit &amp; Loss Acc</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>B5</td><td>Turnover (Total Fares)</td><td>36045</td><td>gl-cor:amount (salesTurnover)</td></tr>
+<tr><td>B5</td><td>Turnover (Total Fares)</td><td>36000</td><td>gl-cor:amount (salesTurnover)</td></tr>
 <tr><td>B6</td><td>Fuel</td><td>3600</td><td>accounts.purchases.5100 (fuel)</td></tr>
 <tr><td>B7</td><td>Car Hire / Rental</td><td>0</td><td>accounts.purchases.5200 (carHire)</td></tr>
 <tr><td>B8</td><td>Repairs &amp; Servicing</td><td>0</td><td>accounts.purchases.5300 (repairs)</td></tr>
@@ -850,7 +752,7 @@
 <tr><td>B10</td><td>Capital Allowances</td><td>1120</td><td>tax.capitalAllowances</td></tr>
 <tr><td>B11</td><td>Mileage Allowance</td><td>0</td><td>tax.mileage (allowance)</td></tr>
 <tr><td>B12</td><td>Cost of Sales (vehicle costs)</td><td>6100</td><td>gl-cor:amount (costOfSales)</td></tr>
-<tr><td>B13</td><td><strong>Gross Profit</strong></td><td>29945</td><td>gl-cor:amount (grossProfit)</td></tr>
+<tr><td>B13</td><td><strong>Gross Profit</strong></td><td>29900</td><td>gl-cor:amount (grossProfit)</td></tr>
 <tr><td>B14</td><td>Employee Costs</td><td>0</td><td>accounts.purchases.5500</td></tr>
 <tr><td>B15</td><td>Premises Costs</td><td>0</td><td>accounts.purchases.5600</td></tr>
 <tr><td>B16</td><td>General Admin</td><td>480</td><td>accounts.purchases.5700</td></tr>
@@ -860,73 +762,67 @@
 <tr><td>B20</td><td>Bank Charges</td><td>0</td><td>accounts.purchases.6100</td></tr>
 <tr><td>B21</td><td>Other Expenses</td><td>0</td><td>accounts.purchases.6200</td></tr>
 <tr><td>B22</td><td>Total General Expenses</td><td>1380</td><td>gl-cor:amount (totalGeneral)</td></tr>
-<tr><td>B23</td><td><strong>Net Profit</strong></td><td>28565</td><td>gl-cor:amount (netProfit)</td></tr>
-<tr><td>B24</td><td>Any Other Business Income</td><td>500</td><td>gl-cor:amount (otherIncome)</td></tr>
-<tr><td>J1</td><td>Running costs plus capital allowances</td><td>6100</td><td>accounts.purchases (vehicleCostsCompared)</td></tr>
-<tr><td>C5</td><td>Apr</td><td>3045</td><td>gl-cor:amount (monthlyTakings.apr)</td></tr>
-<tr><td>D5</td><td>May</td><td>3000</td><td>gl-cor:amount (monthlyTakings.may)</td></tr>
-<tr><td>E5</td><td>Jun</td><td>3000</td><td>gl-cor:amount (monthlyTakings.jun)</td></tr>
-<tr><td>F5</td><td>Jul</td><td>3000</td><td>gl-cor:amount (monthlyTakings.jul)</td></tr>
-<tr><td>G5</td><td>Aug</td><td>3000</td><td>gl-cor:amount (monthlyTakings.aug)</td></tr>
-<tr><td>H5</td><td>Sep</td><td>3000</td><td>gl-cor:amount (monthlyTakings.sep)</td></tr>
-<tr><td>I5</td><td>Oct</td><td>3000</td><td>gl-cor:amount (monthlyTakings.oct)</td></tr>
-<tr><td>J5</td><td>Nov</td><td>3000</td><td>gl-cor:amount (monthlyTakings.nov)</td></tr>
-<tr><td>K5</td><td>Dec</td><td>3000</td><td>gl-cor:amount (monthlyTakings.dec)</td></tr>
-<tr><td>L5</td><td>Jan</td><td>3000</td><td>gl-cor:amount (monthlyTakings.jan)</td></tr>
-<tr><td>M5</td><td>Feb</td><td>3000</td><td>gl-cor:amount (monthlyTakings.feb)</td></tr>
-<tr><td>N5</td><td>Mar</td><td>3000</td><td>gl-cor:amount (monthlyTakings.mar)</td></tr>
-<tr><td>C12</td><td>Apr</td><td>1773.33333333333</td><td>gl-cor:amount (monthlyVehicleCosts.apr)</td></tr>
-<tr><td>D12</td><td>May</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.may)</td></tr>
-<tr><td>E12</td><td>Jun</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.jun)</td></tr>
-<tr><td>F12</td><td>Jul</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.jul)</td></tr>
-<tr><td>G12</td><td>Aug</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.aug)</td></tr>
-<tr><td>H12</td><td>Sep</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.sep)</td></tr>
-<tr><td>I12</td><td>Oct</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.oct)</td></tr>
-<tr><td>J12</td><td>Nov</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.nov)</td></tr>
-<tr><td>K12</td><td>Dec</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.dec)</td></tr>
-<tr><td>L12</td><td>Jan</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.jan)</td></tr>
-<tr><td>M12</td><td>Feb</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.feb)</td></tr>
-<tr><td>N12</td><td>Mar</td><td>393.333333333333</td><td>gl-cor:amount (monthlyVehicleCosts.mar)</td></tr>
-<tr><td>C22</td><td>Apr</td><td>520</td><td>gl-cor:amount (monthlyRunningCosts.apr)</td></tr>
-<tr><td>D22</td><td>May</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.may)</td></tr>
-<tr><td>E22</td><td>Jun</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.jun)</td></tr>
-<tr><td>F22</td><td>Jul</td><td>120</td><td>gl-cor:amount (monthlyRunningCosts.jul)</td></tr>
-<tr><td>G22</td><td>Aug</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.aug)</td></tr>
-<tr><td>H22</td><td>Sep</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.sep)</td></tr>
-<tr><td>I22</td><td>Oct</td><td>120</td><td>gl-cor:amount (monthlyRunningCosts.oct)</td></tr>
-<tr><td>J22</td><td>Nov</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.nov)</td></tr>
-<tr><td>K22</td><td>Dec</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.dec)</td></tr>
-<tr><td>L22</td><td>Jan</td><td>620</td><td>gl-cor:amount (monthlyRunningCosts.jan)</td></tr>
-<tr><td>M22</td><td>Feb</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.feb)</td></tr>
-<tr><td>N22</td><td>Mar</td><td>0</td><td>gl-cor:amount (monthlyRunningCosts.mar)</td></tr>
-<tr><td>C24</td><td>Apr</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.apr)</td></tr>
-<tr><td>D24</td><td>May</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.may)</td></tr>
-<tr><td>E24</td><td>Jun</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.jun)</td></tr>
-<tr><td>F24</td><td>Jul</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.jul)</td></tr>
-<tr><td>G24</td><td>Aug</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.aug)</td></tr>
-<tr><td>H24</td><td>Sep</td><td>500</td><td>gl-cor:amount (monthlyOtherIncome.sep)</td></tr>
-<tr><td>I24</td><td>Oct</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.oct)</td></tr>
-<tr><td>J24</td><td>Nov</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.nov)</td></tr>
-<tr><td>K24</td><td>Dec</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.dec)</td></tr>
-<tr><td>L24</td><td>Jan</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.jan)</td></tr>
-<tr><td>M24</td><td>Feb</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.feb)</td></tr>
-<tr><td>N24</td><td>Mar</td><td>0</td><td>gl-cor:amount (monthlyOtherIncome.mar)</td></tr>
+<tr><td>B23</td><td><strong>Net Profit</strong></td><td>28520</td><td>gl-cor:amount (netProfit)</td></tr>
+<tr><td>B24</td><td>Any Other Business Income</td><td>0</td><td>gl-cor:amount (otherIncome)</td></tr>
+<tr><td>C5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>D5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>E5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>F5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>G5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>H5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>I5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>J5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>K5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>L5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>M5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>N5</td><td></td><td>3000</td><td></td></tr>
+<tr><td>C12</td><td></td><td>1773.33333333333</td><td></td></tr>
+<tr><td>D12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>E12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>F12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>G12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>H12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>I12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>J12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>K12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>L12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>M12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>N12</td><td></td><td>393.333333333333</td><td></td></tr>
+<tr><td>C22</td><td></td><td>520</td><td></td></tr>
+<tr><td>D22</td><td></td><td>0</td><td></td></tr>
+<tr><td>E22</td><td></td><td>0</td><td></td></tr>
+<tr><td>F22</td><td></td><td>120</td><td></td></tr>
+<tr><td>G22</td><td></td><td>0</td><td></td></tr>
+<tr><td>H22</td><td></td><td>0</td><td></td></tr>
+<tr><td>I22</td><td></td><td>120</td><td></td></tr>
+<tr><td>J22</td><td></td><td>0</td><td></td></tr>
+<tr><td>K22</td><td></td><td>0</td><td></td></tr>
+<tr><td>L22</td><td></td><td>620</td><td></td></tr>
+<tr><td>M22</td><td></td><td>0</td><td></td></tr>
+<tr><td>N22</td><td></td><td>0</td><td></td></tr>
+<tr><td>C24</td><td></td><td>0</td><td></td></tr>
+<tr><td>D24</td><td></td><td>0</td><td></td></tr>
+<tr><td>E24</td><td></td><td>0</td><td></td></tr>
+<tr><td>F24</td><td></td><td>0</td><td></td></tr>
+<tr><td>G24</td><td></td><td>0</td><td></td></tr>
+<tr><td>H24</td><td></td><td>0</td><td></td></tr>
+<tr><td>I24</td><td></td><td>0</td><td></td></tr>
+<tr><td>J24</td><td></td><td>0</td><td></td></tr>
+<tr><td>K24</td><td></td><td>0</td><td></td></tr>
+<tr><td>L24</td><td></td><td>0</td><td></td></tr>
+<tr><td>M24</td><td></td><td>0</td><td></td></tr>
+<tr><td>N24</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>VitalTax</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>C5</td><td>Q1 Turnover</td><td>9045</td><td>gl-cor:amount (vitalTax.q1Turnover)</td></tr>
+<tr><td>C5</td><td>Q1 Turnover</td><td>9000</td><td>gl-cor:amount (vitalTax.q1Turnover)</td></tr>
 <tr><td>D5</td><td>Q2 Turnover</td><td>9000</td><td>gl-cor:amount (vitalTax.q2Turnover)</td></tr>
 <tr><td>E5</td><td>Q3 Turnover</td><td>9000</td><td>gl-cor:amount (vitalTax.q3Turnover)</td></tr>
 <tr><td>F5</td><td>Q4 Turnover</td><td>9000</td><td>gl-cor:amount (vitalTax.q4Turnover)</td></tr>
-<tr><td>G5</td><td><strong>Annual Turnover</strong></td><td>36045</td><td>gl-cor:amount (vitalTax.annualTurnover)</td></tr>
-<tr><td>C6</td><td>Q1 Other income</td><td>0</td><td>gl-cor:amount (vitalTax.q1OtherIncome)</td></tr>
-<tr><td>D6</td><td>Q2 Other income</td><td>500</td><td>gl-cor:amount (vitalTax.q2OtherIncome)</td></tr>
-<tr><td>E6</td><td>Q3 Other income</td><td>0</td><td>gl-cor:amount (vitalTax.q3OtherIncome)</td></tr>
-<tr><td>F6</td><td>Q4 Other income</td><td>0</td><td>gl-cor:amount (vitalTax.q4OtherIncome)</td></tr>
-<tr><td>G6</td><td><strong>Annual Other income</strong></td><td>500</td><td>gl-cor:amount (vitalTax.annualOtherIncome)</td></tr>
+<tr><td>G5</td><td><strong>Annual Turnover</strong></td><td>36000</td><td>gl-cor:amount (vitalTax.annualTurnover)</td></tr>
 <tr><td>C29</td><td>Q1 Total Allowable Expenses</td><td>3080</td><td>gl-cor:amount (vitalTax.q1Expenses)</td></tr>
 <tr><td>D29</td><td>Q2 Total Allowable Expenses</td><td>1300</td><td>gl-cor:amount (vitalTax.q2Expenses)</td></tr>
 <tr><td>E29</td><td>Q3 Total Allowable Expenses</td><td>1300</td><td>gl-cor:amount (vitalTax.q3Expenses)</td></tr>
@@ -938,41 +834,39 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>D38</td><td>Turnover (box 9)</td><td>36045</td><td>gl-cor:amount (sa103s.turnover)</td></tr>
-<tr><td>D71</td><td><strong>Net profit/loss (box 21)</strong></td><td>29685</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
-<tr><td>O71</td><td>Net loss (box 22)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
-<tr><td>D80</td><td>Annual investment allowance (box 23)</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
-<tr><td>D85</td><td>Small-balance allowance (box 24)</td><td>0</td><td>tax.capitalAllowances.smallPool (sa103s)</td></tr>
-<tr><td>O80</td><td>Other capital allowances (box 25)</td><td>1120</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
-<tr><td>O85</td><td>Balancing charges (box 26)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
-<tr><td>D94</td><td>Goods and services for own use (box 27)</td><td>0</td><td>gl-cor:amount (sa103s.ownUse)</td></tr>
-<tr><td>D99</td><td><strong>Net business profit (box 28)</strong></td><td>28565</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
-<tr><td>O94</td><td>Loss brought forward (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
-<tr><td>O99</td><td>Other business income (box 30)</td><td>500</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
-<tr><td>D106</td><td><strong>Net profit for tax calc (box 31)</strong></td><td>29065</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>D38</td><td>Turnover</td><td>36000</td><td>gl-cor:amount (sa103s.turnover)</td></tr>
+<tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>29640</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
+<tr><td>O71</td><td>Net loss (box 21)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
+<tr><td>D80</td><td>Annual investment allowance (box 22)</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
+<tr><td>D85</td><td>Small-balance allowance (box 23)</td><td>0</td><td>tax.capitalAllowances.smallPool (sa103s)</td></tr>
+<tr><td>O80</td><td>Other capital allowances (box 24)</td><td>1120</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
+<tr><td>O85</td><td>Balancing charges (box 25)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
+<tr><td>D94</td><td>Goods and services for own use (box 26)</td><td>0</td><td>gl-cor:amount (sa103s.ownUse)</td></tr>
+<tr><td>D99</td><td><strong>Net business profit (box 27)</strong></td><td>28520</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
+<tr><td>O94</td><td>Loss brought forward (box 28)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
+<tr><td>O99</td><td>Other business income (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
+<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>28520</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
 </tbody>
 </table></div>
 <h5>Draft Tax calculation</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>E5</td><td>Profit from Self Employment</td><td>29065</td><td>gl-cor:amount (profitSE)</td></tr>
+<tr><td>E5</td><td>Profit from Self Employment</td><td>28520</td><td>gl-cor:amount (profitSE)</td></tr>
 <tr><td>E6</td><td>Less: Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
-<tr><td>E7</td><td>Taxable Income</td><td>16495</td><td>gl-cor:amount (taxableIncome)</td></tr>
+<tr><td>E7</td><td>Taxable Income</td><td>15950</td><td>gl-cor:amount (taxableIncome)</td></tr>
 <tr><td>D8</td><td>Basic rate the sheet applies</td><td>0.2</td><td>tax.incomeTax.basicRate (applied)</td></tr>
 <tr><td>C9</td><td>Basic band ceiling the sheet applies</td><td>37700</td><td>tax.incomeTax.basicRateLimit (applied)</td></tr>
 <tr><td>D9</td><td>Higher rate the sheet applies</td><td>0.4</td><td>tax.incomeTax.higherRate (applied)</td></tr>
 <tr><td>C10</td><td>Additional rate threshold the sheet applies</td><td>125140</td><td>tax.incomeTax.higherRateThreshold (applied)</td></tr>
 <tr><td>D10</td><td>Additional rate the sheet applies</td><td>0.45</td><td>tax.incomeTax.additionalRate (applied)</td></tr>
-<tr><td>E8</td><td>Tax at Basic Rate</td><td>3299</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>E8</td><td>Tax at Basic Rate</td><td>3190</td><td>tax.incomeTax.basicRate</td></tr>
 <tr><td>E9</td><td>Tax at Higher Rate</td><td>0</td><td>tax.incomeTax.higherRate</td></tr>
 <tr><td>E10</td><td>Tax at Additional Rate</td><td>0</td><td>tax.incomeTax.additionalRate</td></tr>
-<tr><td>E11</td><td><strong>Total Income Tax</strong></td><td>3299</td><td>tax.incomeTax (total)</td></tr>
-<tr><td>E14</td><td>NI Class 4 (lower band)</td><td>989.7</td><td>tax.nationalInsurance.class4MainRate</td></tr>
+<tr><td>E11</td><td><strong>Total Income Tax</strong></td><td>3190</td><td>tax.incomeTax (total)</td></tr>
+<tr><td>E14</td><td>NI Class 4 (lower band)</td><td>957</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>E15</td><td>NI Class 4 (upper band)</td><td>0</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
-<tr><td>E17</td><td><strong>Total Tax + NI</strong></td><td>4288.7</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
-<tr><td>E25</td><td>First payment on account (31 January)</td><td>2144.35</td><td>gl-cor:taxAmount (paymentOnAccount1)</td></tr>
-<tr><td>E26</td><td>Second payment on account (31 July)</td><td>2144.35</td><td>gl-cor:taxAmount (paymentOnAccount2)</td></tr>
+<tr><td>E17</td><td><strong>Total Tax + NI</strong></td><td>4147</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>Wages Forecast</h5>
@@ -980,19 +874,19 @@
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
 <tr><td>C19</td><td>Months of actual trade</td><td>12</td><td>gl-cor:amount (forecast.monthsTraded)</td></tr>
-<tr><td>C20</td><td>Forecast Sales Turnover</td><td>36045</td><td>gl-cor:amount (forecast.turnover)</td></tr>
-<tr><td>C22</td><td>Forecast Investment Grants</td><td>500</td><td>gl-cor:amount (forecast.otherIncome)</td></tr>
+<tr><td>C20</td><td>Forecast Sales Turnover</td><td>36000</td><td>gl-cor:amount (forecast.turnover)</td></tr>
+<tr><td>C22</td><td>Forecast Investment Grants</td><td>0</td><td>gl-cor:amount (forecast.otherIncome)</td></tr>
 <tr><td>C24</td><td>Forecast Cost of Sales</td><td>6100</td><td>gl-cor:amount (forecast.costOfSales)</td></tr>
 <tr><td>C28</td><td>Forecast General Expenses</td><td>1380</td><td>gl-cor:amount (forecast.expenses)</td></tr>
-<tr><td>C30</td><td><strong>Forecast Profit before Tax</strong></td><td>29065</td><td>gl-cor:amount (forecast.profit)</td></tr>
-<tr><td>C34</td><td>Profit before Tax</td><td>29065</td><td>gl-cor:amount (forecast.taxableProfit)</td></tr>
+<tr><td>C30</td><td><strong>Forecast Profit before Tax</strong></td><td>28520</td><td>gl-cor:amount (forecast.profit)</td></tr>
+<tr><td>C34</td><td>Profit before Tax</td><td>28520</td><td>gl-cor:amount (forecast.taxableProfit)</td></tr>
 <tr><td>C35</td><td>Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
-<tr><td>C36</td><td>Profit after Allowance</td><td>16495</td><td>gl-cor:amount (forecast.taxableIncome)</td></tr>
-<tr><td>C37</td><td>Tax at standard rate</td><td>3299</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>C36</td><td>Profit after Allowance</td><td>15950</td><td>gl-cor:amount (forecast.taxableIncome)</td></tr>
+<tr><td>C37</td><td>Tax at standard rate</td><td>3190</td><td>tax.incomeTax.basicRate</td></tr>
 <tr><td>C38</td><td>Tax at higher rate</td><td>0</td><td>tax.incomeTax.higherRate</td></tr>
 <tr><td>C39</td><td>Tax at additional rate</td><td>0</td><td>tax.incomeTax.additionalRate</td></tr>
-<tr><td>C40</td><td>National Insurance</td><td>989.7</td><td>tax.nationalInsurance.class4</td></tr>
-<tr><td>C41</td><td><strong>Forecast Tax &amp; NI Liability</strong></td><td>4288.7</td><td>gl-cor:taxAmount (forecast.totalTaxNI)</td></tr>
+<tr><td>C40</td><td>National Insurance</td><td>957</td><td>tax.nationalInsurance.class4</td></tr>
+<tr><td>C41</td><td><strong>Forecast Tax &amp; NI Liability</strong></td><td>4147</td><td>gl-cor:taxAmount (forecast.totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>PurchasesMar</h5>
@@ -1014,7 +908,6 @@
 <tr><td>J1</td><td>Total Writing Down Allowance</td><td>1120</td><td>tax.capitalAllowances.wda (schedule)</td></tr>
 <tr><td>P1</td><td>Total Capital Allowance on Disposal</td><td>0</td><td>tax.capitalAllowances.disposals (schedule)</td></tr>
 <tr><td>Q1</td><td>Total Balancing Charge</td><td>0</td><td>tax.capitalAllowances.balancingCharge (schedule)</td></tr>
-<tr><td>K1</td><td>Written-down value carried forward</td><td>6880</td><td>fixedAssets (writtenDownValue)</td></tr>
 </tbody>
 </table></div>
 <h5>Admin</h5>
@@ -1029,7 +922,7 @@
 <tr><td>M11</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
 <tr><td>N12</td><td>Higher Band Start</td><td>37701</td><td>tax.incomeTax.basicRateLimit (+1)</td></tr>
 <tr><td>N13</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
-<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>3.5</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>0</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
 <tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
@@ -1051,42 +944,40 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Turnover (box 9)</td><td class="num">36,045</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10)</td><td class="num">—</td></tr>
-<tr><td><strong>Net profit/loss (box 21)</strong></td><td class="num">29,685</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 23)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Small-balance allowance (box 24)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25)</td><td class="num">1,120</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 27)</td><td class="num">0</td></tr>
-<tr><td><strong>Net business profit (box 28)</strong></td><td class="num">28,565</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30)</td><td class="num">500</td></tr>
-<tr><td><strong>Net profit for tax calc (box 31)</strong></td><td class="num">29,065</td></tr>
+<tr><td>Turnover</td><td class="num">36,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9)</td><td class="num">—</td></tr>
+<tr><td><strong>Net profit/loss</strong></td><td class="num">29,640</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 22)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Small-balance allowance (box 23)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24)</td><td class="num">1,120</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 26)</td><td class="num">0</td></tr>
+<tr><td><strong>Net business profit (box 27)</strong></td><td class="num">28,520</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29)</td><td class="num">0</td></tr>
+<tr><td><strong>Net profit for tax calc</strong></td><td class="num">28,520</td></tr>
 </tbody>
 </table></div>
 <h4>Draft Tax Calculation</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Profit from Self Employment</td><td class="num">29,065</td></tr>
+<tr><td>Profit from Self Employment</td><td class="num">28,520</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">12,570</td></tr>
-<tr><td>Taxable Income</td><td class="num">16,495</td></tr>
+<tr><td>Taxable Income</td><td class="num">15,950</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies</td><td class="num">0.2</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies</td><td class="num">37,700</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies</td><td class="num">0.4</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies</td><td class="num">125,140</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies</td><td class="num">0.45</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate</td><td class="num">3,299</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate</td><td class="num">3,190</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate</td><td class="num">0</td></tr>
-<tr><td><strong>Total Income Tax</strong></td><td class="num">3,299</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">989.7</td></tr>
+<tr><td><strong>Total Income Tax</strong></td><td class="num">3,190</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">957</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">0</td></tr>
-<tr><td><strong>Total Tax + NI</strong></td><td class="num">4,288.7</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;First payment on account (31 January)</td><td class="num">2,144.35</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Second payment on account (31 July)</td><td class="num">2,144.35</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">4,147</td></tr>
 </tbody>
 </table></div>
       </section>
