@@ -248,10 +248,10 @@ export const CELL_MAP = [
   ["SE Short", "O80",  "WDA + Capital Allowance claimed", "tax.capitalAllowances.wda (sa103s)",       "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O85",  "Balancing Charge",               "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D99",  "**Net business profit (box 28)**", "gl-cor:amount (sa103s.taxableProfit)",    "Self Assessment (SA103S)", 0, "money"],
   ["SE Short", "O94",  "Loss brought forward (box 29)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O99",  "Other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D106", "**Net profit for tax calc (box 31)**", "gl-cor:amount (sa103s.profitForTax)", "Self Assessment (SA103S)", 0, "money"],
   // ── Stock ──
   ["PurchasesStock", "D5",  "Opening Stock",  "stock.openingValue", "Stock", 0, "money"],
   ["PurchasesStock", "D7",  "Stock at Cost",  "stock.openingValue (carried)", "Stock", 0, "money"],

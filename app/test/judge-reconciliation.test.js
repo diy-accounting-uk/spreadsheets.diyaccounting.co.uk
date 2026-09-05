@@ -348,7 +348,7 @@ describe("buildIndicators for the Basic Sole Trader", () => {
     expect(text).toContain(
       "Self assessment: net profit 265,508.00, less 39,000.00 of capital allowances " +
         "(Capital allowances 39,000.00, AIA / WDA claimed 0.00, WDA + Capital Allowance claimed 0.00), " +
-        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a taxable profit of 226,508.00.",
+        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a net business profit of 226,508.00.",
     );
   });
 

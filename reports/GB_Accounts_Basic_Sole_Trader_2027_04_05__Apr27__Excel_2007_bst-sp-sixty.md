@@ -209,10 +209,10 @@ Trade: Private hire and taxi driving services
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 31,087 |
+| **Net business profit (box 28)** | 31,087 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30) | 0 |
-| **Net profit for tax calc** | 31,087 |
+| **Net profit for tax calc (box 31)** | 31,087 |
 
 ## Stock
 
@@ -392,10 +392,10 @@ Trade: Private hire and taxi driving services
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 31087 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 31087 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc** | 31087 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 31087 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 

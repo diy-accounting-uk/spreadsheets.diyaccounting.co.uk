@@ -479,19 +479,19 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
-| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `frs102:OtherOperatingIncome` | Box 9 |
-| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | — | Box 21 |
-| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 22 |
-| D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
-| O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
-| O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 25 |
-| D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 26 |
-| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 28 |
-| O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 29 |
-| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
-| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
+| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 9 |
+| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `frs102:OtherOperatingIncome` | Box 10 |
+| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 21 |
+| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | — | Box 22 |
+| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
+| D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
+| O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 25 |
+| O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 26 |
+| D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 27 |
+| D99 | **Net business profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 28 |
+| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 29 |
+| O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 30 |
+| D106 | Net profit for tax calc | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 31 |
 
 ### Income Tax
 
