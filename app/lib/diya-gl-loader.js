@@ -608,8 +608,6 @@ export function diyaGlToScenario(book, lines, product) {
   return scenario;
 }
 
-const TAX_DATA_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");
-
 /**
  * The depreciation table for a book's own accounting period. book.toml
  * carries no depreciation rates at all, so unlike the rest of
@@ -617,6 +615,13 @@ const TAX_DATA_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "dat
  * it is read from the app/data/<year>.toml file the period falls in, the
  * same file --years names and the page's loadTaxDataForBook resolves via
  * taxYearFileName, so a --data extraction and a --years run agree.
+ *
+ * Resolves app/data's path from import.meta.url lazily, on the first call,
+ * rather than at module load: this module is bundled into the books page
+ * (books-engine.js re-exports diyaGlToScenario from it), where url and path
+ * are stubs that throw when called -- extractTaxDataFromBook itself is
+ * Node-only and never reached from the bundle, but a module-scope call
+ * would run for every importer, browser included.
  * @param {Object} book - parsed book.toml
  * @param {"se"|"ltd"} taxRegime
  * @returns {Object} the tax-year file's [depreciation] table
@@ -629,7 +634,8 @@ function depreciationForBook(book, taxRegime) {
     );
   }
   const taxYearName = taxYearFileName(new Date(periodCoveredEnd), taxRegime);
-  const taxYearPath = resolve(TAX_DATA_DIR, `${taxYearName}.toml`);
+  const taxDataDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");
+  const taxYearPath = resolve(taxDataDir, `${taxYearName}.toml`);
   if (!existsSync(taxYearPath)) {
     throw new Error(`no tax-year file covers ${periodCoveredEnd} (looked for ${taxYearName}.toml)`);
   }
