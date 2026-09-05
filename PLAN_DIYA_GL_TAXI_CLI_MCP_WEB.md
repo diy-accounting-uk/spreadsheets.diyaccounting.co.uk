@@ -539,6 +539,21 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   `products/taxi.js:222` never surfaces a sibling module's load error; the view shows "Loading the
   Taxi views…" until T15's files exist.
 
+- T15 `c12c9a86`, `06281104`, merged 2026-09-05: `products/taxi-views.js` (the comparison panel with
+  `data-route`, the statement, the vehicle register, the computation in SA110 order with Class 2 as
+  its own line and the two payments, the quarterly and forecast summaries), `products/taxi-forms.js`
+  and `form-layouts/taxi.json` (34 boxes in 7 sections: 13 cells, 10 derived, 11 present and
+  empty; SE's envelope plus `derived`, bare A1 cells), `taxi-form-layouts.test.js` (9),
+  `taxi-views.css` imported by `taxi.css`, the bundle copying the whole form-layouts directory.
+  T13 had already wired the ten view entries. The browser cases are proved on the BST shell through
+  `loadManifest("taxi")`; T18 lands them as `books-taxi-views.browser.test.js` with the
+  drift-survival case once `taxi.html` exists. For T18: `snapshot.register` is
+  `{assets, unregistered, totals, cells}`; `computation.bands[i]` is `{label, rate, ceiling, tax,
+  cells}` and `paymentsOnAccount[i]` is `{cell, amount, due}`; sp-sixty's figures are 21,680 miles,
+  a £7,420 claim and £1,320 of general expenses; box 15 carries a `.sheet-placement` note on the
+  mileage route only, so sp-sixty carries three notes and basic and kestrel two; miles print with
+  `toLocaleString("en-GB")`. The SA103S render fetches its layout on first render, nothing at load.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
