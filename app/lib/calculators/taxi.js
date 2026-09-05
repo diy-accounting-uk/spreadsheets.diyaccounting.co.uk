@@ -391,21 +391,49 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   results.VitalTax.G6 = Math.round(annualOther * 100) / 100;
   results.VitalTax.G29 = Math.round(annualExpenses * 100) / 100;
 
-  // Wages Forecast — the projected year. Every fixture this calculator sees
-  // trades all twelve months, so the forecast repeats the actual year
-  // exactly. When a business trades fewer months, the template spreads the
-  // year's total across the months that did not trade instead of leaving
-  // them nil; that spread is not computed here, so C20, C22, C24, C28, C30
-  // and the tax block below them stay unset for a partial trading year.
-  const monthsTraded = MONTH_ORDER.filter((m) => (pl[`${MONTH_COLS[m]}5`] || 0) > 0).length;
+  // Wages Forecast — the projected year the customer plans drawings
+  // against. The sheet repeats a month that traded and spreads the year's
+  // own totals across the months that did not, so a driver who traded all
+  // twelve months forecasts the year just gone and one who started in
+  // October forecasts twice what he took (verified against the template:
+  // 'Wages Forecast'!C19 = SUM(D19:O19) over D19 = IF(D5>0,1," "); D20 =
+  // IF(C5>0,IF(D5>0,D5,C5/C19),0); D22 = D7; D24 = IF($C5>0,IF(D5>0,D9,
+  // ($C9-'Profit & Loss Acc'!$B10)/$C19+'Profit & Loss Acc'!$B10/12),0);
+  // D28 = IF($C5>0,IF(D5>0,D13,$C13/$C19),0); D26 = D20+D22-D24; D30 =
+  // D26-D28; C20 to C30 each sum their own row).
+  const monthTotal = (row) => MONTH_ORDER.reduce((sum, month) => sum + (pl[`${MONTH_COLS[month]}${row}`] || 0), 0);
+  const monthsTraded = MONTH_ORDER.filter((month) => (pl[`${MONTH_COLS[month]}5`] || 0) > 0).length;
   results["Wages Forecast"] = { C19: monthsTraded };
-  if (monthsTraded === MONTH_ORDER.length) {
+  if (monthsTraded > 0) {
     const forecast = results["Wages Forecast"];
-    forecast.C20 = totalSales;
-    forecast.C22 = otherBusinessIncome;
-    forecast.C24 = costOfSales;
-    forecast.C28 = totalGenExpenses;
-    forecast.C30 = Math.round((forecast.C20 + forecast.C22 - forecast.C24 - forecast.C28) * 100) / 100;
+    const yearTurnover = monthTotal(5);
+    const yearOtherIncome = monthTotal(24);
+    const yearCostOfSales = monthTotal(12);
+    const yearGenExpenses = monthTotal(22);
+    // Capital allowances are the one cost the spread leaves alone. The
+    // year claims them once however few months it traded, so the sheet
+    // lifts them out of the year's cost of sales, spreads what is left
+    // over the months that traded, and gives every month of the projected
+    // year a twelfth of the allowance back.
+    const spreadCostOfSales = (yearCostOfSales - (pl.B10 || 0)) / monthsTraded + (pl.B10 || 0) / 12;
+    let projectedTurnover = 0;
+    let projectedCostOfSales = 0;
+    let projectedGenExpenses = 0;
+    for (const month of MONTH_ORDER) {
+      const col = MONTH_COLS[month];
+      const traded = (pl[`${col}5`] || 0) > 0;
+      projectedTurnover += traded ? pl[`${col}5`] : yearTurnover / monthsTraded;
+      projectedCostOfSales += traded ? pl[`${col}12`] : spreadCostOfSales;
+      projectedGenExpenses += traded ? pl[`${col}22`] : yearGenExpenses / monthsTraded;
+    }
+    // Other income is the one row with no spread of its own: the forecast
+    // month reads the actual month straight through, so a year that traded
+    // six months forecasts the same other income it took.
+    forecast.C20 = Math.round(projectedTurnover * 100) / 100;
+    forecast.C22 = Math.round(yearOtherIncome * 100) / 100;
+    forecast.C24 = Math.round(projectedCostOfSales * 100) / 100;
+    forecast.C28 = Math.round(projectedGenExpenses * 100) / 100;
+    forecast.C30 = Math.round((projectedTurnover + yearOtherIncome - projectedCostOfSales - projectedGenExpenses) * 100) / 100;
     forecast.C34 = forecast.C30; // C33, the financial-health check's own manual cell, is nil in every fixture
     const forecastIncomeTax = calculateIncomeTax(forecast.C34, taxData.income_tax);
     const forecastNI = calculateNIClass4(forecast.C34, taxData.national_insurance);

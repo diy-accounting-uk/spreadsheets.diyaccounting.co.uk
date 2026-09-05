@@ -2,9 +2,9 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // calculator-taxi.test.js — Mirrors app/products/taxi.js's checkCompliance()
-// checks against the pure JS calculator, one test per check, run on three
+// checks against the pure JS calculator, one test per check, run on four
 // independent diya-gl fixtures (SP Sixty Driving, Kestrel Executive Cars,
-// Basic Taxi Driver). No LibreOffice and no xlsx: these prove the
+// Basic Taxi Driver, Autumn Start Cabs). No LibreOffice and no xlsx: these prove the
 // calculator's own arithmetic, not the Excel roundtrip (that is EQ1, run by
 // app/bin/verify-roundtrip.js against a recalculated package).
 
@@ -28,6 +28,7 @@ const FIXTURES = [
   { name: "sp-sixty-driving/taxi", dir: resolve(ROOT, "examples", "sp-sixty-driving", "taxi") },
   { name: "kestrel-executive-cars/taxi", dir: resolve(ROOT, "examples", "kestrel-executive-cars", "taxi") },
   { name: "basic-taxi-driver/taxi", dir: resolve(ROOT, "examples", "basic-taxi-driver", "taxi") },
+  { name: "autumn-start-cabs/taxi", dir: resolve(ROOT, "examples", "autumn-start-cabs", "taxi") },
 ];
 
 function runFixture(dataDir, linesOverride) {
@@ -137,6 +138,91 @@ describe("Taxi calculator — other business income", () => {
 
     expect(results["Profit & Loss Acc"].E5).toBe(withoutRental.results["Profit & Loss Acc"].E5 + 300);
     expect(results["Profit & Loss Acc"].B24).toBe(withoutRental.results["Profit & Loss Acc"].B24);
+  });
+});
+
+// ── The partial trading year ─────────────────────────────────────────────
+
+describe("Taxi calculator — a six-month year spreads the forecast", () => {
+  const dir = resolve(ROOT, "examples", "autumn-start-cabs", "taxi");
+
+  it("projects each traded month again and the year's own figures over the six that did not", () => {
+    const { results } = runFixture(dir);
+    const forecast = results["Wages Forecast"];
+    const pl = results["Profit & Loss Acc"];
+
+    expect(forecast.C19).toBe(6);
+    expect(forecast.C20).toBeCloseTo(2 * pl.B5, 0);
+    expect(forecast.C24).toBeCloseTo(2 * pl.B12, 0);
+    expect(forecast.C28).toBeCloseTo(2 * pl.B22, 0);
+    // Other income is repeated month for month, never spread, so it is the
+    // one figure the forecast does not double.
+    expect(forecast.C22).toBe(pl.B24);
+    expect(forecast.C30).toBeCloseTo(forecast.C20 + forecast.C22 - forecast.C24 - forecast.C28, 2);
+  });
+
+  it("keeps the capital allowance out of the spread and gives the projected year a twelfth a month", () => {
+    // The book buys no vehicle, so the allowance the spread has to leave
+    // alone is added here: a 6,000 car in October, coded to the capital
+    // column, claims a writing down allowance the year takes once however
+    // few months it traded.
+    const vehicle = {
+      entryNumber: "TXN-9001",
+      sourceJournalID: "purchases",
+      postingDate: "2025-10-06",
+      accountMainID: "7000",
+      amount: 6000,
+      documentType: "invoice",
+      detailComment: "Lincoln Motors",
+      lineItemComment: "Replacement vehicle",
+      taxCode: "OS",
+      taxRate: 0,
+      paymentMethod: "bank-transfer",
+    };
+    const { results, checks } = runFixture(dir, (lines) => [...lines, vehicle]);
+    const forecast = results["Wages Forecast"];
+    const pl = results["Profit & Loss Acc"];
+
+    expect(pl.B10).toBeCloseTo(6000 * taxData.capital_allowances.writing_down_allowance, 2);
+    // Each of the six traded months carries its own running costs and a
+    // twelfth of the allowance; each of the six that did not takes a sixth
+    // of the year's cost of sales less the allowance, plus a twelfth of the
+    // allowance again. The two halves come to the year's cost of sales twice
+    // over, less the allowance once.
+    expect(forecast.C24).toBeCloseTo(2 * pl.B12 - pl.B10, 2);
+    expect(checks.filter((c) => !c.pass)).toEqual([]);
+  });
+
+  it("a forecast turnover out by more than a pound fails the spread check and the profit check and nothing else", () => {
+    const { results, scenario } = runFixture(dir);
+    const before = checkCompliance(results, scenario, taxData, calculateExpectedTax);
+    const mutated = { ...results, "Wages Forecast": { ...results["Wages Forecast"], C20: results["Wages Forecast"].C20 + 10 } };
+    const after = checkCompliance(mutated, scenario, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken.sort()).toEqual([
+      "Forecast: profit = turnover + other income - cost of sales - expenses",
+      "Forecast: turnover = the traded months plus the year spread over the rest",
+    ]);
+  });
+
+  it("a fixture that miscounts its trading months fails only the fixture's own check", () => {
+    const { results, scenario } = runFixture(dir);
+    const before = checkCompliance(results, scenario, taxData, calculateExpectedTax);
+    const after = checkCompliance(results, { ...scenario, months_traded: 7 }, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Forecast: months of actual trade = the fixture's"]);
   });
 });
 
