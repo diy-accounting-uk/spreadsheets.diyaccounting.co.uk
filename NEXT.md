@@ -35,9 +35,9 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | SE-S4 | S4 `link-caches.js`, the calculator's leaf cells, the stale-cache state | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T3 | blocked-to-start | Fable, wave 6 |
-| SE-S8 | S8 example books per product from `scripts/example-books.json` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku, wave 6, after SE-T2 in the bundle script |
+| SE-S8 | S8 example books per product from `scripts/example-books.json` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Haiku, `.worktrees/spreadsheets/se-s8` |
 | SE-T1 | T1 SE anchor table and input-cell predicate | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t1` |
-| SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T1 | blocked-to-start | Opus, wave 6 |
+| SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t2` |
 | SE-T3 | T3 CIS both ways; BrickWork CIS-suffered sale; regeneration point | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t3` |
 | SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T3, SE-T2 | blocked-to-start | Sonnet, wave 7 |
 | SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S4 | blocked-to-start | Opus, wave 7 |
