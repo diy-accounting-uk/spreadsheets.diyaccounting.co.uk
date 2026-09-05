@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 869 },
-  { name: "se-brickwork-pro-vat", checkCount: 803 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 792 },
+  { name: "se-scenario-advanced", checkCount: 870 },
+  { name: "se-brickwork-pro-vat", checkCount: 804 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 793 },
 ];
 
 function loadFixture(name) {
@@ -255,6 +255,65 @@ describe("Self Employed engine: the checks are breakable", () => {
       expect(broken.sort()).toEqual([...corruption.failing].sort());
     });
   }
+});
+
+// se-loss-no-expected carries no [expected] table and nets to a loss on
+// every trading month: SE Short's D71 (net profit) and the SE Full/Income
+// Tax chain it feeds all floor at nil the way the template's own IF()
+// formulas do, and only O71 (net loss) and the SE Full loss boxes carry a
+// live figure. Before the SE-T27 fix, checkCompliance raised four mismatches
+// on this book that were artefacts of the check arithmetic, not the sheet:
+// D71's identity check and the SA103F box 47 counterpart it feeds compared
+// an unclamped turnover-less-expenses figure against D71's own clamped
+// value; the box 65/box 106 counterpart compared against SE Short!O106,
+// which was never in CELL_MAP so it always read as 0; the profit bridge
+// subtracted SE Short!O71 on top of Profit & Loss Account!B39 already
+// carrying that same loss, double-counting it; and the Forecast personal
+// allowance check compared the sheet's own IF(C39<=0,0,...) floor against
+// calculateExpectedTax's unfloored figure.
+describe("Self Employed engine: a loss-making book with no [expected] table", () => {
+  it("reports no compliance mismatches", () => {
+    const { scenario, expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    expect(pl.B39).toBeLessThan(0);
+    expect(scenario.expected).toBeUndefined();
+
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map(describeFailure)).toEqual([]);
+  });
+
+  it("still reports a real mismatch when the book carries an [expected] table", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    const wrongExpected = { ...expected, total_sales: pl.B9 + 12345 };
+
+    const broken = failures(checkCompliance(results, wrongExpected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Total Sales"]);
+  });
+
+  it("fails on the net loss identity and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Short"].O71 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      ["SA103S: net loss = total expenses - turnover - other business income", "SA103F box 48 net loss: full return (O129) = short return (O71)"].sort(),
+    );
+  });
+
+  it("fails on the profit bridge and the box 63 deduction total when SE Full's box 62 is corrupted", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Full"].D179 = 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      [
+        "Accounting profit to tax profit bridge closes to zero",
+        "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
+      ].sort(),
+    );
+  });
 });
 
 describe("Self Employed engine: the read scope", () => {
