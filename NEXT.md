@@ -14,7 +14,12 @@ The three successor plans (`PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_
 merges each verified commit into the batch branch and pushes; docs go to main). Each plan carries
 a `## Briefs` section, one per row; the cross-plan schedule, shared-file landing order and
 regeneration points are in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. R1 and R2 are green on the
-branch; generate-bst is green after the Class 2 field fix. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
+branch; generate-bst is green after the Class 2 field fix. The PR's `test` job is red at the head
+for two reasons: `books-equivalence` A3 compares the committed `examples/bst-latest` (Admin L17
+still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
+generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
+PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
+which Taxi T5 corrects. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
 `ready-to-start` with a worktree named have a fresh worktree and no agent yet; merge the batch
 branch into any worktree before dispatching. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
@@ -79,6 +84,9 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | LT-T15 | Ltd T15 CLI and MCP harness; Ltd edits in the edit map | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S6, LT-T1, LT-T2, SE-T14 | blocked-to-start | Sonnet, wave 7 |
 | LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T10, LT-T11, SE-T9 | blocked-to-start | Sonnet, wave 10 |
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, TX-T18 | blocked-to-start | Haiku, wave 11 |
+| LT-T20 | Ltd T20 the checks' remainders: TXN-0155's counter leg in the master, E37 and D91 ungated, journal legs exempt from duplicates, results into `bookchecks.json` and the MCP report, every declared dividend loaded | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 3, `.worktrees/spreadsheets/ltd-t20` |
+| LT-T21 | Ltd T21 the CT600 sheet's capital allowance boxes read the working sheet's empty column H; point AA177, AL177 and AA179 at column I in the template and regenerate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Sonnet, with R6; a template change, one reviewed binary commit |
+| LT-T22 | Ltd T22 per-product labels for the running-costs and tax bridge slices (`runningCosts.label`, `tax.label`), so Ltd's pie says Administrative expenses and Corporation tax | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 4, `.worktrees/spreadsheets/ltd-t22` |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
 
 ## Plans not tracked here
