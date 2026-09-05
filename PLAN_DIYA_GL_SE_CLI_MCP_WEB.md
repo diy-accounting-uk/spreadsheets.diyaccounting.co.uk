@@ -432,6 +432,9 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- For S7: the page's three `engine.taxYearFileName(new Date(...))` calls (`bst-data.js:907`,
+  `925`, `1077`) pass no regime and so name an `se-*` file for every product; the shell passes
+  the product module's `taxRegime`.
 - T5 the SE checks and warnings `223a8880`, `6f932139`, `ca9c386d`, merged 2026-09-05 with a
   formatting commit for `book-checks.js` and `books-engine.js`. Eight SE rules in
   `app/lib/book-checks/se.js`; `book-accounts-in-chart` and `book-dates-in-period` read the SE way
