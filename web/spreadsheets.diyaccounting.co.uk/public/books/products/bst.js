@@ -702,10 +702,17 @@
     };
   }
 
+  // Basic Sole Trader is one workbook, so the set an upload opens holds one
+  // workbook, whatever name it arrived under.
+  function theWorkbook(set) {
+    return set.names()[0];
+  }
+
   // A book built from the same cells CELL_MAP names: the entity fields, the
   // two entered ledger cells (everything else on that sheet is the
   // template's own formula) and the stock figures the exporter reads.
-  async function bookFromWorkbook(cells, lines, ctx) {
+  async function bookFromWorkbook(set, lines, ctx) {
+    var file = theWorkbook(set);
     var entity = { "diya-gl:product": SCHEMA_NAME, "diya-gl:vatRegistered": false };
     var openingBalances = {};
     var rows = ctx.productMod.CELL_MAP;
@@ -713,16 +720,16 @@
       var row = rows[i];
       var path = row[3];
       if (row[4] === BUSINESS_DETAILS_SECTION && path.indexOf(ENTITY_PATH_PREFIX) === 0) {
-        var text = await cells.readCell(row[0], row[1]);
+        var text = await set.readCell(file, row[0], row[1]);
         if (text !== undefined && text !== "") entity[path.slice(ENTITY_PATH_PREFIX.length)] = String(text);
       } else if (path.indexOf(OPENING_BALANCES_PATH_PREFIX) === 0) {
-        var balance = await cells.readCell(row[0], row[1]);
+        var balance = await set.readCell(file, row[0], row[1]);
         if (typeof balance === "number") openingBalances[path.slice(OPENING_BALANCES_PATH_PREFIX.length)] = balance;
       }
     }
     var stockCells = ctx.engine.STOCK_CELLS.bst;
-    var openingStock = await cells.readCell(stockCells.sheet, stockCells.openingValue);
-    var closingStock = await cells.readCell(stockCells.sheet, stockCells.closingValue);
+    var openingStock = await set.readCell(file, stockCells.sheet, stockCells.openingValue);
+    var closingStock = await set.readCell(file, stockCells.sheet, stockCells.closingValue);
 
     var book = {
       documentInfo: {
@@ -824,11 +831,11 @@
       },
     },
     upload: {
-      validate: function (engine, xlsxBytes) {
-        return engine.validateBstAnchors(xlsxBytes);
+      validate: function (engine, set) {
+        return engine.validateAnchors(set, engine.BST_ANCHORS, "Basic Sole Trader");
       },
-      extract: function (engine, xlsxBytes) {
-        return engine.extractBstTransactions(xlsxBytes, engine.bstExtractionMap());
+      extract: function (engine, set) {
+        return engine.extractLines(set, "bst", engine.bstExtractionMap());
       },
       bookFromWorkbook: bookFromWorkbook,
     },

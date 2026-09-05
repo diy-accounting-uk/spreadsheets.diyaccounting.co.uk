@@ -116,7 +116,7 @@ describe("taxTablesForPackage", () => {
     // allowance back onto the basic band rather than copy the toml's field.
     const buffer = await buildWorkbook({ Admin: { B23: "2024-25" } });
     const { xml, sharedStrings } = await adminSheetOf(buffer);
-    const tax = taxTablesForPackage(xml, sharedStrings, "se");
+    const tax = await taxTablesForPackage(xml, sharedStrings, "se");
     expect(tax.incomeTax).toEqual({
       personalAllowance: 12570,
       personalAllowanceTaperThreshold: 100000,
@@ -132,7 +132,7 @@ describe("taxTablesForPackage", () => {
   it("reconstructs Ltd's corporation tax and dividend tables from the same year's toml", async () => {
     const buffer = await buildWorkbook({ Admin: { F21: 45747 } });
     const { xml, sharedStrings } = await adminSheetOf(buffer);
-    const tax = taxTablesForPackage(xml, sharedStrings, "ltd");
+    const tax = await taxTablesForPackage(xml, sharedStrings, "ltd");
     expect(tax.corporationTax).toEqual({
       smallProfitsRate: 0.19,
       smallProfitsLimit: 50000,
@@ -148,7 +148,7 @@ describe("taxTablesForPackage", () => {
     // and no app/data/*.toml carries the employee side of Class 1 NI at all.
     const buffer = await buildWorkbook({ Admin: { F21: 45747 } });
     const { xml, sharedStrings } = await adminSheetOf(buffer);
-    const tax = taxTablesForPackage(xml, sharedStrings, "ltd");
+    const tax = await taxTablesForPackage(xml, sharedStrings, "ltd");
     expect(tax.capitalAllowances.annualInvestmentAllowance).toBeUndefined();
     expect(tax.nationalInsurance?.class1EmployeeMainRate).toBeUndefined();
   });
@@ -156,7 +156,7 @@ describe("taxTablesForPackage", () => {
   it("returns nothing for a year app/data/ has no file for", async () => {
     const buffer = await buildWorkbook({ Admin: { F21: 36250 } });
     const { xml, sharedStrings } = await adminSheetOf(buffer);
-    expect(taxTablesForPackage(xml, sharedStrings, "ltd")).toEqual({});
+    expect(await taxTablesForPackage(xml, sharedStrings, "ltd")).toEqual({});
   });
 
   it("leaves tax.vat unmapped for BST and Taxi -- their sheets carry no VAT rate cell of their own", async () => {
@@ -168,9 +168,9 @@ describe("taxTablesForPackage", () => {
     // either book would carry a rate the package never entered.
     const buffer = await buildWorkbook({ Admin: { B23: "2024-25" } });
     const { xml, sharedStrings } = await adminSheetOf(buffer);
-    expect(taxTablesForPackage(xml, sharedStrings, "bst").vat).toBeUndefined();
-    expect(taxTablesForPackage(xml, sharedStrings, "taxi").vat).toBeUndefined();
-    expect(taxTablesForPackage(xml, sharedStrings, "se").vat).toEqual({ standardRate: 0.2, registrationThreshold: 90000 });
+    expect((await taxTablesForPackage(xml, sharedStrings, "bst")).vat).toBeUndefined();
+    expect((await taxTablesForPackage(xml, sharedStrings, "taxi")).vat).toBeUndefined();
+    expect((await taxTablesForPackage(xml, sharedStrings, "se")).vat).toEqual({ standardRate: 0.2, registrationThreshold: 90000 });
   });
 });
 
@@ -200,7 +200,7 @@ describe("the emitted rates agree with the sheet's own formula results", () => {
     const adminXml = await zip.file(sheetMap.get("Admin")).async("string");
     const incomeTaxXml = await zip.file(sheetMap.get("Income Tax")).async("string");
 
-    const tax = taxTablesForPackage(adminXml, sharedStrings, "se");
+    const tax = await taxTablesForPackage(adminXml, sharedStrings, "se");
     const taxRates = {
       personal_allowance: tax.incomeTax.personalAllowance,
       personal_allowance_taper_threshold: tax.incomeTax.personalAllowanceTaperThreshold,
@@ -246,7 +246,7 @@ describe("the emitted rates agree with the sheet's own formula results", () => {
     const adminXml = await zip.file(sheetMap.get("Admin")).async("string");
     const ctXml = await zip.file(sheetMap.get("CorporationTax")).async("string");
 
-    const tax = taxTablesForPackage(adminXml, sharedStrings, "ltd");
+    const tax = await taxTablesForPackage(adminXml, sharedStrings, "ltd");
     const ctRates = {
       small_profits_rate: tax.corporationTax.smallProfitsRate,
       main_rate: tax.corporationTax.mainRate,

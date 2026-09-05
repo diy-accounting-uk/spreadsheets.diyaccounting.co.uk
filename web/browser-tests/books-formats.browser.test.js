@@ -226,7 +226,7 @@ test.describe("DIYA-GL books page — every way in", () => {
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 
-  test("an SE workbook fails the anchor guard by name, not silently or as a crash", async ({ page }) => {
+  test("one workbook of an SE package is refused as the part it is, not silently or as a crash", async ({ page }) => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(
       page,
@@ -236,7 +236,9 @@ test.describe("DIYA-GL books page — every way in", () => {
     );
     const message = page.locator("#empty-state-message");
     await expect(message).toHaveClass(/upload-error/);
-    await expect(message).toContainText("does not match the current Basic Sole Trader template");
+    await expect(message).toHaveText(
+      '"Financialaccounts.xlsx" is the hub workbook of a nine-file Self Employed package; upload the package zip.',
+    );
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 

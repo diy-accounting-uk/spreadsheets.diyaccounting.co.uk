@@ -37,6 +37,7 @@ import { loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.j
 import { calculateSeCells } from "../../app/lib/calculators/se.js";
 import { savePackageZip, taxYearFileName } from "../../app/lib/product-workbook.js";
 import { linkCacheValues, externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
+import { readXlsxCellValues } from "../../app/lib/xlsx-reader.js";
 import { canonicalValue } from "../../app/lib/report-serializer.js";
 import { parse as parseTOML } from "smol-toml";
 
@@ -510,36 +511,208 @@ test.describe("DIYA-GL books page — the fixture holds (A6)", () => {
 
 // ── A7: a true package upload ────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — a true package upload (A7)", () => {
-  // The nine workbooks of examples/se-latest, zipped the way a customer's
-  // own download ships. The page sniffs the set as Self Employed and then
-  // refuses it: products/se.js's upload.validate throws, so the drift and
-  // stale-cache layers a real package would light up have no way onto this
-  // page yet. Asserting the refusal by name keeps that visible; when the
-  // page reads a package the assertion becomes the drift set.
-  const REFUSAL =
-    "A Self Employed package is nine workbooks. This page reads one back from a diya-gl zip or a diya-gl JSON file; " +
-    "reading the workbooks themselves is not on this page yet.";
+// The nine workbooks of examples/se-latest, zipped the way a customer's own
+// download ships. The page sniffs the set as Self Employed, runs the anchor
+// table over all nine, extracts the book through the engine's own
+// extractLines and extractBook, and reads the hub's cached figures and its
+// link caches back as the as-read and link layers.
+const SE_PACKAGE_DIR = path.join(ROOT, "examples/se-latest");
 
-  async function seLatestZipBytes() {
-    const dir = path.join(ROOT, "examples/se-latest");
-    const zip = new JSZip();
-    for (const name of fs.readdirSync(dir).filter((file) => file.endsWith(".xlsx"))) {
-      zip.file(name, fs.readFileSync(path.join(dir, name)));
-    }
-    return zip.generateAsync({ type: "nodebuffer" });
+function packageWorkbookNames() {
+  return fs.readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"));
+}
+
+async function seLatestZipBytes(overrides) {
+  const zip = new JSZip();
+  for (const name of packageWorkbookNames()) {
+    zip.file(name, (overrides && overrides[name]) || fs.readFileSync(path.join(SE_PACKAGE_DIR, name)));
   }
+  return zip.generateAsync({ type: "nodebuffer" });
+}
 
-  test("the se-latest package is sniffed as Self Employed and refused by name", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
-    await dropFile(page, await seLatestZipBytes(), "se-latest-package.zip");
+// A copy of the hub with one cached link value bent, the same way A8 bends
+// one in the package the page saved: the hub then quotes a figure the leaf
+// itself no longer holds, which is what a customer leaves behind by saving a
+// leaf without reopening the hub.
+async function hubWithBentCache(targetFile, sheetName, cellRef) {
+  const hub = await JSZip.loadAsync(fs.readFileSync(path.join(SE_PACKAGE_DIR, HUB_FILE)));
+  const link = (await externalLinks(hub)).find((entry) => entry.targetFile === targetFile);
+  const sheetId = link.sheetNames.indexOf(sheetName);
+  const xml = await hub.file(link.path).async("string");
+  const block = new RegExp(`<sheetData\\s+sheetId="${sheetId}"[^>]*>[\\s\\S]*?</sheetData>`).exec(xml)[0];
+  const cached = new RegExp(`<cell r="${cellRef}"><v>([^<]*)</v></cell>`).exec(block);
+  expect(cached, `the hub caches ${targetFile}!${sheetName}!${cellRef}`).not.toBeNull();
+  const bent = block.replace(cached[0], `<cell r="${cellRef}"><v>${Number(cached[1]) + 1000}</v></cell>`);
+  hub.file(link.path, xml.replace(block, bent));
+  return hub.generateAsync({ type: "nodebuffer" });
+}
 
-    const message = page.locator("#empty-state-message");
-    await expect(message).toHaveClass(/upload-error/);
-    await expect(message).toHaveText(REFUSAL);
-    await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("se");
+async function uploadPackage(page, bytes, name) {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
+  await dropFile(page, bytes, name);
+  await waitForLoaded(page);
+}
+
+function driftFromPage(page) {
+  return page.evaluate(() =>
+    window.DIYA_BOOKS_SNAPSHOT.drift.map((entry) => ({
+      id: entry.id,
+      state: entry.state,
+      sheet: entry.sheet,
+      cell: entry.cell,
+      leaf: entry.leaf,
+      computed: entry.computed,
+      asRead: entry.asRead,
+      recalculated: entry.recalculated,
+    })),
+  );
+}
+
+// What the engine itself now holds for the cell a mark stands on: a hub cell
+// for a mark read straight off the hub, and the leaf cell for a mark that
+// came through a link cache.
+function engineFiguresFor(page, entries) {
+  return page.evaluate((wanted) => {
+    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+    const linkCells = snapshot.context.linkCells;
+    return wanted.map((entry) => {
+      if (entry.leaf === null) return snapshot.results[entry.sheet][entry.cell];
+      const at = entry.leaf.lastIndexOf("!");
+      const sheetKey = entry.leaf.slice(0, at);
+      return linkCells[sheetKey][entry.leaf.slice(at + 1)];
+    });
+  }, entries);
+}
+
+// The figure the uploaded package itself carries at the cell a mark names.
+async function uploadedFigureFor(entry) {
+  const [file, sheet, cell] = entry.leaf === null ? [HUB_FILE, entry.sheet, entry.cell] : entry.leaf.split("!");
+  const read = await readXlsxCellValues(fs.readFileSync(path.join(SE_PACKAGE_DIR, file)), { [sheet]: [cell] });
+  return read[sheet][cell];
+}
+
+test.describe("DIYA-GL books page — a true package upload (A7)", () => {
+  test("the se-latest package loads as Self Employed, on the book the engine reads back", async ({ page }) => {
+    await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
+
+    const loaded = await page.evaluate(() => ({
+      product: window.DiyaGlBooksPage.manifest.id,
+      declared: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"],
+      lines: window.DIYA_BOOKS_SNAPSHOT.lines.length,
+      bookValidation: window.DIYA_BOOKS_SNAPSHOT.bookValidation,
+      linesValidation: window.DIYA_BOOKS_SNAPSHOT.linesValidation,
+      period: window.DIYA_BOOKS_SNAPSHOT.period,
+    }));
+
+    expect(loaded.product).toBe("se");
+    expect(loaded.declared).toBe("SelfEmployed");
+    expect(loaded.bookValidation).toEqual({ valid: true, errors: [] });
+    expect(loaded.linesValidation).toEqual({ valid: true, errors: [] });
+
+    // The CLI reads the same package through the same extractLines, so the
+    // page's own count is the CLI's.
+    const exported = path.join(TARGET_DIR, "a7-se-latest-export");
+    const zipPath = path.join(TARGET_DIR, "a7-se-latest.zip");
+    fs.writeFileSync(zipPath, await seLatestZipBytes());
+    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", exported], {
+      cwd: ROOT,
+      stdio: "pipe",
+    });
+    const cliLines = fs.readFileSync(path.join(exported, "lines.jsonl"), "utf-8").trim().split("\n").length;
+    expect(loaded.lines).toBe(cliLines);
+  });
+
+  test("every drift mark reads the uploaded figure against the engine's", async ({ page }) => {
+    await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
+
+    const drift = await driftFromPage(page);
+    expect(drift.length, "the package's own cached figures give the page something to mark").toBeGreaterThan(0);
+    expect(drift.every((entry) => entry.state === "drift")).toBe(true);
+
+    const engineFigures = await engineFiguresFor(page, drift);
+    const mismatches = [];
+    for (let i = 0; i < drift.length; i++) {
+      const entry = drift[i];
+      const uploaded = await uploadedFigureFor(entry);
+      const where = `${entry.id}${entry.leaf ? ` via ${entry.leaf}` : ""}`;
+      if (canonical(entry.asRead, "money") !== canonical(uploaded, "money")) {
+        mismatches.push(`${where}: marked as-read ${entry.asRead}, the package holds ${uploaded}`);
+      }
+      if (canonical(entry.computed, "money") !== canonical(engineFigures[i], "money")) {
+        mismatches.push(`${where}: marked computed ${entry.computed}, the engine holds ${engineFigures[i]}`);
+      }
+      if (canonical(entry.asRead, "money") === canonical(entry.computed, "money")) {
+        mismatches.push(`${where}: marked though the two agree at ${entry.asRead}`);
+      }
+    }
+    expect(mismatches, mismatches.join("\n")).toEqual([]);
+  });
+
+  test("a mark survives a re-render and an edit, and says which it is", async ({ page }) => {
+    await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
+
+    // SE Short box 25 reads the Schedule's other capital allowances across a
+    // link, so it carries a mark in the form row's margin.
+    const marked = page.locator('#view-root .form-row:has([data-r-key="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction');
+    await page.locator('.tab-btn[data-view="sa103s"]').click();
+    await expect(marked).toHaveCount(1);
+
+    await page.locator('.tab-btn[data-view="payroll"]').click();
+    await page.locator('.tab-btn[data-view="sa103s"]').click();
+    await expect(marked, "the mark is re-applied on every render, not stamped in once").toHaveCount(1);
+
+    await page.locator('.tab-btn[data-view="year"]').click();
+    // The last month's purchases, because the extractors number each journal
+    // from EXP-0001 of its own: every line whose number a shorter journal
+    // also reached shares it, and the grid shows a line it cannot address on
+    // its own as a figure rather than a field. The purchases journal is the
+    // longest, so its later months are the addressable ones.
+    const month = page.locator(".year-row").last();
+    if ((await month.getAttribute("aria-expanded")) !== "true") await month.click();
+    const entriesToggle = page.locator("#entries-toggle");
+    if ((await entriesToggle.innerText()).includes("Show entries")) await entriesToggle.click();
+    await page.locator('[data-journal-switch="purchases"]').click();
+    const amountField = page.locator('.entries-table[data-journal="purchases"] [data-amount-entry]').first();
+    const was = Number(await amountField.inputValue());
+    await amountField.fill(String(was + 250));
+    await amountField.blur();
+    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.edited), { timeout: 30_000 }).toBe(true);
+
+    await page.locator('.tab-btn[data-view="sa103s"]').click();
+    await expect(marked, "an edit moves the calculated side, it does not clear the marks").toHaveCount(1);
+
+    const afterEdit = await driftFromPage(page);
+    const hubRead = afterEdit.filter((entry) => entry.leaf === null);
+    expect(hubRead.length, "the hub's own cells still carry marks").toBeGreaterThan(0);
+    expect(hubRead.every((entry) => entry.recalculated)).toBe(true);
+  });
+
+  test("a hub cache bent behind its leaf shows the stale warning, naming the leaf cell", async ({ page }) => {
+    await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
+    const before = await driftFromPage(page);
+
+    const hub = await hubWithBentCache("Payslips.xlsx", "Aug", "M1");
+    await uploadPackage(page, await seLatestZipBytes({ [HUB_FILE]: hub }), "se-latest-stale-hub.zip");
+    const after = await driftFromPage(page);
+
+    const stale = after.filter((entry) => entry.state === "stale");
+    expect(stale.map((entry) => `${entry.id} <- ${entry.leaf}`)).toEqual([
+      "Financialaccounts.xlsx!Wagesinterface!C8 <- Payslips.xlsx!Aug!M1",
+    ]);
+    expect(stale[0].asRead, "the mark shows the hub's own cache").toBe(
+      (await uploadedFigureFor({ leaf: null, sheet: "Wagesinterface", cell: "C8" })) + 1000,
+    );
+
+    // Nothing else moved: bending the hub's copy of one leaf cell cannot
+    // change what any other figure reads.
+    expect(after.filter((entry) => entry.state === "drift")).toEqual(before);
+
+    await page.locator('.tab-btn[data-view="payroll"]').click();
+    const warning = page.locator("#view-root .pencil-correction.is-stale");
+    await expect(warning).toHaveCount(1);
+    await expect(warning.locator(".drift-tag.is-stale")).toHaveText("the hub was saved before this leaf changed");
+    await expect(warning.locator(".drift-tag.is-stale")).toHaveAttribute("title", "Payslips.xlsx!Aug!M1");
   });
 });
 
