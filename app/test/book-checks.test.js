@@ -284,6 +284,31 @@ describe("each rule is breakable by one crafted change, and only that rule flips
     assertOnlyThisRuleFlips(fixture, "book-duplicate-entries", "warn");
   });
 
+  it("book-duplicate-entries: two legs of one balanced journal entry are not a duplicate of each other", () => {
+    const fixture = baseline();
+    fixture.lines.push(
+      {
+        entryNumber: "BREAK-JOURNAL-D",
+        sourceJournalID: "purchases",
+        postingDate: "2025-05-06",
+        accountMainID: "5000",
+        debitCreditCode: "D",
+        amount: 250.0,
+        detailComment: "Opening stock correction",
+      },
+      {
+        entryNumber: "BREAK-JOURNAL-C",
+        sourceJournalID: "purchases",
+        postingDate: "2025-05-06",
+        accountMainID: "5501",
+        debitCreditCode: "C",
+        amount: 250.0,
+        detailComment: "Opening stock correction",
+      },
+    );
+    assertOnlyThisRuleFlips(fixture, "book-duplicate-entries", "pass");
+  });
+
   it("book-empty-detail: a purchase with a blank detail", () => {
     const fixture = baseline();
     fixture.lines.push({

@@ -2315,18 +2315,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
   // Opening balances. A balance sheet that never posts is still balanced, so
-  // EJ91 alone cannot tell an unposted opening from a posted one. These
-  // checks tie each opening figure to the trial balance row it feeds.
+  // EJ91 alone cannot tell an unposted opening from a posted one. The next
+  // two checks tie the sheet's own opening balance sheet and trial balance
+  // audit rows to zero; both need only the calculated results, not a
+  // fixture's [opening_balance] table, so they run whether or not one is
+  // there -- a book loaded straight from a diya-gl file carries no such
+  // table.
+  const oa = results.OpenAccounts;
+  const tb = results.TrialBalance;
+  check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
+  check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
+
+  // The rest tie each opening figure to the trial balance row it feeds, so
+  // they run only where the fixture states an [opening_balance] table.
   if (expected.opening_balance) {
     const ob = expected.opening_balance;
-    const oa = results.OpenAccounts;
-    const tb = results.TrialBalance;
     const cost = ob.fixed_asset_cost || {};
     const depreciation = ob.fixed_asset_depreciation || {};
     const sum = (o) => Object.values(o).reduce((s, v) => s + v, 0);
-
-    check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
-    check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
 
     check("Trial Balance opening: fixed asset cost", (tb.D6 || 0) + (tb.D7 || 0) + (tb.D8 || 0) + (tb.D9 || 0) + (tb.D10 || 0), sum(cost));
     check(
@@ -3273,12 +3279,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // The year's HP interest and admin charges reaching the P&L's own "Bank
   // Charges" line (MnthP&L!B36), through the "B" bank-payment code every
-  // other direct bank charge on that line already uses. Computed from the
+  // other direct bank charge on that line already uses, plus whatever nets
+  // through the bank workbooks' "Bank Contra Items Received/Paid" rows
+  // (TrialBalance rows 88/89), which the sheet feeds from code "X" -- an
+  // uncoded transfer between the company's own accounts, coded "X" on the
+  // leg its own workbook has no more specific letter for. Computed from the
   // scenario's own bank transactions, not from the P&L cell it is compared
   // to, so a broken cross-file link shows up here rather than passing by
   // construction.
   if (pl && expected.bank) {
-    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B"));
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B") + netBankPayments("X"));
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash
@@ -3286,7 +3296,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // direction-tagged entries, not read back from a second formula, so a
   // receipt posted as a payment, a dropped month or an opening balance that
   // never carried forward shows up here.
+  //
+  // A "BC"-coded entry only carries the account's opening balance on the
+  // day the workbook's own first entry falls on; a "BC"-coded entry any
+  // other day is an ordinary transfer statement line, the same as any other
+  // code (see BANK_TRANSFER_CODES). tx.date arrives as a plain string from
+  // a book loaded straight off disk and as a TOML date object from a parsed
+  // fixture, so the day each file's own entries start on is keyed as text
+  // either way before the two are compared.
   if (expected.bank) {
+    const dateKey = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10));
+    const firstDayOf = {};
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
+        if (!fileName) continue;
+        const key = dateKey(tx.date);
+        if (!firstDayOf[fileName] || key < firstDayOf[fileName]) firstDayOf[fileName] = key;
+      }
+    }
     const movements = {};
     for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
       movements[fileName] = { opening: 0, receipts: 0, payments: 0 };
@@ -3296,7 +3324,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
         if (!fileName) continue;
         const movement = movements[fileName];
-        if (tx.code === "BC") movement.opening += tx.amount;
+        if (tx.code === "BC" && dateKey(tx.date) === firstDayOf[fileName]) movement.opening += tx.amount;
         else if (tx.direction === "in") movement.receipts += tx.amount;
         else if (tx.direction === "out") movement.payments += tx.amount;
       }

@@ -235,7 +235,12 @@ function journalCodeTotal(journal, code, rate) {
  * column carries, and the running balance A1 and A2 hold.
  *
  * An opening balance entry is written straight into its month's A1, replacing
- * the formula that would otherwise carry the month before it forward.
+ * the formula that would otherwise carry the month before it forward. Only a
+ * "BC"-coded entry in the year's first month tab is that opening balance --
+ * MONTH_KEYS always starts on the period's own opening month, so a "BC"-coded
+ * entry in any other month is an ordinary transfer statement line instead
+ * (BC also names the sibling a Bank.xlsx transfer points at, on Cash.xlsx's
+ * own tabs).
  */
 function bankBook(bankJournal, fileName) {
   const layout = BANK_LAYOUTS[fileName];
@@ -254,7 +259,7 @@ function bankBook(bankJournal, fileName) {
       const file = (tx.account || "1200") === "1220" ? "Cash.xlsx" : "Bank.xlsx";
       if (file !== fileName) continue;
       const month = months[index];
-      if (tx.code === "BC") {
+      if (tx.code === "BC" && index === 0) {
         month.openingWritten = (month.openingWritten || 0) + tx.amount;
         continue;
       }

@@ -17,6 +17,8 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateLtdResults } from "../lib/calculators/ltd.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { calculatedResultsFor } from "../bin/export.js";
+import { runBookChecks } from "../lib/book-checks.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -307,5 +309,65 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
         results["Fixedassets.xlsx!Schedule"].E1 += 250;
       }),
     ).toEqual(["Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals"]);
+  });
+});
+
+// ============================== export.js's shared R for the book checks ==============================
+// export.js's writeBookChecksJson and the MCP server's report tool both
+// build R through calculatedResultsFor rather than calculateFromDiyaGl
+// directly, so a Ltd book's distributable-profits warning sees the same
+// calculated accounts either way.
+
+describe("calculatedResultsFor matches the engine's own D-to-R loop", () => {
+  it("is the same R calculateFromDiyaGl produces from the same book and lines", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const direct = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    const wired = calculatedResultsFor(book, lines, taxData);
+    expect(wired).toEqual(direct);
+  });
+
+  it("lets the dividend warning read real distributable profits, not the calculated-accounts placeholder", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const results = calculatedResultsFor(book, lines, taxData);
+    const withoutResults = runBookChecks({ book, lines, taxData }).results.find(
+      (r) => r.id === "ltd-dividend-within-distributable-profits",
+    );
+    const withResults = runBookChecks({ book, lines, taxData, results }).results.find(
+      (r) => r.id === "ltd-dividend-within-distributable-profits",
+    );
+    expect(withoutResults.label).toContain("not known without the calculated accounts");
+    expect(withResults.label).toContain("retained profit brought forward plus profit after tax");
+  });
+});
+
+// ============================== the opening balance sheet's own audit checks ==============================
+// E37 and D91 compare a trial balance row to zero and need no [opening_balance]
+// table to do it, so they run whether or not diyaGlToScenario found one to
+// set -- a book with nothing brought forward (a first year with no opening
+// balance sheet at all) still owes the sheet a zero on both rows.
+
+describe("the opening balance sheet's own audit checks run without an [opening_balance] table", () => {
+  it("run and pass on the full fixture from the book path even with no such table stated", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    const yearEnd = new Date(book.documentInfo.periodCoveredEnd).toISOString().slice(0, 10);
+
+    expect(merged.opening_balance).toBeDefined();
+    const withoutOpeningBalance = { ...merged };
+    delete withoutOpeningBalance.opening_balance;
+
+    const checks = ltd.checkCompliance({ ...results }, withoutOpeningBalance, taxData, calculateExpectedTax, yearEnd);
+    const e37 = checks.find((c) => c.name === "Opening balance sheet: accuracy check (E37)");
+    const d91 = checks.find((c) => c.name === "Trial Balance: opening balances audit check (D91)");
+    expect(e37).toBeDefined();
+    expect(e37.pass).toBe(true);
+    expect(d91).toBeDefined();
+    expect(d91.pass).toBe(true);
   });
 });

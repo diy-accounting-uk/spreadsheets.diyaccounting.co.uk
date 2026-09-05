@@ -348,6 +348,20 @@ function duplicateKey(line) {
   return [line.sourceJournalID, line.postingDate, line.amount, line.detailComment || ""].join("|");
 }
 
+// Two lines that share a journal, date, amount and detail are each other's
+// own two legs, not a duplicate, when one debits and the other credits a
+// different account: a balanced double-entry pair nets to nil, which no
+// accidental re-entry of the same one-sided posting ever does. Sales and
+// purchases lines carry no debitCreditCode at all, so this never exempts a
+// pair of those -- only bank and journal lines can ever match it.
+function isBalancedPair(group) {
+  if (group.length !== 2) return false;
+  const [first, second] = group;
+  if (first.accountMainID === second.accountMainID) return false;
+  const codes = [first.debitCreditCode, second.debitCreditCode].sort();
+  return codes[0] === "C" && codes[1] === "D";
+}
+
 function duplicateEntriesWarning(ctx) {
   const groups = new Map();
   for (const line of ctx.lines) {
@@ -356,7 +370,7 @@ function duplicateEntriesWarning(ctx) {
     groups.get(key).push(line);
   }
   let offenders = [];
-  for (const group of groups.values()) if (group.length > 1) offenders = offenders.concat(group);
+  for (const group of groups.values()) if (group.length > 1 && !isBalancedPair(group)) offenders = offenders.concat(group);
   offenders = offenders.sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {

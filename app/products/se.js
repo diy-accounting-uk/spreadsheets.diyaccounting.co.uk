@@ -2327,15 +2327,31 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // second spreadsheet formula, so a wrong closing balance -- wrong
   // opening balance carried forward, a receipt posted as a payment, a
   // month dropped -- shows up as a mismatch.
+  //
+  // A "BC"-coded entry only carries the account's opening balance on the
+  // day its own first entry falls on; a "BC"-coded entry any other day is
+  // an ordinary transfer statement line, the same as any other code. tx.date
+  // arrives as a plain string from a book loaded straight off disk and as a
+  // TOML date object from a parsed fixture, so it is keyed as text either
+  // way before two are compared.
   if (expected.bank) {
+    const dateKey = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10));
     const closingBalanceCheck = (fileName, account) => {
+      let firstDay = null;
+      for (const transactions of Object.values(expected.bank)) {
+        for (const tx of transactions) {
+          if ((tx.account || "1200") !== account) continue;
+          const key = dateKey(tx.date);
+          if (!firstDay || key < firstDay) firstDay = key;
+        }
+      }
       let openingBC = 0;
       let receipts = 0;
       let payments = 0;
       for (const transactions of Object.values(expected.bank)) {
         for (const tx of transactions) {
           if ((tx.account || "1200") !== account) continue;
-          if (tx.code === "BC") openingBC += tx.amount;
+          if (tx.code === "BC" && dateKey(tx.date) === firstDay) openingBC += tx.amount;
           else if (tx.direction === "in") receipts += tx.amount;
           else if (tx.direction === "out") payments += tx.amount;
         }
@@ -2945,7 +2961,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
-    if (taxData.tax_year?.end) {
+    if (taxData?.tax_year?.end) {
       const deadlineYear = new Date(taxData.tax_year.end).getUTCFullYear() + 1;
       check(
         "Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends",
@@ -2979,7 +2995,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(results.Admin.B17),
       0,
     );
-    if (taxData.tax_year) {
+    if (taxData?.tax_year) {
       checkText(
         "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
         payrollCalendar.N1,

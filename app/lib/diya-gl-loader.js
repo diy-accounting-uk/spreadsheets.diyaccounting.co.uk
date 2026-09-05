@@ -563,9 +563,14 @@ export function diyaGlToScenario(book, lines, product) {
       return entry;
     });
   }
+  // The Board Minute sheet has one meeting date and one declared figure, so
+  // a book with more than one dividend voucher still reaches the sheet as
+  // one minute: the total across every voucher declared, dated the first
+  // voucher's own board meeting. A second or later voucher's own meeting
+  // date has nowhere on that one sheet to go.
   if (product === "ltd" && book.dividends?.length > 0) {
-    const dividend = book.dividends[0];
-    scenario.dividend = { board_meeting: dividend.boardMeetingDate, declared: dividend.amount };
+    const declared = book.dividends.reduce((total, dividend) => total + dividend.amount, 0);
+    scenario.dividend = { board_meeting: book.dividends[0].boardMeetingDate, declared };
   }
 
   // A purchase coded f capitalises out of the profit and loss account, and

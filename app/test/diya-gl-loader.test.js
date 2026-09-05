@@ -27,9 +27,9 @@ describe("loadDiyaGlData", () => {
     const { book, lines } = loadDiyaGlData(FULL_DATA);
     expect(book.entityInformation.organizationIdentifier).toBe("Precision Code Ltd");
     // The land & buildings opening asset's two OB- journal lines (the asset
-    // and its offsetting retained earnings entry) add to the 722 lines the
+    // and its offsetting retained earnings entry) add to the 723 lines the
     // rest of the book carries.
-    expect(lines.length).toBe(724);
+    expect(lines.length).toBe(725);
   });
 });
 
@@ -180,6 +180,17 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
     expect(brickFixture.hp_agreements).toBeUndefined();
     expect(brickScenario.charges).toBeUndefined();
     expect(brickFixture.charges).toBeUndefined();
+  });
+
+  it("dividend.declared sums every voucher a book declares, dated the first one's own board meeting", () => {
+    const { book, lines } = loadDiyaGlData(FULL_DATA);
+    expect(book.dividends).toHaveLength(1);
+    book.dividends = [
+      { boardMeetingDate: book.dividends[0].boardMeetingDate, amount: book.dividends[0].amount },
+      { boardMeetingDate: new Date("2026-06-30"), amount: 4000 },
+    ];
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    expect(scenario.dividend).toEqual({ board_meeting: fullFixture.dividend.board_meeting, declared: fullFixture.dividend.declared + 4000 });
   });
 });
 
