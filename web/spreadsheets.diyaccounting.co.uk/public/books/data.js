@@ -36,80 +36,24 @@
 (function (global) {
   "use strict";
 
-  // ============================== the drift layer ==============================
-  // Mirrors app/bin/verify-roundtrip.js's canonicalForUnit: a money value
-  // rounds half up at a working precision finer than a penny first (so
-  // binary-float noise never nudges the penny the wrong way), then to the
-  // penny; a rate rounds half up to six places. Both operate on the numbers
-  // the engine and the workbook already hand back -- there is no string
-  // decimal arithmetic here, only enough guard to keep IEEE-754 noise from
-  // reading as a genuine difference.
-  var WORKING_DECIMALS = 6;
-  var MONEY_DECIMALS = 2;
-  var RATE_DECIMALS = 6;
+  // The as-read layer, the link layer and the drift they show live in
+  // drift.js (window.DiyaGlDrift); this file captures them at load and hands
+  // them to every snapshot.
 
-  function roundHalfUp(value, decimals) {
-    if (typeof value !== "number" || !isFinite(value)) return value;
-    var factor = Math.pow(10, decimals);
-    var guarded = value + (value >= 0 ? 1 : -1) * Math.max(Math.abs(value), 1) * 1e-9;
-    var sign = guarded < 0 ? -1 : 1;
-    return (sign * Math.round(Math.abs(guarded) * factor)) / factor;
-  }
-
-  function canonicalise(value, unit) {
-    if (typeof value !== "number" || !isFinite(value)) return value;
-    if (unit === "rate") return roundHalfUp(value, RATE_DECIMALS);
-    return roundHalfUp(roundHalfUp(value, WORKING_DECIMALS), MONEY_DECIMALS);
-  }
-
-  // The as-read layer, captured once off the uploaded bytes. The workbook's
-  // own cached values never change while the page is open -- editing moves
-  // the calculated side only -- so the cells are read here and every later
-  // drift comparison runs against this captured layer rather than reopening
-  // the file. Text cells (entity fields) carry no meaningful "drift" in the
-  // pencil-correction sense, so only the units the manifest names are
-  // compared, and the sections it excludes are skipped.
-  async function captureAsReadLayer(cellMap, workbookCells, manifest) {
-    var captured = [];
-    for (var i = 0; i < cellMap.length; i++) {
-      var entry = cellMap[i];
-      var sheet = entry[0],
-        cell = entry[1],
-        label = entry[2],
-        section = entry[4],
-        unit = entry[6];
-      if (!manifest.drift.units[unit]) continue;
-      if (manifest.drift.excludedSections[section]) continue;
-      if (!workbookCells.hasSheet(sheet)) continue;
-      var value = await workbookCells.readCell(sheet, cell);
-      if (typeof value !== "number") continue;
-      captured.push({ sheet: sheet, cell: cell, label: label, unit: unit, value: value });
-    }
-    return captured;
-  }
-
-  // Every captured cell compared to what the engine now computes. Before any
-  // edit a difference is a reconciliation finding; after one it is the edit's
-  // own effect, so the annotation says "recalculated" instead.
-  function driftFromAsRead(asReadLayer, results, recalculated) {
-    var drift = [];
-    for (var i = 0; i < asReadLayer.length; i++) {
-      var entry = asReadLayer[i];
-      var computedRaw = results[entry.sheet] && results[entry.sheet][entry.cell];
-      if (typeof computedRaw !== "number") continue;
-      var computed = canonicalise(computedRaw, entry.unit);
-      var asRead = canonicalise(entry.value, entry.unit);
-      if (Math.abs(computed - asRead) < 1e-9) continue;
-      drift.push({
-        id: entry.sheet + "!" + entry.cell,
-        label: entry.label,
-        computed: computedRaw,
-        asRead: entry.value,
-        note: entry.sheet + "!" + entry.cell,
-        recalculated: !!recalculated,
-      });
-    }
-    return drift;
+  // A single uploaded workbook read through the set contract, so both kinds
+  // of upload capture their layers through one reader.
+  function singleWorkbookSet(workbookCells) {
+    return {
+      has: function () {
+        return true;
+      },
+      hasSheet: function (file, sheetName) {
+        return workbookCells.hasSheet(sheetName);
+      },
+      readCell: function (file, sheetName, cellRef) {
+        return workbookCells.readCell(sheetName, cellRef);
+      },
+    };
   }
 
   // ============================== engine loading ==============================
@@ -517,7 +461,10 @@
     var expected = Object.assign({}, scenario, scenario.expected);
     var results = engine.calculateFromDiyaGl(book, lines, manifest.id, context.taxData, expected);
     var checks = productMod.checkCompliance(Object.assign({}, results), expected, context.taxData, engine.calculateExpectedTax);
-    var drift = context.asReadLayer ? driftFromAsRead(context.asReadLayer, results, !!context.edited) : [];
+    var links = context.linkLayer
+      ? { layer: context.linkLayer, cells: context.linkCells, hubFile: context.hubFile, classify: engine.classifyLinkCell }
+      : null;
+    var drift = context.asReadLayer ? global.DiyaGlDrift.driftFromAsRead(context.asReadLayer, results, !!context.edited, links) : [];
 
     var fullContext = Object.assign({}, context, { engine: engine, productMod: productMod });
     var ctx = Object.assign({ book: book, lines: lines, results: results, checks: checks, drift: drift }, fullContext);
@@ -702,7 +649,18 @@
 
     var taxYearName = taxYearFor(engine, productMod, book);
     var taxData = await engine.loadTaxDataForBook(book, { resources: loaded.resources, taxYearName: taxYearName });
-    var asReadLayer = await captureAsReadLayer(productMod.CELL_MAP, workbookCells, manifest);
+    // A multi-file package's hub caches every leaf cell it reads, so its
+    // upload captures the link layer too, and the engine's unscoped link
+    // cells once, beside it.
+    var hubFile = manifest.multiFile ? engine.HUB_FILE : null;
+    var set = manifest.multiFile ? await global.DiyaGlXlsxCells.openWorkbookSet(sniffed.bytes) : singleWorkbookSet(workbookCells);
+    var asReadLayer = await global.DiyaGlDrift.captureAsReadLayer(productMod.CELL_MAP, set, hubFile, manifest);
+    var linkLayer = manifest.multiFile ? await global.DiyaGlDrift.captureLinkLayer(set, hubFile, engine) : null;
+    var linkCells = null;
+    if (manifest.multiFile) {
+      var scenario = engine.diyaGlToScenario(book, lines, manifest.id);
+      linkCells = engine.calculateLinkCells(book, lines, manifest.id, taxData, Object.assign({}, scenario, scenario.expected));
+    }
 
     var snapshot = await buildSnapshot(book, lines, {
       manifest: manifest,
@@ -710,6 +668,9 @@
       taxData: taxData,
       taxYearName: taxYearName,
       asReadLayer: asReadLayer,
+      linkLayer: linkLayer,
+      linkCells: linkCells,
+      hubFile: hubFile,
     });
     snapshot.bookValidation = bookValidation;
     snapshot.linesValidation = linesValidation;

@@ -7,7 +7,9 @@
 // with the filesystem behind an injectable resource loader: the default reads
 // this repo's app/ directory, a browser supplies one backed by fetch. Nothing
 // here recalculates; every workbook carries fullCalcOnLoad="1" so the
-// spreadsheet app computes it on open.
+// spreadsheet app computes it on open. A multi-file package's link caches are
+// filled from the calculator's own figures, so a workbook that reads a sibling
+// shows the book's numbers before the app re-resolves the link.
 //
 // The product comes from the book itself, so one save path serves all four:
 // a single-file product (Basic Sole Trader, Taxi Driver) writes one workbook,
@@ -18,6 +20,8 @@ import { parse as parseTOML } from "smol-toml";
 
 import { generateSpreadsheet, packageNaming, applyYearEndSequence, setFullCalcOnLoad } from "./generator.js";
 import { applyCellWrites } from "./spreadsheet-runner.js";
+import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "./link-caches.js";
+import { calculateLinkCells } from "./diya-gl-calculator.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { nodeResourceLoader } from "./app-resources.js";
 import * as bst from "../products/bst.js";
@@ -218,6 +222,7 @@ async function resolveInputs(book, lines, options) {
     productMeta,
     dirName,
     xlsxFilename,
+    scenario,
     writes,
   };
 }
@@ -242,6 +247,27 @@ async function composeFile(inputs, templateFile) {
   return setFullCalcOnLoad(buffer);
 }
 
+// Every workbook of the package, then every link-bearing one with its caches
+// refreshed from the calculator. The calculator holds every figure before the
+// first refresh, so the order is the declared one and nothing else.
+async function composeFiles(inputs, book, lines) {
+  const files = [];
+  for (const templateFile of inputs.templateFiles) {
+    files.push({ name: templateFile, bytes: await composeFile(inputs, templateFile) });
+  }
+
+  const linkOrder = LINK_ORDER[inputs.product];
+  if (!linkOrder) return files;
+
+  const reader = resultsReader(calculateLinkCells(book, lines, inputs.product, inputs.taxData, inputs.scenario));
+  for (const name of linkOrder) {
+    const file = files.find((entry) => entry.name === name);
+    if (!file) throw new Error(`${name} is in LINK_ORDER.${inputs.product} but not among the ${inputs.product} template files`);
+    file.bytes = (await refreshWorkbookLinkCaches(file.bytes, reader)).bytes;
+  }
+  return files;
+}
+
 /**
  * A book as the workbooks a spreadsheet app opens: one file for Basic Sole
  * Trader and Taxi Driver, the whole set for Self Employed and Company.
@@ -257,11 +283,10 @@ async function composeFile(inputs, templateFile) {
 export async function saveWorkbookFiles(book, lines, options = {}) {
   const inputs = await resolveInputs(book, lines, options);
 
-  const files = [];
-  for (const templateFile of inputs.templateFiles) {
-    const bytes = await composeFile(inputs, templateFile);
-    files.push({ name: inputs.multiFile ? templateFile : inputs.xlsxFilename, bytes });
-  }
+  const files = (await composeFiles(inputs, book, lines)).map(({ name, bytes }) => ({
+    name: inputs.multiFile ? name : inputs.xlsxFilename,
+    bytes,
+  }));
 
   return { product: inputs.product, dirName: inputs.dirName, files };
 }
@@ -291,10 +316,8 @@ export async function savePackageZip(book, lines, options = {}) {
   const inputs = await resolveInputs(book, lines, options);
 
   const zip = new JSZip();
-  for (const templateFile of inputs.templateFiles) {
-    const bytes = await composeFile(inputs, templateFile);
-    const name = inputs.multiFile ? `${inputs.dirName}/${templateFile}` : inputs.xlsxFilename;
-    zip.file(name, bytes, { date: DOS_EPOCH });
+  for (const { name, bytes } of await composeFiles(inputs, book, lines)) {
+    zip.file(inputs.multiFile ? `${inputs.dirName}/${name}` : inputs.xlsxFilename, bytes, { date: DOS_EPOCH });
   }
   // The package directory is an entry of its own, which JSZip dates with the
   // time of the run; the zip is the same bytes every time without that.

@@ -25,7 +25,7 @@ import { parse as parseTOML } from "smol-toml";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
-import { calculateSeResults } from "../lib/calculators/se.js";
+import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
 import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
@@ -332,6 +332,42 @@ describe("Self Employed engine: the read scope", () => {
       for (const cell of Object.keys(cells)) if (!labels[`${sheet}!${cell}`]?.unit) undeclared.push(`${sheet}!${cell}`);
     }
     expect(undeclared).toEqual([]);
+  });
+});
+
+// The leaf cells a sibling workbook's link addresses, each anchored to the
+// fixture's own lines rather than to anything the engine produced.
+describe("Self Employed engine: the leaf cells a link addresses", () => {
+  const { scenario } = loadFixture("se-scenario-advanced");
+  const rate = vatRateFor(scenario);
+  const cells = calculateSeCells({}, [], TAX_DATA, scenario);
+  const net = (amount) => amount - (amount * rate) / (1 + rate);
+
+  it("totals April's product sales (code a) in Sales.xlsx!Apr!P1", () => {
+    const april = scenario.sales.apr.filter((tx) => !tx.mileage && (tx.code || "a") === "a");
+    expect(april.length).toBeGreaterThan(0);
+    expect(cells["Sales.xlsx!Apr"].P1).toBeCloseTo(
+      april.reduce((sum, tx) => sum + net(tx.amount), 0),
+      6,
+    );
+  });
+
+  it("runs the fixed asset purchases (code fa) to the year's total in Purchases.xlsx!Mar!AB2", () => {
+    const yearTotal = fixtureNet(scenario.purchases, ["fa"], rate);
+    expect(yearTotal).toBeGreaterThan(0);
+    expect(cells["Purchases.xlsx!Mar"].AB2).toBeCloseTo(yearTotal, 6);
+  });
+
+  it("totals April's debtor receipts (code DR) in Bank.xlsx!Apr!H1", () => {
+    const receipts = scenario.bank.apr.filter((tx) => (tx.account || "1200") === "1200" && tx.direction === "in" && tx.code === "DR");
+    expect(receipts.length).toBeGreaterThan(0);
+    expect(cells["Bank.xlsx!Apr"].H1).toBe(receipts.reduce((sum, tx) => sum + tx.amount, 0));
+  });
+
+  it("totals April's gross pay in Payslips.xlsx!Apr!M1", () => {
+    const april = scenario.payroll.apr;
+    expect(april.length).toBeGreaterThan(0);
+    expect(cells["Payslips.xlsx!Apr"].M1).toBe(april.reduce((sum, entry) => sum + entry.grossPay, 0));
   });
 });
 

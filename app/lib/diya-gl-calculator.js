@@ -12,7 +12,7 @@
 
 import { calculateBstResults } from "./calculators/bst.js";
 import { calculateTaxiResults } from "./calculators/taxi.js";
-import { calculateSeResults } from "./calculators/se.js";
+import { calculateSeCells, calculateSeResults } from "./calculators/se.js";
 import { calculateLtdCells, calculateLtdResults } from "./calculators/ltd.js";
 
 export { aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./calculators/shared.js";
@@ -40,12 +40,13 @@ export function calculateFromDiyaGl(book, lines, product, taxData, scenario = {}
  * so asking for its link cells is a bug rather than an empty answer.
  * @param {Object} book - parsed book.toml
  * @param {Array} lines - parsed lines.jsonl entries
- * @param {string} product - 'ltd'
+ * @param {string} product - 'se' | 'ltd'
  * @param {Object} taxData - tax rates from app/data/*.toml format
  * @param {Object} [scenario] - optional scenario with stock/debtors/creditors
  * @returns {Object} { "SheetName": { "CellRef": value, ... }, ... }
  */
 export function calculateLinkCells(book, lines, product, taxData, scenario = {}) {
+  if (product === "se") return calculateSeCells(book, lines, taxData, scenario);
   if (product === "ltd") return calculateLtdCells(book, lines, taxData, scenario);
   throw new Error(`Product "${product}" has no external link cells`);
 }

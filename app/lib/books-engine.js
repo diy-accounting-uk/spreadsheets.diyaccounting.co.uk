@@ -52,7 +52,7 @@ export {
 
 // R's own serialisation, so a browser export and a CLI export of the same
 // book write the same report.json bytes.
-export { buildReportDocument, serializeReportDocument, slug } from "./report-serializer.js";
+export { buildReportDocument, serializeReportDocument, slug, canonicalValue } from "./report-serializer.js";
 
 // overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
 // that module resolves its template path from import.meta.url at the top
@@ -76,7 +76,26 @@ export {
 } from "./books-interchange.js";
 
 // Computing the reports, without a spreadsheet application.
-export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
+export {
+  calculateFromDiyaGl,
+  calculateLinkCells,
+  aggregateByAccountAndMonth,
+  annualTotal,
+  sumValues,
+  aggregateByCode,
+} from "./diya-gl-calculator.js";
+
+// The link caches a multi-file package carries, and the reader that fills
+// them from the calculator's own results.
+export {
+  refreshLinkCaches,
+  resultsReader,
+  linkCacheValues,
+  linkAddressedCells,
+  classifyLinkCell,
+  LINK_ORDER,
+  HUB_FILE,
+} from "./link-caches.js";
 
 // The checks and the report shape.
 export {

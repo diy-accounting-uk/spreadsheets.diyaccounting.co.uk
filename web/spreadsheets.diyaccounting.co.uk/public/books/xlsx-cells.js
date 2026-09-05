@@ -177,7 +177,7 @@
    * one opens on the first question asked of it and stays open, so a page
    * that reads two cells off the hub decompresses nothing else.
    * @param {Uint8Array} zipBytes
-   * @returns {Promise<{names: () => string[], has: (file: string) => boolean, hasSheet: (file: string, sheet: string) => Promise<boolean>, readCell: (file: string, sheet: string, cellRef: string) => Promise<*>}>}
+   * @returns {Promise<{names: () => string[], has: (file: string) => boolean, hasSheet: (file: string, sheet: string) => Promise<boolean>, readCell: (file: string, sheet: string, cellRef: string) => Promise<*>, zip: (file: string) => Promise<Object>}>}
    */
   async function openWorkbookSet(zipBytes) {
     var zip = await global.JSZip.loadAsync(zipBytes);
@@ -208,6 +208,27 @@
       return cellsByName.get(key);
     }
 
+    // The workbook's own JSZip, for the engine's link-cache readers, which
+    // take any JSZip-shaped object.
+    var zipsByName = new Map();
+    function zipFor(file) {
+      var key = workbookBaseName(file).toLowerCase();
+      var entryPath = pathByName.get(key);
+      if (!entryPath) throw new Error("The package holds no workbook named " + file + ".");
+      if (!zipsByName.has(key)) {
+        zipsByName.set(
+          key,
+          zip
+            .file(entryPath)
+            .async("uint8array")
+            .then(function (bytes) {
+              return global.JSZip.loadAsync(bytes);
+            }),
+        );
+      }
+      return zipsByName.get(key);
+    }
+
     return {
       names: function () {
         return names.slice();
@@ -225,6 +246,7 @@
         if (!pending) return undefined;
         return (await pending).readCell(sheetName, cellRef);
       },
+      zip: zipFor,
     };
   }
 

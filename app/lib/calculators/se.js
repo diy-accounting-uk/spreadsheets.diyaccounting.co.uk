@@ -228,6 +228,20 @@ function journalCodeTotal(journal, code, rate) {
   return total;
 }
 
+// Row 1 of a journal month tab's analysis block: one net total per code column.
+function analysisTotals(month, analysisColumns) {
+  const cells = {};
+  for (const [code, column] of Object.entries(analysisColumns)) cells[`${column}1`] = month.byCode[code] || 0;
+  return cells;
+}
+
+// One analysis column's running total, tab by tab: April's is its own figure
+// and every later tab adds the month before it.
+function runningTotals(months, code) {
+  let total = 0;
+  return months.map((month) => (total += month.byCode[code] || 0));
+}
+
 // ── Bank and cash ──────────────────────────────────────────────────────────
 
 /**
@@ -276,6 +290,20 @@ function bankBook(bankJournal, fileName) {
     carried = month.closing;
   }
   return months;
+}
+
+// Every month tab of a bank workbook: the running balance in A1 and A2 and, on
+// row 1, each analysis column's own total.
+function bankMonthTabs(fileName, months) {
+  const layout = BANK_LAYOUTS[fileName];
+  const tabs = {};
+  months.forEach((month, index) => {
+    const cells = { A1: month.opening, A2: month.closing };
+    for (const [code, column] of Object.entries(layout.receiptColumns)) cells[`${column}1`] = month.receiptsByCode[code] || 0;
+    for (const [code, column] of Object.entries(layout.paymentColumns)) cells[`${column}1`] = month.paymentsByCode[code] || 0;
+    tabs[`${fileName}!${MONTH_SHEETS[MONTH_KEYS[index]]}`] = cells;
+  });
+  return tabs;
 }
 
 const bankPayments = (months, index, code) => months[index].paymentsByCode[code] || 0;
@@ -693,7 +721,12 @@ function buildPayrollCalendar(startYear, taxYearStartSerial) {
 
 // ── The whole book ─────────────────────────────────────────────────────────
 
-export function calculateSeResults(book, lines, taxData, scenario = {}) {
+/**
+ * Every cell the engine computes for a Self Employed book, unscoped: the
+ * report's cells and every leaf cell a sibling workbook's link addresses,
+ * hub sheets under their bare names and leaf sheets as "File.xlsx!Sheet".
+ */
+export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const rate = vatRateFor(scenario);
   const startYear = taxData?.tax_year?.start ? new Date(taxData.tax_year.start).getUTCFullYear() : extractTaxYearStart(scenario);
   const dateSerials = adminDateSerials(startYear);
@@ -1083,12 +1116,14 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
     [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, scenario.payroll || {}),
-    "Bank.xlsx!Mar": { A1: bank[11].opening, A2: bank[11].closing },
-    "Cash.xlsx!Mar": { A1: cash[11].opening, A2: cash[11].closing },
-    "Sales.xlsx!OpeningDebtors": { G1: ledgerTotal(scenario.opening_debtors) },
-    "Sales.xlsx!ClosingDebtors": { G1: ledgerTotal(scenario.closing_debtors) },
-    "Purchases.xlsx!OpeningCreditors": { G1: ledgerTotal(scenario.opening_creditors) },
-    "Purchases.xlsx!ClosingCreditors": { G1: ledgerTotal(scenario.closing_creditors) },
+    ...bankMonthTabs("Bank.xlsx", bank),
+    ...bankMonthTabs("Cash.xlsx", cash),
+    "Sales.xlsx!OpeningDebtors": { G1: ledgerTotal(scenario.opening_debtors), H2: rate * 100 },
+    // H4 quotes Mar!H4, the flat-rate marker, which no book fills; the sheet
+    // reads the blank as nil.
+    "Sales.xlsx!ClosingDebtors": { G1: ledgerTotal(scenario.closing_debtors), H2: rate * 100, H4: 0 },
+    "Purchases.xlsx!OpeningCreditors": { G1: ledgerTotal(scenario.opening_creditors), H2: rate * 100 },
+    "Purchases.xlsx!ClosingCreditors": { G1: ledgerTotal(scenario.closing_creditors), H2: rate * 100 },
   };
 
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
@@ -1105,9 +1140,15 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = month.employeeNI;
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = month.incomeTax;
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
+    results[key].M1 = month.grossPay;
+    // Statutory pay and other deductions: no payroll line carries either.
+    results[key].G1 = 0;
+    results[key].Q1 = 0;
   });
 
   let cisSufferedToDate = 0;
+  const salesFixedAssetsToDate = runningTotals(salesMonths, "fs");
+  const purchasesFixedAssetsToDate = runningTotals(purchasesMonths, "fa");
   MONTH_KEYS.forEach((month, index) => {
     const tab = MONTH_SHEETS[month];
     const sales = salesMonths[index];
@@ -1116,7 +1157,20 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     // is its W1 and every later tab adds the month before it, so the March X1
     // is the figure both returns take off the tax bill.
     cisSufferedToDate += sales.cis;
-    results[`Sales.xlsx!${tab}`] = { G1: sales.gross, H1: sales.vat, I1: sales.net, H2: rate * 100, W1: sales.cis, X1: cisSufferedToDate };
+    results[`Sales.xlsx!${tab}`] = {
+      G1: sales.gross,
+      H1: sales.vat,
+      I1: sales.net,
+      H2: rate * 100,
+      W1: sales.cis,
+      X1: cisSufferedToDate,
+      D1: monthMiles(scenario.sales?.[month]),
+      V2: salesFixedAssetsToDate[index],
+      ...analysisTotals(sales, SALES_ANALYSIS_COLUMNS),
+    };
+    // H4, the flat-rate marker, is blank on the April tab and every later tab
+    // quotes the one before it, so from May on it reads as nil.
+    if (index > 0) results[`Sales.xlsx!${tab}`].H4 = 0;
     results[`Purchases.xlsx!${tab}`] = {
       G1: purchases.gross,
       H1: purchases.vat,
@@ -1126,9 +1180,11 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
       C2: mileage[index].miles,
       G2: mileage[index].claim,
       A2: mileage[index].claimToDate,
+      AB2: purchasesFixedAssetsToDate[index],
       // The month's own check total. Every analysed column is accounted for, so
       // the sheet balances whatever the CIS column carries beside it.
       A1: purchases.gross - purchases.vat - sheetSum(Object.values(purchases.byCode)),
+      ...analysisTotals(purchases, PURCHASES_ANALYSIS_COLUMNS),
     };
   });
 
@@ -1141,7 +1197,11 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     results[`Vat.xlsx!VATQtr${index + 1}`] = vatReturnBoxes(vatinterface, periodEnd);
   });
 
-  return withinReadScope(results);
+  return results;
+}
+
+export function calculateSeResults(book, lines, taxData, scenario = {}) {
+  return withinReadScope(calculateSeCells(book, lines, taxData, scenario));
 }
 
 // The report scores one value per cell the reconciliation reads, so a cell
