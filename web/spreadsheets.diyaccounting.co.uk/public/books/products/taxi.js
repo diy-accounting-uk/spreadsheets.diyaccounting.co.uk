@@ -265,6 +265,14 @@
     return plRows(productMod)[0][0];
   }
 
+  function taxSheetOf(productMod) {
+    return productMod.TAX_SHEET;
+  }
+
+  function forecastSheetOf(productMod) {
+    return productMod.FORECAST_SHEET;
+  }
+
   // The annual P&L cell one snapshot key is carried on.
   function plCellOf(key) {
     for (var cell in PL_KEYS) {
@@ -991,10 +999,10 @@
       { id: "year", label: "Year", sheets: "SalesApr–Mar, PurchasesApr–Mar", shared: "year" },
       { id: "profit-loss", label: "P&L", sheets: plSheetOf, render: viaModule("Views", "renderProfitLoss") },
       { id: "fixed-assets", label: "Vehicles", sheets: FIXED_ASSETS_SHEET, render: viaModule("Views", "renderVehicles") },
-      { id: "tax-computation", label: "Tax", sheets: "Draft Tax calculation", render: viaModule("Views", "renderComputation") },
+      { id: "tax-computation", label: "Tax", sheets: taxSheetOf, render: viaModule("Views", "renderComputation") },
       { id: "sa103s", label: "SA103S", sheets: "SE Short", render: viaModule("Forms", "renderSa103s") },
       { id: "quarterly", label: "Quarterly", sheets: "VitalTax", render: viaModule("Views", "renderQuarterly") },
-      { id: "forecast", label: "Forecast", sheets: "Wages Forecast", render: viaModule("Views", "renderForecast") },
+      { id: "forecast", label: "Forecast", sheets: forecastSheetOf, render: viaModule("Views", "renderForecast") },
       {
         id: "business-details",
         label: "Business Details",

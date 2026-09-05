@@ -85,6 +85,15 @@ describe("the Taxi view manifest", () => {
     for (const view of manifest.views) {
       expect(view.shared || typeof view.render === "function", `view ${view.id} has a renderer`).toBeTruthy();
     }
+    // The sheet each view names comes from the product module wherever the
+    // module has a name for it.
+    const sheetsOf = (id) => {
+      const view = manifest.views.find((v) => v.id === id);
+      return typeof view.sheets === "function" ? view.sheets(taxi) : view.sheets;
+    };
+    expect(sheetsOf("profit-loss")).toBe("Profit & Loss Acc");
+    expect(sheetsOf("tax-computation")).toBe(taxi.TAX_SHEET);
+    expect(sheetsOf("forecast")).toBe(taxi.FORECAST_SHEET);
   });
 
   it("categories() names the twenty P&L cells B5 to B24 in CELL_MAP order, six computed", () => {
