@@ -419,6 +419,8 @@
     var ceiling = band.ceiling
       ? " to <span" + keyed(snapshot, helpers, sheet, band.cells.ceiling) + ">" + helpers.esc(helpers.fmtWhole(band.ceiling)) + "</span>"
       : "";
+    // The band's own ceiling and rate come between the label and its
+    // working-sheet reference, so the line reads as the sheet prints it.
     return computationRow({
       line: band.cells.tax,
       label: helpers.esc(band.label),
@@ -429,7 +431,7 @@
         keyed(snapshot, helpers, sheet, band.cells.rate) +
         ">" +
         helpers.fmtRate(band.rate) +
-        "</span>",
+        '</span><span class="working-sheet-ref">Section 6</span>',
       amount: helpers.fmtBoxMoney(band.tax),
       rKeyAttr: keyed(snapshot, helpers, sheet, band.cells.tax),
     });
