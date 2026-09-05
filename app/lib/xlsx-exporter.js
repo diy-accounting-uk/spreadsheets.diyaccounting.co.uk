@@ -382,6 +382,29 @@ const TAXI_OTHER_EXPENSES_ACCOUNT = "6200";
 // analysis code to say otherwise.
 const TAXI_SALES_ACCOUNT = "4000";
 
+// Which cell of a Taxi row extractTaxiTransactions() reads each line field
+// from, recorded through extractionMap.recordLine() the same way the BST
+// regions are, under the field names every product's records carry
+// (postingDate, detailComment, amount, ...) rather than TAXI_SALES_COLUMNS'
+// and TAXI_PURCHASE_COLUMNS' column-purpose names. A day row shares its row
+// with the other-income line its own F column can carry, so the two are
+// recorded as separate regions -- see bstExtractionMap()'s lineForCell(),
+// which picks whichever of a row's recorded regions actually holds the cell
+// asked for.
+const TAXI_DAY_ROW_REGION = { postingDate: "A", detailComment: "C", measurableQuantity: "D", amount: "E" };
+const TAXI_DAY_ROW_OTHER_INCOME_REGION = { amount: "F", detailComment: "C" };
+const TAXI_RENTAL_ROW_REGION = { postingDate: "A", amount: "E" };
+const TAXI_OTHER_INCOME_ROW_REGION = { postingDate: "A", amount: "F" };
+const TAXI_PURCHASE_ROW_REGION = {
+  postingDate: "A",
+  detailComment: "B",
+  documentReference: "C",
+  expenseCode: "D",
+  measurableQuantity: "E",
+  amount: "F",
+  accountMainID: ACCOUNT_ID_COLUMN,
+};
+
 // The rows a sheet holds, in the order it holds them. A Taxi Sales tab
 // interleaves trade with captions and subtotals, so it is read row by row
 // rather than run to the first gap.
@@ -409,8 +432,14 @@ function enteredNumber(xml, cellRef, sharedStrings) {
  * way, banding it against every mile claimed ahead of it, so a row that
  * crosses the higher-rate limit is claimed at the two rates either side of it
  * exactly as the sheet claims it.
+ *
+ * @param {Buffer} xlsxBuffer
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read so a caller can trace an exported line back to the
+ *   sheet cell it came from. Omitting it changes nothing about the lines
+ *   returned.
  */
-export async function extractTaxiTransactions(xlsxBuffer) {
+export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
   const zip = await JSZip.loadAsync(xlsxBuffer);
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
@@ -419,6 +448,9 @@ export async function extractTaxiTransactions(xlsxBuffer) {
   const lines = [];
   let entryNum = 1;
   let milesToDate = 0;
+  const record = (line, sheetName, columns, row) => {
+    if (extractionMap) extractionMap.recordLine(line, { sheet: sheetName, columns }, row, lines.length - 1);
+  };
 
   for (const month of MONTH_SHEETS) {
     const salesPath = sheetMap.get(`Sales${month}`);
@@ -462,33 +494,38 @@ export async function extractTaxiTransactions(xlsxBuffer) {
               milesToDate += miles;
             }
             lines.push(line);
+            record(line, `Sales${month}`, TAXI_DAY_ROW_REGION, row);
           }
         }
 
         if (isRental) {
           const rental = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
           if (rental !== undefined) {
-            lines.push({
+            const line = {
               sourceJournalID: "sales",
               postingDate: excelSerialToDate(dateVal),
               accountMainID: TAXI_SALES_ACCOUNT,
               amount: rental,
               detailComment: TAXI_RENTAL_CAPTION,
               entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-            });
+            };
+            lines.push(line);
+            record(line, `Sales${month}`, TAXI_RENTAL_ROW_REGION, row);
           }
         }
 
         const otherIncome = enteredNumber(xml, `${TAXI_SALES_COLUMNS.otherIncome}${row}`, sharedStrings);
         if (otherIncome !== undefined && (isDay || isOtherIncomeRow)) {
-          lines.push({
+          const line = {
             sourceJournalID: "sales",
             postingDate: excelSerialToDate(dateVal),
             accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
             amount: otherIncome,
             detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
             entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-          });
+          };
+          lines.push(line);
+          record(line, `Sales${month}`, isDay ? TAXI_DAY_ROW_OTHER_INCOME_REGION : TAXI_OTHER_INCOME_ROW_REGION, row);
         }
       }
     }
@@ -531,6 +568,7 @@ export async function extractTaxiTransactions(xlsxBuffer) {
       const reference = textAt(xml, `${TAXI_PURCHASE_COLUMNS.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       lines.push(line);
+      record(line, `Purchases${month}`, TAXI_PURCHASE_ROW_REGION, row);
     }
   }
 
@@ -1498,7 +1536,7 @@ export function periodCovered(startMonthIndex, lines) {
 export async function extractLines(set, product, extractionMap) {
   if (product === "bst" || product === "taxi") {
     const workbook = await set.bytes(singleWorkbookName(set));
-    return product === "taxi" ? extractTaxiTransactions(workbook) : extractBstTransactions(workbook, extractionMap);
+    return product === "taxi" ? extractTaxiTransactions(workbook, extractionMap) : extractBstTransactions(workbook, extractionMap);
   }
 
   const journalLines = await extractMultiFileTransactions(set, product, extractionMap);
@@ -2546,6 +2584,30 @@ export function bookFieldCells(product) {
   return cells;
 }
 
+// Business Details!D29 and O29: losses brought forward and goods/services
+// for own use, entered straight onto the SA103S boxes with no book field of
+// their own (see PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md's horizons). bookFieldCells
+// leaves these out because ENTITY_CELLS.taxi does not carry them; the sidecar
+// still needs them named as the customer's own cells, not the template's.
+const TAXI_BUSINESS_DETAILS_MANUAL_CELLS = [
+  { cell: "D29", field: "losses brought forward (no book field)" },
+  { cell: "O29", field: "goods and services for own use (no book field)" },
+];
+
+/**
+ * Every cell a Taxi Driver book field is read from, plus the two Business
+ * Details boxes the book carries no field for: bookFieldCells("taxi") (the
+ * entity cells, the tax-year label and the three mileage-rate cells) with
+ * D29 and O29 joined onto it.
+ * @returns {Array<{file: null, sheet: string, cell: string, field: string}>}
+ */
+export function taxiBookFieldCells() {
+  return [
+    ...bookFieldCells("taxi"),
+    ...TAXI_BUSINESS_DETAILS_MANUAL_CELLS.map(({ cell, field }) => ({ file: null, sheet: "Business Details", cell, field })),
+  ];
+}
+
 const bookFieldCellIndexByProduct = new Map();
 
 function bookFieldCellIndex(product) {
@@ -2634,7 +2696,9 @@ export function bstExtractionMap(bookFieldProduct = "bst") {
         cells: Object.fromEntries(Object.entries(region.columns).map(([field, col]) => [field, `${col}${row}`])),
       };
       records.push(record);
-      byRow.set(`${file}!${region.sheet}!${row}`, record);
+      const key = `${file}!${region.sheet}!${row}`;
+      if (!byRow.has(key)) byRow.set(key, []);
+      byRow.get(key).push(record);
     },
 
     /** Every recorded row, in export order. */
@@ -2646,15 +2710,21 @@ export function bstExtractionMap(bookFieldProduct = "bst") {
      * The exported line the cell's own row produced, or undefined where that
      * row produced none. `readAs` names the line field the cell was read
      * into, and is null for a cell that merely shares the row (the sheet's
-     * own analysis columns, say).
+     * own analysis columns, say). A row that produced two lines -- a Taxi
+     * Sales day carrying both a fare and other income -- recorded one region
+     * per line against the same row; the region whose own columns hold the
+     * cell asked for is the one answered, not just whichever recorded last.
      * @param {string|null} file
      * @param {string} sheet
      * @param {string} cellRef
      */
     lineForCell(file, sheet, cellRef) {
-      const record = byRow.get(`${file}!${sheet}!${parseCellRef(cellRef).row}`);
-      if (!record) return undefined;
-      const readAs = Object.entries(record.cells).find(([, ref]) => ref === cellRef)?.[0] ?? null;
+      const ref = parseCellRef(cellRef);
+      if (!ref) return undefined;
+      const rowRecords = byRow.get(`${file}!${sheet}!${ref.row}`);
+      if (!rowRecords) return undefined;
+      const record = rowRecords.find((candidate) => Object.values(candidate.cells).includes(cellRef)) ?? rowRecords[0];
+      const readAs = Object.entries(record.cells).find(([, cell]) => cell === cellRef)?.[0] ?? null;
       return { ...record, readAs };
     },
 

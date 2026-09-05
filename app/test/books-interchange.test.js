@@ -29,6 +29,7 @@ import {
   ProductNotAvailableError,
 } from "../lib/books-interchange.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import { validateBstAnchors } from "../lib/anchors/bst.js";
 import { validateTaxiAnchors } from "../lib/anchors/taxi.js";
@@ -376,6 +377,33 @@ describe("the Taxi anchor table", () => {
     const source = await readBookSource(TAXI_XLSX_BYTES, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
     expect(source.product).toBe("taxi");
   });
+
+  // The Taxi overtype baseline is a workbook generateSpreadsheet() builds
+  // fresh for the book's own tax year (see taxiOvertypeTemplate() in
+  // books-interchange.js), not a static template file the way BST's and SE's
+  // are -- this is the one place that baseline is actually built and read
+  // back, proving the wiring rather than just the sidecar's own diffing.
+  it("reads examples/taxi-latest against its own freshly generated baseline, finding nothing typed over", async () => {
+    const source = await readBookSource(TAXI_XLSX_BYTES, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
+    expect(source.overtyped).toEqual({});
+  }, 30000);
+
+  it("names a Sales week subtotal typed over, attributed to no line", async () => {
+    const zip = await JSZip.loadAsync(TAXI_XLSX_BYTES);
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("SalesMay");
+    const xml = await zip.file(sheetPath).async("string");
+    const element = xml.match(/<c r="E14"[^>]*?(?:\/>|>[\s\S]*?<\/c>)/)?.[0];
+    expect(element, "SalesMay!E14 has no <c> element in the fixture").toBeTruthy();
+    const stripped = element.replace(/<f[^>]*(?:\/>|>[\s\S]*?<\/f>)/, "");
+    expect(stripped, "SalesMay!E14 was not changed").not.toBe(element);
+    zip.file(sheetPath, xml.replace(element, stripped));
+    const patchedBytes = await zip.generateAsync({ type: "uint8array" });
+
+    const source = await readBookSource(patchedBytes, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
+    expect(Object.keys(source.overtyped)).toEqual(["SalesMay!E14"]);
+    expect(source.overtyped["SalesMay!E14"].attribution).toBeNull();
+  }, 30000);
 
   it("refuses a BST workbook by name", async () => {
     let caught;

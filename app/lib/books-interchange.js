@@ -31,9 +31,10 @@
 // one until a workbook is actually read.
 
 import JSZip from "jszip";
+import { parse as parseTOML } from "smol-toml";
 import { extractBook, extractLines, bstExtractionMap, productIdOf, SCHEMA_PRODUCT_NAMES } from "./xlsx-exporter.js";
 import { validateBstAnchors } from "./anchors/bst.js";
-import { validateTaxiAnchors } from "./anchors/taxi.js";
+import { validateTaxiAnchors, isTaxiInputCell } from "./anchors/taxi.js";
 import { SE_ANCHORS, isSeInputCell, seTemplatePaths } from "./anchors/se.js";
 import { AnchorError, validateAnchors } from "./anchors/run.js";
 import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
@@ -281,6 +282,37 @@ function uploadedWorkbookName(name) {
   return name && /\.xlsx$/i.test(name) ? workbookBaseName(name) : "workbook.xlsx";
 }
 
+// The overtype sidecar's Taxi baseline: a workbook the generator builds
+// fresh for the book's own tax year, since taxi-excel.xlsx's own Sales
+// formulas sit on the wrong rows for any other year (the generator rebuilds
+// all twelve Sales sheets a package's own year runs against). Every other
+// sheet's formulas are the template's own, so this is the one baseline every
+// Taxi upload is read against, cached by tax year the way overtype-sidecar.js
+// caches a file path. Imported dynamically for the same reason
+// overtype-sidecar.js itself is: product-workbook.js's own dependents
+// resolve paths and read the filesystem, which the browser bundle's
+// node-absent stubs cannot do until a Taxi workbook is actually read.
+async function taxiOvertypeTemplate(book) {
+  const [{ generateSpreadsheet }, { loadTaxDataForBook, taxYearFileName }, { nodeResourceLoader }] = await Promise.all([
+    import("./generator.js"),
+    import("./product-workbook.js"),
+    import("./app-resources.js"),
+  ]);
+
+  const resources = nodeResourceLoader();
+  const taxYearName = taxYearFileName(new Date(book.documentInfo.periodCoveredEnd), "se");
+  const taxData = await loadTaxDataForBook(book, { resources, taxYearName });
+  const productMeta = parseTOML(await resources.readText("templates/taxi/meta.toml"));
+
+  return {
+    key: `taxi:${taxYearName}`,
+    load: async () => {
+      const templateBuffer = await resources.readBinary(`templates/taxi/${productMeta.template.spreadsheet}`);
+      return generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+    },
+  };
+}
+
 async function readWorkbookSource(kind, bytes, name, deps) {
   const products = deps.products ?? { bst };
   const set = kind === "workbook" ? await workbookSetFromWorkbook(uploadedWorkbookName(name), bytes) : await workbookSetFromZipBytes(bytes);
@@ -291,7 +323,7 @@ async function readWorkbookSource(kind, bytes, name, deps) {
 
   if (product === "se") await validateAnchors(set, SE_ANCHORS, PRODUCT_LABELS.se);
 
-  const extractionMap = product === "bst" ? bstExtractionMap() : undefined;
+  const extractionMap = product === "bst" || product === "taxi" ? bstExtractionMap(product) : undefined;
   const lines = await extractLines(set, product, extractionMap);
   const book = await extractBook(set, product, lines, productMod.CELL_MAP);
 
@@ -302,6 +334,14 @@ async function readWorkbookSource(kind, bytes, name, deps) {
   } else if (product === "se") {
     const { overtypedCells } = await import("./overtype-sidecar.js");
     source.overtyped = await overtypedCells(set, { isInputCell: isSeInputCell, templates: await seTemplatePaths() });
+  } else if (product === "taxi") {
+    const { overtypedCells } = await import("./overtype-sidecar.js");
+    source.overtyped = await overtypedCells(set, {
+      extractionMap,
+      isInputCell: (file, sheet, cellRef) => isTaxiInputCell(sheet, cellRef),
+      templates: { "*": await taxiOvertypeTemplate(book) },
+      reportLabels: productMod.cellLabels(),
+    });
   }
   return source;
 }
