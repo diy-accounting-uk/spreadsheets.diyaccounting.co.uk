@@ -3,9 +3,15 @@
 //
 // taxi.js — JS calculation engine for the Taxi Driver product.
 
-import { TAXI_SALES_ACCOUNT, TAXI_OTHER_INCOME_ACCOUNT, TAXI_PURCHASE_CODE_MAP, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import {
+  TAXI_SALES_ACCOUNT,
+  TAXI_OTHER_INCOME_ACCOUNT,
+  TAXI_PURCHASE_CODE_MAP,
+  MONTH_ORDER,
+  getMonthKey,
+  buildTaxMonthByDate,
+} from "../scenario-extractor.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
-import { generateTaxYearWeeks, groupWeeksIntoMonths } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
 import { calculateMileageAllowance } from "../tax/mileage.js";
@@ -67,25 +73,6 @@ function seShortCapitalAllowances(fa) {
   const d85 = fa.K1 + fa.J1 < 1000 ? fa.K1 : 0;
   const o85 = fa.Q1 > 0 ? fa.Q1 : 0;
   return { d80, o80, d85, o85 };
-}
-
-// The Taxi Driver package's own month tabs hold whole Monday-to-Sunday
-// weeks, and a week's tab is the one named after the calendar month its
-// ending Sunday falls in (verified against app/lib/generator.js's own
-// generateTaxYearWeeks()/groupWeeksIntoMonths(), which cellWrites in
-// app/products/taxi.js lays sales out by), not a fixed 6th-to-5th date
-// range: a week that starts in one calendar month but ends its Sunday in
-// the next belongs to the sheet named after the next one.
-function buildTaxMonthByDate(startYear) {
-  const weeks = generateTaxYearWeeks(startYear);
-  const monthly = groupWeeksIntoMonths(weeks);
-  const byDate = new Map();
-  for (const [monthKey, monthWeeks] of Object.entries(monthly)) {
-    for (const week of monthWeeks) {
-      for (const date of week) byDate.set(date.toISOString().slice(0, 10), monthKey);
-    }
-  }
-  return byDate;
 }
 
 // Group purchase amounts by code letter and month, for the Purchases

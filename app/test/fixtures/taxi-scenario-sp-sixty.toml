@@ -1582,4 +1582,5 @@ cost = 200
 [expected]
 total_sales = 38000
 total_mileage = 20000
+months_traded = 12
 fixed_asset_cost = 200

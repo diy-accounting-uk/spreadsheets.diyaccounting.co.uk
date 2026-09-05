@@ -5,6 +5,7 @@
 // from Precision Code Ltd master data.
 
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
+import { generateTaxYearWeeks, groupWeeksIntoMonths } from "./generator.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -483,6 +484,24 @@ export function getMonthKey(postingDate) {
   return MONTH_NAMES[d.getMonth()];
 }
 
+// The Taxi Driver package's own month tabs hold whole Monday-to-Sunday
+// weeks, and a week's tab is the one named after the calendar month its
+// ending Sunday falls in, not a fixed 6th-to-5th date range: a week that
+// starts in one calendar month but ends its Sunday in the next belongs to
+// the sheet named after the next one. generateTaxYearWeeks() and
+// groupWeeksIntoMonths() are the layout the Sales tabs are written from, so
+// they are the layout a takings date is read back through.
+export function buildTaxMonthByDate(startYear) {
+  const monthly = groupWeeksIntoMonths(generateTaxYearWeeks(startYear));
+  const byDate = new Map();
+  for (const [monthKey, monthWeeks] of Object.entries(monthly)) {
+    for (const week of monthWeeks) {
+      for (const date of week) byDate.set(date.toISOString().slice(0, 10), monthKey);
+    }
+  }
+  return byDate;
+}
+
 export function escapeTomlString(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
@@ -901,14 +920,31 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
 // business income, never a fare, and the P&L keeps the two on separate
 // rows (B5 and B24), so mixing them into one total would anchor the
 // turnover check against a figure the sheet never computes.
-export function taxiExpectedFigures(lines) {
+export function taxiExpectedFigures(lines, periodStart) {
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
-  const figures = { total_sales: computeGrossSales(salesLines.filter((line) => line.accountMainID === TAXI_SALES_ACCOUNT)) };
+  const fareLines = salesLines.filter((line) => line.accountMainID === TAXI_SALES_ACCOUNT);
+  const figures = { total_sales: computeGrossSales(fareLines) };
   const otherIncomeLines = salesLines.filter((line) => line.accountMainID === TAXI_OTHER_INCOME_ACCOUNT);
   if (otherIncomeLines.length > 0) figures.total_other_income = computeGrossSales(otherIncomeLines);
   const businessMiles = totalBusinessMiles(lines);
   if (businessMiles) figures.total_mileage = businessMiles;
+  if (periodStart !== undefined) figures.months_traded = monthsWithTakings(fareLines, periodStart);
   return figures;
+}
+
+// The months the driver actually took a fare in, counted on the month tabs
+// the takings reach rather than on their plain calendar months. The Wages
+// Forecast counts the same months and spreads the year's figures over the
+// ones left, so a fixture that states the count anchors that spread against
+// the book instead of against the sheet's own arithmetic.
+function monthsWithTakings(fareLines, periodStart) {
+  const byDate = buildTaxMonthByDate(new Date(periodStart).getUTCFullYear());
+  const takingsByMonth = {};
+  for (const line of fareLines) {
+    const month = byDate.get(tomlLocalDate(line.postingDate));
+    takingsByMonth[month] = (takingsByMonth[month] || 0) + line.amount;
+  }
+  return MONTH_ORDER.filter((month) => (takingsByMonth[month] || 0) > 0).length;
 }
 
 // ============================================================================
@@ -1230,12 +1266,13 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
   if (expected.total_mileage) parts.push(`total_mileage = ${expected.total_mileage}`);
+  if (expected.months_traded !== undefined) parts.push(`months_traded = ${expected.months_traded}`);
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
   if (expected.vat_output_total !== undefined) parts.push(`vat_output_total = ${expected.vat_output_total}`);
   if (expected.vat_input_total !== undefined) parts.push(`vat_input_total = ${expected.vat_input_total}`);
-  if (expected.fixed_asset_additions) {
+  if (expected.fixed_asset_additions?.length) {
     const totalCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
     parts.push(`fixed_asset_cost = ${totalCost}`);
   }
