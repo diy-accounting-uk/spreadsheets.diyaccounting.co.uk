@@ -250,10 +250,12 @@ These are the most comprehensive single-page source for all rates announced in e
 | Full expensing | N/A | 100% (new) | 100% | 100% | 100% |
 | WDA main pool (Ltd) | 18% | 18% | 18% | 18% | **14%** |
 | WDA special (Ltd) | 6% | 6% | 6% | 6% | 6% |
-| WDA (SE) | 18% | 18% | 18% | 18% | 18% |
+| WDA (SE) | 18% | 18% | 18% | 18% | **14%** |
 | Employer NI rate | 13.8% | 13.8% | 13.8% | **15%** | 15% |
 | Employer NI threshold | 9,100 | 9,100 | 9,100 | **5,000** | 5,000 |
 | Employment allowance | 5,000 | 5,000 | 5,000 | **10,500** | 10,500 |
+| Class 2 small profits threshold | 6,725 | 6,725 | 6,725 | 6,845 | **7,105** |
+| Class 2 weekly rate | 3.15 | 3.45 | 0 (treated as paid) | 3.50 | **3.65** |
 | Class 4 NI lower | 9.73% (blended) | 9% | **6%** | 6% | 6% |
 | Class 4 NI upper | 2.73% (blended) | 2% | 2% | 2% | 2% |
 | Class 2 NI weekly | 3.15 | 3.45 | **0 (abolished)** | 0 | 0 |
