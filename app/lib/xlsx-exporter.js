@@ -239,9 +239,9 @@ function accountAt(xml, row, sharedStrings, reverseMap, codeStr, fallback) {
 // The anchor guard (which sheets and header cells a BST file must still
 // carry before any extractor reads it) lives in app/lib/anchors/bst.js and
 // app/lib/anchors/run.js: BST_ANCHORS is the table, validateAnchors() is the
-// runner that reads it, and AnchorError is the one error class every
-// product's table throws. validateBstAnchors() there is a two-line wrapper
-// so every existing BST caller and test keeps calling it by that name.
+// runner that reads it, AnchorError is the one error class every product's
+// table throws, and the guard's own BST entry point is a two-line wrapper so
+// every existing BST caller and test keeps calling it by the same name.
 
 /**
  * Extract transaction lines from a single-file BST product.
