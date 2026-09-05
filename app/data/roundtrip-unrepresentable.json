@@ -9,8 +9,8 @@
     },
     {
       "field": "diya-gl:cisDeduction",
-      "products": ["bst", "taxi", "se"],
-      "reason": "The BST and Taxi writers do not fill the contractors block, and the SE purchases sheet has no CIS column. Ltd keeps it on the purchases journal's own CIS certificates column."
+      "products": ["bst", "taxi"],
+      "reason": "The BST and Taxi single-file templates carry no contractors column on either journal. The SE and Ltd packages keep both sides of the scheme: the tax withheld from a sub-contractor on the purchases journal's CIS certificates column, and the tax a contractor customer withheld on the sales journal's CIS tax deducted column."
     },
     {
       "field": "diya-gl:cisRate",
@@ -235,9 +235,19 @@
       "reason": "The two single-file templates have no VAT rate cell. Their Sales tabs total a gross sales value with no rate beside it, so nothing on any sheet says whether the business charges VAT."
     },
     {
+      "path": "entityInformation.organizationAddressLine",
+      "products": ["taxi"],
+      "reason": "The Taxi Business Details sheet writes only the trader's name (C5), the trade description (C8), the postcode (C17) and the UTR (O5); the address line has no cell of the form's own and stays in the book only."
+    },
+    {
       "path": "entityInformation.organizationTelephone",
       "products": ["bst", "taxi"],
       "reason": "The Business Details sheet takes a name, a description, an address, a town and a postcode, with no telephone box; and these two products ship no Salesinvoice workbook, whose letterhead is where the multi-file packages keep the number."
+    },
+    {
+      "path": "entityInformation.organizationTown",
+      "products": ["taxi"],
+      "reason": "The Taxi Business Details sheet writes only the trader's name (C5), the trade description (C8), the postcode (C17) and the UTR (O5); the town has no cell of the form's own and stays in the book only."
     },
     {
       "path": "entityInformation.taxAuthorityIdentifier",
@@ -246,7 +256,7 @@
     },
     {
       "path": "entityInformation.taxRegistrationNumber",
-      "products": ["bst", "taxi", "se"],
+      "products": ["bst", "se"],
       "reason": "The self-employment return prints the unique taxpayer reference from a pair of boxes on the Business Details sheet (\"SE Short\"!O8 and R8 read O5 and R5), each holding part of it. The sheet states nowhere how the reference divides between the two, so two halves do not join back into the one reference the book declares."
     },
     {

@@ -163,13 +163,7 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
       const check = checks.find((c) => c.name === name);
       expect(check, `missing check: ${name}`).toBeDefined();
       expect(check.pass, `${name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
-      // NI Class 2 Weekly Rate is genuinely zero in the 2025-26 tax data
-      // (Class 2 was abolished for most self-employed traders); every other
-      // cell's tax-data value is non-zero, so this still proves each check
-      // isn't a 0 = 0 pass that a broken sheet would sail through too.
-      if (name !== "Admin: NI Class 2 Weekly Rate = tax data") {
-        expect(check.expected, `${name}: tax-data value was zero, so this check cannot prove anything`).not.toBe(0);
-      }
+      expect(check.expected, `${name}: tax-data value was zero, so this check cannot prove anything`).not.toBe(0);
     }
   });
 
@@ -249,16 +243,11 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
     expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
   });
 
-  // NI Class 2 Weekly Rate is genuinely zero in the 2025-26 tax data (Class 2
-  // was abolished for most self-employed traders), so the corruption above
-  // has to move it away from zero rather than toward it -- kept separate
-  // from the it.each table above because the intact value can't be
-  // multiplied to get a different non-zero corrupted value.
   it("Admin: NI Class 2 Weekly Rate = tax data fails, and only that check fails, when Admin!L16 is corrupted via JSZip", async () => {
     const checkName = "Admin: NI Class 2 Weekly Rate = tax data";
     const intact = checks.find((c) => c.name === checkName);
     expect(intact.pass).toBe(true);
-    expect(intact.expected).toBe(0);
+    expect(intact.expected).toBe(3.5);
 
     const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "L16", 0.05);
     expect(value).toBe(0.05);

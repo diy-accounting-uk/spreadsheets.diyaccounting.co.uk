@@ -9,7 +9,7 @@ FY 2025-04-01 to 2026-03-31. Director-owner Mike Brown (100% shares) plus one la
 ## Data Files
 
 - **book.toml** -- Business metadata and address, chart of accounts, tax rates, the opening balance sheet, stock, the debtor and creditor ledgers, the van on the fixed asset register, 1 director, 1 member, 2 employees
-- **lines.jsonl** -- 165 entries (24 sales, 58 purchases, 24 payroll, 52 bank, 7 opening journal)
+- **lines.jsonl** -- 166 entries (25 sales, 58 purchases, 24 payroll, 52 bank, 7 opening journal)
 
 The bank journal is the company's own statement: the balance brought forward,
 a customer receipt and a supplier payment each month, the monthly net wages
@@ -17,6 +17,13 @@ and PAYE, three Construction Industry Scheme remittances and last year's
 corporation tax. The sub-contractors are paid net of the tax withheld from
 them, and February's deduction is still owed at the year end, which is what
 leaves a CIS creditor on the closing balance sheet.
+
+The business is on both sides of the scheme. May's invoice to Northgate
+Contracts is sub-contract work of its own, so that contractor withholds 20%
+of it and June's receipt settles the month net of the deduction. The company
+sets that 200 against what it owes HMRC, so the closing CIS creditor is 600
+rather than February's 800; on the sole trader books the same figure is what
+the self-employment return takes off the tax bill.
 
 ## Key Figures
 

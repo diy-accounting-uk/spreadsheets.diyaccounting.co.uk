@@ -377,6 +377,51 @@ function project(line, fields) {
   return fields.map((field) => (field === "amount" ? roundHalfUp(String(line[field] ?? 0), 2) : String(line[field] ?? ""))).join("|");
 }
 
+// Taxi's Sales writer gathers every fixture line landing on one calendar day
+// before it writes a cell: a fare joins the day's takings total in one E
+// cell, a same-day "other income" line joins the day's F cell instead
+// (app/products/taxi.js cellWrites, the `days` map) -- so several fixture
+// lines legitimately export as the one line the sheet actually holds, and a
+// day whose combined total is the value that comes back is not a loss. The
+// accountMainID in the key stands in for the writer's own E/F choice (4000
+// takings vs 4001 other income), the two destinations a day can split across.
+//
+// linesLost and the coarse/account matches are scored against this grouping
+// for a listed journal; wholeLineMatches and the field-existence checks stay
+// on the raw fixture lines, since a merged day's own comment and entry
+// number never round-trip and are not what this grouping is claiming.
+const DAY_SUMMED_JOURNALS = {
+  taxi: new Set(["sales"]),
+};
+
+/**
+ * Fixture lines with every run of same-day, same-account lines on a
+ * day-summed journal (DAY_SUMMED_JOURNALS) collapsed into one line carrying
+ * their combined amount, mirroring the single cell the writer actually fills
+ * for that day. A line on a journal the product does not list passes through
+ * unchanged.
+ * @param {Array<Object>} lines
+ * @param {string} [product]
+ * @returns {Array<Object>}
+ */
+export function collapseDaySummedLines(lines, product) {
+  const journals = DAY_SUMMED_JOURNALS[product];
+  if (!journals || journals.size === 0) return lines;
+
+  const groups = new Map();
+  const passthrough = [];
+  for (const line of lines) {
+    if (!journals.has(line.sourceJournalID)) {
+      passthrough.push(line);
+      continue;
+    }
+    const key = `${line.sourceJournalID}|${line.postingDate}|${line.accountMainID}`;
+    if (!groups.has(key)) groups.set(key, { ...line, amount: 0 });
+    groups.get(key).amount += line.amount ?? 0;
+  }
+  return [...passthrough, ...groups.values()];
+}
+
 // A line on every field the encoding claims to carry. The fields the
 // inventory names are left out of both sides: an entry number the export
 // regenerates, or a quantity no sheet has a column for, would otherwise put
@@ -602,6 +647,13 @@ export function flattenBook(value, prefix = "") {
  *   that translates dates by exact days (Taxi) rather than by month
  *   positions (Ltd). Applied instead of a month shift; the two never
  *   combine.
+ *
+ * linesLost, coarseMatches and accountMatches score against the fixture
+ * lines after collapseDaySummedLines(fixtureLines, scope.product) folds
+ * same-day, same-account lines together for a journal DAY_SUMMED_JOURNALS
+ * lists for this product -- a day the writer sums into one cell is one line
+ * to be matched, not several. wholeLineMatches and the field-existence
+ * checks stay on the raw fixture lines.
  */
 export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0, dateShiftDays = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
@@ -672,16 +724,22 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
     );
   }
 
+  const groupedFixtureLines = collapseDaySummedLines(fixtureLines, scope.product);
+
   return {
     fixtureLines: fixtureLines.length,
     exportedLines: exportedLines.length,
-    linesLost: Math.max(0, fixtureLines.length - exportedLines.length),
+    // The line count coarseUnmatched and accountUnmatched are read against
+    // in main(): the day-summed count, not the raw fixture count, since a
+    // merged day is one line to be matched, not two.
+    groupedFixtureLines: groupedFixtureLines.length,
+    linesLost: Math.max(0, groupedFixtureLines.length - exportedLines.length),
     coarseMatches: multisetOverlap(
-      fixtureLines.map((line) => project(line, COARSE_FIELDS)),
+      groupedFixtureLines.map((line) => project(line, COARSE_FIELDS)),
       exportedLines.map((line) => project(line, COARSE_FIELDS)),
     ),
     accountMatches: multisetOverlap(
-      fixtureLines.map((line) => project(line, ACCOUNT_FIELDS)),
+      groupedFixtureLines.map((line) => project(line, ACCOUNT_FIELDS)),
       exportedLines.map((line) => project(line, ACCOUNT_FIELDS)),
     ),
     wholeLineMatches: multisetOverlap(
@@ -837,8 +895,12 @@ async function main() {
             // transaction but posted to a different account (accountUnmatched).
             // With --date-shift-months set, these score in the shifted frame,
             // so a non-March year end is judged on the transactions
-            // themselves rather than on counts alone.
-            coarseUnmatched: Math.max(0, data.fixtureLines - data.coarseMatches),
+            // themselves rather than on counts alone. Read against
+            // groupedFixtureLines, not the raw fixture count: a day-summed
+            // journal (collapseDaySummedLines) already folded same-day,
+            // same-account lines into the one the writer actually holds, so
+            // it is that grouped line coarseMatches counts against.
+            coarseUnmatched: Math.max(0, data.groupedFixtureLines - data.coarseMatches),
             accountUnmatched: Math.max(0, data.coarseMatches - data.accountMatches),
           }
         : {}),
