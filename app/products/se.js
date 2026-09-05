@@ -1008,6 +1008,63 @@ export const CELL_MAP = [
   ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];
 
+// The year-at-a-glance strip's four tiles and two pies (see
+// app/lib/headlines.js). Every key here is a Financialaccounts.xlsx hub
+// cell unless it names a leaf file of its own (Fixedassets.xlsx, Bank.xlsx,
+// Cash.xlsx, Sales.xlsx) -- verified against the template:
+// B9 = SUM(B5:B8), B11 = SUM(C11:N11), B17 = SUM(B14:B16),
+// B21-B34 = SUM(C:N) each, B35 = SUM(B21:B34), B38 = SUM(C38:N38),
+// Income Tax!E18 = SUM(E11:E17), Fixedassets.xlsx!Schedule!K1 = K57+K110,
+// Bank.xlsx!Mar!A2 = A1+F1-T1, Cash.xlsx!Mar!A2 = A1+F1-Q1,
+// Sales.xlsx!ClosingDebtors!G1 = SUM(G5:G300). BST's assets tile uses the
+// tax written-down value because the BST sheet carries no depreciation;
+// SE's P&L charges depreciation (B34), so net book value is the figure the
+// accounts carry forward. Owed-by-customers stays on the assets tile's
+// second line, not summed in, the same reason BST's plan gives: the
+// sheet's own "Amount owed by customers" runs close to a year's turnover.
+const HUB = "cell/Financialaccounts.xlsx";
+export const HEADLINES = {
+  turnover: {
+    key: `${HUB}!Profit & Loss Account!B9`,
+    secondLine: [
+      { label: "Grants", key: `${HUB}!Profit & Loss Account!B11` },
+      { label: "Interest received", key: `${HUB}!Profit & Loss Account!B38` },
+    ],
+  },
+  costOfSales: { key: `${HUB}!Profit & Loss Account!B17` },
+  runningCosts: { key: `${HUB}!Profit & Loss Account!B35`, label: "Admin expenses" },
+  tax: { key: `${HUB}!Income Tax!E18` },
+  assets: {
+    writtenDown: { key: "cell/Fixedassets.xlsx!Schedule!K1", optional: true },
+    stock: { key: `${HUB}!StockControl!AB30`, optional: true },
+    extra: [
+      { label: "Cash at bank", key: "cell/Bank.xlsx!Mar!A2" },
+      { label: "Cash in hand", key: "cell/Cash.xlsx!Mar!A2" },
+    ],
+    debtors: { key: "cell/Sales.xlsx!ClosingDebtors!G1", optional: true },
+  },
+  // The pie's own fourteen lines: B21 to B34, the P&L rows Total Admin
+  // Expenses (B35) sums. Labels are the sheet's own captions (column A of
+  // "Profit & Loss Account"), not BST's -- SE's B22 is "Premises Rent Rates
+  // Power", not "Light, Heat, Power".
+  expenseLines: [
+    [`${HUB}!Profit & Loss Account!B21`, "Wages & Salaries"],
+    [`${HUB}!Profit & Loss Account!B22`, "Premises, Rent, Rates & Power"],
+    [`${HUB}!Profit & Loss Account!B23`, "Repairs & Maintenance"],
+    [`${HUB}!Profit & Loss Account!B24`, "General Admin"],
+    [`${HUB}!Profit & Loss Account!B25`, "Motor Expenses"],
+    [`${HUB}!Profit & Loss Account!B26`, "Travel & Subsistence"],
+    [`${HUB}!Profit & Loss Account!B27`, "Advertising"],
+    [`${HUB}!Profit & Loss Account!B28`, "Legal & Professional"],
+    [`${HUB}!Profit & Loss Account!B29`, "Bad Debts"],
+    [`${HUB}!Profit & Loss Account!B30`, "Bank Interest Paid"],
+    [`${HUB}!Profit & Loss Account!B31`, "HP Interest, Lease, Bank Charges"],
+    [`${HUB}!Profit & Loss Account!B32`, "Other Expenses"],
+    [`${HUB}!Profit & Loss Account!B33`, "Loss on Disposal of Assets"],
+    [`${HUB}!Profit & Loss Account!B34`, "Depreciation"],
+  ],
+};
+
 // Additional reads from leaf files (Bank.xlsx and Cash.xlsx closing
 // balances, Vat.xlsx quarterly returns, Fixedassets.xlsx Schedule and
 // FAreconciliation totals). Results are keyed "<filename>!<sheetName>", so
