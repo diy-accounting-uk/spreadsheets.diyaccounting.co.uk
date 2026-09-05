@@ -897,143 +897,362 @@ Tier: Fable for the design wave; the implementation brief it produces names its 
 
 #### T4 coding brief
 
-**Partial. The design wave was paused on 2026-09-04 before the brief was finished.** What
-follows is measured and decided; the sections marked "to write" are the remainder for a
-fresh agent in this worktree. Every count below was measured by a script over the thirteen
-templates in `app/templates/ltd`, the shipped 2026-03-31 package and `examples/ltd-latest`,
-not taken from the design text above.
+Tiers: LT-T4a Opus, LT-T4b Opus. T4a needs no S4 code and starts first. T4b waits on T4a and
+on SE:S4 (`app/lib/link-caches.js` with `resultsReader`, `linkCacheValues`,
+`linkAddressedCells`, `classifyLinkCell`, `LINK_ORDER`, and the writer's refresh step in
+`product-workbook.js`). Written 2026-09-05 from the thirteen templates in `app/templates/ltd`,
+`examples/ltd-latest` and the code on the batch branch. Every count below was measured by a
+script over the XML and the calculator, not taken from the design text above; where the two
+disagree this brief is right and the corrections are listed.
 
-Measured. The Ltd templates address 2,214 distinct `file!sheet!cell` leaf cells across
-2,334 cache cells (the same cell cached by several readers: Admin `B9` to `B32` by the four
-bank books, Sales and Purchases `G1` by the hub and Vatreturns, and so on). Per target:
-the four bank books 1,344 (three statement books at 29 cells a tab, Cashaccount at 25);
-Purchases 303 (25 a tab, `AI2` on the last tab, the two ledgers' `G2`); Sales 161 (13 a tab,
-`U2` on the last tab, the two ledgers' `G2` and `G4`); Fixedassets 186 (Schedule 185,
-`HPfinance!E2`); Payslips 156 (13 a tab); the hub 57 (Admin `B6` to `B40` less the odd
-rows above 32, `G5`, `G6`, `G7`, `L6`, `M19`, `N7`, `N11`; OpenAccounts `E16` and
-`G13` to `K13`, `M13` to `Q13`; TrialBalance `D28` to `D31`, `EJ20`, `EJ28` to `EJ31`);
-Companysecretary 7. In every template the cached set equals the addressed set (the union is
-2,334 in both), except that the hub template caches none of Schedule `B`, `C`, `E` on rows
-67 to 107, none of Boardmeeting `E4`, `E6`, RegisterofMembers `A3`, `A4`, and Fixedassets
-caches none of OpenAccounts row 13 or Admin `G6`; those are the input cells Excel had no
-value for when it last saved.
+Measured. The Ltd templates address 2,214 distinct `file!sheet!cell` leaf cells across 2,334
+cache cells (the same cell cached by several readers: Admin `B9` to `B32` by the four bank
+books, Sales and Purchases `G1` by the hub and Vatreturns, `Sales.xlsx!Apr!G4` by Purchases
+and Vatreturns, and so on). Per target: the four bank books 1,344 (three statement books at 29
+cells a tab, Cashaccount at 25); Purchases 303 (25 a tab, `AI2` on the last tab, the two
+ledgers' `G2`); Sales 161 (13 a tab, `U2` on the last tab, the two ledgers' `G2` and `G4`);
+Fixedassets 186 (Schedule 185, `HPfinance!E2`); Payslips 156 (13 a tab); the hub 57 (Admin:
+30 `B` cells, `B6`, `B8` to `B32` and the even rows `B34` to `B40`, plus `G5`, `G6`, `G7`,
+`L6`, `M19`, `N7`, `N11`; OpenAccounts `E16` and `G13` to `K13`, `M13` to `Q13`; TrialBalance
+`D28` to `D31`, `EJ20`, `EJ28` to `EJ31`); Companysecretary 7. The hub alone addresses 2,101.
+Nine templates carry links: Sales (the hub), Purchases (the hub, Sales), the four bank books
+(the hub), Fixedassets (the hub, Purchases, Sales), the hub (nine), Vatreturns (the hub, Sales,
+Purchases). Payslips, Companysecretary, Salesinvoice and expensesform carry none. No template
+caches a cell its formulas do not address. The templates leave 116 addressed cache cells
+uncached. 110 are the blank input cells below: the hub's 97 (Schedule `B`, `C`, `E` on the
+new-asset rows, Boardmeeting `E4` and `E6`, RegisterofMembers `A3` and `A4`), Fixedassets' 10
+(OpenAccounts row 13), Purchases' and Vatreturns' `Sales.xlsx!Apr!G4`, Sales'
+`OpenAccounts!E16`. The other six are formula cells Excel had no value for when it saved:
+Fixedassets' `Admin!G6` (Schedule `R4` reads it) and Vatreturns' `Sales.xlsx!<tab>!G4` on Jul,
+Oct, Dec, Jan and Feb. The refresh adds those six.
 
-The fixture `app/test/fixtures/ltd-link-cells.json` is committed in first cut with the 2,214
-`addressed` keys and 109 `blank` entries, each with a `why` and, where `cellWrites` may fill
-the cell, `writer: true`. The blank set: Schedule `B`, `C`, `E` on the 31 new-asset rows
-(67 to 74, 78 to 82, 86 to 93, 97 to 101, 103 to 107), OpenAccounts `G13` to `K13` and `M13`
-to `Q13`, OpenAccounts `E16`, Boardmeeting `E4` and `E6`, RegisterofMembers `A3` and `A4`,
-and `Sales.xlsx!Apr!G4`. So 2,105 cells must come from the calculator.
+The fixture `app/test/fixtures/ltd-link-cells.json` is committed with the 2,214 `addressed`
+keys and 109 `blank` entries, each with a `why`; 107 carry `writer: true`. The blank set:
+Schedule `B`, `C`, `E` on the 31 new-asset rows (67 to 74, 78 to 82, 86 to 93, 97 to 101, 103
+to 107), OpenAccounts `G13` to `K13` and `M13` to `Q13`, OpenAccounts `E16`, Boardmeeting `E4`
+and `E6`, RegisterofMembers `A3` and `A4`, and `Sales.xlsx!Apr!G4`. Only Boardmeeting `E6` and
+`Sales.xlsx!Apr!G4` are never filled. The other 107 are input cells `cellWrites` fills when the
+book carries the figure. So 2,105 cells are formula cells the calculator must always emit, and
+107 are input cells it emits exactly when the writer fills them.
 
-Verified from the leaf XML (what each analysis total is):
+Today's emitted count. `calculateFromDiyaGl` over `examples/precision-code-ltd/full` at
+`ltd-2024` with offset `-P1Y` emits 1,506 cells, of which 257 are addressed: Sales 60 (`G1`,
+`G2`, `H1`, `T1`, `U1` a tab), Purchases 72 (`G1`, `G2`, `H1`, `O1`, `R1`, `S1`, `AI1`),
+Payslips 48 (`N1`, `O1`, `P1`, `T1`), Fixedassets 58 (Schedule row 1, the class totals rows
+less `R22`, `R30`, `R41`, `R55`, the rate cells, `E110`, `HPfinance!E2`), the hub 13
+(Admin `B9`, `B32`, `G5`, `G6`, `G7`, `L6`, `M19`, `N7`; OpenAccounts `E16`; TrialBalance
+`D28`, `D31`, `EJ28`, `EJ31`), Companysecretary 6 (`E4`, `G1`, `A3`, `G3`, `A4`, `G4`). Four
+of the 257 are blank-set input cells the calculator already emits for the report
+(`OpenAccounts!E16`, `Boardmeeting!E4`, `RegisterofMembers!A3`, `A4`). Uncovered: 1,852 formula
+cells, the emission table below. `cellWrites` for the same fixture writes 4,644 cells, 27 of
+them addressed, all in the blank set.
 
-- Bank books, every tab: `F1 = SUM(F6:F200)` (receipts), `G1` to `Q1` (Cash `G1` to `N1`)
-  `= SUM(<col>6:<col>200)` one column per receipt code letter in row 5, which is
-  `bankLayout(file).receiptCodes` in order (Currentaccount row 5: BS BD BC DR K LDR LCR RV RC
-  DL X; Cash: BB BS BD DR K LDR LCR DL); `X1` (Cash `U1`) `= SUM(X6:X200)` (payments);
-  `Y1` to `AN1` (Cash `V1` to `AJ1`) one per `paymentCodes` in order. The hub reads them as
-  `TrialBalance!H22 = [4]Apr!$F$1-[4]Apr!$X$1`, `H26 = -G1-H1-I1+Y1+Z1+AA1` (transfers),
-  `H20 = -J1` (DR), `H58 = -K1` (K), `H28 = AB1` (CR), `H82 = AE1` (J), and so on; Cash on
-  column K with `K25 = F1-U1`. Source figures: `bankMonthTotals` `month.receipts`,
-  `month.payments`, `month.receiptCodes[code] || 0`, `month.paymentCodes[code] || 0`
-  (`calculators/ltd.js` 378). The BC column reads 0: an opening balance goes to `A1`.
+Verified from the leaf XML (what each addressed formula cell computes):
+
+- Bank books, every tab: `F1 = SUM(F6:F200)` (receipts), one `= SUM(<col>6:<col>200)` per
+  receipt code letter in row 5 (`G1` to `Q1`; Cash `G1` to `N1`), `X1 = SUM(X6:X200)`
+  (payments; Cash `U1`), one per payment code letter (`Y1` to `AN1`; Cash `V1` to `AJ1`).
+  Row 5 in the templates: Currentaccount receipts `G` BS, `H` BD, `I` BC, `J` DR, `K` K, `L`
+  LDR, `M` LCR, `N` RV, `O` RC, `P` DL, `Q` X and payments `Y` BS, `Z` BD, `AA` BC, `AB` CR,
+  `AC` W, `AD` B, `AE` J, `AF` LDR, `AG` LCR, `AH` RP, `AI` RV, `AJ` RC, `AK` RT, `AL` DV,
+  `AM` DL, `AN` X; Savingaccount the same with `G`/`Y` BB; Creditcardaccount `G`/`Y` BB,
+  `H`/`Z` BS, `I`/`AA` BC; Cashaccount receipts `G` BB, `H` BS, `I` BD, `J` DR, `K` K, `L` LDR,
+  `M` LCR, `N` DL and payments `V` BB, `W` BS, `X` BD, `Y` CR, `Z` W, `AA` B, `AB` J, `AC` LDR,
+  `AD` LCR, `AE` RP, `AF` RV, `AG` RC, `AH` RT, `AI` DV, `AJ` DL. The transfer trio is always
+  BB, BS, BD, BC with the book's own code left out. The hub reads them as `TrialBalance!H22 =
+  [4]Apr!$F$1-[4]Apr!$X$1`, `H26 = -G1-H1-I1+Y1+Z1+AA1` (transfers), `H20 = -J1` (DR), `H58 =
+  -K1` (K), `H28 = AB1` (CR), `H82 = AE1` (J), and so on; Cash on column K with `K25 = F1-U1`.
+  Source figures: `bankMonthTotals` `month.receipts`, `month.payments`,
+  `month.receiptCodes[code] || 0`, `month.paymentCodes[code] || 0`. The BC column reads 0 on
+  every book: an opening balance goes to `A1`.
 - Sales tabs: `F1 = SUM(F5:F300)` gross, `G1` VAT, `H1` net, `O1` to `U1` one per
-  `SALES_ANALYSIS_COLUMNS` (`journalMonthTotals` already computes every one of them),
-  `V1` CIS suffered; `G2 = [1]Admin!$M$19` on Apr and `=<previous>!G2` after (rate × 100;
-  `cellWrites` overwrites Apr `G2` with 0 for a non-VAT book); `G4` empty on Apr and
-  `=<previous>!G4` after, so 0; last tab `U2 = Apr!U1+...+Mar!U1` (`FAreconciliation!K13`
-  reads `[3]Mar!$U$2`). OpeningDebtors `G2 = Apr!G2`, `G4 = Apr!G4`; ClosingDebtors `G2 =
-  Mar!G2`, `G4 = Mar!G4`.
+  `SALES_ANALYSIS_COLUMNS` (`journalMonthTotals` already computes every one of them), `V1` CIS
+  suffered; `G2 = [1]Admin!$M$19` on the first tab and `=<previous>!G2` after (rate × 100;
+  `cellWrites` overwrites the first tab's `G2` with 0 for a non-VAT book); `G4` empty on the
+  first tab and `=<previous>!G4` after, so 0; last tab `U2 = <first>!U1+...+<last>!U1`
+  (`FAreconciliation!K13` reads `[3]<last>!$U$2`). OpeningDebtors `G2 = <first>!G2`, `G4 =
+  <first>!G4`; ClosingDebtors `G2 = <last>!G2`, `G4 = <last>!G4`.
 - Purchases tabs: `F1`, `G1`, `H1`, `O1` to `AI1` (`PURCHASE_ANALYSIS_COLUMNS`), `AK1` CIS
-  deductions; `G2 = IF([2]Apr!$G$4>0,0,[2]Apr!$G$2)`; last tab `AI2 = Apr!AI1+...+Mar!AI1`
-  (`FAreconciliation!E13`). OpeningCreditors `G2 = IF([2]Apr!$G$4>0,0,[2]Apr!$G$2)`;
-  ClosingCreditors `G2 = IF([2]Feb!$G$4>0,0,[2]Feb!$G$2)`.
-- Payslips tabs: row 1 `M1 = M16+M26+M36+M46+M56` (gross), `N1`, `O1`, `P1`, `Q1`, `T1` the
-  same shape, `G1 = SUM(AD60:AG60)+SUM(AE62:AG62)` (statutory pay, 0 for every fixture);
-  row 2 is the directors' block below the monthly block: `M2 = M65`, `M65 = SUM(M60:M64)`,
-  `M60 = IF(B51="D",M51," ")` (Jun, a five-week month, uses rows 70 to 75). Column B of the
-  monthly block is the employee's NI category, which `cellWrites` sets to `D` for a
-  director, so row 2 is `directorPayroll[tab]` (grossPay, incomeTax, employeeNI, employerNI)
-  with `P2` and `Q2` 0. The hub: `WagesInterface!C4 = [9]Apr!$M$1-C17`, `C17 = [9]Apr!$M$2`,
-  `F4 = P1+Q1-F17`, `I4 = G1`.
+  deductions; `G2 = IF([2]<first>!$G$4>0,0,[2]<first>!$G$2)`; last tab `AI2` the sum of `AI1`
+  over the twelve tabs (`FAreconciliation!E13`). OpeningCreditors `G2` the same as a tab's;
+  ClosingCreditors `G2 = IF([2]Feb!$G$4>0,0,[2]Feb!$G$2)`, the eleventh tab.
+- Payslips tabs: row 1 `M1 = M16+M26+M36+M46+M56` (gross), `N1` income tax, `O1` employee NI,
+  `P1` student loan, `Q1` other deductions, `T1` employer NI in the same shape, `G1 =
+  SUM(AD60:AG60)+SUM(AE62:AG62)` (statutory pay, 0 for every fixture); row 2 is the directors'
+  block below the monthly block: `M2 = M65`, `M65 = SUM(M60:M64)`, `M60 = IF(B51="D",M51," ")`
+  (Jun, a five-week month, uses rows 70 to 75). `B51` reads the Employee sheet's `D` column for
+  that line, which `cellWrites` sets to `D` for a director, so row 2 is `directorPayroll[tab]`
+  (`M2` grossPay, `N2` incomeTax, `O2` employeeNI, `T2` employerNI) with `P2` and `Q2` 0. The
+  hub: `WagesInterface!C4 = [9]Apr!$M$1-C17`, `C17 = [9]Apr!$M$2`, `F4 = P1+Q1-F17`, `I4 = G1`.
 - Schedule: row 1 totals and the class totals rows are emitted today except `R22`, `R30`,
   `R41`, `R55` (`= SUM(R14:R21)` and so on, `block.existing.R`). Per row: `Q67 =
-  IF(E67>0,E67*P67/100," ")` on the new-asset rows of plant, fixtures, computer and vans
-  (67 to 74, 78 to 82, 86 to 93, 103 to 107; 26 cells), `R97 = IF(E97>0,E97*R$4/100*(1-M97)," ")`
-  on the cars rows 97 to 101 (5 cells). `P67 = IF(B67>0,IF(B67>[1]Admin!$N$11,[1]Admin!$G$7,[1]Admin!$G$5),[1]Admin!$G$5)`
-  and `R4 = [1]Admin!$G$6`. So `Q<row>` is `row.investmentAllowance` where a schedule row
-  sits there and `SHEET_BLANK` (" ") otherwise; `R97` to `R101` are always `SHEET_BLANK`
-  (the calculator never places an asset on the cars rows). The template caches these as
-  `t="str"` spaces, which is why they are formula cells, not blanks. The hub reads them as
-  `CorporationTax!F49 = IF([1]Schedule!$E$67>0,[1]Schedule!$E$67," ")`, `B49` the same over
-  `C67`, and the `Q`/`R` cells one row each down to `E107`.
+  IF(E67>0,E67*P67/100," ")` on the new-asset rows of plant, fixtures, computer and vans (67 to
+  74, 78 to 82, 86 to 93, 103 to 107; 26 cells), `R97 = IF(E97>0,E97*R$4/100*(1-M97)," ")` on
+  the cars rows 97 to 101 (5 cells). `P67 =
+  IF(B67>0,IF(B67>[1]Admin!$N$11,[1]Admin!$G$7,[1]Admin!$G$5),[1]Admin!$G$5)` and `R4 =
+  [1]Admin!$G$6`. So `Q<row>` is `row.investmentAllowance` where a schedule row sits there and
+  `SHEET_BLANK` otherwise; `R97` to `R101` are always `SHEET_BLANK` (the calculator never places
+  an asset on the cars rows). Excel caches these as `t="str"` spaces with `xml:space="preserve"`;
+  LibreOffice writes the leaf cell as `<v> </v>` and caches nothing for it in the hub. The hub
+  reads them as `CorporationTax!F49 = IF([1]Schedule!$E$67>0,[1]Schedule!$E$67," ")`, `A49` the
+  date in `B67`, `B49` the description in `C67`, `I49` the `Q` cell, one row each down to 107.
 - Admin: `B6` to `B40` is the date chain (`B32 = F21`, even rows `DATE(...)-1` month ends,
-  odd rows the first of the next month). `period.adminMonthEnd(row)` already computes the
-  even rows; odd row = even row above + 1 day. `N11 = B32`. `G5`, `G6`, `G7`, `L6`, `M19`,
-  `N7` are emitted today.
-- TrialBalance `D29 = -OpenAccounts!E21`, `D30 = -OpenAccounts!E22`, `EJ29`, `EJ30`: computed
-  in `buildTrialBalance` today and dropped by `trialBalanceReads`.
-- Companysecretary: `RegisterofMembers!G1 = SUM(G3:G19)`, `G3`, `G4` (template literal 0),
-  `Boardmeeting` `E4`, `E6` inputs. `HPfinance!E2 = SUM(E8:E26)` emitted today.
+  odd rows `DATE(YEAR(B<n+1>),MONTH(B<n+1>),1)`, the first of the next month). The generator
+  rolls the cached values with `ltdAdminBColumnSerial(yearEndSerial, row)` (`generator.js`
+  466), which is the same rule. `period.adminMonthEnd(row)` already computes the even rows.
+  `N11 = B32`. `G5`, `G6`, `G7`, `L6`, `M19`, `N7` are emitted today.
+- TrialBalance `D29 = -OpenAccounts!E21`, `D30 = -OpenAccounts!E22`, `EJ20`, `EJ29`, `EJ30`:
+  all computed in `buildTrialBalance` today and dropped by `trialBalanceReads`.
+- Companysecretary: `RegisterofMembers!G1 = SUM(G3:G19)`; `G3`, `G4` are template literal 0s
+  the writer overwrites; `Boardmeeting` `E4`, `E6` inputs. `HPfinance!E2 = SUM(E8:E26)` emitted
+  today.
 
-Corrections to the design text above, from the XML:
+Corrections to the design text above, from the XML and the code:
 
 - Schedule column `B` is addressed on the new-asset rows 67 to 107 (the date purchased, an
-  input), not on the class totals rows; the "Existing Plant & Machinery" text in `B11`,
-  `B22` and so on is read by the reconciliation, not by any link. Column `C` (description)
-  is addressed on the same rows. The per-row set starts at 67, not 61: land's new rows 60 to
-  63 carry no capital allowance formulas and nothing reads them.
+  input), not on the class totals rows; the "Existing Plant & Machinery" text in `B11`, `B22`
+  and so on is read by the reconciliation, not by any link. Column `C` (description) is
+  addressed on the same rows. The per-row set starts at 67, not 61: land's new rows 60 to 63
+  carry no capital allowance formulas and nothing reads them.
 - Payslips `G2` is not addressed; the 13 cells a tab are `G1`, `M1`, `M2`, `N1`, `N2`, `O1`,
   `O2`, `P1`, `P2`, `Q1`, `Q2`, `T1`, `T2`.
-- The hub does not read `Sales.xlsx!<tab>!H1`; only Vatreturns does, so the stale-cache
-  test cannot corrupt `H1` in the hub's `externalLink3.xml` (the hub caches no such cell).
-  Use `Sales.xlsx!Apr!O1` (read by `TrialBalance!F53` and `Stock!J8`).
+- Schedule row 57 is not addressed by any link; of the two block-total rows only `E110` is.
+- The hub does not read `Sales.xlsx!<tab>!H1`; only Vatreturns does, so no stale-cache test
+  can corrupt `H1` in the hub's `externalLink3.xml`. T11's A7 names the same cell and takes
+  `Sales.xlsx!<first tab>!O1` instead (read by `TrialBalance!F53` and `Stock!J8`).
+- TrialBalance needs five cells added, not four: `D29`, `D30`, `EJ20` (Sales
+  `ClosingDebtors!B1` reads it), `EJ29`, `EJ30`.
+- The bank column letters do not follow `bankLayout(file).receiptCodes` order. `bankLayout`
+  spreads `Object.values(BANK_TRANSFER_CODES)`, which runs BB, BS, BC, BD, so Currentaccount
+  gets BS, BC, BD where the template's row 5 runs BS, BD, BC (Savingaccount likewise). The
+  writer uses the two lists as sets, so nothing is wrong today; the calculator needs the
+  template's order, which is BB, BS, BD, BC less the book's own code.
 - `examples/ltd-latest` is an October year-end package (tabs Nov to Oct). Its last tab is
-  `Oct`, so `U2` and `AI2` sit on `Oct`, and the bank books' `C1`/`C2` are remapped to the
-  Admin rows of their own month. The calculator must key these on `tabs[11]`, never `Mar`.
+  `Oct`, so `U2` and `AI2` sit on `Oct`, and the bank books' `C1`/`C2` are remapped to the Admin
+  rows of their own month. The calculator keys everything on `tabs[0]` and `tabs[11]`, never
+  `Apr` or `Mar`.
 - SE:S4 makes `resultsReader(results)` product-agnostic. `app/products/ltd.js` needs no
   `linkCacheReader`; the design text's function is superseded.
-- `Sales.xlsx!<tab>!G4` is empty only on Apr. The other eleven tabs and both ledgers are
-  formula cells reading the previous tab, cached as 0, so the calculator emits 0 for them.
+- `Sales.xlsx!<tab>!G4` is empty only on the first tab. The other eleven tabs and both ledgers
+  are formula cells reading the previous tab, cached as 0, so the calculator emits 0 for them.
+- LibreOffice does not materialise the first tab's `G4` as a 0 in the leaf: `ltd-latest`'s
+  `Sales.xlsx` `Nov!G4` is `<c r="G4" s="31"/>` after the roundtrip. It writes a 0 into
+  Vatreturns' own link cache for that cell when it saves Vatreturns. The pure refresh writes
+  nothing for it under either reader, since no template caches it and both readers answer
+  `undefined`.
+- `readCellValue` (`spreadsheet-runner.js`, moving to `xlsx-parts.js` under S4) matches `<v>`
+  only, so it returns `null` for Excel's `<v xml:space="preserve"> </v>` and `""` for
+  LibreOffice's `<v> </v>`. The sibling reader therefore never writes a `" "`; it keeps the
+  template's cached space or writes an empty string. `canonicalValue` folds `" "`, `""` and
+  absent to `null`, so the agreement tests below are unaffected. S4 owns the fix if one is
+  wanted.
 
-Decisions so far:
+Decisions:
 
-1. The calculator emits exactly what the recalculated sheet holds a value for: every
-   addressed formula cell (its computed value, `SHEET_BLANK` where the sheet's own formula
-   returns " "), and no input cell. Input cells are `written` (by `cellWrites`) or `blank`.
-   That makes the cache-agreement test exact: results-reader refresh equals sibling-reader
-   refresh cell for cell over a recalculated package of the same fixture, with one allowance
-   still to settle: LibreOffice writes `Sales.xlsx!Apr!G4` as a literal 0 in a roundtripped
-   leaf (the template has it empty), so the sibling reader caches it and the results reader
-   does not.
-2. Bank column letters come from `bankLayout(file)` in `app/products/ltd.js`, which the
-   calculator cannot import (products would then import calculators for T-something and
-   cycle). Move `bankLayout`, `BANK_LAYOUTS`, `BANK_ACCOUNT_FILES` and `BANK_TRANSFER_CODES`
-   to a new `app/lib/ltd-layout.js` and import from both; T2's anchor table pins the same
-   row-5 letters.
+1. The calculator emits every addressed formula cell (its computed value, `SHEET_BLANK` where
+   the sheet's own formula returns `" "`), and an addressed input cell exactly when
+   `cellWrites` fills it, with the same value. Input cells the writer leaves empty stay
+   unemitted, so a reader answers `undefined` and the refresh writes nothing, which is what a
+   spreadsheet reads as blank. That makes the cache-agreement test exact: the results reader
+   and a sibling reader over a recalculated package of the same fixture produce the same value
+   for every addressed cell, and no cell where the leaf is empty. The one LibreOffice
+   difference (a cached 0 for an empty referenced cell) lands only on `blank` keys, which the
+   test excludes.
+2. `app/lib/ltd-layout.js` (new, no `fs`) receives from `app/products/ltd.js`
+   `BANK_ACCOUNT_FILES`, `BANK_TRANSFER_CODES`, `bankLayout`, `BANK_LAYOUTS` and
+   `OPENING_FIXED_ASSET_COLUMNS`, and gains `BANK_TRANSFER_COLUMN_ORDER = ["BB", "BS", "BD",
+   "BC"]`. `bankLayout` derives its transfer trio from that order less the book's own code,
+   exposes it as `transfers`, and adds `receiptColumns` and `paymentColumns`: arrays of
+   `[code, column]` pairs, receipts from the column after `receipt.amount`, payments from the
+   column after `payment.amount`, in `receiptCodes`/`paymentCodes` order. `receiptCodes` and
+   `paymentCodes` stay arrays. `products/ltd.js` and `calculators/ltd.js` import from it; the
+   calculator's own copies of `BANK_ACCOUNT_FILES`, `BANK_TRANSFER_CODES` and
+   `bankTransferCodes` go. The reason for the module: `products/ltd.js` imports
+   `spreadsheet-runner.js` (fs, child_process) and `xlsx-exporter.js` (fs), and the calculator
+   is in the page bundle through `books-engine.js`, so it cannot import the product module.
+   T2's anchor table takes the same constants from `ltd-layout.js`; if T2 has landed first,
+   T4a repoints `app/lib/anchors/ltd.js`'s import.
 3. `calculateLtdResults` stays as the report's cell set (R unchanged). The body becomes
    `computeLtd(book, lines, taxData, scenario)` returning `{ results, linkCells }`;
-   `calculateLtdResults` returns `results`; new `calculateLtdCells` merges `linkCells` into a
-   copy of `results` sheet by sheet. `calculateLinkCells` in `diya-gl-calculator.js`
-   dispatches `ltd` to `calculateLtdCells`.
-4. Odd Admin rows and the whole `B6` to `B40` chain are emitted from one helper
-   `adminDateChain(period)`; the coverage test checks only the addressed 30.
-5. Tiers: T4a Opus (the cell list is exact and the arithmetic already exists in the
-   calculator); T4b Opus.
+   `calculateLtdResults` returns `results`; `calculateLtdCells` merges `linkCells` into a copy
+   of `results` sheet by sheet. `calculateLinkCells` in `diya-gl-calculator.js` dispatches
+   `ltd` to `calculateLtdCells`.
+4. The whole `B6` to `B40` chain is emitted from one helper `adminDateChain(period)`; the
+   coverage test checks only the addressed 30 (`B7` and the odd rows above 32 are not
+   addressed).
+5. The fixture keeps its two-key shape. `writer: true` on a blank entry means "the calculator
+   emits this cell exactly when `cellWrites` fills it"; the coverage test asserts that.
 
-To write (the remainder): the per-group emission table with the calculator source for each
-group in `calculateLtdCells`; `LINK_ORDER.ltd = ["Sales.xlsx", "Purchases.xlsx",
-"Currentaccount.xlsx", "Savingaccount.xlsx", "Cashaccount.xlsx", "Creditcardaccount.xlsx",
-"Fixedassets.xlsx", "Financialaccounts.xlsx", "Vatreturns.xlsx"]` with its template test;
-today's emitted count against the fixture (the script exists in the scratchpad only; rerun
-`calculateFromDiyaGl` over `examples/precision-code-ltd/full` with `ltd-2024` and offset
-`-P1Y` and intersect with `addressed`); the coverage test text; the agreement test (results
-reader over `saveWorkbookFiles` output against a sibling reader over `examples/ltd-latest`
-only if the fixture behind `ltd-latest` still matches the calculator, else idempotence plus
-a spot list); the stale-cache Node test over `classifyLinkCell` for one addressed cell per
-link-reading hub sheet (TrialBalance, Stock, WagesInterface, CorporationTax, PubNotes,
-Report), with the page half deferred to T11's A7; the serial commands; acceptance; the
-landing order in `ltd.js`, `calculators/ltd.js` and `ltd-layout.js`.
+The module cut and the split, in `app/lib/calculators/ltd.js`:
+
+```js
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, BANK_TRANSFER_CODES, OPENING_FIXED_ASSET_COLUMNS } from "../ltd-layout.js";
+
+function computeLtd(book, lines, taxData, scenario) {
+  // today's body of calculateLtdResults, unchanged, building `results` ...
+  const linkCells = {};
+  const link = (key, cells) => Object.assign((linkCells[key] ||= {}), cells);
+  // ... the emission blocks below, each calling link(key, { cell: value })
+  return { results, linkCells };
+}
+
+export function calculateLtdResults(book, lines, taxData, scenario) {
+  return computeLtd(book, lines, taxData, scenario).results;
+}
+
+// Every cell a sibling workbook's link addresses, on top of the report's cells.
+export function calculateLtdCells(book, lines, taxData, scenario) {
+  const { results, linkCells } = computeLtd(book, lines, taxData, scenario);
+  const cells = Object.fromEntries(Object.entries(results).map(([key, sheet]) => [key, { ...sheet }]));
+  for (const [key, sheet] of Object.entries(linkCells)) Object.assign((cells[key] ||= {}), sheet);
+  return cells;
+}
+```
+
+`diya-gl-calculator.js` gains `export function calculateLinkCells(book, lines, product, taxData,
+scenario = {})` dispatching `ltd` to `calculateLtdCells` and throwing for any other product;
+if S4 has landed first the function exists and this row adds the `ltd` line. A cell in both
+`results` and `linkCells` must carry the same value; the coverage test asserts it, so the
+emission blocks write only cells the report does not already hold.
+
+The emission table. Each group names the cells, the count for a twelve-tab package and the
+source in `computeLtd`. Every value is a figure `computeLtd` already holds; no new arithmetic.
+
+| Group | Cells | Count | Source |
+|---|---|---|---|
+| Bank books, each tab | `F1`; one per `receiptColumns`; `X1` (Cash `U1`); one per `paymentColumns` | 1,344 | `bankMonthTotals`: `month.receipts`, `month.receiptCodes[code]` (nil where absent), `month.payments`, `month.paymentCodes[code]`; columns from `BANK_LAYOUTS[fileName]` |
+| Sales, each tab | `F1`, `O1`, `P1`, `Q1`, `R1`, `S1`, `V1` | 84 | `salesMonths[tab]`, the same object `G1`, `H1`, `T1`, `U1` come from |
+| Sales, tabs 2 to 12 and both ledgers | `G4` = 0 | 13 | constant; the first tab is never emitted |
+| Sales ledgers | `OpeningDebtors!G2`, `ClosingDebtors!G2` = `rate * 100` | 2 | `salesMonths[tabs[0]].G2` |
+| Sales last tab | `U2` | 1 | `salesFixedAssetTotal`, already computed for `FAreconciliation!K13` |
+| Purchases, each tab | `F1`, `AK1`, `P1`, `Q1`, `T1` to `AH1` | 228 | `purchaseMonths[tab]` |
+| Purchases ledgers | `OpeningCreditors!G2`, `ClosingCreditors!G2` = `rate * 100` | 2 | `purchaseMonths[tabs[0]].G2` |
+| Purchases last tab | `AI2` | 1 | `purchasesFixedAssetTotal`, already computed for `FAreconciliation!E13` |
+| Payslips, each tab | `M1`, `G1` = 0, `Q1` = 0, `M2`, `N2`, `O2`, `P2` = 0, `Q2` = 0, `T2` | 108 | `payroll[tab].grossPay`; `directorPayroll[tab]` grossPay, incomeTax, employeeNI, employerNI |
+| Schedule class totals | `R22`, `R30`, `R41`, `R55` | 4 | `blocks[className].existing.R` for plant, fixtures, computer, motor |
+| Schedule per row | `Q` on the 26 new-asset rows of plant, fixtures, computer, vans; `R97` to `R101` | 31 | `scheduleRows.find(row => row.row === n)?.investmentAllowance ?? SHEET_BLANK`; the cars rows always `SHEET_BLANK` |
+| Schedule writer inputs | `B`, `C`, `E` on rows 67 to 74 that hold an asset bought in the year | 0 to 24 | `buildSchedule` gains `date` (serial of the purchase date) and `description` (`transaction.supplier`) on new-asset rows; `E` is `row.cost`; `C` only when the supplier is set, as the writer does |
+| Admin | `B6`, `B8`, `B10` to `B31`, `B34` to `B40` even, `N11` | 29 | `adminDateChain(period)`: even rows `serialOf(period.adminMonthEnd(row))`, odd rows the even row above plus 1; `N11 = admin.B32` |
+| OpenAccounts writer inputs | `G13` to `K13`, `M13` to `Q13` for the classes the book carries | 0 to 10 | `openingBalance.fixed_asset_cost[key]` and `fixed_asset_depreciation[key]` through `OPENING_FIXED_ASSET_COLUMNS`, emitted only where the key is defined, as `writeOpeningBalance` does |
+| TrialBalance | `D29`, `D30`, `EJ20`, `EJ29`, `EJ30` | 5 | `TRIAL_BALANCE_READS` gains the five; `trialBalanceReads` already reads them off `tb` |
+
+The first thirteen groups are 1,852 cells, the whole uncovered set. The two writer-input groups
+add what the book carries (the full fixture: 15 Schedule cells, 6 OpenAccounts cells). The
+bank, Sales, Purchases and Payslips groups go in `linkCells`; the TrialBalance five go in
+`TRIAL_BALANCE_READS` and so in `results`, which changes R by five cells whose values the
+reconciliation reads anyway. Everything else goes in `linkCells`.
+
+`LINK_ORDER.ltd`, in `app/lib/link-caches.js` (T4b):
+
+```js
+ltd: ["Sales.xlsx", "Purchases.xlsx", "Currentaccount.xlsx", "Savingaccount.xlsx", "Cashaccount.xlsx", "Creditcardaccount.xlsx", "Fixedassets.xlsx", "Financialaccounts.xlsx", "Vatreturns.xlsx"],
+```
+
+Its template test, in `app/test/ltd-link-caches.test.js`: "LINK_ORDER.ltd names exactly the
+Ltd templates that carry external links": the set of `app/templates/ltd/*.xlsx` whose zip
+holds `xl/externalLinks/externalLink1.xml` equals `new Set(LINK_ORDER.ltd)`. Order is data for
+the results reader, so the test checks the set.
+
+Tests, `app/test/ltd-link-caches.test.js`, Node, no LibreOffice. T4a creates the file with the
+first three; T4b appends the rest.
+
+- "the bank layouts match row 5 of the four templates" (T4a): for each of the four books, read
+  row 5 of the first tab with JSZip and `readCellValue`, and assert the code letter in each
+  `receiptColumns` and `paymentColumns` column equals the pair's code, and that
+  `receipt.amount` and `payment.amount` sit one column before the first pair. This is the test
+  that would have caught the transfer-trio order.
+- "every pinned cell is a calculator output, a writer input or a declared blank" (T4a): for the
+  full book at `ltd-2024`, offset `-P1Y`, emitted = every `key!cell` of `calculateLtdCells`
+  with hub sheets prefixed `Financialaccounts.xlsx!`; written = every `file!sheet!cell` of
+  `cellWrites(scenario, 2024, 3)`; `addressed - emitted - blank` is empty, the failure naming
+  every leftover. Then for each `blank` entry: if `writer: true`, `emitted.has(key) ===
+  written.has(key)` and, when both hold, `canonicalValue` of the two values agree; if not,
+  neither emits nor writes it. Then each `blank` key is proved blank in its template: the cell
+  has no `<f>` and no `<v>`, or does not exist. Expect 2,105 formula cells covered, 25 writer
+  inputs emitted for this fixture, 109 blank. Also assert every cell in both `results` and
+  `linkCells` carries one value, and that `adminDateChain` equals
+  `ltdAdminBColumnSerial(admin.B32, row)` for rows 6 to 40.
+- "the report's cells do not move" (T4a): the addressed cells `calculateLtdResults` holds for
+  the full fixture number exactly 262, today's 257 plus `TrialBalance!D29`, `D30`, `EJ20`,
+  `EJ29`, `EJ30`, and none of the link-only groups (no bank `F1`, no Sales `F1`, no Admin
+  `B6`) appears in it. A stray emission into `results` fails by name.
+- "every link-addressed cell in the thirteen templates is pinned" (T4b): `linkAddressedCells`
+  over the templates, keyed `targetFile!sheet!cell`, equals the fixture's `addressed` (2,214),
+  the failure listing additions and removals by name.
+- "the saved package's caches equal the calculator" (T4b, the results-reader half):
+  `saveWorkbookFiles(book, lines)` for the full book (the writer's S4 step refreshes every file
+  in `LINK_ORDER.ltd` with `resultsReader(calculateLinkCells(...))`); for each of the nine
+  files, `linkCacheValues(zip)`; every cached cell whose key is in `addressed` and not in
+  `blank` has `canonicalValue(cached) === canonicalValue(calculateLtdCells value)`; the count of
+  cells compared is exactly 2,224 (2,334 cache cells less the 110 blank-key pairs); each
+  blank-key pair is absent unless `cellWrites` wrote that cell, in which case its cached value
+  canonicalises to the written value (the full fixture: Schedule `B`, `C`, `E` on rows 67 to
+  71, OpenAccounts `G13`, `J13`, `K13`, `M13`, `P13`, `Q13`, `E16`, Boardmeeting `E4`,
+  RegisterofMembers `A3`, `A4`, 25 pairs; absent: Boardmeeting `E6`, `Sales.xlsx!<first>!G4`
+  twice, the other 78 Schedule cells, OpenAccounts `H13`, `I13`, `N13`, `O13`, 85 pairs).
+- "a recalculated package's caches equal the calculator" (T4b, the sibling half): over
+  `examples/ltd-latest` with the calculator run as `loadDiyaGlData("examples/precision-code-ltd/full",
+  "P1Y7M")` at `ltd-2027` (the loader shifts the period with the postings, so the tabs are Nov
+  to Oct and the month keys line up tab for tab). For every cached cell in the thirteen files
+  whose key is in `addressed` and not in `blank`, `canonicalValue(cached) ===
+  canonicalValue(engine)`; the count compared is 2,195 (measured: `ltd-latest` holds 2,224
+  cache cells, 27 on blank keys, 2 on cells no formula addresses). Today the 288 cells the
+  calculator already emits all agree, so the fixture behind `ltd-latest` matches the engine
+  and this half is the strong form, not the idempotence fallback. LibreOffice's cache omits the
+  31 `" "` cells and its `25333.3333333333` equals the engine's `25333.333333333332` under
+  `canonicalValue`, which is why the comparison is canonical, not textual. When `ltd-latest`
+  is regenerated the offset and tax year are read off the package's Admin `B32`
+  (`monthsBetween(book period end, B32)` and the financial year `B32` falls in), never
+  hardcoded.
+- "a stale hub cache is stale, not drift" (T4b, the Node half of T11's A7): over `ltd-latest`
+  and the same engine run, for each of six cells, one per link-reading hub sheet, take
+  `hubCache` from `linkCacheValues(hub zip)`, `leafValue` from the leaf's own sheet XML through
+  `readCellValue`, and `engineValue` from `calculateLtdCells`; assert
+  `classifyLinkCell({ hubCache, leafValue, engineValue })` is `{ stale: false, drift: false }`;
+  then with `hubCache` replaced by `hubCache + 1` (or `"x"` for a text cell) assert `{ stale:
+  true, drift: false }`; then with `leafValue` replaced instead assert `{ stale: false, drift:
+  true }`. The cells, with `<first>` the package's first tab (`Nov` for `ltd-latest`):
+  `Currentaccount.xlsx!<first>!J1` (TrialBalance `H20`; 44,200), `Sales.xlsx!<first>!O1`
+  (TrialBalance `F53` and Stock `J8`, so two sources; 25,333.33), `Payslips.xlsx!<first>!M2`
+  (WagesInterface `C17`; 1,048), `Fixedassets.xlsx!Schedule!Q67` (CorporationTax `I49`; 1,500),
+  `Fixedassets.xlsx!Schedule!E55` (PubNotes `F8`; 30,000),
+  `Companysecretary.xlsx!RegisterofMembers!G1` (Report `I95`; 100). Also assert
+  `linkAddressedCells(hub zip)` lists exactly those source cells for each. The page half (the
+  stale mark rendered, the drift mark on a corrupted leaf) is T11's A7.
+
+Commands. T4a: `npx vitest run --fileParallelism=false app/test/ltd-link-caches.test.js
+app/test/calculator-ltd.test.js app/test/ltd-precision-code.test.js 2>&1 | tee
+target/ltd-t4a.log` (the last needs LibreOffice; skip-by-name when absent is already its
+behaviour), then `node app/bin/report.js --package ltd --data examples/precision-code-ltd/full
+--years ltd-2024 --offset -P1Y --output-dir target/r-ltd` and diff `report.json` against the
+same run on `main`: the only additions are the five `cell/TrialBalance!…` entries. T4b: the
+same vitest line plus `app/test/link-cache.test.js`, then `node app/bin/report.js --package ltd
+--source-dir examples/ltd-latest --mode saved --year-end 2027-10-31 --output-dir
+target/r-ltd-saved` and confirm it matches `--data` on every shared key it matched before. Full
+`npm test` before any push. Tee everything.
+
+Acceptance. T4a: the coverage test names no leftover; 2,105 formula cells and every
+writer-filled input the fixture carries are emitted; the row-5 test passes for all four books;
+R gains exactly the five TrialBalance cells and nothing else moves in `report.json`;
+`calculator-ltd.test.js` and `ltd-precision-code.test.js` pass. T4b: the pinned list equals the
+templates (2,214); the results-reader half compares 2,224 cells and every blank-key pair is
+absent or written; the sibling half compares 2,195 cells over `ltd-latest` and agrees; the six
+stale classifications pass; `report.js --mode saved` over `ltd-latest` matches `--data` on every
+key it matched before.
+
+Landing order. T4a, one branch, four commits: (1) `app/lib/ltd-layout.js` created;
+`products/ltd.js` imports from it and deletes its own copies (`BANK_ACCOUNT_FILES`,
+`BANK_TRANSFER_CODES`, `bankLayout`, `BANK_LAYOUTS`, `OPENING_FIXED_ASSET_COLUMNS`); the row-5
+test; `calculators/ltd.js` imports `BANK_ACCOUNT_FILES` and `BANK_TRANSFER_CODES` from it and
+deletes its copies and `bankTransferCodes` (`bankLayout(fileName).transfers` replaces it, so
+`intraTransfers` reads the same trio). (2) The `computeLtd` split with an empty `linkCells`,
+`calculateLtdCells`, `calculateLinkCells`; the report-cells test. (3) The emission table, group
+by group, with the fixture and the coverage test; `TRIAL_BALANCE_READS` last. (4) Docs: this
+row's line in `NEXT.md` and the plan's Landed list. T4b, after S4 merges: (1) `LINK_ORDER.ltd`
+and its test; (2) the pinned-list test; (3) the two agreement halves; (4) the stale test;
+(5) docs. Files T4b touches: `app/lib/link-caches.js` (the one `ltd` line),
+`app/test/ltd-link-caches.test.js`. T4b must not touch `spreadsheet-runner.js`,
+`product-workbook.js` or any template.
 
 ### T5 Ltd book checks and warnings
 
