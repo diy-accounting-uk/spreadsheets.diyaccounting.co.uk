@@ -1074,4 +1074,5 @@ cost = 900
 [expected]
 total_sales = 269500
 total_other_income = 80
+months_traded = 12
 fixed_asset_cost = 900

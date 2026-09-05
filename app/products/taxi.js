@@ -713,13 +713,37 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // The forecast repeats a month that traded and spreads the year's total
       // across the months that did not, so the projected year only equals the
       // actual one when every month traded. C19 counts the trading months
-      // against the P&L's own monthly turnover.
+      // against the P&L's own monthly turnover, and the fixture states the
+      // count the book itself makes so the sheet is not the only witness.
       const monthsTraded = MONTH_COLS.filter((col) => (pl[`${col}5`] || 0) > 0).length;
       check("Forecast: months of actual trade = P&L months with turnover", forecast.C19 || 0, monthsTraded, 0);
+      if (expected.months_traded !== undefined)
+        check("Forecast: months of actual trade = the fixture's", forecast.C19 || 0, expected.months_traded, 0);
+
+      // A month that traded is repeated as it stands and a month that did not
+      // takes the year's own figure divided by the months that did, except
+      // for capital allowances: the year claims those once however few months
+      // it traded, so the sheet lifts them out of the year's cost of sales
+      // before spreading it and gives every projected month a twelfth of the
+      // allowance back (verified against the template: 'Wages Forecast'!D24 =
+      // IF($C5>0,IF(D5>0,D9,($C9-'Profit & Loss Acc'!$B10)/$C19+'Profit &
+      // Loss Acc'!$B10/12),0), against D20's and D28's plain $C/$C19 spread).
+      // A year with no turnover at all forecasts nil, which is the outer
+      // IF(C5>0,...) on every one of those rows.
+      const spread = (row, claimedOnceInTheYear = 0) => {
+        if (monthsTraded === 0) return 0;
+        const spreadMonth = (monthTotal(row) - claimedOnceInTheYear) / monthsTraded + claimedOnceInTheYear / 12;
+        return MONTH_COLS.reduce((sum, col) => sum + ((pl[`${col}5`] || 0) > 0 ? pl[`${col}${row}`] || 0 : spreadMonth), 0);
+      };
+      check("Forecast: turnover = the traded months plus the year spread over the rest", forecast.C20 || 0, spread(5));
+      check("Forecast: cost of sales = the traded months plus the year spread over the rest", forecast.C24 || 0, spread(12, pl.B10 || 0));
+      check("Forecast: general expenses = the traded months plus the year spread over the rest", forecast.C28 || 0, spread(22));
+      // Other income is the one row the forecast reads straight through, with
+      // no spread of its own (verified against the template: D22 = D7).
+      check("Forecast: other business income = P&L other business income", forecast.C22 || 0, monthTotal(24));
 
       if (monthsTraded === MONTH_COLS.length) {
         check("Forecast: turnover = P&L turnover", forecast.C20 || 0, monthTotal(5));
-        check("Forecast: other business income = P&L other business income", forecast.C22 || 0, monthTotal(24));
         check("Forecast: cost of sales = P&L cost of sales", forecast.C24 || 0, monthTotal(12));
         check("Forecast: general expenses = P&L general expenses", forecast.C28 || 0, monthTotal(22));
       }

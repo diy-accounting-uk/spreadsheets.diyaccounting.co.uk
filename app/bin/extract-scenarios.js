@@ -18,6 +18,7 @@
 //         examples/sp-sixty-driving/{book.toml,lines.jsonl}
 //         examples/kestrel-executive-cars/{book.toml,lines.jsonl}
 //         examples/basic-taxi-driver/{book.toml,lines.jsonl}
+//         examples/autumn-start-cabs/{book.toml,lines.jsonl}
 //
 // Writes: a book.toml and lines.jsonl subset directory under each master,
 //         and the twelve fixtures under app/test/fixtures/.
@@ -1107,7 +1108,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
     },
     grouped,
     {
-      ...taxiExpectedFigures(lines),
+      ...taxiExpectedFigures(lines, book.documentInfo.periodCoveredStart),
       fixed_asset_additions: additions,
     },
   );
@@ -1125,6 +1126,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
 const spSixty = readMaster("sp-sixty-driving");
 const kestrel = readMaster("kestrel-executive-cars");
 const basicTaxi = readMaster("basic-taxi-driver");
+const autumnStart = readMaster("autumn-start-cabs");
 
 const spSixtyTaxiDiya = writeTaxiScenario(spSixty, {
   fixtureName: "taxi-scenario-sp-sixty",
@@ -1147,6 +1149,13 @@ const basicTaxiDiya = writeTaxiScenario(basicTaxi, {
   name: "Basic taxi driver",
   description:
     "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental.",
+});
+
+const autumnStartDiya = writeTaxiScenario(autumnStart, {
+  fixtureName: "taxi-scenario-autumn-start",
+  subsetName: "taxi",
+  name: "Autumn Start Cabs",
+  description: "Owner-driver who started trading in October, so the year's takings and costs sit in the last six month tabs",
 });
 
 // ---------------------------------------------------------------------------
@@ -1225,6 +1234,7 @@ const subsetLines = [
   ["sp-sixty-driving/taxi", spSixtyTaxiDiya],
   ["kestrel-executive-cars/taxi", kestrelDiya],
   ["basic-taxi-driver/taxi", basicTaxiDiya],
+  ["autumn-start-cabs/taxi", autumnStartDiya],
 ];
 
 console.log(`Extracted ${extracted.length} fixtures and ${subsetLines.length} diya-gl subsets`);

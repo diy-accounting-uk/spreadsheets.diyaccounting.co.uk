@@ -5,21 +5,21 @@ creationDate = 2026-04-04
 periodCoveredStart = 2025-04-06
 periodCoveredEnd = 2026-04-05
 defaultCurrency = "GBP"
-entriesComment = "Complete business activity for Basic Taxi Driver FY2025/26"
+entriesComment = "Complete business activity for Autumn Start Cabs FY2025/26"
 
 [entityInformation]
-organizationIdentifier = "Basic Taxi Driver"
-organizationDescription = "Owner-driver private hire and taxi services"
-organizationAddressLine = "17 Station Road"
-organizationTown = "Derby"
-organizationPostcode = "DE1 2GH"
-organizationTelephone = "01332 555 0300"
-taxRegistrationNumber = "5566778899"
+organizationIdentifier = "Autumn Start Cabs"
+organizationDescription = "Owner-driver private hire started part way through the tax year"
+organizationAddressLine = "9 Newland"
+organizationTown = "Lincoln"
+organizationPostcode = "LN1 1XG"
+organizationTelephone = "01522 555 0180"
+taxRegistrationNumber = "6677889900"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "TaxiDriver"
 "diya-gl:vatRegistered" = false
 "diya-gl:basisOfAccounting" = "cash"
-"diya-gl:nino" = "QQ987654A"
+"diya-gl:nino" = "QQ112233B"
 
 [accounts.sales."4000"]
 accountMainDescription = "Fares income"
@@ -105,9 +105,3 @@ specialRateWDA = 0.06
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
-
-[[fixedAssets]]
-assetID = "FA-VEHICLE-001"
-description = "Taxi vehicle"
-cost = 8000
-acquiredDate = 2025-06-01

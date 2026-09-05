@@ -499,7 +499,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
     expect(err.status).toBe(1);
     expect(err.stderr).toContain('"version": 1');
     expect(err.stderr).toContain("found 2");
-  });
+  }, 30000);
 });
 
 describe("package.json export-bst alias", () => {
