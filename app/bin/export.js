@@ -7,16 +7,19 @@
 // Usage:
 //   node app/bin/export.js --package bst --source-dir examples/bst-latest --output-dir /tmp/exported
 //   node app/bin/export.js --package se --source-dir examples/se-latest --output-dir /tmp/exported
-//   node app/bin/export.js --package bst --file my-file.xlsx
-//   node app/bin/export.js --package bst --file my-package.zip --output-dir /tmp/exported
+//   node app/bin/export.js --file my-file.xlsx
+//   node app/bin/export.js --file my-package.zip --output-dir /tmp/exported
+//   node app/bin/export.js --package se --file my-package.zip --output-dir /tmp/exported
 //
 // --source-dir reads a package the pipeline already unpacked into its own
-// directory. --file takes any of the kinds books-interchange.js reads --
-// a customer's own download, not a directory this repo laid out -- and
-// writes beside that input unless --output-dir says otherwise. --file
-// supports --package bst only for now: the anchor guard is written against
-// the Basic Sole Trader template, and reading another product's file this
-// way is undecided until it has one.
+// directory, and always needs --package to say which product's extractors
+// to run. --file takes any of the kinds books-interchange.js reads -- a
+// customer's own download, not a directory this repo laid out -- and writes
+// beside that input unless --output-dir says otherwise; --package is
+// optional there, since the file itself says which product it is (the
+// anchor guard for a single workbook, the sheets a package zip carries for
+// the rest). Given anyway, --package is checked against what the file
+// sniffs as and a disagreement is refused by name.
 //
 // book.toml and lines.jsonl are written through app/lib/diya-gl-canonical.js,
 // the one form D is compared in, so a re-ordered line, a re-ordered field or
@@ -45,10 +48,10 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/product-workbook.js";
+import { loadTaxDataForBook, productOf } from "../lib/product-workbook.js";
 import {
   readBookSource,
-  BstAnchorError,
+  AnchorError,
   XlsBookSourceError,
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
@@ -56,30 +59,36 @@ import {
   PackagePartError,
   ProductNotAvailableError,
 } from "../lib/books-interchange.js";
-import * as bst from "../products/bst.js";
-import * as taxi from "../products/taxi.js";
-import * as se from "../products/se.js";
-import * as ltd from "../products/ltd.js";
+import { PRODUCTS } from "../lib/products.js";
+
+// A book read through --file whose sniffed product disagrees with the
+// --package it was given, so the CLI reports it by name rather than
+// building R for the wrong product.
+export class PackageMismatchError extends Error {
+  constructor(given, actualProductName) {
+    super(`--package ${given} was given but the file is a ${actualProductName} workbook`);
+    this.name = "PackageMismatchError";
+  }
+}
 
 // Every error a book source can refuse a read with, named rather than a
 // stack trace: --file prints the message and exits, exactly as the anchor
 // guard already did before books-interchange.js grew four more ways a file
 // can be rejected.
 const NAMED_BOOK_SOURCE_ERRORS = [
-  BstAnchorError,
+  AnchorError,
   XlsBookSourceError,
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,
   PackagePartError,
   ProductNotAvailableError,
+  PackageMismatchError,
 ];
 
 function isNamedBookSourceError(err) {
   return NAMED_BOOK_SOURCE_ERRORS.some((ErrorClass) => err instanceof ErrorClass);
 }
-
-const PRODUCTS = { bst, taxi, se, ltd };
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -95,12 +104,8 @@ function parseArgs(argv) {
 
   const usage =
     "Usage: node app/bin/export.js --package <bst|taxi|se|ltd> --source-dir <path> --output-dir <path>\n" +
-    "   or: node app/bin/export.js --package bst --file <path.xlsx|path.zip> [--output-dir <path>]";
+    "   or: node app/bin/export.js --file <path.xlsx|path.zip> [--package <bst|taxi|se|ltd>] [--output-dir <path>]";
 
-  if (!packageName) {
-    console.error(usage);
-    process.exit(1);
-  }
   if (!sourceDir && !file) {
     console.error(usage);
     process.exit(1);
@@ -109,12 +114,12 @@ function parseArgs(argv) {
     console.error("Error: --source-dir and --file are mutually exclusive");
     process.exit(1);
   }
-  if (sourceDir && !outputDir) {
-    console.error("Error: --output-dir is required with --source-dir");
+  if (sourceDir && !packageName) {
+    console.error(usage);
     process.exit(1);
   }
-  if (file && packageName !== "bst") {
-    console.error(`Error: --file mode supports --package bst only (got "${packageName}")`);
+  if (sourceDir && !outputDir) {
+    console.error("Error: --output-dir is required with --source-dir");
     process.exit(1);
   }
 
@@ -160,13 +165,27 @@ function writeOvertypedJson(outputDir, overtyped) {
   console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
 }
 
+// R's calculated cell map alone, the same D -> R half buildFileReportDocument
+// runs before it builds a whole report document -- for a caller (the book
+// checks, which only read a handful of R's cells for a warning like Ltd's
+// distributable-profits one) that has no use for the rest of it.
+export function calculatedResultsFor(book, lines, taxData) {
+  const packageName = productOf(book);
+  const scenario = diyaGlToScenario(book, lines, packageName);
+  return calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
+}
+
 // The book checks and warnings, run over D with the book's own tax year's
 // data behind the VAT threshold warning -- loadTaxDataForBook resolves that
 // year from book.documentInfo alone, so this runs the same way whichever of
-// the five kinds --file read the book from.
+// the five kinds --file read the book from. Also carries R, so a
+// product's own warning that reads the calculated accounts (Ltd's dividend
+// warning against distributable profits) sees them here too, not just
+// through the report.
 async function writeBookChecksJson(outputDir, book, lines) {
   const taxData = await loadTaxDataForBook(book);
-  const { results } = runBookChecks({ book, lines, taxData });
+  const calculatedResults = calculatedResultsFor(book, lines, taxData);
+  const { results } = runBookChecks({ book, lines, taxData, results: calculatedResults });
   writeFileSync(resolve(outputDir, "bookchecks.json"), bookChecksJson(results));
   const failing = results.filter((r) => r.result === "fail").length;
   console.log(`  bookchecks.json: ${results.length} rules, ${failing} failing`);
@@ -180,12 +199,21 @@ async function writeBookChecksJson(outputDir, book, lines) {
 // extract_book tool both call this rather than each reaching into
 // books-interchange.js on their own, so a change to how D or R are produced
 // can only ever happen in one place.
-export async function extractBstFromFile(filePath, productMod) {
+//
+// The product is whichever of the four the file sniffs as; a caller that
+// already knows which product it expects (--package, or the MCP tool's own
+// argument) passes it as `product` and gets a named refusal when the file
+// disagrees, rather than silently reading it as something it is not.
+export async function extractBookFromFile(filePath, { product } = {}) {
   const resolvedFile = resolve(filePath);
   const bytes = readFileSync(resolvedFile);
-  const { product, book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { products: { bst: productMod } });
-  const document = buildFileReportDocument(book, lines, product, productMod);
-  return { book, lines, document, overtyped };
+  const { product: sniffedProduct, book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { products: PRODUCTS });
+  if (product && product !== sniffedProduct) {
+    throw new PackageMismatchError(product, PRODUCTS[sniffedProduct].PRODUCT.name);
+  }
+  const productMod = PRODUCTS[sniffedProduct];
+  const document = buildFileReportDocument(book, lines, sniffedProduct, productMod);
+  return { product: sniffedProduct, book, lines, document, overtyped };
 }
 
 // The v2 schema validation, then book.toml + lines.jsonl written through
@@ -215,18 +243,17 @@ function writeDiyaGlData(outputDir, book, lines) {
   console.log(`  book.toml: ${Object.keys(book).length} tables`);
 }
 
-async function runFileMode(filePath, outputDirArg, productMod) {
+async function runFileMode(filePath, outputDirArg, packageName) {
   const resolvedFile = resolve(filePath);
   const resolvedOutput = resolve(outputDirArg || dirname(resolvedFile));
 
   console.log(`=== export.js ===`);
-  console.log(`Package:    bst`);
   console.log(`File:       ${resolvedFile}`);
   console.log(`Output:     ${resolvedOutput}`);
 
   let extracted;
   try {
-    extracted = await extractBstFromFile(resolvedFile, productMod);
+    extracted = await extractBookFromFile(resolvedFile, { product: packageName });
   } catch (err) {
     if (isNamedBookSourceError(err)) {
       console.error(err.message);
@@ -235,7 +262,8 @@ async function runFileMode(filePath, outputDirArg, productMod) {
     throw err;
   }
 
-  const { book, lines, document, overtyped } = extracted;
+  const { product, book, lines, document, overtyped } = extracted;
+  console.log(`Package:    ${product}`);
   writeDiyaGlData(resolvedOutput, book, lines);
   writeReportJson(resolvedOutput, document);
   if (overtyped) writeOvertypedJson(resolvedOutput, overtyped);
@@ -246,17 +274,17 @@ async function runFileMode(filePath, outputDirArg, productMod) {
 
 async function main() {
   const { packageName, sourceDir, file, outputDir } = parseArgs(process.argv);
-  const productMod = PRODUCTS[packageName];
-  if (!productMod) {
+  if (packageName && !PRODUCTS[packageName]) {
     console.error(`Unknown package: ${packageName}. Available: ${Object.keys(PRODUCTS).join(", ")}`);
     process.exit(1);
   }
 
   if (file) {
-    await runFileMode(file, outputDir, productMod);
+    await runFileMode(file, outputDir, packageName);
     return;
   }
 
+  const productMod = PRODUCTS[packageName];
   const resolvedSource = resolve(sourceDir);
   const resolvedOutput = resolve(outputDir);
 
@@ -278,7 +306,7 @@ async function main() {
 }
 
 // Only run as a CLI when invoked directly; a caller importing
-// extractBstFromFile or buildFileReportDocument (the MCP server does both)
+// extractBookFromFile or buildFileReportDocument (the MCP server does both)
 // must never trigger a second, argv-driven run of this file's own main().
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((err) => {

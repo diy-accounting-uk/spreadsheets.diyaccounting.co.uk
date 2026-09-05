@@ -2945,7 +2945,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
-    if (taxData.tax_year?.end) {
+    if (taxData?.tax_year?.end) {
       const deadlineYear = new Date(taxData.tax_year.end).getUTCFullYear() + 1;
       check(
         "Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends",
@@ -2979,7 +2979,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(results.Admin.B17),
       0,
     );
-    if (taxData) {
+    if (taxData?.tax_year) {
       checkText(
         "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
         payrollCalendar.N1,

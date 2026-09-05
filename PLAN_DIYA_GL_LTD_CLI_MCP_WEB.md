@@ -486,6 +486,13 @@ each rebasing on the last.
   **T24** (Sonnet); and the page calls `engine.taxYearFileName(date)` with no regime
   (`bst-data.js:907`, `925`, `1077`), which S7's shell passes the product's regime.
 
+- T4a `a0c4de16`, `9933ed28`, `ec359b16`, `977358cf`, merged 2026-09-05: `app/lib/ltd-layout.js`,
+  the `computeLtd` split, `calculateLtdCells` and `calculateLinkCells`; 2,130 of the 2,214
+  addressed cells emitted (the 84 remaining are blank inputs the fixture does not fill); R gained
+  exactly the five TrialBalance cells. T4b keeps `LINK_ORDER.ltd` (the nine link-bearing files,
+  verified) and the agreement halves. Follow-up in T4b: `app/lib/book-checks/ltd.js`'s bank layout
+  copy comes from `ltd-layout.js`.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially

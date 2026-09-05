@@ -33,6 +33,7 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../lib/ltd-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -70,13 +71,6 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-
 // TrialBalance's own closing-balance echo of each bank workbook (verified
 // against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
 // EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
@@ -88,49 +82,6 @@ const TRIAL_BALANCE_BANK_ECHO_CELLS = {
   "Creditcardaccount.xlsx": "EJ24",
   "Cashaccount.xlsx": "EJ25",
 };
-
-// Transfer code letter each bank workbook stands for. A workbook analyses
-// transfers under the other three letters; it never transfers to itself.
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
-// Column layout of the receipts and payments blocks in each bank workbook's
-// month tabs, and the code letters each block has an analysis column for.
-// Cashaccount analyses fewer receipt codes than the three statement books,
-// which shifts its payments block four columns to the left.
-//
-// reference and comment are two columns every one of the four workbooks
-// keeps beside its receipts and payments that the writer never used to fill.
-// reference is the invoice number column -- "Sales Invoice" on receipts (C),
-// "Enter Purchase Invoice No." on payments. comment is the column beside it
-// -- "Deposit Bank Reference" on receipts (D), "Cheque number Direct Debit"
-// on Cashaccount's and the statement books' payments -- which the sheet
-// keeps for the payer's own reference rather than a description, but is a
-// real, otherwise-empty cell all the same, so a line's own free-text comment
-// goes there.
-function bankLayout(fileName) {
-  const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
-  if (fileName === "Cashaccount.xlsx") {
-    return {
-      receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-      payment: { date: "P", source: "Q", reference: "R", comment: "S", code: "T", amount: "U" },
-      receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
-      paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
-    };
-  }
-  return {
-    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-    payment: { date: "S", source: "T", reference: "U", comment: "V", code: "W", amount: "X" },
-    receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
-    paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
-  };
-}
-
-const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
 // ── Payslips.xlsx Admin: the payroll calendar ──────────────────────────────
 // B2 carries the tax year's first day and every date under it is the row
@@ -288,14 +239,6 @@ const STOCK_MATERIALS_PERCENT_CELL = "H4";
 // Everything else is a single figure in column E. The sheet's own audit
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
-
-const OPENING_FIXED_ASSET_COLUMNS = {
-  land_buildings: { cost: "G", depreciation: "M" },
-  plant_machinery: { cost: "H", depreciation: "N" },
-  fixtures_fittings: { cost: "I", depreciation: "O" },
-  computer_technology: { cost: "J", depreciation: "P" },
-  motor_vehicles: { cost: "K", depreciation: "Q" },
-};
 
 const OPENING_BANK_COLUMNS = {
   current_account: "G",
@@ -2372,18 +2315,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
   // Opening balances. A balance sheet that never posts is still balanced, so
-  // EJ91 alone cannot tell an unposted opening from a posted one. These
-  // checks tie each opening figure to the trial balance row it feeds.
+  // EJ91 alone cannot tell an unposted opening from a posted one. The next
+  // two checks tie the sheet's own opening balance sheet and trial balance
+  // audit rows to zero; both need only the calculated results, not a
+  // fixture's [opening_balance] table, so they run whether or not one is
+  // there -- a book loaded straight from a diya-gl file carries no such
+  // table.
+  const oa = results.OpenAccounts;
+  const tb = results.TrialBalance;
+  check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
+  check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
+
+  // The rest tie each opening figure to the trial balance row it feeds, so
+  // they run only where the fixture states an [opening_balance] table.
   if (expected.opening_balance) {
     const ob = expected.opening_balance;
-    const oa = results.OpenAccounts;
-    const tb = results.TrialBalance;
     const cost = ob.fixed_asset_cost || {};
     const depreciation = ob.fixed_asset_depreciation || {};
     const sum = (o) => Object.values(o).reduce((s, v) => s + v, 0);
-
-    check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
-    check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
 
     check("Trial Balance opening: fixed asset cost", (tb.D6 || 0) + (tb.D7 || 0) + (tb.D8 || 0) + (tb.D9 || 0) + (tb.D10 || 0), sum(cost));
     check(
@@ -3330,12 +3279,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // The year's HP interest and admin charges reaching the P&L's own "Bank
   // Charges" line (MnthP&L!B36), through the "B" bank-payment code every
-  // other direct bank charge on that line already uses. Computed from the
+  // other direct bank charge on that line already uses, plus whatever nets
+  // through the bank workbooks' "Bank Contra Items Received/Paid" rows
+  // (TrialBalance rows 88/89), which the sheet feeds from code "X" -- an
+  // uncoded transfer between the company's own accounts, coded "X" on the
+  // leg its own workbook has no more specific letter for. Computed from the
   // scenario's own bank transactions, not from the P&L cell it is compared
   // to, so a broken cross-file link shows up here rather than passing by
   // construction.
   if (pl && expected.bank) {
-    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B"));
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B") + netBankPayments("X"));
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash
@@ -3343,7 +3296,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // direction-tagged entries, not read back from a second formula, so a
   // receipt posted as a payment, a dropped month or an opening balance that
   // never carried forward shows up here.
+  //
+  // A "BC"-coded entry only carries the account's opening balance on the
+  // day the workbook's own first entry falls on; a "BC"-coded entry any
+  // other day is an ordinary transfer statement line, the same as any other
+  // code (see BANK_TRANSFER_CODES). tx.date arrives as a plain string from
+  // a book loaded straight off disk and as a TOML date object from a parsed
+  // fixture, so the day each file's own entries start on is keyed as text
+  // either way before the two are compared.
   if (expected.bank) {
+    const dateKey = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10));
+    const firstDayOf = {};
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
+        if (!fileName) continue;
+        const key = dateKey(tx.date);
+        if (!firstDayOf[fileName] || key < firstDayOf[fileName]) firstDayOf[fileName] = key;
+      }
+    }
     const movements = {};
     for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
       movements[fileName] = { opening: 0, receipts: 0, payments: 0 };
@@ -3353,7 +3324,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
         if (!fileName) continue;
         const movement = movements[fileName];
-        if (tx.code === "BC") movement.opening += tx.amount;
+        if (tx.code === "BC" && dateKey(tx.date) === firstDayOf[fileName]) movement.opening += tx.amount;
         else if (tx.direction === "in") movement.receipts += tx.amount;
         else if (tx.direction === "out") movement.payments += tx.amount;
       }

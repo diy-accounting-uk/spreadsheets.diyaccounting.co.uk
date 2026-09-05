@@ -85,8 +85,8 @@ describe("the Ltd example books", () => {
     // registered, and the opening, transfer and stock journals, whose two
     // legs share a journal, date, amount and detail by construction.
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
-    expect(resultFor(results, "book-duplicate-entries").actual).toBe(6);
-    expect(summary).toEqual({ pass: 13, warn: 3, fail: 0 });
+    expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
+    expect(summary).toEqual({ pass: 14, warn: 2, fail: 0 });
   });
 
   it("BrickWork Pro (Company, non-VAT): all sixteen rules pass", () => {

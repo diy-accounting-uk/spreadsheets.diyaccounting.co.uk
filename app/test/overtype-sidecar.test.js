@@ -15,13 +15,8 @@ import { tmpdir } from "os";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
-import {
-  extractBstTransactions,
-  bstExtractionMap,
-  bstBookFieldCells,
-  isBstInputCell,
-  BST_TRANSACTION_REGIONS,
-} from "../lib/xlsx-exporter.js";
+import { extractBstTransactions, bstExtractionMap, bookFieldCells, isBstInputCell, BST_TRANSACTION_REGIONS } from "../lib/xlsx-exporter.js";
+import { workbookSetFromWorkbook } from "../lib/workbook-set.js";
 import { overtypedCells, BST_TEMPLATE_PATH } from "../lib/overtype-sidecar.js";
 import { parseCells, formulaCells, sortCellRefs } from "../lib/template-formula-map.js";
 import { cellLabels, CELL_MAP } from "../products/bst.js";
@@ -32,11 +27,13 @@ const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole
 
 let original;
 let originalMap;
+let originalSet;
 
 beforeAll(async () => {
   original = readFileSync(BST_XLSX);
   originalMap = bstExtractionMap();
   await extractBstTransactions(original, originalMap);
+  originalSet = await workbookSetFromWorkbook("workbook.xlsx", original);
 });
 
 // One sheet's XML out of a workbook buffer.
@@ -75,12 +72,13 @@ async function overtypedAfterPatch(sheet, cellRef, rewrite = stripFormula) {
   const buffer = await patchedCopy(sheet, cellRef, rewrite);
   const map = bstExtractionMap();
   await extractBstTransactions(buffer, map);
-  return overtypedCells(buffer, { extractionMap: map });
+  const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+  return overtypedCells(set, { extractionMap: map });
 }
 
 describe("overtyped.json on an untouched package", () => {
   it("reports nothing for a package the generator just produced", async () => {
-    expect(await overtypedCells(original, { extractionMap: originalMap })).toEqual({});
+    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).toEqual({});
   });
 
   // The template prints prompt formulas across the customer's own entry
@@ -98,7 +96,7 @@ describe("overtyped.json on an untouched package", () => {
     expect(upload.get(cellRef)?.hasF ?? false, `${sheet}!${cellRef} still computes in the fixture`).toBe(false);
 
     expect(isBstInputCell(sheet, cellRef)).toBe(true);
-    expect(await overtypedCells(original, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
+    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
   });
 
   // The Debtors & Creditors sheet takes two figures and computes the rest.
@@ -251,7 +249,7 @@ describe("attribution agrees with what CELL_MAP and the extraction map state", (
     for (const [index, record] of recorded.entries()) {
       expect(record.entryNumber).toBe(lines[index].entryNumber);
       expect(record.sourceJournalID).toBe(lines[index].sourceJournalID);
-      const found = originalMap.lineForCell(record.sheet, record.cells.postingDate);
+      const found = originalMap.lineForCell(null, record.sheet, record.cells.postingDate);
       expect(found.entryNumber).toBe(record.entryNumber);
       expect(found.readAs).toBe("postingDate");
     }
@@ -263,43 +261,44 @@ describe("attribution agrees with what CELL_MAP and the extraction map state", (
     const cells = parseCells(xml);
     expect(cells.has(record.cells.postingDate)).toBe(true);
     expect(cells.has(record.cells.amount)).toBe(true);
-    expect(originalMap.lineForCell(record.sheet, record.cells.amount).readAs).toBe("amount");
-    expect(originalMap.lineForCell(record.sheet, `Z${record.row}`).readAs).toBe(null);
+    expect(originalMap.lineForCell(null, record.sheet, record.cells.amount).readAs).toBe("amount");
+    expect(originalMap.lineForCell(null, record.sheet, `Z${record.row}`).readAs).toBe(null);
   });
 
   it("has no line for a row that produced none", () => {
-    expect(originalMap.lineForCell("SalesApr", "A3")).toBeUndefined();
-    expect(originalMap.lineForCell("Profit & Loss Acc", "C24")).toBeUndefined();
+    expect(originalMap.lineForCell(null, "SalesApr", "A3")).toBeUndefined();
+    expect(originalMap.lineForCell(null, "Profit & Loss Acc", "C24")).toBeUndefined();
   });
 });
 
 describe("the extraction map's cell-to-field half", () => {
   it("names the Business Details cells the book's entity information is read from", () => {
     const map = bstExtractionMap();
-    expect(map.fieldForCell("Business Details", "C5")).toEqual({
+    expect(map.fieldForCell(null, "Business Details", "C5")).toEqual({
+      file: null,
       sheet: "Business Details",
       cell: "C5",
       field: "entityInformation.organizationIdentifier",
     });
-    expect(map.fieldForCell("Business Details", "C12").field).toBe("entityInformation.organizationPostcode");
+    expect(map.fieldForCell(null, "Business Details", "C12").field).toBe("entityInformation.organizationPostcode");
   });
 
   it("names the ledger, stock and Admin cells too", () => {
     const map = bstExtractionMap();
-    expect(map.fieldForCell("Debtors & Creditors", "C3").field).toBe("openingBalances.tradeDebtors");
-    expect(map.fieldForCell("Debtors & Creditors", "F3").field).toBe("openingBalances.tradeCreditors");
-    expect(map.fieldForCell("Debtors & Creditors", "C5")).toBeUndefined();
-    expect(map.fieldForCell("PurchasesStock", "D30").field).toBe("stock.closingValue");
-    expect(map.fieldForCell("Admin", "B23").field).toMatch(/^tax /);
-    expect(map.fieldForCell("Admin", "G21").field).toMatch(/mileage rate/);
+    expect(map.fieldForCell(null, "Debtors & Creditors", "C3").field).toBe("openingBalances.tradeDebtors");
+    expect(map.fieldForCell(null, "Debtors & Creditors", "F3").field).toBe("openingBalances.tradeCreditors");
+    expect(map.fieldForCell(null, "Debtors & Creditors", "C5")).toBeUndefined();
+    expect(map.fieldForCell(null, "PurchasesStock", "D30").field).toBe("stock.closingValue");
+    expect(map.fieldForCell(null, "Admin", "B23").field).toMatch(/^tax /);
+    expect(map.fieldForCell(null, "Admin", "G21").field).toMatch(/mileage rate/);
   });
 
   it("has nothing to say about a cell no extractor reads", () => {
-    expect(bstExtractionMap().fieldForCell("Profit & Loss Acc", "C24")).toBeUndefined();
+    expect(bstExtractionMap().fieldForCell(null, "Profit & Loss Acc", "C24")).toBeUndefined();
   });
 
   it("counts every cell it names as an input cell", () => {
-    for (const { sheet, cell } of bstBookFieldCells()) {
+    for (const { sheet, cell } of bookFieldCells("bst")) {
       expect(isBstInputCell(sheet, cell), `${sheet}!${cell}`).toBe(true);
     }
   });
@@ -317,6 +316,36 @@ describe("the extraction map's cell-to-field half", () => {
   });
 });
 
+// SE's own templates and input-cell predicate are T1's row (app/lib/anchors/se.js
+// and app/products/se.js); this proves the sidecar's file-keyed result shape
+// once T1 supplies them.
+describe.skip("an SE upload's overtyped keys (T1 supplies the SE templates and isInputCell)", () => {
+  it("keys an SE upload's entries by file, sheet and cell", async () => {
+    const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+    const hubBytes = readFileSync(resolve(SE_PACKAGE_DIR, "Financialaccounts.xlsx"));
+    const zip = await JSZip.loadAsync(hubBytes);
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("Profit & Loss Account");
+    const xml = await zip.file(sheetPath).async("string");
+    const element = xml.match(/<c r="B9"[^>]*(?:\/>|>[\s\S]*?<\/c>)/)?.[0];
+    expect(element, "Profit & Loss Account!B9 has no <c> element in the fixture").toBeTruthy();
+    zip.file(sheetPath, xml.replace(element, stripFormula(element)));
+    const patchedHub = await zip.generateAsync({ type: "uint8array" });
+
+    const packageZip = new JSZip();
+    for (const name of readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+      packageZip.file(name, name === "Financialaccounts.xlsx" ? patchedHub : readFileSync(resolve(SE_PACKAGE_DIR, name)));
+    }
+    const packageBytes = await packageZip.generateAsync({ type: "uint8array" });
+    const { workbookSetFromZipBytes } = await import("../lib/workbook-set.js");
+    const set = await workbookSetFromZipBytes(packageBytes);
+
+    const overtyped = await overtypedCells(set, {});
+    expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
+    expect(overtyped["Financialaccounts.xlsx!Profit & Loss Account!B9"].kind).toBe("literal");
+  });
+});
+
 describe("the shipped Basic Sole Trader packages against the template", () => {
   const PACKAGES_DIR = join(ROOT, "packages");
   const shipped = existsSync(PACKAGES_DIR)
@@ -331,7 +360,8 @@ describe("the shipped Basic Sole Trader packages against the template", () => {
     "reports nothing for any year a customer can download",
     async () => {
       for (const file of shipped) {
-        expect(Object.keys(await overtypedCells(readFileSync(file))), file).toEqual([]);
+        const set = await workbookSetFromWorkbook("workbook.xlsx", readFileSync(file));
+        expect(Object.keys(await overtypedCells(set)), file).toEqual([]);
       }
     },
     120000,
