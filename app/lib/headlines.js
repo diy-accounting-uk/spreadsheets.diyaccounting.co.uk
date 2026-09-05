@@ -86,14 +86,17 @@ function resolveSecondLine(report, spec) {
 // tax and NI, whatever extra slices the product declares (Ltd's
 // dividends), then whatever remains. A negative remainder is a loss year;
 // a negative slice is a refund year. Either way a pie cannot show it
-// honestly, so the page draws a bar instead.
-function turnoverPie(turnover, costOfSales, runningCosts, tax, pieExtra = []) {
+// honestly, so the page draws a bar instead. The running-costs and tax
+// slices carry the label their own declaration names (BST's "Running
+// costs" and "Tax and NI" by default; Ltd's "Administrative expenses" and
+// "Corporation tax", the words its own sheet uses).
+function turnoverPie(turnover, costOfSales, runningCosts, runningCostsLabel, tax, taxLabel, pieExtra = []) {
   const extraTotal = pieExtra.reduce((total, slice) => total + slice.value, 0);
   const kept = turnover.value - costOfSales.value - runningCosts.value - tax.value - extraTotal;
   const slices = [
     { label: "Cost of sales", value: costOfSales.value, from: costOfSales.from },
-    { label: "Running costs", value: runningCosts.value, from: runningCosts.from },
-    { label: "Tax and NI", value: tax.value, from: tax.from },
+    { label: runningCostsLabel, value: runningCosts.value, from: runningCosts.from },
+    { label: taxLabel, value: tax.value, from: tax.from },
     ...pieExtra.map((slice) => ({ label: slice.label, value: slice.value, from: slice.from })),
     {
       label: "Kept",
@@ -154,7 +157,10 @@ function outgoingsPie(costOfSales, expenseLines, outgoingsTotal) {
  *   `extra` (`[{label, key}]`, summed into the assets total). tax and
  *   assets may each add `secondLine` (one `{label, key}`, shown beside that
  *   tile's own value, outside every sum -- Ltd's tax-outstanding and
- *   net-assets figures). All four default to empty/absent.
+ *   net-assets figures). runningCosts and tax may each add `label` (a
+ *   string, the turnover-pie slice's own name -- default "Running costs"
+ *   and "Tax and NI"; Ltd names its sheet's own words, "Administrative
+ *   expenses" and "Corporation tax"). All default to empty/absent.
  * @returns {{tiles: Object, pies: Object, keys: Object}}
  */
 export function headlinesFromReport(report, declaration) {
@@ -169,6 +175,7 @@ export function headlinesFromReport(report, declaration) {
 
   const costOfSales = readKey(report, declaration.costOfSales);
   const runningCosts = readKey(report, declaration.runningCosts);
+  const runningCostsLabel = declaration.runningCosts.label ?? "Running costs";
   const outgoingsTotal = addFigures(costOfSales, runningCosts);
 
   const assetsDecl = declaration.assets || {};
@@ -191,6 +198,7 @@ export function headlinesFromReport(report, declaration) {
   const taxFigure = readKey(report, declaration.tax);
   const taxSecondLine = resolveSecondLine(report, declaration.tax.secondLine);
   const tax = taxSecondLine ? { ...taxFigure, secondLine: taxSecondLine } : taxFigure;
+  const taxLabel = declaration.tax.label ?? "Tax and NI";
 
   const expenseLines = declaration.expenseLines.map(([key, label]) => {
     const figure = readOneCell(report, key, false);
@@ -205,7 +213,7 @@ export function headlinesFromReport(report, declaration) {
   };
 
   const pies = {
-    turnover: turnoverPie(turnoverFigure, costOfSales, runningCosts, taxFigure, turnoverPieExtra),
+    turnover: turnoverPie(turnoverFigure, costOfSales, runningCosts, runningCostsLabel, taxFigure, taxLabel, turnoverPieExtra),
     outgoings: outgoingsPie(costOfSales, expenseLines, outgoingsTotal),
   };
 
