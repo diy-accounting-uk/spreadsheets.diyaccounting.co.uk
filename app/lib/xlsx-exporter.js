@@ -646,11 +646,11 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   const taxRate = typeof ratePercent === "number" ? ratePercent / 100 : 0;
 
   const salesRegionColumns = {
-    postingDate: "A",
-    detailComment: "B",
-    documentReference: "C",
-    amount: amountCol,
-    accountMainID: ACCOUNT_ID_COLUMN,
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": "C",
+    "amount": amountCol,
+    "accountMainID": ACCOUNT_ID_COLUMN,
     ...(salesDescriptionCol ? { lineItemComment: salesDescriptionCol } : {}),
     ...(salesMileageCol ? { measurableQuantity: salesMileageCol } : {}),
     "diya-gl:cisDeduction": salesCisColumn,
@@ -705,12 +705,12 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   const purchasesStrings = await loadSharedStrings(purchasesZip);
 
   const purchasesRegionColumns = {
-    postingDate: "A",
-    detailComment: "B",
-    documentReference: "C",
-    amount: amountCol,
-    accountMainID: ACCOUNT_ID_COLUMN,
-    expenseCode: codeCol,
+    "postingDate": "A",
+    "detailComment": "B",
+    "documentReference": "C",
+    "amount": amountCol,
+    "accountMainID": ACCOUNT_ID_COLUMN,
+    "expenseCode": codeCol,
     ...(purchasesDescriptionCol ? { lineItemComment: purchasesDescriptionCol } : {}),
     ...(purchasesMileageCol ? { measurableQuantity: purchasesMileageCol } : {}),
     "diya-gl:cisDeduction": purchasesCisColumn,
