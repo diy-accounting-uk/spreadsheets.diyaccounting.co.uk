@@ -16,8 +16,7 @@ import { tmpdir } from "os";
 
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { saveWorkbook } from "../lib/product-workbook.js";
-import { extractBstFromFile, buildFileReportDocument } from "../bin/export.js";
-import * as bst from "../products/bst.js";
+import { extractBookFromFile, buildFileReportDocument } from "../bin/export.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
@@ -41,7 +40,7 @@ async function saveAndReimport(dir) {
   try {
     const xlsxPath = resolve(stageDir, "book.xlsx");
     writeFileSync(xlsxPath, workbook);
-    const reimported = await extractBstFromFile(xlsxPath, bst);
+    const reimported = await extractBookFromFile(xlsxPath, { product: "bst" });
     return { book, lines, reimported };
   } finally {
     rmSync(stageDir, { recursive: true, force: true });

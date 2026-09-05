@@ -17,17 +17,21 @@ import {
   extractJournalEntries,
   extractPayrollTransactions,
   extractBook,
+  extractMultiFileTransactions,
   normaliseLine,
   AdminSheetMissingError,
 } from "../lib/xlsx-exporter.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
+import { saveWorkbookFiles } from "../lib/product-workbook.js";
+import { parse as parseTOML } from "smol-toml";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
 import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
 import { CELL_MAP as LTD_CELL_MAP } from "../products/ltd.js";
+import { cellWrites as seCellWrites } from "../products/se.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -1389,5 +1393,99 @@ describe("extractBook — the Schedule's asset attributes and disposals", () => 
     expect("disposedDate" in book.fixedAssets[0]).toBe(false);
     expect("disposalProceeds" in book.fixedAssets[0]).toBe(false);
     expect(book.fixedAssets[0].depreciationRate).toBe(0.25);
+  });
+});
+
+// ── CIS both ways on the SE journals ───────────────────────────────────────
+//
+// A construction business sits on both sides of the Construction Industry
+// Scheme: it withholds tax from the sub-contractors it buys labour from, and
+// its own contractor customers withhold tax from it. The SE package keeps a
+// column for each -- Purchases AD "CIS Certificates / Tax Paid" and Sales W
+// "Sub contractors only / CIS Tax Deducted" -- and the writer and the export
+// have to meet on both. The Company package keeps the same pair one and two
+// columns over, at AK and V.
+
+describe("CIS both ways on the SE journals", () => {
+  const seCisScenario = {
+    sales: { apr: [{ date: "2025-04-10", customer: "Northgate Contracts", code: "a", amount: 1250, cis_deduction: 250 }] },
+    purchases: { apr: [{ date: "2025-04-15", supplier: "JB Plastering", code: "g", amount: 1500, cis_deduction: 300 }] },
+    metadata: { vat_registered: true },
+  };
+
+  it("writes each side of the scheme to the column its own journal keeps for it", () => {
+    const writes = seCellWrites(seCisScenario, 2025);
+    expect(writes["Sales.xlsx"].Apr.W5).toBe(250);
+    expect(writes["Purchases.xlsx"].Apr.AD5).toBe(300);
+  });
+
+  it("writes nothing to either column for a journal line carrying no deduction", () => {
+    const writes = seCellWrites(
+      { sales: { apr: [{ date: "2025-04-10", customer: "HomeStyle Renovations", code: "a", amount: 1250 }] }, metadata: {} },
+      2025,
+    );
+    expect(writes["Sales.xlsx"].Apr).not.toHaveProperty("W5");
+  });
+
+  // The whole way round: a diya-gl book through the writer into a package,
+  // and the package back out through the export.
+  async function seBrickworkPackage() {
+    const source = resolve(ROOT, "examples", "brickwork-pro", "se-nonvat");
+    const book = parseTOML(readFileSync(resolve(source, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(source, "lines.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    const { files } = await saveWorkbookFiles(book, lines);
+    const dir = mkdtempSync(join(tmpdir(), "se-cis-both-ways-"));
+    for (const file of files) writeFileSync(join(dir, file.name), file.bytes);
+    return dir;
+  }
+
+  const cisOf = (lines) =>
+    lines
+      .filter((line) => line["diya-gl:cisDeduction"] !== undefined)
+      .map((line) => [line.sourceJournalID, line.postingDate, line.detailComment, line["diya-gl:cisDeduction"]]);
+
+  it("brings both sides back off the package the writer produced", async () => {
+    const dir = await seBrickworkPackage();
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "se");
+    expect(cisOf(lines)).toEqual([
+      ["sales", "2026-03-30", "Northgate Contracts", 200],
+      ["purchases", "2025-05-15", "JB Plastering", 1200],
+      ["purchases", "2025-08-15", "JB Plastering", 1000],
+      ["purchases", "2025-11-15", "Smith Bricklaying", 1000],
+      ["purchases", "2026-02-15", "Smith Bricklaying", 800],
+    ]);
+  }, 60000);
+
+  it("takes the sales figure from column W alone: blanking that one cell drops that one field", async () => {
+    const dir = await seBrickworkPackage();
+    const before = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "se");
+
+    const path = resolve(dir, "Sales.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Mar");
+    const xml = await zip.file(sheetPath).async("string");
+    expect(xml).toContain(`<c r="W7"><v>200</v></c>`);
+    zip.file(sheetPath, xml.replace(`<c r="W7"><v>200</v></c>`, ""));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "se");
+    expect(cisOf(after)).toEqual(cisOf(before).filter((entry) => entry[0] !== "sales"));
+    const changed = after.filter((line, index) => JSON.stringify(line) !== JSON.stringify(before[index]));
+    expect(changed.map((line) => line.detailComment)).toEqual(["Northgate Contracts"]);
+  }, 60000);
+
+  it("reads a Company sales journal's own CIS column, which sits at V and not at W", async () => {
+    const dir = await writePackage({
+      "Sales.xlsx": { Apr: { A5: APRIL_SEVENTH, B5: "Northgate Contracts", E5: "a", F5: 1250, V5: 250, W5: 999 } },
+      "Purchases.xlsx": { Apr: { A5: APRIL_SEVENTH, B5: "JB Plastering", E5: "g", F5: 1500, AK5: 300 } },
+    });
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(dir), "ltd");
+    expect(cisOf(lines)).toEqual([
+      ["sales", "2025-04-07", "Northgate Contracts", 250],
+      ["purchases", "2025-04-07", "JB Plastering", 300],
+    ]);
   });
 });

@@ -605,7 +605,17 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   // VAT on an unregistered book's every line.
   const salesDescriptionCol = product === "ltd" ? "D" : "E";
   const purchasesDescriptionCol = product === "ltd" ? "D" : "E";
-  const cisColumn = product === "ltd" ? "AK" : null;
+  // Both multi-file purchases journals keep the tax a contractor withheld
+  // from a sub-contractor's invoice in their own "CIS Certificates / Tax
+  // Paid" column, and both sales journals keep the tax a contractor withheld
+  // from this business's own invoice under "Sub contractors only / CIS Tax
+  // Deducted". The columns sit at different letters per product: Ltd's are
+  // AK and V, SE's are AD and W. On SE the sales column feeds a running
+  // year-to-date total in X, which the tax return reads (Income Tax!E12 and
+  // SE Full!D231 both read Mar!X1); Ltd's sales column carries no such
+  // column.
+  const purchasesCisColumn = product === "ltd" ? "AK" : "AD";
+  const salesCisColumn = product === "ltd" ? "V" : "W";
   // SE's Sales sheet gives D to the day's business miles (see the codeCol
   // comment above). A sales row's miles sit beside a real sale rather than
   // pricing it the way a Purchases mileage-log row does, so they carry as an
@@ -643,6 +653,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
     accountMainID: ACCOUNT_ID_COLUMN,
     ...(salesDescriptionCol ? { lineItemComment: salesDescriptionCol } : {}),
     ...(salesMileageCol ? { measurableQuantity: salesMileageCol } : {}),
+    "diya-gl:cisDeduction": salesCisColumn,
   };
 
   for (const sheetName of salesMonths) {
@@ -681,6 +692,8 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
           salesMilesByMonth.set(sheetName, (salesMilesByMonth.get(sheetName) || 0) + miles);
         }
       }
+      const cisSuffered = numberAt(xml, `${salesCisColumn}${row}`, salesStrings);
+      if (cisSuffered) line["diya-gl:cisDeduction"] = cisSuffered;
       lines.push(line);
       if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Sales.xlsx");
     }
@@ -700,7 +713,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
     expenseCode: codeCol,
     ...(purchasesDescriptionCol ? { lineItemComment: purchasesDescriptionCol } : {}),
     ...(purchasesMileageCol ? { measurableQuantity: purchasesMileageCol } : {}),
-    ...(cisColumn ? { "diya-gl:cisDeduction": cisColumn } : {}),
+    "diya-gl:cisDeduction": purchasesCisColumn,
   };
 
   for (const sheetName of monthSheetsInPeriodOrder(purchasesSheetMap)) {
@@ -752,10 +765,8 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
       if (reference) line.documentReference = reference;
       const description = textAt(xml, `${purchasesDescriptionCol}${row}`, purchasesStrings);
       if (description) line.lineItemComment = description;
-      // The Ltd purchases journal keeps the tax withheld from a CIS
-      // sub-contractor in its own certificates column.
-      const cisDeduction = cisColumn ? numberAt(xml, `${cisColumn}${row}`, purchasesStrings) : undefined;
-      if (cisDeduction) line["diya-gl:cisDeduction"] = cisDeduction;
+      const cisWithheld = numberAt(xml, `${purchasesCisColumn}${row}`, purchasesStrings);
+      if (cisWithheld) line["diya-gl:cisDeduction"] = cisWithheld;
       lines.push(line);
       if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Purchases.xlsx");
     }

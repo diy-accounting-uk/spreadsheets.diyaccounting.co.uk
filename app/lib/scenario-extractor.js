@@ -719,12 +719,13 @@ export function buildPayroll(lines, { carriesSourceFields = false } = {}) {
   return payroll;
 }
 
-// A purchase from a CIS sub-contractor carries the tax the contractor
-// withheld and paid over to HMRC on the sub-contractor's behalf. The Ltd and
-// Self Employed purchase journals each keep a CIS certificates column for it
-// (Purchases.xlsx AK and AD). The Basic Sole Trader package has no such
-// column, so its subset carries no deduction, the same way it carries no
-// hire purchase agreement.
+// A line under the Construction Industry Scheme carries the tax withheld
+// from it and paid over to HMRC. On a purchase that is the tax this business
+// withheld from a sub-contractor; on a sale it is the tax a contractor
+// customer withheld from this business. The Ltd and Self Employed journals
+// keep a column for each side (purchases AK and AD, sales V and W). The Basic
+// Sole Trader package has no such column, so its subset carries no deduction,
+// the same way it carries no hire purchase agreement.
 export const CIS_DEDUCTION_FIELD = "diya-gl:cisDeduction";
 
 // carriesSourceFields keeps the fields a transaction sheet has a column for
@@ -791,6 +792,7 @@ export function buildGrouped(
         if (line.lineItemComment) sale.description = line.lineItemComment;
       }
       if (carriesPaymentLabels) sale.payment = paymentLabel(line);
+      if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) sale.cis_deduction = line[CIS_DEDUCTION_FIELD];
       const saleMileage = carriesMileage === "all" ? lineMileage(line) : undefined;
       if (saleMileage !== undefined) sale.mileage = saleMileage;
       sales[month].push(sale);
@@ -1018,6 +1020,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       if (txn.code) parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
       if (txn.mileage !== undefined) parts.push(`mileage = ${txn.mileage}`);
+      if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
       if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }

@@ -232,6 +232,13 @@ export function cellWrites(scenario, targetStartYear) {
         if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
+        // W is the sheet's "Sub contractors only / CIS Tax Deducted" column,
+        // where a sub-contractor records the tax its contractor customer
+        // withheld from this invoice. W1 totals the month and X1 runs the
+        // year to date, which is what Income Tax!E12 and SE Full!D231 read.
+        // The column sits outside the month's own analysis check total (A1 =
+        // G1 - H1 - SUM(P1:V1)), so recording it leaves that check nil.
+        if (tx.cis_deduction) sheet[`W${row}`] = tx.cis_deduction;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -844,6 +851,7 @@ export const CELL_MAP = [
   ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "O124", "Deductions by contractors (box 37)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
   // ── SE Full (SA103F) ──
   // The full return, live in the same workbook as the short one and fed from
   // the same profit and loss account and fixed asset schedule. Every cell
@@ -982,7 +990,10 @@ export function multiFileOptions() {
   const salesMonthReads = {};
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
-    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    // W1 is the month's own CIS suffered total (SUM(W5:W300)) and X1 the year
+    // to date (Apr!X1 = W1, every later tab = W1 + the month before), which
+    // is the figure Income Tax!E12 and SE Full!D231 read off Mar.
+    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL, "W1", "X1"];
     // AD1 is the month's CIS certificates total (SUM(AD5:AD300)) and A1 the
     // sheet's own check total, G1 - H1 - SUM(P1:AB1), which is the closest
     // this product has to a trial balance: nil means every row's gross has
@@ -1889,7 +1900,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+    // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already deducted,
+    // carried negative) sits inside that range, so the sheet's total is the
+    // computed tax and NI less what the contractors have already paid over.
+    const cisSuffered = Object.values(expected.sales || {})
+      .flat()
+      .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -2422,6 +2439,41 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Purchases.xlsx ${tab}: CIS tax withheld reaches the certificates column (AD1)`, num(month.AD1), withheld, 0.01);
       check(`Purchases.xlsx ${tab}: the month's expense analysis balances (A1)`, num(month.A1), 0, 0.01);
     });
+  }
+
+  // ── CIS suffered on the business's own invoices (Sales.xlsx column W) ────
+  //
+  // The other side of the scheme: a contractor customer withholds tax from
+  // this business's invoice, and the sub-contractor records it beside that
+  // sale. W1 totals the month and X1 runs the year to date (Apr!X1 = W1,
+  // every later tab = W1 + the month before), which is the figure the return
+  // takes off the tax bill -- Income Tax!E12 = -[2]Mar!$X$1 and
+  // SE Full!D231 = [2]Mar!$X$1. Both sides of each check are anchored in the
+  // scenario's own sales, so a return that agrees with the journals only
+  // because every figure is nil fails.
+  if (expected.sales) {
+    let sufferedToDate = 0;
+    Object.values(MONTH_SHEETS).forEach((tab, i) => {
+      const suffered = (expected.sales[MONTH_KEYS[i]] || []).reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+      sufferedToDate += suffered;
+      const month = results[`Sales.xlsx!${tab}`];
+      if (!month) return;
+      check(`Sales.xlsx ${tab}: CIS suffered reaches the sub-contractor column (W1)`, num(month.W1), suffered, 0.01);
+      check(`Sales.xlsx ${tab}: CIS suffered for the year to date (X1)`, num(month.X1), sufferedToDate, 0.01);
+    });
+    const taxSheet = results[TAX_SHEET];
+    if (taxSheet) {
+      check("Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal", num(taxSheet.E12), -sufferedToDate, 0.01);
+    }
+    const fullReturn = results["SE Full"];
+    if (fullReturn) {
+      check(
+        "SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal",
+        num(fullReturn.D231),
+        sufferedToDate,
+        0.01,
+      );
+    }
   }
 
   // ── Payroll: Wagesinterface monthly ties (item 4) ──
