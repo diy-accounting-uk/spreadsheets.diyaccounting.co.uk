@@ -589,8 +589,13 @@ function payrollMonthStarts() {
 
 // ── The engine ─────────────────────────────────────────────────────────────
 
-export function calculateLtdResults(book, lines, taxData, scenario) {
+// Every figure the package holds, in two parts: `results`, the cells the
+// reconciliation reads, and `linkCells`, the leaf cells a sibling workbook's
+// external link addresses and nothing else does. Both come off the same run,
+// so a cell in each carries the same value.
+function computeLtd(book, lines, taxData, scenario) {
   const rate = scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+  const linkCells = {};
   const period = periodFrom(book);
   const tabs = period.tabs;
   const results = {};
@@ -773,7 +778,21 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
 
   Object.assign(results, buildSalesInvoice(scenario, rate, taxData));
 
-  return results;
+  return { results, linkCells };
+}
+
+// The cells the reconciliation reads.
+export function calculateLtdResults(book, lines, taxData, scenario) {
+  return computeLtd(book, lines, taxData, scenario).results;
+}
+
+// Every cell a sibling workbook's link addresses, on top of the report's
+// cells. The link-cache refresh reads its figures from here.
+export function calculateLtdCells(book, lines, taxData, scenario) {
+  const { results, linkCells } = computeLtd(book, lines, taxData, scenario);
+  const cells = Object.fromEntries(Object.entries(results).map(([key, sheet]) => [key, { ...sheet }]));
+  for (const [key, sheet] of Object.entries(linkCells)) Object.assign((cells[key] ||= {}), sheet);
+  return cells;
 }
 
 // ── Admin ──────────────────────────────────────────────────────────────────
