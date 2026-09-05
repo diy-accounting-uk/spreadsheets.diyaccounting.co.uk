@@ -82,12 +82,13 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators line up with the headline: turnover and profit are on scale for the journals, net assets match shareholders' funds, TB audit and profit bridge residue are zero, VAT boxes are populated for a registered business, and tax is charged with marginal relief on a positive chargeable profit. Only cosmetic notes.</p>
+          <p>Indicators line up with the headline: VAT boxes are populated for a registered business, net assets equal shareholders' funds, audit cell and profit bridge residue are zero, and tax is charged on a positive chargeable profit at the headline's scale. Only presentational notes, chiefly the unreported CT600 boxes 63 to 65.</p>
           <ul>
-            <li><strong>trading margin 0.94</strong> (Directors' report): gross profit 322,496.67 on turnover 341,283.33 implies almost no cost of sales for a consultancy with a 3-person payroll; worth a glance but consistent with the P&amp;L figures given [note]</li>
-            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand indicator): negative-zero presentation of a nil directors' loan balance; cosmetic only [note]</li>
+            <li><strong>box 63 &quot;not reported&quot;, marginal relief &quot;not reported&quot;, box 65 &quot;not reported&quot;</strong> (Corporation tax indicator): The CT600 boxes are absent from the digest even though a charge of 29,221.27 exists, so the gross-to-net tax trail cannot be read; not a contradiction of the headline. [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report): Margin looks high for a consultancy (gross profit 322,496.67 on turnover 341,283.33 with little cost of sales); worth a glance but consistent with the scenario's low purchase base. [note]</li>
+            <li><strong>owes -0.00 to the members</strong> (Cash at bank commentary): Negative-zero presentation of the directors' loan balance; cosmetic only. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-02. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -226,7 +227,7 @@
 <tr><td>Published balance sheet: stock = year-end stock</td><td>6000</td><td>6000</td><td>0</td><td>PASS</td></tr>
 <tr><td>Stock: calculated stock = opening + materials bought - materials sold</td><td>6102</td><td>6102.00000000002</td><td>+2.000888343900442e-11</td><td>PASS</td></tr>
 <tr><td>Published balance sheet: trade debtors = closing debtors</td><td>7900</td><td>7900</td><td>0</td><td>PASS</td></tr>
-<tr><td>Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts</td><td>7900</td><td>7900</td><td>0</td><td>PASS</td></tr>
+<tr><td>Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered</td><td>7900</td><td>7900</td><td>0</td><td>PASS</td></tr>
 <tr><td>VAT: Q1-Q4 box 1 = Sales VAT</td><td>70816.6666666667</td><td>70816.6666666667</td><td>0</td><td>PASS</td></tr>
 <tr><td>VAT: Q1-Q4 box 4 = Purchases VAT</td><td>22498.708333333332</td><td>22498.70833333333</td><td>-3.637978807091713e-12</td><td>PASS</td></tr>
 <tr><td>VAT Q1: box 5 = box 3 - box 4</td><td>10896.125</td><td>10896.125</td><td>0</td><td>PASS</td></tr>
@@ -483,7 +484,7 @@
 <tr><td>Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed</td><td>10832.25</td><td>10832.25</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV</td><td>9135.789999999979</td><td>9135.78833333336</td><td>-0.0016666666197124869</td><td>PASS</td></tr>
-<tr><td>Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT</td><td>29156.76675462949</td><td>29156.7667546295</td><td>+1.0913936421275139e-11</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule additions = Purchases.xlsx fixed asset total</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total</td><td>12500</td><td>12500</td><td>0</td><td>PASS</td></tr>
@@ -2464,17 +2465,17 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year</td><td class="num">2,026</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit</td><td class="num">51,472.34</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax</td><td class="num">25</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax</td><td class="num">12,868.09</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year</td><td class="num">2,027</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit</td><td class="num">72,947.56</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax</td><td class="num">25</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax</td><td class="num">18,236.89</td></tr>
-<tr><td><strong>Box 63: corporation tax</strong></td><td class="num">31,104.97</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief</td><td class="num">1,883.7</td></tr>
-<tr><td><strong>Box 65: corporation tax net of marginal rate relief</strong></td><td class="num">29,221.27</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year</td><td class="num">2,026</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit</td><td class="num">51,472.34</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax</td><td class="num">25</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax</td><td class="num">12,868.09</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year</td><td class="num">2,027</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit</td><td class="num">72,947.56</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax</td><td class="num">25</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax</td><td class="num">18,236.89</td></tr>
+<tr><td><strong>Box 430: corporation tax</strong></td><td class="num">31,104.97</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief</td><td class="num">1,883.7</td></tr>
+<tr><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td class="num">29,221.27</td></tr>
 </tbody>
 </table></div>
 <h4>Published P&amp;L</h4>
@@ -3036,7 +3037,7 @@
 <tr><td>K26</td><td>Less: losses brought forward</td><td>0</td><td>gl-cor:amount (ct600.lossesBf)</td></tr>
 <tr><td>K28</td><td><strong>Profit Chargeable to CT</strong></td><td>124419.897839506</td><td>gl-cor:amount (ct600.box315)</td></tr>
 <tr><td>K35</td><td><strong>Corporation Tax</strong></td><td>29221.272927469</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
-<tr><td>K39</td><td>Tax Outstanding</td><td>29156.7667546295</td><td>gl-cor:taxAmount (ct600.box515)</td></tr>
+<tr><td>K39</td><td>Tax Outstanding</td><td>29156.7667546295</td><td>gl-cor:taxAmount (ct600.box600)</td></tr>
 <tr><td>E5</td><td></td><td>46327</td><td></td></tr>
 <tr><td>H5</td><td></td><td>46691</td><td></td></tr>
 <tr><td>I15</td><td></td><td>52500</td><td></td></tr>
@@ -3065,17 +3066,17 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>C126</td><td>Box 43: financial year</td><td>2026</td><td>gl-cor:period (ct600.box43)</td></tr>
-<tr><td>N126</td><td>Box 44: amount of profit</td><td>51472.3412979873</td><td>gl-cor:amount (ct600.box44)</td></tr>
-<tr><td>AA126</td><td>Box 45: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box45)</td></tr>
-<tr><td>AJ126</td><td>Box 46: tax</td><td>12868.0853244968</td><td>gl-cor:taxAmount (ct600.box46)</td></tr>
-<tr><td>C128</td><td>Box 53: financial year</td><td>2027</td><td>gl-cor:period (ct600.box53)</td></tr>
-<tr><td>N128</td><td>Box 54: amount of profit</td><td>72947.5565415185</td><td>gl-cor:amount (ct600.box54)</td></tr>
-<tr><td>AA128</td><td>Box 55: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box55)</td></tr>
-<tr><td>AJ128</td><td>Box 56: tax</td><td>18236.8891353796</td><td>gl-cor:taxAmount (ct600.box56)</td></tr>
-<tr><td>AJ131</td><td><strong>Box 63: corporation tax</strong></td><td>31104.9744598765</td><td>gl-cor:taxAmount (ct600.box63)</td></tr>
-<tr><td>Y133</td><td>Box 64: marginal rate relief</td><td>1883.70153240741</td><td>gl-cor:taxAmount (ct600.box64)</td></tr>
-<tr><td>Y135</td><td><strong>Box 65: corporation tax net of marginal rate relief</strong></td><td>29221.272927469</td><td>gl-cor:taxAmount (ct600.box65)</td></tr>
+<tr><td>C126</td><td>Box 330: financial year</td><td>2026</td><td>gl-cor:period (ct600.box330)</td></tr>
+<tr><td>N126</td><td>Box 335: amount of profit</td><td>51472.3412979873</td><td>gl-cor:amount (ct600.box335)</td></tr>
+<tr><td>AA126</td><td>Box 340: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box340)</td></tr>
+<tr><td>AJ126</td><td>Box 345: tax</td><td>12868.0853244968</td><td>gl-cor:taxAmount (ct600.box345)</td></tr>
+<tr><td>C128</td><td>Box 380: financial year</td><td>2027</td><td>gl-cor:period (ct600.box380)</td></tr>
+<tr><td>N128</td><td>Box 385: amount of profit</td><td>72947.5565415185</td><td>gl-cor:amount (ct600.box385)</td></tr>
+<tr><td>AA128</td><td>Box 390: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box390)</td></tr>
+<tr><td>AJ128</td><td>Box 395: tax</td><td>18236.8891353796</td><td>gl-cor:taxAmount (ct600.box395)</td></tr>
+<tr><td>AJ131</td><td><strong>Box 430: corporation tax</strong></td><td>31104.9744598765</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
+<tr><td>Y133</td><td>Box 435: marginal rate relief</td><td>1883.70153240741</td><td>gl-cor:taxAmount (ct600.box435)</td></tr>
+<tr><td>Y135</td><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td>29221.272927469</td><td>gl-cor:taxAmount (ct600.box440)</td></tr>
 <tr><td>B33</td><td></td><td>46327</td><td></td></tr>
 <tr><td>M33</td><td></td><td>46691</td><td></td></tr>
 <tr><td>W137</td><td></td><td>23.4860126353445</td><td></td></tr>
