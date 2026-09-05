@@ -491,13 +491,34 @@ describe("the snapshot's product half", () => {
     expect(snapshot.computation.total).toBe(results[taxi.TAX_SHEET].E17);
   });
 
-  it("Class 2 comes from the year's own thresholds", () => {
-    const expected = calculateExpectedTax(results[taxi.TAX_SHEET].E5, taxData);
-    expect(snapshot.computation.class2).toEqual({
-      amount: expected.ni_class2,
-      weekly: expected.ni_class2_weekly,
-      threshold: expected.ni_class2_threshold,
-      voluntary: !(expected.ni_class2 > 0),
+  it("Class 2 is the year's own weekly rate and threshold, voluntary only below it", () => {
+    const profit = results[taxi.TAX_SHEET].E5;
+    const class2 = snapshot.computation.class2;
+    expect(class2.weekly).toBe(taxData.national_insurance.class2_weekly_rate);
+    expect(class2.threshold).toBe(taxData.national_insurance.class2_small_profits_threshold);
+    expect(profit).toBeGreaterThan(class2.threshold);
+    expect(class2.amount).toBe(0);
+    expect(class2.voluntary).toBe(false);
+  });
+
+  it("a profit under the threshold makes the year's contributions voluntary", () => {
+    const bare = calculated("basic-taxi-driver");
+    bare.results = { ...bare.results, [taxi.TAX_SHEET]: { ...bare.results[taxi.TAX_SHEET], E5: 1000 } };
+    const class2 = manifest.snapshot(ctxFor(bare)).computation.class2;
+    expect(class2.voluntary).toBe(true);
+    expect(class2.amount).toBeCloseTo(taxData.national_insurance.class2_weekly_rate * 52, 2);
+  });
+
+  it("a tax year with no declared threshold leaves every Class 2 figure out", () => {
+    const bare = calculated("basic-taxi-driver");
+    const ni = { ...taxData.national_insurance };
+    delete ni.class2_small_profits_threshold;
+    const ctxWithoutThreshold = { ...ctxFor(bare), taxData: { ...taxData, national_insurance: ni } };
+    expect(manifest.snapshot(ctxWithoutThreshold).computation.class2).toEqual({
+      amount: undefined,
+      weekly: undefined,
+      threshold: undefined,
+      voluntary: false,
     });
   });
 
