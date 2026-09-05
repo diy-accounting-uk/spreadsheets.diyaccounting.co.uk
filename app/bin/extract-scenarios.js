@@ -398,7 +398,7 @@ const advToml = formatScenarioToml(
   {
     total_sales: advTotalSales,
     total_mileage: advBusinessMiles,
-    total_motor_net: Math.round(advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)),
+    total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,

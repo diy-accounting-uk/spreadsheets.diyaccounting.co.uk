@@ -6310,5 +6310,5 @@ amount = 480
 [expected]
 total_sales = 339200
 total_mileage = 1365
-total_motor_net = 6434
+total_motor_net = 6434.25
 total_legal_net = 6925

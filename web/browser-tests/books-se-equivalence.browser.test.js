@@ -357,13 +357,11 @@ test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
 // ── A6: the fixture holds ────────────────────────────────────────────────
 
 // The [expected] totals extract-scenarios.js writes for an SE fixture that
-// one Profit & Loss Account cell carries on its own. total_motor_net and
-// total_mileage are not here: the advanced book's motor total is the motor
-// spend net plus the mileage allowance, written to whole pounds
-// (extract-scenarios.js's advanced section), so it is a claim calculation
-// rounded, not a bare cell equality -- the sheet's own B25 is 6,434.25.
+// one Profit & Loss Account cell carries on its own. total_mileage is not
+// here: it is business miles, not a cash figure the sheet prints anywhere.
 const EXPECTED_KEY_MAP = {
   total_sales: "cell/Financialaccounts.xlsx!Profit & Loss Account!B9",
+  total_motor_net: "cell/Financialaccounts.xlsx!Profit & Loss Account!B25",
   total_legal_net: "cell/Financialaccounts.xlsx!Profit & Loss Account!B28",
 };
 
