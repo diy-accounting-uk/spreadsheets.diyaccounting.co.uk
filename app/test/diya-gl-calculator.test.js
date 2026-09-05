@@ -135,7 +135,7 @@ describe("calculateFromDiyaGl — BST", () => {
 
   // ── Income Tax checks ──
 
-  // Income Tax!E5 reads 'SE Short'!D106, the box 27 net business profit, not
+  // Income Tax!E5 reads 'SE Short'!D106, the box 28 net business profit, not
   // the P&L's own C28 directly, though the two agree once the boxes only
   // the SA103S carries (other business income, loss brought forward) are nil.
   it("E5: Profit from SE = 226508 (SE Short D106)", () => {
