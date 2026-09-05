@@ -423,23 +423,23 @@ Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicl
 
 | Cell | DIY Label | SA103S Box |
 |------|-----------|-----------|
-| D38 | Turnover | Box 8 |
-| O38 | Other business income | Box 9 |
-| D71 | **Net profit/loss** (pre-capital-allowance) | Box 20 |
-| O71 | Net loss | Box 21 |
-| D80 | Annual investment allowance | Box 22 |
-| D85 | Small-balance allowance | Box 23 |
-| O80 | Other capital allowances | Box 24 |
-| O85 | Balancing charges | Box 25 |
-| D94 | Goods and services for own use | Box 26 |
-| D99 | **Net business profit** | Box 27 |
-| O94 | Loss brought forward | Box 28 |
-| O99 | Other business income | Box 29 |
-| D106 | **Net profit for tax calc** | Box 30 |
+| D38 | Turnover | Box 9 |
+| O38 | Other business income | Box 10 |
+| D71 | **Net profit/loss** (pre-capital-allowance) | Box 21 |
+| O71 | Net loss | Box 22 |
+| D80 | Annual investment allowance | Box 23 |
+| D85 | Small-balance allowance | Box 24 |
+| O80 | Other capital allowances | Box 25 |
+| O85 | Balancing charges | Box 26 |
+| D94 | Goods and services for own use | Box 27 |
+| D99 | **Net business profit** | Box 28 |
+| O94 | Loss brought forward | Box 29 |
+| O99 | Other business income | Box 30 |
+| D106 | **Net profit for tax calc** | Box 31 |
 
 Box numbers above are as annotated in `app/products/taxi.js`'s `CELL_MAP`, read off the sheet's own printed box numbers (`A35`, `L35`, `A68`, `L68`, `A78`, `L78`, `A82`, `L82`, `A91`, `L91`, `A96`, `L96`, `A103`, `L103`).
 
-The two Business Details manual inputs the form feeds carry box numbers of their own: `Business Details!O29` (goods and services for own use) is box 26, the same box `SE Short!D94` prints; `Business Details!D29` (losses brought forward) is box 28, the same box `SE Short!O94` prints.
+The two Business Details manual inputs the form feeds carry box numbers of their own: `Business Details!O29` (goods and services for own use) is box 27, the same box `SE Short!D94` prints; `Business Details!D29` (losses brought forward) is box 29, the same box `SE Short!O94` prints.
 
 D71 is HMRC's pre-capital-allowance figure: turnover minus total expenses with capital allowances subtracted back out. The P&L's own net profit (B23) folds capital allowances into cost of sales instead, so the two agree only when B10 is zero -- otherwise they differ by exactly B10.
 

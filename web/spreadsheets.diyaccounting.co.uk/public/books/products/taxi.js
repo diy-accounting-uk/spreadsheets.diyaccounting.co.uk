@@ -748,12 +748,9 @@
   // Class 2 is the flat weekly charge the sheet never prints. Below the
   // small profits threshold nothing is due, but a year's contributions can
   // be paid voluntarily to keep the state pension record; above it the
-  // record is credited without payment. A tax year that declares no
-  // threshold gives no figures at all, and the view leaves the line out
-  // rather than printing a zero that means "not computed".
+  // record is credited without payment.
   function buildClass2(profit, ctx) {
     var expected = ctx.engine.calculateExpectedTax(profit, ctx.taxData);
-    if (expected.ni_class2_threshold === undefined) return { amount: undefined, weekly: undefined, threshold: undefined, voluntary: false };
     return {
       amount: expected.ni_class2,
       weekly: expected.ni_class2_weekly,

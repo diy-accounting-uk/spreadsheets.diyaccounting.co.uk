@@ -1,7 +1,13 @@
 {
   "bst": [
     { "key": "bst-scenario-basic", "name": "Precision Code Trading", "note": "full ledger", "dir": "precision-code-ltd", "product": "bst" },
-    { "key": "bst-brickwork-pro-nonvat", "name": "BrickWork Pro Trading", "note": "bricklaying trade", "dir": "brickwork-pro", "product": "bst-nonvat" },
+    {
+      "key": "bst-brickwork-pro-nonvat",
+      "name": "BrickWork Pro Trading",
+      "note": "bricklaying trade",
+      "dir": "brickwork-pro",
+      "product": "bst-nonvat"
+    },
     { "key": "bst-sp-sixty", "name": "SP Sixty Driving", "note": "no ledger, mileage route", "dir": "sp-sixty-driving", "product": "bst" }
   ],
   "se": [
@@ -11,6 +17,20 @@
       "note": "VAT, payroll, hire purchase",
       "dir": "precision-code-ltd",
       "product": "advanced"
+    },
+    {
+      "key": "se-brickwork-pro-nonvat",
+      "name": "BrickWork Pro Trading",
+      "note": "not VAT registered, CIS withheld",
+      "dir": "brickwork-pro",
+      "product": "se-nonvat"
+    },
+    {
+      "key": "se-brickwork-pro-vat",
+      "name": "BrickWork Pro Trading",
+      "note": "VAT registered, trade 1.5x",
+      "dir": "brickwork-pro",
+      "product": "se-vat"
     }
   ]
 }

@@ -434,6 +434,14 @@ corrections (the Debtors & Creditors fiction and the settlement column) are in t
 messages on those branches and in the As-built notes at the end of this document. The
 Playwright suite stands at 63 tests across five books specs.
 
+BST-T17 `9a7c3e8a`, `2f0af482`, `240b7ad5` on `claude/wt-bst-t17`, not yet merged (2026-09-05):
+`form-layouts/bst.json` (34 boxes: 18 cells, 5 derived, 11 present and empty),
+`products/bst-forms.js` fetching it on first render, `SA103S_BOXES` gone, A9 in
+`books-equivalence`, the CONTEXT SA103S tables rewritten from the sheet, the `D106` wording. 26 BST
+browser cases green. Found: the `CELL_MAP` labels for `D99` and `D106` carry the box-28 and box-31
+confusion, and the judge and nine golden reports key off them (board row BST-T18); the page has no
+profit-bridge panel though S2 always carries the nine bridge keys (BST-T19).
+
 ## Task list
 
 Delivered on `claude/bst-ledger` (PR #57), one batch branch, every row landed by a

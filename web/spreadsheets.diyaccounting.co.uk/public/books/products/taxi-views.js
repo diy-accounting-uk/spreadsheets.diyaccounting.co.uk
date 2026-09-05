@@ -394,7 +394,6 @@
   // carries a sentence where every other line carries a box.
   function class2Row(snapshot, helpers) {
     var class2 = snapshot.computation.class2;
-    if (class2.threshold === undefined) return "";
     var sentence =
       class2.amount > 0
         ? helpers.fmtMoney(class2.amount) +

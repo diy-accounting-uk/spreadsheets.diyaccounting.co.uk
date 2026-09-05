@@ -24,6 +24,15 @@ import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { s1, s2ForPackage, s3Se, s3SeYearEnd, canonical, parseFigure, SCENARIOS_SE } from "./r-sources.js";
+import { loadScenario } from "../../app/lib/scenario-loader.js";
+import {
+  buildVatinterface,
+  straddlingPeriodTotals,
+  vatReturnBoxes,
+  STRADDLING_PERIOD_ROWS,
+  VATINTERFACE_FIRST_ROW,
+  VATINTERFACE_LAST_ROW,
+} from "../../app/lib/tax/vat.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.js";
 import { calculateSeCells } from "../../app/lib/calculators/se.js";
 import { savePackageZip, taxYearFileName } from "../../app/lib/product-workbook.js";
@@ -254,13 +263,113 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
   // scenario) -- the journal lines, which a saved read has none of.
   const SAVED_MODE_CANNOT_CARRY = ["check/", "section/journal-category-vat-netting/"];
 
+  // The three boxes the report prints per return form, by the box number its
+  // row slug carries and the form cell behind it (se.js's vatSection).
+  const PRINTED_RETURN_BOXES = { "box-1": "G9", "box-4": "G15", "box-5": "G17" };
+
+  const STRADDLING_ROWS = new Map(Object.entries(STRADDLING_PERIOD_ROWS).map(([period, row]) => [row, period]));
+
+  // A quarter column on an interface row sums that row and the two above it,
+  // and a return form reads its own row's quarter columns.
+  const quarterWindow = (row) => [row - 2, row - 1, row];
+
+  function interfaceRowEnding(s3Map, periodEndSerial) {
+    for (let row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+      const end = s3Map.get(`cell/Vat.xlsx!Vatinterface!B${row}`);
+      if (end && Number(end.value) === Number(periodEndSerial)) return row;
+    }
+    return null;
+  }
+
+  // What the fixture's straddling VAT entries put on the package that the
+  // book cannot put on S2, key by key.
+  //
+  // Vat.xlsx keeps a pair of entry sheets for each VAT period either side of
+  // the accounting year, and the fixture fills five of them; those figures
+  // reach the return without ever touching the books. The diya-gl book has
+  // none of them: extract-scenarios.js splits every master line carrying
+  // diya-gl:vatPeriodEnd out of the subset books it writes, and
+  // diyaGlToScenario reads no straddling period, so report.js --data leaves
+  // every straddling row nil.
+  //
+  // Rather than leave the family out of the comparison, what it adds is
+  // stated here and added to S2 before comparing. buildVatinterface is
+  // linear in the period rows, so running it over the fixture's straddling
+  // entries with no month totals beside them gives exactly the difference,
+  // and vatReturnBoxes carries it onto each form the same way the package
+  // does. A book that ever learns to read a straddling period makes this
+  // difference wrong, and A3 says so.
+  function straddlingContribution(s3Map) {
+    const fixture = loadScenario(path.join(ROOT, FEATURED.fixture));
+    const rate = Number(s3Map.get("cell/Sales.xlsx!Apr!H2").value) / 100;
+    const contribution = buildVatinterface({
+      salesMonths: [],
+      purchasesMonths: [],
+      straddlingSales: straddlingPeriodTotals(fixture.vat_straddling_sales, rate),
+      straddlingPurchases: straddlingPeriodTotals(fixture.vat_straddling_purchases, rate),
+      adminDateSerials: {},
+    });
+    // The interface's own period ends, so a return form finds its row here
+    // by the same date it finds it by in the package.
+    for (let row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+      contribution[row].B = Number(s3Map.get(`cell/Vat.xlsx!Vatinterface!B${row}`).value);
+    }
+
+    const added = new Map();
+    const addKey = (key, amount) => {
+      if (amount) added.set(key, amount);
+    };
+    for (let row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+      for (const [column, amount] of Object.entries(contribution[row])) {
+        if (column === "B" || column === "C") continue;
+        addKey(`cell/Vat.xlsx!Vatinterface!${column}${row}`, Number(amount) || 0);
+      }
+    }
+
+    const coveredOutsideTheYear = new Set();
+    for (let form = 1; form <= 5; form++) {
+      const periodEnd = s3Map.get(`cell/Vat.xlsx!VATQtr${form}!G5`);
+      if (!periodEnd) continue;
+      const row = interfaceRowEnding(s3Map, periodEnd.value);
+      if (row === null) continue;
+      for (const covered of quarterWindow(row)) if (STRADDLING_ROWS.has(covered)) coveredOutsideTheYear.add(covered);
+      for (const [box, amount] of Object.entries(vatReturnBoxes(contribution, Number(periodEnd.value)))) {
+        const key = `cell/Vat.xlsx!VATQtr${form}!${box}`;
+        if (s3Map.get(key)?.unit !== "money") continue;
+        addKey(key, Number(amount) || 0);
+      }
+    }
+
+    // A printed return row takes its form cell's difference.
+    for (const key of s3Map.keys()) {
+      const printed = /^section\/vat-returns\/q(\d)-period-ending-.*?-(box-\d+)-/.exec(key);
+      if (!printed) continue;
+      addKey(key, added.get(`cell/Vat.xlsx!VATQtr${printed[1]}!${PRINTED_RETURN_BOXES[printed[2]]}`) || 0);
+    }
+
+    // The cycle rows total the periods a return covers that lie outside the
+    // accounting year, which are the straddling ones.
+    const outside = [...coveredOutsideTheYear];
+    addKey(
+      "section/vat-returns/output-vat-on-those",
+      outside.reduce((total, row) => total + contribution[row].F, 0),
+    );
+    addKey(
+      "section/vat-returns/input-vat-on-those",
+      outside.reduce((total, row) => total + contribution[row].J, 0),
+    );
+
+    return added;
+  }
+
   test("S3 (se-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const s3Map = s3Se();
-    // se-latest was built for its own year-end, not the master book's own
-    // 2025-26 year, so a year-dependent Admin figure only agrees when S2 is
-    // asked for that same year -- s2ForPackage takes the year-end S3
-    // actually reported under.
+    // se-latest stamps its Admin and VAT calendar on the year end it was
+    // generated for and writes every entry on the book's own date, so S2
+    // reproduces both by asking for that same year end -- no date shift.
+    // se-period-frame.test.js proves the two calendars.
     const s2Map = s2ForPackage(FEATURED.bookDir, s3SeYearEnd(), "se-advanced-s3-year", "se");
+    const straddling = straddlingContribution(s3Map);
 
     const onlyS2 = [...s2Map.keys()].filter((key) => !s3Map.has(key));
     const onlyS3 = [...s3Map.keys()].filter((key) => !s2Map.has(key));
@@ -272,16 +381,21 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
       const s2Entry = s2Map.get(key);
       if (!s2Entry) continue;
       compared++;
-      const unit = s3Entry.unit ?? s2Entry.unit;
+      const added = straddling.get(key) ?? 0;
+      // A straddling difference is money whatever the key declares: the
+      // return rows the report prints carry no unit of their own.
+      const unit = added === 0 ? (s3Entry.unit ?? s2Entry.unit) : "money";
       const excelValue = canonical(s3Entry.value, unit);
-      const jsValue = canonical(s2Entry.value, unit);
+      const jsValue = canonical(added === 0 ? s2Entry.value : Number(s2Entry.value) + added, unit);
       if (excelValue !== jsValue) mismatches.push({ key, excelValue, jsValue });
     }
 
     console.log(`A3: ${compared} keys compared between S3 and S2 at year-end ${s3SeYearEnd()}`);
+    console.log(`A3: ${straddling.size} of them carry the fixture's straddling VAT entries, which the book has none of`);
     console.log(`A3: ${onlyS2.length} keys in S2 only, ${onlyS3.length} keys in S3 only`);
     if (mismatches.length) console.log(`A3: ${mismatches.length} value mismatch(es)`);
 
+    expect(straddling.size).toBeGreaterThan(0);
     expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
     expect(onlyS2Unexplained, `S2-only keys a saved read should have carried:\n${onlyS2Unexplained.join("\n")}`).toEqual([]);
     expect(onlyS3, `S3-only keys:\n${onlyS3.join("\n")}`).toEqual([]);
