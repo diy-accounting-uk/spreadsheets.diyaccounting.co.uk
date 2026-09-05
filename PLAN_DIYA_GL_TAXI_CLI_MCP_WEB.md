@@ -452,6 +452,16 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   with no key, as SE T8 has them; `app/products/taxi.js` lands in the order T1, T4, T5, T6, T12,
   T13 (T13 adds 48 monthly `CELL_MAP` rows), and the H1 refresh runs again after T13, before T17.
 
+- T20 `c1923823`, merged 2026-09-05: TXN-0166 to TXN-0180 carry miles at the book's own 0.5284
+  miles per pound; SP Sixty's daily miles go from 20,000 to 21,680 and the mileage claim from
+  £7,000 to £7,420 in the calculator and the pinned tests. `taxi-sp-sixty.test.js` and the committed
+  SP Sixty reports move with it at R3.
+
+- T14 design `9b4b46e4`, 2026-09-05: the T14 coding brief rewritten to implementation depth. It
+  corrects the takings view text: "Add rental" dates the line the week's last day, not its Sunday;
+  the year table carries no Miles column; and T8's `book-taxi-fare-miles` helper gains
+  `field: "miles"` in T14's scope so the shell's focus route reaches it.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
@@ -1866,146 +1876,397 @@ Acc!D5`, not `SalesMay!E1`.
 
 ##### T14 coding brief
 
-Tier: Fable. Precursors: T13 merged; `books/taxi.html` and the `taxi-scenario-basic` example row
-(T16). If T16 has not merged, add both exactly as T16's brief specifies and say so in the
-commit; T16 then finds them in place and adds the other two rows.
+Tier: Fable. Precursors: T13 merged (the manifest, `snapshot.takings`, `changeLineDetail`,
+`changeLineQuantity`); SE:S7 merged with the five seam lines; `books/taxi.html` and the
+`taxi-scenario-basic` example row (T16). If T16 has not merged, add both exactly as T16's brief
+specifies and say so in the commit; T16 then finds them in place and adds the other two rows.
+Where this brief and the "### T14" design brief or "The takings view" disagree, this brief wins
+and the commit message says so.
 
-Purpose: the takings grain under the shared year table: month summary, week strip, day grid,
-fares; add a fare, add rental, add other income; edits through `commit`; keyboard and the
-four layouts.
+Purpose: the takings grain under the shared year table: the month summary line, a week strip,
+a day grid, the fares of a day; add a fare, add rental, add other income; every edit through
+`helpers.commit`; keyboard reach and the four layouts.
 
-Files. Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-takings.js`,
+###### Facts this brief settles against the code and the sheet
+
+Read from `packages/GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007/Financialaccountsyearto050426.xlsx`
+(`SalesApr` is `xl/worksheets/sheet9.xml`, `SalesMay` is `sheet11.xml`) and the page code on
+2026-09-05.
+
+- A Sales sheet week is: one row per calendar day (`A` and `B` the day's serial, `C` names,
+  `D` miles, `E` takings, `F` other income), then a "Rental due" row and an "Any other income"
+  row, both carrying the week's last day's serial in `A`, then a subtotal row with
+  `E = SUM(E<first>:E<other>)` and `F = SUM(F<first>:F<other>)`, then a blank row. The
+  sheet has two week subtotals, takings-side and other-income-side, not one. `E1 =
+  SUM(E4:E41)/2` halves the column because the subtotals sit in it. The 2025-26 first week is
+  one day (Sunday 6 April, row 5; rental row 6, other row 7, subtotal row 8).
+- The rental and other-income rows' date is the week's last day (`generator.js:902`), which is
+  a Sunday except in the year's last week, where it is 5 April. The design brief's "the week's
+  Sunday" is corrected to "the week's last day". A caption line already in a book may be dated
+  any day of its week (Kestrel's rentals are Fridays); `groupTakings` keys it by week either
+  way.
+- The year table cannot carry a Miles column (T13's decision). The design brief's year-level
+  column list drops Miles; miles show in the month summary line, the week strip, the day grid,
+  the comparison panel and the tile.
+- The shared `bindEntriesGrid` binds every `[data-amount-entry]`, `[data-date-entry]` and
+  `[data-delete-entry]` under the view root, commits through `changeAmount`, `changeDate` and
+  `deleteEntry`, and sets `state.focusEntry` and `state.focusField` so `restoreEditFocus`
+  returns the caret after the re-render. `restoreEditFocus` looks `state.focusField` up in
+  `manifest.focusFieldAttr` first (seam line 5), and T13's manifest maps `miles` to
+  `data-miles-entry` and `detail` to `data-detail-entry`. So this module binds only the detail
+  and miles inputs, the toggles, the add controls and the drafts, and uses the shell's own
+  focus route for every input.
+- S7's seam hands `monthDetail(monthKey, state, helpers)` no snapshot. The module reads
+  `window.DIYA_BOOKS_SNAPSHOT`, which `applySnapshot` sets before every render and which the
+  specs already read as the page's public snapshot; the Node test sets
+  `globalThis.DIYA_BOOKS_SNAPSHOT`. The alternative, a fourth argument on the seam, is an S7
+  and T13 edit and is not taken.
+- `helpers` carries no amount parser. The module keeps a local `parseAmount` identical to the
+  shell's (strip `£`, `,` and spaces; `-?\d*(\.\d*)?`; `null` otherwise).
+- `DiyaGlBooksEdits.addEntry` builds a line with `documentType: "invoice"` and no measurable
+  fields; the fixtures' fares carry `documentType: "receipt"`. `undo` is a stack the shell's
+  `commit` pushes to, so every edit below is one undo step with no work here.
+- T8's `book-taxi-fare-miles` helper is `{ id, label, kind: "focus" }` with no `field`
+  (`app/lib/book-checks/taxi.js`), while the S7 seam sets `state.focusField = helper.field`. T14
+  adds `field: "miles"` to that object, one line, with one assertion in `book-checks.test.js`.
+- A date off the grid is a date outside 6 April to 5 April, which is the accounting period,
+  so `snapshot.takings.offGrid` and `book-dates-in-period`'s offenders are the same set. The
+  helper clamps each date into the period (`clampIntoPeriod`), which lands it on the grid's
+  first or last day.
+
+###### Files
+
+Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-takings.js`,
 `web/spreadsheets.diyaccounting.co.uk/public/books/taxi.css`,
-`web/browser-tests/books-taxi-takings.browser.test.js`; appends one line to
-`playwright.config.js` after SE's rows. Modifies `books/edits.js` in one region: `addEntry`
-passes `entry.miles` (when above 0) as the three measurable fields and `entry.documentType`
-(default `"invoice"`), and two wrappers `changeDetail(book, lines, entryNumber, detail)` and
-`changeMiles(book, lines, entryNumber, miles)` reach `changeLineDetail` and
-`changeLineQuantity` (unit `"miles"`). Must not touch `shell.js`, `data.js`, `books.css`,
-`products/taxi.js`, the engine.
+`app/test/taxi-takings-view.test.js`, `web/browser-tests/books-taxi-takings.browser.test.js`;
+appends one line to `playwright.config.js` after SE's rows. Modifies `books/edits.js` in one
+region, described below, and `app/lib/book-checks/taxi.js` on the one line above (plus its test).
+Must not touch `shell.js`, `data.js`, `books.css`, `products/taxi.js`, the rest of the engine,
+the template, `products/bst.js`, `products/se.js`.
 
-The module: `window.DiyaGlTaxiTakings = { renderMonthDetail(monthKey, state, helpers),
-bind(root, state, helpers) }`. View state through `helpers.viewState("taxi-takings", {
-openWeek: null, openDay: null, draft: null, pendingFocus: null })`; `openWeek` is a week
-`start` ISO, `openDay` an ISO date, `draft` `{ kind: "fare" | "rental" | "other-income", day,
-weekStart, amount, detail, miles }`. All figures come from `snapshot.takings.months[monthKey]`;
-the module reads no `results` and names no sheet.
+###### `edits.js`, one region
 
-Rendering, desktop and mobile landscape (a table inside the shared `.month-detail`):
+- `addEntry(book, lines, entry)` also sets `documentType: entry.documentType || "invoice"` and,
+  when `entry.miles > 0`, `measurableQuantity: entry.miles`, `measurableUnitOfMeasure: "miles"`,
+  `measurableDescription: "Business miles driven"`. BST's add row passes neither, so its lines
+  are unchanged.
+- Two wrappers in the shape of `changeAmount`: `changeDetail(book, lines, entryNumber, detail)`
+  calls `api.changeLineDetail(book, lines, { entryNumber, detailComment: detail })`;
+  `changeMiles(book, lines, entryNumber, miles)` calls `api.changeLineQuantity(book, lines,
+  { entryNumber, quantity: miles, unit: "miles" })` (`miles` `null` removes the fields). Both
+  join the `DiyaGlBooksEdits` object.
 
-- `.takings-month`: a `.takings-summary` line ("Miles 1,640 · 22 days traded · from Mon 28
-  Apr" when captioned), then `#takings-save-note.entries-note` once: "The workbook carries one
-  row per day; your fares stay in the book." When `snapshot.takings.offGrid` is non-empty, a
-  `.takings-offgrid` banner above the strip: "N fares are dated outside this year's grid, so
-  the workbook cannot hold them" listing dates, with `button[data-offgrid-helper]` "Move them
-  into the period" which runs `DiyaGlBooksEdits.applyHelper(snapshot, "book-dates-in-period")`
-  inside `helpers.commit`.
-- `table.week-strip[data-month]`: head Week, Days, Takings, Rental, Other income, Miles, Total;
-  one `tr.week-row[data-week="<start ISO>"][tabindex=0][role=button][aria-expanded]` per week,
-  its first cell "w/c Mon 7 Apr" (the first week reads "Sun 6 Apr" alone). Book figures, no
-  `data-r-key`. The open week is followed by `tr.week-detail-row` holding `.week-detail`.
-- `.week-detail` holds `table.day-grid[data-week]`: head Day, Fares, Miles, Takings, and a
-  control column. One `tr.day-row[data-day="YYYY-MM-DD"][data-lines="n"]` per calendar day:
-  - `n = 0`: the day name, an empty names cell, `button.add-fare[data-add-fare="<date>"]` "Add a
-    fare".
-  - `n = 1`: `input[data-detail-entry="<entryNumber>"]`, `input[data-miles-entry][inputmode=decimal]`,
-    `input[data-amount-entry="<entryNumber>"][inputmode=decimal]`, `button[data-delete-entry]`
-    with an accessible name, and `button.add-fare[data-add-fare]` for a second fare. The
-    attribute names `data-amount-entry` and `data-delete-entry` are the shared grid's on
-    purpose: the shell's `bindEntriesGrid` already commits an amount change and a delete for
-    them and restores focus after the re-render, so this module binds only detail, miles and
-    the add controls.
-  - `n > 1`: the row shows `names`, the day's miles and the sum, `tabindex=0 role=button
-    aria-expanded`; open, it is followed by `tr.day-detail-row` holding `table.fare-list[data-day]`
-    with one `tr.fare-row[data-entry]` per line carrying the same four controls, and the add
-    control in its foot.
-  - A `.day-row.is-missing-miles` carries `<span class="entry-flag">no miles</span>` after the
-    names.
-  Then `tr.caption-row[data-caption="rental"]` "Rental due" and
-  `tr.caption-row[data-caption="other-income"]` "Any other income": each shows its amount, one
-  `input[data-amount-entry]` and `button[data-delete-entry]` per caption line when any, and
-  `button[data-add-caption="rental"|"other-income"][data-week]` "Add rental" / "Add other income".
-  Then `tr.week-total-row` with the week's total.
-- A draft renders as `tr.fare-draft[data-day]` (or `[data-week]` for a caption) with
-  `input[data-draft-field="amount"]`, `[data-draft-field="detail"]` (absent for a caption; the
-  detail is fixed), `[data-draft-field="miles"]` (absent for a caption and for other income),
-  `button[data-draft-commit]` "Add", `button[data-draft-cancel]` "Cancel". Enter in a field
-  commits, Escape cancels. Commit builds `{ journal: "sales", date, account, detail, amount,
-  miles, documentType: "receipt" }`: a fare is `4000` dated the day with the typed detail; a
-  rental is `4000`, "Rental due", dated the week's last day; other income is `4001`, "Any other
-  income", dated the week's last day. Refusals as the shared add row ("Give the new entry an
-  amount first."). Every commit goes through `helpers.commit(fn, label, toast)` so undo works.
-- Detail and miles inputs commit on change and on Enter; the module sets `pendingFocus =
-  { attr, entryNumber }` before the commit and focuses that input in `bind` after the re-render.
-  When `state.focusEntry` names a line in this month and `state.focusField === "miles"` (seam
-  item 5), `renderMonthDetail` opens that line's week and day so the shell's `restoreEditFocus`
-  finds `[data-miles-entry="<entryNumber>"]`.
+###### The module, `products/taxi-takings.js`
 
-Mobile portrait (`helpers.isMobilePortrait()`): the same data in cards. `.week-cards
-.week-card[data-week-card="<start>"]` with `button.week-card-head[aria-expanded]` and
-`.week-card-figures`; the open card holds `.day-list .day-card[data-day-card="<date>"]` with
-`button.day-card-head[aria-expanded]` for `n > 1`, and the same inputs, buttons and draft
-markup inside. One copy of any control is ever in the document.
+A classic script in the S7 shape, assigning `window.DiyaGlTaxiTakings` and nothing else:
 
-Keyboard: week rows and multi-fare day rows toggle on Enter and Space as the year rows do;
-every control is a `button` or `input`; focus rings come from `books.css`.
+```js
+{
+  renderMonthDetail(monthKey, state, helpers),   // -> HTML placed by the shared renderMonthDetail after the summary grid, before the purchases entries toggle
+  bind(root, state, helpers),                    // called at the end of bindYearView, after bindEntriesGrid
+  internals: { weekLabel, dayLabel, draftLine, levelsFor, subtotals, parseAmount },
+}
+```
 
-`taxi.css`: the licence header, `@import url("books.css");`, then Taxi rules only: the strip
-and grid at the shared table idiom (`.entries-table` metrics), `.week-row.is-open`,
-`.day-row.is-missing-miles .entry-flag`, the four layouts: desktop landscape leaves the strip
-inside `.month-detail` (already sticky-left and `100cqw`); desktop portrait and mobile landscape
-wrap the strip in `.week-strip-scroll { overflow-x: auto }` with the first column sticky; mobile
-portrait shows `.week-cards` and hides the tables, mirroring the `@media (max-width: 899px) and
-(orientation: portrait)` block in `books.css`. Reduced motion collapses the one expand to a cut.
+View state through `helpers.viewState("taxi-takings", { openWeek: null, openDay: null, draft:
+null, pendingFocus: null })`. `openWeek` is a week `start` ISO date, `openDay` an ISO date,
+`draft` `{ kind: "fare" | "rental" | "other-income", day, weekStart, amount, detail, miles }`,
+`pendingFocus` a selector `bind` focuses once after a re-render. The bag survives commits and
+empties on a load, which is what the shell already does for the year view's bag.
 
-Tests, `web/browser-tests/books-taxi-takings.browser.test.js`, on `books/taxi.html?example=taxi-scenario-basic`
-(2025-26) at desktop landscape unless stated, `report.json` figures through `r-sources.js`'s
-`s2` with `--package taxi` (T17 adds the product argument; add it here if T17 has not, default
-`bst`):
+Every figure comes from `window.DIYA_BOOKS_SNAPSHOT.takings.months[monthKey]` (shape in T13's
+`groupTakings`) and `.takings.offGrid`; the module reads no `results`, names no sheet, and calls
+no `rkFor`. The week and day figures are book figures with no `data-r-key`; the month's keyed
+takings cell is the shared summary grid's, above this module's output.
 
-- "May opens to a week strip captioned from Mon 28 Apr with five week rows" (28 Apr to 1 Jun).
-- "a week opens to seven day rows, a rental row, an other-income row and a total; the first
-  week of April is one day".
+`levelsFor(state, month, bag)`. When `state.focusEntry` names a line in this month (a day line,
+a caption line or a fare in the fare list), the returned `openWeek` and `openDay` are that
+line's, whatever the bag holds, so the shell's `restoreEditFocus` finds the input after the
+re-render. This is how the inspector's "Go to <date>" button (`book-taxi-fare-miles`, `kind:
+"focus"`, `field: "miles"`) lands on the day's miles input, and how an amount or date commit in
+the fare list keeps the list open. Otherwise the bag's values stand. `openDay` outside
+`openWeek` is treated as `null`.
+
+###### The DOM, desktop and mobile landscape
+
+Inside the shared `.month-detail`, in order:
+
+1. `.takings-month[data-month="<monthKey>"]`
+   - `p.takings-summary`: "Miles 1,640 · 22 days traded" and, when the month is captioned, "·
+     from Mon 28 Apr"; when any day is `isMissingMiles`, "· 3 fare days without miles" in a
+     `span.entry-flag`. Miles use `helpers.fmtWhole`.
+   - `p#takings-note.entries-note`, once: "The workbook carries one row per day; your fares stay
+     in the book." (The shared purchases grid's own note already says how to undo.)
+   - When `offGrid` is non-empty, `.takings-offgrid` before the strip: `p` "N entries are dated
+     outside this year's grid (6 April to 5 April), so the workbook cannot hold them. Give each
+     a date inside the year, or move them all to the year's edge." then `table.offgrid-list`
+     with one `tr.offgrid-row[data-entry="<entryNumber>"]` per line: `input[type=date]
+     [data-date-entry].entry-date-input`, the detail, the amount as text, `button[data-delete-entry]
+     .entry-delete`; then `button[data-offgrid-helper].btn` "Move them into the period", which runs
+     `DiyaGlBooksEdits.applyHelper({ book: state.book, lines: state.lines }, "book-dates-in-period")` inside `helpers.commit(fn,
+     "move N entries into the period", "Moved N entries into the period.")`. The list is the same
+     on every open month, since the lines belong to none.
+2. `table.week-strip[data-month]`: head Week, Days, Takings, Rental, Other income, Miles, Total.
+   One `tr.week-row[data-week="<start>"][tabindex=0][role=button][aria-expanded]` per week, class
+   `is-open` when open, first cell `<span class="disclosure" aria-hidden="true">▸</span>` then
+   `weekLabel(week)`: "w/c Mon 7 Apr" from the week's first day, or the day alone ("Sun 6 Apr")
+   when the week is one day. Days is `daysTraded`; Miles carries `data-missing-miles="n"` and a
+   `span.entry-flag` "n without miles" when `n > 0`; Total is `week.total`. The open week's row is
+   followed by `tr.week-detail-row` holding one `td[colspan=7] > .week-detail`.
+3. `.week-detail` holds `table.day-grid[data-week="<start>"]`: head Day, Fares, Miles, Takings,
+   `<span class="sr-only">Controls</span>`. One `tr.day-row[data-day="YYYY-MM-DD"][data-lines="n"]`
+   per calendar day of the week, `n` the day's line count (4000 and 4001 day lines together),
+   class `is-missing-miles` when the day is:
+   - `n = 0`: Day is `dayLabel(day)` ("Mon 7 Apr"); Fares, Miles and Takings are empty; Controls
+     holds `button.add-fare.btn[data-add-fare="<date>"]` "Add a fare".
+   - `n = 1`, closed: Day is `button.day-toggle[data-day-toggle="<date>"][aria-expanded=false]`
+     wrapping the label; Fares holds `input.entry-detail-input[data-detail-entry="<entryNumber>"]
+     [aria-label="Name for entry <n>"]`; Miles holds `input.entry-miles-input[data-miles-entry]
+     [inputmode=numeric][placeholder="miles"]` (value empty when the line carries none) and, when
+     `is-missing-miles`, `span.entry-flag` "no miles"; Takings holds `input.entry-amount-input
+     [data-amount-entry][inputmode=decimal]`; Controls holds `button.entry-delete[data-delete-entry]
+     [aria-label="Remove entry <n>"]` and `button.add-fare[data-add-fare]`. A line that is not
+     `addressable` renders its figures as text with the shared "shared no." flag and no inputs,
+     as the shared grid does.
+   - `n > 1`, closed: Day is the toggle; Fares is `names` as text with `span.fare-count` "2 fares";
+     Miles and Takings are the day's sums as text; Controls holds `button.add-fare`.
+   - open (any `n ≥ 1`): the row shows the day's figures as text (names, miles, sum, the count)
+     and the toggle reads `aria-expanded=true`; it is followed by `tr.day-detail-row` holding
+     `td[colspan=5] > table.fare-list[data-day="<date>"]` with `caption.fare-list-caption`:
+     "2 fares on Mon 7 Apr. The workbook row will carry £245.00 and 'Daily fares; Airport run'."
+     (one fare: "1 fare on Mon 7 Apr. The workbook row will carry £200.00 and 'Daily fares'."),
+     head Date, Name, Miles, Amount, Controls, one `tr.fare-row[data-entry="<entryNumber>"]` per
+     line with `input[type=date].entry-date-input[data-date-entry]`, the detail, miles and amount
+     inputs above, `button.entry-delete[data-delete-entry]`, class `is-other` on a 4001 day line
+     (its Miles cell empty, since other income drives nothing); `tfoot` with `button.add-fare
+     [data-add-fare="<date>"]`. A day's inputs live in exactly one place: the row while it holds
+     one fare and is closed, the fare list while it is open. `data-date-entry` is how a fare moves
+     to another day and `changeLinePostingDate` is reached.
+   Then `tr.caption-row[data-caption="rental"]`: Day "Rental due", Fares holds one `span.caption-line
+   [data-entry]` per rental line with its `input[type=date].entry-date-input[data-date-entry]`,
+   `input.entry-amount-input[data-amount-entry]` and `button.entry-delete[data-delete-entry]`;
+   Takings is `week.rental` as text; Controls holds `button.add-caption.btn[data-add-caption="rental"]
+   [data-week="<start>"]` "Add rental". Then `tr.caption-row[data-caption="other-income"]` "Any
+   other income" the same way over `otherIncomeLines`, the figure under Takings being
+   `week.otherIncome`, the button "Add other income". Then `tr.week-total-row`: Day "Week total",
+   Miles `week.miles`, Takings the two sheet subtotals from `subtotals(week)`: `takings + rental`
+   and, when either is non-zero, "other income <sum of days[].other + otherIncome>" in small text,
+   so the row reads as the sheet's subtotal row does.
+4. A draft renders where its control was: `tr.fare-draft[data-day="<date>"]` after the day row
+   (or as the last `fare-row` when the day is open), or `tr.fare-draft[data-week="<start>"]
+   [data-caption]` after the caption row. Fields: `input[data-draft-field="amount"][inputmode=decimal]
+   [aria-label="Amount for the new fare"]`, `input[data-draft-field="detail"]` (placeholder "Name",
+   absent for a caption), `input[data-draft-field="miles"][inputmode=numeric]` (absent for a
+   caption), `button[data-draft-commit].btn` "Add", `button[data-draft-cancel].btn` "Cancel". The
+   amount field gets focus on render. Enter in any field commits, Escape cancels and focuses the
+   control that opened the draft. Typing updates `bag.draft` so a re-render keeps the text.
+
+`draftLine(draft, week)` returns the `addEntry` entry: a fare is `{ journal: "sales", date:
+draft.day, account: "4000", detail: draft.detail, amount, miles, documentType: "receipt" }`; a
+rental is `{ journal: "sales", date: week.end, account: "4000", detail: "Rental due", amount,
+documentType: "invoice" }`; other income is the same on `"4001"` with `"Any other income"`.
+Refusals mirror the shared add row: no or zero amount toasts "Give the new fare an amount first."
+(or "the new rental", "the new other income") and leaves the draft open; miles that do not parse
+as a non-negative number toast "Miles must be a whole number." Commit clears the draft, sets
+`pendingFocus` to the add control's selector, then `helpers.commit(function () { return
+DiyaGlBooksEdits.addEntry(state.book, state.lines, entry); }, "add a fare of £45.00 on Mon 7 Apr",
+"Added a fare of £45.00 on Mon 7 Apr.")` (labels per kind: "add rental of £150.00 for w/c Mon 9
+Jun", "add other income of £80.00 for w/c Mon 10 Nov").
+
+###### Mobile portrait
+
+`helpers.isMobilePortrait()` true: the same data as cards, the tables not rendered.
+`.week-cards > .week-card[data-week-card="<start>"]` with `button.week-card-head[aria-expanded]`
+(the label and `week.total`) and `.week-card-figures` (Takings, Rental, Other income, Miles as
+`.figure-label`/`.figure-value` pairs); the open card holds `.day-list > .day-card[data-day-card
+="<date>"][data-lines="n"]` with `button.day-card-head[aria-expanded]` (`dayLabel`, the sum, the
+count, "no miles" when missing) for `n ≥ 1` and a plain head for `n = 0`; an open day card
+lists `.fare-card[data-entry]` blocks, each a stack of labelled fields carrying the same
+`data-*-entry` inputs and the delete, then the add control. The rental and other-income rows are
+`.caption-card[data-caption]` blocks after the day list with the same inputs and add buttons; the
+week subtotals close the card. The draft is `.fare-draft` with the same `data-draft-*` controls.
+One copy of any control is ever in the document, on either layout.
+
+###### Binding and re-rendering
+
+`bind(root, state, helpers)`:
+
+- `tr.week-row`: click, and Enter or Space on keydown, toggle `bag.openWeek` (closing also clears
+  `openDay` and `draft`) and call `helpers.render()`. `.week-card-head` the same.
+- `button.day-toggle` and `.day-card-head`: toggle `bag.openDay`, render.
+- `[data-detail-entry]`: on Enter blur; on change, if unchanged return, else set
+  `state.focusEntry = entryNumber`, `state.focusField = "detail"` and `helpers.commit(function ()
+  { return DiyaGlBooksEdits.changeDetail(state.book, state.lines, entryNumber, value); }, "rename
+  TXN-0002 to Airport run", "Renamed TXN-0002.")`. Escape restores the committed value.
+- `[data-miles-entry]`: the same with `focusField = "miles"` and `changeMiles`; an empty field
+  commits `null`; a value that is not a non-negative number restores the field and toasts.
+- `[data-add-fare]`, `[data-add-caption]`: set `bag.draft` (`day` or `weekStart`, `kind`), render.
+  `[data-draft-field]` input keeps the draft's text; `[data-draft-commit]` and Enter commit as
+  above; `[data-draft-cancel]` and Escape clear the draft and render.
+- `[data-offgrid-helper]`: the helper commit above.
+- Last, when `bag.pendingFocus` is set, focus `root.querySelector(pendingFocus)` and clear it;
+  when a draft is open, focus its amount field.
+- The shared `bindEntriesGrid` has already bound every `data-amount-entry`, `data-date-entry`
+  and `data-delete-entry`; this module attaches nothing to them.
+
+Every commit returns through the shell: `helpers.commit` recalculates, `applySnapshot` replaces
+`window.DIYA_BOOKS_SNAPSHOT`, `render()` rebuilds the year view, the shared `renderMonthDetail`
+calls this module again, `levelsFor` reopens the same week and day, and `restoreEditFocus` or
+`pendingFocus` puts focus back. The module holds no DOM between renders.
+
+###### Keyboard
+
+Week rows and card heads are buttons or `role=button` rows answering Enter and Space; day
+toggles, add, commit, cancel and delete are `button`s; every figure a reader can change is an
+`input`. Tab order in an open week: the week row, each day's toggle, its inputs in the order
+name, miles, amount, delete, add; the caption rows' inputs and add buttons; the total row is
+not focusable. Focus rings come from `books.css`'s `:focus-visible` rules; the module adds none.
+
+###### `taxi.css`
+
+The licence header, `@import url("books.css");`, then Taxi rules only:
+
+- `.week-strip` and `.day-grid` at the entries-table idiom (`font-size: 0.82rem`, the caps
+  headers, `td` padding `0.3rem 0.4rem`, `table-layout: fixed`, figures in `--font-mono` right-
+  aligned, text cells `--font-ui` left-aligned and wrapping), `.week-row` hover and `.is-open`
+  as `.year-row`, `.week-row .disclosure` rotating on `aria-expanded="true"`.
+- `.entry-detail-input`, `.entry-miles-input` in the quiet-field idiom of `.entry-amount-input`
+  (transparent border until hover or focus, `[data-dirty="true"]` in `--correction`); miles
+  `width: 4.5rem`, right-aligned mono.
+- `.day-row.is-missing-miles .entry-flag`, `.fare-count`, `.caption-line` (inline-flex, gap
+  `0.4rem`, wrapping), `.fare-list-caption` in the `.entries-note` voice, `.takings-offgrid` as
+  a `.panel-card` with the `--correction` left rule.
+- The four layouts: desktop landscape leaves the strip inside `.month-detail` (already sticky-
+  left and `100cqw`); desktop portrait and mobile landscape wrap the strip and the day grid in
+  `.week-strip-scroll { overflow-x: auto }` with `th:first-child, td:first-child` sticky left;
+  mobile portrait, mirroring the `@media (max-width: 899px) and (orientation: portrait)` block
+  in `books.css`, hides nothing (the tables are not rendered there) and lays `.week-card`,
+  `.day-card`, `.fare-card`, `.caption-card` as the month cards are laid (`.month-card` metrics,
+  full-width `.btn` add controls, 44px targets). Reduced motion: `.week-detail` and
+  `.day-detail-row` reuse `month-reveal` and collapse to a cut under the existing
+  `prefers-reduced-motion` rule.
+
+###### Tests
+
+`app/test/taxi-takings-view.test.js`, Node, imports `products/taxi.js` and
+`products/taxi-takings.js` (both assign the global), loads `examples/basic-taxi-driver/taxi` and
+`examples/sp-sixty-driving/taxi` through `loadDiyaGlData`, builds `takings` with
+`DiyaGlProducts.taxi.internals.groupTakings(lines, DiyaGlProducts.taxi.internals.buildTabMonths(book))`,
+sets `globalThis.DIYA_BOOKS_SNAPSHOT = { takings, lines }`, and renders with a stub `helpers`
+(`esc`, `fmtMoney`, `fmtWhole`, `viewState` over a plain object, `isMobilePortrait`) and a
+`state` of `{ focusEntry: null, focusField: null }`. Assertions are on the HTML string.
+
+- "April renders one week row per week, the first captioned Sun 6 Apr alone, and May's summary
+  says from Mon 28 Apr".
+- "the two-fare day renders data-lines=2 with the sum £245.00 and the names Daily fares; Airport
+  run, and no inputs while closed".
+- "an open week renders seven day rows, the rental row, the other-income row and the total row;
+  the one-day first week renders one day row".
+- "a day's inputs live in one place: closed with one fare the row carries data-amount-entry once;
+  open, the fare list carries it once and the row none" (count the attribute for TXN-0004 in
+  both states).
+- "a focus entry opens its week and day" (`state.focusEntry = "TXN-0202"`, `focusField =
+  "miles"` on a bag with no open week yields `data-miles-entry="TXN-0202"` in the output).
+- "draftLine dates a fare on its day as a receipt, a rental on the week's last day with the
+  caption, other income on 4001".
+- "weekLabel and dayLabel read w/c Mon 7 Apr and Mon 7 Apr; a one-day week reads Sun 6 Apr;
+  the last week of 2025-26 reads w/c Mon 30 Mar".
+- "subtotals gives the sheet's two figures" (kestrel's week of 9 June: `takings + 150` and the
+  other-income side).
+- "a fare day without miles renders is-missing-miles and the flag only when the book carries
+  miles" (sp-sixty with TXN-0002's measurable fields deleted on a copy; basic never).
+- "mobile portrait renders week cards, day cards and one copy of every control" (stub
+  `isMobilePortrait` true; the same attribute counts as the table case).
+- "the module reads no results and names no sheet": `grep`-style assertion over the file's
+  source for `results[` and `Profit & Loss Acc`, both 0.
+
+`web/browser-tests/books-taxi-takings.browser.test.js`, on `books/taxi.html?example=taxi-scenario-basic`
+(2025-26) at desktop landscape unless stated, S2 figures through `r-sources.js`'s `s2` with a
+product argument (`--package taxi`; T17 adds the argument, add it here if T17 has not, default
+`bst`). The cases T17 runs again inside its layouts and edits specs are marked (T17):
+
+- "the four levels open and close: the year row opens May to a week strip captioned from Mon 28
+  Apr with five week rows; a week opens to its day grid; a day opens to its fares; each closes
+  on a second activation and aria-expanded follows" (28 Apr to 1 Jun). (T17)
+- "the first week of April is one day row, a rental row, an other-income row and a total".
 - "the month's takings cell carries the sheet's key and equals S2" (`[data-r-key*="cell/Profit
   & Loss Acc!D5"]` on the May row equals `s2(...).get("cell/Profit & Loss Acc!D5")`).
-- "adding a fare on a day that has one shows the sum on the day row and moves the month, the
-  quarter and the year by the amount" (read the May takings cell, `cell/VitalTax!C5` on the
-  quarterly view and `tfoot.year-totals` before and after; `window.DIYA_BOOKS_SNAPSHOT.lines`
-  gains one `4000` line dated that day with `documentType: "receipt"`).
-- "adding a rental posts a 4000 line dated the week's last day with the caption; the caption
-  row shows it; the day rows do not" and the same for other income, which moves
-  `cell/Profit & Loss Acc!B24` and not `B5`.
-- "a day's miles commit through changeLineQuantity and the mileage figures appear" (basic has
-  no miles; type 50 on one day, then `cell/PurchasesMar!A1` on the P&L view reads 50 and the
-  vehicle tile appears).
-- "a fare dated off the grid is listed with the helper and the helper moves it" (set one
-  line's `postingDate` to `2026-04-07` through `window.DiyaGlBooksPage.setLines`, read the
-  banner, apply, banner gone).
-- "undo reverses the last takings edit" (Ctrl+Z after an add restores the line count).
+- "a second fare on a day sums in the day cell and lists in the day: adding £45.00 on 8 April
+  (one fare, £220.00) shows £265.00 and 2 fares on the row, the fare list holds both, and the
+  month, the quarter and the year move by the amount" (`window.DIYA_BOOKS_SNAPSHOT.lines` gains one 4000
+  line dated that day with `documentType: "receipt"`; `cell/VitalTax!C5` on the quarterly view
+  and `tfoot.year-totals` before and after). (T17)
+- "a caption row's entry lands on its row: adding a rental posts a 4000 line dated the week's
+  last day with the caption, the rental row shows it and no day row does; other income does the
+  same on 4001 and moves `cell/Profit & Loss Acc!B24` and not `B5`". (T17)
+- "a fare's name and miles commit through changeLineDetail and changeLineQuantity and focus
+  returns to the field" (type a name, Enter, the input carries the new value and is
+  `document.activeElement`; type 50 miles, the day row and the week strip read 50).
+- "miles totals: with 50 miles typed on one day the month summary reads Miles 50, the week's
+  Miles cell reads 50, `cell/PurchasesMar!A1` on the P&L view reads 50 and the vehicle tile
+  appears" (basic carries no miles).
+- "the missing-miles state shows on the day, the week and the month, and the inspector's Go to
+  button lands on the day's miles input" (with 50 miles on one day every other fare day is
+  flagged; click `[data-helper-focus="book-taxi-fare-miles"]`'s first button; the active element
+  is a `[data-miles-entry]` inside an open week).
+- "a fare dated off the grid is listed with a date field and the helper, and the helper moves
+  it" (set one line's `postingDate` to `2026-04-07` through `window.DiyaGlBooksPage.setLines`;
+  the banner names it; apply; banner gone; the line's date is `2026-04-05`).
+- "a fare moved by its date field leaves its day and arrives on the other" (in the fare list,
+  fill the date input with the next day; the two day rows' counts change).
+- "undo reverses the last takings edit" (Ctrl+Z after an add restores the line count and the
+  day row's sum).
 - "year, month, week, day, add a fare, commit, save menu, keyboard only" in the shape of
-  `books-layouts.browser.test.js`'s traversal, with a focus ring at each stop.
-- "mobile portrait shows week cards that open to day cards" at 390 by 844, and axe at the four
-  viewports on the open week through the helper `books-layouts.browser.test.js` uses.
+  `books-layouts.browser.test.js`'s traversal (`tabTo`, `activeElementHasFocusRing`), with a
+  focus ring at each stop and the draft's Escape returning focus to the add button. (T17)
+- "mobile portrait shows week cards that open to day cards, and an edit inside a fare card moves
+  the card's figure" at 390 by 844.
+- "the axe gate at four viewports with a week and a day open" through the `AxeBuilder` helper
+  and the skip message `books-layouts.browser.test.js` uses. (T17)
 
-Commands: `node scripts/build-books-bundle.mjs`; `npx playwright test --project=browser-tests
-web/browser-tests/books-taxi-takings.browser.test.js 2>&1 | tee <scratch>/t14.log`; then `npm
-run test:browser 2>&1 | tee <scratch>/t14-browser.log`; `npm test` before the push. Commit before
-waiting.
+###### Commands
 
-Acceptance: the spec passes; every BST and SE spec is unchanged in count and outcome; `grep -c
-"Profit & Loss Acc\|results\[" .../products/taxi-takings.js` is 0; axe reports no serious or
-critical violation at the four viewports with a week open; `git diff --stat main -- web/.../books/edits.js`
-shows the one region.
+```
+npx vitest run --fileParallelism=false app/test/taxi-takings-view.test.js app/test/taxi-books-manifest.test.js app/test/diya-gl-edits-taxi.test.js 2>&1 | tee <scratch>/t14-unit.log
+node scripts/build-books-bundle.mjs 2>&1 | tee <scratch>/t14-bundle.log
+npx playwright test --project=browser-tests web/browser-tests/books-taxi-takings.browser.test.js 2>&1 | tee <scratch>/t14.log
+npm run test:browser 2>&1 | tee <scratch>/t14-browser.log
+npm test 2>&1 | tee <scratch>/t14-npm-test.log
+```
 
-Selectors T17 uses, fixed here: `.takings-month`, `#takings-save-note`, `.takings-offgrid`,
-`[data-offgrid-helper]`, `table.week-strip[data-month]`, `tr.week-row[data-week][aria-expanded]`,
-`tr.week-detail-row`, `table.day-grid[data-week]`, `tr.day-row[data-day][data-lines]`,
-`.day-row.is-missing-miles`, `tr.day-detail-row`, `table.fare-list[data-day]`, `tr.fare-row[data-entry]`,
-`[data-detail-entry]`, `[data-miles-entry]`, `[data-amount-entry]`, `[data-delete-entry]`,
-`button.add-fare[data-add-fare]`, `tr.caption-row[data-caption]`, `[data-add-caption][data-week]`,
-`tr.week-total-row`, `tr.fare-draft`, `[data-draft-field]`, `[data-draft-commit]`,
+Commit before waiting; wait with `timeout 900 bash -c 'while pgrep -f "playwright test"
+>/dev/null; do sleep 15; done'`.
+
+###### Acceptance
+
+- The Node test and the spec pass; every BST and SE spec is unchanged in count and outcome.
+- `grep -c "Profit & Loss Acc\|results\[\|rkFor(" web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-takings.js`
+  is 0; `grep -c "DIYA_BOOKS_SNAPSHOT" ...` is 1 (one accessor).
+- `git diff --stat main -- web/spreadsheets.diyaccounting.co.uk/public/books/edits.js` shows the
+  one region; `git diff main -- app/lib` is the one `field: "miles"` line; `git diff --stat main -- web/.../books/shell.js .../data.js .../books.css
+  .../products/taxi.js` is empty.
+- axe reports no serious or critical violation at the four viewports with a week and a day open.
+- On the basic book, after adding a fare named "Station run" on 8 April and saving the
+  workbook, `SalesApr!E11` carries 265 and `C11` "Daily fares; Station run" (the T1 rule, proved
+  here through the page's own save; 8 April is the second row of the second week).
+
+###### Selectors T17 uses, fixed here
+
+`.takings-month[data-month]`, `.takings-summary`, `#takings-note`, `.takings-offgrid`,
+`table.offgrid-list tr.offgrid-row[data-entry]`, `[data-offgrid-helper]`,
+`table.week-strip[data-month]`, `tr.week-row[data-week][aria-expanded]`, `.week-row.is-open`,
+`[data-missing-miles]`, `tr.week-detail-row`, `table.day-grid[data-week]`,
+`tr.day-row[data-day][data-lines]`, `.day-row.is-missing-miles`, `button.day-toggle[data-day-toggle]
+[aria-expanded]`, `.fare-count`, `tr.day-detail-row`, `table.fare-list[data-day]`,
+`.fare-list-caption`, `tr.fare-row[data-entry]`, `.fare-row.is-other`, `[data-detail-entry]`,
+`[data-miles-entry]`, `[data-amount-entry]`, `[data-date-entry]`, `[data-delete-entry]`,
+`button.add-fare[data-add-fare]`, `tr.caption-row[data-caption]`, `.caption-line[data-entry]`,
+`[data-add-caption][data-week]`, `tr.week-total-row`, `tr.fare-draft[data-day]`,
+`tr.fare-draft[data-week][data-caption]`, `[data-draft-field]`, `[data-draft-commit]`,
 `[data-draft-cancel]`, `.week-cards .week-card[data-week-card]`, `.week-card-head[aria-expanded]`,
-`.day-list .day-card[data-day-card]`, `.day-card-head[aria-expanded]`.
+`.week-card-figures .figure-value`, `.day-list .day-card[data-day-card][data-lines]`,
+`.day-card-head[aria-expanded]`, `.fare-card[data-entry]`, `.caption-card[data-caption]`,
+`.week-strip-scroll`, `.entry-flag`.
 
 ##### T15 coding brief
 
