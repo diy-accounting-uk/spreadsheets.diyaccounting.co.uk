@@ -22,7 +22,7 @@ record and carries its own open items (the Rust port plan and the operator's res
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-1 | CodeQL: `decodeXmlEntities` one-pass; `bookWithField` refuses prototype segments; the two XML-escape helpers escape quotes | none | machine | — | ready-to-start | `../.worktrees/spreadsheets/cq-1` on `claude/wt-cq-1` at `fbc552e8`; 3405 Node tests green; first merge of the next batch |
+| CQ-1 | CodeQL: `decodeXmlEntities` one-pass; `bookWithField` refuses prototype segments; the two XML-escape helpers escape quotes | none | machine | — | ready-to-resume | `../.worktrees/spreadsheets/cq-1` on `claude/wt-cq-1` at `fbc552e8`; 3405 Node tests green; first merge of the next batch |
 | SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T16 | blocked-to-start | Sonnet, wave 8 |
 | SE-T21 | The SE VAT view carries the interface table under a disclosure (T7's spec); `renderBalances` keys every month's opening balance and `renderVatQuarter` keys `G5`; the declared list in `render-unrepresentable/se.json` shrinks from 958 to the true unrepresentables | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after PR #60 |
 | SE-T22 | `se-2026-2027.toml` Class 2 figures (6845 threshold, 3.50 weekly) verified against HMRC 2026/27 through the package-updates skill | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; TX-T24 reported 7,105 and 3.65 |
