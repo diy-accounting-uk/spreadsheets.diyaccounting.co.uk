@@ -362,6 +362,13 @@ function amountAsNumber(text) {
   return text === "" ? null : Number(String(text).replace(/,/g, ""));
 }
 
+// rkFor() (shell.js) joins a cell key to a CELL_MAP-derived section key with
+// " || "; a box's own data-r-key carries both, so a check against the bare
+// cell key reads only the first half.
+function cellKeyOf(rKey) {
+  return rKey === null ? null : rKey.split(" || ")[0];
+}
+
 test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () => {
   test("SA103S prints the 2026 short-return boxes in order, each keyed to its cell where the sheet has one", async ({ page }) => {
     const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
@@ -394,7 +401,7 @@ test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () 
         const key = `cell/${sheet}!${box.cell}`;
         const entry = s2Map.get(key);
         if (entry) {
-          if (row.rKey !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected "${key}"`);
+          if (cellKeyOf(row.rKey) !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected cell key "${key}"`);
           if (amountAsNumber(row.amount) !== Math.round(Number(entry.value))) {
             problems.push(`box ${box.box} prints "${row.amount}", expected ${Math.round(Number(entry.value))}`);
           }
@@ -415,7 +422,7 @@ test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () 
         // "pl:" keys its own cell; "sum:" carries no top-level key, only its parts do.
         if (box.derived.startsWith("pl:")) {
           const key = `cell/Profit & Loss Acc!${box.derived.slice(3)}`;
-          if (row.rKey !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected "${key}"`);
+          if (cellKeyOf(row.rKey) !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected cell key "${key}"`);
         } else if (row.rKey !== null) {
           problems.push(`box ${box.box} is a "sum:" total, expected no top-level key, carries "${row.rKey}"`);
         }
