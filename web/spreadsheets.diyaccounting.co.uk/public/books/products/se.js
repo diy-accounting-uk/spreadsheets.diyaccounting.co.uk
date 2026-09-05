@@ -254,7 +254,7 @@
 
   // The year table's columns and the month rows' buckets: the statement's
   // own rows as CELL_MAP names them, the interest row the sheet prints
-  // beside them, and the two buckets no column shows.
+  // beside them, and the one bucket no column shows.
   function categories(productMod) {
     var out = [];
     sectionRowsOf(productMod, PL_SECTION).forEach(function (row) {
@@ -308,6 +308,20 @@
 
   // ============================== classifying a line ==============================
 
+  var scenarioCache = new WeakMap();
+
+  // The scenario the engine builds from this book and these lines, with its
+  // own expected table merged in, which is the shape both the code letters
+  // and the unscoped cells below are read from.
+  function scenarioOf(ctx) {
+    var found = scenarioCache.get(ctx);
+    if (found) return found;
+    var scenario = ctx.engine.diyaGlToScenario(ctx.book, ctx.lines, PRODUCT_ID);
+    var merged = Object.assign({}, scenario, scenario.expected);
+    scenarioCache.set(ctx, merged);
+    return merged;
+  }
+
   var codeMapCache = new WeakMap();
 
   // The code letter each account posts under, read back off the scenario the
@@ -317,7 +331,7 @@
   function codeMaps(ctx) {
     var found = codeMapCache.get(ctx);
     if (found) return found;
-    var scenario = ctx.engine.diyaGlToScenario(ctx.book, ctx.lines, PRODUCT_ID);
+    var scenario = scenarioOf(ctx);
     var maps = { sales: {}, purchases: {} };
     ["sales", "purchases"].forEach(function (journal) {
       var byMonth = scenario[journal] || {};
@@ -373,8 +387,7 @@
   function linkCells(ctx) {
     var found = linkCellsCache.get(ctx);
     if (found) return found;
-    var scenario = ctx.engine.diyaGlToScenario(ctx.book, ctx.lines, PRODUCT_ID);
-    var cells = ctx.engine.calculateLinkCells(ctx.book, ctx.lines, PRODUCT_ID, ctx.taxData, Object.assign({}, scenario, scenario.expected));
+    var cells = ctx.engine.calculateLinkCells(ctx.book, ctx.lines, PRODUCT_ID, ctx.taxData, scenarioOf(ctx));
     linkCellsCache.set(ctx, cells);
     return cells;
   }
