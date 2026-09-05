@@ -432,11 +432,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
-- S8 `55add52d`, `317effde`, merged 2026-09-05: `scripts/example-books.json` is the list, the bundle
-  build generates `books/examples.js` (gitignored) as `window.DiyaGlExamples` keyed by product, the
-  shell reads it and the manifest's `examples` field is gone; the id grep finds only the generated
-  file. Taxi T16 and Ltd T10 append their rows to the JSON.
-<<<<<<< HEAD
+- The BrickWork master `examples/brickwork-pro/lines.jsonl` keeps date order (`31882a5c`): the
+  Ltd non-VAT twin and the BST subset read it in file order while the VAT and SE twins sort, so an
+  appended line splits the twins' journal shape. Insert in date order; entry numbers are identifiers,
+  not positions.
 - T3 `6f7d3e6a` to `c37e62c8`, merged 2026-09-05: CIS both ways (Purchases `AD` read back, Sales `W`
   written and read, `Income Tax!E12`, `SE Full!D231` and `SE Short!O124` no longer agree by
   absence), a CIS-suffered sale in the BrickWork master with May's and June's figures adjusted so
@@ -446,8 +445,6 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   is appended to rather than kept in date order (re-sort once T6's numbering settles, renumbering
   follows); the judge has no indicator for CIS suffered, so a negative `Total Tax + NI` on the
   BrickWork SE books is a query it may raise.
-=======
->>>>>>> claude/wt-se-s8
 - S7 `ab5c82d9`, `105777a9`, `2afdf60b`, `63934d1b`, merged 2026-09-05: `books/shell.js`, `data.js`,
   `edits.js`, `books.css`, `products/bst.js` as the first manifest under `window.DiyaGlProducts`,
   `window.DiyaGlBooksLoader` and `window.DiyaGlBooksPage`, the five seam lines, the regime passed

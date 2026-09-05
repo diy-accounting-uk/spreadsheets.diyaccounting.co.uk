@@ -493,6 +493,11 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   sit one behind the 2026 form; the page's layout (T15) renders the form's numbers. R3 dispatched;
   `reports/*taxi*`, the judge verdict and `examples/taxi-latest` move on the refresh.
 
+- T12 `4a7bfed7`, merged 2026-09-05: `HEADLINES` in `taxi.js` with `pieLines` (the six vehicle
+  lines and eight general lines shown individually in place of the combined cost-of-sales slice),
+  `costOfSales.label`, and the `vehicle` tile keys; only SP Sixty logs miles, so the actual-costs
+  branch is proved by removing the route cell from R.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
