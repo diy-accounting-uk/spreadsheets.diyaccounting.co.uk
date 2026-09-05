@@ -43,6 +43,7 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -1860,7 +1861,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
   const vat = vatSection(results);
@@ -2127,11 +2128,14 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit = "money") {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  // A nil that arrived by negation carries a sign bit and prints as "-0",
-  // which reads as a defect in a statement.
-  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") {
+    const canonical = Number(canonicalForUnit(v, unit));
+    // A nil that arrived by negation carries a sign bit and prints as "-0",
+    // which reads as a defect in a statement.
+    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
   return String(v);
 }
 

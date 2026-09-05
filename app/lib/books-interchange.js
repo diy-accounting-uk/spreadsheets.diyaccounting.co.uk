@@ -249,7 +249,12 @@ function packagePartOf(sheetNames) {
 // Ltd is read as Self Employed here, missing or renamed sibling included --
 // the anchor guard (readWorkbookSource, over SE_ANCHORS) is what actually
 // names a missing or swapped file, this sniff only picks which table to run.
-async function sniffProduct(set, name) {
+//
+// The books page calls this through the engine bundle, over the set its own
+// xlsx-cells.js opened, so the page and the CLI pick the same product from
+// the same bytes. name is the name the upload arrived under, for messages
+// only; the answer is bst, taxi, se or ltd.
+export async function sniffProduct(set, name) {
   if (set.has(PACKAGE_HUB) && set.names().length > 1) {
     return set.has("Currentaccount.xlsx") ? "ltd" : "se";
   }

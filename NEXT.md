@@ -6,44 +6,33 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #60 (`claude/diya-gl-products`) merged to main on 2026-09-05 at `7629c0e1` with every test job
-green after the two A3 causes were fixed at source (payroll order and tax codes on the fixture
-path; each generate workflow's examples artifact and commit now carry only its own
-`examples/<product>-latest/`). The operator has frozen new dispatches; the next batch opens on the
-word "continue past PR60": open a new batch branch from main, merge `claude/wt-cq-1`, then the
-worktrees marked `ready-to-resume`; each worktree forked from the batch head before PR #60, so
-merge main into it first and take main's version of any generated artefact. Ltd rows stay held. Sub-agents run no LibreOffice and prove JS
-calculations against the committed packages' extraction (`report.js --source-dir`). Every
-worktree lives at `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>`; the wave schedule is in
-`_developers/WAVES_DIYA_GL_PRODUCTS.md`. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of
-record and carries its own open items (the Rust port plan and the operator's research for it).
+Batch `claude/diya-gl-wave-2` (from main `4d0241d9`) works the board top to bottom: the paused
+worktrees first, then each product's block. Every worktree lives at
+`../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` with a `node_modules` symlink; the
+coordinator merges each landed commit into the batch branch, runs the row's non-LibreOffice tests,
+and pushes; `NEXT.md` tracking commits ride on the batch branch. Sub-agents run no LibreOffice and
+prove JS calculations against the committed packages' extraction (`report.js --source-dir`). The
+wave schedule is in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. `PLAN_DIYA_GL_LAUNCH.md` is the launch
+and revenue plan of record and carries its own open items.
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-1 | CodeQL: `decodeXmlEntities` one-pass; `bookWithField` refuses prototype segments; the two XML-escape helpers escape quotes | none | machine | — | ready-to-resume | `../.worktrees/spreadsheets/cq-1` on `claude/wt-cq-1` at `fbc552e8`; 3405 Node tests green; first merge of the next batch |
-| SE-T12 | T12 SE edit and warning proofs in the browser | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-resume | `../.worktrees/spreadsheets/se-t12` on `claude/wt-se-t12` at `9d11a6dd`; 17 cases green |
-| SE-T19 | The SE page accepts the nine-file package: `upload.validate`, `extractLines`, `drift.js` units for element rows; A7 drift and stale-cache proofs | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-resume | `../.worktrees/spreadsheets/se-t19` on `claude/wt-se-t19` at `07c558fb`; browser 202 green |
-| BST-T17 | `form-layouts/bst.json` replaces `products/bst.js` `SA103S_BOXES`; the BST SA103S renders through `helpers.form`; `CONTEXT_BASIC_SOLE_TRADER.md` SA103S tables and the `D106` comments verified against the sheet | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-resume | `../.worktrees/spreadsheets/bst-t17` on `claude/wt-bst-t17` at `240b7ad5`; 26 BST cases green |
-| SE-T17 | `diya-gl-loader` gives SE a depreciation table; `extract-scenarios` keeps `total_motor_net` pence; `fmtMoney` rounds as the canonical value does; `Payment!B4:C15` carry a date unit | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T23 | blocked-to-resume | `../.worktrees/spreadsheets/se-t17` on `claude/wt-se-t17` at `8a0cbbd2`; its A4 shows the `fmt()` rounding |
+| SE-T17 | `diya-gl-loader` gives SE a depreciation table; `extract-scenarios` keeps `total_motor_net` pence; `fmtMoney` rounds as the canonical value does; `Payment!B4:C15` carry a date unit | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t17` on `claude/wt-se-t17`; Sonnet merges the batch and re-pins A4 |
 | TX-T24 | BST and Taxi `SE Short` gate the expense boxes on `Admin!F26`, not `30000`; `calculators/bst.js:293` follows; the L111 and L116 tick captions take the 2026 text | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T25 | blocked-to-resume | `../.worktrees/spreadsheets/taxi-t24` on `claude/wt-taxi-t24` at `8aa340f0`; 14 Node tests read the committed packages |
-| CQ-2 | CodeQL's twelve remaining alerts: path injection in `web/unit-tests/smoke.test.js`; double escaping and multi-character sanitization in `scripts/generate-knowledge-base-toml.cjs`, `app/test/home-sheet-hyperlinks.test.js` and `public/lib/community-page.js`; URL and hostname checks in `scripts/generate-aws-resources.js`, `behaviour-tests/helpers/playwrightTestWithout.js` and `web/unit-tests/seo-validation.test.js` | none | machine | — | ready-to-start | Sonnet; alerts 1-3, 5-13; files disjoint from CQ-1 |
-| CQ-3 | Dependabot 80: `@humanfs/node` 0.16.7 to 0.16.8 under eslint in `package-lock.json` | none | machine | — | ready-to-start | Haiku; `npm update @humanfs/node`, lockfile-only PR |
-| TX-T25 | The BST and Taxi sidecar, interchange and roundtrip tests build their package from the template, as the SE ones do, so a template change no longer reads the committed packages as overtyped | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; precursor of merging TX-T24 |
-| BST-T18 | `products/bst.js` `CELL_MAP` labels for `D99` and `D106` carry the box-28 and box-31 confusion; the judge and nine golden reports key off the label strings | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; re-pins the BST reports at the refresh |
+| UI-1 | The books pages drop the back link to the xlsx download page; a `New` button beside `Save`, equal in prominence on desktop and the mobile bar, returns to the upload-or-example screen | operator | machine | — | in-flight | `../.worktrees/spreadsheets/ui-1` on `claude/wt-ui-1`; Opus designs and builds |
+| TX-T25 | The BST and Taxi sidecar, interchange and roundtrip tests build their package from the template, as the SE ones do, so a template change no longer reads the committed packages as overtyped | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t25` on `claude/wt-tx-t25`; Sonnet |
+| BST-T18 | `products/bst.js` `CELL_MAP` labels for `D99` and `D106` carry the box-28 and box-31 confusion; the judge and nine golden reports key off the label strings | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t18` on `claude/wt-bst-t18`; Sonnet |
 | BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | TX-T24 | blocked-to-start | Sonnet |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 6 |
 | TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
-| SE-T21 | The SE VAT view carries the interface table under a disclosure (T7's spec); `renderBalances` keys every month's opening balance and `renderVatQuarter` keys `G5`; the declared list in `render-unrepresentable/se.json` shrinks from 958 to the true unrepresentables | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after PR #60 |
-| SE-T22 | `se-2026-2027.toml` Class 2 figures (6845 threshold, 3.50 weekly) verified against HMRC 2026/27 through the package-updates skill | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; TX-T24 reported 7,105 and 3.65 |
-| SE-T23 | `products/{se,bst,taxi,ltd}.js` `fmt()` formats section values through `canonicalForUnit`; the generated reports re-pin at the refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; precursor of merging SE-T17 |
-| SE-T27 | `products/se.js` `checkCompliance` shows four spurious mismatches on a book with no `[expected]` table that nets to a loss | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
+| SE-T21 | The SE VAT view carries the interface table under a disclosure (T7's spec); `renderBalances` keys every month's opening balance and `renderVatQuarter` keys `G5`; the declared list in `render-unrepresentable/se.json` shrinks from 958 to the true unrepresentables | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t21` on `claude/wt-se-t21`; Opus |
+| SE-T27 | `products/se.js` `checkCompliance` shows four spurious mismatches on a book with no `[expected]` table that nets to a loss | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t27` on `claude/wt-se-t27`; Sonnet |
 | SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T16 | blocked-to-start | Sonnet, wave 8 |
-| SE-T24 | Extracted entry numbers are unique across an uploaded package: `xlsx-exporter.js` numbers each journal from `EXP-0001`, so sales, bank and payroll rows collide and cannot be edited | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T19 | blocked-to-start | Opus; moves every multi-file `lines.jsonl` |
-| SE-T25 | `drift.js` emits two entries with one id when a link cell drifts and the hub cell also reads short | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T19 | blocked-to-start | Haiku |
-| SE-T26 | `scenario-extractor.js:824` throws on a bank line whose side is neither D nor C before the book checks run, so `book-bank-line-has-side` never surfaces; `edits.js` `changeAmount` moves no payroll gross because the loader reads `diya-gl:grossPay` first | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T12 | blocked-to-start | Sonnet; T12 carries the `fixme` |
-| SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T12 | blocked-to-start | Fable, wave 10 |
+| SE-T24 | Extracted entry numbers are unique across an uploaded package: `xlsx-exporter.js` numbers each journal from `EXP-0001`, so sales, bank and payroll rows collide and cannot be edited | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T19 | in-flight | `../.worktrees/spreadsheets/se-t24` on `claude/wt-se-t24`; Opus |
+| SE-T26 | `scenario-extractor.js:824` throws on a bank line whose side is neither D nor C before the book checks run, so `book-bank-line-has-side` never surfaces; `edits.js` `changeAmount` moves no payroll gross because the loader reads `diya-gl:grossPay` first | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T12 | in-flight | `../.worktrees/spreadsheets/se-t26` on `claude/wt-se-t26`; Sonnet |
+| SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T12, UI-1, SE-T21 | blocked-to-start | Fable; after UI-1 and SE-T21 change the SE page |
 | SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T17 | blocked-to-start | Opus; rewrites every product's example books, so after SE-T17's regeneration |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T12, SE-T13, SE-T17, SE-T19, SE-T20, SE-T21 | blocked-to-start | after the next batch |
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T16, SE-T12 | blocked-to-start | Sonnet, wave 9 |

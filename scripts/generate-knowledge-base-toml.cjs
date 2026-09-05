@@ -38,6 +38,21 @@ function parseMdcms(content) {
 }
 
 /**
+ * Remove HTML tags, reapplying the tag regex until no tags remain so a
+ * tag exposed by removing an enclosing one (e.g. "<scr<script>ipt>")
+ * cannot survive a single pass.
+ */
+function stripAllTags(text) {
+  let previous;
+  let result = text;
+  do {
+    previous = result;
+    result = previous.replace(/<[^>]+>/g, "");
+  } while (result !== previous);
+  return result;
+}
+
+/**
  * Convert HTML to plain text with basic markdown formatting.
  * Strips tags, converts <strong> to **, <a> to markdown links,
  * <li> to list items, etc.
@@ -85,10 +100,11 @@ function htmlToMarkdown(html) {
   text = text.replace(/<\/p>/gi, "\n\n");
 
   // Remove all remaining HTML tags
-  text = text.replace(/<[^>]+>/g, "");
+  text = stripAllTags(text);
 
-  // Decode HTML entities
-  text = text.replace(/&amp;/g, "&");
+  // Decode HTML entities (named entities before &amp;, so an encoded
+  // ampersand followed by an entity name, e.g. "&amp;lt;", is not
+  // mistaken for a second, already-escaped entity)
   text = text.replace(/&lt;/g, "<");
   text = text.replace(/&gt;/g, ">");
   text = text.replace(/&quot;/g, '"');
@@ -102,6 +118,7 @@ function htmlToMarkdown(html) {
   text = text.replace(/&ndash;/g, "\u2013");
   text = text.replace(/&mdash;/g, "\u2014");
   text = text.replace(/&hellip;/g, "\u2026");
+  text = text.replace(/&amp;/g, "&");
 
   // Clean up whitespace
   text = text.replace(/\n{3,}/g, "\n\n");
@@ -121,8 +138,7 @@ function htmlToMarkdown(html) {
  */
 function stripHtml(html) {
   if (!html) return "";
-  let text = html.replace(/<[^>]+>/g, "");
-  text = text.replace(/&amp;/g, "&");
+  let text = stripAllTags(html);
   text = text.replace(/&lt;/g, "<");
   text = text.replace(/&gt;/g, ">");
   text = text.replace(/&pound;/g, "\u00A3");
@@ -133,6 +149,7 @@ function stripHtml(html) {
   text = text.replace(/&rsquo;/g, "'");
   text = text.replace(/&ndash;/g, "-");
   text = text.replace(/&mdash;/g, "-");
+  text = text.replace(/&amp;/g, "&");
   return text.trim();
 }
 

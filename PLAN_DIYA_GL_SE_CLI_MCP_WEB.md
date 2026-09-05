@@ -629,7 +629,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   never got the interface disclosure T7's manifest spec names; `Bank.xlsx!Mar!A1`,
   `Cash.xlsx!Mar!A1` and every `VATQtr!G5` are rendered without a key. Board row SE-T21.
 
-- T12 `d09bf253`, `9d11a6dd` on `claude/wt-se-t12`, not yet merged (2026-09-05): `books-se-edits.browser.test.js`
+- T12 `d09bf253`, `9d11a6dd`, merged into `claude/diya-gl-wave-2` at `965827c6` (2026-09-05): `books-se-edits.browser.test.js`
   (17: E1 bank amount, payroll gross through the page's `setLines` seam, undo byte for byte; E2 the
   ten T5 rules on the BrickWork non-VAT book, one `fixme`; the four settlement helpers),
   `applyNamedEdit` taking product and tax data, one `playwright.config.js` line. Full browser 213
@@ -646,7 +646,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   green. Its corrected A4 shows one red: `products/{se,bst,taxi,ltd}.js` `fmt()` formats section
   values on the raw double (`se.js:1650`, `bst.js:382`, `taxi.js:539`, `ltd.js:2125`), board row
   SE-T23, the precursor of merging this.
-- SE-T19 `87a0e211`, `07c558fb` on `claude/wt-se-t19`, not yet merged: `data.js` sniffs every upload
+- SE-T19 `87a0e211`, `07c558fb`, merged into `claude/diya-gl-wave-2` at `8a80d84c` (2026-09-06): `data.js` sniffs every upload
   through the engine's `sniffProduct` over one workbook set; a lone package part raises
   `PackagePartError` by name; the three products' `upload` hooks take the set; `extractBook` takes
   a `readRateData` reader so the browser rebuilds `book.tax` (`taxTablesForPackage` async);
