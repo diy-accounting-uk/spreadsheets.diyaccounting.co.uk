@@ -155,7 +155,8 @@ function registerVehicleApply(ctx, offenders) {
 // ============================== book-taxi-miles-band ==============================
 
 function milesPastBandWarning(ctx, taxData) {
-  const limit = taxData && taxData.mileage && typeof taxData.mileage.higher_rate_limit === "number" ? taxData.mileage.higher_rate_limit : null;
+  const limit =
+    taxData && taxData.mileage && typeof taxData.mileage.higher_rate_limit === "number" ? taxData.mileage.higher_rate_limit : null;
   const milesLines = ctx.lines
     .filter((line) => (line.sourceJournalID === "sales" || line.sourceJournalID === "purchases") && hasOwnMiles(line))
     .slice()

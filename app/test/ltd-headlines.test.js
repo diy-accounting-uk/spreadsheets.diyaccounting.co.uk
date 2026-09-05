@@ -25,7 +25,11 @@ const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const BOOKS = [
   { name: "precision-code-ltd/full", dir: resolve(ROOT, "examples", "precision-code-ltd", "full"), expectedFile: "ltd-scenario-full.toml" },
   { name: "brickwork-pro/ltd-vat", dir: resolve(ROOT, "examples", "brickwork-pro", "ltd-vat"), expectedFile: "ltd-brickwork-pro-vat.toml" },
-  { name: "brickwork-pro/ltd-nonvat", dir: resolve(ROOT, "examples", "brickwork-pro", "ltd-nonvat"), expectedFile: "ltd-brickwork-pro-nonvat.toml" },
+  {
+    name: "brickwork-pro/ltd-nonvat",
+    dir: resolve(ROOT, "examples", "brickwork-pro", "ltd-nonvat"),
+    expectedFile: "ltd-brickwork-pro-nonvat.toml",
+  },
 ];
 
 // R for one fixture, built the way report.js's --data mode builds it for
@@ -144,7 +148,10 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
     expect(headlines.tiles.assets.total.secondLine.label).toBe("Net assets");
     const netAssetsCell = report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!PubBalSht!F33").value;
     expect(headlines.tiles.assets.total.secondLine.value).toBeCloseTo(netAssetsCell, 6);
-    expect(headlines.tiles.assets.total.value).toBeCloseTo(headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value, 6);
+    expect(headlines.tiles.assets.total.value).toBeCloseTo(
+      headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value,
+      6,
+    );
     // Net assets is a different figure from the assets total (it nets off
     // liabilities), so nothing says they must be close on a real book --
     // this only proves the second line traces to its own cell, not the sum.

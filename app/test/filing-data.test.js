@@ -65,8 +65,7 @@ describe("filing data", () => {
       }
     };
     for (const box of ct600.box) if (box.sheetCell) check(box.sheetCell, `ct600-v3.toml box ${box.number}`);
-    for (const line of computation.line)
-      if (line.sheetCell) check(line.sheetCell, `ct-computation-v1.1.toml "${line.label}"`);
+    for (const line of computation.line) if (line.sheetCell) check(line.sheetCell, `ct-computation-v1.1.toml "${line.label}"`);
     for (const heading of frs105.heading)
       if (heading.sheetCell) check(heading.sheetCell, `frs105-formats.toml ${heading.statement} ${heading.letter}`);
     expect(offenders).toEqual([]);

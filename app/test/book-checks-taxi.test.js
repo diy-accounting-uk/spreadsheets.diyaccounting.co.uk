@@ -58,33 +58,11 @@ describe("the three Taxi example books", () => {
     expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
   });
 
-  it("SP Sixty Driving: crosses the higher-rate mileage band in October, and fifteen fare days carry no miles of their own", () => {
+  it("SP Sixty Driving: crosses the higher-rate mileage band in October and every fare day carries its miles", () => {
     const { book, lines, taxData } = loadTaxi("examples/sp-sixty-driving/taxi");
     const { results, summary } = runBookChecks({ book, lines, taxData });
 
-    // The committed fixture leaves TXN-0166 through TXN-0180 (the last
-    // fifteen fare days of the year) with no measurableQuantity or
-    // measurableUnitOfMeasure at all, unlike the other 165 fare days --
-    // book-taxi-fare-miles already warns on this book unmodified.
-    const fareMiles = resultFor(results, "book-taxi-fare-miles");
-    expect(fareMiles.result).toBe("warn");
-    expect(fareMiles.offenders.map((o) => o.entryNumber)).toEqual([
-      "TXN-0166",
-      "TXN-0167",
-      "TXN-0168",
-      "TXN-0169",
-      "TXN-0170",
-      "TXN-0171",
-      "TXN-0172",
-      "TXN-0173",
-      "TXN-0174",
-      "TXN-0175",
-      "TXN-0176",
-      "TXN-0177",
-      "TXN-0178",
-      "TXN-0179",
-      "TXN-0180",
-    ]);
+    expect(resultFor(results, "book-taxi-fare-miles").result).toBe("pass");
 
     expect(resultFor(results, "book-taxi-vehicle-register").result).toBe("pass");
 
@@ -92,7 +70,7 @@ describe("the three Taxi example books", () => {
     expect(milesBand.result).toBe("warn");
     expect(milesBand.offenders).toEqual([{ month: "2025-10", milesToDate: 11662 }]);
 
-    expect(summary).toEqual({ pass: 9, warn: 2, fail: 0 });
+    expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
   });
 });
 
@@ -106,7 +84,8 @@ describe("the three Taxi example books", () => {
 function sp60CleanBaseline() {
   const fixture = loadTaxi("examples/sp-sixty-driving/taxi");
   for (const line of fixture.lines) {
-    const isFareGap = line.sourceJournalID === "sales" && line.accountMainID === "4000" && line.amount > 0 && line.measurableUnitOfMeasure !== "miles";
+    const isFareGap =
+      line.sourceJournalID === "sales" && line.accountMainID === "4000" && line.amount > 0 && line.measurableUnitOfMeasure !== "miles";
     if (isFareGap) {
       line.measurableQuantity = 100;
       line.measurableUnitOfMeasure = "miles";
