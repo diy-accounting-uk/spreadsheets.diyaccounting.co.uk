@@ -19,7 +19,9 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The batch's books page no longer boots fully (94 of 168 browser tests red at the head after S7, S8
+and S4 merged; each passed alone): a fix is in flight on `.worktrees/spreadsheets/verify`, branch
+`claude/wt-fix-page-boot`, before any further page row lands. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. PR #61 (the stray Taxi T20 commit on main) merged 2026-09-05; the batch keeps the change. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
