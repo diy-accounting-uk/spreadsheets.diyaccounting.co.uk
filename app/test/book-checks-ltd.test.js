@@ -61,25 +61,32 @@ const FULL = loadLtd("examples/precision-code-ltd/full");
 // Read as they stand, not as they are hoped to be.
 
 describe("the Ltd example books", () => {
-  it("Precision Code Ltd runs sixteen rules: every check passes but the VAT threshold", () => {
+  it("Precision Code Ltd runs sixteen rules: every check passes, and the cash top-up has no counter leg", () => {
     const { results, summary } = runBookChecks(clone(FULL));
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
-    for (const id of ALL_IDS) {
-      const expected = id === "book-vat-threshold" ? "warn" : "pass";
+    for (const id of ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"]) {
+      expect(resultFor(results, id).result, id).toBe("pass");
+    }
+    for (const id of LTD_IDS) {
+      const expected = id === "ltd-transfer-has-counter-leg" ? "warn" : "pass";
       expect(resultFor(results, id).result, id).toBe(expected);
     }
 
-    // The cash top-up's counter leg is in the master data (TXN-0918, coded
-    // BC on the current account), so the transfer rule finds no offender;
-    // the opening, transfer and stock journals' two legs share a journal,
-    // date, amount and detail by construction, but each pair debits one
-    // account and credits another, which the duplicate rule reads as one
-    // balanced entry rather than two of the same one.
-    expect(resultFor(results, "ltd-transfer-has-counter-leg").offenders).toEqual([]);
-    expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
+    // The book's one BB-coded transfer tops the cash float up from the
+    // current account, and the current account never gives the money up.
+    const transfers = resultFor(results, "ltd-transfer-has-counter-leg");
+    expect(transfers.offenders).toEqual([
+      { entryNumber: "TXN-0155", postingDate: "2025-06-10", accountMainID: "1220", detail: "Cash top-up", amount: 100 },
+    ]);
+
+    // The other two warnings are the shared rules reading a Company book:
+    // turnover well over the VAT threshold on a book that says it is
+    // registered, and the opening, transfer and stock journals, whose two
+    // legs share a journal, date, amount and detail by construction.
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
-    expect(summary).toEqual({ pass: 15, warn: 1, fail: 0 });
+    expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
+    expect(summary).toEqual({ pass: 14, warn: 2, fail: 0 });
   });
 
   it("BrickWork Pro (Company, non-VAT): all sixteen rules pass", () => {
@@ -105,12 +112,31 @@ describe("the Ltd example books", () => {
 });
 
 // ============================== a Company book that starts clean ==============================
-// The full fixture already carries the cash top-up's counter leg (TXN-0918,
-// on the current account), so every Ltd rule starts passing and one crafted
-// change can be shown to flip one rule.
+// The full fixture with the cash top-up's counter leg entered on the
+// current account, so every Ltd rule starts passing and one crafted change
+// can be shown to flip one rule.
+
+const COUNTER_LEG = {
+  "entryNumber": "TXN-0155B",
+  "sourceJournalID": "bank",
+  "postingDate": "2025-06-10",
+  "accountMainID": "1200",
+  "debitCreditCode": "C",
+  "amount": 100.0,
+  "documentType": "bank-statement",
+  "documentReference": "BNK-0155B",
+  "detailComment": "Cash float withdrawal",
+  "lineItemComment": "Cash drawn for the cash float",
+  "taxCode": "OS",
+  "taxRate": 0.0,
+  "diya-gl:bankCode": "BC",
+  "diya-gl:bankAccountID": "1200",
+};
 
 function baseline() {
-  return clone(FULL);
+  const fixture = clone(FULL);
+  fixture.lines.push(clone(COUNTER_LEG));
+  return fixture;
 }
 
 function lineIn(fixture, entryNumber) {
@@ -132,7 +158,7 @@ function assertOnlyTheseRulesFlip(mutated, targetIds, expectedResult) {
 }
 
 describe("the Company baseline starts clean", () => {
-  it("every Ltd rule passes", () => {
+  it("entering the counter leg clears the transfer warning and every Ltd rule passes", () => {
     const { results } = runBookChecks(baseline());
     for (const id of LTD_IDS) expect(resultFor(results, id).result, id).toBe("pass");
   });
@@ -165,7 +191,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
 
   it("ltd-transfer-has-counter-leg: the transfer's other leg removed", () => {
     const fixture = baseline();
-    fixture.lines = fixture.lines.filter((l) => l.entryNumber !== "TXN-0918");
+    fixture.lines = fixture.lines.filter((l) => l.entryNumber !== "TXN-0155B");
     assertOnlyTheseRulesFlip(fixture, ["ltd-transfer-has-counter-leg"], "warn");
   });
 
