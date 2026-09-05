@@ -19,7 +19,7 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The page-boot regression after S8 (the loader still read the manifest's examples) is fixed in T7's first commit; the browser suite is 175 of 176 with the known bst-latest red. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The page-boot regression after S8 (the loader still read the manifest's examples) is fixed in T7's first commit; the batch head's own browser run is 175 of 176, the one red being the stale committed bst-latest. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. PR #61 (the stray Taxi T20 commit on main) merged 2026-09-05; the batch keeps the change. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
