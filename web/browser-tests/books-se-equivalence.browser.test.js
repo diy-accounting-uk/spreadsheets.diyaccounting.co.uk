@@ -83,11 +83,13 @@ function excelSerialAsDate(serial) {
 }
 
 // What a figure R holds should print as: whole pounds inside a form box, the
-// penny the double rounds to everywhere else, and the raw value for a rate
-// or a count.
+// same working-precision-then-half-up penny fmtMoney now uses everywhere
+// else (canonicalForUnit, off the engine bundle), and the raw value for a
+// rate or a count. A bare toFixed(2) reads the double's own float noise on
+// a figure sitting exactly on a half penny and can round the wrong way.
 function expectedForUnit(entry, wholePounds) {
   if (entry.unit !== "money") return entry.value;
-  return wholePounds ? Math.round(Number(entry.value)) : Number(entry.value).toFixed(2);
+  return wholePounds ? Math.round(Number(entry.value)) : canonical(entry.value, "money");
 }
 
 // ── Getting each of the three books onto the page ─────────────────────────
