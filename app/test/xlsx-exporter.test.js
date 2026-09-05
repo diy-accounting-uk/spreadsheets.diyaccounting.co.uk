@@ -21,6 +21,7 @@ import {
   AdminSheetMissingError,
 } from "../lib/xlsx-exporter.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
+import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
@@ -280,7 +281,7 @@ describe("extractBook", () => {
     const buffer = await buildWorkbook(bstSheets({ purchaseRows: { [`${ACCOUNT_ID_COLUMN}5`]: "5301" } }));
     writeFileSync(join(dir, "book.xlsx"), buffer);
     const lines = await extractBstTransactions(buffer);
-    return { book: await extractBook(dir, "bst", lines, CELL_MAP), lines };
+    return { book: await extractBook(await workbookSetFromDirectory(dir), "bst", lines, CELL_MAP), lines };
   }
 
   it("conforms to the published v2 book schema", async () => {
@@ -368,7 +369,7 @@ describe("extractBankTransactions — the opening balance in A1", () => {
         May: { A1: { formula: "Apr!A1+Apr!F1", value: 33000 } },
       },
     });
-    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+    const lines = await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
 
     const opening = lines.filter((line) => line["diya-gl:bankCode"] === "BC");
     expect(opening).toHaveLength(1);
@@ -381,7 +382,7 @@ describe("extractBankTransactions — the opening balance in A1", () => {
       "Savingaccount.xlsx": { Apr: { A1: 5000 }, May: { A1: { formula: "Apr!A1", value: 5000 } } },
       "Cashaccount.xlsx": { Apr: { A1: 500 }, May: { A1: { formula: "Apr!A1", value: 500 } } },
     });
-    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+    const lines = await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
 
     expect(lines.map((line) => [line.accountMainID, line.amount, line.postingDate])).toEqual([
       ["1210", 5000, "2025-04-01"],
@@ -393,7 +394,7 @@ describe("extractBankTransactions — the opening balance in A1", () => {
     const dir = await writePackage({
       "Creditcardaccount.xlsx": { Apr: {}, May: { A1: { formula: "Apr!A1", value: 500 } } },
     });
-    expect(await extractBankTransactions(dir, "ltd", LTD_PERIOD)).toEqual([]);
+    expect(await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).toEqual([]);
   });
 });
 
@@ -404,7 +405,9 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 6000 } },
     });
-    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter(
+      (line) => line.documentReference === "JNL-001",
+    );
 
     expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount, line.postingDate])).toEqual([
       ["1100", "C", 4000, "2026-03-31"],
@@ -416,7 +419,9 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 14000 } },
     });
-    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter(
+      (line) => line.documentReference === "JNL-001",
+    );
 
     expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
       ["1100", "D", 4000],
@@ -428,7 +433,7 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 10000 } },
     });
-    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+    const lines = await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
 
     expect(lines.some((line) => line.documentReference === "JNL-001")).toBe(false);
     expect(lines.map((line) => line.postingDate)).toEqual(["2025-04-01", "2025-04-01"]);
@@ -440,7 +445,7 @@ describe("extractJournalEntries — the Ltd opening balance sheet's land and bui
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000, M13: 40000 } },
     });
-    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+    const lines = await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
 
     expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
       ["0000", "D", 200000],
@@ -452,7 +457,7 @@ describe("extractJournalEntries — the Ltd opening balance sheet's land and bui
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000 } },
     });
-    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+    const lines = await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
 
     expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([["0000", "D", 200000]]);
   });
@@ -514,14 +519,16 @@ function taxiSheets({ salesRows = {}, purchaseRows = {} } = {}) {
       E5: 174,
       A6: TAXI_FIRST_DAY + 1,
       B6: TAXI_FIRST_DAY + 1,
+      C6: "Daily fares; Grant",
       D6: 112,
       E6: 198,
+      F6: 25,
       A7: TAXI_FIRST_DAY + 1,
       B7: "Rental due",
       E7: 300,
       A8: TAXI_FIRST_DAY + 1,
       B8: "Any other income",
-      E8: 50,
+      F8: 50,
       A9: carried,
       B9: carried,
       E9: { formula: "SUM(E5:E8)", value: 722 },
@@ -544,16 +551,15 @@ const taxiJournal = async (sheets, journal) =>
 describe("extractTaxiTransactions — the Sales week", () => {
   it("takes a day's takings and the miles driven to earn them", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.map((line) => [line.postingDate, line.amount, line.measurableQuantity, line.measurableUnitOfMeasure])).toEqual([
+    const fares = sales.filter((line) => line.measurableQuantity !== undefined);
+    expect(fares.map((line) => [line.postingDate, line.amount, line.measurableQuantity, line.measurableUnitOfMeasure])).toEqual([
       ["2025-04-06", 174, 94, "miles"],
       ["2025-04-07", 198, 112, "miles"],
     ]);
   });
 
-  it("leaves the rental, other-income and subtotal rows to the week's own arithmetic", async () => {
+  it("leaves the subtotal row to the week's own arithmetic", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.map((line) => line.amount)).not.toContain(300);
-    expect(sales.map((line) => line.amount)).not.toContain(50);
     expect(sales.map((line) => line.amount)).not.toContain(722);
   });
 
@@ -564,14 +570,57 @@ describe("extractTaxiTransactions — the Sales week", () => {
     expect(sales[1]).toMatchObject({ amount: 0, measurableQuantity: 112 });
   });
 
-  it("posts the day to the one income account the taxi chart keeps", async () => {
+  it("posts a fare or rental line to the one income account the taxi chart keeps", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.every((line) => line.accountMainID === "4000")).toBe(true);
+    const income = sales.filter((line) => line.accountMainID !== "4001");
+    expect(income).toHaveLength(3);
+    expect(income.every((line) => line.accountMainID === "4000")).toBe(true);
   });
 
   it("keeps a row's own income account where the sheet carries one", async () => {
     const sales = await taxiJournal(taxiSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}5`]: "4001" } }), "sales");
     expect(sales[0].accountMainID).toBe("4001");
+  });
+
+  it("reads the rental row as a fare dated the week's last day, named Rental due", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const rental = sales.find((line) => line.detailComment === "Rental due");
+    expect(rental).toMatchObject({ postingDate: "2025-04-07", amount: 300, accountMainID: "4000" });
+    expect(rental.measurableQuantity).toBeUndefined();
+  });
+
+  it("reads the other-income row as a 4001 line named Any other income", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const otherIncome = sales.find((line) => line.detailComment === "Any other income");
+    expect(otherIncome).toMatchObject({ amount: 50, accountMainID: "4001" });
+  });
+
+  it("reads column F on a day row as a 4001 line sharing the day's name", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const grant = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(grant).toMatchObject({ postingDate: "2025-04-07", amount: 25, accountMainID: "4001" });
+  });
+
+  it("numbers the fare before the other income on a shared row", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const fare = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.measurableQuantity !== undefined);
+    const otherIncome = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(fare.entryNumber < otherIncome.entryNumber).toBe(true);
+  });
+
+  it("a rental row with nothing in E produces nothing", async () => {
+    const sheets = taxiSheets();
+    delete sheets.SalesApr.E7;
+    const sales = await taxiJournal(sheets, "sales");
+    expect(sales.find((line) => line.detailComment === "Rental due")).toBeUndefined();
+  });
+
+  it("BZ names the fare's account and never the other income's", async () => {
+    const sales = await taxiJournal(taxiSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}6`]: "4005" } }), "sales");
+    const fare = sales.find((line) => line.measurableQuantity === 112);
+    const grant = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(fare.accountMainID).toBe("4005");
+    expect(grant.accountMainID).toBe("4001");
   });
 });
 
@@ -585,7 +634,7 @@ describe("extractTaxiTransactions — the Purchases block", () => {
         accountMainID: "5100",
         amount: 52,
         detailComment: "Shell",
-        entryNumber: "EXP-0003",
+        entryNumber: "EXP-0006",
       },
     ]);
   });
@@ -649,7 +698,7 @@ describe("extractTaxiTransactions — the exported book", () => {
     const buffer = await buildWorkbook(sheets);
     writeFileSync(join(dir, "book.xlsx"), buffer);
     const lines = await extractTaxiTransactions(buffer);
-    return { book: await extractBook(dir, "taxi", lines, TAXI_CELL_MAP), lines };
+    return { book: await extractBook(await workbookSetFromDirectory(dir), "taxi", lines, TAXI_CELL_MAP), lines };
   }
 
   it("conforms to the published v2 book schema and declares every account its lines name", async () => {
@@ -696,7 +745,7 @@ async function exportedPayroll(blocksByTab) {
   const sheets = { Employee: {} };
   for (const tab of PAYSLIP_MONTH_TABS) sheets[tab] = blocksByTab[tab] || {};
   writeFileSync(join(dir, "Payslips.xlsx"), await buildWorkbook(sheets));
-  return extractPayrollTransactions(dir);
+  return extractPayrollTransactions(await workbookSetFromDirectory(dir));
 }
 
 describe("extractPayrollTransactions — the month's own block row", () => {
@@ -822,7 +871,7 @@ describe("extractBook — the Ltd registers of members and directors", () => {
 
   async function exportedRegisters() {
     const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
-    return extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    return extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
   }
 
   it("reads the register of members back with the shares and the date each holding was acquired", async () => {
@@ -857,13 +906,13 @@ describe("extractBook — the Ltd registers of members and directors", () => {
       registerofMembers: {},
       directorsAndSecretary: { A2: "Priya Patel", D2: "Finance Director" },
     });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(book.directors).toEqual([{ name: "Priya Patel", role: "Finance Director" }]);
   });
 
   it("breaks only the shares a corrupted RegisterofMembers cell carries, on both the member and the director it names", async () => {
     const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
-    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
 
     const path = resolve(dir, "Companysecretary.xlsx");
     const zip = await JSZip.loadAsync(readFileSync(path));
@@ -872,7 +921,7 @@ describe("extractBook — the Ltd registers of members and directors", () => {
     zip.file(sheetPath, xml.replace(`<c r="G3"><v>60</v></c>`, `<c r="G3"><v>99</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
-    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(after.members[0].shares).toBe(99);
     expect(after.directors[0].shares).toBe(99);
     expect(after.members[1]).toEqual(before.members[1]);
@@ -883,7 +932,7 @@ describe("extractBook — the Ltd registers of members and directors", () => {
 
 describe("extractBook — the Ltd payroll register", () => {
   async function payrollLinesFor(dir) {
-    return extractPayrollTransactions(dir);
+    return extractPayrollTransactions(await workbookSetFromDirectory(dir));
   }
 
   it("recovers the book's own employee id from the payslip reference, not the sheet's payroll number", async () => {
@@ -901,7 +950,7 @@ describe("extractBook — the Ltd payroll register", () => {
       }),
     });
     const lines = await payrollLinesFor(dir);
-    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(book.employees[0].employeeID).toBe("EMP007");
   });
 
@@ -911,7 +960,7 @@ describe("extractBook — the Ltd payroll register", () => {
       payslipsApril: {},
     });
     const lines = [...(await payrollLinesFor(dir)), DUMMY_POSTING];
-    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(book.employees[0].employeeID).toBe("1");
   });
 
@@ -940,7 +989,7 @@ describe("extractBook — the Ltd payroll register", () => {
       }),
     });
     const lines = await payrollLinesFor(dir);
-    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(book.employees[0].grossPay).toBe(3500);
   });
 
@@ -959,7 +1008,7 @@ describe("extractBook — the Ltd payroll register", () => {
       }),
     });
     const lines = await payrollLinesFor(dir);
-    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(book.employees[0].startDate).toBe("2025-06-01");
   });
 
@@ -978,7 +1027,7 @@ describe("extractBook — the Ltd payroll register", () => {
       }),
     });
     const lines = await payrollLinesFor(dir);
-    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(book.employees[0]).toMatchObject({ isDirector: true });
     expect(book.employees[0].niCategory).toBeUndefined();
   });
@@ -997,7 +1046,7 @@ describe("extractBook — the Ltd payroll register", () => {
         reference: "PAY-EMP007-2025-04",
       }),
     });
-    const before = await extractBook(dir, "ltd", await payrollLinesFor(dir), LTD_CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "ltd", await payrollLinesFor(dir), LTD_CELL_MAP);
     expect(before.employees[0].employeeID).toBe("EMP007");
 
     const path = resolve(dir, "Payslips.xlsx");
@@ -1012,7 +1061,7 @@ describe("extractBook — the Ltd payroll register", () => {
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
     const lines = await payrollLinesFor(dir);
-    const after = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "ltd", lines, LTD_CELL_MAP);
     expect(after.employees[0].employeeID).toBe("1");
     expect(after.employees[0].name).toBe(before.employees[0].name);
     expect(after.employees[0].grossPay).toBe(before.employees[0].grossPay);
@@ -1080,7 +1129,7 @@ async function ltdPackageWithFixedAssets(fixedAssetsSheets) {
 describe("extractBook — the hire purchase agreements", () => {
   it("reads every agreement the HPfinance block names", async () => {
     const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(book.hpAgreements).toEqual([
       {
         agreementID: "HP-2025-01",
@@ -1107,7 +1156,7 @@ describe("extractBook — the hire purchase agreements", () => {
 
   it("breaks only the agreement whose amount financed a corrupted cell carries", async () => {
     const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
-    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
 
     const path = resolve(dir, "Fixedassets.xlsx");
     const zip = await JSZip.loadAsync(readFileSync(path));
@@ -1116,7 +1165,7 @@ describe("extractBook — the hire purchase agreements", () => {
     zip.file(sheetPath, xml.replace(`<c r="E8"><v>13000</v></c>`, `<c r="E8"><v>99</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
-    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(after.hpAgreements[0].amountFinanced).toBe(99);
     expect({ ...after.hpAgreements[0], amountFinanced: 13000 }).toEqual(before.hpAgreements[0]);
     expect(after.hpAgreements[1]).toEqual(before.hpAgreements[1]);
@@ -1127,7 +1176,7 @@ describe("extractBook — the hire purchase agreements", () => {
       Schedule: {},
       HPfinance: { ...HP_FINANCE_SHEET, E10: 0 },
     });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(book.hpAgreements.map((agreement) => agreement.agreementID)).toEqual(["HP-2025-01"]);
   });
 });
@@ -1153,7 +1202,7 @@ describe("extractBook — the single-file fixed asset register", () => {
       D69: "PUR-FA-002",
       E69: 36000,
     });
-    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
     expect(book.fixedAssets).toEqual([
       { assetID: "FA-0001", cost: 1800, description: "New laptop for development", acquiredDate: "2025-05-15" },
       { assetID: "FA-0002", cost: 36000, description: "Ford Transit Custom van", acquiredDate: "2025-10-25" },
@@ -1169,7 +1218,7 @@ describe("extractBook — the single-file fixed asset register", () => {
       C68: "Ford Transit Custom van",
       E68: 36000,
     });
-    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
 
     const path = resolve(dir, findXlsx(dir));
     const zip = await JSZip.loadAsync(readFileSync(path));
@@ -1178,7 +1227,7 @@ describe("extractBook — the single-file fixed asset register", () => {
     zip.file(sheetPath, xml.replace(`<c r="E67"><v>1800</v></c>`, `<c r="E67"><v>7</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
-    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
     expect(after.fixedAssets[0].cost).toBe(7);
     expect(after.fixedAssets[0].description).toBe(before.fixedAssets[0].description);
     expect(after.fixedAssets[1]).toEqual(before.fixedAssets[1]);
@@ -1202,7 +1251,7 @@ describe("extractBook — the named ledgers", () => {
         ClosingCreditors: { B5: "BT Business", C5: "BT-2603", H5: 60 },
       },
     });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(book.debtors).toEqual([
       { counterparty: "Acme Corp", invoice: "INV-0901", amount: 7200, timing: "opening" },
       { counterparty: "WidgetWorks", invoice: "INV-2104", amount: 1440, timing: "closing" },
@@ -1223,7 +1272,7 @@ describe("extractBook — the named ledgers", () => {
       join(dir, "Financialaccounts.xlsx"),
       await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": { C3: 10800, F3: 2220 } }),
     );
-    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
     expect(book.openingBalances).toEqual({ tradeDebtors: 10800, tradeCreditors: 2220 });
     expect(book.debtors).toBeUndefined();
     expect(book.creditors).toBeUndefined();
@@ -1232,7 +1281,7 @@ describe("extractBook — the named ledgers", () => {
   it("leaves the opening balances off a sheet that states neither figure", async () => {
     const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
     writeFileSync(join(dir, "Financialaccounts.xlsx"), await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": {} }));
-    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
     expect(book.openingBalances).toBeUndefined();
   });
 
@@ -1242,7 +1291,7 @@ describe("extractBook — the named ledgers", () => {
       join(dir, "Financialaccounts.xlsx"),
       await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": { C3: 10800, F3: 2220 } }),
     );
-    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
 
     const path = resolve(dir, findXlsx(dir));
     const zip = await JSZip.loadAsync(readFileSync(path));
@@ -1251,7 +1300,7 @@ describe("extractBook — the named ledgers", () => {
     zip.file(sheetPath, xml.replace(`<c r="C3"><v>10800</v></c>`, `<c r="C3"><v>1</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
-    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "bst", [DUMMY_POSTING], CELL_MAP);
     expect(after.openingBalances.tradeDebtors).toBe(1);
     expect(after.openingBalances.tradeCreditors).toBe(before.openingBalances.tradeCreditors);
   });
@@ -1301,7 +1350,7 @@ describe("extractBook — the Schedule's asset attributes and disposals", () => 
 
   it("reads an asset's purchase date, depreciation rate and disposal back off its own row", async () => {
     const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(book.fixedAssets).toEqual([
       {
         assetID: "FA-0001",
@@ -1320,7 +1369,7 @@ describe("extractBook — the Schedule's asset attributes and disposals", () => 
 
   it("breaks only the disposal proceeds a corrupted cell carries", async () => {
     const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
-    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const before = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
 
     const path = resolve(dir, "Fixedassets.xlsx");
     const zip = await JSZip.loadAsync(readFileSync(path));
@@ -1329,14 +1378,14 @@ describe("extractBook — the Schedule's asset attributes and disposals", () => 
     zip.file(sheetPath, xml.replace(`<c r="V${MOTOR_EXISTING_ROW}"><v>12500</v></c>`, `<c r="V${MOTOR_EXISTING_ROW}"><v>3</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
-    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const after = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect(after.fixedAssets[0].disposalProceeds).toBe(3);
     expect({ ...after.fixedAssets[0], disposalProceeds: 12500 }).toEqual(before.fixedAssets[0]);
   });
 
   it("leaves the disposal fields off an asset the year did not sell", async () => {
     const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan({ U50: undefined, V50: undefined }) });
-    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
     expect("disposedDate" in book.fixedAssets[0]).toBe(false);
     expect("disposalProceeds" in book.fixedAssets[0]).toBe(false);
     expect(book.fixedAssets[0].depreciationRate).toBe(0.25);

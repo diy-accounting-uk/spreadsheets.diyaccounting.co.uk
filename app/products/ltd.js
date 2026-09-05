@@ -33,6 +33,7 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../lib/ltd-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -70,13 +71,6 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-
 // TrialBalance's own closing-balance echo of each bank workbook (verified
 // against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
 // EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
@@ -88,49 +82,6 @@ const TRIAL_BALANCE_BANK_ECHO_CELLS = {
   "Creditcardaccount.xlsx": "EJ24",
   "Cashaccount.xlsx": "EJ25",
 };
-
-// Transfer code letter each bank workbook stands for. A workbook analyses
-// transfers under the other three letters; it never transfers to itself.
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
-// Column layout of the receipts and payments blocks in each bank workbook's
-// month tabs, and the code letters each block has an analysis column for.
-// Cashaccount analyses fewer receipt codes than the three statement books,
-// which shifts its payments block four columns to the left.
-//
-// reference and comment are two columns every one of the four workbooks
-// keeps beside its receipts and payments that the writer never used to fill.
-// reference is the invoice number column -- "Sales Invoice" on receipts (C),
-// "Enter Purchase Invoice No." on payments. comment is the column beside it
-// -- "Deposit Bank Reference" on receipts (D), "Cheque number Direct Debit"
-// on Cashaccount's and the statement books' payments -- which the sheet
-// keeps for the payer's own reference rather than a description, but is a
-// real, otherwise-empty cell all the same, so a line's own free-text comment
-// goes there.
-function bankLayout(fileName) {
-  const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
-  if (fileName === "Cashaccount.xlsx") {
-    return {
-      receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-      payment: { date: "P", source: "Q", reference: "R", comment: "S", code: "T", amount: "U" },
-      receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
-      paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
-    };
-  }
-  return {
-    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-    payment: { date: "S", source: "T", reference: "U", comment: "V", code: "W", amount: "X" },
-    receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
-    paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
-  };
-}
-
-const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
 // ── Payslips.xlsx Admin: the payroll calendar ──────────────────────────────
 // B2 carries the tax year's first day and every date under it is the row
@@ -288,14 +239,6 @@ const STOCK_MATERIALS_PERCENT_CELL = "H4";
 // Everything else is a single figure in column E. The sheet's own audit
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
-
-const OPENING_FIXED_ASSET_COLUMNS = {
-  land_buildings: { cost: "G", depreciation: "M" },
-  plant_machinery: { cost: "H", depreciation: "N" },
-  fixtures_fittings: { cost: "I", depreciation: "O" },
-  computer_technology: { cost: "J", depreciation: "P" },
-  motor_vehicles: { cost: "K", depreciation: "Q" },
-};
 
 const OPENING_BANK_COLUMNS = {
   current_account: "G",
@@ -1198,24 +1141,24 @@ export const CELL_MAP = [
   [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
-  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
-  // ── The CT600's own tax boxes, so the report states what the form files
-  // as well as what the working sheet charges. Boxes 43 to 46 are the first
-  // financial year the accounting period falls in and boxes 53 to 56 the
-  // second, which stays blank when the period lies in one. Boxes 46 and 56
-  // are the tax before relief, box 64 the relief and box 65 the tax the
-  // company bears. ──
-  ["CT600", "C126",  "Box 43: financial year",      "gl-cor:period (ct600.box43)",     "CT600 as filed", 1],
-  ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
-  ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
-  ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
-  ["CT600", "C128",  "Box 53: financial year",      "gl-cor:period (ct600.box53)",     "CT600 as filed", 1],
-  ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
-  ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
-  ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
-  ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
-  ["CT600", "Y133",  "Box 64: marginal rate relief","gl-cor:taxAmount (ct600.box64)",  "CT600 as filed", 1],
-  ["CT600", "Y135",  "**Box 65: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box65)", "CT600 as filed", 0],
+  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box600)","Corporation Tax working sheet", 0],
+  // ── The CT600's own tax boxes, Version 3 (2026) numbering, so the report
+  // states what the form files as well as what the working sheet charges.
+  // Boxes 330 to 345 are the first financial year the accounting period
+  // falls in and boxes 380 to 395 the second, which stays blank when the
+  // period lies in one. Boxes 345 and 395 are the tax before relief, box 435
+  // the relief and box 440 the tax the company bears. ──
+  ["CT600", "C126",  "Box 330: financial year",      "gl-cor:period (ct600.box330)",     "CT600 as filed", 1],
+  ["CT600", "N126",  "Box 335: amount of profit",    "gl-cor:amount (ct600.box335)",     "CT600 as filed", 1],
+  ["CT600", "AA126", "Box 340: rate of tax",         "gl-cor:rate (ct600.box340)",       "CT600 as filed", 1],
+  ["CT600", "AJ126", "Box 345: tax",                 "gl-cor:taxAmount (ct600.box345)",  "CT600 as filed", 1],
+  ["CT600", "C128",  "Box 380: financial year",      "gl-cor:period (ct600.box380)",     "CT600 as filed", 1],
+  ["CT600", "N128",  "Box 385: amount of profit",    "gl-cor:amount (ct600.box385)",     "CT600 as filed", 1],
+  ["CT600", "AA128", "Box 390: rate of tax",         "gl-cor:rate (ct600.box390)",       "CT600 as filed", 1],
+  ["CT600", "AJ128", "Box 395: tax",                 "gl-cor:taxAmount (ct600.box395)",  "CT600 as filed", 1],
+  ["CT600", "AJ131", "**Box 430: corporation tax**", "gl-cor:taxAmount (ct600.box430)",  "CT600 as filed", 0],
+  ["CT600", "Y133",  "Box 435: marginal rate relief","gl-cor:taxAmount (ct600.box435)",  "CT600 as filed", 1],
+  ["CT600", "Y135",  "**Box 440: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box440)", "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1313,6 +1256,80 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ48","Final: Dividends declared",                 "gl-cor:amount (dividendsDeclared)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
+
+// The year-at-a-glance strip's four tiles and two pies for a Company book.
+// Every key is a report-serializer.js cell key, verified against
+// `report.js --package ltd --data examples/precision-code-ltd/full`.
+//
+// The declaration wraps every single-cell reference as `{ key }` (or
+// `{ key, optional }`) and every summed group as `{ keys: [...] }`, the
+// shape the shared headline reducer (app/lib/headlines.js) reads across
+// products. Ltd's current-assets cell (`PubBalSht!E13`) already sums stock,
+// trade debtors and cash, so it fills the reducer's `assets.stock` part --
+// the total's other summed-in figure -- and there is no separate `debtors`
+// part the way BST has one. `tax.secondLine` and `assets.secondLine` each
+// add one labelled figure beside that tile's own value, excluded from every
+// sum: the tax charge still outstanding and the balance sheet's net-assets
+// total. `turnover.pieExtra` adds the dividends the board declared as a
+// fifth turnover-pie slice, folded into the bridge before "Kept" rather
+// than summed into the turnover total itself -- unlike `assets.extra`
+// (SE's, summed into that tile's total and never its own slice), a pie
+// slice needs its own label and value, so it takes the list shape
+// `resolveLines()` already reads for a tile's second line. It is optional:
+// a company need not have declared a dividend in the year. `runningCosts`
+// and `tax` each add `label`, the turnover pie's own name for that slice --
+// the shared reducer defaults to BST's "Running costs" and "Tax and NI",
+// so without this Ltd's pie would carry the wrong sheet's words; here it
+// names the Ltd sheet's own, "Administrative expenses" and "Corporation
+// tax".
+// prettier-ignore
+export const HEADLINES = {
+  turnover: {
+    key: "cell/Financialaccounts.xlsx!MnthP&L!B9", // SUM(B4:B8)
+    pieExtra: [{ label: "Dividends", key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }], // =TrialBalance!EJ48
+  },
+  costOfSales: { keys: ["cell/Financialaccounts.xlsx!MnthP&L!B14"] }, // SUM(B11:B13)
+  runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41", label: "Administrative expenses" }, // SUM(B18:B40)
+  tax: {
+    key: "cell/Financialaccounts.xlsx!CorporationTax!K35", // SUM(I33:I34)
+    label: "Corporation tax",
+    secondLine: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
+  },
+  assets: {
+    writtenDown: { key: "cell/Financialaccounts.xlsx!PubBalSht!F6" }, // fixed assets NBV
+    stock: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+    secondLine: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
+  },
+  // B11 to B13, cost of sales' own three lines, are not repeated here: the
+  // shared reducer's outgoings pie already adds one "Cost of sales" slice
+  // from the `costOfSales` figure above, so listing them again would count
+  // them twice.
+  expenseLines: [
+    ["cell/Financialaccounts.xlsx!MnthP&L!B18", "Wages and salaries"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B19", "Directors Wages + Non-PAYE (code d)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B20", "Employers National Insurance"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B21", "Premises (code r)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B22", "Light, Heat, Power (code p)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B23", "Distribution (code t)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B24", "Equipment Hire (code q)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B25", "Repairs & Maintenance (code m)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B26", "Consumables (code u)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B27", "Advertising (code a)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B28", "Telephone, Postage & Stationery (code g)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B29", "Travel & Hotel (code h)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B30", "Motor Vehicle (code v)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B31", "Insurance (code n)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B32", "Leasing (code f)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B33", "Legal & Professional (code l)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B34", "Bad Debts (from Sales)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B35", "Bank Interest Paid"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B36", "Bank Charges"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B37", "Charitable Donations (code y)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B38", "Goodwill written off (code z)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B39", "Loss on disposal of assets"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B40", "Depreciation"],
+  ],
+};
 
 // Month tab order (matching the scenario key order) and the MnthP&L column
 // each month occupies — verified against the template (C = month 1 .. N =
@@ -2298,18 +2315,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
   // Opening balances. A balance sheet that never posts is still balanced, so
-  // EJ91 alone cannot tell an unposted opening from a posted one. These
-  // checks tie each opening figure to the trial balance row it feeds.
+  // EJ91 alone cannot tell an unposted opening from a posted one. The next
+  // two checks tie the sheet's own opening balance sheet and trial balance
+  // audit rows to zero; both need only the calculated results, not a
+  // fixture's [opening_balance] table, so they run whether or not one is
+  // there -- a book loaded straight from a diya-gl file carries no such
+  // table.
+  const oa = results.OpenAccounts;
+  const tb = results.TrialBalance;
+  check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
+  check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
+
+  // The rest tie each opening figure to the trial balance row it feeds, so
+  // they run only where the fixture states an [opening_balance] table.
   if (expected.opening_balance) {
     const ob = expected.opening_balance;
-    const oa = results.OpenAccounts;
-    const tb = results.TrialBalance;
     const cost = ob.fixed_asset_cost || {};
     const depreciation = ob.fixed_asset_depreciation || {};
     const sum = (o) => Object.values(o).reduce((s, v) => s + v, 0);
-
-    check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
-    check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
 
     check("Trial Balance opening: fixed asset cost", (tb.D6 || 0) + (tb.D7 || 0) + (tb.D8 || 0) + (tb.D9 || 0) + (tb.D10 || 0), sum(cost));
     check(
@@ -3256,12 +3279,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // The year's HP interest and admin charges reaching the P&L's own "Bank
   // Charges" line (MnthP&L!B36), through the "B" bank-payment code every
-  // other direct bank charge on that line already uses. Computed from the
+  // other direct bank charge on that line already uses, plus whatever nets
+  // through the bank workbooks' "Bank Contra Items Received/Paid" rows
+  // (TrialBalance rows 88/89), which the sheet feeds from code "X" -- an
+  // uncoded transfer between the company's own accounts, coded "X" on the
+  // leg its own workbook has no more specific letter for. Computed from the
   // scenario's own bank transactions, not from the P&L cell it is compared
   // to, so a broken cross-file link shows up here rather than passing by
   // construction.
   if (pl && expected.bank) {
-    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B"));
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B") + netBankPayments("X"));
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash
@@ -3269,7 +3296,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // direction-tagged entries, not read back from a second formula, so a
   // receipt posted as a payment, a dropped month or an opening balance that
   // never carried forward shows up here.
+  //
+  // A "BC"-coded entry only carries the account's opening balance on the
+  // day the workbook's own first entry falls on; a "BC"-coded entry any
+  // other day is an ordinary transfer statement line, the same as any other
+  // code (see BANK_TRANSFER_CODES). tx.date arrives as a plain string from
+  // a book loaded straight off disk and as a TOML date object from a parsed
+  // fixture, so the day each file's own entries start on is keyed as text
+  // either way before the two are compared.
   if (expected.bank) {
+    const dateKey = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10));
+    const firstDayOf = {};
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
+        if (!fileName) continue;
+        const key = dateKey(tx.date);
+        if (!firstDayOf[fileName] || key < firstDayOf[fileName]) firstDayOf[fileName] = key;
+      }
+    }
     const movements = {};
     for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
       movements[fileName] = { opening: 0, receipts: 0, payments: 0 };
@@ -3279,7 +3324,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
         if (!fileName) continue;
         const movement = movements[fileName];
-        if (tx.code === "BC") movement.opening += tx.amount;
+        if (tx.code === "BC" && dateKey(tx.date) === firstDayOf[fileName]) movement.opening += tx.amount;
         else if (tx.direction === "in") movement.receipts += tx.amount;
         else if (tx.direction === "out") movement.payments += tx.amount;
       }
