@@ -50,7 +50,7 @@
 // Run against the full committed catalogue (every packages/*/*.xlsx, every
 // sheet) this rule reports zero gaps.
 
-import { buildSheetMap } from "./spreadsheet-runner.js";
+import { buildSheetMap } from "./xlsx-parts.js";
 
 // ── Cell ref / range arithmetic ─────────────────────────────────────────
 

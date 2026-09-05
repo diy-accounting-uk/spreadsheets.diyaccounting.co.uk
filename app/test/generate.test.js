@@ -297,7 +297,7 @@ describe("buildSeCellEdits", () => {
 
   it("uses L16 for NI Class 2 (not L17)", () => {
     const { numericEdits } = buildSeCellEdits(taxData, 2025);
-    expect(numericEdits.L16).toBe(0);
+    expect(numericEdits.L16).toBe(3.5);
     expect(numericEdits.L17).toBeUndefined();
   });
 

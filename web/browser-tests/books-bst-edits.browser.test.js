@@ -401,13 +401,13 @@ test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's"
 
     await page.evaluate(
       async ({ entryNumber, newPostingDate }) => {
-        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
         const lines = snapshot.lines.map((line) => (line.entryNumber === entryNumber ? { ...line, postingDate: newPostingDate } : line));
         await window.DiyaGlBooksPage.setLines(lines, "test: change a date");
       },
       { entryNumber, newPostingDate },
     );
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
     expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
     expect(await monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 1200);
@@ -433,7 +433,7 @@ test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's"
 
     await page.evaluate(
       async ({ entryNumber, newAccountMainID }) => {
-        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
         const lines = snapshot.lines.map((line) =>
           line.entryNumber === entryNumber ? { ...line, accountMainID: newAccountMainID } : line,
         );
@@ -441,7 +441,7 @@ test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's"
       },
       { entryNumber, newAccountMainID },
     );
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
     expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
     const movedRow = page.locator(`tr.entry-row[data-entry="${entryNumber}"] .entry-account-code`);
@@ -627,7 +627,7 @@ test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broke
     // line is installed the way a book from another surface would land,
     // through the page's own setLines seam.
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BST_SNAPSHOT;
+      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
       const imported = {
         entryNumber: "IMPORT-0001",
         sourceJournalID: "purchases",
