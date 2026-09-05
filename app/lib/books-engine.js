@@ -97,6 +97,7 @@ export { PRODUCTS, productModule } from "./products.js";
 export {
   addSaleLine,
   addPurchaseLine,
+  addBankLine,
   changeLineAmount,
   removeLine,
   changeLinePostingDate,
@@ -105,7 +106,16 @@ export {
 } from "./diya-gl-edits.js";
 
 // The book checks and warnings over D itself, and their fix-it helpers.
-export { runBookChecks, bookChecksJson, previewHelper, applyHelper, previewBookHelper, applyBookHelper } from "./book-checks.js";
+export {
+  runBookChecks,
+  bookChecksJson,
+  previewHelper,
+  applyHelper,
+  previewBookHelper,
+  applyBookHelper,
+  settlementSuggestions,
+  applySettlement,
+} from "./book-checks.js";
 export { bankBalancesByMonth } from "./book-checks/se.js";
 
 // The year-at-a-glance headline figures, derived from R.

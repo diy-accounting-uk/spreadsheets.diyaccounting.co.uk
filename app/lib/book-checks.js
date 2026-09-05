@@ -15,7 +15,7 @@
 // one step without reimplementing an edit. A book naming a product with
 // rules of its own runs those after the shared ones -- see book-checks/.
 
-import { changeLinePostingDate, changeLineAccount, changeLineAmount } from "./diya-gl-edits.js";
+import { changeLinePostingDate, changeLineAccount, changeLineAmount, addSaleLine, addPurchaseLine, addBankLine } from "./diya-gl-edits.js";
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
 import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
 import { SE_PRODUCT_RULES } from "./book-checks/se.js";
@@ -588,4 +588,276 @@ export function applyBookHelper({ book, lines }, checkId) {
   const offenders = spec.offenders(ctx);
   if (offenders.length === 0) throw new Error("Nothing left for this helper to fix.");
   return spec.apply(ctx, offenders);
+}
+
+// ============================== the settlement helpers ==============================
+// A bank entry and the invoice behind it are two halves of one transaction,
+// and a book carrying one half without the other is a book with a hole in
+// it. These four suggestions name each hole and fill it through a named
+// edit: a receipt from a debtor with no sale behind it becomes a sale, a
+// payment to a creditor with no purchase becomes a purchase, and a sale or
+// purchase that never reached the bank gets the entry that banks it.
+//
+// Nothing here reads a product's sheets. DR and CR are the codes every
+// package's bank book analyses money in from a debtor and money out to a
+// creditor under, and every account comes from the book's own chart, so the
+// same four suggestions run over a sole trader's book and a company's.
+
+const RECEIPT_BANK_CODE = "DR";
+const PAYMENT_BANK_CODE = "CR";
+const CURRENT_ACCOUNT = "1200";
+const SETTLEMENT_ENTRY_PREFIX = "SET-";
+
+function counterpartyOf(line) {
+  return String(line.detailComment || "")
+    .trim()
+    .toLowerCase();
+}
+
+// Two halves match when they name the same counterparty and come to the
+// same amount to the penny.
+function settlementKey(line) {
+  return counterpartyOf(line) + "|" + round2(line.amount).toFixed(2);
+}
+
+// The left-hand lines with no right-hand line left to pair off against.
+// Two receipts of the same amount from the same customer need two sales to
+// settle them, not one, so this draws down a count rather than asking
+// whether a match exists at all.
+function unpaired(left, right) {
+  const spare = new Map();
+  for (const line of right) {
+    const key = settlementKey(line);
+    spare.set(key, (spare.get(key) || 0) + 1);
+  }
+  const rest = [];
+  for (const line of left) {
+    const key = settlementKey(line);
+    const available = spare.get(key) || 0;
+    if (available > 0) {
+      spare.set(key, available - 1);
+      continue;
+    }
+    rest.push(line);
+  }
+  return rest;
+}
+
+function bankEntries(lines, bankCode, side) {
+  return lines.filter(function (line) {
+    return line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === bankCode && line.debitCreditCode === side;
+  });
+}
+
+function journalEntries(lines, journal) {
+  return lines.filter(function (line) {
+    return line.sourceJournalID === journal;
+  });
+}
+
+// The bank account a settlement's new entry is banked through: the current
+// account where the book's chart declares one, otherwise the first bank
+// account it does declare. A book that declares none -- a Basic Sole Trader
+// book, which keeps no bank journal at all -- has nowhere to bank, so the
+// two suggestions that add a bank entry are not offered on it.
+function settlementBankAccount(ctx) {
+  const declared = (ctx.book && ctx.book.accounts && ctx.book.accounts.bank) || {};
+  const codes = Object.keys(declared).sort();
+  const code = codes.indexOf(CURRENT_ACCOUNT) === -1 ? codes[0] : CURRENT_ACCOUNT;
+  if (!code) return null;
+  return { code: code, description: declared[code].accountMainDescription || "Account " + code };
+}
+
+// A settlement's new sale or purchase is coded the way that journal is
+// already coded in this book, so a registered book's new line carries that
+// book's VAT rate and an unregistered book's carries none.
+function taxTreatmentOf(lines, journal) {
+  const existing = lines.find(function (line) {
+    return line.sourceJournalID === journal;
+  });
+  return { taxCode: existing ? existing.taxCode : "OS", taxRate: existing ? existing.taxRate : 0 };
+}
+
+// One past the highest settlement number the book already carries, so
+// applying two suggestions in a row does not hand out the same number
+// twice.
+function nextSettlementEntryNumber(lines) {
+  let highest = 0;
+  for (const line of lines) {
+    const numbered = String(line.entryNumber || "").match(/^SET-(\d+)$/);
+    if (numbered) highest = Math.max(highest, Number(numbered[1]));
+  }
+  return SETTLEMENT_ENTRY_PREFIX + String(highest + 1).padStart(4, "0");
+}
+
+function tradeLine(ctx, journal, source, account, entryNumber) {
+  const treatment = taxTreatmentOf(ctx.lines, journal);
+  return {
+    entryNumber: entryNumber,
+    sourceJournalID: journal,
+    postingDate: source.postingDate,
+    accountMainID: account.code,
+    amount: source.amount,
+    documentType: "invoice",
+    documentReference: entryNumber,
+    detailComment: source.detailComment || "",
+    lineItemComment: journal === "sales" ? "Sale behind the banked receipt" : "Purchase behind the bank payment",
+    taxCode: treatment.taxCode,
+    taxRate: treatment.taxRate,
+  };
+}
+
+function bankLineFor(journal, source, account, entryNumber) {
+  const receipt = journal === "sales";
+  return {
+    "entryNumber": entryNumber,
+    "sourceJournalID": "bank",
+    "postingDate": source.postingDate,
+    "accountMainID": account.code,
+    "amount": source.amount,
+    "debitCreditCode": receipt ? "D" : "C",
+    "documentType": "bank-statement",
+    "documentReference": entryNumber,
+    "detailComment": source.detailComment || "",
+    "lineItemComment": receipt ? "Receipt banking the sale" : "Payment settling the purchase",
+    "taxCode": "OS",
+    "taxRate": 0,
+    "diya-gl:bankCode": receipt ? RECEIPT_BANK_CODE : PAYMENT_BANK_CODE,
+    "diya-gl:bankAccountID": account.code,
+  };
+}
+
+const SETTLEMENT_KINDS = [
+  {
+    kind: "sale-from-receipt",
+    title: "Make a sale from this receipt",
+    actionLabel: "Add the sale",
+    what: "sale",
+    sources: function (ctx) {
+      return unpaired(bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"), journalEntries(ctx.lines, "sales"));
+    },
+    account: function (ctx) {
+      return ctx.chart.sales[0] || null;
+    },
+    build: function (ctx, source, account, entryNumber) {
+      return tradeLine(ctx, "sales", source, account, entryNumber);
+    },
+    edit: addSaleLine,
+  },
+  {
+    kind: "purchase-from-payment",
+    title: "Make a purchase from this payment",
+    actionLabel: "Add the purchase",
+    what: "purchase",
+    sources: function (ctx) {
+      return unpaired(bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"), journalEntries(ctx.lines, "purchases"));
+    },
+    account: function (ctx) {
+      return repostAccount(ctx, "purchases");
+    },
+    build: function (ctx, source, account, entryNumber) {
+      return tradeLine(ctx, "purchases", source, account, entryNumber);
+    },
+    edit: addPurchaseLine,
+  },
+  {
+    kind: "receipt-for-sale",
+    title: "Record the receipt for this sale",
+    actionLabel: "Add the receipt",
+    what: "receipt",
+    sources: function (ctx) {
+      return unpaired(journalEntries(ctx.lines, "sales"), bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"));
+    },
+    account: settlementBankAccount,
+    build: function (ctx, source, account, entryNumber) {
+      return bankLineFor("sales", source, account, entryNumber);
+    },
+    edit: addBankLine,
+  },
+  {
+    kind: "payment-for-purchase",
+    title: "Record the payment for this purchase",
+    actionLabel: "Add the payment",
+    what: "payment",
+    sources: function (ctx) {
+      return unpaired(journalEntries(ctx.lines, "purchases"), bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"));
+    },
+    account: settlementBankAccount,
+    build: function (ctx, source, account, entryNumber) {
+      return bankLineFor("purchases", source, account, entryNumber);
+    },
+    edit: addBankLine,
+  },
+];
+
+function settlementIdOf(kind, source) {
+  return kind + ":" + source.entryNumber;
+}
+
+function suggestionOf(spec, ctx, source, account) {
+  return {
+    id: settlementIdOf(spec.kind, source),
+    kind: spec.kind,
+    entryNumber: source.entryNumber,
+    title: spec.title,
+    actionLabel: spec.actionLabel,
+    changes: [
+      {
+        what: spec.what,
+        becomes: account.code + " — " + account.description,
+        amount: source.amount,
+        postingDate: source.postingDate,
+        counterparty: source.detailComment || "",
+      },
+    ],
+  };
+}
+
+// Every unsettled half, paired with the account its other half would post
+// to. A suggestion names the line it is built from, so a line the book left
+// unnumbered is not one this can offer: there would be no way to ask for it
+// back by id.
+function settlementsOf(ctx) {
+  const found = [];
+  for (const spec of SETTLEMENT_KINDS) {
+    const account = spec.account(ctx);
+    if (!account) continue;
+    for (const source of spec.sources(ctx)) {
+      if (!source.entryNumber) continue;
+      found.push({ spec: spec, source: source, account: account });
+    }
+  }
+  return found;
+}
+
+/**
+ * The settlements a book is missing: for every bank receipt or payment with
+ * no invoice behind it, and every invoice that never reached the bank, one
+ * suggestion naming what applying it would add.
+ * @param {{book: Object, lines: Array}} args
+ * @returns {Array<{id: string, kind: string, entryNumber: string, title: string, actionLabel: string, changes: Array}>}
+ */
+export function settlementSuggestions({ book, lines }) {
+  const ctx = contextOf(book, lines);
+  return settlementsOf(ctx).map(function (settlement) {
+    return suggestionOf(settlement.spec, ctx, settlement.source, settlement.account);
+  });
+}
+
+/**
+ * Apply one settlement suggestion, by the id settlementSuggestions gave it,
+ * through the named edit that adds its missing half.
+ * @param {{book: Object, lines: Array}} args
+ * @param {string} id - a suggestion's own id, "<kind>:<entryNumber>"
+ * @returns {Array} a new lines array with the missing half added
+ */
+export function applySettlement({ book, lines }, id) {
+  const ctx = contextOf(book, lines);
+  const settlement = settlementsOf(ctx).find(function (candidate) {
+    return settlementIdOf(candidate.spec.kind, candidate.source) === id;
+  });
+  if (!settlement) throw new Error('No settlement called "' + id + '"');
+  const entryNumber = nextSettlementEntryNumber(lines);
+  const line = settlement.spec.build(ctx, settlement.source, settlement.account, entryNumber);
+  return settlement.spec.edit(book, lines, { line: line });
 }

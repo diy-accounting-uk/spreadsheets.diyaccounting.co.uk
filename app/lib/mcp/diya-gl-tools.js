@@ -32,10 +32,18 @@ import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js"
 import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
 import { saveWorkbook, savePackageZip, loadTaxDataForBook, productOf } from "../product-workbook.js";
 import { productModule } from "../products.js";
-import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../diya-gl-edits.js";
+import {
+  addSaleLine,
+  addPurchaseLine,
+  addBankLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+} from "../diya-gl-edits.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 
-const EDITS = { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount };
+const EDITS = { addSaleLine, addPurchaseLine, addBankLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount };
 
 /**
  * A fresh, empty session: no book loaded.
@@ -249,7 +257,9 @@ export const TOOLS = {
   edit_lines: {
     name: "edit_lines",
     description:
-      "Apply one named edit from app/lib/diya-gl-edits.js (addSaleLine, addPurchaseLine, changeLineAmount) to the session's currently loaded lines, and return the edited lines, the recomputed R, and the figures that moved.",
+      "Apply one named edit from app/lib/diya-gl-edits.js (" +
+      Object.keys(EDITS).join(", ") +
+      ") to the session's currently loaded lines, and return the edited lines, the recomputed R, and the figures that moved.",
     inputSchema: {
       type: "object",
       properties: {
