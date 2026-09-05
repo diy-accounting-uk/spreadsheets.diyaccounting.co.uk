@@ -22,14 +22,11 @@ import { generatePdf } from "../lib/guide.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { saveWorkbook } from "../lib/product-workbook.js";
+import { productModule } from "../lib/products.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
 import { PRODUCT as LTD } from "../products/ltd.js";
-import * as bstMod from "../products/bst.js";
-import * as taxiMod from "../products/taxi.js";
-import * as seMod from "../products/se.js";
-import * as ltdMod from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -283,12 +280,11 @@ async function main() {
 
   // If --data provided, inject diya-gl data into the generated package and recalculate
   if (dataDir && results.length > 0) {
-    const PRODUCT_MODULES = { bst: bstMod, taxi: taxiMod, se: seMod, ltd: ltdMod };
-    const productMod = PRODUCT_MODULES[packageFilter];
-    if (!productMod) {
+    if (!PRODUCTS[packageFilter]) {
       console.error(`--data requires --package (not 'all'). Got: ${packageFilter}`);
       process.exit(1);
     }
+    const productMod = productModule(packageFilter);
 
     const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
 

@@ -27,13 +27,13 @@
 // extract_book call first.
 
 import { resolve as resolvePath } from "path";
-import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
+import { extractBookFromFile, buildFileReportDocument } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
 import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
-import { saveWorkbook, savePackageZip, loadTaxDataForBook } from "../product-workbook.js";
+import { saveWorkbook, savePackageZip, loadTaxDataForBook, productOf } from "../product-workbook.js";
+import { productModule } from "../products.js";
 import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../diya-gl-edits.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
-import * as bst from "../../products/bst.js";
 
 const EDITS = { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount };
 
@@ -67,7 +67,8 @@ function requireLoaded(session) {
 }
 
 function reportFor(book, lines) {
-  return buildFileReportDocument(book, lines, "bst", bst);
+  const product = productOf(book);
+  return buildFileReportDocument(book, lines, product, productModule(product));
 }
 
 // The book checks and warnings, with the book's own tax year's data behind
@@ -107,11 +108,14 @@ function diffFigures(beforeDocument, afterDocument) {
 /**
  * extract_book: a .xlsx or .zip path in, D (book + lines, canonical and
  * parsed) and the overtype sidecar out. Replaces the session's loaded book.
+ * `product` is optional; given, it is checked against the file's own sniff
+ * and a disagreement is refused by name rather than read as the wrong
+ * product.
  */
-async function extractBook(session, { path }) {
+async function extractBook(session, { path, product }) {
   if (!path) throw new Error("extract_book requires a path");
   const resolved = resolvePath(path);
-  const { book, lines, document, overtyped } = await extractBstFromFile(resolved, bst);
+  const { book, lines, document, overtyped } = await extractBookFromFile(resolved, { product });
   loadIntoSession(session, book, lines, resolved);
   return {
     book,
@@ -210,11 +214,16 @@ export const TOOLS = {
   extract_book: {
     name: "extract_book",
     description:
-      "Extract a diya-gl book from a Basic Sole Trader .xlsx or .zip package: D (book.toml + lines.jsonl, canonical and parsed), R (the computed report), the book checks and warnings over D, and the overtype sidecar (every template formula the upload carries as a typed value instead). Replaces the session's loaded book.",
+      "Extract a diya-gl book from a DIY Accounting workbook or package zip: D (book.toml + lines.jsonl, canonical and parsed), R (the computed report), the book checks and warnings over D, and the overtype sidecar (every template formula the upload carries as a typed value instead). Replaces the session's loaded book.",
     inputSchema: {
       type: "object",
       properties: {
-        path: { type: "string", description: "Path to a Basic Sole Trader .xlsx or .zip file" },
+        path: { type: "string", description: "Path to a workbook or package zip" },
+        product: {
+          type: "string",
+          enum: ["bst", "taxi", "se", "ltd"],
+          description: "Optional: the product the file is expected to be; checked against the file's own content and refused by name on a disagreement",
+        },
       },
       required: ["path"],
     },
@@ -252,7 +261,7 @@ export const TOOLS = {
   save_workbook: {
     name: "save_workbook",
     description:
-      "Write the session's currently loaded book into a Basic Sole Trader workbook, its package zip, a diya-gl zip (book.toml, lines.jsonl, report.json, bookchecks.json), or a single diya-gl JSON file, returned as base64 alongside its filename.",
+      "Write the session's currently loaded book into a DIY Accounting workbook or package zip, a diya-gl zip (book.toml, lines.jsonl, report.json, bookchecks.json), or a single diya-gl JSON file, returned as base64 alongside its filename. Format xlsx is refused by name for a product whose package is more than one workbook.",
     inputSchema: {
       type: "object",
       properties: {
