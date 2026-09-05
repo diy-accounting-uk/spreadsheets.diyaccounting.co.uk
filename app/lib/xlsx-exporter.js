@@ -1937,9 +1937,8 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
 // also carries, and the arithmetic each one takes to get there. A field the
 // toml has no equivalent for stays absent rather than guessed:
 //
-// - tax.vat.reducedRate, tax.corporationTax.associatedCompanies and
-//   tax.nationalInsurance.class2SmallProfitsThreshold: no app/data/*.toml
-//   field carries these at all.
+// - tax.vat.reducedRate and tax.corporationTax.associatedCompanies: no
+//   app/data/*.toml field carries these at all.
 // - tax.capitalAllowances.annualInvestmentAllowance: the toml's own
 //   `annual_investment_allowance` is the *relief scale* HMRC allows (1.00 =
 //   100% relief up to the cap), not the schema's absolute cap in pounds --
@@ -1982,6 +1981,7 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   const ni = raw.national_insurance;
   if (ni) {
     set("nationalInsurance", "class2WeeklyRate", ni.class2_weekly_rate);
+    set("nationalInsurance", "class2SmallProfitsThreshold", ni.class2_small_profits_threshold);
     set("nationalInsurance", "class4MainRate", ni.class4_lower_rate);
     set("nationalInsurance", "class4UpperRate", ni.class4_upper_rate);
     set("nationalInsurance", "class4LowerProfits", ni.class4_lower_limit);

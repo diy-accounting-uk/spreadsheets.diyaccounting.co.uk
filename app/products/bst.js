@@ -310,6 +310,7 @@ export const CELL_MAP = [
   ["Admin", "N13", "Higher Band Start",                   "tax.incomeTax.basicRateLimit (+1)",        "Admin (Generator Injected)", 0, "money"],
   ["Admin", "N14", "Higher Band End",                     "tax.incomeTax.additionalRateThreshold",    "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L17", "NI Class 2 Rate",                     "tax.nationalInsurance.class2WeeklyRate",   "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N17", "NI Class 2 Small Profits Threshold",   "tax.nationalInsurance.class2SmallProfitsThreshold", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",     "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",    "Admin (Generator Injected)", 0, "rate"],
@@ -615,6 +616,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Higher Band Start = tax data", admin.N13, it.higher_band_start);
     check("Admin: Higher Band End = tax data", admin.N14, it.higher_band_end);
     check("Admin: NI Class 2 Rate = tax data", admin.L17, ni.class2_rate, 0.0001);
+    check("Admin: NI Class 2 Small Profits Threshold = tax data", admin.N17, ni.class2_small_profits_threshold);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
     check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
