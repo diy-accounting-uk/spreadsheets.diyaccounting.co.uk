@@ -17,26 +17,34 @@ import { fileURLToPath } from "url";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import {
   extractBstTransactions,
+  extractTaxiTransactions,
   bstExtractionMap,
-  bstBookFieldCells,
+  bookFieldCells,
   isBstInputCell,
   BST_TRANSACTION_REGIONS,
 } from "../lib/xlsx-exporter.js";
+import { workbookSetFromWorkbook } from "../lib/workbook-set.js";
 import { overtypedCells, BST_TEMPLATE_PATH } from "../lib/overtype-sidecar.js";
 import { parseCells, formulaCells, sortCellRefs } from "../lib/template-formula-map.js";
 import { cellLabels, CELL_MAP } from "../products/bst.js";
+import { cellLabels as taxiCellLabels } from "../products/taxi.js";
+import { isSeInputCell, seTemplatePaths } from "../lib/anchors/se.js";
+import { isTaxiInputCell } from "../lib/anchors/taxi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
+const TAXI_XLSX = resolve(ROOT, "examples", "taxi-latest", "GB_Accounts_Taxi_Driver.xlsx");
 
 let original;
 let originalMap;
+let originalSet;
 
 beforeAll(async () => {
   original = readFileSync(BST_XLSX);
   originalMap = bstExtractionMap();
   await extractBstTransactions(original, originalMap);
+  originalSet = await workbookSetFromWorkbook("workbook.xlsx", original);
 });
 
 // One sheet's XML out of a workbook buffer.
@@ -75,12 +83,13 @@ async function overtypedAfterPatch(sheet, cellRef, rewrite = stripFormula) {
   const buffer = await patchedCopy(sheet, cellRef, rewrite);
   const map = bstExtractionMap();
   await extractBstTransactions(buffer, map);
-  return overtypedCells(buffer, { extractionMap: map });
+  const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+  return overtypedCells(set, { extractionMap: map });
 }
 
 describe("overtyped.json on an untouched package", () => {
   it("reports nothing for a package the generator just produced", async () => {
-    expect(await overtypedCells(original, { extractionMap: originalMap })).toEqual({});
+    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).toEqual({});
   });
 
   // The template prints prompt formulas across the customer's own entry
@@ -98,7 +107,7 @@ describe("overtyped.json on an untouched package", () => {
     expect(upload.get(cellRef)?.hasF ?? false, `${sheet}!${cellRef} still computes in the fixture`).toBe(false);
 
     expect(isBstInputCell(sheet, cellRef)).toBe(true);
-    expect(await overtypedCells(original, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
+    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
   });
 
   // The Debtors & Creditors sheet takes two figures and computes the rest.
@@ -251,7 +260,7 @@ describe("attribution agrees with what CELL_MAP and the extraction map state", (
     for (const [index, record] of recorded.entries()) {
       expect(record.entryNumber).toBe(lines[index].entryNumber);
       expect(record.sourceJournalID).toBe(lines[index].sourceJournalID);
-      const found = originalMap.lineForCell(record.sheet, record.cells.postingDate);
+      const found = originalMap.lineForCell(null, record.sheet, record.cells.postingDate);
       expect(found.entryNumber).toBe(record.entryNumber);
       expect(found.readAs).toBe("postingDate");
     }
@@ -263,43 +272,44 @@ describe("attribution agrees with what CELL_MAP and the extraction map state", (
     const cells = parseCells(xml);
     expect(cells.has(record.cells.postingDate)).toBe(true);
     expect(cells.has(record.cells.amount)).toBe(true);
-    expect(originalMap.lineForCell(record.sheet, record.cells.amount).readAs).toBe("amount");
-    expect(originalMap.lineForCell(record.sheet, `Z${record.row}`).readAs).toBe(null);
+    expect(originalMap.lineForCell(null, record.sheet, record.cells.amount).readAs).toBe("amount");
+    expect(originalMap.lineForCell(null, record.sheet, `Z${record.row}`).readAs).toBe(null);
   });
 
   it("has no line for a row that produced none", () => {
-    expect(originalMap.lineForCell("SalesApr", "A3")).toBeUndefined();
-    expect(originalMap.lineForCell("Profit & Loss Acc", "C24")).toBeUndefined();
+    expect(originalMap.lineForCell(null, "SalesApr", "A3")).toBeUndefined();
+    expect(originalMap.lineForCell(null, "Profit & Loss Acc", "C24")).toBeUndefined();
   });
 });
 
 describe("the extraction map's cell-to-field half", () => {
   it("names the Business Details cells the book's entity information is read from", () => {
     const map = bstExtractionMap();
-    expect(map.fieldForCell("Business Details", "C5")).toEqual({
+    expect(map.fieldForCell(null, "Business Details", "C5")).toEqual({
+      file: null,
       sheet: "Business Details",
       cell: "C5",
       field: "entityInformation.organizationIdentifier",
     });
-    expect(map.fieldForCell("Business Details", "C12").field).toBe("entityInformation.organizationPostcode");
+    expect(map.fieldForCell(null, "Business Details", "C12").field).toBe("entityInformation.organizationPostcode");
   });
 
   it("names the ledger, stock and Admin cells too", () => {
     const map = bstExtractionMap();
-    expect(map.fieldForCell("Debtors & Creditors", "C3").field).toBe("openingBalances.tradeDebtors");
-    expect(map.fieldForCell("Debtors & Creditors", "F3").field).toBe("openingBalances.tradeCreditors");
-    expect(map.fieldForCell("Debtors & Creditors", "C5")).toBeUndefined();
-    expect(map.fieldForCell("PurchasesStock", "D30").field).toBe("stock.closingValue");
-    expect(map.fieldForCell("Admin", "B23").field).toMatch(/^tax /);
-    expect(map.fieldForCell("Admin", "G21").field).toMatch(/mileage rate/);
+    expect(map.fieldForCell(null, "Debtors & Creditors", "C3").field).toBe("openingBalances.tradeDebtors");
+    expect(map.fieldForCell(null, "Debtors & Creditors", "F3").field).toBe("openingBalances.tradeCreditors");
+    expect(map.fieldForCell(null, "Debtors & Creditors", "C5")).toBeUndefined();
+    expect(map.fieldForCell(null, "PurchasesStock", "D30").field).toBe("stock.closingValue");
+    expect(map.fieldForCell(null, "Admin", "B23").field).toMatch(/^tax /);
+    expect(map.fieldForCell(null, "Admin", "G21").field).toMatch(/mileage rate/);
   });
 
   it("has nothing to say about a cell no extractor reads", () => {
-    expect(bstExtractionMap().fieldForCell("Profit & Loss Acc", "C24")).toBeUndefined();
+    expect(bstExtractionMap().fieldForCell(null, "Profit & Loss Acc", "C24")).toBeUndefined();
   });
 
   it("counts every cell it names as an input cell", () => {
-    for (const { sheet, cell } of bstBookFieldCells()) {
+    for (const { sheet, cell } of bookFieldCells("bst")) {
       expect(isBstInputCell(sheet, cell), `${sheet}!${cell}`).toBe(true);
     }
   });
@@ -317,6 +327,127 @@ describe("the extraction map's cell-to-field half", () => {
   });
 });
 
+// SE's own templates and input-cell predicate (app/lib/anchors/se.js), which
+// this proves the sidecar's file-keyed result shape against.
+describe("an SE upload's overtyped keys", () => {
+  it("keys an SE upload's entries by file, sheet and cell", async () => {
+    const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+    const hubBytes = readFileSync(resolve(SE_PACKAGE_DIR, "Financialaccounts.xlsx"));
+    const zip = await JSZip.loadAsync(hubBytes);
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("Profit & Loss Account");
+    const xml = await zip.file(sheetPath).async("string");
+    const element = xml.match(/<c r="B9"[^>]*(?:\/>|>[\s\S]*?<\/c>)/)?.[0];
+    expect(element, "Profit & Loss Account!B9 has no <c> element in the fixture").toBeTruthy();
+    zip.file(sheetPath, xml.replace(element, stripFormula(element)));
+    const patchedHub = await zip.generateAsync({ type: "uint8array" });
+
+    const packageZip = new JSZip();
+    for (const name of readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+      packageZip.file(name, name === "Financialaccounts.xlsx" ? patchedHub : readFileSync(resolve(SE_PACKAGE_DIR, name)));
+    }
+    const packageBytes = await packageZip.generateAsync({ type: "uint8array" });
+    const { workbookSetFromZipBytes } = await import("../lib/workbook-set.js");
+    const set = await workbookSetFromZipBytes(packageBytes);
+
+    const overtyped = await overtypedCells(set, { isInputCell: isSeInputCell, templates: await seTemplatePaths() });
+    expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
+    expect(overtyped["Financialaccounts.xlsx!Profit & Loss Account!B9"].kind).toBe("literal");
+  });
+});
+
+// Taxi's own predicate (app/lib/anchors/taxi.js) and its own baseline: unlike
+// BST and SE, examples/taxi-latest is itself the correct baseline for its own
+// tax year (books-interchange.js builds the real one fresh per book through
+// generateSpreadsheet -- see the "reports no overtypes" case in
+// books-interchange.test.js, which proves that wiring), so these cases patch
+// a copy and read it back against the untouched fixture.
+describe("a Taxi upload's overtyped keys", () => {
+  const taxiOriginal = readFileSync(TAXI_XLSX);
+
+  async function taxiPatchedCopy(sheet, cellRef, rewrite) {
+    const zip = await JSZip.loadAsync(taxiOriginal);
+    const sheetMap = await buildSheetMap(zip);
+    const path = sheetMap.get(sheet);
+    expect(path, `${sheet} not found in the fixture`).toBeTruthy();
+    const xml = await zip.file(path).async("string");
+    // Lazy on the shared attribute run: a self-closing shell (Taxi's own
+    // blank day-row cells, <c r="E5" s="361"/>, no <v> at all) has no "</c>"
+    // to anchor the greedy version's alternation on, so it over-runs into
+    // whichever cell happens to close with one next.
+    const element = xml.match(new RegExp(`<c r="${cellRef}"[^>]*?(?:/>|>[\\s\\S]*?</c>)`))?.[0];
+    expect(element, `${sheet}!${cellRef} has no <c> element in the fixture`).toBeTruthy();
+    const patched = xml.replace(element, rewrite(element));
+    expect(patched, `${sheet}!${cellRef} was not changed`).not.toBe(xml);
+    zip.file(path, patched);
+    return zip.generateAsync({ type: "nodebuffer" });
+  }
+
+  async function taxiOvertypedAfterPatch(sheet, cellRef, rewrite = stripFormula) {
+    const buffer = await taxiPatchedCopy(sheet, cellRef, rewrite);
+    const map = bstExtractionMap("taxi");
+    await extractTaxiTransactions(buffer, map);
+    const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+    return overtypedCells(set, {
+      extractionMap: map,
+      isInputCell: (file, taxiSheet, taxiCellRef) => isTaxiInputCell(taxiSheet, taxiCellRef),
+      templates: { "*": TAXI_XLSX },
+      reportLabels: taxiCellLabels(),
+    });
+  }
+
+  it("names a typed-over Sales week subtotal and nothing else, with no line to attribute it to", async () => {
+    expect(await taxiOvertypedAfterPatch("SalesMay", "E14")).toEqual({
+      "SalesMay!E14": {
+        kind: "literal",
+        templateFormula: "SUM(E5:E13)",
+        value: 0,
+        attribution: null,
+      },
+    });
+  });
+
+  it("names the Profit & Loss turnover cell with the reported figure it feeds", async () => {
+    const overtyped = await taxiOvertypedAfterPatch("Profit & Loss Acc", "B5");
+    expect(Object.keys(overtyped)).toEqual(["Profit & Loss Acc!B5"]);
+    expect(overtyped["Profit & Loss Acc!B5"].attribution).toEqual({
+      kind: "reportedFigure",
+      label: "Turnover (Total Fares)",
+      glMapping: "gl-cor:amount (salesTurnover)",
+    });
+  });
+
+  it("names a cleared Draft Tax calculation total as cleared, carrying the reported figure", async () => {
+    const emptied = (element) => element.replace(/>[\s\S]*<\/c>$/, "/>").replace(/\/><\/c>$/, "/>");
+    const overtyped = await taxiOvertypedAfterPatch("Draft Tax calculation", "E17", emptied);
+    expect(Object.keys(overtyped)).toEqual(["Draft Tax calculation!E17"]);
+    expect(overtyped["Draft Tax calculation!E17"].kind).toBe("cleared");
+    expect(overtyped["Draft Tax calculation!E17"].value).toBeNull();
+    expect(overtyped["Draft Tax calculation!E17"].attribution).toEqual({
+      kind: "reportedFigure",
+      label: "**Total Tax + NI**",
+      glMapping: "gl-cor:taxAmount (totalTaxNI)",
+    });
+  });
+
+  it("does not count a fare typed into a Sales day row's E as an overtype", async () => {
+    // SalesMay!E5 ships as an empty <c .../> shell with no <v> at all -- the
+    // template carries no formula there for any day row, so nothing in
+    // overtypedCells() ever visits it regardless of what the customer types.
+    const buffer = await taxiPatchedCopy("SalesMay", "E5", (element) => element.replace(/\/>$/, "><v>174</v></c>"));
+    const map = bstExtractionMap("taxi");
+    await extractTaxiTransactions(buffer, map);
+    const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+    const overtyped = await overtypedCells(set, {
+      extractionMap: map,
+      isInputCell: (file, sheet, cellRef) => isTaxiInputCell(sheet, cellRef),
+      templates: { "*": TAXI_XLSX },
+      reportLabels: taxiCellLabels(),
+    });
+    expect(overtyped).not.toHaveProperty("SalesMay!E5");
+  });
+});
+
 describe("the shipped Basic Sole Trader packages against the template", () => {
   const PACKAGES_DIR = join(ROOT, "packages");
   const shipped = existsSync(PACKAGES_DIR)
@@ -331,7 +462,8 @@ describe("the shipped Basic Sole Trader packages against the template", () => {
     "reports nothing for any year a customer can download",
     async () => {
       for (const file of shipped) {
-        expect(Object.keys(await overtypedCells(readFileSync(file))), file).toEqual([]);
+        const set = await workbookSetFromWorkbook("workbook.xlsx", readFileSync(file));
+        expect(Object.keys(await overtypedCells(set)), file).toEqual([]);
       }
     },
     120000,

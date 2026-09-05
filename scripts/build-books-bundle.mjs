@@ -22,9 +22,10 @@
 //   node scripts/build-books-bundle.mjs
 
 import { build } from "esbuild";
-import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "fs";
+import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
 import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -116,20 +117,31 @@ export default Ajv2020Stub;`,
   };
 }
 
-// Each entry is a path under examples/, as [directory, product]. The three
-// BST reconciliation fixtures the books page offers as examples (W1): the
-// full-ledger Precision Code subset, the BrickWork non-VAT subset and the
-// no-ledger mileage-route book.
-const EXAMPLE_BOOKS = [
-  ["precision-code-ltd", "bst"],
-  ["brickwork-pro", "bst-nonvat"],
-  ["sp-sixty-driving", "bst"],
-];
+// Each entry is a path under examples/, as [directory, product], read from
+// scripts/example-books.json. The three BST reconciliation fixtures the books
+// page offers as examples (W1): the full-ledger Precision Code subset, the
+// BrickWork non-VAT subset and the no-ledger mileage-route book. Taxi (T16) and
+// Ltd (T10) append their products' rows to the same file.
+let EXAMPLE_BOOKS = [];
 
 // The files the engine reads that are not the book itself: the tax year data
-// the save path applies, and the BST template with its meta. The two v2
-// schemas are left where they are — the site already publishes them at
-// /schema/, which is the root the resource loader names them under.
+// the save path applies, each product's templates with their meta, and the
+// generated examples.js. The two v2 schemas are left where they are — the site
+// already publishes them at /schema/, which is the root the resource loader names
+// them under.
+function generateExamplesJs() {
+  const examplesJson = JSON.parse(readFileSync(resolve(ROOT, "scripts", "example-books.json"), "utf8"));
+  const examplesJs = `window.DiyaGlExamples = ${JSON.stringify(examplesJson)};`;
+  writeFileSync(resolve(BOOKS_DIR, "examples.js"), examplesJs);
+
+  // Flatten the examples for copyRuntimeAssets: each product's array becomes [dir, product] pairs.
+  for (const [product, examples] of Object.entries(examplesJson)) {
+    for (const example of examples) {
+      EXAMPLE_BOOKS.push([example.dir, example.product]);
+    }
+  }
+}
+
 function copyRuntimeAssets() {
   rmSync(ASSETS_DIR, { recursive: true, force: true });
 
@@ -139,6 +151,14 @@ function copyRuntimeAssets() {
   const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name));
   for (const name of yearFiles) cpSync(resolve(dataIn, name), resolve(dataOut, name));
 
+  // The SE form layout (se-forms.js's own render data), fetched by the
+  // books page at runtime rather than bundled: books/products/se-forms.js
+  // reads it from books/assets/data/hmrc/form-layouts/se.json, the same
+  // path convention bundle-resources.js gives every other file under app/data.
+  const formLayoutsOut = resolve(dataOut, "hmrc", "form-layouts");
+  mkdirSync(formLayoutsOut, { recursive: true });
+  cpSync(resolve(ROOT, "app", "data", "hmrc", "form-layouts", "se.json"), resolve(formLayoutsOut, "se.json"));
+
   const templatesOut = resolve(ASSETS_DIR, "templates");
   mkdirSync(resolve(templatesOut, "bst"), { recursive: true });
   cpSync(resolve(ROOT, "app", "templates", "meta.toml"), resolve(templatesOut, "meta.toml"));
@@ -146,8 +166,17 @@ function copyRuntimeAssets() {
     cpSync(resolve(ROOT, "app", "templates", "bst", name), resolve(templatesOut, "bst", name));
   }
 
+  // The Self Employed set: nine workbooks and the meta that names them, 3.4
+  // MB the page reads only when a save asks for a template, not at load.
+  // The names come off meta.toml so the two cannot drift apart.
+  const seDir = resolve(ROOT, "app", "templates", "se");
+  const seMeta = parseTOML(readFileSync(resolve(seDir, "meta.toml"), "utf8"));
+  const seFiles = ["meta.toml", ...seMeta.template.files];
+  mkdirSync(resolve(templatesOut, "se"), { recursive: true });
+  for (const name of seFiles) cpSync(resolve(seDir, name), resolve(templatesOut, "se", name));
+
   // Example books, copied under the path the resource loader names them by:
-  // examples/<name>/<product>/{book.toml,lines.jsonl}. The probe page needs
+  // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
   // one; an example the page offers is added to this list.
   for (const example of EXAMPLE_BOOKS) {
     const out = resolve(ASSETS_DIR, "examples", ...example);
@@ -167,7 +196,7 @@ function copyRuntimeAssets() {
   mkdirSync(vendorOut, { recursive: true });
   cpSync(resolve(ROOT, "node_modules", "jszip", "dist", "jszip.min.js"), resolve(vendorOut, "jszip.min.js"));
 
-  return { yearFiles: yearFiles.length, examples: EXAMPLE_BOOKS.length };
+  return { yearFiles: yearFiles.length, seFiles: seFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
 const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
@@ -175,6 +204,7 @@ const LINES_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl
 
 async function main() {
   mkdirSync(ENGINE_DIR, { recursive: true });
+  mkdirSync(BOOKS_DIR, { recursive: true });
 
   const bookSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
   const linesSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
@@ -198,12 +228,15 @@ async function main() {
     define: { "process.env.NODE_ENV": '"production"' },
   });
 
+  generateExamplesJs();
   const assets = copyRuntimeAssets();
   const bytes = statSync(BUNDLE_FILE).size;
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
-  console.log(`  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.examples} example book(s)`);
+  console.log(
+    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, ${assets.examples} example book(s)`,
+  );
 }
 
 await main();

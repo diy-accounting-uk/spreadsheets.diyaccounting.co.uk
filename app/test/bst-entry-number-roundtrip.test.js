@@ -21,7 +21,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { saveBstWorkbook } from "../lib/bst-workbook.js";
+import { saveWorkbook } from "../lib/product-workbook.js";
 import { extractBstTransactions } from "../lib/xlsx-exporter.js";
 import { canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 
@@ -35,7 +35,7 @@ const EXAMPLE_BOOKS = [
 ];
 
 async function generateAndExtract(book, lines) {
-  const { workbook } = await saveBstWorkbook(book, lines);
+  const { workbook } = await saveWorkbook(book, lines);
   return extractBstTransactions(Buffer.from(workbook));
 }
 
