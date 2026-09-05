@@ -56,7 +56,7 @@ Trade: IT consultancy and software development
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
 | Income Tax | 40340 | 40339.8099999998 | -0.19000000019877916 | PASS |
 | NI Class 4 (lower) | 3732.6 | 3732.6226 | +0.02260000000023865 | PASS |
-| Total Tax + NI | 46017 | 46017.3669549998 | +0.36695499980123714 | PASS |
+| Total Tax + NI, less the CIS already deducted | 46017 | 46017.3669549998 | +0.36695499980123714 | PASS |
 | Tax: Personal allowance after taper | 1813.4916666670033 | 1813.49166666687 | -1.3324097380973399e-10 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
@@ -141,7 +141,7 @@ Trade: IT consultancy and software development
 | SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 0 | 0 | 0 | PASS |
 | SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back | 169510.316666667 | 169510.316666667 | 0 | PASS |
 | SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation | 169689.683333333 | 169689.683333333 | 0 | PASS |
-| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24 | 64000 | 64000 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 | 64000 | 64000 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 44657 | 44657 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 45021 | 45021 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.18 | 0.18 | 0 | PASS |
@@ -379,6 +379,32 @@ Trade: IT consultancy and software development
 | Purchases.xlsx Feb: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Mar: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Mar: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Apr: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Apr: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx May: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx May: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jun: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jun: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jul: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jul: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Aug: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Aug: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Sep: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Sep: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Oct: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Oct: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Nov: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Nov: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Dec: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Dec: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jan: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jan: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Feb: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Feb: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Mar: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Mar: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal | 0 | 0 | 0 | PASS |
+| SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal | 0 | 0 | 0 | PASS |
 | Wagesinterface apr C4 gross pay | 6748 | 6748 | 0 | PASS |
 | Wagesinterface apr D4 income tax | 800 | 800 | 0 | PASS |
 | Wagesinterface apr E4 employee NI | 296 | 296 | 0 | PASS |
@@ -759,6 +785,7 @@ Trade: IT consultancy and software development
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 150000 | 150000 | 0 | PASS |
 | Admin: NI Class 2 Weekly Rate = tax data | 3.15 | 3.15 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 6725 | 6725 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.0973 | 0.0973 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 11908 | 11908 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.0273 | 0.0273 | 0 | PASS |
@@ -861,14 +888,14 @@ Trade: IT consultancy and software development
 | Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 171,773.02 |
 | Add depreciation charged in the accounts | Profit & Loss Account!B34 | 13,740 |
 | Less grants, taxed as other business income below | Profit & Loss Account!B11 | -2,083.33 |
-| Less net loss for the year (box 21) | SE Short!O71 | 0 |
-| Less annual investment allowance (box 22) | SE Short!D80 | -52,500 |
-| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
-| Less other capital allowances (box 24) | SE Short!O80 | -11,500 |
-| Add balancing charges (box 25) | SE Short!O85 | 0 |
-| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
-| Add grants as other business income (box 29) | SE Short!O99 | 2,083.33 |
-| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| Less net loss for the year (box 22) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 23) | SE Short!D80 | -52,500 |
+| Less small-balance allowance (box 24) | SE Short!D85 | 0 |
+| Less other capital allowances (box 25) | SE Short!O80 | -11,500 |
+| Add balancing charges (box 26) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 27) | SE Short!D94 | 0 |
+| Add grants as other business income (box 30) | SE Short!O99 | 2,083.33 |
+| Less loss brought forward (box 29) | SE Short!O94 | 0 |
 | **Tax profit the bridge computes** | | **121,513.02** |
 | Tax profit the sheet carries | Income Tax!E5 | 121,513.02 |
 | **Residue** | | **0** |
@@ -921,7 +948,7 @@ Journal amounts include VAT at 20%.
 | Cost of Sales | 20,136.67 |
 | **Gross Profit** | 321,146.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Wages & Salaries | 92,735.73 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power | 13,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Premises Rent Rates Power | 13,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 950 |
 | &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 3,035 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 6,434.25 |
@@ -998,17 +1025,19 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
 | **Total expenses** | 155,770.32 |
 | **Net profit/loss** | 183,429.68 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 11,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 11,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 119,429.68 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 2,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 2,083.33 |
 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold |
 | **Net profit for tax calc** | 121,513.02 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 0 |
 
 ## Self Assessment (SA103F)
 
@@ -1103,6 +1132,7 @@ Journal amounts include VAT at 20%.
 | Higher Band Start | 37,701 |
 | Higher Band End | 150,000 |
 | NI Class 2 Weekly Rate | 3.15 |
+| NI Class 2 Small Profits Threshold | 6,725 |
 | NI Class 4 Lower Rate | 0.1 |
 | NI Class 4 Lower Limit | 11,908 |
 | NI Class 4 Upper Rate | 0.03 |
@@ -1196,7 +1226,7 @@ Journal amounts include VAT at 20%.
 | B17 | Cost of Sales | 20136.6666666667 | gl-cor:amount (costOfSales) |
 | B19 | **Gross Profit** | 321146.666666666 | gl-cor:amount (grossProfit) |
 | B21 | Wages & Salaries | 92735.7333333333 | accounts.purchases.5101 |
-| B22 | Light, Heat, Power | 13200 | accounts.purchases.5201 |
+| B22 | Premises Rent Rates Power | 13200 | accounts.purchases.5201 |
 | B23 | Repairs & Maintenance | 950 | accounts.purchases.5400 |
 | B24 | General Admin | 3035 | accounts.purchases.5501 |
 | B25 | Motor Expenses | 6434.25 | accounts.purchases.5601 |
@@ -1514,17 +1544,19 @@ Journal amounts include VAT at 20%.
 | O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
 | O64 | **Total expenses** | 155770.316666667 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 183429.683333333 | gl-cor:amount (sa103s.netProfit) |
-| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
+| O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 52500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
-| O80 | Other capital allowances (box 24) | 11500 | tax.capitalAllowances.wda (sa103s) |
-| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
+| O80 | Other capital allowances (box 25) | 11500 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 119429.683333333 | gl-cor:amount (sa103s.taxableProfit) |
-| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
-| O99 | Grants as other business income (box 29) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
+| O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Grants as other business income (box 30) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | A33 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
 | D106 | **Net profit for tax calc** | 121513.016666666 | gl-cor:amount (sa103s.profitForTax) |
+| D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
+| O124 | Deductions by contractors (box 38) | 0 | diya-gl:cisDeduction (sa103s) |
 
 ### SE Full
 
@@ -1656,6 +1688,7 @@ Journal amounts include VAT at 20%.
 | N12 | Higher Band Start | 37701 |  |
 | N13 | Higher Band End | 150000 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 3.15 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 6725 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.0973 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 11908 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.0273 | tax.nationalInsurance.class4UpperRate |
@@ -1712,6 +1745,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5566.66666666667 |  |
 | I1 |  | 27833.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!May
 
@@ -1720,6 +1755,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5486.66666666667 |  |
 | I1 |  | 27433.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Jun
 
@@ -1728,6 +1765,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5866.66666666667 |  |
 | I1 |  | 29333.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Jul
 
@@ -1736,6 +1775,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Aug
 
@@ -1744,6 +1785,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 6003.33333333333 |  |
 | I1 |  | 30016.6666666667 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Sep
 
@@ -1752,6 +1795,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Oct
 
@@ -1760,6 +1805,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 8426.66666666667 |  |
 | I1 |  | 42133.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Nov
 
@@ -1768,6 +1815,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5886.66666666667 |  |
 | I1 |  | 29433.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Dec
 
@@ -1776,6 +1825,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5466.66666666667 |  |
 | I1 |  | 27333.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Jan
 
@@ -1784,6 +1835,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5906.66666666667 |  |
 | I1 |  | 29533.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Feb
 
@@ -1792,6 +1845,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5726.66666666667 |  |
 | I1 |  | 28633.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!Mar
 
@@ -1800,6 +1855,8 @@ Journal amounts include VAT at 20%.
 | H1 |  | 5226.66666666667 |  |
 | I1 |  | 26133.3333333333 |  |
 | H2 |  | 20 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Purchases.xlsx!OpeningCreditors
 
