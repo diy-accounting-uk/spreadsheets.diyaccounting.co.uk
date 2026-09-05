@@ -902,6 +902,7 @@ export const CELL_MAP = [
   ["SE Short", "O99",  "Grants as other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "O106", "Net loss for tax calc",          "gl-cor:amount (sa103s.lossForTax)",         "Self Assessment (SA103S)", 1],
   ["SE Short", "D124", "Total loss to carry forward (box 35)", "gl-cor:amount (sa103s.lossCarriedForward)", "Self Assessment (SA103S)", 1],
   ["SE Short", "O124", "Deductions by contractors (box 38)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
   // ── SE Full (SA103F) ──
@@ -1667,22 +1668,35 @@ export function fmt(v, unit = "money") {
 export function profitBridge(results) {
   const pl = results["Profit & Loss Account"];
   const seShort = results["SE Short"];
+  const seFull = results["SE Full"];
   const tax = results[TAX_SHEET];
   if (!pl || !seShort || !tax) return null;
 
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // A trading loss cannot turn the taxable profit negative -- there is no
+  // such thing as negative tax -- so the chain above floors this subtotal at
+  // nil and carries the loss forward through SE Full's own box 65 instead
+  // (verified against the template: 'SE Full'!O174 = IF((D129+D174-O169)>0,
+  // ...,IF((-O129+D174-O169)>0,...,0)) and O179 = IF(O174>0,0,...the same
+  // subtotal negated...), so O174 minus O179 restates the unfloored subtotal
+  // exactly, in both directions, without the bridge floor having to be
+  // rebuilt from the very rows it is meant to prove. Reading it off the
+  // sheet, rather than deriving it from the rows above, keeps the row-side
+  // figures free to diverge from it if one of them is wrong.
   const rows = [
     { label: "Profit before tax per the profit and loss account", cell: "Profit & Loss Account!B39", value: num(pl.B39) },
     { label: "Add depreciation charged in the accounts", cell: "Profit & Loss Account!B34", value: num(pl.B34) },
     { label: "Less grants, taxed as other business income below", cell: "Profit & Loss Account!B11", value: -num(pl.B11) },
-    { label: "Less net loss for the year (box 22)", cell: "SE Short!O71", value: -num(seShort.O71) },
     { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
     { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
     { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
     { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
     { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
+    { label: "Add back the year's loss, carried forward rather than reducing tax below nil", cell: "SE Full!O179", value: num(seFull?.O179) },
     { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
+    { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
@@ -2062,10 +2076,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(seShort.O64),
         num(pl.B17) + num(pl.B35) - plDepreciation,
       );
+      // D71 only ever carries a profit (verified against the template: D71 =
+      // IF((D38+O38-O64)>=0,D38+O38-O64,0)) -- a loss-making year floors it
+      // at nil and states the loss in O71 instead, so the identity has to be
+      // clamped the same way or a loss year fails it on the sheet's own
+      // design rather than on a defect.
       check(
         "SA103S: net profit = turnover + other business income - total expenses",
         num(seShort.D71),
-        num(seShort.D38) + num(seShort.O38) - num(seShort.O64),
+        Math.max(0, num(seShort.D38) + num(seShort.O38) - num(seShort.O64)),
+      );
+      // O71's mirror identity (verified against the template: O71 =
+      // IF((D38+O38-O64)<0,O64-D38-O38,0)), so a loss year still has a live
+      // check on the same figure rather than the clamp above passing on 0=0.
+      check(
+        "SA103S: net loss = total expenses - turnover - other business income",
+        num(seShort.O71),
+        Math.max(0, num(seShort.O64) - num(seShort.D38) - num(seShort.O38)),
       );
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
 
@@ -2128,7 +2155,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
 
       const expectedForecastTax = calculateExpectedTax(num(forecast.C39), taxData);
-      check("Forecast: personal allowance after taper", num(forecast.C40), expectedForecastTax.personal_allowance);
+      // C40 = IF(C39<=0,0,MAX(0,Admin!N4-MAX(0,C39-Admin!N5)/2)): on a loss
+      // year there is no taxable profit to set an allowance against, so the
+      // sheet floors it at nil rather than showing the allowance unused.
+      // calculateExpectedTax has no such floor, so the comparison applies it.
+      check(
+        "Forecast: personal allowance after taper",
+        num(forecast.C40),
+        num(forecast.C39) <= 0 ? 0 : expectedForecastTax.personal_allowance,
+      );
       check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
       check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
       check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
