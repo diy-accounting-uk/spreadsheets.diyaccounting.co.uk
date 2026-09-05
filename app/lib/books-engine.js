@@ -12,6 +12,7 @@
 // Reading a populated workbook back into diya-gl data.
 export {
   extractBstTransactions,
+  extractTaxiTransactions,
   extractMetadata,
   bstExtractionMap,
   bookFieldCells,
@@ -26,10 +27,11 @@ export {
 // and the one error class every product's table throws.
 export { validateAnchors, AnchorError } from "./anchors/run.js";
 export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
+export { validateTaxiAnchors } from "./anchors/taxi.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset, resolveBstPurchaseCodeMap } from "./diya-gl-loader.js";
-export { BST_SALES_ACCOUNTS } from "./scenario-extractor.js";
+export { BST_SALES_ACCOUNTS, TAXI_PURCHASE_CODE_MAP } from "./scenario-extractor.js";
 
 // Validating it.
 export { validateBook, validateLines, useSchemas, loadSchemasFrom } from "./diya-gl-schema.js";
@@ -97,6 +99,10 @@ export {
   HUB_FILE,
 } from "./link-caches.js";
 
+// The Taxi Sales tabs' own week grid: the layout the takings view groups a
+// book's fares through, and the one the writer lays them out on.
+export { generateTaxYearWeeks, groupWeeksIntoMonths } from "./generator.js";
+
 // The checks and the report shape.
 export {
   reportSections,
@@ -125,6 +131,8 @@ export {
   changeLinePostingDate,
   changeLineAccount,
   changeLineBankAccount,
+  changeLineDetail,
+  changeLineQuantity,
 } from "./diya-gl-edits.js";
 
 // The book checks and warnings over D itself, and their fix-it helpers.

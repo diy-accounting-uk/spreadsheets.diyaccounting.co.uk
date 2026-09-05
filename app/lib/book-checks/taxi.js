@@ -81,7 +81,7 @@ function fareDayNoMilesWarning(ctx) {
       : null,
     offenders: offenders.map(offenderOf),
   };
-  if (warn) result.helper = { id: "book-taxi-fare-miles", label: "Enter the day's miles", kind: "focus" };
+  if (warn) result.helper = { id: "book-taxi-fare-miles", label: "Enter the day's miles", kind: "focus", field: "miles" };
   return result;
 }
 
