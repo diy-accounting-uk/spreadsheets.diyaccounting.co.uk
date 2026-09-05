@@ -1,0 +1,1078 @@
+{
+  "source": {
+    "csv": "sa103f_mapping_v3.csv",
+    "url": "https://github.com/hmrc/income-tax-mtd-changelog/blob/main/mapping/mapping-csv-files.md",
+    "csvUrl": "https://raw.githubusercontent.com/hmrc/income-tax-mtd-changelog/main/mapping/csv/sa103f_mapping_v3.csv",
+    "read": "2026-09-04"
+  },
+  "api": {
+    "name": "Self Employment Business API",
+    "version": "5.0",
+    "years": {
+      "2023-24": {
+        "quarterly": "period-summary",
+        "annual": "annual-submission"
+      },
+      "2024-25": {
+        "quarterly": "period-summary",
+        "annual": "annual-submission",
+        "fieldsAdded": [
+          "adjustments.transitionProfitAmount",
+          "adjustments.transitionProfitAccelerationAmount"
+        ]
+      },
+      "2025-26": {
+        "quarterly": "cumulative-period-summary",
+        "annual": "annual-submission",
+        "fieldsGone": [
+          "allowances.zeroEmissionsGoodsVehicleAllowance",
+          "allowances.electricChargePointAllowance"
+        ]
+      },
+      "2026-27": {
+        "quarterly": "cumulative-period-summary",
+        "annual": "annual-submission",
+        "fieldsGone": [
+          "adjustments.overlapReliefUsed"
+        ],
+        "fieldsAdded": [
+          {
+            "field": "adjustments.adjustmentToProfitsForClass4",
+            "status": "test only (flag r21_adjustment_to_profits_for_class4_docs)"
+          },
+          {
+            "field": "allowances.firstYearAllowanceOnPlantAndMachinery",
+            "status": "test only (flag r22_fya_docs)"
+          }
+        ]
+      }
+    }
+  },
+  "boxes": [
+    {
+      "form": "SA103F",
+      "box": "0",
+      "label": "Your name / Your Unique Taxpayer Reference (UTR)",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "1",
+      "label": "Business name - unless it's in your own name",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "2",
+      "label": "Description of business",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "3",
+      "label": "First line of your business address - unless you work from home",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "4",
+      "label": "Postcode of your business address",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "5",
+      "label": "If the details in boxes 1, 2, 3 or 4 have changed in the last 12 months, put 'X' in the box and give details in the 'Any other information' box",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "6Q",
+      "label": "Did this business start after 5 April 2025?",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "6",
+      "label": "If you answered ‘Yes’ in box 6Q, enter the date the business started",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "7Q",
+      "label": "Did this business cease after 5 April 2025 but before 6 April 2026?",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "7",
+      "label": "If your business ceased after 5 April 2022 but before 6 April 2023, enter the final date of trading",
+      "cell": null,
+      "reason": "no API field",
+      "caveat": "the CSV's own label text still quotes 2022-23; the field path is current, only the label wording is stale"
+    },
+    {
+      "form": "SA103F",
+      "box": "8",
+      "label": "Date your books or accounts start - the beginning of your accounting period",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "9",
+      "label": "If you answered ‘Yes’ in box 7Q, enter the final date of trading",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "10",
+      "label": "If you used traditional accounting rather than cash basis to calculate your income and expenses, put 'X' in the box",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "13",
+      "label": "If special arrangements apply, put 'X' in the box",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "14",
+      "label": "If you provided the information about your 2025-26 profit on last year's tax return, put 'X' in the box",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "15",
+      "label": "Your turnover - the takings, fees, sales or money earned by your business",
+      "cell": "SE Full!D55",
+      "field": "periodIncome.turnover",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "16",
+      "label": "Any other business income not included in box 15",
+      "cell": "SE Full!O55",
+      "field": "periodIncome.other",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "16.1",
+      "label": "Trading income allowance",
+      "cell": null,
+      "field": "allowances.tradingIncomeAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "17",
+      "label": "Cost of goods bought for resale or goods used",
+      "cell": "SE Full!D66",
+      "field": "periodExpenses.costOfGoods",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "18",
+      "label": "Construction industry - payments to subcontractors",
+      "cell": "SE Full!D70",
+      "field": "periodExpenses.paymentsToSubcontractors",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "19",
+      "label": "Wages, salaries and other staff costs",
+      "cell": "SE Full!D74",
+      "field": "periodExpenses.wagesAndStaffCosts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "20",
+      "label": "Car, van and travel expenses",
+      "cell": "SE Full!D78",
+      "field": "periodExpenses.carVanTravelExpenses",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "21",
+      "label": "Rent, rates, power and insurance costs",
+      "cell": "SE Full!D82",
+      "field": "periodExpenses.premisesRunningCosts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "22",
+      "label": "Repairs and maintenance of property and equipment",
+      "cell": "SE Full!D86",
+      "field": "periodExpenses.maintenanceCosts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "23",
+      "label": "Phone, fax, stationery and other office costs",
+      "cell": "SE Full!D90",
+      "field": "periodExpenses.adminCosts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "24",
+      "label": "Advertising and business entertainment costs",
+      "cell": "SE Full!D94",
+      "field": "periodExpenses.advertisingCosts | periodExpenses.businessEntertainmentCosts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "25",
+      "label": "Interest on bank and other loans",
+      "cell": "SE Full!D98",
+      "field": "periodExpenses.interestOnBankOtherLoans",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "26",
+      "label": "Bank, credit card and other financial charges",
+      "cell": "SE Full!D102",
+      "field": "periodExpenses.financeCharges",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "27",
+      "label": "Irrecoverable debts written off",
+      "cell": "SE Full!D106",
+      "field": "periodExpenses.irrecoverableDebts",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "28",
+      "label": "Accountancy, legal and other professional fees",
+      "cell": "SE Full!D110",
+      "field": "periodExpenses.professionalFees",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "29",
+      "label": "Depreciation and loss or profit on sale of assets",
+      "cell": "SE Full!D114",
+      "field": "periodExpenses.depreciation",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "30",
+      "label": "Other business expense",
+      "cell": "SE Full!D118",
+      "field": "periodExpenses.otherExpenses",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "31",
+      "label": "Total expenses",
+      "cell": "SE Full!D122",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV carries a second box 31 row mapping it to periodExpenses.consolidatedExpenses (the consolidatedExpenses route, used instead of the itemised total when turnover is under the VAT threshold)"
+    },
+    {
+      "form": "SA103F",
+      "box": "32",
+      "label": "Cost of goods bought for resale or goods used",
+      "cell": null,
+      "field": "periodDisallowableExpenses.costOfGoodsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "33",
+      "label": "Construction industry - payments to subcontractors",
+      "cell": null,
+      "field": "periodDisallowableExpenses.paymentsToSubcontractorsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "34",
+      "label": "Wages, salaries and other staff costs",
+      "cell": null,
+      "field": "periodDisallowableExpenses.wagesAndStaffCostsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "35",
+      "label": "Car, van and travel expenses",
+      "cell": null,
+      "field": "periodDisallowableExpenses.carVanTravelExpensesDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "36",
+      "label": "Rent, rates, power and insurance costs",
+      "cell": null,
+      "field": "periodDisallowableExpenses.premisesRunningCostsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "37",
+      "label": "Repairs and maintenance of property and equipment",
+      "cell": null,
+      "field": "periodDisallowableExpenses.maintenanceCostsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "38",
+      "label": "Phone, fax, stationery and other office costs",
+      "cell": null,
+      "field": "periodDisallowableExpenses.adminCostsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "39",
+      "label": "Advertising and business entertainment costs",
+      "cell": null,
+      "field": "periodDisallowableExpenses.advertisingCostsDisallowable | periodDisallowableExpenses.businessEntertainmentCostsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "40",
+      "label": "Interest on bank and other loans",
+      "cell": null,
+      "field": "periodDisallowableExpenses.interestOnBankOtherLoansDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "41",
+      "label": "Bank, credit card and other financial charges",
+      "cell": null,
+      "field": "periodDisallowableExpenses.financeChargesDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "42",
+      "label": "Irrecoverable debts written off",
+      "cell": null,
+      "field": "periodDisallowableExpenses.irrecoverableDebtsDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "43",
+      "label": "Accountancy, legal and other professional fees",
+      "cell": null,
+      "field": "periodDisallowableExpenses.professionalFeesDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "44",
+      "label": "Depreciation and loss or profit on sale of assets",
+      "cell": "SE Full!O114",
+      "field": "periodDisallowableExpenses.depreciationDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "45",
+      "label": "Other business expense",
+      "cell": null,
+      "field": "periodDisallowableExpenses.otherExpensesDisallowable",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "46",
+      "label": "Total disallowable expenses",
+      "cell": "SE Full!O122",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "47",
+      "label": "Net profit - if your business income is more than your expenses",
+      "cell": "SE Full!D129",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "48",
+      "label": "Or, net loss - if your expenses are more than your business income",
+      "cell": "SE Full!O129",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "49",
+      "label": "Annual Investment Allowance",
+      "cell": "SE Full!D139",
+      "field": "allowances.annualInvestmentAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "50",
+      "label": "Capital allowances at 18% on equipment, including cars with lower CO2 emissions",
+      "cell": "SE Full!D144",
+      "field": "allowances.capitalAllowanceMainPool | allowances.capitalAllowanceSingleAssetPool",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "51",
+      "label": "Capital allowances at 6% on equipment, including cars with higher CO2 emissions",
+      "cell": null,
+      "field": "allowances.capitalAllowanceSpecialRatePool | allowances.capitalAllowanceSingleAssetPool",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "52",
+      "label": "Zero-emission goods vehicle allowance",
+      "cell": null,
+      "field": "allowances.zeroEmissionsGoodsVehicleAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "52.1",
+      "label": "Zero-emission car allowance",
+      "cell": null,
+      "field": "allowances.zeroEmissionsCarAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "53",
+      "label": "The Structures and Buildings Allowance",
+      "cell": null,
+      "field": "allowances.structuredBuildingAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "53.1",
+      "label": "Freeport Structures and Buildings Allowance",
+      "cell": null,
+      "field": "allowances.enhancedStructuredBuildingAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "54",
+      "label": "Electric charge-point allowance",
+      "cell": null,
+      "field": "allowances.enhancedCapitalAllowance | allowances.electricChargePointAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "55",
+      "label": "100% and other enhanced capital allowances",
+      "cell": "SE Full!O144",
+      "field": "allowances.enhancedCapitalAllowance | allowances.businessPremisesRenovationAllowance",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "56",
+      "label": "Allowances on sale or cessation of business use (where you've disposed of assets for less than their tax value)",
+      "cell": "SE Full!O149",
+      "field": "allowances.allowanceOnSales",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "57",
+      "label": "Total capital allowances",
+      "cell": "SE Full!O154",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "58",
+      "label": "Not in use",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "59",
+      "label": "Balancing charge on sales of assets or on the cessation of business use (including where Business Premises Renovation Allowance has been claimed)",
+      "cell": "SE Full!O160",
+      "field": "adjustments.balancingChargeOther | adjustments.balancingChargeBpra",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "60",
+      "label": "Goods and services for your own use",
+      "cell": "SE Full!D169",
+      "field": "adjustments.goodsAndServicesOwnUse",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "61",
+      "label": "Total additions to net profit or deductions from net loss",
+      "cell": "SE Full!D174",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "62",
+      "label": "Income, receipts and other profits included in business income or expenses but not taxable as business profits",
+      "cell": null,
+      "field": "adjustments.includedNonTaxableProfits",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "63",
+      "label": "Total deductions from net profit or additions to net loss",
+      "cell": "SE Full!O169",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "64",
+      "label": "Net business profit for tax purposes",
+      "cell": "SE Full!O174",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "65",
+      "label": "Net business loss for tax purposes",
+      "cell": "SE Full!O179",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "68",
+      "label": "Adjustment where your accounting period ended before 31 March 2026 or where your accounting period was not 12 months long – if the adjustment needs to be taken off the profit figure, put a minus sign in the box",
+      "cell": null,
+      "field": "adjustments.basisAdjustment",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "69",
+      "label": "Overlap relief used this year",
+      "cell": null,
+      "field": "adjustments.overlapReliefUsed",
+      "route": "annual",
+      "caveat": "the CSV lists box 69 (overlapReliefUsed) as live even though the 2026 SA103F prints boxes 69 and 70 as not in use; the field is dropped from the API schema from 2026-27 (see api.years['2026-27'].fieldsGone)"
+    },
+    {
+      "form": "SA103F",
+      "box": "70",
+      "label": "Not in use",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "71",
+      "label": "Adjustment for change of accounting practice",
+      "cell": null,
+      "field": "adjustments.accountingAdjustment",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "72",
+      "label": "Averaging adjustment (only for farmers, market gardeners and creators of literary or artistic works)",
+      "cell": null,
+      "field": "adjustments.averagingAdjustment",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "73",
+      "label": "Adjusted profit for 2025-26",
+      "cell": "SE Full!O194",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "73.3",
+      "label": "Spread of the transition profit treated as arising in this tax year",
+      "cell": null,
+      "field": "adjustments.transitionProfitAmount | adjustments.transitionProfitAccelerationAmount",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "73.4",
+      "label": "Loss brought forward from earlier years set off against this year’s spread of the transition profit",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "74",
+      "label": "Loss brought forward from earlier years set off against this year's profits",
+      "cell": "SE Full!O199",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "75",
+      "label": "Any other business income-not included in Box 15, 16 or 60",
+      "cell": "SE Full!O204",
+      "field": "adjustments.outstandingBusinessIncome",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "76",
+      "label": "Total taxable profits from this business",
+      "cell": "SE Full!O210",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "76.1",
+      "label": "Amount claimed under the foreign income and gains (FIG) regime",
+      "cell": null,
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "77",
+      "label": "Adjusted loss for 2022-23 (see the working sheet in the notes)",
+      "cell": "SE Full!D219",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's own label text still quotes 2022-23; the field path is current, only the label wording is stale"
+    },
+    {
+      "form": "SA103F",
+      "box": "78",
+      "label": "Loss from this tax year set off against other income for 2025-26",
+      "cell": null,
+      "reason": "another API",
+      "otherApi": "Individual Losses — Create a Loss Claim: typeOfLoss.self-employment | typeOfClaim.carry-sideways"
+    },
+    {
+      "form": "SA103F",
+      "box": "79",
+      "label": "Loss to be carried back to previous year(s) and set off against income (or capital gains)",
+      "cell": null,
+      "reason": "no API field",
+      "caveat": "HMRC's mapping marks this box 'Future Delivery' -- no field is published yet."
+    },
+    {
+      "form": "SA103F",
+      "box": "80",
+      "label": "Total loss to carry forward after all other set-offs - Including unused losses brought forward",
+      "cell": "SE Full!O224",
+      "reason": "calculated by HMRC"
+    },
+    {
+      "form": "SA103F",
+      "box": "81",
+      "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors - CIS subcontractors only",
+      "cell": "SE Full!D231",
+      "reason": "another API",
+      "otherApi": "CIS Deductions — Create CIS Deductions for Subcontractor: periodData.deductionAmount"
+    },
+    {
+      "form": "SA103F",
+      "box": "82",
+      "label": "Other tax taken off trading income",
+      "cell": null,
+      "field": "periodIncome.taxTakenOffTradingIncome",
+      "route": "quarterly"
+    },
+    {
+      "form": "SA103F",
+      "box": "83",
+      "label": "Equipment, machinery and vehicles",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "84",
+      "label": "Other fixed assets",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "85",
+      "label": "Stock and work in progress",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "86",
+      "label": "Trade debtors",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "87",
+      "label": "Bank or building society balances",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "88",
+      "label": "Cash in hand",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "89",
+      "label": "Other current assets and prepayments",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "90",
+      "label": "Total assets",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "91",
+      "label": "Trade creditors",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "92",
+      "label": "Loans and overdrawn bank account balances",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "93",
+      "label": "Other liabilities and accruals",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "94",
+      "label": "Net business assets",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "95",
+      "label": "Balance at start of period",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "96",
+      "label": "Net profit or loss",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "97",
+      "label": "Capital introduced",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "98",
+      "label": "Drawings",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "99",
+      "label": "Balance at end of period",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103F",
+      "box": "100",
+      "label": "If your total profits for 2025-26 are less than £6,845 and you choose to pay Class 2 NICs voluntarily, put 'X' in the box",
+      "cell": null,
+      "reason": "another API",
+      "otherApi": "Individuals Disclosures — Create and Amend Disclosures: class2Nics.class2VoluntaryContributions"
+    },
+    {
+      "form": "SA103F",
+      "box": "101",
+      "label": "If you're exempt from paying Class 4 NICs, put 'X' in the box",
+      "cell": null,
+      "field": "nonFinancials.class4NicsExemptionReason",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "102",
+      "label": "Adjustment to profits chargeable to Class 4 NICs",
+      "cell": null,
+      "field": "adjustmentToProfitsForClass4",
+      "route": "annual"
+    },
+    {
+      "form": "SA103F",
+      "box": "103",
+      "label": "Please give any other information in this space",
+      "cell": null,
+      "reason": "no API field"
+    },
+    {
+      "form": "SA103S",
+      "box": "9",
+      "label": "Your turnover, the takings, fees, sales or money earned by your business",
+      "cell": "SE Short!D38",
+      "field": "periodIncome.turnover",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "10",
+      "label": "Any other business income not included in box 9",
+      "cell": "SE Short!O38",
+      "field": "periodIncome.other",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "11",
+      "label": "Costs of goods bought for resale or goods used",
+      "cell": "SE Short!D46",
+      "field": "periodExpenses.costOfGoods",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "12",
+      "label": "Car, van and travel expenses, after private use proportion",
+      "cell": "SE Short!D51",
+      "field": "periodExpenses.carVanTravelExpenses",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "13",
+      "label": "Wages, salaries and other staff costs",
+      "cell": "SE Short!D55",
+      "field": "periodExpenses.wagesAndStaffCosts",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "14",
+      "label": "Rent, rates, power and insurance costs",
+      "cell": "SE Short!D60",
+      "field": "periodExpenses.premisesRunningCosts",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "15",
+      "label": "Repairs and maintenance of property and equipment",
+      "cell": "SE Short!D64",
+      "field": "periodExpenses.maintenanceCosts",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "16",
+      "label": "Accountancy, legal and other professional fees",
+      "cell": "SE Short!O46",
+      "field": "periodExpenses.professionalFees",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "17",
+      "label": "Interest and bank and credit card financial charges",
+      "cell": "SE Short!O51",
+      "field": "periodExpenses.interestOnBankOtherLoans",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "18",
+      "label": "Phone, fax, stationery and other office costs",
+      "cell": "SE Short!O55",
+      "field": "periodExpenses.adminCosts",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "19",
+      "label": "Other allowable business expenses",
+      "cell": "SE Short!O60",
+      "field": "periodExpenses.otherExpenses",
+      "route": "quarterly",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "20",
+      "label": "Total allowable expenses",
+      "cell": "SE Short!O64",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "21",
+      "label": "Net profit, if your business income is more than your expenses",
+      "cell": "SE Short!D71",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "22",
+      "label": "Or, net loss, if your expenses exceed your business income",
+      "cell": "SE Short!O71",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 21)'; the 2026 SA103S numbering (and the CSV's SSE22 ref) makes it box 22 -- the CELL_MAP label is wrong and needs fixing when T8 lands"
+    },
+    {
+      "form": "SA103S",
+      "box": "23",
+      "label": "Annual Investment Allowance",
+      "cell": "SE Short!D80",
+      "field": "allowances.annualInvestmentAllowance",
+      "route": "annual",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "24",
+      "label": "Allowance for small balance of unrelieved expenditure",
+      "cell": "SE Short!D85",
+      "reason": "no API field",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. no SSE ref for box 24 in the CSV (SSE24.1 exists but is the zero-emission car allowance, a different box); SA103F has no separate small-balance box either, so no field is guessed"
+    },
+    {
+      "form": "SA103S",
+      "box": "25",
+      "label": "Other capital allowances",
+      "cell": "SE Short!O80",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 24)'; the 2026 SA103S numbering makes it box 25 -- the CELL_MAP label is wrong and needs fixing when T8 lands. The CSV's SSE25 ref points to FSE57 'Total capital allowances', a total, not the 'other capital allowances' component the 2026 form prints at box 25 -- a mismatch the research note flags"
+    },
+    {
+      "form": "SA103S",
+      "box": "26",
+      "label": "Total balancing charges, for example where you have disposed of items for more than their tax value",
+      "cell": "SE Short!O85",
+      "field": "adjustments.balancingChargeOther | adjustments.balancingChargeBpra",
+      "route": "annual",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 25)'; the 2026 SA103S numbering makes it box 26 -- the CELL_MAP label is wrong and needs fixing when T8 lands"
+    },
+    {
+      "form": "SA103S",
+      "box": "27",
+      "label": "Goods and/or services for your own use",
+      "cell": "SE Short!D94",
+      "field": "adjustments.goodsAndServicesOwnUse",
+      "route": "annual",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "28",
+      "label": "Net business profit for tax purposes",
+      "cell": "SE Short!D99",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box"
+    },
+    {
+      "form": "SA103S",
+      "box": "29",
+      "label": "Loss brought forward from earlier years set off against this year's profits, up to the amount in box 28",
+      "cell": "SE Short!O94",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 28)'; the 2026 SA103S numbering makes it box 29 -- the CELL_MAP label is wrong and needs fixing when T8 lands. No SSE ref for box 29 in the CSV; matched to FSE74 by description"
+    },
+    {
+      "form": "SA103S",
+      "box": "30",
+      "label": "Any other business income not included in box 9 or box 10",
+      "cell": "SE Short!O99",
+      "field": "adjustments.outstandingBusinessIncome",
+      "route": "annual",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 29)'; the 2026 SA103S numbering makes it box 30 -- the CELL_MAP label is wrong and needs fixing when T8 lands. No SSE ref for box 30 in the CSV; matched to FSE75 by description"
+    },
+    {
+      "form": "SA103S",
+      "box": "38",
+      "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors - CIS subcontractors only",
+      "cell": "SE Short!O124",
+      "reason": "another API",
+      "otherApi": "CIS Deductions \u2014 Create CIS Deductions for Subcontractor: periodData.deductionAmount",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box 81. se.js's own CELL_MAP label reads '(box 37)' because that is the number printed beside the cell on the sheet; the 2026 SA103S numbering makes it box 38"
+    },
+    {
+      "form": "SA103S",
+      "box": "31",
+      "label": "Total taxable profits from this business",
+      "cell": "SE Short!D106",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. no SSE ref for box 31 in the CSV; matched to FSE76 'Total taxable profits from this business' by description"
+    }
+  ]
+}

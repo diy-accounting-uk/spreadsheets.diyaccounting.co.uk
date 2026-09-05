@@ -32,6 +32,8 @@ export default defineConfig({
         "**/books-layouts.browser.test.js",
         "**/books-headlines.browser.test.js",
         "**/books-formats.browser.test.js",
+        "**/books-shell.browser.test.js",
+        "**/books-se.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",

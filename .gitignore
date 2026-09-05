@@ -39,9 +39,10 @@ web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
-# Books engine bundle and the app/ files it reads (built by scripts/build-books-bundle.mjs)
+# Books engine bundle, examples, and the app/ files it reads (built by scripts/build-books-bundle.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/books/engine/
 web/spreadsheets.diyaccounting.co.uk/public/books/assets/
+web/spreadsheets.diyaccounting.co.uk/public/books/examples.js
 
 # Generated zip packages
 target/zips/

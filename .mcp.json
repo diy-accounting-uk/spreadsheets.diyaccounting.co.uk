@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "diya-gl-bst": {
+    "diya-gl": {
       "command": "node",
       "args": ["app/bin/diya-gl-mcp.js"]
     }

@@ -21,7 +21,7 @@
 
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync, spawn } from "child_process";
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -31,6 +31,7 @@ import { createMethods } from "../lib/mcp/server.js";
 import { createSession, loadIntoSession } from "../lib/mcp/diya-gl-tools.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { buildFileReportDocument } from "../bin/export.js";
+import { savePackageZip } from "../lib/product-workbook.js";
 import * as bst from "../products/bst.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -39,6 +40,20 @@ const NODE = process.execPath;
 const MCP_BIN = resolve(ROOT, "app", "bin", "diya-gl-mcp.js");
 const EXPORT_BIN = resolve(ROOT, "app", "bin", "export.js");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
+const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+const TAXI_SOURCE_DIR = resolve(ROOT, "examples", "taxi-latest");
+
+// A multi-file package zipped flat, the way a customer's own download ships
+// it -- every workbook in the directory, at the zip root.
+async function packageZipOf(dir, zipPath) {
+  const zip = new JSZip();
+  for (const name of readdirSync(dir).filter((file) => file.endsWith(".xlsx"))) {
+    zip.file(name, readFileSync(resolve(dir, name)));
+  }
+  const buffer = await zip.generateAsync({ type: "nodebuffer" });
+  writeFileSync(zipPath, buffer);
+  return zipPath;
+}
 
 const tempDirs = [];
 function tempDir(prefix) {
@@ -111,7 +126,7 @@ describe("diya-gl MCP server: stdio handshake", () => {
     const client = startMcpClient();
     try {
       const initResult = await client.request("initialize", { protocolVersion: "2025-06-18" });
-      expect(initResult.serverInfo.name).toBe("diya-gl-bst");
+      expect(initResult.serverInfo.name).toBe("diya-gl");
       expect(initResult.protocolVersion).toBe("2025-06-18");
 
       client.notify("notifications/initialized");
@@ -206,6 +221,133 @@ describe("save_workbook: the base64 payload decodes to a real workbook", () => {
       client.close();
     }
   }, 30000);
+
+  it("save_workbook format xlsx on an SE session answers with the single-file refusal and format zip returns nine entries under dirName, byte-identical to savePackageZip", async () => {
+    const zipDir = tempDir("mcp-save-se-zip-");
+    const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: zipPath });
+
+      await expect(client.request("tools/call", { name: "save_workbook", arguments: { format: "xlsx" } })).rejects.toThrow(
+        "a Self Employed book saves as its package zip, not as one workbook",
+      );
+
+      const saved = await client.callTool("save_workbook", { format: "zip" });
+      expect(saved.format).toBe("zip");
+
+      const bytes = Buffer.from(saved.base64, "base64");
+      const JSZip = (await import("jszip")).default;
+      const zip = await JSZip.loadAsync(bytes);
+      const entries = Object.keys(zip.files).filter((name) => !zip.files[name].dir);
+      expect(entries.length).toBe(9);
+      const dirName = saved.filename.replace(/\.zip$/, "");
+      for (const entry of entries) expect(entry.startsWith(`${dirName}/`)).toBe(true);
+
+      // The same book and lines the session loaded, run through
+      // savePackageZip directly in Node, produce the exact same zip bytes --
+      // the MCP tool adds no distortion of its own.
+      const { zip: directZip, filename: directFilename } = await savePackageZip(extracted.book, extracted.lines);
+      expect(saved.filename).toBe(directFilename);
+      expect(bytes.equals(Buffer.from(directZip))).toBe(true);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+});
+
+// ============================================================================
+// save_workbook on a Taxi book, seeded straight into the session
+// (loadIntoSession) rather than through extract_book: a raw Taxi workbook has
+// no anchor table yet (a separate row), so extract_book on one still refuses
+// it as a Basic Sole Trader mismatch. save_workbook itself needs no anchor
+// guard -- it writes from D, not from a workbook -- so it is fully exercised
+// here independently of that gap.
+// ============================================================================
+
+describe("save_workbook: a Taxi book", () => {
+  it("hands back Financialaccountsyearto050426.xlsx, recalculating on open", async () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const session = createSession();
+    loadIntoSession(session, book, lines);
+    const methods = createMethods(session);
+
+    const response = await methods["tools/call"]({ name: "save_workbook", arguments: {} });
+    const saved = response.structuredContent;
+
+    expect(saved.filename).toBe("Financialaccountsyearto050426.xlsx");
+    const bytes = Buffer.from(saved.base64, "base64");
+    const zip = await JSZip.loadAsync(bytes);
+    const workbookXml = await zip.file("xl/workbook.xml").async("string");
+    expect(workbookXml).toContain('fullCalcOnLoad="1"');
+  });
+
+  it("returns the named refusal for an off-grid fare", async () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offGridLine = {
+      // Sorts after every TXN-* entry (diya-gl-loader.js's sourceJournalID-
+      // then-entryNumber sort) so the book's own earliest fare stays the one
+      // extractTaxYearStart reads the tax year off, and this line alone lands
+      // off-grid.
+      entryNumber: "ZZZ-TEST-OFFGRID-1",
+      sourceJournalID: "sales",
+      postingDate: "2026-04-07",
+      accountMainID: "4000",
+      amount: 50,
+      documentType: "receipt",
+      detailComment: "Daily fares",
+      lineItemComment: "Gross fares taken",
+      taxCode: "OS",
+      taxRate: 0,
+      paymentMethod: "cash",
+    };
+    const session = createSession();
+    loadIntoSession(session, book, [...lines, offGridLine]);
+    const methods = createMethods(session);
+
+    await expect(methods["tools/call"]({ name: "save_workbook", arguments: {} })).rejects.toThrow("2026-04-07");
+  });
+});
+
+// ============================================================================
+// extract_book on a Taxi book, byte-for-byte with export.js --file. A raw
+// Taxi workbook (or its package zip) still runs into the same missing anchor
+// table as above, so this reaches --file's generic per-product plumbing
+// (product resolution, report.json's package field) through the diya-gl JSON
+// format instead, which carries its own declared product and skips the sniff.
+// ============================================================================
+
+describe("extract_book: a Taxi book, byte-for-byte with export.js --file", () => {
+  it("matches lines.jsonl and reports product taxi", async () => {
+    const sourceDirOutput = tempDir("mcp-extract-taxi-source-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "taxi", "--source-dir", TAXI_SOURCE_DIR, "--output-dir", sourceDirOutput], {
+      cwd: ROOT,
+    });
+
+    const book = parseTOML(readFileSync(resolve(sourceDirOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(sourceDirOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const jsonDir = tempDir("mcp-extract-taxi-json-src-");
+    const jsonPath = resolve(jsonDir, "book-diya-gl.json");
+    writeFileSync(jsonPath, writeBookJson(book, lines));
+
+    const cliFileOutput = tempDir("mcp-extract-taxi-cli-file-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "taxi", "--file", jsonPath, "--output-dir", cliFileOutput], { cwd: ROOT });
+    const cliLinesJsonl = readFileSync(resolve(cliFileOutput, "lines.jsonl"), "utf8");
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: jsonPath, product: "taxi" });
+      expect(extracted.report.package).toBe("taxi");
+      expect(extracted.linesJsonl).toBe(cliLinesJsonl);
+    } finally {
+      client.close();
+    }
+  }, 30000);
 });
 
 // ============================================================================
@@ -227,6 +369,26 @@ describe("extract_book: byte-for-byte with export.js --file", () => {
       expect(extracted.bookToml).toBe(cliBookToml);
       expect(extracted.linesJsonl).toBe(cliLinesJsonl);
       expect(extracted.overtyped).toEqual(cliOvertyped);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+
+  it("extract_book on the SE package zip returns product se and the CLI's own --file bytes", async () => {
+    const zipDir = tempDir("mcp-extract-se-zip-");
+    const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
+
+    const cliOutput = tempDir("mcp-extract-se-cli-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "se", "--file", zipPath, "--output-dir", cliOutput], { cwd: ROOT });
+    const cliBookToml = readFileSync(resolve(cliOutput, "book.toml"), "utf8");
+    const cliLinesJsonl = readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8");
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: zipPath });
+      expect(extracted.report.package).toBe("se");
+      expect(extracted.bookToml).toBe(cliBookToml);
+      expect(extracted.linesJsonl).toBe(cliLinesJsonl);
     } finally {
       client.close();
     }
@@ -416,7 +578,7 @@ const FIXTURES = [
     changePurchaseLine: { entryNumber: "TXN-0028", newAmount: 6450, delta: 450, categoryCell: "C7" },
     removeSaleLine: { entryNumber: "TXN-0018", amount: 1950, monthCell: "D4" },
     removePurchaseLine: { entryNumber: "TXN-0009", amount: 60, categoryCell: "C14" },
-    changeDateLine: { entryNumber: "TXN-0025", oldMonthCell: "E4", newPostingDate: "2025-06-10", newMonthCell: "F4", amount: 4200 },
+    changeDateLine: { entryNumber: "TXN-0025", oldMonthCell: "E4", newPostingDate: "2025-06-10", newMonthCell: "F4", amount: 3200 },
     changeAccountLine: { entryNumber: "TXN-0035", amount: 300, oldCategoryCell: "C17", newAccountMainID: "5501", newCategoryCell: "C14" },
   },
   {

@@ -96,17 +96,17 @@ describeCalc("Taxi Driver end-to-end: SP Sixty Driving scenario", () => {
 
   it("Purchases: the year's business miles reach the sheet", () => {
     expect(results.PurchasesMar.A1).toBe(scenario.expected.total_mileage);
-    expect(results.PurchasesMar.A1).toBe(20000);
+    expect(results.PurchasesMar.A1).toBe(21680);
   });
 
   it("Purchases: the claim is those miles banded at the approved rates", () => {
     const { higher_rate_limit: limit, higher_rate_pence: higher, lower_rate_pence: lower } = taxData.mileage;
-    expect(results.PurchasesMar.A2).toBeCloseTo(limit * higher + (20000 - limit) * lower, 2);
+    expect(results.PurchasesMar.A2).toBeCloseTo(limit * higher + (21680 - limit) * lower, 2);
   });
 
   it("P&L: the claim beats running the vehicle, so the claim is what is charged", () => {
     const pl = results["Profit & Loss Acc"];
-    expect(pl.B11).toBe(7000);
+    expect(pl.B11).toBe(7420);
     expect(results.PurchasesMar.I2).toBeLessThan(pl.B11);
     expect([pl.B6, pl.B7, pl.B8, pl.B9, pl.B10]).toEqual([0, 0, 0, 0, 0]);
     expect(pl.B12).toBe(pl.B11);

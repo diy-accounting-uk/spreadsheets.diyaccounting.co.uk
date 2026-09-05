@@ -129,21 +129,22 @@ describeCalc("Taxi income tax checks catch a broken workbook", () => {
   });
 
   // Hand-computed from the 2025-26 rates on the profit the SA103S carries:
-  // the allowance is nil because 144,140 is more than 25,140 above the
+  // the allowance is nil because 144,520 is more than 25,140 above the
   // 100,000 taper threshold; 37,700 at 20% is 7,540; 37,700 to 125,140 at 40%
-  // is 34,976; the remaining 19,000 at 45% is 8,550.
+  // is 34,976; the remaining 19,380 at 45% is 8,721. Class 4 is 2,262 on the
+  // band to 50,270 and 2% on the 94,250 above it.
   it("charges the Kestrel profit the statutory amount", () => {
     const tax = results[TAX_SHEET];
-    expect(tax.E5).toBeCloseTo(144140, 2);
+    expect(tax.E5).toBeCloseTo(144520, 2);
     expect(tax.E6).toBe(0);
-    expect(tax.E7).toBeCloseTo(144140, 2);
+    expect(tax.E7).toBeCloseTo(144520, 2);
     expect(tax.E8).toBeCloseTo(7540, 2);
     expect(tax.E9).toBeCloseTo(34976, 2);
-    expect(tax.E10).toBeCloseTo(8550, 2);
-    expect(tax.E11).toBeCloseTo(51066, 2);
+    expect(tax.E10).toBeCloseTo(8721, 2);
+    expect(tax.E11).toBeCloseTo(51237, 2);
     expect(tax.E14).toBeCloseTo(2262, 2);
-    expect(tax.E15).toBeCloseTo(1877.4, 2);
-    expect(tax.E17).toBeCloseTo(55205.4, 2);
+    expect(tax.E15).toBeCloseTo(1885, 2);
+    expect(tax.E17).toBeCloseTo(55384, 2);
   });
 
   it.each([
