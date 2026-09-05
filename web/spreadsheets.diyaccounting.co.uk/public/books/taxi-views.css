@@ -1,0 +1,211 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 DIY Accounting Ltd */
+
+/* books/taxi-views.css -- the rules the Taxi views in
+   products/taxi-views.js and products/taxi-forms.js need on top of the
+   shared books sheet. The page's own stylesheet (taxi.css) imports this
+   file alongside books.css; no colour here is new, every one comes from
+   the custom properties books.css already declares. */
+
+/* The mileage comparison: the sheet's own decision, laid out as the two
+   figures it weighs against each other and the three that follow from it. */
+.vehicle-comparison {
+  margin-bottom: 0.85rem;
+}
+
+.comparison-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.6rem 0;
+}
+
+.comparison-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.comparison-figure .figure-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.comparison-sentence {
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0;
+}
+
+.comparison-route-cell {
+  font-size: 0.75rem;
+  color: var(--pencil);
+  margin: 0.3rem 0 0;
+}
+
+.comparison-route-cell span {
+  font-family: var(--font-mono);
+}
+
+/* The workbook's own health check, folded away: the reader opens it when
+   they want it, and it is a summary of the forecast rather than part of
+   the statement above it. */
+details.health-check {
+  margin-top: 0.85rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  padding: 0.5rem 1rem;
+  max-width: 34rem;
+}
+
+details.health-check summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.3rem 0;
+}
+
+/* The four drawings weeks: a field the workbook has and the book has not,
+   shown at the table's own metrics so the row reads as a missing figure
+   rather than a nil one. */
+.readonly-input {
+  width: 5rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--hint);
+  font-family: var(--font-mono);
+  text-align: right;
+  padding: 0.15rem 0.35rem;
+}
+
+table.kv-table tr.derived td:last-child {
+  color: var(--ink-faint);
+}
+
+table.kv-table tr.below-the-line td {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pencil);
+  border-bottom: none;
+  padding-top: 0.6rem;
+}
+
+table.kv-table td.statement-indent {
+  padding-left: 0.9rem;
+}
+
+/* The register and the quarterly summary both sit at the shared register
+   metrics; the quarterly table is six columns wide, so its first column
+   stays put while the rest scroll. */
+table.vehicle-register td.num,
+table.quarterly-table td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.quarterly-scroll {
+  overflow-x: auto;
+}
+
+table.quarterly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+table.quarterly-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pencil);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.3rem 0.5rem;
+}
+
+table.quarterly-table thead th:not(:first-child) {
+  text-align: right;
+}
+
+table.quarterly-table tbody th {
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+table.quarterly-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+/* The tax computation and the SA103S: the SA110 line reference beside a
+   label, the parts a form box adds together, and the note saying where the
+   sheet files a figure the form asks for somewhere else. */
+.working-sheet-ref {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--hint);
+  margin-left: 0.4rem;
+}
+
+.box-parts {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--pencil);
+  margin-top: 0.15rem;
+}
+
+.class2-sentence {
+  flex: none;
+  max-width: 22rem;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.computation-note {
+  font-size: 0.75rem;
+  color: var(--pencil);
+  margin: 0.4rem 0 0;
+}
+
+.form-row.derived .form-amount-box {
+  border-style: dashed;
+}
+
+/* The margin column the drift walker also writes into: this note is a
+   sibling of .form-row-margin, never a child, so a drift mark on the same
+   row leaves it standing. */
+.form-row .sheet-placement {
+  flex: none;
+  width: 7.5rem;
+  font-size: 0.68rem;
+  color: var(--hint);
+}
+
+@media (max-width: 899px) and (orientation: portrait) {
+  .comparison-figures {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* The margin column has nowhere to sit beside a narrow row, so the note
+     and any drift mark drop under it instead. */
+  .form-row {
+    flex-wrap: wrap;
+  }
+
+  .form-row .sheet-placement {
+    width: 100%;
+    order: 3;
+  }
+
+  .class2-sentence {
+    max-width: none;
+  }
+}

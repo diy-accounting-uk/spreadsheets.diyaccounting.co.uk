@@ -1,0 +1,117 @@
+{
+  "product": "taxi",
+  "workbook": "Financialaccountsyearto050426.xlsx",
+  "refShapes": {
+    "cell": "a bare A1 reference on the form's own sheet; the Taxi package is one workbook, so no file prefix is needed",
+    "derived": "a resolver the render owns, set only where cell is null: a name in DiyaGlTaxiForms.DERIVED_NAMES, \"pl:B<n>\" for one Profit & Loss Acc cell, or \"sum:B<n>,B<m>\" for a total of several"
+  },
+  "sources": {
+    "boxLists": "_developers/hmrc-references/hmrc-forms-sole-trader.md, section 1",
+    "template": "packages/GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007/Financialaccountsyearto050426.xlsx"
+  },
+  "notes": {
+    "sheetNumbering": "SE Short prints its own box numbers, one behind the 2026 form's from turnover on. Every box here carries the 2026 number.",
+    "expenseBoxes": "Boxes 11 to 20 read the Profit & Loss Account, not SE Short's own expense block: those sheet cells carry no CELL_MAP row, so R has no key for them, and the sheet blanks the block below £30,000 turnover while the form's permission is £90,000.",
+    "emptyBoxes": "Boxes 32, 35 and 38 print empty although the sheet computes O106 and holds D123 and O123: CELL_MAP names none of the three and the calculator emits none, so R carries no key either way."
+  },
+  "forms": {
+    "sa103s": {
+      "form": "SA103S",
+      "year": 2026,
+      "sheet": "SE Short",
+      "microcopy": "Check these against your return. Box numbers match the 2026 form; nothing here is the HMRC document.",
+      "sections": [
+        {
+          "heading": "Business income",
+          "boxes": [
+            { "box": "9", "label": "Your turnover, the takings, fees, sales or money earned by your business", "cell": "D38" },
+            { "box": "10", "label": "Any other business income not included in box 9", "cell": "O38" },
+            { "box": "10.1", "label": "Trading income allowance", "cell": null }
+          ]
+        },
+        {
+          "heading": "Allowable business expenses",
+          "boxes": [
+            { "box": "11", "label": "Costs of goods bought for resale or goods used", "cell": null, "derived": "goodsForResale" },
+            {
+              "box": "12",
+              "label": "Car, van and travel expenses, after private use proportion",
+              "cell": null,
+              "derived": "vehicleTravel"
+            },
+            { "box": "13", "label": "Wages, salaries and other staff costs", "cell": null, "derived": "pl:B14" },
+            { "box": "14", "label": "Rent, rates, power and insurance costs", "cell": null, "derived": "pl:B15" },
+            { "box": "15", "label": "Repairs and maintenance of property and equipment", "cell": null, "derived": "repairs" },
+            { "box": "16", "label": "Accountancy, legal and other professional fees", "cell": null, "derived": "pl:B18" },
+            { "box": "17", "label": "Interest and bank and credit card financial charges", "cell": null, "derived": "sum:B19,B20" },
+            { "box": "18", "label": "Phone, fax, stationery and other office costs", "cell": null, "derived": "pl:B16" },
+            { "box": "19", "label": "Other allowable business expenses", "cell": null, "derived": "sum:B17,B21" },
+            { "box": "20", "label": "Total allowable expenses", "cell": null, "derived": "totalExpenses", "total": true }
+          ]
+        },
+        {
+          "heading": "Net profit or loss",
+          "boxes": [
+            { "box": "21", "label": "Net profit, if your business income is more than your expenses", "cell": "D71", "total": true },
+            { "box": "22", "label": "Or, net loss, if your expenses exceed your business income", "cell": "O71", "total": true }
+          ]
+        },
+        {
+          "heading": "Tax allowances for certain buildings, vehicles and equipment (capital allowances)",
+          "boxes": [
+            { "box": "23", "label": "Annual Investment Allowance", "cell": "D80" },
+            { "box": "24", "label": "Allowance for small balance of unrelieved expenditure", "cell": "D85" },
+            { "box": "24.1", "label": "Zero-emission car allowance", "cell": null },
+            { "box": "25", "label": "Other capital allowances", "cell": "O80" },
+            { "box": "25.1", "label": "The Structures and Buildings Allowance", "cell": null },
+            { "box": "25.2", "label": "Freeport and Investment Zones Structures and Buildings Allowance", "cell": null },
+            {
+              "box": "26",
+              "label": "Total balancing charges, for example where you have disposed of items for more than their tax value",
+              "cell": "O85"
+            }
+          ]
+        },
+        {
+          "heading": "Calculating your taxable profits",
+          "boxes": [
+            { "box": "27", "label": "Goods and/or services for your own use", "cell": "D94" },
+            { "box": "28", "label": "Net business profit for tax purposes", "cell": "D99", "total": true },
+            {
+              "box": "29",
+              "label": "Loss brought forward from earlier years set off against this year's profits",
+              "cell": "O94"
+            },
+            { "box": "30", "label": "Any other business income not included in box 9 or box 10", "cell": "O99" }
+          ]
+        },
+        {
+          "heading": "Total taxable profits or net business loss",
+          "boxes": [
+            { "box": "31", "label": "Total taxable profits from this business", "cell": "D106", "total": true },
+            { "box": "32", "label": "Net business loss for tax purposes", "cell": null, "total": true }
+          ]
+        },
+        {
+          "heading": "Losses, Class 2 and Class 4 NICs and CIS deductions",
+          "boxes": [
+            { "box": "33", "label": "Loss from this tax year set off against other income for 2025-26", "cell": null },
+            {
+              "box": "34",
+              "label": "Loss to be carried back to previous years and set off against income (or capital gains)",
+              "cell": null
+            },
+            {
+              "box": "35",
+              "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward",
+              "cell": null
+            },
+            { "box": "36", "label": "Voluntary Class 2 NICs", "cell": null },
+            { "box": "37", "label": "Exempt from Class 4 NICs", "cell": null },
+            { "box": "38", "label": "Total CIS deductions taken from your payments by contractors", "cell": null }
+          ]
+        }
+      ]
+    }
+  }
+}
