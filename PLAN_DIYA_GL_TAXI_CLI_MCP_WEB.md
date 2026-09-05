@@ -516,6 +516,9 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   declared absent for taxi. `fixedAssets[].assetID` always differs (the sheet has no identifier cell)
   and is informational.
 
+- After T6's box annotations, `report-indicators.js` matches a label with or without a trailing
+  "(box N)", so the judge's `Net profit/loss` indicator reads the Taxi report again.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
