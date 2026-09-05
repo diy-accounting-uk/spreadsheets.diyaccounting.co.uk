@@ -27,7 +27,7 @@ import { s1, s2ForPackage, s3Se, s3SeYearEnd, canonical, parseFigure, SCENARIOS_
 import { loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.js";
 import { calculateSeCells } from "../../app/lib/calculators/se.js";
 import { savePackageZip, taxYearFileName } from "../../app/lib/product-workbook.js";
-import { linkCacheValues, HUB_FILE } from "../../app/lib/link-caches.js";
+import { linkCacheValues, externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
 import { canonicalValue } from "../../app/lib/report-serializer.js";
 import { parse as parseTOML } from "smol-toml";
 
@@ -457,6 +457,23 @@ async function packageWorkbooks(zipBytes) {
   return workbooks;
 }
 
+// Every cached link value in a set of workbooks, against the calculator's
+// own figure for the cell each one addresses.
+async function cacheDisagreements(workbooks, keys) {
+  let compared = 0;
+  const disagreements = [];
+  for (const [name, workbook] of workbooks) {
+    for (const [key, cached] of await linkCacheValues(workbook)) {
+      if (!keys.has(key)) continue;
+      compared++;
+      if (canonicalValue(cached) !== canonicalValue(keys.get(key))) {
+        disagreements.push(`${name} caches ${key} as ${cached}, the calculator holds ${keys.get(key)}`);
+      }
+    }
+  }
+  return { compared, disagreements };
+}
+
 test.describe("DIYA-GL books page — the saved package agrees with the calculator (A8)", () => {
   test("the package zip the page downloads is Node's savePackageZip, byte for byte", async ({ page }) => {
     await openBook(page, FEATURED);
@@ -477,21 +494,31 @@ test.describe("DIYA-GL books page — the saved package agrees with the calculat
     const workbooks = await packageWorkbooks(bytes);
     expect(workbooks.size).toBe(9);
 
-    let compared = 0;
-    const disagreements = [];
-    for (const [name, workbook] of workbooks) {
-      for (const [key, cached] of await linkCacheValues(workbook)) {
-        if (!keys.has(key)) continue;
-        compared++;
-        if (canonicalValue(cached) !== canonicalValue(keys.get(key))) {
-          disagreements.push(`${name} caches ${key} as ${cached}, the calculator holds ${keys.get(key)}`);
-        }
-      }
-    }
+    const { compared, disagreements } = await cacheDisagreements(workbooks, keys);
 
     console.log(`A8: ${compared} link cache cells compared against the calculator`);
     expect(disagreements, disagreements.join("\n")).toEqual([]);
     expect(compared).toBeGreaterThanOrEqual(539);
+  });
+
+  test("one cached value bent in the downloaded hub is the only cell that then disagrees", async ({ page }) => {
+    await openBook(page, FEATURED);
+    const { bytes } = await triggerSaveDownload(page, "Download package (.zip)");
+
+    const { keys } = calculatorCellsByLinkKey(FEATURED.bookDir);
+    const workbooks = await packageWorkbooks(bytes);
+    const hub = workbooks.get(HUB_FILE);
+
+    const salesLink = (await externalLinks(hub)).find((link) => link.targetFile === "Sales.xlsx");
+    const aprilId = salesLink.sheetNames.indexOf("Apr");
+    const xml = await hub.file(salesLink.path).async("string");
+    const block = new RegExp(`<sheetData\\s+sheetId="${aprilId}"[^>]*>[\\s\\S]*?</sheetData>`).exec(xml)[0];
+    const cell = /<cell r="P1"><v>([^<]*)<\/v><\/cell>/.exec(block);
+    expect(cell, "the hub caches Sales.xlsx!Apr!P1").not.toBeNull();
+    hub.file(salesLink.path, xml.replace(block, block.replace(cell[0], `<cell r="P1"><v>${Number(cell[1]) + 1000}</v></cell>`)));
+
+    const { disagreements } = await cacheDisagreements(workbooks, keys);
+    expect(disagreements.map((line) => line.split(" caches ")[1].split(" as ")[0])).toEqual(["Sales.xlsx!Apr!P1"]);
   });
 });
 
