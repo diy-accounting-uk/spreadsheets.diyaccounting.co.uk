@@ -87,17 +87,25 @@ function attribute(file, sheet, cellRef, extractionMap, reportLabels) {
   return null;
 }
 
-// Reading 64,252 formulas out of the template costs about as much as reading
-// the upload itself, and the template is a file in this repo that does not
-// change while a process runs. One read per path per process.
-const templateFormulasByPath = new Map();
+// Reading tens of thousands of formulas out of a template costs about as
+// much as reading the upload itself, so each baseline is read once per
+// process. A BST or SE template is a file in this repo that never changes
+// while a process runs, so the path itself is the cache key; Taxi's own
+// baseline is a workbook the generator builds fresh for the book's own tax
+// year (see readWorkbookSource in books-interchange.js), which has no path
+// on disk to key on, so its entry in options.templates carries its own cache
+// key (a string like "taxi:se-2025-2026") alongside a loader that is only
+// called on a cache miss.
+const templateFormulasByKey = new Map();
 
-async function templateFormulasAt(templatePath) {
-  if (!templateFormulasByPath.has(templatePath)) {
-    const zip = await JSZip.loadAsync(readFileSync(templatePath));
-    templateFormulasByPath.set(templatePath, await workbookFormulaMap(zip));
+async function templateFormulasAt(template) {
+  const key = typeof template === "string" ? template : template.key;
+  if (!templateFormulasByKey.has(key)) {
+    const bytes = typeof template === "string" ? readFileSync(template) : await template.load();
+    const zip = await JSZip.loadAsync(bytes);
+    templateFormulasByKey.set(key, await workbookFormulaMap(zip));
   }
-  return templateFormulasByPath.get(templatePath);
+  return templateFormulasByKey.get(key);
 }
 
 /**
@@ -109,9 +117,13 @@ async function templateFormulasAt(templatePath) {
  * @param {Object} [options.extractionMap] - a bstExtractionMap() the export
  *   recorded its rows into, so a cell on a transaction row can name the line
  *   that row produced
- * @param {Object} [options.templates] - { [file]: templatePath }, the
- *   baseline workbook for each file the set carries; "*" names the one
- *   workbook of a single-file product (BST: { "*": BST_TEMPLATE_PATH })
+ * @param {Object} [options.templates] - { [file]: template }, the baseline
+ *   workbook for each file the set carries; "*" names the one workbook of a
+ *   single-file product (BST: { "*": BST_TEMPLATE_PATH }). Each template is
+ *   either a file path (read from disk, cached by that path) or
+ *   { key, load }, a cache key and an async () => Uint8Array for a baseline
+ *   built fresh per caller, such as Taxi's own per-tax-year generated
+ *   workbook -- load() only runs on a cache miss.
  * @param {Object} [options.reportLabels] - a product module's cellLabels()
  * @param {Function} [options.isInputCell] - (file, sheet, cellRef) => boolean,
  *   which cells are the customer's to fill
@@ -127,10 +139,10 @@ export async function overtypedCells(set, options = {}) {
   const overtyped = {};
 
   for (const file of files) {
-    const templatePath = templates[file] ?? templates["*"];
-    if (!templatePath) continue; // no baseline named for this file
+    const template = templates[file] ?? templates["*"];
+    if (!template) continue; // no baseline named for this file
 
-    const templateFormulas = await templateFormulasAt(templatePath);
+    const templateFormulas = await templateFormulasAt(template);
     const uploadZip = await set.zip(file);
     const uploadSheets = await buildSheetMap(uploadZip);
     const uploadSharedStrings = await loadSharedStrings(uploadZip);

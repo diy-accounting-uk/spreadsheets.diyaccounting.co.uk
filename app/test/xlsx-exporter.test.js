@@ -21,7 +21,10 @@ import {
   extractMetadata,
   normaliseLine,
   AdminSheetMissingError,
+  bstExtractionMap,
+  taxiBookFieldCells,
 } from "../lib/xlsx-exporter.js";
+import { isTaxiInputCell } from "../lib/anchors/taxi.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
@@ -728,6 +731,51 @@ describe("extractTaxiTransactions — the exported book", () => {
     expect(book.entityInformation.taxRegistrationNumber).toBe("5566778899");
     expect(book.entityInformation.organizationAddressLine).toBeUndefined();
     expect(book.entityInformation.organizationTown).toBeUndefined();
+  });
+});
+
+describe("extractTaxiTransactions — the extraction map", () => {
+  it("records every Sales and Purchases line it exports on the synthesised week", async () => {
+    const map = bstExtractionMap("taxi");
+    const lines = await extractTaxiTransactions(await buildWorkbook(taxiSheets()), map);
+    expect(lines.length).toBe(6);
+    expect(map.lines().length).toBe(6);
+
+    // Row 6 carries both a fare and its own other income, recorded as two
+    // regions against the same row; lineForCell answers whichever region's
+    // own columns actually hold the cell asked for, not just the last one
+    // recorded.
+    const otherIncomeLine = lines.find((line) => line.accountMainID === "4001");
+    const found = map.lineForCell(null, "SalesApr", "F6");
+    expect(found.readAs).toBe("amount");
+    expect(found.entryNumber).toBe(otherIncomeLine.entryNumber);
+  });
+});
+
+describe("isTaxiInputCell", () => {
+  it("counts every taxiBookFieldCells() cell as an input cell", () => {
+    for (const { sheet, cell } of taxiBookFieldCells()) {
+      expect(isTaxiInputCell(sheet, cell), `${sheet}!${cell}`).toBe(true);
+    }
+  });
+
+  it("counts a Sales day row's customer and mileage columns as input, and its takings/other-income columns as not", () => {
+    expect(isTaxiInputCell("SalesApr", "C5")).toBe(true);
+    expect(isTaxiInputCell("SalesApr", "D5")).toBe(true);
+    expect(isTaxiInputCell("SalesApr", "E5")).toBe(false);
+    expect(isTaxiInputCell("SalesApr", "F5")).toBe(false);
+  });
+
+  it("counts a Purchases row's expense-code prompt and account carrier as input, past row 199 as not", () => {
+    expect(isTaxiInputCell("PurchasesApr", "D5")).toBe(true);
+    expect(isTaxiInputCell("PurchasesApr", `${ACCOUNT_ID_COLUMN}5`)).toBe(true);
+    expect(isTaxiInputCell("PurchasesApr", "D200")).toBe(false);
+  });
+
+  it("counts the Fixed Assets vehicle block's cost and personal-use columns as input, its header row as not", () => {
+    expect(isTaxiInputCell("Fixed Assets", "D47")).toBe(true);
+    expect(isTaxiInputCell("Fixed Assets", "F47")).toBe(true);
+    expect(isTaxiInputCell("Fixed Assets", "D46")).toBe(false);
   });
 });
 

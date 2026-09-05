@@ -15,16 +15,26 @@ import { tmpdir } from "os";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
-import { extractBstTransactions, bstExtractionMap, bookFieldCells, isBstInputCell, BST_TRANSACTION_REGIONS } from "../lib/xlsx-exporter.js";
+import {
+  extractBstTransactions,
+  extractTaxiTransactions,
+  bstExtractionMap,
+  bookFieldCells,
+  isBstInputCell,
+  BST_TRANSACTION_REGIONS,
+} from "../lib/xlsx-exporter.js";
 import { workbookSetFromWorkbook } from "../lib/workbook-set.js";
 import { overtypedCells, BST_TEMPLATE_PATH } from "../lib/overtype-sidecar.js";
 import { parseCells, formulaCells, sortCellRefs } from "../lib/template-formula-map.js";
 import { cellLabels, CELL_MAP } from "../products/bst.js";
+import { cellLabels as taxiCellLabels } from "../products/taxi.js";
 import { isSeInputCell, seTemplatePaths } from "../lib/anchors/se.js";
+import { isTaxiInputCell } from "../lib/anchors/taxi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
+const TAXI_XLSX = resolve(ROOT, "examples", "taxi-latest", "GB_Accounts_Taxi_Driver.xlsx");
 
 let original;
 let originalMap;
@@ -343,6 +353,98 @@ describe("an SE upload's overtyped keys", () => {
     const overtyped = await overtypedCells(set, { isInputCell: isSeInputCell, templates: await seTemplatePaths() });
     expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
     expect(overtyped["Financialaccounts.xlsx!Profit & Loss Account!B9"].kind).toBe("literal");
+  });
+});
+
+// Taxi's own predicate (app/lib/anchors/taxi.js) and its own baseline: unlike
+// BST and SE, examples/taxi-latest is itself the correct baseline for its own
+// tax year (books-interchange.js builds the real one fresh per book through
+// generateSpreadsheet -- see the "reports no overtypes" case in
+// books-interchange.test.js, which proves that wiring), so these cases patch
+// a copy and read it back against the untouched fixture.
+describe("a Taxi upload's overtyped keys", () => {
+  const taxiOriginal = readFileSync(TAXI_XLSX);
+
+  async function taxiPatchedCopy(sheet, cellRef, rewrite) {
+    const zip = await JSZip.loadAsync(taxiOriginal);
+    const sheetMap = await buildSheetMap(zip);
+    const path = sheetMap.get(sheet);
+    expect(path, `${sheet} not found in the fixture`).toBeTruthy();
+    const xml = await zip.file(path).async("string");
+    // Lazy on the shared attribute run: a self-closing shell (Taxi's own
+    // blank day-row cells, <c r="E5" s="361"/>, no <v> at all) has no "</c>"
+    // to anchor the greedy version's alternation on, so it over-runs into
+    // whichever cell happens to close with one next.
+    const element = xml.match(new RegExp(`<c r="${cellRef}"[^>]*?(?:/>|>[\\s\\S]*?</c>)`))?.[0];
+    expect(element, `${sheet}!${cellRef} has no <c> element in the fixture`).toBeTruthy();
+    const patched = xml.replace(element, rewrite(element));
+    expect(patched, `${sheet}!${cellRef} was not changed`).not.toBe(xml);
+    zip.file(path, patched);
+    return zip.generateAsync({ type: "nodebuffer" });
+  }
+
+  async function taxiOvertypedAfterPatch(sheet, cellRef, rewrite = stripFormula) {
+    const buffer = await taxiPatchedCopy(sheet, cellRef, rewrite);
+    const map = bstExtractionMap("taxi");
+    await extractTaxiTransactions(buffer, map);
+    const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+    return overtypedCells(set, {
+      extractionMap: map,
+      isInputCell: (file, taxiSheet, taxiCellRef) => isTaxiInputCell(taxiSheet, taxiCellRef),
+      templates: { "*": TAXI_XLSX },
+      reportLabels: taxiCellLabels(),
+    });
+  }
+
+  it("names a typed-over Sales week subtotal and nothing else, with no line to attribute it to", async () => {
+    expect(await taxiOvertypedAfterPatch("SalesMay", "E14")).toEqual({
+      "SalesMay!E14": {
+        kind: "literal",
+        templateFormula: "SUM(E5:E13)",
+        value: 0,
+        attribution: null,
+      },
+    });
+  });
+
+  it("names the Profit & Loss turnover cell with the reported figure it feeds", async () => {
+    const overtyped = await taxiOvertypedAfterPatch("Profit & Loss Acc", "B5");
+    expect(Object.keys(overtyped)).toEqual(["Profit & Loss Acc!B5"]);
+    expect(overtyped["Profit & Loss Acc!B5"].attribution).toEqual({
+      kind: "reportedFigure",
+      label: "Turnover (Total Fares)",
+      glMapping: "gl-cor:amount (salesTurnover)",
+    });
+  });
+
+  it("names a cleared Draft Tax calculation total as cleared, carrying the reported figure", async () => {
+    const emptied = (element) => element.replace(/>[\s\S]*<\/c>$/, "/>").replace(/\/><\/c>$/, "/>");
+    const overtyped = await taxiOvertypedAfterPatch("Draft Tax calculation", "E17", emptied);
+    expect(Object.keys(overtyped)).toEqual(["Draft Tax calculation!E17"]);
+    expect(overtyped["Draft Tax calculation!E17"].kind).toBe("cleared");
+    expect(overtyped["Draft Tax calculation!E17"].value).toBeNull();
+    expect(overtyped["Draft Tax calculation!E17"].attribution).toEqual({
+      kind: "reportedFigure",
+      label: "**Total Tax + NI**",
+      glMapping: "gl-cor:taxAmount (totalTaxNI)",
+    });
+  });
+
+  it("does not count a fare typed into a Sales day row's E as an overtype", async () => {
+    // SalesMay!E5 ships as an empty <c .../> shell with no <v> at all -- the
+    // template carries no formula there for any day row, so nothing in
+    // overtypedCells() ever visits it regardless of what the customer types.
+    const buffer = await taxiPatchedCopy("SalesMay", "E5", (element) => element.replace(/\/>$/, "><v>174</v></c>"));
+    const map = bstExtractionMap("taxi");
+    await extractTaxiTransactions(buffer, map);
+    const set = await workbookSetFromWorkbook("workbook.xlsx", buffer);
+    const overtyped = await overtypedCells(set, {
+      extractionMap: map,
+      isInputCell: (file, sheet, cellRef) => isTaxiInputCell(sheet, cellRef),
+      templates: { "*": TAXI_XLSX },
+      reportLabels: taxiCellLabels(),
+    });
+    expect(overtyped).not.toHaveProperty("SalesMay!E5");
   });
 });
 
