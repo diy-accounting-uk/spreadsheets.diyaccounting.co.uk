@@ -31,15 +31,9 @@
 // one until a workbook is actually read.
 
 import JSZip from "jszip";
-import {
-  validateBstAnchors,
-  BstAnchorError,
-  extractBook,
-  extractLines,
-  bstExtractionMap,
-  productIdOf,
-  SCHEMA_PRODUCT_NAMES,
-} from "./xlsx-exporter.js";
+import { extractBook, extractLines, bstExtractionMap, productIdOf, SCHEMA_PRODUCT_NAMES } from "./xlsx-exporter.js";
+import { validateBstAnchors } from "./anchors/bst.js";
+import { AnchorError } from "./anchors/run.js";
 import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
 import { buildSheetMap } from "./spreadsheet-runner.js";
 import { validateBook, validateLines } from "./diya-gl-schema.js";
@@ -48,7 +42,7 @@ import { serializeReportDocument } from "./report-serializer.js";
 import { parseDiyaGlData } from "./diya-gl-loader.js";
 import * as bst from "../products/bst.js";
 
-export { BstAnchorError };
+export { AnchorError };
 
 const JSON_FORMAT = "diya-gl-books";
 const JSON_VERSION = 1;
@@ -279,8 +273,7 @@ async function readWorkbookSource(kind, bytes, name, deps) {
   const source = { kind, product, book, lines, workbookSet: set };
   if (product === "bst") {
     const { overtypedCells } = await import("./overtype-sidecar.js");
-    const workbook = await set.bytes(set.names()[0]);
-    source.overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
+    source.overtyped = await overtypedCells(set, { extractionMap, reportLabels: productMod.cellLabels() });
   }
   return source;
 }

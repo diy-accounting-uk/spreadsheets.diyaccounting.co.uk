@@ -10,17 +10,12 @@
 // Every module below is imported as it stands. Nothing here is a browser fork.
 
 // Reading a populated workbook back into diya-gl data.
-export {
-  extractBstTransactions,
-  extractMetadata,
-  bstExtractionMap,
-  bstBookFieldCells,
-  isBstInputCell,
-  validateBstAnchors,
-  BstAnchorError,
-  normaliseLine,
-  taxTablesForPackage,
-} from "./xlsx-exporter.js";
+export { extractBstTransactions, extractMetadata, bstExtractionMap, bookFieldCells, isBstInputCell, normaliseLine, taxTablesForPackage } from "./xlsx-exporter.js";
+
+// The anchor guard: the runner, BST's own table and its two-line wrapper,
+// and the one error class every product's table throws.
+export { validateAnchors, AnchorError } from "./anchors/run.js";
+export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader.js";
