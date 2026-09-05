@@ -14,6 +14,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
+import { calculateLtdResults } from "../lib/calculators/ltd.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import * as ltd from "../products/ltd.js";
@@ -187,6 +188,31 @@ describe.each(FIXTURES)("Trial balance on $name", (fixture) => {
 
   it("balances the opening column to nil as well", () => {
     expect(run.results.TrialBalance.D91).toBeCloseTo(0, 2);
+  });
+});
+
+// ── The payroll year a book with no tax data derives itself ────────────────
+describe("the payroll year a book with no financial year data falls back on", () => {
+  function payrollAnchorFor(periodCoveredEnd, taxData = {}) {
+    const results = calculateLtdResults({ documentInfo: { periodCoveredEnd } }, [], taxData, {});
+    return results["Payslips.xlsx!Admin"].B2;
+  }
+
+  it("agrees with the writer's targetStartYear rule for a January, a March and an October year end", () => {
+    // cellWrites (app/products/ltd.js) opens the payroll year at
+    // targetStartYear for a January to March year end and at
+    // targetStartYear + 1 otherwise, where targetStartYear is the year
+    // end's own calendar year minus one (product-workbook.js).
+    expect(payrollAnchorFor("2026-01-31")).toBe(45753); // 2025-04-06
+    expect(payrollAnchorFor("2026-03-31")).toBe(45753); // 2025-04-06
+    expect(payrollAnchorFor("2026-10-31")).toBe(46118); // 2026-04-06
+  });
+
+  it("takes the payroll year from financial_year.start when the tax data carries one, whatever the year end", () => {
+    const taxData = { financial_year: { start: "2024-04-01" } };
+    expect(payrollAnchorFor("2026-01-31", taxData)).toBe(45388); // 2024-04-06
+    expect(payrollAnchorFor("2026-03-31", taxData)).toBe(45388);
+    expect(payrollAnchorFor("2026-10-31", taxData)).toBe(45388);
   });
 });
 

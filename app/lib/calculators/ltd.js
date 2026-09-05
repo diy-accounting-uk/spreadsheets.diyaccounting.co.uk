@@ -1032,11 +1032,16 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
 }
 
 // The year the package's payroll runs in, which is the year its tax data
-// opens in. A book that carries no tax data falls back on the year its own
-// accounting period ends in.
+// opens in. A book that carries no tax data derives it the way cellWrites
+// does: the year before the year end's own calendar year, unless the year
+// end falls in January to March, when the payroll year already opened the
+// April before that year.
 function payrollYearOf(taxData, period) {
   const financialYearStart = taxData.financial_year?.start;
-  return financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
+  if (financialYearStart) return new Date(financialYearStart).getUTCFullYear();
+  const targetStartYear = period.yearEnd.getUTCFullYear() - 1;
+  const yearEndMonth = period.yearEnd.getUTCMonth() + 1;
+  return yearEndMonth <= 3 ? targetStartYear : targetStartYear + 1;
 }
 
 // The calendar every payslip dates from. B2 carries the payroll year's first
