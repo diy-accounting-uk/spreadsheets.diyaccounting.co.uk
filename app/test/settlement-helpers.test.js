@@ -124,10 +124,10 @@ describe("the settlements the BrickWork Pro sole trader book is missing", () => 
     expect(countByKind(suggestions)).toEqual({
       "sale-from-receipt": 12,
       "purchase-from-payment": 12,
-      "receipt-for-sale": 24,
+      "receipt-for-sale": 25,
       "payment-for-purchase": 58,
     });
-    expect(suggestions).toHaveLength(106);
+    expect(suggestions).toHaveLength(107);
     // Every sale and every purchase in the book is unsettled, and so is
     // every receipt and payment: the twelve monthly bankings each cover a
     // month of invoices, which no single invoice can match.
