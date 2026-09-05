@@ -10,16 +10,18 @@ basis, and its year runs from 6 April 2025 to 5 April 2026.
 
 The point of this example is how plain it is. Steady daily fares, five running
 costs and one capital purchase: it is the smallest book the Taxi Driver package
-has to publish a return from.
+has to publish a return from. One extra fare and one start-up grant carry the
+package's other-income column and a joined day name onto an otherwise bare
+book.
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
-- **lines.jsonl** -- 201 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
+- **book.toml** -- Business metadata, chart of accounts (2 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **lines.jsonl** -- 203 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
-| sales | 180 | Daily fares, 15 working days a month |
+| sales | 182 | Daily fares, 15 working days a month, plus a second fare on 7 April and a start-up grant on 15 September |
 | purchases | 21 | Fuel, road tax and insurance, mobile, licence, accountant and the vehicle |
 
 ## Total Sales
@@ -27,9 +29,16 @@ has to publish a return from.
 | Item | Amount |
 |------|-------:|
 | Daily fares (180 working days) | 36,000 |
-| **Total Sales** | **36,000** |
+| Airport run (7 April 2025, a second fare on an existing day) | 45 |
+| **Total Sales** | **36,045** |
 
 Fares run at 180 to 220 a day, averaging 3,000 a month.
+
+Other business income: a start-up grant of 500 on 15 September 2025. It
+carries the "Any other income" caption and posts to account 4001, so it
+never joins turnover -- the Profit & Loss account keeps it on its own row
+(box 29 of the tax return) and the fixture states it separately as
+`total_other_income`.
 
 ## Total Purchases by Category
 
@@ -58,16 +67,19 @@ earns it its allowance.
 
 | Item | Amount |
 |------|-------:|
-| Turnover | 36,000 |
+| Turnover | 36,045 |
 | Less: fuel, road tax and insurance | -4,980 |
 | Less: writing down allowance on the vehicle (8,000 at 18%) | -1,440 |
-| **Gross profit** | **29,580** |
+| **Gross profit** | **29,625** |
 | Less: general expenses | -1,380 |
-| **Net profit** | **28,200** |
+| **Net profit** | **28,245** |
+
+The 500 start-up grant sits outside this table -- it reaches the tax
+computation through its own row, not through net profit.
 
 A vehicle earns no Annual Investment Allowance, so the allowance is the main
 rate writing down allowance and the profit moves with it: at the 14% rate a
-later year carries, the same book publishes 29,900 and 28,520.
+later year carries, the same book publishes 29,945 and 28,565.
 
 ## Scenario Extract
 

@@ -36,26 +36,16 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname, basename } from "path";
-import {
-  extractBstTransactions,
-  extractTaxiTransactions,
-  extractMultiFileTransactions,
-  extractBankTransactions,
-  extractPayrollTransactions,
-  extractJournalEntries,
-  extractBook,
-  extractPeriodStartMonth,
-  periodCovered,
-} from "../lib/xlsx-exporter.js";
+import { extractBook, extractLines } from "../lib/xlsx-exporter.js";
+import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
-import { findXlsx } from "../lib/xlsx-reader.js";
 import { extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/bst-workbook.js";
+import { loadTaxDataForBook } from "../lib/product-workbook.js";
 import {
   readBookSource,
   BstAnchorError,
@@ -63,6 +53,8 @@ import {
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,
+  PackagePartError,
+  ProductNotAvailableError,
 } from "../lib/books-interchange.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
@@ -79,6 +71,8 @@ const NAMED_BOOK_SOURCE_ERRORS = [
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,
+  PackagePartError,
+  ProductNotAvailableError,
 ];
 
 function isNamedBookSourceError(err) {
@@ -179,18 +173,18 @@ async function writeBookChecksJson(outputDir, book, lines) {
 }
 
 // The whole --file extraction: books-interchange.js sniffs the input and
-// turns it into D (a workbook and its package zip stage into a scratch
-// directory and run the anchor guard exactly as before; a diya-gl zip, a
-// JSON file or that JSON zipped validate straight against the published
-// schemas), then this builds R from that D. --source-dir's CLI path and the
-// MCP server's extract_book tool both call this rather than each reaching
-// into books-interchange.js on their own, so a change to how D or R are
-// produced can only ever happen in one place.
+// turns it into D (a workbook or a package zip runs the anchor guard and
+// the extractors over a workbook set; a diya-gl zip, a JSON file or that
+// JSON zipped validate straight against the published schemas), then this
+// builds R from that D. --source-dir's CLI path and the MCP server's
+// extract_book tool both call this rather than each reaching into
+// books-interchange.js on their own, so a change to how D or R are produced
+// can only ever happen in one place.
 export async function extractBstFromFile(filePath, productMod) {
   const resolvedFile = resolve(filePath);
   const bytes = readFileSync(resolvedFile);
-  const { book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { productMod });
-  const document = buildFileReportDocument(book, lines, "bst", productMod);
+  const { product, book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { products: { bst: productMod } });
+  const document = buildFileReportDocument(book, lines, product, productMod);
   return { book, lines, document, overtyped };
 }
 
@@ -271,30 +265,14 @@ async function main() {
   console.log(`Source:     ${resolvedSource}`);
   console.log(`Output:     ${resolvedOutput}`);
 
-  let lines;
-
-  if (packageName === "bst" || packageName === "taxi") {
-    const xlsxFile = findXlsx(resolvedSource);
-    if (!xlsxFile) {
-      console.error(`No xlsx file found in ${resolvedSource}`);
-      process.exit(1);
-    }
-    const workbook = readFileSync(resolve(resolvedSource, xlsxFile));
-    lines = packageName === "taxi" ? await extractTaxiTransactions(workbook) : await extractBstTransactions(workbook);
-  } else {
-    lines = await extractMultiFileTransactions(resolvedSource, packageName);
-    // An opening balance and a year-end adjustment are dated by the period
-    // they sit at the edges of, and no cell beside either one carries a date.
-    // The sales and purchases journals fix that period on their own, so it is
-    // settled before the sheets that need it are read.
-    const period = periodCovered(await extractPeriodStartMonth(resolvedSource, packageName), lines);
-    const bankLines = await extractBankTransactions(resolvedSource, packageName, period);
-    const payrollLines = await extractPayrollTransactions(resolvedSource);
-    const journalLines = await extractJournalEntries(resolvedSource, packageName, period);
-    lines = lines.concat(bankLines, payrollLines, journalLines);
+  const set = await workbookSetFromDirectory(resolvedSource);
+  if (set.names().length === 0) {
+    console.error(`No xlsx file found in ${resolvedSource}`);
+    process.exit(1);
   }
 
-  const book = await extractBook(resolvedSource, packageName, lines, productMod.CELL_MAP);
+  const lines = await extractLines(set, packageName);
+  const book = await extractBook(set, packageName, lines, productMod.CELL_MAP);
   writeDiyaGlData(resolvedOutput, book, lines);
   console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }
