@@ -1023,7 +1023,11 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const niUpper = carry([taxableProfit], () => (taxableProfit > admin.N23 ? (taxableProfit - admin.N23) * admin.L23 : 0));
   const incomeTax = {
     E5: taxableProfit,
-    E6: chargedOn("personalAllowance"),
+    // E6 = IF(E5<=0,0,MAX(0,Admin!N$4-MAX(0,E5-Admin!N$5)/2)): a loss year
+    // has no taxable profit to set an allowance against, so the sheet floors
+    // this at nil rather than showing the allowance unused -- the same floor
+    // Profit Forecast!C40 already applies below.
+    E6: carry([taxableProfit, charged], () => (taxableProfit <= 0 ? 0 : charged.personalAllowance)),
     E7: chargedOn("taxableIncome"),
     C8: admin.N11,
     D8: admin.N6,
