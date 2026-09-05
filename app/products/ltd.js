@@ -33,6 +33,7 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../lib/ltd-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -70,13 +71,6 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-
 // TrialBalance's own closing-balance echo of each bank workbook (verified
 // against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
 // EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
@@ -88,49 +82,6 @@ const TRIAL_BALANCE_BANK_ECHO_CELLS = {
   "Creditcardaccount.xlsx": "EJ24",
   "Cashaccount.xlsx": "EJ25",
 };
-
-// Transfer code letter each bank workbook stands for. A workbook analyses
-// transfers under the other three letters; it never transfers to itself.
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
-// Column layout of the receipts and payments blocks in each bank workbook's
-// month tabs, and the code letters each block has an analysis column for.
-// Cashaccount analyses fewer receipt codes than the three statement books,
-// which shifts its payments block four columns to the left.
-//
-// reference and comment are two columns every one of the four workbooks
-// keeps beside its receipts and payments that the writer never used to fill.
-// reference is the invoice number column -- "Sales Invoice" on receipts (C),
-// "Enter Purchase Invoice No." on payments. comment is the column beside it
-// -- "Deposit Bank Reference" on receipts (D), "Cheque number Direct Debit"
-// on Cashaccount's and the statement books' payments -- which the sheet
-// keeps for the payer's own reference rather than a description, but is a
-// real, otherwise-empty cell all the same, so a line's own free-text comment
-// goes there.
-function bankLayout(fileName) {
-  const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
-  if (fileName === "Cashaccount.xlsx") {
-    return {
-      receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-      payment: { date: "P", source: "Q", reference: "R", comment: "S", code: "T", amount: "U" },
-      receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
-      paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
-    };
-  }
-  return {
-    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
-    payment: { date: "S", source: "T", reference: "U", comment: "V", code: "W", amount: "X" },
-    receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
-    paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
-  };
-}
-
-const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
 // ── Payslips.xlsx Admin: the payroll calendar ──────────────────────────────
 // B2 carries the tax year's first day and every date under it is the row
@@ -288,14 +239,6 @@ const STOCK_MATERIALS_PERCENT_CELL = "H4";
 // Everything else is a single figure in column E. The sheet's own audit
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
-
-const OPENING_FIXED_ASSET_COLUMNS = {
-  land_buildings: { cost: "G", depreciation: "M" },
-  plant_machinery: { cost: "H", depreciation: "N" },
-  fixtures_fittings: { cost: "I", depreciation: "O" },
-  computer_technology: { cost: "J", depreciation: "P" },
-  motor_vehicles: { cost: "K", depreciation: "Q" },
-};
 
 const OPENING_BANK_COLUMNS = {
   current_account: "G",

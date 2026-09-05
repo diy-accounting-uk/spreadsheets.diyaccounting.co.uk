@@ -24,6 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -101,25 +102,6 @@ const EXPENSE_PL_ROWS = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74
 // directors, twelve rows each.
 const WAGES_INTERFACE_EMPLOYEE_FIRST_ROW = 4;
 const WAGES_INTERFACE_DIRECTOR_FIRST_ROW = 17;
-
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
-// The transfer codes each workbook analyses. A workbook never transfers to
-// itself, so its own code is left out of both blocks.
-function bankTransferCodes(fileName) {
-  return Object.values(BANK_TRANSFER_CODES).filter((code) => code !== BANK_TRANSFER_CODES[fileName]);
-}
 
 // Fixed Assets schedule blocks. Each class has a block of rows for assets
 // already owned with a totals row, and a second block for assets bought in
@@ -1464,7 +1446,7 @@ function intraTransfers(banks) {
   let total = 0;
   for (const [fileName, file] of Object.entries(banks)) {
     for (const month of Object.values(file.months)) {
-      for (const code of bankTransferCodes(fileName)) {
+      for (const code of BANK_LAYOUTS[fileName].transfers) {
         total += -(month.receiptCodes[code] || 0) + (month.paymentCodes[code] || 0);
       }
     }
