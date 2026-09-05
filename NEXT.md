@@ -19,7 +19,9 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
+which Taxi T5 corrects. Main carries one stray code commit (`c1923823`, Taxi T20's fixture, committed by an
+agent in the primary tree); PR #61 reverts it on main and waits on the operator: merge to keep main
+clear of the batch until PR #60 lands, close to keep it. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
 `ready-to-start` with a worktree named have a fresh worktree and no agent yet; merge the batch
 branch into any worktree before dispatching. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
