@@ -40,11 +40,20 @@
     return div.innerHTML;
   }
 
+  function stripAllTags(text) {
+    let previous;
+    let result = text;
+    do {
+      previous = result;
+      result = previous.replace(/<[^>]*>/g, "");
+    } while (result !== previous);
+    return result;
+  }
+
   function stripHtmlAndTruncate(text, maxLen) {
     if (!text) return "";
     // Strip markdown/HTML tags
-    const stripped = text
-      .replace(/<[^>]*>/g, "")
+    const stripped = stripAllTags(text)
       .replace(/#{1,6}\s/g, "")
       .replace(/[*_~`]/g, "")
       .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
