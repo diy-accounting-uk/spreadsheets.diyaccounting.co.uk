@@ -109,9 +109,12 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     const derived = await page.evaluate(
       (rows) =>
         rows.map(([sheet, cell]) => {
-          const attr = window.DiyaGlBooksPage.helpers.rkFor(sheet, cell);
-          const match = /data-r-key="([^"]*)"/.exec(attr);
-          return { sheet, cell, keys: match ? match[1].split(" || ") : [] };
+          // rkFor returns the attribute as markup, so it is read back off an
+          // element the way a view's own figure carries it.
+          const holder = document.createElement("span");
+          holder.innerHTML = "<i" + window.DiyaGlBooksPage.helpers.rkFor(sheet, cell) + "></i>";
+          const raw = holder.firstChild.getAttribute("data-r-key");
+          return { sheet, cell, keys: raw ? raw.split(" || ") : [] };
         }),
       CELL_MAP.map((row) => [row[0], row[1]]),
     );
