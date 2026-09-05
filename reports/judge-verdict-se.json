@@ -1,24 +1,24 @@
 {
   "product": "se",
   "verdict": "pass",
-  "summary": "Indicators match the headline: VAT-registered with all four quarters carrying VAT, turnover net of VAT and disposals at the right scale, capital allowances explaining the lower taxable profit, grants bridging to the taxed profit, and a zero-residue bridge with no balance sheet expected for this product. Only minor notes.",
+  "summary": "Indicators match the headline: VAT-registered with all four quarters non-nil, turnover net of VAT and disposals at the expected scale, capital allowances explaining the lower taxable profit, grants accounting for the exact difference to the taxed profit, and a zero-residue bridge. Only minor items to glance at.",
   "concerns": [
     {
-      "figure": "profit before tax 171,773.02 vs SA103S net profit 183,429.68",
-      "where": "Turnover/profit indicator and self assessment line",
-      "why": "The two profit measures differ by 11,656.66; plausible from tax adjustments/grants presentation but worth a glance.",
+      "figure": "personal allowance 1,813.49",
+      "where": "Income tax indicator",
+      "why": "An unusual tapered-looking allowance for a profit of 121,513.02 — worth a human glance, but consistent with taper and not a contradiction",
       "severity": "note"
     },
     {
-      "figure": "personal allowance of 1,813.49",
-      "where": "Income tax indicator",
-      "why": "Heavily tapered allowance is consistent with income near 120k, but the odd figure is worth a sanity check.",
+      "figure": "Turnover 339,200.00 vs profit before tax 171,773.02 and SA net profit 183,429.68",
+      "where": "Turnover/self assessment indicators",
+      "why": "P&L PBT sits below the SA net profit; plausible given differing adjustments but the gap is not explained in the digest",
       "severity": "note"
     }
   ],
   "model": "anthropic.claude-opus-5",
   "region": "us-east-1",
-  "digestHash": "3e89ab8fd1d781f9ab6f8bc693a6989a32eadb0f2f9a98509503402b2056c2be",
+  "digestHash": "03b67d9e2cc01cc3b736da2dc9a8454328fdfe595157b47b308fc1df2cde6cca",
   "runs": [
     {
       "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
@@ -27,5 +27,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-02T07:52:12.322Z"
+  "timestamp": "2026-09-05T19:06:21.812Z"
 }

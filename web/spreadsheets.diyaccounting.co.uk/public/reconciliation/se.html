@@ -74,20 +74,20 @@
       <section class="recon-section" id="summary">
         <h3>Summary</h3>
         <ul class="recon-facts">
-          <li><strong>Status:</strong> RECONCILES (with warnings)</li>
+          <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 842 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 869 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators match the headline: VAT-registered with all four quarters carrying VAT, turnover net of VAT and disposals at the right scale, capital allowances explaining the lower taxable profit, grants bridging to the taxed profit, and a zero-residue bridge with no balance sheet expected for this product. Only minor notes.</p>
+          <p>Indicators match the headline: VAT-registered with all four quarters non-nil, turnover net of VAT and disposals at the expected scale, capital allowances explaining the lower taxable profit, grants accounting for the exact difference to the taxed profit, and a zero-residue bridge. Only minor items to glance at.</p>
           <ul>
-            <li><strong>profit before tax 171,773.02 vs SA103S net profit 183,429.68</strong> (Turnover/profit indicator and self assessment line): The two profit measures differ by 11,656.66; plausible from tax adjustments/grants presentation but worth a glance. [note]</li>
-            <li><strong>personal allowance of 1,813.49</strong> (Income tax indicator): Heavily tapered allowance is consistent with income near 120k, but the odd figure is worth a sanity check. [note]</li>
+            <li><strong>personal allowance 1,813.49</strong> (Income tax indicator): An unusual tapered-looking allowance for a profit of 121,513.02 — worth a human glance, but consistent with taper and not a contradiction [note]</li>
+            <li><strong>Turnover 339,200.00 vs profit before tax 171,773.02 and SA net profit 183,429.68</strong> (Turnover/self assessment indicators): P&amp;L PBT sits below the SA net profit; plausible given differing adjustments but the gap is not explained in the digest [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-02. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -155,7 +155,7 @@
 <tr><td>Closing Creditors total</td><td>1710</td><td>1710</td><td>0</td><td>PASS</td></tr>
 <tr><td>Income Tax</td><td>40340</td><td>40339.8099999998</td><td>-0.19000000019877916</td><td>PASS</td></tr>
 <tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI</td><td>44027</td><td>44026.6703333331</td><td>-0.32966666689753765</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI, less the CIS already deducted</td><td>44027</td><td>44026.6703333331</td><td>-0.32966666689753765</td><td>PASS</td></tr>
 <tr><td>Tax: Personal allowance after taper</td><td>1813.4916666670033</td><td>1813.49166666687</td><td>-1.3324097380973399e-10</td><td>PASS</td></tr>
 <tr><td>Tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the basic and higher bands at the basic band end</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
@@ -240,7 +240,7 @@
 <tr><td>SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back</td><td>169510.316666667</td><td>169510.316666667</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation</td><td>169689.683333333</td><td>169689.683333333</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24</td><td>64000</td><td>64000</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25</td><td>64000</td><td>64000</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)</td><td>46118</td><td>46118</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)</td><td>46482</td><td>46482</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)</td><td>0.14</td><td>0.14</td><td>0</td><td>PASS</td></tr>
@@ -478,6 +478,32 @@
 <tr><td>Purchases.xlsx Feb: the month's expense analysis balances (A1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Purchases.xlsx Mar: CIS tax withheld reaches the certificates column (AD1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Purchases.xlsx Mar: the month's expense analysis balances (A1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Apr: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Apr: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx May: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx May: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jun: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jun: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jul: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jul: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Aug: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Aug: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Sep: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Sep: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Oct: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Oct: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Nov: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Nov: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Dec: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Dec: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jan: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Jan: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Feb: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Feb: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Mar: CIS suffered reaches the sub-contractor column (W1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Sales.xlsx Mar: CIS suffered for the year to date (X1)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface apr C4 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface apr D4 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface apr E4 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -857,7 +883,8 @@
 <tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band End = tax data</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>3.5</td><td>3.5</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Small Profits Threshold = tax data</td><td>6845</td><td>6845</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
@@ -1970,14 +1997,14 @@
 <tr><td>Profit before tax per the profit and loss account</td><td>Profit &amp; Loss Account!B39</td><td class="num">171,773.02</td></tr>
 <tr><td>Add depreciation charged in the accounts</td><td>Profit &amp; Loss Account!B34</td><td class="num">13,740</td></tr>
 <tr><td>Less grants, taxed as other business income below</td><td>Profit &amp; Loss Account!B11</td><td class="num">-2,083.33</td></tr>
-<tr><td>Less net loss for the year (box 21)</td><td>SE Short!O71</td><td class="num">0</td></tr>
-<tr><td>Less annual investment allowance (box 22)</td><td>SE Short!D80</td><td class="num">-52,500</td></tr>
-<tr><td>Less small-balance allowance (box 23)</td><td>SE Short!D85</td><td class="num">0</td></tr>
-<tr><td>Less other capital allowances (box 24)</td><td>SE Short!O80</td><td class="num">-11,500</td></tr>
-<tr><td>Add balancing charges (box 25)</td><td>SE Short!O85</td><td class="num">0</td></tr>
-<tr><td>Add goods and services for own use (box 26)</td><td>SE Short!D94</td><td class="num">0</td></tr>
-<tr><td>Add grants as other business income (box 29)</td><td>SE Short!O99</td><td class="num">2,083.33</td></tr>
-<tr><td>Less loss brought forward (box 28)</td><td>SE Short!O94</td><td class="num">0</td></tr>
+<tr><td>Less net loss for the year (box 22)</td><td>SE Short!O71</td><td class="num">0</td></tr>
+<tr><td>Less annual investment allowance (box 23)</td><td>SE Short!D80</td><td class="num">-52,500</td></tr>
+<tr><td>Less small-balance allowance (box 24)</td><td>SE Short!D85</td><td class="num">0</td></tr>
+<tr><td>Less other capital allowances (box 25)</td><td>SE Short!O80</td><td class="num">-11,500</td></tr>
+<tr><td>Add balancing charges (box 26)</td><td>SE Short!O85</td><td class="num">0</td></tr>
+<tr><td>Add goods and services for own use (box 27)</td><td>SE Short!D94</td><td class="num">0</td></tr>
+<tr><td>Add grants as other business income (box 30)</td><td>SE Short!O99</td><td class="num">2,083.33</td></tr>
+<tr><td>Less loss brought forward (box 29)</td><td>SE Short!O94</td><td class="num">0</td></tr>
 <tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>121,513.02</strong></td></tr>
 <tr><td>Tax profit the sheet carries</td><td>Income Tax!E5</td><td class="num">121,513.02</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
@@ -2032,7 +2059,7 @@
 <tr><td>Cost of Sales</td><td class="num">20,136.67</td></tr>
 <tr><td><strong>Gross Profit</strong></td><td class="num">321,146.67</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Wages &amp; Salaries</td><td class="num">92,735.73</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power</td><td class="num">13,200</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises Rent Rates Power</td><td class="num">13,200</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Maintenance</td><td class="num">950</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;General Admin</td><td class="num">3,035</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses</td><td class="num">6,434.25</td></tr>
@@ -2123,7 +2150,8 @@
 <tr><td>Basic Band End</td><td class="num">37,700</td></tr>
 <tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
 <tr><td>Higher Band End</td><td class="num">125,140</td></tr>
-<tr><td>NI Class 2 Weekly Rate</td><td class="num">0</td></tr>
+<tr><td>NI Class 2 Weekly Rate</td><td class="num">3.5</td></tr>
+<tr><td>NI Class 2 Small Profits Threshold</td><td class="num">6,845</td></tr>
 <tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
 <tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
 <tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
@@ -2219,7 +2247,7 @@
 <tr><td>B17</td><td>Cost of Sales</td><td>20136.6666666667</td><td>gl-cor:amount (costOfSales)</td></tr>
 <tr><td>B19</td><td><strong>Gross Profit</strong></td><td>321146.666666666</td><td>gl-cor:amount (grossProfit)</td></tr>
 <tr><td>B21</td><td>Wages &amp; Salaries</td><td>92735.7333333333</td><td>accounts.purchases.5101</td></tr>
-<tr><td>B22</td><td>Light, Heat, Power</td><td>13200</td><td>accounts.purchases.5201</td></tr>
+<tr><td>B22</td><td>Premises Rent Rates Power</td><td>13200</td><td>accounts.purchases.5201</td></tr>
 <tr><td>B23</td><td>Repairs &amp; Maintenance</td><td>950</td><td>accounts.purchases.5400</td></tr>
 <tr><td>B24</td><td>General Admin</td><td>3035</td><td>accounts.purchases.5501</td></tr>
 <tr><td>B25</td><td>Motor Expenses</td><td>6434.25</td><td>accounts.purchases.5601</td></tr>
@@ -2540,17 +2568,19 @@
 <tr><td>O60</td><td>Other business expenses</td><td>6903.66666666666</td><td>gl-cor:amount (sa103s.otherExpenses)</td></tr>
 <tr><td>O64</td><td><strong>Total expenses</strong></td><td>155770.316666667</td><td>gl-cor:amount (sa103s.totalExpenses)</td></tr>
 <tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>183429.683333333</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
-<tr><td>O71</td><td>Net loss (box 21)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
+<tr><td>O71</td><td>Net loss (box 22)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
 <tr><td>D80</td><td>Capital allowances</td><td>52500</td><td>tax.capitalAllowances (sa103s)</td></tr>
 <tr><td>D85</td><td>AIA / WDA claimed</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
-<tr><td>O80</td><td>Other capital allowances (box 24)</td><td>11500</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
-<tr><td>O85</td><td>Balancing charges (box 25)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
+<tr><td>O80</td><td>Other capital allowances (box 25)</td><td>11500</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
+<tr><td>O85</td><td>Balancing charges (box 26)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
 <tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
 <tr><td>D99</td><td><strong>Taxable profit</strong></td><td>119429.683333333</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
-<tr><td>O94</td><td>Loss brought forward (box 28)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
-<tr><td>O99</td><td>Grants as other business income (box 29)</td><td>2083.33333333333</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
+<tr><td>O94</td><td>Loss brought forward (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
+<tr><td>O99</td><td>Grants as other business income (box 30)</td><td>2083.33333333333</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
 <tr><td>A33</td><td>Turnover note</td><td>SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td><td>gl-cor:detailComment (sa103s.notes)</td></tr>
 <tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>121513.016666666</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>D124</td><td>Total loss to carry forward (box 35)</td><td>0</td><td>gl-cor:amount (sa103s.lossCarriedForward)</td></tr>
+<tr><td>O124</td><td>Deductions by contractors (box 38)</td><td>0</td><td>diya-gl:cisDeduction (sa103s)</td></tr>
 </tbody>
 </table></div>
 <h5>SE Full</h5>
@@ -2685,7 +2715,8 @@
 <tr><td>M11</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
 <tr><td>N12</td><td>Higher Band Start</td><td>37701</td><td></td></tr>
 <tr><td>N13</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
-<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>0</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>3.5</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>N16</td><td>NI Class 2 Small Profits Threshold</td><td>6845</td><td>tax.nationalInsurance.class2SmallProfitsThreshold</td></tr>
 <tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
@@ -2748,6 +2779,8 @@
 <tr><td>H1</td><td></td><td>5566.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>27833.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!May</h5>
@@ -2757,6 +2790,8 @@
 <tr><td>H1</td><td></td><td>5486.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>27433.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Jun</h5>
@@ -2766,6 +2801,8 @@
 <tr><td>H1</td><td></td><td>5866.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>29333.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Jul</h5>
@@ -2775,6 +2812,8 @@
 <tr><td>H1</td><td></td><td>5626.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>28133.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Aug</h5>
@@ -2784,6 +2823,8 @@
 <tr><td>H1</td><td></td><td>6003.33333333333</td><td></td></tr>
 <tr><td>I1</td><td></td><td>30016.6666666667</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Sep</h5>
@@ -2793,6 +2834,8 @@
 <tr><td>H1</td><td></td><td>5626.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>28133.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Oct</h5>
@@ -2802,6 +2845,8 @@
 <tr><td>H1</td><td></td><td>8426.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>42133.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Nov</h5>
@@ -2811,6 +2856,8 @@
 <tr><td>H1</td><td></td><td>5886.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>29433.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Dec</h5>
@@ -2820,6 +2867,8 @@
 <tr><td>H1</td><td></td><td>5466.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>27333.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Jan</h5>
@@ -2829,6 +2878,8 @@
 <tr><td>H1</td><td></td><td>5906.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>29533.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Feb</h5>
@@ -2838,6 +2889,8 @@
 <tr><td>H1</td><td></td><td>5726.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>28633.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Sales.xlsx!Mar</h5>
@@ -2847,6 +2900,8 @@
 <tr><td>H1</td><td></td><td>5226.66666666667</td><td></td></tr>
 <tr><td>I1</td><td></td><td>26133.3333333333</td><td></td></tr>
 <tr><td>H2</td><td></td><td>20</td><td></td></tr>
+<tr><td>W1</td><td></td><td>0</td><td></td></tr>
+<tr><td>X1</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Purchases.xlsx!OpeningCreditors</h5>
@@ -3740,17 +3795,19 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business expenses</td><td class="num">6,903.67</td></tr>
 <tr><td><strong>Total expenses</strong></td><td class="num">155,770.32</td></tr>
 <tr><td><strong>Net profit/loss</strong></td><td class="num">183,429.68</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital allowances</td><td class="num">52,500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24)</td><td class="num">11,500</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25)</td><td class="num">11,500</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
 <tr><td><strong>Taxable profit</strong></td><td class="num">119,429.68</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29)</td><td class="num">2,083.33</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30)</td><td class="num">2,083.33</td></tr>
 <tr><td>Turnover note</td><td class="num">SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td></tr>
 <tr><td><strong>Net profit for tax calc</strong></td><td class="num">121,513.02</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38)</td><td class="num">0</td></tr>
 </tbody>
 </table></div>
 <h4>Self Assessment (SA103F)</h4>

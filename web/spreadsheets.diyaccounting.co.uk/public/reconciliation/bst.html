@@ -82,12 +82,12 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators are consistent with the headline: no VAT boxes for an unregistered trader, turnover and profit on scale, capital allowances and bridge residue clean, and tax charged on the stated taxable profit. Only minor items worth a glance, nothing blocking.</p>
+          <p>Indicators agree with the headline: no VAT boxes for an unregistered trader, tax charged on a positive taxable profit, capital allowances match the capitalised spend, and the profit bridge residue is zero. Only minor notes on the nil personal allowance and the unsettled debtor balance.</p>
           <ul>
-            <li><strong>Personal allowance 0.00</strong> (Income tax indicator): Correct at this income level (fully tapered), but worth a glance since it leaves taxable income equal to full profit. [note]</li>
-            <li><strong>Debtors 420,700.00 vs turnover 409,900.00</strong> (Debtors and creditors indicator): Debtors exceed the year's sales, consistent with the stated opening balance and no settlements recorded, so explained rather than faulty. [note]</li>
+            <li><strong>Personal allowance 0.00</strong> (Income tax indicator): Consistent with taper at £226,508 income, but worth a glance that the allowance is deliberately nil rather than unpopulated. [note]</li>
+            <li><strong>Debtors 420,700.00 vs sales invoiced 409,900.00</strong> (Debtors and creditors indicator): Debtors exceed the year's sales; explained by the stated opening balance and no settlements recorded, so behavioural rather than wrong. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-03. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -168,7 +168,7 @@
 <tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band End = tax data</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Rate = tax data</td><td>3.5</td><td>3.5</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Rate = tax data</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
@@ -961,15 +961,15 @@
 <thead><tr><th>Line</th><th>Cell</th><th class="num">Amount</th></tr></thead>
 <tbody>
 <tr><td>Net profit per the profit and loss account</td><td>Profit &amp; Loss Acc!C24</td><td class="num">265,508</td></tr>
-<tr><td>Add other business income (box 10)</td><td>SE Short!O38</td><td class="num">0</td></tr>
-<tr><td>Less net loss for the year (box 22)</td><td>SE Short!O71</td><td class="num">0</td></tr>
-<tr><td>Less annual investment allowance (box 23)</td><td>SE Short!D80</td><td class="num">-39,000</td></tr>
-<tr><td>Less small-balance allowance (box 24)</td><td>SE Short!D85</td><td class="num">0</td></tr>
-<tr><td>Less other capital allowances (box 25)</td><td>SE Short!O80</td><td class="num">0</td></tr>
-<tr><td>Add balancing charges (box 26)</td><td>SE Short!O85</td><td class="num">0</td></tr>
-<tr><td>Add goods and services for own use (box 27)</td><td>SE Short!D94</td><td class="num">0</td></tr>
-<tr><td>Add other business income (box 30)</td><td>SE Short!O99</td><td class="num">0</td></tr>
-<tr><td>Less loss brought forward (box 29)</td><td>SE Short!O94</td><td class="num">0</td></tr>
+<tr><td>Add other business income (box 9)</td><td>SE Short!O38</td><td class="num">0</td></tr>
+<tr><td>Less net loss for the year (box 21)</td><td>SE Short!O71</td><td class="num">0</td></tr>
+<tr><td>Less annual investment allowance (box 22)</td><td>SE Short!D80</td><td class="num">-39,000</td></tr>
+<tr><td>Less small-balance allowance (box 23)</td><td>SE Short!D85</td><td class="num">0</td></tr>
+<tr><td>Less other capital allowances (box 24)</td><td>SE Short!O80</td><td class="num">0</td></tr>
+<tr><td>Add balancing charges (box 25)</td><td>SE Short!O85</td><td class="num">0</td></tr>
+<tr><td>Add goods and services for own use (box 26)</td><td>SE Short!D94</td><td class="num">0</td></tr>
+<tr><td>Add other business income (box 29)</td><td>SE Short!O99</td><td class="num">0</td></tr>
+<tr><td>Less loss brought forward (box 28)</td><td>SE Short!O94</td><td class="num">0</td></tr>
 <tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>226,508</strong></td></tr>
 <tr><td>Tax profit the sheet carries</td><td>Income Tax!E5</td><td class="num">226,508</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
@@ -1110,7 +1110,7 @@
 <tr><td>Basic Band End</td><td class="num">37,700</td></tr>
 <tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
 <tr><td>Higher Band End</td><td class="num">125,140</td></tr>
-<tr><td>NI Class 2 Rate</td><td class="num">3.5</td></tr>
+<tr><td>NI Class 2 Rate</td><td class="num">0</td></tr>
 <tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
 <tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
 <tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
@@ -1211,15 +1211,15 @@
 <tr><td>D60</td><td>Premises costs</td><td>15840</td><td>gl-cor:amount (sa103s.premises)</td></tr>
 <tr><td>D64</td><td>Repairs &amp; maintenance</td><td>1140</td><td>gl-cor:amount (sa103s.repairs)</td></tr>
 <tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>265508</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
-<tr><td>O71</td><td>Net loss (box 22)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
+<tr><td>O71</td><td>Net loss (box 21)</td><td>0</td><td>gl-cor:amount (sa103s.netLoss)</td></tr>
 <tr><td>D80</td><td>Capital allowances</td><td>39000</td><td>tax.capitalAllowances (sa103s)</td></tr>
 <tr><td>D85</td><td>AIA / WDA claimed</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
 <tr><td>O80</td><td>WDA + Capital Allowance claimed</td><td>0</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
 <tr><td>O85</td><td>Balancing Charge</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
 <tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
 <tr><td>D99</td><td><strong>Taxable profit</strong></td><td>226508</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
-<tr><td>O94</td><td>Loss brought forward (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
-<tr><td>O99</td><td>Other business income (box 30)</td><td>0</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
+<tr><td>O94</td><td>Loss brought forward (box 28)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
+<tr><td>O99</td><td>Other business income (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
 <tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>226508</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
 </tbody>
 </table></div>
@@ -1300,7 +1300,7 @@
 <tr><td>M12</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
 <tr><td>N13</td><td>Higher Band Start</td><td>37701</td><td>tax.incomeTax.basicRateLimit (+1)</td></tr>
 <tr><td>N14</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
-<tr><td>L17</td><td>NI Class 2 Rate</td><td>3.5</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>L17</td><td>NI Class 2 Rate</td><td>0</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
 <tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
@@ -1350,17 +1350,17 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee costs</td><td class="num">69,200</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises costs</td><td class="num">15,840</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; maintenance</td><td class="num">1,140</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10)</td><td class="num">—</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9)</td><td class="num">—</td></tr>
 <tr><td><strong>Net profit/loss</strong></td><td class="num">265,508</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital allowances</td><td class="num">39,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
 <tr><td><strong>Taxable profit</strong></td><td class="num">226,508</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29)</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29)</td><td class="num">0</td></tr>
 <tr><td><strong>Net profit for tax calc</strong></td><td class="num">226,508</td></tr>
 </tbody>
 </table></div>
