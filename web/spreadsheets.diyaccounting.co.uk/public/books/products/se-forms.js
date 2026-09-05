@@ -274,10 +274,10 @@
       });
     }
     if (!line.cell) {
-      return form.row({ label: line.label, amount: line.text || "", rKeyAttr: "", total: false });
+      return form.row({ box: line.ref, label: line.label, amount: line.text || "", rKeyAttr: "", total: false });
     }
     var resolved = wholeAmount(ctx, helpers, line.cell);
-    return form.row({ label: line.label, amount: resolved.amount, rKeyAttr: resolved.rKeyAttr, total: !!line.total });
+    return form.row({ box: line.ref, label: line.label, amount: resolved.amount, rKeyAttr: resolved.rKeyAttr, total: !!line.total });
   }
 
   function renderComputation(snap, state, helpers) {
