@@ -51,6 +51,38 @@ export function addPurchaseLine(book, lines, params) {
 }
 
 /**
+ * Append a bank line. A bank entry reaches its month tab through four
+ * fields at once -- the workbook it belongs to, the block it lands in, the
+ * column it is analysed under and the amount -- so all four are checked
+ * here rather than left to fail later inside the writer, where the message
+ * names a cell instead of a field. The bank account has to be one the
+ * book's own chart declares under [accounts.bank].
+ * @param {Object} book - parsed book.toml, for its declared bank accounts
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{line: Object}} params - the bank line to add
+ * @returns {Array} a new lines array with the line appended
+ */
+export function addBankLine(book, lines, params) {
+  const { line } = params;
+  if (line.sourceJournalID !== "bank") {
+    throw new Error(`addBankLine expects a line with sourceJournalID "bank", got "${line.sourceJournalID}"`);
+  }
+  if (line.debitCreditCode !== "D" && line.debitCreditCode !== "C") {
+    throw new Error(`addBankLine expects debitCreditCode "D" or "C", got "${line.debitCreditCode}"`);
+  }
+  if (!Object.keys(book?.accounts?.bank || {}).includes(line["diya-gl:bankAccountID"])) {
+    throw new Error(`addBankLine expects a diya-gl:bankAccountID declared in the book's own chart, got "${line["diya-gl:bankAccountID"]}"`);
+  }
+  if (!line["diya-gl:bankCode"]) {
+    throw new Error("addBankLine expects a diya-gl:bankCode naming the column the entry is analysed under");
+  }
+  if (typeof line.amount !== "number" || !Number.isFinite(line.amount)) {
+    throw new Error(`addBankLine expects amount to be a number, got "${line.amount}"`);
+  }
+  return [...lines, line];
+}
+
+/**
  * Change one existing line's amount, identified by its entryNumber. Every
  * other field on the line is carried over unchanged.
  * @param {Object} book - parsed book.toml (unused; see addSaleLine)
@@ -160,6 +192,105 @@ export function changeLineAccount(book, lines, params) {
     if (line.entryNumber !== entryNumber) return line;
     found = true;
     return { ...line, accountMainID: newAccountMainID };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
+
+/**
+ * Move one existing bank entry to another of the book's own bank accounts,
+ * identified by its entryNumber. A bank line names its account twice -- as
+ * the line's own account and as the bank account the workbook is keyed by --
+ * and both move together, or the entry would reach one workbook and be
+ * totalled under another. The new account has to be one the book's chart
+ * declares under [accounts.bank], and the named line has to be on the bank
+ * journal. Every other field, including the line's position in the array,
+ * is carried over unchanged.
+ * @param {Object} book - parsed book.toml, for its declared bank accounts
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, newBankAccountID: string}} params
+ * @returns {Array} a new lines array with the named line's bank account changed
+ */
+export function changeLineBankAccount(book, lines, params) {
+  const { entryNumber, newBankAccountID } = params;
+  if (!Object.keys(book?.accounts?.bank || {}).includes(newBankAccountID)) {
+    throw new Error(`changeLineBankAccount expects a bank account declared in the book's own chart, got "${newBankAccountID}"`);
+  }
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    if (line.sourceJournalID !== "bank") {
+      throw new Error(`changeLineBankAccount expects a line on the bank journal, got "${line.sourceJournalID}"`);
+    }
+    found = true;
+    return { ...line, "accountMainID": newBankAccountID, "diya-gl:bankAccountID": newBankAccountID };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
+
+/**
+ * Change one existing line's detail comment, identified by its entryNumber.
+ * The detail is what the workbook prints beside the entry -- a fare's name
+ * on the Taxi Sales sheet, a supplier on a Purchases sheet -- and it also
+ * decides where a Taxi sales line lands: "Rental due" and "Any other
+ * income" are the week's own caption rows, not a day's fare. Every other
+ * field, including the line's position in the array, is carried over
+ * unchanged.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, detailComment: string}} params
+ * @returns {Array} a new lines array with the named line's detail changed
+ */
+export function changeLineDetail(book, lines, params) {
+  const { entryNumber, detailComment } = params;
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    found = true;
+    return { ...line, detailComment };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
+
+// A measured quantity is three fields at once -- how many, of what, and
+// what the measurement is of -- so they are written and removed together.
+// Miles name themselves: a Taxi fare day's quantity is always the business
+// miles that day drove, which is what the mileage claim is priced from.
+const MILES_DESCRIPTION = "Business miles driven";
+
+/**
+ * Set or remove one existing line's measured quantity, identified by its
+ * entryNumber. A quantity above zero writes all three measurable fields; a
+ * quantity of zero or null removes all three, leaving a line that measures
+ * nothing rather than one measuring none of something. Every other field,
+ * including the line's position in the array, is carried over unchanged.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, quantity: number|null, unit: string, description: string}} params
+ * @returns {Array} a new lines array with the named line's quantity changed
+ */
+export function changeLineQuantity(book, lines, params) {
+  const { entryNumber, quantity, unit, description } = params;
+  if (quantity !== null && quantity !== undefined && (typeof quantity !== "number" || !Number.isFinite(quantity) || quantity < 0)) {
+    throw new Error(`changeLineQuantity expects a non-negative number or null, got "${quantity}"`);
+  }
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    found = true;
+    const next = { ...line };
+    if (quantity) {
+      next.measurableQuantity = quantity;
+      next.measurableUnitOfMeasure = unit;
+      next.measurableDescription = unit === "miles" ? MILES_DESCRIPTION : description;
+    } else {
+      delete next.measurableQuantity;
+      delete next.measurableUnitOfMeasure;
+      delete next.measurableDescription;
+    }
+    return next;
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;

@@ -31,6 +31,7 @@ class4_lower_limit = 11908
 class4_upper_rate = 0.0273
 class4_upper_limit = 50270
 class2_weekly_rate = 3.15
+class2_small_profits_threshold = 6725
 
 [capital_allowances]
 annual_investment_allowance = 1.00

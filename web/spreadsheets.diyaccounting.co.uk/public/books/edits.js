@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 
-// books/bst-edits.js
+// books/edits.js
 //
 // The edit path, the undo stack and the fix-it helpers. Every change to the
 // book -- a hand edit in the entries grid, a delete, an added entry, or a
 // helper applying its whole plan -- goes through the named edits
 // app/lib/diya-gl-edits.js exports (addSaleLine, addPurchaseLine,
-// changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount),
-// reached through the engine bundle. Nothing here reimplements an edit, so
+// changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount,
+// changeLineDetail, changeLineQuantity), reached through the engine bundle. Nothing here reimplements an edit, so
 // the page, the CLI and the MCP server change a book the same way.
 //
 // The book checks themselves -- which lines offend, why it matters, and how
@@ -61,10 +61,11 @@
     return engineModule;
   }
 
-  // The three check ids' button text before their preview opens. The rule
-  // that decides an offender and the fix it applies live in book-checks.js;
-  // this is presentation text only, keyed off the count that module's own
-  // result already carries.
+  // The button text before a helper's preview opens, for the checks whose
+  // text counts the offenders. The rule that decides an offender and the fix
+  // it applies live in book-checks.js; this is presentation text only, keyed
+  // off the count that module's own result already carries. A helper this
+  // table does not list uses its own label.
   var ACTION_LABELS = {
     "book-dates-in-period": function (n) {
       return "Move " + n + (n === 1 ? " entry" : " entries") + " into the period";
@@ -89,7 +90,14 @@
     var taxData = (snapshot.context && snapshot.context.taxData) || null;
     var results = api.runBookChecks({ book: snapshot.book, lines: snapshot.lines, taxData: taxData }).results;
     return results.map(function (r) {
-      var helper = r.helper ? { title: r.helper.label, actionLabel: ACTION_LABELS[r.id](r.actual) } : null;
+      var helper = r.helper
+        ? {
+            title: r.helper.label,
+            actionLabel: ACTION_LABELS[r.id] ? ACTION_LABELS[r.id](r.actual) : r.helper.label,
+            kind: r.helper.kind,
+            field: r.helper.field,
+          }
+        : null;
       return {
         id: r.id,
         tier: r.tier,
@@ -137,6 +145,18 @@
     return api.removeLine(book, lines, { entryNumber: entryNumber });
   }
 
+  async function changeDetail(book, lines, entryNumber, detail) {
+    var api = await engine();
+    return api.changeLineDetail(book, lines, { entryNumber: entryNumber, detailComment: detail });
+  }
+
+  // null clears the line's miles along with the unit and description they
+  // came with.
+  async function changeMiles(book, lines, entryNumber, miles) {
+    var api = await engine();
+    return api.changeLineQuantity(book, lines, { entryNumber: entryNumber, quantity: miles, unit: "miles" });
+  }
+
   function nextEntryNumber(lines) {
     var taken = {};
     for (var i = 0; i < lines.length; i++) taken[lines[i].entryNumber] = 1;
@@ -148,7 +168,9 @@
   /**
    * A new entry typed into the open month. The line is built here and added
    * by addSaleLine/addPurchaseLine, which refuse a line posted to the other
-   * journal -- so a sale can never arrive under the purchases name.
+   * journal -- so a sale can never arrive under the purchases name. A fare
+   * arrives as a receipt with the day's miles; the shared add row passes
+   * neither, so its lines are invoices measuring nothing.
    */
   async function addEntry(book, lines, entry) {
     var api = await engine();
@@ -158,11 +180,12 @@
       postingDate: entry.date,
       accountMainID: String(entry.account),
       amount: entry.amount,
-      documentType: "invoice",
+      documentType: entry.documentType || "invoice",
       detailComment: entry.detail || "",
     };
-    if (entry.journal === "sales") return api.addSaleLine(book, lines, { line: line });
-    return api.addPurchaseLine(book, lines, { line: line });
+    var added = entry.journal === "sales" ? api.addSaleLine(book, lines, { line: line }) : api.addPurchaseLine(book, lines, { line: line });
+    if (!(entry.miles > 0)) return added;
+    return api.changeLineQuantity(book, added, { entryNumber: line.entryNumber, quantity: entry.miles, unit: "miles" });
   }
 
   // ============================== undo ==============================
@@ -200,6 +223,8 @@
     changeAmount: changeAmount,
     changeDate: changeDate,
     changeAccount: changeAccount,
+    changeDetail: changeDetail,
+    changeMiles: changeMiles,
     deleteEntry: deleteEntry,
     undo: undo,
   };

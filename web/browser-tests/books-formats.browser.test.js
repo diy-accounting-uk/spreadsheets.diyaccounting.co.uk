@@ -26,6 +26,7 @@ import { startStaticServer } from "./serve.js";
 import { parse as parseTOML } from "smol-toml";
 import { parseDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { writeBookJson } from "../../app/lib/books-interchange.js";
+import { readXlsxCellValues } from "../../app/lib/xlsx-reader.js";
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
@@ -36,6 +37,7 @@ const TARGET_DIR = path.join(ROOT, "target", "books-formats");
 const WORKBOOK_PATH = path.join(ROOT, "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
 const PRECISION_DIR = path.join(ROOT, "examples/precision-code-ltd/bst");
 const SE_WORKBOOK_PATH = path.join(ROOT, "app/templates/se/Financialaccounts.xlsx");
+const SE_PACKAGE_DIR = path.join(ROOT, "examples/se-latest");
 
 const YEAR_TOTAL = 409900;
 const YEAR_TOTAL_TEXT = "£409,900.00";
@@ -75,7 +77,18 @@ async function buildFixtures() {
       name: "legacy-accounts.xls",
     },
     seWorkbook: { bytes: fs.readFileSync(SE_WORKBOOK_PATH), name: "Financialaccounts.xlsx" },
+    sePackageZip: { bytes: await sePackageZipBytes(), name: "se-package.zip" },
   };
+}
+
+// The nine workbooks of a populated Self Employed package, zipped the way a
+// customer's own download ships.
+async function sePackageZipBytes() {
+  const entries = {};
+  for (const name of fs.readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+    entries[name] = fs.readFileSync(path.join(SE_PACKAGE_DIR, name));
+  }
+  return zipOf(entries);
 }
 
 let FIXTURES;
@@ -128,7 +141,7 @@ async function waitForLoaded(page) {
 }
 
 async function readSnapshotTotal(page) {
-  return page.evaluate(() => window.DIYA_BST_SNAPSHOT.annual.sales);
+  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.annual.sales);
 }
 
 async function readDownload(download) {
@@ -165,6 +178,38 @@ test.describe("DIYA-GL books page — every way in", () => {
       expect(await readSnapshotTotal(page), `${kind} snapshot total`).toBe(YEAR_TOTAL);
       await expect(page.locator("tfoot.year-totals"), `${kind} DOM total`).toContainText(YEAR_TOTAL_TEXT);
     }
+  });
+
+  test("the page opens every workbook in a package zip by name", async ({ page }) => {
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const base64 = FIXTURES.sePackageZip.bytes.toString("base64");
+    const read = await page.evaluate(async (zipBase64) => {
+      const binary = atob(zipBase64);
+      const array = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+      const set = await window.DiyaGlXlsxCells.openWorkbookSet(array);
+      return {
+        names: set.names(),
+        hubHasSeFull: await set.hasSheet("Financialaccounts.xlsx", "SE Full"),
+        salesHasSeFull: await set.hasSheet("Sales.xlsx", "SE Full"),
+        aprilMiles: await set.readCell("Sales.xlsx", "Apr", "D1"),
+        firstCustomer: await set.readCell("Sales.xlsx", "Apr", "B5"),
+      };
+    }, base64);
+
+    expect(read.names).toEqual(
+      fs
+        .readdirSync(SE_PACKAGE_DIR)
+        .filter((file) => file.endsWith(".xlsx"))
+        .sort(),
+    );
+    expect(read.hubHasSeFull).toBe(true);
+    expect(read.salesHasSeFull).toBe(false);
+
+    const nodeSide = await readXlsxCellValues(fs.readFileSync(path.join(SE_PACKAGE_DIR, "Sales.xlsx")), { Apr: ["D1", "B5"] });
+    expect(read.aprilMiles).toBe(nodeSide.Apr.D1);
+    expect(read.firstCustomer).toBe(nodeSide.Apr.B5);
   });
 
   test("a .zip renamed .xlsx still loads -- content decides, not the name", async ({ page }) => {
@@ -210,7 +255,7 @@ test.describe("DIYA-GL books page — every way in", () => {
   });
 });
 
-// loadFromFile's own book-building for an uploaded workbook (bst-data.js)
+// The manifest's own book-building for an uploaded workbook (products/bst.js)
 // is deliberately lighter than the CLI's extractBook: it has no access to
 // the real per-cell chart labels, the Fixed Assets register or the Admin
 // sheet's tax snapshot that extractBook() reads Node-side, off the
@@ -363,10 +408,10 @@ test.describe("DIYA-GL books page — breakability", () => {
     const beforeReport = JSON.parse(await (await JSZip.loadAsync(before.bytes)).file("report.json").async("string"));
 
     await page.evaluate(async () => {
-      const edited = window.DIYA_BST_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
+      const edited = window.DIYA_BOOKS_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
       await window.DiyaGlBooksPage.setLines(edited, "test: bump the first line by £500");
     });
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
     const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const afterReport = JSON.parse(await (await JSZip.loadAsync(after.bytes)).file("report.json").async("string"));

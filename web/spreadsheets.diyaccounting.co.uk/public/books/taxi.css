@@ -1,0 +1,397 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 DIY Accounting Ltd */
+
+/* books/taxi.css -- the Taxi Driver page's sheet: the shared books sheet,
+   the rules the takings grain under the year table needs, and the
+   comparison, register, computation and form views' own. */
+
+@import url("books.css");
+@import url("taxi-views.css");
+
+/* The week strip and the day grid are nested inside the open month's
+   detail, so they take the entries grid's own measure: small caps headers,
+   figures in tabular mono on the right, text left and wrapping. */
+table.week-strip,
+table.day-grid,
+table.fare-list,
+table.offgrid-list {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.82rem;
+  margin-top: 0.6rem;
+}
+
+table.week-strip th,
+table.day-grid th,
+table.fare-list th,
+table.offgrid-list th {
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.66rem;
+  color: var(--pencil);
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.week-strip th:first-child,
+table.day-grid th:first-child,
+table.day-grid th:nth-child(2),
+table.fare-list th:first-child,
+table.fare-list th:nth-child(2),
+table.offgrid-list th:first-child,
+table.offgrid-list th:nth-child(2) {
+  text-align: left;
+}
+
+table.week-strip td,
+table.day-grid td,
+table.fare-list td,
+table.offgrid-list td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--rule-faint);
+  font-family: var(--font-ui);
+  text-align: left;
+  white-space: normal;
+  vertical-align: middle;
+}
+
+table.week-strip td.num,
+table.day-grid td.num,
+table.fare-list td.num,
+table.offgrid-list td.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The week row opens like a year row: pointer, tint on hover and open, a
+   disclosure that turns when the row is open. */
+.week-row {
+  cursor: pointer;
+}
+.week-row:hover td,
+.week-row.is-open td {
+  background: var(--tint);
+}
+.week-row .disclosure,
+.day-toggle .disclosure {
+  display: inline-block;
+  width: 0.9em;
+  transition: transform 0.18s ease;
+}
+.week-row[aria-expanded="true"] .disclosure,
+.day-toggle[aria-expanded="true"] .disclosure {
+  transform: rotate(90deg);
+}
+
+.week-detail-row > td,
+.day-detail-row > td {
+  padding: 0 0 0.6rem 1rem;
+  background: var(--paper);
+}
+.week-detail,
+.day-detail-row table.fare-list {
+  animation: month-reveal 0.22s ease;
+}
+
+.day-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  min-height: 1.6rem;
+}
+
+.day-row.is-missing-miles td:nth-child(3) {
+  color: var(--correction);
+}
+
+.fare-count,
+.day-other,
+.week-subtotal-other {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--pencil);
+  white-space: nowrap;
+}
+
+.fare-list-caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--pencil);
+  padding: 0.3rem 0;
+}
+
+.week-total-row td {
+  border-top: 2px double var(--rule);
+  border-bottom: none;
+  font-weight: 700;
+}
+
+/* A fare's name and miles are quiet fields like the amount: an edge only on
+   hover and focus, a red edge while the typed value differs from the book. */
+.entry-detail-input,
+.entry-miles-input {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  max-width: 100%;
+}
+.entry-detail-input {
+  font-family: var(--font-ui);
+  width: 100%;
+}
+.entry-miles-input {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  width: 4.5rem;
+}
+.entry-detail-input:hover,
+.entry-detail-input:focus,
+.entry-miles-input:hover,
+.entry-miles-input:focus {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
+}
+.entry-detail-input[data-dirty="true"],
+.entry-miles-input[data-dirty="true"] {
+  border-color: var(--correction);
+}
+
+table.day-grid td.entry-actions,
+table.fare-list td.entry-actions,
+table.offgrid-list td.entry-actions {
+  width: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+table.day-grid td.entry-actions .btn,
+table.fare-list .btn,
+.caption-card .btn,
+.day-card .btn {
+  min-height: 2rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.78rem;
+  margin-left: 0.3rem;
+}
+
+/* A week's rental and other-income lines sit inline on their caption row,
+   each a date, an amount and a delete. */
+.caption-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-right: 0.6rem;
+}
+.caption-line .entry-date-input {
+  display: inline-block;
+  width: auto;
+}
+
+/* The draft is one row of fields where its add control was. */
+.fare-draft-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0;
+}
+.fare-draft-form .entry-detail-input {
+  width: 12rem;
+}
+.fare-draft-form .entry-amount-input,
+.fare-draft-form .entry-detail-input,
+.fare-draft-form .entry-miles-input {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
+}
+
+/* Entries the grid cannot hold: a red-ruled card above the strip. */
+.takings-offgrid {
+  border-left: 3px solid var(--correction);
+  margin: 0.6rem 0;
+}
+.takings-offgrid p {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+}
+.takings-offgrid .btn {
+  margin-top: 0.6rem;
+}
+
+.takings-summary {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* Desktop portrait and mobile landscape scroll the strip and the day grid
+   inside their own box, the first column pinned; desktop landscape has the
+   room and leaves the strip in place. */
+@media (min-width: 900px) and (orientation: portrait), (max-width: 899px) and (orientation: landscape) {
+  .week-strip-scroll {
+    overflow-x: auto;
+  }
+  .week-strip-scroll table.week-strip,
+  .week-strip-scroll table.day-grid {
+    min-width: 640px;
+  }
+  .week-strip-scroll th:first-child,
+  .week-strip-scroll td:first-child {
+    position: sticky;
+    left: 0;
+    background: var(--paper-raised);
+    z-index: 1;
+  }
+  .week-strip-scroll .week-row:hover td:first-child,
+  .week-strip-scroll .week-row.is-open td:first-child {
+    background: var(--tint);
+  }
+}
+
+/* Mobile portrait: the tables are not rendered; weeks, days and fares nest
+   as cards, laid as the month cards are, with full-width add controls and
+   thumb-sized targets. */
+.week-cards,
+.day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.week-card,
+.day-card,
+.caption-card {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  padding: 0.7rem 0.85rem;
+}
+.week-card.is-open,
+.day-card.is-open {
+  border-color: var(--rule);
+}
+.week-card-head,
+.day-card-head,
+.caption-card-head {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+button.week-card-head,
+button.day-card-head {
+  cursor: pointer;
+}
+.week-name,
+.day-name {
+  font-weight: 700;
+}
+.week-card-figures,
+.week-card-total {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.6rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+.week-card-figures .figure-label,
+.week-card-total .figure-label,
+.fare-card .figure-label {
+  color: var(--ink-faint);
+}
+.week-card-figures .figure-value,
+.week-card-total .figure-value,
+.fare-card .figure-value {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+.caption-card {
+  margin-top: 0.6rem;
+}
+.fare-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.6rem;
+  border-top: 1px solid var(--rule-faint);
+  padding: 0.6rem 0;
+}
+.fare-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.8rem;
+}
+.fare-card-field .entry-detail-input,
+.fare-card-field .entry-miles-input,
+.fare-card-field .entry-amount-input,
+.fare-card-field .entry-date-input,
+.fare-card .entry-delete {
+  border-color: var(--rule-faint);
+  min-height: 44px;
+  width: 100%;
+  text-align: left;
+}
+.caption-card .caption-line {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  width: 100%;
+  margin: 0.4rem 0;
+}
+.caption-card .caption-line .entry-date-input,
+.caption-card .caption-line .entry-amount-input,
+.caption-card .caption-line .entry-delete {
+  border-color: var(--rule-faint);
+  min-height: 44px;
+  width: 100%;
+}
+.day-card .btn,
+.caption-card .btn,
+.week-cards .fare-draft .btn {
+  width: 100%;
+  margin: 0.4rem 0 0;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+.week-cards .fare-draft-form {
+  flex-direction: column;
+  align-items: stretch;
+}
+.week-cards .fare-draft-form input {
+  min-height: 44px;
+  width: 100%;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .week-detail,
+  .day-detail-row table.fare-list,
+  .week-row .disclosure,
+  .day-toggle .disclosure {
+    animation: none;
+    transition: none;
+  }
+}

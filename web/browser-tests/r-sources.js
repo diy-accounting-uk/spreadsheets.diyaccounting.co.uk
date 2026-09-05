@@ -20,6 +20,7 @@ import { calculateFromDiyaGl } from "../../app/lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
 import * as bst from "../../app/products/bst.js";
+import { productModule } from "../../app/lib/products.js";
 
 const ROOT = process.cwd();
 
@@ -46,12 +47,38 @@ export const SCENARIOS = [
   },
 ];
 
-const FIXTURE_BY_SCENARIO = new Map(SCENARIOS.map((s) => [s.scenario, s.fixture]));
+// The three Self Employed books, each paired with its fixture (S1) and its
+// report.js --data directory (S2). Only the advanced book is served as an
+// example the page has a button for; the two BrickWork books reach the page
+// as a diya-gl zip built from the same directory, so `example` is null for
+// them.
+export const SCENARIOS_SE = [
+  {
+    scenario: "se-scenario-advanced",
+    fixture: "app/test/fixtures/se-scenario-advanced.toml",
+    bookDir: "examples/precision-code-ltd/advanced",
+    example: "se-scenario-advanced",
+  },
+  {
+    scenario: "se-brickwork-pro-nonvat",
+    fixture: "app/test/fixtures/se-brickwork-pro-nonvat.toml",
+    bookDir: "examples/brickwork-pro/se-nonvat",
+    example: null,
+  },
+  {
+    scenario: "se-brickwork-pro-vat",
+    fixture: "app/test/fixtures/se-brickwork-pro-vat.toml",
+    bookDir: "examples/brickwork-pro/se-vat",
+    example: null,
+  },
+];
+
+const FIXTURE_BY_SCENARIO = new Map([...SCENARIOS, ...SCENARIOS_SE].map((s) => [s.scenario, s.fixture]));
 
 /**
  * S1: a scenario fixture's own [expected] table -- the totals the fixture
  * was written to produce, independent of either engine.
- * @param {string} scenarioName - one of SCENARIOS[].scenario
+ * @param {string} scenarioName - one of SCENARIOS[].scenario or SCENARIOS_SE[].scenario
  * @returns {Object} the fixture's `expected` table, or {} if it declares none
  */
 export function s1(scenarioName) {
@@ -78,20 +105,21 @@ const s2Cache = new Map();
  * @param {string} bookDir - a diya-gl data directory, e.g. SCENARIOS[].bookDir
  * @param {string} [name] - a short label for the output directory; derived
  *   from bookDir when omitted
+ * @param {string} [product] - the package report.js computes the book under
  * @returns {Map<string, {value: string, unit: string}>}
  */
-export function s2(bookDir, name) {
-  const resolvedBookDir = path.resolve(ROOT, bookDir);
-  if (s2Cache.has(resolvedBookDir)) return s2Cache.get(resolvedBookDir);
+export function s2(bookDir, name, product = "bst") {
+  const cacheKey = `${path.resolve(ROOT, bookDir)}@${product}`;
+  if (s2Cache.has(cacheKey)) return s2Cache.get(cacheKey);
 
   const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
   const outDir = path.resolve(ROOT, "target", `r-${label}`);
-  execFileSync(process.execPath, ["app/bin/report.js", "--package", "bst", "--data", bookDir, "--output-dir", outDir], {
+  execFileSync(process.execPath, ["app/bin/report.js", "--package", product, "--data", bookDir, "--output-dir", outDir], {
     cwd: ROOT,
     stdio: "pipe",
   });
   const map = readReportMap(outDir);
-  s2Cache.set(resolvedBookDir, map);
+  s2Cache.set(cacheKey, map);
   return map;
 }
 
@@ -99,7 +127,7 @@ const s2ForPackageCache = new Map();
 
 /**
  * S2, computed for a stated year-end rather than the book's own -- the tax
- * tables report.js's --years names, in the se-<start>-<end> form
+ * tables report.js's --years names, in the <regime>-<start>-<end> form
  * generate-bst.yml's own scorecard step derives from a year-end, plus
  * --year-end itself so the two sides' report.json name the same year. A
  * book's [tax] section carries only its own year's rates (extractTaxDataFromBook
@@ -109,19 +137,20 @@ const s2ForPackageCache = new Map();
  * @param {string} yearEnd - YYYY-MM-DD, the UK tax year-end convention (5 April)
  * @param {string} [name] - a short label for the output directory; derived
  *   from bookDir when omitted
+ * @param {string} [product] - the package report.js computes the book under
  * @returns {Map<string, {value: string, unit: string}>}
  */
-export function s2ForPackage(bookDir, yearEnd, name) {
-  const cacheKey = `${path.resolve(ROOT, bookDir)}@${yearEnd}`;
+export function s2ForPackage(bookDir, yearEnd, name, product = "bst") {
+  const cacheKey = `${path.resolve(ROOT, bookDir)}@${yearEnd}@${product}`;
   if (s2ForPackageCache.has(cacheKey)) return s2ForPackageCache.get(cacheKey);
 
   const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
   const outDir = path.resolve(ROOT, "target", `r-${label}-${yearEnd}`);
   const taxYearEnd = Number(yearEnd.slice(0, 4));
-  const years = `se-${taxYearEnd - 1}-${taxYearEnd}`;
+  const years = `${productModule(product).PRODUCT.taxRegime}-${taxYearEnd - 1}-${taxYearEnd}`;
   execFileSync(
     process.execPath,
-    ["app/bin/report.js", "--package", "bst", "--data", bookDir, "--years", years, "--year-end", yearEnd, "--output-dir", outDir],
+    ["app/bin/report.js", "--package", product, "--data", bookDir, "--years", years, "--year-end", yearEnd, "--output-dir", outDir],
     { cwd: ROOT, stdio: "pipe" },
   );
   const map = readReportMap(outDir);
@@ -216,7 +245,7 @@ export function canonical(value, unit) {
 /**
  * Apply one edit to a diya-gl book directory's own lines in Node, then build
  * report.json exactly the way report.js's --data path and the page's own
- * buildReport (bst-data.js) both do: the same package name, engine, merged
+ * buildReport (data.js) both do: the same package name, engine, merged
  * scenario, checks, scenarioName and yearEnd. A browser edit's report.json
  * is expected to equal this function's `text`, byte for byte, for the same
  * edit applied to the same book.
@@ -285,4 +314,71 @@ export function parseFigure(text) {
   }
 
   return { value: NaN, unit: "text" };
+}
+
+const SE_SCENARIO_ADVANCED_REPORT = /^GB_Accounts_Self_Employed_(\d{4})_(\d{2})_(\d{2})__.*_se-scenario-advanced\.md$/;
+
+let s3SeCache = null;
+
+/**
+ * The year-end examples/se-latest was built for, read off the committed
+ * report names the same run wrote, exactly as latestBstYearEnd reads
+ * bst-latest's.
+ * @returns {string} YYYY-MM-DD
+ */
+function latestSeYearEnd() {
+  const reportsDir = path.resolve(ROOT, "reports");
+  const yearEnds = fs
+    .readdirSync(reportsDir)
+    .map((name) => SE_SCENARIO_ADVANCED_REPORT.exec(name))
+    .filter(Boolean)
+    .map((m) => `${m[1]}-${m[2]}-${m[3]}`)
+    .sort();
+  const latest = yearEnds.at(-1);
+  if (!latest) throw new Error("latestSeYearEnd: no reports/*_se-scenario-advanced.md found to read se-latest's year-end from");
+  return latest;
+}
+
+/**
+ * S3 for Self Employed: report.json read from the cached values of the nine
+ * workbooks in examples/se-latest, the saved Excel reference the repository
+ * keeps for this product. Reads each workbook's own cached cells -- no
+ * LibreOffice, no scenario, so it carries no check/ keys and none of the
+ * journal-category netting the --data path derives from the lines. Exists
+ * for se-scenario-advanced only.
+ * @returns {Map<string, {value: string, unit: string}>}
+ */
+export function s3Se() {
+  if (s3SeCache) return s3SeCache.map;
+
+  const outDir = path.resolve(ROOT, "target", "r-se-excel");
+  execFileSync(
+    process.execPath,
+    [
+      "app/bin/report.js",
+      "--package",
+      "se",
+      "--source-dir",
+      "examples/se-latest",
+      "--mode",
+      "saved",
+      "--year-end",
+      latestSeYearEnd(),
+      "--output-dir",
+      outDir,
+    ],
+    { cwd: ROOT, stdio: "pipe" },
+  );
+  s3SeCache = readReport(outDir);
+  return s3SeCache.map;
+}
+
+/**
+ * The year-end S3's Self Employed report.json carries, for a caller (A3)
+ * that wants S2 built to match it.
+ * @returns {string} YYYY-MM-DD
+ */
+export function s3SeYearEnd() {
+  s3Se();
+  return s3SeCache.yearEnd;
 }

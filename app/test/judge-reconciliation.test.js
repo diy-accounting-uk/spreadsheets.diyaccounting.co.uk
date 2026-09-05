@@ -307,8 +307,8 @@ describe("buildIndicators for the Self Employed", () => {
   it("itemises every capital allowance box so the drop to the taxable profit is exact", () => {
     expect(text).toContain(
       "Self assessment: net profit 183,429.68, less 64,000.00 of capital allowances " +
-        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances (box 24) 11,500.00), " +
-        "plus balancing charges (box 25) 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,429.68.",
+        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 11,500.00), " +
+        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,429.68.",
     );
   });
 
@@ -376,8 +376,8 @@ describe("buildIndicators for the Taxi Driver", () => {
   it("itemises an allowance this product really does split across two boxes", () => {
     const split = indicatorText("taxi", "taxiSpSixty");
     expect(split).toContain(
-      "less 200.00 of capital allowances (Annual investment allowance (box 22) 0.00, " +
-        "Small-balance allowance (box 23) 172.00, Other capital allowances (box 24) 28.00)",
+      "less 200.00 of capital allowances (Annual investment allowance 0.00, " +
+        "Small-balance allowance 172.00, Other capital allowances 28.00)",
     );
     expect(split).toContain("gives a net business profit of 29,480.00.");
   });

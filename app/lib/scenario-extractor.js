@@ -5,6 +5,7 @@
 // from Precision Code Ltd master data.
 
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
+import { generateTaxYearWeeks, groupWeeksIntoMonths } from "./generator.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -173,6 +174,13 @@ export const MONTH_ORDER = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "no
 
 // BST sales accounts (excludes 4006 FA sales)
 export const BST_SALES_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004", "4005"]);
+
+// The Taxi Driver chart's one fare account and the account any income the
+// driver takes outside a fare posts to instead. A Sales tab writes a fare to
+// column E and anything else -- a landlord's rental due, a start-up grant --
+// to column F, so the two accounts never mix on the same total.
+export const TAXI_SALES_ACCOUNT = "4000";
+export const TAXI_OTHER_INCOME_ACCOUNT = "4001";
 
 // SE bank accounts (current + cash only)
 export const SE_BANK_ACCOUNTS = new Set(["1200", "1220"]);
@@ -476,6 +484,24 @@ export function getMonthKey(postingDate) {
   return MONTH_NAMES[d.getMonth()];
 }
 
+// The Taxi Driver package's own month tabs hold whole Monday-to-Sunday
+// weeks, and a week's tab is the one named after the calendar month its
+// ending Sunday falls in, not a fixed 6th-to-5th date range: a week that
+// starts in one calendar month but ends its Sunday in the next belongs to
+// the sheet named after the next one. generateTaxYearWeeks() and
+// groupWeeksIntoMonths() are the layout the Sales tabs are written from, so
+// they are the layout a takings date is read back through.
+export function buildTaxMonthByDate(startYear) {
+  const monthly = groupWeeksIntoMonths(generateTaxYearWeeks(startYear));
+  const byDate = new Map();
+  for (const [monthKey, monthWeeks] of Object.entries(monthly)) {
+    for (const week of monthWeeks) {
+      for (const date of week) byDate.set(date.toISOString().slice(0, 10), monthKey);
+    }
+  }
+  return byDate;
+}
+
 export function escapeTomlString(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
@@ -608,14 +634,22 @@ export function monthlySalesTotals(salesLines) {
   return [...months.keys()].sort().map((month) => months.get(month));
 }
 
-// A taxi sheet takes the day's gross takings and nothing else: its Sales rows
-// carry a pre-filled date and one amount cell, with no customer or analysis
-// code to write.
+// A taxi sheet takes the day's gross takings and nothing else, except the two
+// caption rows a week keeps for a landlord's rental due and any other
+// income: those need their customer and account fields to reach their own
+// row rather than a day's, so this keeps the two fields on a line that
+// carries the other-income account or one of the two captions and strips
+// them from a plain fare, whose C column the package leaves blank.
 export function takingsOnlySales(grouped) {
   for (const month of Object.keys(grouped.sales)) {
     grouped.sales[month] = grouped.sales[month].map((txn) => {
+      const isCaptioned = txn.account === TAXI_OTHER_INCOME_ACCOUNT || txn.customer === "Rental due" || txn.customer === "Any other income";
       const takings = { date: txn.date, amount: txn.amount };
       if (txn.mileage !== undefined) takings.mileage = txn.mileage;
+      if (isCaptioned) {
+        takings.customer = txn.customer;
+        takings.account = txn.account;
+      }
       return takings;
     });
   }
@@ -656,41 +690,72 @@ export function fixedAssetAdditions(lines, purchaseCodeMap, capitalCode) {
  * the line's own accountMainID on each entry, which cellWrites() writes to
  * the Payslips ACCOUNT_ID_COLUMN so a payroll row posted to a non-default
  * account (a director paid outside PAYE, say) keeps that account on export
- * instead of falling back to the sheet's default payroll account.
+ * instead of falling back to the sheet's default payroll account. The same
+ * flag carries each entry's taxCode, looked up on the book's employees
+ * table the way diyaGlToScenario (diya-gl-loader.js) looks it up -- a
+ * payroll line names its employee by id or by name, so both are tried.
+ *
+ * A month's entries are ordered by entryNumber. The master's payroll lines
+ * happen to already read that way, but nothing enforces it -- the subset
+ * lines.jsonl a caller regenerates from is canonicalised (sorted by posting
+ * date, journal, then account) before it reaches disk, which can interleave
+ * a month's employees by account code. Sorting here, on the same key
+ * diyaGlToScenario sorts by, keeps the two paths agreeing regardless of
+ * which order the input lines arrive in.
  *
  * @param {Array} lines - parsed lines.jsonl entries (any journal)
  * @param {Object} [options]
- * @param {boolean} [options.carriesSourceFields] - carry each line's own accountMainID
+ * @param {boolean} [options.carriesSourceFields] - carry each line's own accountMainID and taxCode
+ * @param {Array} [options.employees] - the book's employees table, for the taxCode lookup
  * @returns {Object} { apr: [...], may: [...], ... }, {} when none present
  */
-export function buildPayroll(lines, { carriesSourceFields = false } = {}) {
-  const payroll = {};
+export function buildPayroll(lines, { carriesSourceFields = false, employees = [] } = {}) {
+  const taxCodeByEmployee = new Map();
+  for (const employee of employees) {
+    if (!employee.taxCode) continue;
+    taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+    taxCodeByEmployee.set(employee.name, employee.taxCode);
+  }
+  const linesByMonth = {};
   for (const line of lines) {
     if (line.sourceJournalID !== "payroll") continue;
     const month = getMonthKey(line.postingDate);
-    if (!payroll[month]) payroll[month] = [];
-    const entry = {
-      date: line.postingDate,
-      name: line.detailComment,
-      grossPay: line["diya-gl:grossPay"],
-      incomeTax: line["diya-gl:incomeTax"],
-      employeeNI: line["diya-gl:employeeNI"],
-      employerNI: line["diya-gl:employerNI"],
-      netPay: line["diya-gl:netPay"],
-      reference: line.documentReference,
-    };
-    if (carriesSourceFields) entry.accountMainID = line.accountMainID;
-    payroll[month].push(entry);
+    if (!linesByMonth[month]) linesByMonth[month] = [];
+    linesByMonth[month].push(line);
+  }
+  const payroll = {};
+  for (const [month, monthLines] of Object.entries(linesByMonth)) {
+    payroll[month] = [...monthLines]
+      .sort((a, b) => (a.entryNumber < b.entryNumber ? -1 : a.entryNumber > b.entryNumber ? 1 : 0))
+      .map((line) => {
+        const entry = {
+          date: line.postingDate,
+          name: line.detailComment,
+          grossPay: line["diya-gl:grossPay"],
+          incomeTax: line["diya-gl:incomeTax"],
+          employeeNI: line["diya-gl:employeeNI"],
+          employerNI: line["diya-gl:employerNI"],
+          netPay: line["diya-gl:netPay"],
+          reference: line.documentReference,
+        };
+        if (carriesSourceFields) {
+          entry.accountMainID = line.accountMainID;
+          const taxCode = taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment);
+          if (taxCode) entry.taxCode = taxCode;
+        }
+        return entry;
+      });
   }
   return payroll;
 }
 
-// A purchase from a CIS sub-contractor carries the tax the contractor
-// withheld and paid over to HMRC on the sub-contractor's behalf. The Ltd and
-// Self Employed purchase journals each keep a CIS certificates column for it
-// (Purchases.xlsx AK and AD). The Basic Sole Trader package has no such
-// column, so its subset carries no deduction, the same way it carries no
-// hire purchase agreement.
+// A line under the Construction Industry Scheme carries the tax withheld
+// from it and paid over to HMRC. On a purchase that is the tax this business
+// withheld from a sub-contractor; on a sale it is the tax a contractor
+// customer withheld from this business. The Ltd and Self Employed journals
+// keep a column for each side (purchases AK and AD, sales V and W). The Basic
+// Sole Trader package has no such column, so its subset carries no deduction,
+// the same way it carries no hire purchase agreement.
 export const CIS_DEDUCTION_FIELD = "diya-gl:cisDeduction";
 
 // carriesSourceFields keeps the fields a transaction sheet has a column for
@@ -757,6 +822,7 @@ export function buildGrouped(
         if (line.lineItemComment) sale.description = line.lineItemComment;
       }
       if (carriesPaymentLabels) sale.payment = paymentLabel(line);
+      if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) sale.cis_deduction = line[CIS_DEDUCTION_FIELD];
       const saleMileage = carriesMileage === "all" ? lineMileage(line) : undefined;
       if (saleMileage !== undefined) sale.mileage = saleMileage;
       sales[month].push(sale);
@@ -881,11 +947,36 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
 // data carries, which is 18% in one year and 14% in the next, and one
 // fixture is reconciled against every year's package, so a profit stated
 // here would be wrong for every year but its own.
-export function taxiExpectedFigures(lines) {
-  const figures = { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
+//
+// Turnover (total_sales) is the fare account alone: a 4001 line is other
+// business income, never a fare, and the P&L keeps the two on separate
+// rows (B5 and B24), so mixing them into one total would anchor the
+// turnover check against a figure the sheet never computes.
+export function taxiExpectedFigures(lines, periodStart) {
+  const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
+  const fareLines = salesLines.filter((line) => line.accountMainID === TAXI_SALES_ACCOUNT);
+  const figures = { total_sales: computeGrossSales(fareLines) };
+  const otherIncomeLines = salesLines.filter((line) => line.accountMainID === TAXI_OTHER_INCOME_ACCOUNT);
+  if (otherIncomeLines.length > 0) figures.total_other_income = computeGrossSales(otherIncomeLines);
   const businessMiles = totalBusinessMiles(lines);
   if (businessMiles) figures.total_mileage = businessMiles;
+  if (periodStart !== undefined) figures.months_traded = monthsWithTakings(fareLines, periodStart);
   return figures;
+}
+
+// The months the driver actually took a fare in, counted on the month tabs
+// the takings reach rather than on their plain calendar months. The Wages
+// Forecast counts the same months and spreads the year's figures over the
+// ones left, so a fixture that states the count anchors that spread against
+// the book instead of against the sheet's own arithmetic.
+function monthsWithTakings(fareLines, periodStart) {
+  const byDate = buildTaxMonthByDate(new Date(periodStart).getUTCFullYear());
+  const takingsByMonth = {};
+  for (const line of fareLines) {
+    const month = byDate.get(tomlLocalDate(line.postingDate));
+    takingsByMonth[month] = (takingsByMonth[month] || 0) + line.amount;
+  }
+  return MONTH_ORDER.filter((month) => (takingsByMonth[month] || 0) > 0).length;
 }
 
 // ============================================================================
@@ -959,6 +1050,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       if (txn.code) parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
       if (txn.mileage !== undefined) parts.push(`mileage = ${txn.mileage}`);
+      if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
       if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
@@ -1021,6 +1113,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`netPay = ${e.netPay}`);
         if (e.reference) parts.push(`reference = "${escapeTomlString(e.reference)}"`);
         if (e.accountMainID) parts.push(`accountMainID = "${escapeTomlString(e.accountMainID)}"`);
+        if (e.taxCode) parts.push(`taxCode = "${escapeTomlString(e.taxCode)}"`);
         parts.push("");
       }
     }
@@ -1200,18 +1293,20 @@ export function formatScenarioToml(metadata, grouped, expected) {
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
+  if (expected.total_other_income !== undefined) parts.push(`total_other_income = ${expected.total_other_income}`);
   if (expected.gross_profit !== undefined) parts.push(`gross_profit = ${expected.gross_profit}`);
   if (expected.net_profit !== undefined) parts.push(`net_profit = ${expected.net_profit}`);
   if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
   if (expected.total_mileage) parts.push(`total_mileage = ${expected.total_mileage}`);
+  if (expected.months_traded !== undefined) parts.push(`months_traded = ${expected.months_traded}`);
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
   if (expected.vat_output_total !== undefined) parts.push(`vat_output_total = ${expected.vat_output_total}`);
   if (expected.vat_input_total !== undefined) parts.push(`vat_input_total = ${expected.vat_input_total}`);
-  if (expected.fixed_asset_additions) {
+  if (expected.fixed_asset_additions?.length) {
     const totalCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
     parts.push(`fixed_asset_cost = ${totalCost}`);
   }

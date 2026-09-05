@@ -149,4 +149,22 @@ describe("calculateExpectedTax", () => {
     expect(result.ni_class4_upper).toBe(0);
     expect(result.total_tax_and_ni).toBe(0);
   });
+
+  it("returns the voluntary Class 2 amount below the small profits threshold", () => {
+    const result = calculateExpectedTax(5000, TAX_DATA_2025_26);
+    expect(result.ni_class2).toBe(182);
+    expect(result.total_tax_and_ni).toBe(0);
+  });
+
+  it("returns nil Class 2 above it", () => {
+    const result = calculateExpectedTax(30000, TAX_DATA_2025_26);
+    expect(result.ni_class2).toBe(0);
+  });
+
+  it("carries the year's own threshold and a nil voluntary amount where the weekly rate is nil", () => {
+    const result = calculateExpectedTax(5000, taxDataFor("se-2024-2025"));
+    expect(result.ni_class2_weekly).toBe(0);
+    expect(result.ni_class2_threshold).toBe(6725);
+    expect(result.ni_class2).toBe(0);
+  });
 });

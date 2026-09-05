@@ -104,8 +104,19 @@ export function checkActual(report, name) {
   return toNumber(row.actual);
 }
 
+// A product may print the return's box number after a row's label, as the Taxi
+// sheet does ("Net profit/loss (box 20)"), so a label matches with or without
+// that suffix.
+const BOX_SUFFIX = /\s*\(box [^)]*\)$/;
+
 export function value(report, section, label) {
-  return toNumber(report.sections.get(section)?.get(label));
+  const rows = report.sections.get(section);
+  if (!rows) return null;
+  if (rows.has(label)) return toNumber(rows.get(label));
+  for (const [key, cell] of rows) {
+    if (key.replace(BOX_SUFFIX, "") === label) return toNumber(cell);
+  }
+  return null;
 }
 
 // A label the report no longer carries would drop an indicator and leave the judge passing a
@@ -329,10 +340,10 @@ function seIndicators(report, vatRegistered) {
   const gross = requireValue(report, "Profit & Loss Account", "Gross Profit");
   const pbt = requireValue(report, "Profit & Loss Account", "Profit Before Tax");
   const split = allowances(report, {
-    deductions: ["Capital allowances", "AIA / WDA claimed", "Other capital allowances (box 24)"],
-    additions: ["Balancing charges (box 25)", "Other tax adjustments"],
+    deductions: ["Capital allowances", "AIA / WDA claimed", "Other capital allowances"],
+    additions: ["Balancing charges", "Other tax adjustments"],
   });
-  const grants = requireValue(report, SA103S, "Grants as other business income (box 29)");
+  const grants = requireValue(report, SA103S, "Grants as other business income");
   const forTax = requireValue(report, SA103S, "Net profit for tax calc");
 
   return [
@@ -405,8 +416,8 @@ function taxiIndicators(report) {
   const running = value(report, "Purchase Analysis", "Vehicle running costs for the year");
   const capitalised = value(report, "Purchase Analysis", "Vehicle purchases capitalised");
   const split = allowances(report, {
-    deductions: ["Annual investment allowance (box 22)", "Small-balance allowance (box 23)", "Other capital allowances (box 24)"],
-    additions: ["Balancing charges (box 25)", "Goods and services for own use (box 26)"],
+    deductions: ["Annual investment allowance", "Small-balance allowance", "Other capital allowances"],
+    additions: ["Balancing charges", "Goods and services for own use"],
   });
 
   const vehicleCosts = mileage
@@ -422,7 +433,7 @@ function taxiIndicators(report) {
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",
       fromLabel: "net profit",
-      to: "Net business profit (box 27)",
+      to: "Net business profit",
       toLabel: "net business profit",
     }),
     incomeTaxLine(report, "Draft Tax Calculation"),

@@ -25,7 +25,7 @@ import { parse as parseTOML } from "smol-toml";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
-import { calculateSeResults } from "../lib/calculators/se.js";
+import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
 import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 842 },
-  { name: "se-brickwork-pro-vat", checkCount: 776 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 771 },
+  { name: "se-scenario-advanced", checkCount: 869 },
+  { name: "se-brickwork-pro-vat", checkCount: 803 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 792 },
 ];
 
 function loadFixture(name) {
@@ -151,11 +151,27 @@ describe("Self Employed engine: the return boxes against the statutory computati
         expect(short.D71 - short.O71).toBeCloseTo(short.D38 + short.O38 - short.O64, 6);
       });
 
-      it("SA103S box 31 taxable profit is the net profit with the capital allowances taken off", () => {
+      it("SA103S box 28 net business profit is the net profit with the capital allowances taken off", () => {
         const short = results["SE Short"];
         const allowances = short.D80 + short.D85 + short.O80;
         const chargeable = short.D71 - short.O71 + short.O85 + short.D94 - allowances;
         expect(short.D99).toBeCloseTo(Math.max(0, chargeable), 6);
+      });
+
+      it("the nine expense boxes are filled only when turnover clears the VAT threshold", () => {
+        const short = results["SE Short"];
+        const threshold = TAX_DATA.vat.registration_threshold;
+        const expenseBoxes = ["D46", "D51", "D55", "D60", "D64", "O46", "O51", "O55", "O60"];
+        const filled = results["Profit & Loss Account"].B9 > threshold;
+        for (const box of expenseBoxes) {
+          expect(typeof short[box] === "number", `${box} with turnover ${results["Profit & Loss Account"].B9}`).toBe(filled);
+        }
+        // The total the boxes roll into is stated either way.
+        expect(typeof short.O64).toBe("number");
+      });
+
+      it("SA103S box 35 total loss to carry forward is the figure the customer enters", () => {
+        expect(results["SE Short"].D124).toBe(0);
       });
 
       it("the annual investment allowance is the year's capital spend, which claims it in full", () => {
@@ -275,17 +291,11 @@ describe("Self Employed engine: the read scope", () => {
         "Vat.xlsx!Vatinterface!I5",
         "Vat.xlsx!Vatinterface!K4",
         "Vat.xlsx!Vatinterface!K5",
-        // The tax code column: a scenario TOML names no code for an
-        // employee, so every row of the block keeps the placeholder space
-        // the template ships there.
-        "Payslips.xlsx!Jul!D51",
-        "Payslips.xlsx!Jul!D52",
-        "Payslips.xlsx!Jul!D53",
+        // The tax code column: the three employees on the payroll each carry
+        // a code, so only the two rows no employee sits on keep the
+        // placeholder space the template ships there.
         "Payslips.xlsx!Jul!D54",
         "Payslips.xlsx!Jul!D55",
-        "Payslips.xlsx!Aug!D51",
-        "Payslips.xlsx!Aug!D52",
-        "Payslips.xlsx!Aug!D53",
         "Payslips.xlsx!Aug!D54",
         "Payslips.xlsx!Aug!D55",
         // A monthly block row no employee sits on: the template ships the
@@ -332,6 +342,42 @@ describe("Self Employed engine: the read scope", () => {
       for (const cell of Object.keys(cells)) if (!labels[`${sheet}!${cell}`]?.unit) undeclared.push(`${sheet}!${cell}`);
     }
     expect(undeclared).toEqual([]);
+  });
+});
+
+// The leaf cells a sibling workbook's link addresses, each anchored to the
+// fixture's own lines rather than to anything the engine produced.
+describe("Self Employed engine: the leaf cells a link addresses", () => {
+  const { scenario } = loadFixture("se-scenario-advanced");
+  const rate = vatRateFor(scenario);
+  const cells = calculateSeCells({}, [], TAX_DATA, scenario);
+  const net = (amount) => amount - (amount * rate) / (1 + rate);
+
+  it("totals April's product sales (code a) in Sales.xlsx!Apr!P1", () => {
+    const april = scenario.sales.apr.filter((tx) => !tx.mileage && (tx.code || "a") === "a");
+    expect(april.length).toBeGreaterThan(0);
+    expect(cells["Sales.xlsx!Apr"].P1).toBeCloseTo(
+      april.reduce((sum, tx) => sum + net(tx.amount), 0),
+      6,
+    );
+  });
+
+  it("runs the fixed asset purchases (code fa) to the year's total in Purchases.xlsx!Mar!AB2", () => {
+    const yearTotal = fixtureNet(scenario.purchases, ["fa"], rate);
+    expect(yearTotal).toBeGreaterThan(0);
+    expect(cells["Purchases.xlsx!Mar"].AB2).toBeCloseTo(yearTotal, 6);
+  });
+
+  it("totals April's debtor receipts (code DR) in Bank.xlsx!Apr!H1", () => {
+    const receipts = scenario.bank.apr.filter((tx) => (tx.account || "1200") === "1200" && tx.direction === "in" && tx.code === "DR");
+    expect(receipts.length).toBeGreaterThan(0);
+    expect(cells["Bank.xlsx!Apr"].H1).toBe(receipts.reduce((sum, tx) => sum + tx.amount, 0));
+  });
+
+  it("totals April's gross pay in Payslips.xlsx!Apr!M1", () => {
+    const april = scenario.payroll.apr;
+    expect(april.length).toBeGreaterThan(0);
+    expect(cells["Payslips.xlsx!Apr"].M1).toBe(april.reduce((sum, entry) => sum + entry.grossPay, 0));
   });
 });
 

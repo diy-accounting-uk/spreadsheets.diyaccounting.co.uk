@@ -67,6 +67,13 @@ describe("the three example books", () => {
     expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
   });
 
+  it("Kestrel Executive Cars: every entry sits inside the declared period", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "kestrel-executive-cars", "taxi"));
+    const { results } = runBookChecks({ book, lines, taxData: TAX_DATA });
+
+    expect(resultFor(results, "book-dates-in-period").result).toBe("pass");
+  });
+
   it("BrickWork Pro (non-VAT): every check and every warning pass", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "brickwork-pro", "bst-nonvat"));
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
@@ -277,6 +284,31 @@ describe("each rule is breakable by one crafted change, and only that rule flips
     assertOnlyThisRuleFlips(fixture, "book-duplicate-entries", "warn");
   });
 
+  it("book-duplicate-entries: two legs of one balanced journal entry are not a duplicate of each other", () => {
+    const fixture = baseline();
+    fixture.lines.push(
+      {
+        entryNumber: "BREAK-JOURNAL-D",
+        sourceJournalID: "purchases",
+        postingDate: "2025-05-06",
+        accountMainID: "5000",
+        debitCreditCode: "D",
+        amount: 250.0,
+        detailComment: "Opening stock correction",
+      },
+      {
+        entryNumber: "BREAK-JOURNAL-C",
+        sourceJournalID: "purchases",
+        postingDate: "2025-05-06",
+        accountMainID: "5501",
+        debitCreditCode: "C",
+        amount: 250.0,
+        detailComment: "Opening stock correction",
+      },
+    );
+    assertOnlyThisRuleFlips(fixture, "book-duplicate-entries", "pass");
+  });
+
   it("book-empty-detail: a purchase with a blank detail", () => {
     const fixture = baseline();
     fixture.lines.push({
@@ -392,6 +424,43 @@ describe("the fix-it helpers", () => {
     expect(previewHelper(fixture, "book-dates-in-period")).toBeNull();
     expect(() => applyHelper(fixture, "book-dates-in-period")).toThrow("Nothing left for this helper to fix.");
     expect(() => applyHelper(fixture, "not-a-real-check")).toThrow('No helper called "not-a-real-check"');
+  });
+});
+
+// ============================== the reposting account follows the book's product ==============================
+
+describe("the reposting account follows the book's product", () => {
+  it("a Taxi book reposts to 6200", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes).toHaveLength(1);
+    expect(preview.changes[0].becomes).toBe("6200 — " + book.accounts.purchases["6200"].accountMainDescription);
+
+    const applied = applyHelper({ book, lines }, "book-accounts-in-chart");
+    const fixedLine = applied.find((l) => l.entryNumber === offender.entryNumber);
+    expect(fixedLine.accountMainID).toBe("6200");
+  });
+
+  it("a Taxi book whose chart drops 6200 falls to its first account", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+    delete book.accounts.purchases["6200"];
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes[0].becomes.startsWith("5100")).toBe(true);
+  });
+
+  it("a BST book still prefers 5002", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "precision-code-ltd", "bst"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes[0].becomes.startsWith("5002")).toBe(true);
   });
 });
 

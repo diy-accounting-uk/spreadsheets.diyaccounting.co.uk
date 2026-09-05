@@ -240,17 +240,17 @@ export const CELL_MAP = [
   ["SE Short", "D55",  "Employee costs",                 "gl-cor:amount (sa103s.employeeCosts)",      "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D60",  "Premises costs",                 "gl-cor:amount (sa103s.premises)",           "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D64",  "Repairs & maintenance",          "gl-cor:amount (sa103s.repairs)",            "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "O38",  "Other business income (box 9)",  "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O38",  "Other business income (box 10)", "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
-  ["SE Short", "O71",  "Net loss (box 21)",              "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O71",  "Net loss (box 22)",              "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O80",  "WDA + Capital Allowance claimed", "tax.capitalAllowances.wda (sa103s)",       "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O85",  "Balancing Charge",               "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
-  ["SE Short", "O94",  "Loss brought forward (box 28)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "O99",  "Other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O94",  "Loss brought forward (box 29)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O99",  "Other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
   // ── Stock ──
   ["PurchasesStock", "D5",  "Opening Stock",  "stock.openingValue", "Stock", 0, "money"],
@@ -323,6 +323,34 @@ export const CELL_MAP = [
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0, "money"],
 ];
 
+// The year-at-a-glance strip's tiles and pies, declared as data rather than
+// read as literal cell keys inside headlines.js (see headlinesFromReport()
+// there for how a declaration like this one is reduced against R).
+export const HEADLINES = {
+  turnover: { key: "cell/Profit & Loss Acc!C4" },
+  costOfSales: { keys: ["cell/Profit & Loss Acc!C6", "cell/Profit & Loss Acc!C7"] },
+  runningCosts: { key: "cell/Profit & Loss Acc!C22" },
+  tax: { key: "cell/Income Tax!E18" },
+  assets: {
+    writtenDown: { key: "cell/Fixed Assets!M1", optional: true },
+    stock: { key: "cell/PurchasesStock!D30", optional: true },
+    debtors: { key: "cell/Debtors & Creditors!C29", optional: true },
+  },
+  expenseLines: [
+    ["cell/Profit & Loss Acc!C11", "Employee Costs"],
+    ["cell/Profit & Loss Acc!C12", "Premises Costs"],
+    ["cell/Profit & Loss Acc!C13", "Repairs & Maintenance"],
+    ["cell/Profit & Loss Acc!C14", "General Admin"],
+    ["cell/Profit & Loss Acc!C15", "Motor Expenses"],
+    ["cell/Profit & Loss Acc!C16", "Travel & Subsistence"],
+    ["cell/Profit & Loss Acc!C17", "Advertising"],
+    ["cell/Profit & Loss Acc!C18", "Legal & Professional"],
+    ["cell/Profit & Loss Acc!C19", "Bad Debts"],
+    ["cell/Profit & Loss Acc!C20", "Interest & Finance"],
+    ["cell/Profit & Loss Acc!C21", "Other Expenses"],
+  ],
+};
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {
@@ -374,15 +402,15 @@ export function profitBridge(results) {
 
   const rows = [
     { label: "Net profit per the profit and loss account", cell: "Profit & Loss Acc!C24", value: num(pl.C24) },
-    { label: "Add other business income (box 9)", cell: "SE Short!O38", value: num(seShort.O38) },
-    { label: "Less net loss for the year (box 21)", cell: "SE Short!O71", value: -num(seShort.O71) },
-    { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -num(seShort.D80) },
-    { label: "Less small-balance allowance (box 23)", cell: "SE Short!D85", value: -num(seShort.D85) },
-    { label: "Less other capital allowances (box 24)", cell: "SE Short!O80", value: -num(seShort.O80) },
-    { label: "Add balancing charges (box 25)", cell: "SE Short!O85", value: num(seShort.O85) },
-    { label: "Add goods and services for own use (box 26)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Add other business income (box 29)", cell: "SE Short!O99", value: num(seShort.O99) },
-    { label: "Less loss brought forward (box 28)", cell: "SE Short!O94", value: -num(seShort.O94) },
+    { label: "Add other business income (box 10)", cell: "SE Short!O38", value: num(seShort.O38) },
+    { label: "Less net loss for the year (box 22)", cell: "SE Short!O71", value: -num(seShort.O71) },
+    { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
+    { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
+    { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
+    { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
+    { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Add other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
