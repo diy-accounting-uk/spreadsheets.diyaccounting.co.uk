@@ -51,7 +51,7 @@ import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
 import { loadTaxDataForBook } from "../lib/product-workbook.js";
 import {
   readBookSource,
-  BstAnchorError,
+  AnchorError,
   XlsBookSourceError,
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
@@ -76,7 +76,7 @@ export class PackageMismatchError extends Error {
 // guard already did before books-interchange.js grew four more ways a file
 // can be rejected.
 const NAMED_BOOK_SOURCE_ERRORS = [
-  BstAnchorError,
+  AnchorError,
   XlsBookSourceError,
   UnknownBookSourceError,
   InvalidDiyaGlBookError,
