@@ -222,7 +222,8 @@ Resources below exist for both \`ci\` and \`prod\` environments. Replace \`{env}
   const oidcProviders = awsJson("iam list-open-id-connect-providers");
   if (oidcProviders?.OpenIDConnectProviderList) {
     for (const provider of oidcProviders.OpenIDConnectProviderList) {
-      if (provider.Arn.includes("token.actions.githubusercontent.com")) {
+      const providerUrl = provider.Arn.split(":oidc-provider/")[1];
+      if (providerUrl === "token.actions.githubusercontent.com") {
         md += `| IAM OIDC provider | \`token.actions.githubusercontent.com\` | GitHub Actions OIDC |\n`;
       }
     }
