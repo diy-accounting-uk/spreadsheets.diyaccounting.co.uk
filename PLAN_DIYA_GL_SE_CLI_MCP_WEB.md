@@ -555,6 +555,21 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   found `se.js`'s `SE Short` `CELL_MAP` box labels one behind the 2026 form on `O71` (22), `O80`
   (25), `O85` (26), `O94` (29) and `O99` (30); T16 relabels them with the sheet.
 
+- T16 `d27a062a`, `1bf45a7b`, merged 2026-09-05: `SE Short` prints the 2026 numbers (30 box cells +1, 10
+  gate formulas on `Admin!F26`, 14 captions through the shared strings; 54 cells, two parts, the other
+  50 byte-identical), `analysesExpenses = pl.B9 > admin.F26`, `D124` "Total loss to carry forward
+  (box 35)", the relabelled `CELL_MAP` and bridge, `seIndicators` looking labels up by name so
+  `BOX_SUFFIX` strips the number, a Node-only describe over the template's XML in
+  `se-full-return-checks` (37 box cells, 1 to 7 and 9 to 38, no `30000`/`67000`). The sheet has 37
+  box cells, not 38. Two batch reds from T3 fixed: `SA103F_CORRUPTIONS` gains the D231 check;
+  `se-brickwork-pro-nonvat` now expects `Income Tax!E18 = -200` (the CIS suffered is repayable on a
+  profit under the allowance); if the sheet should print no negative liability instead, that is a
+  template change and the test reverts with it. At R5 the brickwork report's nine expense boxes go
+  blank (turnover 75,000 is under `Admin!F26`) and the sheet's demand for a full return at 67,000
+  goes. Open: `L111` prints "exempt from Class 4", which the 2026 form numbers 37, and `L116` a
+  deferment note the form deleted; both took the mechanical +1 and carry stale captions (board row
+  SE-T16b). BST and Taxi templates print the old numbers (board row TX-T23).
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row
