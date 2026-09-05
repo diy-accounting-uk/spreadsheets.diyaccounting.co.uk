@@ -671,6 +671,7 @@ function buildAdmin(taxData, dateSerials) {
   cells.L13 = it.higher_band_end + 1;
   cells.N13 = it.higher_band_end;
   cells.L16 = ni.class2_weekly_rate;
+  cells.N16 = ni.class2_small_profits_threshold;
   cells.L20 = ni.class4_lower_rate;
   cells.N20 = ni.class4_lower_limit;
   cells.L23 = ni.class4_upper_rate;
