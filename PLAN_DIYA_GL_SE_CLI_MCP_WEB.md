@@ -432,6 +432,12 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
+  by the 2026 number with `cell`, `rule` or `cell: null`, the expenses section's `collapseBelow` on
+  the VAT threshold, the VAT block per `VATQtr` sheet, the computation in SA110 order), `se-forms.js`
+  rendering all four through `helpers.form`, the four view entries, one script tag in `se.html`.
+  SA103F boxes 51 to 54 and the `.n` sub-boxes are `cell: null` because the calculator never
+  populates them.
 - T14 `edfbba21`, `ebba7cb2`, `97a7beba`, merged 2026-09-05: `changeLineBankAccount` in the edit
   map (ten edits now), `extractLines` on the engine for the page's SE upload, the SE `--file` and
   MCP tests with byte identity between `save_workbook` and `savePackageZip`. The settlement test's
