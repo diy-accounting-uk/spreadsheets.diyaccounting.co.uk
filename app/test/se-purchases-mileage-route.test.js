@@ -34,6 +34,7 @@ import {
   checkCompliance as seCheckCompliance,
 } from "../products/se.js";
 import { extractMultiFileTransactions } from "../lib/xlsx-exporter.js";
+import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
 
@@ -207,7 +208,7 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
   });
 
   it("prices every mileage row back out of the package at the claim the sheet made of it", async () => {
-    const lines = await extractMultiFileTransactions(saveDir, "se");
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(saveDir), "se");
     const mileageLines = lines.filter((l) => l.measurableUnitOfMeasure === "miles");
     expect(mileageLines).toHaveLength(12);
     expect(mileageLines.reduce((sum, l) => sum + l.measurableQuantity, 0)).toBe(YEAR_MILES);
@@ -223,7 +224,7 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
   });
 
   it("keeps reading the rows that follow a mileage row, which carries no amount to stop on", async () => {
-    const lines = await extractMultiFileTransactions(saveDir, "se");
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(saveDir), "se");
     const fixturePurchases = Object.values(scenario.purchases).flat().length;
     expect(lines.filter((l) => l.sourceJournalID === "purchases")).toHaveLength(fixturePurchases);
   });
@@ -243,7 +244,7 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
     zip.file(sheetPath, setCellValue(await zip.file(sheetPath).async("string"), milesCell, 999), { date: originalDate });
     writeFileSync(join(corruptedDir, "Purchases.xlsx"), await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
 
-    const lines = await extractMultiFileTransactions(corruptedDir, "se");
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(corruptedDir), "se");
     const april = lines.find((l) => l.measurableUnitOfMeasure === "miles" && l.postingDate.startsWith("2025-04"));
     expect(april.measurableQuantity).toBe(999);
     expect(april.amount).toBeCloseTo(calculateMileageAllowance(999, taxData.mileage), 2);

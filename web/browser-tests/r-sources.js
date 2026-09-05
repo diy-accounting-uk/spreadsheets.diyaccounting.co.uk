@@ -216,7 +216,7 @@ export function canonical(value, unit) {
 /**
  * Apply one edit to a diya-gl book directory's own lines in Node, then build
  * report.json exactly the way report.js's --data path and the page's own
- * buildReport (bst-data.js) both do: the same package name, engine, merged
+ * buildReport (data.js) both do: the same package name, engine, merged
  * scenario, checks, scenarioName and yearEnd. A browser edit's report.json
  * is expected to equal this function's `text`, byte for byte, for the same
  * edit applied to the same book.

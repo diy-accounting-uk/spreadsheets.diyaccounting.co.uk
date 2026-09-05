@@ -156,7 +156,7 @@ test.describe("DIYA-GL books page — E2: deliberate warnings and failures", () 
     const before = await bookCheckStates(page);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BST_SNAPSHOT;
+      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
       const imported = {
         entryNumber: "IMPORT-0001",
         sourceJournalID: "purchases",
@@ -168,7 +168,7 @@ test.describe("DIYA-GL books page — E2: deliberate warnings and failures", () 
       };
       await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([imported]), "test: import an out-of-chart line");
     });
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
     const after = await bookCheckStates(page);
     expect(flippedIds(before, after)).toEqual(["book-accounts-in-chart"]);
@@ -328,18 +328,18 @@ test.describe("DIYA-GL books page — E2: deliberate warnings and failures", () 
   // edited quantities, none of which split the two figures apart.
   test("an edited mileage quantity moves the claim but leaves both mileage checks passing", async ({ page }) => {
     await openBook(page, /bst-sp-sixty/);
-    const before = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.report.values.find((v) => v.key === "cell/PurchasesMar!C1").value);
+    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report.values.find((v) => v.key === "cell/PurchasesMar!C1").value);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BST_SNAPSHOT;
+      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
       const lines = snapshot.lines.map((line) =>
         line.entryNumber === "TXN-0264" ? { ...line, measurableQuantity: line.measurableQuantity + 500 } : line,
       );
       await window.DiyaGlBooksPage.setLines(lines, "test: edit the mileage claim's quantity");
     });
-    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
-    const after = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.report.values.find((v) => v.key === "cell/PurchasesMar!C1").value);
+    const after = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report.values.find((v) => v.key === "cell/PurchasesMar!C1").value);
     expect(Number(after)).toBe(Number(before) + 500);
 
     const engineFailing = await engineFailingSet(page);

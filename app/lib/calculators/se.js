@@ -63,12 +63,12 @@ const VAT_RATE = 0.2;
 
 // Each Sales month tab's analysis column, by the code letter its own row 4
 // carries. Every column holds the row's net figure.
-const SALES_ANALYSIS_COLUMNS = { a: "P", b: "Q", c: "R", d: "S", g: "T", o: "U", fs: "V" };
+export const SALES_ANALYSIS_COLUMNS = { a: "P", b: "Q", c: "R", d: "S", g: "T", o: "U", fs: "V" };
 
 // The same on a Purchases month tab. AD is the CIS certificates column, which
 // takes the tax withheld rather than a net figure and sits outside the sheet's
 // own analysis check total.
-const PURCHASES_ANALYSIS_COLUMNS = {
+export const PURCHASES_ANALYSIS_COLUMNS = {
   s: "P",
   c: "Q",
   o: "R",

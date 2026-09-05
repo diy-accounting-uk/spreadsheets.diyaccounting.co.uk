@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 
-// books/bst-edits.js
+// books/edits.js
 //
 // The edit path, the undo stack and the fix-it helpers. Every change to the
 // book -- a hand edit in the entries grid, a delete, an added entry, or a
@@ -61,10 +61,11 @@
     return engineModule;
   }
 
-  // The three check ids' button text before their preview opens. The rule
-  // that decides an offender and the fix it applies live in book-checks.js;
-  // this is presentation text only, keyed off the count that module's own
-  // result already carries.
+  // The button text before a helper's preview opens, for the checks whose
+  // text counts the offenders. The rule that decides an offender and the fix
+  // it applies live in book-checks.js; this is presentation text only, keyed
+  // off the count that module's own result already carries. A helper this
+  // table does not list uses its own label.
   var ACTION_LABELS = {
     "book-dates-in-period": function (n) {
       return "Move " + n + (n === 1 ? " entry" : " entries") + " into the period";
@@ -89,7 +90,14 @@
     var taxData = (snapshot.context && snapshot.context.taxData) || null;
     var results = api.runBookChecks({ book: snapshot.book, lines: snapshot.lines, taxData: taxData }).results;
     return results.map(function (r) {
-      var helper = r.helper ? { title: r.helper.label, actionLabel: ACTION_LABELS[r.id](r.actual) } : null;
+      var helper = r.helper
+        ? {
+            title: r.helper.label,
+            actionLabel: ACTION_LABELS[r.id] ? ACTION_LABELS[r.id](r.actual) : r.helper.label,
+            kind: r.helper.kind,
+            field: r.helper.field,
+          }
+        : null;
       return {
         id: r.id,
         tier: r.tier,
