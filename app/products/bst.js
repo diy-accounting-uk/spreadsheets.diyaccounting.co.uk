@@ -11,6 +11,7 @@ import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-lo
 import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "bst",
@@ -362,10 +363,10 @@ export function standardReads() {
 
 export function reportSections(results) {
   const sectionMap = new Map();
-  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+  for (const [sheet, cell, label, , section, indent, unit] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unit), indent });
   }
   return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
 }
@@ -379,9 +380,9 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
