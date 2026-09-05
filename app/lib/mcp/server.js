@@ -5,11 +5,11 @@
 // wired to the four diya-gl tools over one in-memory session per server
 // instance. No engine code lives here or in diya-gl-tools.js -- every tool
 // call is one landed function from export.js, diya-gl-edits.js or
-// bst-workbook.js.
+// product-workbook.js.
 
 import { TOOLS, createSession } from "./diya-gl-tools.js";
 
-export const SERVER_INFO = { name: "diya-gl-bst", version: "0.1.0" };
+export const SERVER_INFO = { name: "diya-gl", version: "0.1.0" };
 
 /**
  * Build the JSON-RPC method table for one server session (one loaded book).

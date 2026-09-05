@@ -24,6 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -87,6 +88,16 @@ const PURCHASE_ANALYSIS_COLUMNS = {
 const SALES_CIS_COLUMN = "V";
 const PURCHASES_CIS_COLUMN = "AK";
 
+// The two ledgers each journal workbook keeps beside its twelve month tabs,
+// for the amounts owed at the year start and the year end.
+const SALES_LEDGER_SHEETS = ["OpeningDebtors", "ClosingDebtors"];
+const PURCHASES_LEDGER_SHEETS = ["OpeningCreditors", "ClosingCreditors"];
+
+// The Admin B column is a chain of dates anchored at B32, the year end. It
+// runs from thirteen months before the year end to four months after it.
+const ADMIN_DATE_CHAIN_FIRST_ROW = 6;
+const ADMIN_DATE_CHAIN_LAST_ROW = 40;
+
 // The management P&L's five turnover rows, and the gap between each and the
 // trial balance income row it reads. The trial balance holds income as a
 // credit, so the P&L negates it back to a positive turnover.
@@ -101,25 +112,6 @@ const EXPENSE_PL_ROWS = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74
 // directors, twelve rows each.
 const WAGES_INTERFACE_EMPLOYEE_FIRST_ROW = 4;
 const WAGES_INTERFACE_DIRECTOR_FIRST_ROW = 17;
-
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
-// The transfer codes each workbook analyses. A workbook never transfers to
-// itself, so its own code is left out of both blocks.
-function bankTransferCodes(fileName) {
-  return Object.values(BANK_TRANSFER_CODES).filter((code) => code !== BANK_TRANSFER_CODES[fileName]);
-}
 
 // Fixed Assets schedule blocks. Each class has a block of rows for assets
 // already owned with a totals row, and a second block for assets bought in
@@ -186,6 +178,16 @@ const SCHEDULE_DEPRECIATION_ROWS = { land: 11, plant: 12, fixtures: 13, computer
 // matching the writer.
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
+// The classes whose new-asset rows carry a capital allowance formula, and
+// their existing-block writing down allowance totals. Land claims none.
+const SCHEDULE_ALLOWANCE_CLASSES = ["plant", "fixtures", "computer", "motor"];
+
+// The cars sub-block of the motor class. Its rows carry a writing down
+// allowance formula rather than an investment allowance one, and the
+// calculator never places an asset on them, so each stays on the sheet's own
+// blank branch.
+const SCHEDULE_CAR_ROWS = [97, 98, 99, 100, 101];
+
 // A class totals row states whether the schedule and the opening balance
 // sheet agree about that class. The computer block's warning carries a
 // spelling slip the template has always had, and the reconciliation reads the
@@ -244,6 +246,8 @@ const TRIAL_BALANCE_READS = [
   "D24",
   "D25",
   "D28",
+  "D29",
+  "D30",
   "D31",
   "D33",
   "D35",
@@ -253,12 +257,15 @@ const TRIAL_BALANCE_READS = [
   "D43",
   "D91",
   "EH35",
+  "EJ20",
   "EJ22",
   "EJ23",
   "EJ24",
   "EJ25",
   "EJ26",
   "EJ28",
+  "EJ29",
+  "EJ30",
   "EJ31",
   "EJ32",
   "EJ33",
@@ -319,6 +326,12 @@ function fromSerial(serial) {
 
 function zeroMonths() {
   return Array.from({ length: 12 }, () => 0);
+}
+
+// The cells of a month's totals the report does not already carry. Those are
+// the ones a sibling workbook's link reads and nothing else does.
+function linkOnlyCells(all, reported) {
+  return Object.fromEntries(Object.entries(all).filter(([cell]) => !(cell in reported)));
 }
 
 // ── The accounting period ──────────────────────────────────────────────────
@@ -454,6 +467,8 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
         assetClass: SCHEDULE_NEW_ASSET_CLASS,
         row,
         acquiredInYear: true,
+        purchasedOn: serialOf(parseDate(transaction.date)),
+        description: transaction.supplier,
         cost: writerNet(transaction.amount, rate),
         depreciationBroughtForward: 0,
         taxWrittenDownValue: 0,
@@ -607,14 +622,21 @@ function payrollMonthStarts() {
 
 // ── The engine ─────────────────────────────────────────────────────────────
 
-export function calculateLtdResults(book, lines, taxData, scenario) {
+// Every figure the package holds, in two parts: `results`, the cells the
+// reconciliation reads, and `linkCells`, the leaf cells a sibling workbook's
+// external link addresses and nothing else does. Both come off the same run,
+// so a cell in each carries the same value.
+function computeLtd(book, lines, taxData, scenario) {
   const rate = scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+  const linkCells = {};
+  const link = (key, cells) => Object.assign((linkCells[key] ||= {}), cells);
   const period = periodFrom(book);
   const tabs = period.tabs;
   const results = {};
 
   const admin = buildAdmin(taxData, period);
   results.Admin = admin;
+  link("Admin", { ...linkOnlyCells(adminDateChain(period), admin), N11: admin.B32 });
 
   const salesByTab = bucketByTab(scenario.sales, tabs);
   const purchasesByTab = bucketByTab(scenario.purchases, tabs);
@@ -639,7 +661,15 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
       S1: purchaseMonths[tab].S1,
       AI1: purchaseMonths[tab].AI1,
     };
+    link(`Sales.xlsx!${tab}`, linkOnlyCells(salesMonths[tab], results[`Sales.xlsx!${tab}`]));
+    link(`Purchases.xlsx!${tab}`, linkOnlyCells(purchaseMonths[tab], results[`Purchases.xlsx!${tab}`]));
   }
+  // A Sales tab's flat-rate cell is empty on the first tab and reads the tab
+  // before it after that, so every tab but the first, and both ledgers, hold
+  // nil. The two ledgers echo the first tab's VAT rate.
+  for (const tab of tabs.slice(1)) link(`Sales.xlsx!${tab}`, { G4: 0 });
+  for (const ledger of SALES_LEDGER_SHEETS) link(`Sales.xlsx!${ledger}`, { G2: salesMonths[tabs[0]].G2, G4: 0 });
+  for (const ledger of PURCHASES_LEDGER_SHEETS) link(`Purchases.xlsx!${ledger}`, { G2: purchaseMonths[tabs[0]].G2 });
   const salesMonthly = (column) => tabs.map((tab) => salesMonths[tab][`${column}1`] || 0);
   const purchasesMonthly = (column) => tabs.map((tab) => purchaseMonths[tab][`${column}1`] || 0);
 
@@ -651,6 +681,13 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
       openingOfLastMonth = balance;
       const month = file.months[tab];
       balance = balance + month.receipts - month.payments;
+      const layout = BANK_LAYOUTS[fileName];
+      link(`${fileName}!${tab}`, {
+        [`${layout.receipt.amount}1`]: month.receipts,
+        [`${layout.payment.amount}1`]: month.payments,
+        ...Object.fromEntries(layout.receiptColumns.map(([code, column]) => [`${column}1`, month.receiptCodes[code] || 0])),
+        ...Object.fromEntries(layout.paymentColumns.map(([code, column]) => [`${column}1`, month.paymentCodes[code] || 0])),
+      });
     }
     results[`${fileName}!${tabs[11]}`] = { A1: openingOfLastMonth, A2: balance };
   }
@@ -679,6 +716,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
   }
   results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
+  link("Fixedassets.xlsx!Schedule", scheduleLinkCells(blocks, scheduleRows));
   // The workbook's own tie-out between the schedule and the two ledgers. E11
   // re-sums the schedule's New-asset cost totals (E6:E10 = Schedule E64, E75,
   // E83, E94, E108) and K11 the disposal proceeds on both halves of each
@@ -689,6 +727,8 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   // ledger leaves the difference nil whatever the schedule holds.
   const purchasesFixedAssetTotal = sum(purchasesMonthly("AI"));
   const salesFixedAssetTotal = sum(salesMonthly("U"));
+  link(`Purchases.xlsx!${tabs[11]}`, { AI2: purchasesFixedAssetTotal });
+  link(`Sales.xlsx!${tabs[11]}`, { U2: salesFixedAssetTotal });
   results["Fixedassets.xlsx!FAreconciliation"] = {
     E11: blocks.allNew.E,
     E13: purchasesFixedAssetTotal,
@@ -727,6 +767,19 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = payroll[tab].employeeNI;
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = payroll[tab].incomeTax;
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
+    // Row 1 also totals the month's gross pay, its statutory pay and its
+    // other deductions, and row 2 is the directors' block below it.
+    link(key, {
+      G1: 0,
+      M1: payroll[tab].grossPay,
+      Q1: 0,
+      M2: directorPayroll[tab].grossPay,
+      N2: directorPayroll[tab].incomeTax,
+      O2: directorPayroll[tab].employeeNI,
+      P2: 0,
+      Q2: 0,
+      T2: directorPayroll[tab].employerNI,
+    });
   }
   results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
 
@@ -739,6 +792,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const stock = buildStock(scenario, openingBalance, rate, salesMonthly("O"), purchasesMonthly("O"));
   results.Stock = stock.sheet;
   results.OpenAccounts = buildOpenAccounts(book, scenario, openingBalance);
+  link("OpenAccounts", openingFixedAssetCells(openingBalance));
 
   const trialBalance = buildTrialBalance({
     openingBalance,
@@ -791,7 +845,21 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
 
   Object.assign(results, buildSalesInvoice(scenario, rate, taxData));
 
-  return results;
+  return { results, linkCells };
+}
+
+// The cells the reconciliation reads.
+export function calculateLtdResults(book, lines, taxData, scenario) {
+  return computeLtd(book, lines, taxData, scenario).results;
+}
+
+// Every cell a sibling workbook's link addresses, on top of the report's
+// cells. The link-cache refresh reads its figures from here.
+export function calculateLtdCells(book, lines, taxData, scenario) {
+  const { results, linkCells } = computeLtd(book, lines, taxData, scenario);
+  const cells = Object.fromEntries(Object.entries(results).map(([key, sheet]) => [key, { ...sheet }]));
+  for (const [key, sheet] of Object.entries(linkCells)) Object.assign((cells[key] ||= {}), sheet);
+  return cells;
 }
 
 // ── Admin ──────────────────────────────────────────────────────────────────
@@ -845,7 +913,54 @@ function buildAdmin(taxData, period) {
   };
 }
 
+// Every row of the chain: an even row is a month end and the odd row under
+// it the day the next month opens.
+function adminDateChain(period) {
+  const chain = {};
+  for (let row = ADMIN_DATE_CHAIN_FIRST_ROW; row <= ADMIN_DATE_CHAIN_LAST_ROW; row++) {
+    chain[`B${row}`] = row % 2 === 0 ? serialOf(period.adminMonthEnd(row)) : chain[`B${row - 1}`] + 1;
+  }
+  return chain;
+}
+
+// The opening cost and depreciation the opening balance sheet splits across
+// row 13, one column a class, for the classes the book carries a figure for.
+function openingFixedAssetCells(openingBalance) {
+  const cells = {};
+  const cost = openingBalance.fixed_asset_cost || {};
+  const depreciation = openingBalance.fixed_asset_depreciation || {};
+  for (const [assetClass, columns] of Object.entries(OPENING_FIXED_ASSET_COLUMNS)) {
+    if (cost[assetClass] !== undefined) cells[`${columns.cost}13`] = cost[assetClass];
+    if (depreciation[assetClass] !== undefined) cells[`${columns.depreciation}13`] = depreciation[assetClass];
+  }
+  return cells;
+}
+
 // ── Fixed Assets schedule sheet ────────────────────────────────────────────
+
+// The schedule cells only the Financialaccounts corporation tax page reads:
+// each class's writing down allowance on the existing block, the investment
+// allowance an asset bought in the year claims, and the date, description and
+// cost the writer put on that asset's row. A new-asset row with no asset on
+// it stays on the sheet's own blank branch.
+function scheduleLinkCells(blocks, rows) {
+  const cells = {};
+  for (const className of SCHEDULE_ALLOWANCE_CLASSES) {
+    const layout = SCHEDULE_CLASSES[className];
+    cells[`R${layout.existingTotalRow}`] = blocks[className].existing.R;
+    for (const row of layout.newRows) {
+      cells[`Q${row}`] = rows.find((asset) => asset.row === row)?.investmentAllowance ?? SHEET_BLANK;
+    }
+  }
+  for (const row of SCHEDULE_CAR_ROWS) cells[`R${row}`] = SHEET_BLANK;
+  for (const asset of rows) {
+    if (!asset.acquiredInYear) continue;
+    cells[`B${asset.row}`] = asset.purchasedOn;
+    cells[`E${asset.row}`] = asset.cost;
+    if (asset.description !== undefined) cells[`C${asset.row}`] = asset.description;
+  }
+  return cells;
+}
 
 function buildScheduleSheet(blocks, openingBalance, depreciationRates) {
   const sheet = {};
@@ -1464,7 +1579,7 @@ function intraTransfers(banks) {
   let total = 0;
   for (const [fileName, file] of Object.entries(banks)) {
     for (const month of Object.values(file.months)) {
-      for (const code of bankTransferCodes(fileName)) {
+      for (const code of BANK_LAYOUTS[fileName].transfers) {
         total += -(month.receiptCodes[code] || 0) + (month.paymentCodes[code] || 0);
       }
     }

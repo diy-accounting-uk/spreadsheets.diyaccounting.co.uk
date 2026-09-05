@@ -10,11 +10,15 @@
 //
 // Pure functions only, no Node built-ins and no DOM, so the browser page,
 // the CLI and the MCP server run exactly the same rules over (book, lines,
-// taxData). The three checks' fix-it helpers live here too, built over the
-// named edits in diya-gl-edits.js, so a caller applies a whole plan as one
-// step without reimplementing an edit.
+// taxData). Fix-it helpers live beside the checks they belong to, built over
+// the named edits in diya-gl-edits.js, so a caller applies a whole plan as
+// one step without reimplementing an edit. A book naming a product with
+// rules of its own runs those after the shared ones -- see book-checks/.
 
 import { changeLinePostingDate, changeLineAccount, changeLineAmount } from "./diya-gl-edits.js";
+import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
+import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
+import { SE_PRODUCT_RULES } from "./book-checks/se.js";
 
 // ============================== shared helpers ==============================
 
@@ -75,13 +79,19 @@ function reachesAnAccount(chart, line) {
 }
 
 // The account an offending line is reposted to: the book's own chart for
-// that journal, preferring the code the sheet files miscellaneous spend
-// under, falling back to whichever account the chart declares first. A
-// book whose chart declares nothing on that side gets no fix-it.
-function repostAccount(chart, journal) {
-  const side = journal === "sales" ? chart.sales : chart.purchases;
-  const preferred = journal === "sales" ? "4000" : "5002";
-  const list = side || [];
+// that journal, preferring the code each product's sheet files
+// miscellaneous spend under, falling back to whichever account the chart
+// declares first. A book whose chart declares nothing on that side, or
+// whose product has no entry here, gets no preferred code and falls back.
+const REPOST_PREFERRED = {
+  BasicSoleTrader: { sales: "4000", purchases: "5002" },
+  TaxiDriver: { sales: "4000", purchases: "6200" },
+};
+
+function repostAccount(ctx, journal) {
+  const product = (ctx.book && ctx.book.entityInformation && ctx.book.entityInformation["diya-gl:product"]) || "";
+  const preferred = (REPOST_PREFERRED[product] || {})[journal];
+  const list = (journal === "sales" ? ctx.chart.sales : ctx.chart.purchases) || [];
   return list.find((account) => account.code === preferred) || list[0] || null;
 }
 
@@ -179,7 +189,7 @@ const CHECK_SPECS = [
     buildHelper: function (ctx, offenders) {
       const changes = [];
       for (const line of offenders) {
-        const account = repostAccount(ctx.chart, line.sourceJournalID);
+        const account = repostAccount(ctx, line.sourceJournalID);
         if (!account) return null;
         changes.push({
           entryNumber: line.entryNumber,
@@ -197,7 +207,7 @@ const CHECK_SPECS = [
     },
     apply: function (ctx, offenders) {
       return offenders.reduce(function (currentLines, line) {
-        const account = repostAccount(ctx.chart, line.sourceJournalID);
+        const account = repostAccount(ctx, line.sourceJournalID);
         if (!account) throw new Error("No account in the book's chart to repost this entry to.");
         return changeLineAccount(ctx.book, currentLines, { entryNumber: line.entryNumber, newAccountMainID: account.code });
       }, ctx.lines);
@@ -237,19 +247,43 @@ const CHECK_SPECS = [
   },
 ];
 
-function checkSpecById(checkId) {
-  return CHECK_SPECS.find(function (spec) {
+// ============================== the per-product rules ==============================
+// A product's own checks and warnings, and the shared checks whose
+// offenders that product reads differently, keyed by the product name the
+// book states in entityInformation["diya-gl:product"]. A book naming a
+// product with no entry here runs the shared rules alone.
+
+const PRODUCT_RULES = { Company: LTD_PRODUCT_RULES, TaxiDriver: TAXI_PRODUCT_RULES, SelfEmployed: SE_PRODUCT_RULES };
+const SHARED_RULES_ONLY = { checks: [], warnings: [], sharedOffenders: {} };
+
+function productRulesFor(book) {
+  const entity = (book && book.entityInformation) || {};
+  return PRODUCT_RULES[entity["diya-gl:product"]] || SHARED_RULES_ONLY;
+}
+
+function specsFor(ctx) {
+  return CHECK_SPECS.concat(ctx.productRules.checks);
+}
+
+function offendersFor(spec, ctx) {
+  const narrow = ctx.productRules.sharedOffenders[spec.id];
+  const offenders = spec.offenders(ctx);
+  return (narrow ? narrow(ctx, offenders) : offenders).slice().sort(byEntryNumber);
+}
+
+function checkSpecById(ctx, checkId) {
+  return specsFor(ctx).find(function (spec) {
     return spec.id === checkId;
   });
 }
 
 function contextOf(book, lines) {
-  return { book: book, lines: lines, period: periodOf(book), chart: chartOf(book) };
+  return { book: book, lines: lines, period: periodOf(book), chart: chartOf(book), productRules: productRulesFor(book) };
 }
 
 function runChecks(ctx) {
-  return CHECK_SPECS.map(function (spec) {
-    const offenders = spec.offenders(ctx).slice().sort(byEntryNumber);
+  return specsFor(ctx).map(function (spec) {
+    const offenders = offendersFor(spec, ctx);
     const pass = offenders.length === 0;
     const result = {
       id: spec.id,
@@ -261,8 +295,17 @@ function runChecks(ctx) {
       offenders: offenders.map(offenderOf),
     };
     if (!pass) {
-      const plan = spec.buildHelper(ctx, offenders);
-      if (plan) result.helper = { id: spec.id, label: plan.title };
+      // A check whose fix changes the book rather than its lines names its
+      // helper in the product's bookHelpers registry, and is applied
+      // through applyBookHelper rather than applyHelper.
+      const bookHelper = (ctx.productRules.bookHelpers || {})[spec.id];
+      if (bookHelper) {
+        const plan = bookHelper.buildHelper(ctx, bookHelper.offenders(ctx));
+        if (plan) result.helper = { id: spec.id, label: plan.title, kind: "book" };
+      } else if (spec.buildHelper) {
+        const plan = spec.buildHelper(ctx, offenders);
+        if (plan) result.helper = { id: spec.id, label: plan.title };
+      }
     }
     return result;
   });
@@ -402,14 +445,24 @@ function emptyMonthWarning(ctx) {
   };
 }
 
-function runWarnings(ctx, taxData) {
-  return [
+function runWarnings(ctx, taxData, results) {
+  const shared = [
     vatWarning(ctx, taxData),
     duplicateEntriesWarning(ctx),
     emptyDetailWarning(ctx),
     negativeAmountWarning(ctx),
     emptyMonthWarning(ctx),
-  ];
+  ].map(function (warning) {
+    // A product whose sheets measure a shared warning differently replaces
+    // the whole result, keeping its id; every other product keeps this one.
+    const readDifferently = (ctx.productRules.sharedWarnings || {})[warning.id];
+    return readDifferently ? readDifferently(ctx, taxData, warning) : warning;
+  });
+  return shared.concat(
+    ctx.productRules.warnings.map(function (warning) {
+      return warning(ctx, taxData, results);
+    }),
+  );
 }
 
 // ============================== public API ==============================
@@ -418,15 +471,15 @@ function runWarnings(ctx, taxData) {
  * Every book check and warning, run over one book. Deterministic: the same
  * (book, lines, taxData) always produces the same results in the same
  * order, whatever order the lines array carries its entries in.
- * @param {{book: Object, lines: Array, taxData: Object}} args
+ * @param {{book: Object, lines: Array, taxData: Object, results: Object}} args - results is the calculated accounts, which a product warning may read
  * @returns {{results: Array, summary: {pass: number, warn: number, fail: number}}}
  */
-export function runBookChecks({ book, lines, taxData }) {
+export function runBookChecks({ book, lines, taxData, results }) {
   const ctx = contextOf(book, lines);
-  const results = runChecks(ctx).concat(runWarnings(ctx, taxData));
+  const checkResults = runChecks(ctx).concat(runWarnings(ctx, taxData, results));
   const summary = { pass: 0, warn: 0, fail: 0 };
-  for (const result of results) summary[result.result]++;
-  return { results: results, summary: summary };
+  for (const result of checkResults) summary[result.result]++;
+  return { results: checkResults, summary: summary };
 }
 
 /**
@@ -447,14 +500,14 @@ export function bookChecksJson(results) {
  * The preview a helper shows before it is applied: exactly which lines
  * change, and how. Returns null when the check passes or has no fix-it.
  * @param {{book: Object, lines: Array}} args
- * @param {string} checkId - one of the three check ids
+ * @param {string} checkId - the id of a check the book runs
  * @returns {?{title: string, summary: string, changes: Array}}
  */
 export function previewHelper({ book, lines }, checkId) {
-  const spec = checkSpecById(checkId);
-  if (!spec) return null;
   const ctx = contextOf(book, lines);
-  const offenders = spec.offenders(ctx).slice().sort(byEntryNumber);
+  const spec = checkSpecById(ctx, checkId);
+  if (!spec || !spec.buildHelper) return null;
+  const offenders = offendersFor(spec, ctx);
   if (offenders.length === 0) return null;
   const plan = spec.buildHelper(ctx, offenders);
   if (!plan) return null;
@@ -470,14 +523,55 @@ export function previewHelper({ book, lines }, checkId) {
  * Apply a helper's whole plan through the named edits in diya-gl-edits.js,
  * as one step.
  * @param {{book: Object, lines: Array}} args
- * @param {string} checkId - one of the three check ids
+ * @param {string} checkId - the id of a check the book runs
  * @returns {Array} a new lines array with the plan applied
  */
 export function applyHelper({ book, lines }, checkId) {
-  const spec = checkSpecById(checkId);
-  if (!spec) throw new Error('No helper called "' + checkId + '"');
   const ctx = contextOf(book, lines);
-  const offenders = spec.offenders(ctx).slice().sort(byEntryNumber);
+  const spec = checkSpecById(ctx, checkId);
+  if (!spec || !spec.apply) throw new Error('No helper called "' + checkId + '"');
+  const offenders = offendersFor(spec, ctx);
+  if (offenders.length === 0) throw new Error("Nothing left for this helper to fix.");
+  return spec.apply(ctx, offenders);
+}
+
+/**
+ * The preview for a helper that changes the book rather than the lines --
+ * a product's own registry, keyed by check id, of { offenders, buildHelper,
+ * apply } specs over the same ctx the checks use. Returns null when the
+ * check passes or names no such helper.
+ * @param {{book: Object, lines: Array}} args
+ * @param {string} checkId - the id of a warning the book runs
+ * @returns {?{title: string, summary: string, changes: Array}}
+ */
+export function previewBookHelper({ book, lines }, checkId) {
+  const ctx = contextOf(book, lines);
+  const spec = (ctx.productRules.bookHelpers || {})[checkId];
+  if (!spec) return null;
+  const offenders = spec.offenders(ctx);
+  if (offenders.length === 0) return null;
+  const plan = spec.buildHelper(ctx, offenders);
+  if (!plan) return null;
+  return {
+    title: plan.title,
+    summary:
+      "This will add " + plan.changes.length + (plan.changes.length === 1 ? " entry" : " entries") + " to the book. Nothing else moves.",
+    changes: plan.changes,
+  };
+}
+
+/**
+ * Apply a book-changing helper's whole plan as one step, the same way
+ * applyHelper does for a lines-changing one.
+ * @param {{book: Object, lines: Array}} args
+ * @param {string} checkId - the id of a warning the book runs
+ * @returns {Object} a new book with the plan applied; the input book is unchanged
+ */
+export function applyBookHelper({ book, lines }, checkId) {
+  const ctx = contextOf(book, lines);
+  const spec = (ctx.productRules.bookHelpers || {})[checkId];
+  if (!spec || !spec.apply) throw new Error('No helper called "' + checkId + '"');
+  const offenders = spec.offenders(ctx);
   if (offenders.length === 0) throw new Error("Nothing left for this helper to fix.");
   return spec.apply(ctx, offenders);
 }
