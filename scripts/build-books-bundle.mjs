@@ -151,6 +151,14 @@ function copyRuntimeAssets() {
   const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name));
   for (const name of yearFiles) cpSync(resolve(dataIn, name), resolve(dataOut, name));
 
+  // The SE form layout (se-forms.js's own render data), fetched by the
+  // books page at runtime rather than bundled: books/products/se-forms.js
+  // reads it from books/assets/data/hmrc/form-layouts/se.json, the same
+  // path convention bundle-resources.js gives every other file under app/data.
+  const formLayoutsOut = resolve(dataOut, "hmrc", "form-layouts");
+  mkdirSync(formLayoutsOut, { recursive: true });
+  cpSync(resolve(ROOT, "app", "data", "hmrc", "form-layouts", "se.json"), resolve(formLayoutsOut, "se.json"));
+
   const templatesOut = resolve(ASSETS_DIR, "templates");
   mkdirSync(resolve(templatesOut, "bst"), { recursive: true });
   cpSync(resolve(ROOT, "app", "templates", "meta.toml"), resolve(templatesOut, "meta.toml"));
