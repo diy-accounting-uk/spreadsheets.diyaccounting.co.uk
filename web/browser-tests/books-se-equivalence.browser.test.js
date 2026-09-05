@@ -281,9 +281,9 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
     console.log(`A3: ${onlyS2.length} keys in S2 only, ${onlyS3.length} keys in S3 only`);
     if (mismatches.length) console.log(`A3: ${mismatches.length} value mismatch(es)`);
 
+    expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
     expect(onlyS2Unexplained, `S2-only keys a saved read should have carried:\n${onlyS2Unexplained.join("\n")}`).toEqual([]);
     expect(onlyS3, `S3-only keys:\n${onlyS3.join("\n")}`).toEqual([]);
-    expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
     expect(compared).toBeGreaterThan(0);
   });
 });
