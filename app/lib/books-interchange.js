@@ -9,22 +9,19 @@
 // writeDiyaGlZip/writeBookJson, so a download from one matches an export
 // from another byte-for-byte.
 //
-// Six byte kinds, told apart by content, never by file extension: a
-// workbook, the zip a downloaded package ships as, this module's own zip
-// (book.toml + lines.jsonl), that pair as one JSON file, the same JSON
-// zipped, and the legacy .xls this pipeline cannot read directly. A
-// customer's upload can be any of the first five under any name at all --
-// a renamed .xlsx is still a workbook -- so the kind is decided by what the
-// bytes actually contain.
+// Seven byte kinds, told apart by content, never by file extension: a
+// workbook, the zip a single-workbook package ships as, the zip a
+// multi-file package ships as, this module's own zip (book.toml +
+// lines.jsonl), that pair as one JSON file, the same JSON zipped, and the
+// legacy .xls this pipeline cannot read directly. A customer's upload can
+// be any of the first six under any name at all -- a renamed .xlsx is still
+// a workbook -- so the kind is decided by what the bytes actually contain.
 //
 // Reading a workbook or its package zip runs the pipeline export.js has
 // always run: the anchor guard, then the extractors and book builder
-// --source-dir uses, staged into a scratch directory because that is what
-// extractBook() reads from. Staging touches fs, os and path, imported
-// statically here as every other pipeline module does -- nothing in this
-// file calls them at import time, only inside the functions that stage a
-// workbook, so a bundle with no file system loads this module fine and
-// only throws if a caller actually reaches that path without one.
+// --source-dir uses, over a workbook set built from the bytes themselves.
+// Nothing here touches fs, os or path, so the same read serves the CLI, the
+// MCP server and the page.
 //
 // overtype-sidecar.js is the one exception to a static import: it resolves
 // its template path from import.meta.url at its own module's top level, so
@@ -34,22 +31,34 @@
 // one until a workbook is actually read.
 
 import JSZip from "jszip";
-import { readFileSync, mkdirSync, writeFileSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { resolve, basename } from "path";
-import { validateBstAnchors, BstAnchorError, extractBstTransactions, extractBook, bstExtractionMap } from "./xlsx-exporter.js";
+import {
+  validateBstAnchors,
+  BstAnchorError,
+  extractBook,
+  extractLines,
+  bstExtractionMap,
+  productIdOf,
+  SCHEMA_PRODUCT_NAMES,
+} from "./xlsx-exporter.js";
+import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
+import { buildSheetMap } from "./spreadsheet-runner.js";
 import { validateBook, validateLines } from "./diya-gl-schema.js";
 import { canonicalBookToml, canonicalLinesJsonl, compareLines, orderedBookTopLevel, orderedLine } from "./diya-gl-canonical.js";
 import { serializeReportDocument } from "./report-serializer.js";
 import { parseDiyaGlData } from "./diya-gl-loader.js";
-import { findXlsx } from "./xlsx-reader.js";
 import * as bst from "../products/bst.js";
 
 export { BstAnchorError };
 
 const JSON_FORMAT = "diya-gl-books";
 const JSON_VERSION = 1;
-const JSON_PRODUCT = "bst";
+
+// The workbook every multi-file package is built around; its siblings say
+// which product the package is.
+const PACKAGE_HUB = "Financialaccounts.xlsx";
+
+// What each product is called where a customer reads the message.
+const PRODUCT_LABELS = { bst: "Basic Sole Trader", taxi: "Taxi Driver", se: "Self Employed", ltd: "Limited Company" };
 
 /** A byte array that sniffs as none of the six kinds this module reads. */
 export class UnknownBookSourceError extends Error {
@@ -67,6 +76,23 @@ export class XlsBookSourceError extends Error {
   constructor(name) {
     super(`${name ? `"${name}"` : "This file"} is the older .xls format. Open it in Excel or LibreOffice and save it as .xlsx.`);
     this.name = "XlsBookSourceError";
+  }
+}
+
+/** One workbook out of a package, uploaded on its own. */
+export class PackagePartError extends Error {
+  constructor(name, part) {
+    super(`${name ? `"${name}"` : "This file"} is ${part}; upload the package zip.`);
+    this.name = "PackagePartError";
+  }
+}
+
+/** A package of a product this build has no module for. */
+export class ProductNotAvailableError extends Error {
+  constructor(name, product, available) {
+    const reads = available.map((id) => PRODUCT_LABELS[id]).join(", ");
+    super(`${name ? `"${name}"` : "This file"} is a ${PRODUCT_LABELS[product]} package; this build reads ${reads} books only.`);
+    this.name = "ProductNotAvailableError";
   }
 }
 
@@ -140,8 +166,15 @@ async function zipKind(bytes) {
   if (lower.includes("xl/workbook.xml")) return "workbook";
 
   const hasLines = lower.includes("lines.jsonl");
-  const xlsxEntries = entries.filter((name) => name.toLowerCase().endsWith(".xlsx"));
-  if (xlsxEntries.length === 1 && !hasLines) return "package-zip";
+  const workbookEntries = entries.filter(isWorkbookEntry);
+  if (!hasLines && workbookEntries.length === 1) return "package-zip";
+  if (
+    !hasLines &&
+    workbookEntries.length > 1 &&
+    workbookEntries.some((entry) => workbookBaseName(entry).toLowerCase() === PACKAGE_HUB.toLowerCase())
+  ) {
+    return "package-set";
+  }
 
   if (hasLines) return "diya-gl-zip";
 
@@ -158,7 +191,7 @@ async function zipKind(bytes) {
  * error messages only.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for messages, not for detection
- * @returns {Promise<"workbook"|"package-zip"|"diya-gl-zip"|"json-zip"|"json"|"xls"|"unknown">}
+ * @returns {Promise<"workbook"|"package-zip"|"package-set"|"diya-gl-zip"|"json-zip"|"json"|"xls"|"unknown">}
  */
 export async function detectBookSource(bytes, name) {
   void name; // content decides the kind; the name is a hint for a caller's own error messages, never for detection
@@ -172,58 +205,84 @@ export async function detectBookSource(bytes, name) {
 // readBookSource
 // ============================================================================
 
-// A fresh scratch directory name, not read back from the filesystem the way
-// mkdtempSync's own uniqueness check would (that call has no browser stub,
-// unlike the plain mkdirSync every other Node-only path in this pipeline
-// already uses) -- two callers landing on the same millisecond and the same
-// six-figure suffix is not a real risk for a directory this function alone
-// creates, writes one file into, and removes before returning.
-function freshStageDir() {
-  const unique = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-  const stageDir = resolve(tmpdir(), `diya-gl-interchange-${unique}`);
-  mkdirSync(stageDir, { recursive: true });
-  return stageDir;
+// A single workbook that is one file of a package, recognised by the sheets
+// it carries and never by the name it arrived under. Every sheet listed must
+// be present; month tabs are left out because a non-March year end renames
+// them.
+const PACKAGE_PART_SHEETS = [
+  {
+    part: "the hub workbook of a nine-file Self Employed package",
+    sheets: ["Business Details", "SE Full", "Profit & Loss Account", "Wagesinterface", "StockControl"],
+  },
+  { part: "the hub workbook of a multi-file Company package", sheets: ["OpenAccounts", "TrialBalance", "CorporationTax", "CT600"] },
+  { part: "the sales journal of a multi-file package", sheets: ["OpeningDebtors", "ClosingDebtors"] },
+  { part: "the purchases journal of a multi-file package", sheets: ["OpeningCreditors", "ClosingCreditors"] },
+  { part: "the fixed asset schedule of a multi-file package", sheets: ["Schedule", "FAreconciliation", "HPfinance"] },
+  { part: "the VAT workbook of a multi-file package", sheets: ["VATQtr1", "Vatinterface"] },
+  { part: "the invoice workbook of a multi-file package", sheets: ["Invoice Template", "Invoice Database", "Customer Details"] },
+  { part: "the payslips workbook of a package, or of the Payslip package", sheets: ["Employee", "Payslips", "Payment"] },
+];
+
+// A bank or cash book carries the twelve month tabs and nothing else, in any
+// rotation, so it has no named sheet of its own to key on.
+const MONTH_TABS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const BANK_BOOK_PART = "a bank or cash book of a multi-file package";
+
+function packagePartOf(sheetNames) {
+  for (const { part, sheets } of PACKAGE_PART_SHEETS) {
+    if (sheets.every((sheet) => sheetNames.has(sheet))) return part;
+  }
+  const tabs = [...sheetNames];
+  if (tabs.length === MONTH_TABS.length && tabs.every((tab) => MONTH_TABS.includes(tab))) return BANK_BOOK_PART;
+  return null;
 }
 
-// extractBook() (xlsx-exporter.js) reads a workbook off a directory, not a
-// buffer, so a byte array reaching this path is staged into a scratch one
-// first, named the way the original upload was so nothing downstream that
-// happens to notice the filename sees anything odd.
-function stageWorkbookBytes(bytes, name) {
-  const stageDir = freshStageDir();
-  const fileName = name && /\.xlsx$/i.test(name) ? basename(name) : "workbook.xlsx";
-  writeFileSync(resolve(stageDir, fileName), bytes);
-  return stageDir;
+// Which product a set of workbooks came from, read from the files it carries
+// and the sheets on them. The package-part check runs ahead of the anchor
+// guard because the Self Employed hub carries a Business Details and an SE
+// Short sheet of its own: what tells it apart is SE Full, Wagesinterface and
+// StockControl, which the single-file templates have not got.
+async function sniffProduct(set, name) {
+  if (set.has(PACKAGE_HUB)) {
+    if (set.has("Bank.xlsx")) return "se";
+    if (set.has("Currentaccount.xlsx")) return "ltd";
+  }
+  if (set.names().length !== 1) throw new UnknownBookSourceError(name);
+
+  const workbookName = set.names()[0];
+  const sheetNames = new Set((await buildSheetMap(await set.zip(workbookName))).keys());
+  const part = packagePartOf(sheetNames);
+  if (part) throw new PackagePartError(workbookName, part);
+
+  await validateBstAnchors(await set.bytes(workbookName));
+  return "bst";
 }
 
-async function stagePackageZipBytes(bytes) {
-  const zip = await JSZip.loadAsync(bytes);
-  const entryName = Object.keys(zip.files).find((name) => !zip.files[name].dir && name.toLowerCase().endsWith(".xlsx"));
-  const buffer = await zip.file(entryName).async("uint8array");
-  const stageDir = freshStageDir();
-  writeFileSync(resolve(stageDir, basename(entryName)), buffer);
-  return stageDir;
+// A workbook uploaded on its own is addressed by the name it arrived under,
+// so nothing downstream that notices a file name sees anything odd.
+function uploadedWorkbookName(name) {
+  return name && /\.xlsx$/i.test(name) ? workbookBaseName(name) : "workbook.xlsx";
 }
 
 async function readWorkbookSource(kind, bytes, name, deps) {
-  const productMod = deps.productMod ?? bst;
-  const stageDir = kind === "workbook" ? stageWorkbookBytes(bytes, name) : await stagePackageZipBytes(bytes);
-  try {
-    const xlsxFile = findXlsx(stageDir);
-    const workbook = readFileSync(resolve(stageDir, xlsxFile));
+  const products = deps.products ?? { bst };
+  const set = kind === "workbook" ? await workbookSetFromWorkbook(uploadedWorkbookName(name), bytes) : await workbookSetFromZipBytes(bytes);
 
-    await validateBstAnchors(workbook);
+  const product = await sniffProduct(set, name);
+  const productMod = products[product];
+  if (!productMod) throw new ProductNotAvailableError(name, product, Object.keys(products));
 
-    const extractionMap = bstExtractionMap();
-    const lines = await extractBstTransactions(workbook, extractionMap);
-    const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
+  const extractionMap = product === "bst" ? bstExtractionMap() : undefined;
+  const lines = await extractLines(set, product, extractionMap);
+  const book = await extractBook(set, product, lines, productMod.CELL_MAP);
+
+  const source = { kind, product, book, lines, workbookSet: set };
+  if (product === "bst") {
     const { overtypedCells } = await import("./overtype-sidecar.js");
-    const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
-
-    return { kind, book, lines, overtyped, workbookBytes: new Uint8Array(workbook) };
-  } finally {
-    rmSync(stageDir, { recursive: true, force: true });
+    const workbook = await set.bytes(set.names()[0]);
+    source.overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
   }
+  return source;
 }
 
 // Both the diya-gl zip's and the JSON's book and lines pass through the same
@@ -249,7 +308,28 @@ async function readDiyaGlZipSource(bytes) {
   const bookToml = await zip.file(bookEntry).async("string");
   const linesRaw = await zip.file(linesEntry).async("string");
   const { book, lines } = parseDiyaGlData(bookToml, linesRaw);
-  return validated("diya-gl-zip", book, lines);
+  const source = validated("diya-gl-zip", book, lines);
+  // A zip carries no product of its own beside the book, the way the JSON
+  // form does, so the book's own field is the only thing that names it.
+  const product = declaredProductOf(source.book);
+  if (!product) throw new InvalidDiyaGlBookError([`the book declares no product: ${undeclaredProduct(source.book)}`]);
+  return { ...source, product };
+}
+
+// The product a book declares for itself. The schema leaves the field
+// optional and its enum also carries three Payslip products, so a book can
+// reach here declaring nothing this pipeline reads or writes.
+function declaredProductOf(book) {
+  const schemaName = book.entityInformation?.["diya-gl:product"];
+  return schemaName === undefined ? undefined : productIdOf(schemaName);
+}
+
+function undeclaredProduct(book) {
+  const schemaName = book.entityInformation?.["diya-gl:product"];
+  return (
+    `entityInformation."diya-gl:product" is ${JSON.stringify(schemaName)}, ` +
+    `and the products diya-gl carries are ${Object.values(SCHEMA_PRODUCT_NAMES).join(", ")}`
+  );
 }
 
 // { "format": "diya-gl-books", "version": 1, "product": "bst", "book": {...}, "lines": [...] }
@@ -266,18 +346,28 @@ function parseJsonDocument(text) {
   if (document.version !== JSON_VERSION) {
     throw new InvalidDiyaGlJsonError(`expected "version": ${JSON_VERSION}, found ${JSON.stringify(document.version)}`);
   }
-  if (document.product !== JSON_PRODUCT) {
-    throw new InvalidDiyaGlJsonError(`expected "product": ${JSON.stringify(JSON_PRODUCT)}, found ${JSON.stringify(document.product)}`);
+  const products = Object.keys(SCHEMA_PRODUCT_NAMES);
+  if (!products.includes(document.product)) {
+    throw new InvalidDiyaGlJsonError(`expected "product" to be one of ${products.join(", ")}, found ${JSON.stringify(document.product)}`);
   }
   if (!document.book || !Array.isArray(document.lines)) {
     throw new InvalidDiyaGlJsonError(`missing "book" or "lines"`);
+  }
+  // A book that declares its own product is the authority the schema gate
+  // judges; one that declares none takes the document's word for it.
+  const schemaName = document.book.entityInformation?.["diya-gl:product"];
+  if (schemaName !== undefined && productIdOf(schemaName) !== document.product) {
+    throw new InvalidDiyaGlJsonError(
+      `"product": ${JSON.stringify(document.product)} disagrees with the book's own ` +
+        `entityInformation."diya-gl:product": ${JSON.stringify(schemaName)}`,
+    );
   }
   return document;
 }
 
 function readJsonSource(bytes) {
   const document = parseJsonDocument(decodeText(bytes));
-  return validated("json", document.book, document.lines);
+  return { ...validated("json", document.book, document.lines), product: document.product };
 }
 
 async function readJsonZipSource(bytes) {
@@ -285,8 +375,7 @@ async function readJsonZipSource(bytes) {
   const entryName = Object.keys(zip.files).find((name) => !zip.files[name].dir);
   const text = await zip.file(entryName).async("string");
   const document = parseJsonDocument(text);
-  const { book, lines } = validated("json-zip", document.book, document.lines);
-  return { kind: "json-zip", book, lines };
+  return { ...validated("json-zip", document.book, document.lines), product: document.product };
 }
 
 /**
@@ -296,16 +385,17 @@ async function readJsonZipSource(bytes) {
  * in all.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for error messages
- * @param {Object} [deps] - {productMod}: the product module a workbook or
- *   package zip is read against (CELL_MAP, cellLabels()); defaults to
- *   app/products/bst.js, the only product this module reads today
- * @returns {Promise<{kind: string, book: Object, lines: Array, overtyped?: Object, workbookBytes?: Uint8Array}>}
+ * @param {Object} [deps] - {products}: product id to product module
+ *   (CELL_MAP, cellLabels()) for the products this caller can read;
+ *   defaults to app/products/bst.js alone
+ * @returns {Promise<{kind: string, product?: string, book: Object, lines: Array, overtyped?: Object, workbookSet?: Object}>}
  */
 export async function readBookSource(bytes, name, deps = {}) {
   const kind = await detectBookSource(bytes, name);
   switch (kind) {
     case "workbook":
     case "package-zip":
+    case "package-set":
       return readWorkbookSource(kind, bytes, name, deps);
     case "diya-gl-zip":
       return readDiyaGlZipSource(bytes);
@@ -332,10 +422,12 @@ export async function readBookSource(bytes, name, deps = {}) {
  * @returns {string}
  */
 export function writeBookJson(book, lines) {
+  const product = declaredProductOf(book);
+  if (!product) throw new Error(`This book declares no product to write: ${undeclaredProduct(book)}.`);
   const document = {
     format: JSON_FORMAT,
     version: JSON_VERSION,
-    product: JSON_PRODUCT,
+    product,
     book: orderedBookTopLevel(book),
     lines: [...lines].sort(compareLines).map(orderedLine),
   };
