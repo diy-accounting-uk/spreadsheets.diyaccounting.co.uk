@@ -509,6 +509,16 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   `entityInformation.taxRegistrationNumber`: the export carries the UTR from `O5`, and the scorecard
   refuses a declaration that explains nothing. R3 re-dispatched.
 
+- Scorecard fix `b17f1390`, `6ae2e408`, `04261b59`, merged 2026-09-05: `verify-roundtrip.js` groups a
+  day-summed journal's fixture lines by (journal, date, account) so the designed day sum is not a
+  lost line; `taxTablesForPackage` restates `[vat]` only for products with a VAT rate cell (the Taxi
+  and BST exports had fabricated `tax.vat`); `organizationAddressLine` and `organizationTown` are
+  declared absent for taxi. `fixedAssets[].assetID` always differs (the sheet has no identifier cell)
+  and is informational.
+
+- After T6's box annotations, `report-indicators.js` matches a label with or without a trailing
+  "(box N)", so the judge's `Net profit/loss` indicator reads the Taxi report again.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
