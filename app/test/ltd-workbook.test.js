@@ -172,10 +172,14 @@ describe("the Company package for a year end that moves the month tabs", () => {
     // The populated October package the reconciliation matrix builds, read
     // back into a book the same way a customer's own upload is.
     const exported = scratchDir("ltd-october-book-");
-    execFileSync(NODE, [resolve(ROOT, "app/bin/export.js"), "--package", "ltd", "--source-dir", OCTOBER_PACKAGE, "--output-dir", exported], {
-      cwd: ROOT,
-      encoding: "utf8",
-    });
+    execFileSync(
+      NODE,
+      [resolve(ROOT, "app/bin/export.js"), "--package", "ltd", "--source-dir", OCTOBER_PACKAGE, "--output-dir", exported],
+      {
+        cwd: ROOT,
+        encoding: "utf8",
+      },
+    );
     const { book, lines } = loadDiyaGlData(exported);
     expect(book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10)).toBe("2026-10-31");
     saved = await saveWorkbookFiles(book, lines);
