@@ -18,6 +18,8 @@ export {
   isBstInputCell,
   normaliseLine,
   taxTablesForPackage,
+  productIdOf,
+  STOCK_CELLS,
 } from "./xlsx-exporter.js";
 
 // The anchor guard: the runner, BST's own table and its two-line wrapper,
@@ -26,7 +28,8 @@ export { validateAnchors, AnchorError } from "./anchors/run.js";
 export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
-export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader.js";
+export { parseDiyaGlData, diyaGlToScenario, applyOffset, resolveBstPurchaseCodeMap } from "./diya-gl-loader.js";
+export { BST_SALES_ACCOUNTS } from "./scenario-extractor.js";
 
 // Validating it.
 export { validateBook, validateLines, useSchemas, loadSchemasFrom } from "./diya-gl-schema.js";
@@ -49,7 +52,7 @@ export {
 
 // R's own serialisation, so a browser export and a CLI export of the same
 // book write the same report.json bytes.
-export { buildReportDocument, serializeReportDocument } from "./report-serializer.js";
+export { buildReportDocument, serializeReportDocument, slug } from "./report-serializer.js";
 
 // overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
 // that module resolves its template path from import.meta.url at the top

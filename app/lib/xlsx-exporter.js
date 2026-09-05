@@ -1665,7 +1665,7 @@ const OPENING_SCALAR_CELLS = {
 // Ltd Stock sheet's D30 is the stock the sheet works out for itself from the
 // year's materials, not a figure anyone enters, so reading it back would
 // hand the next pass a number the book never stated.
-const STOCK_CELLS = {
+export const STOCK_CELLS = {
   bst: { sheet: "PurchasesStock", openingValue: "D5", closingValue: "D30" },
   taxi: null,
   se: { sheet: "StockControl", openingValue: "AB6", closingValue: "AB30" },

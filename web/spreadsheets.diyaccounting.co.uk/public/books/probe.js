@@ -5,7 +5,7 @@
 //
 // It runs one book through the bundled engine and puts what came out on the
 // page and on window.__DIYA_PROBE__. No design, no interaction: the designed
-// shell is bst.html, and W1 wires that to the same bundle.
+// shell is bst.html, which mounts shell.js on the same bundle.
 //
 // The steps below are the whole of what the page asks the engine to do, and
 // the Node side of the bundle gate (web/browser-tests/books-bundle-gate.browser.test.js)

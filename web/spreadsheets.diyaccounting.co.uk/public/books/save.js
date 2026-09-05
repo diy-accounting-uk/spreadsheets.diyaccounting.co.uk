@@ -6,7 +6,7 @@
 //
 // saveWorkbook and savePackageZip are the exact functions the CLI and
 // the MCP server write a workbook through (app/lib/product-workbook.js), bundled
-// for the browser by scripts/build-books-bundle.mjs. bst.js's save controls
+// for the browser by scripts/build-books-bundle.mjs. shell.js's save controls
 // call buildSaveArtifact() then downloadArtifact(); the save browser test
 // calls the same two functions directly against a book it loaded itself, so
 // the shell and the test exercise one save path, not two.
@@ -14,8 +14,8 @@
 // writeDiyaGlZip and writeBookJson (app/lib/books-interchange.js, the same
 // module the CLI's export.js writes through) turn the book into the other
 // two downloads: the diya-gl zip and the single-file JSON. Both need R --
-// bst.js passes it in through extras.report, the same document
-// window.DIYA_BST_SNAPSHOT.report already carries, so nothing here
+// shell.js passes it in through extras.report, the same document
+// window.DIYA_BOOKS_SNAPSHOT.report already carries, so nothing here
 // recomputes a result the page already has.
 
 const ENGINE_MODULE = "./engine/diya-gl-engine.js";

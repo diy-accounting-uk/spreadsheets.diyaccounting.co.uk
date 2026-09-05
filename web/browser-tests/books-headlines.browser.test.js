@@ -84,7 +84,7 @@ function buildMonths() {
   });
 }
 
-// A books-page snapshot shaped exactly as bst-data.js's assembleSnapshot()
+// A books-page snapshot shaped exactly as data.js's assembleSnapshot()
 // returns it, but built from R's own cell values rather than a loaded
 // book, so headlines.js's reportFromSnapshot() reconstructs the same R the
 // fixture actually carries. The debtors monthly breakdown collapses to one
@@ -241,7 +241,7 @@ async function mountStrip(page, snapshotJson) {
   await page.addScriptTag({ path: engineBundlePath });
   // books/headlines.js calls opts.headlinesFromReport(report) with a single
   // argument, so the declaration is bound in here rather than passed
-  // through mountHeadlines -- the same shape bst-data.js's own wrapper uses
+  // through mountHeadlines -- the same shape data.js's own wrapper uses
   // in the real page.
   await page.evaluate(
     ({ snapshot, headlines }) => {

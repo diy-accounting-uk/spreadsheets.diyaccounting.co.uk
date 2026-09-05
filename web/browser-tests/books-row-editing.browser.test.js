@@ -31,8 +31,8 @@ test.afterAll(async () => {
 });
 
 // ── Reading the rendered year table ────────────────────────────────────────
-// The year table's own column order (yearTableColumns(), bst.js): the
-// seventeen P&L categories in bst-data.js's own order, then the Cost of
+// The year table's own column order (yearTableColumns(), shell.js): the
+// seventeen P&L categories in the manifest's own order, then the Cost of
 // Sales composite appended after all of them so their positions never move.
 
 const COLUMNS = {
