@@ -77,10 +77,19 @@ export { reportSections, checkCompliance, cellLabels, profitBridge, standardRead
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
 // Editing it.
-export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
+export {
+  addSaleLine,
+  addPurchaseLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+  changeLineBankAccount,
+} from "./diya-gl-edits.js";
 
 // The book checks and warnings over D itself, and their fix-it helpers.
-export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./book-checks.js";
+export { runBookChecks, bookChecksJson, previewHelper, applyHelper, previewBookHelper, applyBookHelper } from "./book-checks.js";
+export { bankBalancesByMonth } from "./book-checks/se.js";
 
 // The year-at-a-glance headline figures, derived from R.
 export { headlinesFromReport } from "./headlines.js";

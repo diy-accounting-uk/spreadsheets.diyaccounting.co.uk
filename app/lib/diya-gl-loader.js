@@ -203,7 +203,7 @@ const PRODUCT_FILTERS = {
   ltd: filterFull,
 };
 
-const PURCHASE_CODE_MAPS = {
+export const PURCHASE_CODE_MAPS = {
   bst: BST_PURCHASE_CODE_MAP,
   taxi: TAXI_PURCHASE_CODE_MAP,
   se: SE_PURCHASE_CODE_MAP,

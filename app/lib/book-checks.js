@@ -18,6 +18,7 @@
 import { changeLinePostingDate, changeLineAccount, changeLineAmount } from "./diya-gl-edits.js";
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
 import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
+import { SE_PRODUCT_RULES } from "./book-checks/se.js";
 
 // ============================== shared helpers ==============================
 
@@ -252,7 +253,7 @@ const CHECK_SPECS = [
 // book states in entityInformation["diya-gl:product"]. A book naming a
 // product with no entry here runs the shared rules alone.
 
-const PRODUCT_RULES = { Company: LTD_PRODUCT_RULES, TaxiDriver: TAXI_PRODUCT_RULES };
+const PRODUCT_RULES = { Company: LTD_PRODUCT_RULES, TaxiDriver: TAXI_PRODUCT_RULES, SelfEmployed: SE_PRODUCT_RULES };
 const SHARED_RULES_ONLY = { checks: [], warnings: [], sharedOffenders: {} };
 
 function productRulesFor(book) {
@@ -293,9 +294,18 @@ function runChecks(ctx) {
       consequence: pass ? null : spec.consequence(ctx),
       offenders: offenders.map(offenderOf),
     };
-    if (!pass && spec.buildHelper) {
-      const plan = spec.buildHelper(ctx, offenders);
-      if (plan) result.helper = { id: spec.id, label: plan.title };
+    if (!pass) {
+      // A check whose fix changes the book rather than its lines names its
+      // helper in the product's bookHelpers registry, and is applied
+      // through applyBookHelper rather than applyHelper.
+      const bookHelper = (ctx.productRules.bookHelpers || {})[spec.id];
+      if (bookHelper) {
+        const plan = bookHelper.buildHelper(ctx, bookHelper.offenders(ctx));
+        if (plan) result.helper = { id: spec.id, label: plan.title, kind: "book" };
+      } else if (spec.buildHelper) {
+        const plan = spec.buildHelper(ctx, offenders);
+        if (plan) result.helper = { id: spec.id, label: plan.title };
+      }
     }
     return result;
   });
@@ -436,13 +446,19 @@ function emptyMonthWarning(ctx) {
 }
 
 function runWarnings(ctx, taxData, results) {
-  return [
+  const shared = [
     vatWarning(ctx, taxData),
     duplicateEntriesWarning(ctx),
     emptyDetailWarning(ctx),
     negativeAmountWarning(ctx),
     emptyMonthWarning(ctx),
-  ].concat(
+  ].map(function (warning) {
+    // A product whose sheets measure a shared warning differently replaces
+    // the whole result, keeping its id; every other product keeps this one.
+    const readDifferently = (ctx.productRules.sharedWarnings || {})[warning.id];
+    return readDifferently ? readDifferently(ctx, taxData, warning) : warning;
+  });
+  return shared.concat(
     ctx.productRules.warnings.map(function (warning) {
       return warning(ctx, taxData, results);
     }),
