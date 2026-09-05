@@ -476,6 +476,16 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   sheet gives `2 * B12 - B10`, not `2 * B12 - B10/2`. The basic-taxi master's Class 2 rate joined
   the others at 3.5 on the merge.
 
+- For T9, from SE S2: the sidecar option is `options.templates`, not `templatePaths`.
+
+- T10 `58e2514d`, merged 2026-09-05: `app/lib/anchors/taxi.js` (33 sheets, 13 headers); the
+  single-workbook sniff tries BST then Taxi and rethrows BST's error when both fail.
+
+- T11 `899ff970`, `19d1785b`, merged 2026-09-05: the writer passes `targetStartYear` only to
+  multi-file products, so Taxi's grid follows the book's own period; Taxi through `--file`, the MCP
+  `save_workbook` and `extract_book`, with the off-grid refusal surfacing as a named error. The raw
+  Taxi workbook sniff landed with T10 in the same batch.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

@@ -432,10 +432,23 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
-- T1 `dd7366c0`, merged 2026-09-05: `app/lib/anchors/se.js` (nine files, 102 header cells from the
-  exported column constants), `isSeInputCell`, `seTemplatePaths`; `sniffProduct` reads a hub with
-  siblings and no Currentaccount as SE, so a set missing a leaf reaches the guard and is named; the
-  Payslips print sheet's `H3`, `H4`, `L7`, `I9`, `I10` carry formulas and are not inputs.
+- S7 `ab5c82d9`, `105777a9`, `2afdf60b`, `63934d1b`, merged 2026-09-05: `books/shell.js`, `data.js`,
+  `edits.js`, `books.css`, `products/bst.js` as the first manifest under `window.DiyaGlProducts`,
+  `window.DiyaGlBooksLoader` and `window.DiyaGlBooksPage`, the five seam lines, the regime passed
+  to `taxYearFileName`; `wc -l` 4,418 against the 4,422 gate; the browser suite 168 with one red,
+  the bst-latest A3. `sniffProduct` is not exported, so `data.js` restates the package rule; S8 or
+  T7 exports it. SP Sixty's month rows now group 5900 and 7000 by the calculator's own map.
+- T6 `731748c8`, `1ff365dd`, `2051dc53`, merged 2026-09-05: `addBankLine`, `settlementSuggestions`
+  and `applySettlement` (four kinds, matched as a multiset by counterparty and amount, entries
+  numbered `SET-0001` on), `EDITS` at seven; the twelve BrickWork drawings lines are numbered
+  TXN-0166 to TXN-0177 by the adaptation. `changeLineBankAccount` is not in `EDITS`; T14 registers
+  it. `REPOST_PREFERRED` has no SE entry, so an SE purchase settlement falls back to the chart's
+  first account.
+- S2 `cce2aaee`, `be4672a7`, merged 2026-09-05: `app/lib/anchors/run.js` (`validateAnchors`,
+  `AnchorError`, `textAt`), `anchors/bst.js`, the four multi-file extractors recording the map,
+  `overtypedCells(set, options)` with `options.templates` and `isInputCell(file, sheet, cell)`;
+  BST `--file`, `--source-dir` and `overtyped.json` byte-identical; browser suite green bar the
+  bst-latest A3. Taxi T9 and Ltd T2 note the option name `templates`.
 - S6 `9215c63a`, merged 2026-09-05: `app/lib/products.js` (`PRODUCTS`, `productModule`), the MCP
   server named `diya-gl`, `extractBookFromFile` with the product from the book or the sniff and a
   `PackageMismatchError`; BST `--file` output byte-identical; the browser suite is 161 with S1's
