@@ -17,6 +17,7 @@ import {
   extractJournalEntries,
   extractPayrollTransactions,
   extractBook,
+  extractMetadata,
   normaliseLine,
   AdminSheetMissingError,
 } from "../lib/xlsx-exporter.js";
@@ -510,7 +511,7 @@ const TAXI_PURCHASE_ANALYSIS = { G3: "Fuel & Oil Expenses", S2: "Fixed Assets Mo
 function taxiSheets({ salesRows = {}, purchaseRows = {} } = {}) {
   const carried = { formula: "SUM(E5:E8)", value: TAXI_FIRST_DAY };
   return {
-    "Business Details": { C5: "SP Sixty Driving", C7: "Private hire and taxi driving services" },
+    "Business Details": { C5: "SP Sixty Driving", C8: "Private hire and taxi driving services", C17: "DE1 2GH", O5: "5566778899" },
     "Admin": { ...TAXI_MILEAGE_RATES },
     "SalesApr": {
       A5: TAXI_FIRST_DAY,
@@ -713,6 +714,25 @@ describe("extractTaxiTransactions — the exported book", () => {
     const { book } = await exportedTaxiBook(taxiSheets({ purchaseRows: { A6: TAXI_FIRST_DAY + 2, B6: "Amazon", D6: "f", F6: 200 } }));
     expect(book.accounts.purchases["7000"]).toEqual({ "accountMainDescription": "Fixed Assets Motor Vehicles", "diya-gl:column": "S" });
     expect(book.accounts.assets).toBeUndefined();
+  });
+
+  it("carries the trade, postcode and UTR off the cells the form reads", async () => {
+    const { book } = await exportedTaxiBook();
+    expect(book.entityInformation.organizationIdentifier).toBe("SP Sixty Driving");
+    expect(book.entityInformation.organizationDescription).toBe("Private hire and taxi driving services");
+    expect(book.entityInformation.organizationPostcode).toBe("DE1 2GH");
+    expect(book.entityInformation.taxRegistrationNumber).toBe("5566778899");
+    expect(book.entityInformation.organizationAddressLine).toBeUndefined();
+    expect(book.entityInformation.organizationTown).toBeUndefined();
+  });
+});
+
+describe("extractMetadata — Taxi reads its description off C8, not C7", () => {
+  it("reads the name and description the writer puts on the Business Details sheet", async () => {
+    const buffer = await buildWorkbook(taxiSheets());
+    const metadata = await extractMetadata(buffer, "taxi");
+    expect(metadata.organizationIdentifier).toBe("SP Sixty Driving");
+    expect(metadata.organizationDescription).toBe("Private hire and taxi driving services");
   });
 });
 

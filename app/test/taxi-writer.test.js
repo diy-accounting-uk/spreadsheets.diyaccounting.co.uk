@@ -128,6 +128,19 @@ describe("Taxi writer — day sums and joined names", () => {
     expect(error.message).toContain("2026-04-07");
   });
 
+  it("Business Details go to the cells the form reads", () => {
+    const scenario = {
+      business: { name: "SP Sixty Driving", description: "Private hire and taxi driving services", postcode: "DE1 2GH", utr: "5566778899" },
+    };
+    const writes = cellWrites(scenario, 2025);
+    expect(writes["Business Details"]).toEqual({
+      C5: "SP Sixty Driving",
+      C8: "Private hire and taxi driving services",
+      C17: "DE1 2GH",
+      O5: "5566778899",
+    });
+  });
+
   it("the loader hands the writer a Taxi book in entry order", () => {
     const book = { documentInfo: { periodCoveredStart: "2025-04-06" } };
     const lineA = {

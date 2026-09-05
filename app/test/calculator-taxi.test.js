@@ -75,6 +75,27 @@ describe("Taxi calculator — capital allowances and mileage are mutually exclus
   }
 });
 
+describe("Taxi calculator — Business Details", () => {
+  it("the four cells the form reads carry the book's own fields, and nothing else", () => {
+    const dir = resolve(ROOT, "examples", "basic-taxi-driver", "taxi");
+    const { book, results } = runFixture(dir);
+    const bd = results["Business Details"];
+    expect(bd.C5).toBe(book.entityInformation.organizationIdentifier);
+    expect(bd.C8).toBe(book.entityInformation.organizationDescription);
+    expect(bd.C17).toBe(book.entityInformation.organizationPostcode);
+    expect(bd.O5).toBe(book.entityInformation.taxRegistrationNumber);
+    expect(Object.keys(bd).sort()).toEqual(["C17", "C5", "C8", "O5"]);
+  });
+
+  it("the route cell is present only on the mileage route", () => {
+    const { results: mileageRoute } = runFixture(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
+    expect(mileageRoute["Profit & Loss Acc"].C1).toBe("MILEAGE ALLOWANCE");
+
+    const { results: actualCostRoute } = runFixture(resolve(ROOT, "examples", "basic-taxi-driver", "taxi"));
+    expect(actualCostRoute["Profit & Loss Acc"]).not.toHaveProperty("C1");
+  });
+});
+
 // ── The mileage route ────────────────────────────────────────────────────
 
 describe("Taxi calculator — the mileage claim", () => {
@@ -368,6 +389,58 @@ describe("Taxi calculator checks are breakable", () => {
 
     expect(checkByName(checks, "Admin: Higher Rate = tax data").pass).toBe(true); // echoes whatever it was given
     expect(checkByName(checks, "Total Sales").pass).toBe(true); // unrelated to the tax rate
+  });
+
+  function newlyBrokenBy(mutate) {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const results = calculateTaxiResults(book, lines, taxData, anchor);
+    const brokenBefore = checkCompliance(results, anchor, taxData, calculateExpectedTax)
+      .filter((c) => !c.pass)
+      .map((c) => c.name);
+
+    const mutated = mutate(results);
+    return checkCompliance(mutated, anchor, taxData, calculateExpectedTax)
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+  }
+
+  it("bumping the first payment on account fails only its own check", () => {
+    const newlyBroken = newlyBrokenBy((results) => ({
+      ...results,
+      "Draft Tax calculation": { ...results["Draft Tax calculation"], E25: results["Draft Tax calculation"].E25 + 1 },
+    }));
+    expect(newlyBroken).toEqual(["Tax: first payment on account is half the liability"]);
+  });
+
+  it("bumping the written-down value fails only its own check", () => {
+    const newlyBroken = newlyBrokenBy((results) => ({
+      ...results,
+      "Fixed Assets": { ...results["Fixed Assets"], K1: results["Fixed Assets"].K1 + 1 },
+    }));
+    expect(newlyBroken).toEqual(["Fixed Assets: written-down value = cost less the allowance"]);
+  });
+
+  it("bumping the P&L comparison figure fails only its own check", () => {
+    const newlyBroken = newlyBrokenBy((results) => ({
+      ...results,
+      "Profit & Loss Acc": { ...results["Profit & Loss Acc"], J1: results["Profit & Loss Acc"].J1 + 1 },
+    }));
+    expect(newlyBroken).toEqual(["P&L: the comparison figure = running costs plus the schedule's allowances"]);
+  });
+
+  it("deleting the route cell on SP Sixty's mileage route fails only the route check", () => {
+    const { results: unmutated } = runFixture(dir);
+    expect(unmutated["Profit & Loss Acc"].C1).toBe("MILEAGE ALLOWANCE");
+
+    const newlyBroken = newlyBrokenBy((results) => {
+      const pl = { ...results["Profit & Loss Acc"] };
+      delete pl.C1;
+      return { ...results, "Profit & Loss Acc": pl };
+    });
+    expect(newlyBroken).toEqual(["P&L: the route follows the comparison"]);
   });
 });
 

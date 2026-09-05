@@ -1521,9 +1521,10 @@ export async function extractMetadata(xlsxBuffer, product) {
     };
   }
 
+  const entityCells = ENTITY_CELLS[product];
   return {
-    organizationIdentifier: readCellValue(xml, "C5", sharedStrings) || "",
-    organizationDescription: readCellValue(xml, "C7", sharedStrings) || "",
+    organizationIdentifier: readCellValue(xml, entityCells.organizationIdentifier, sharedStrings) || "",
+    organizationDescription: readCellValue(xml, entityCells.organizationDescription, sharedStrings) || "",
   };
 }
 
@@ -1559,14 +1560,17 @@ const ENTITY_CELLS = {
     organizationTown: "C10",
     organizationPostcode: "C12",
   },
+  // 'SE Short'!C13 reads C8 back as box 1 and C22/F22 read C17 for box 2, so
+  // those are the cells the form actually prints; O8 reads O5 for the UTR
+  // box. The address and town have no cell of the form's own and stay in
+  // the book only.
   taxi: {
     file: null,
     sheet: "Business Details",
     organizationIdentifier: "C5",
-    organizationDescription: "C7",
-    organizationAddressLine: "C8",
-    organizationTown: "C10",
-    organizationPostcode: "C12",
+    organizationDescription: "C8",
+    organizationPostcode: "C17",
+    taxRegistrationNumber: "O5",
   },
   // The SA103F front page runs label then entry down column C: C5 the
   // taxpayer's name and C17, the merged box under the C16 "Description of
