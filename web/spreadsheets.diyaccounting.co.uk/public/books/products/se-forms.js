@@ -115,8 +115,13 @@
       return isBlank(v) || typeof v !== "number" ? 0 : v;
     }
     var amounts = rule.cells.map(amountOf);
-    if (rule.op === "sum") return amounts.reduce((a, b) => a + b, 0);
-    if (rule.op === "deduct") return amounts.length ? amounts[0] - amounts.slice(1).reduce((a, b) => a + b, 0) : 0;
+    function sum(list) {
+      var total = 0;
+      for (var i = 0; i < list.length; i++) total += list[i];
+      return total;
+    }
+    if (rule.op === "sum") return sum(amounts);
+    if (rule.op === "deduct") return amounts.length ? amounts[0] - sum(amounts.slice(1)) : 0;
     throw new Error('se-forms.js: unknown rule op "' + rule.op + '"');
   }
 
@@ -147,7 +152,14 @@
   function renderBoxRow(ctx, helpers, form, boxesByNumber, box) {
     if (box.rule) {
       var amount = ruleValue(ctx, boxesByNumber, box.rule);
-      return form.row({ box: box.box, label: box.label, amount: helpers.fmtBoxWhole(amount), rKeyAttr: "", total: !!box.total, wholePounds: true });
+      return form.row({
+        box: box.box,
+        label: box.label,
+        amount: helpers.fmtBoxWhole(amount),
+        rKeyAttr: "",
+        total: !!box.total,
+        wholePounds: true,
+      });
     }
     var resolved = wholeAmount(ctx, helpers, box.cell);
     return form.row({
@@ -193,21 +205,33 @@
   }
 
   function loadingForm(name) {
-    return '<h2>' + name + '</h2><p class="entries-note">' + (layoutFailed ? "The form layout failed to load." : "Loading the form…") + "</p>";
+    return (
+      "<h2>" + name + '</h2><p class="entries-note">' + (layoutFailed ? "The form layout failed to load." : "Loading the form…") + "</p>"
+    );
   }
 
   function renderSa103s(snap, state, helpers) {
     if (!layout) return loadingForm("SA103S");
     var f = layout.forms.sa103s;
     var form = helpers.form;
-    return "<h2>" + f.form + "</h2>" + form.render(f.form + " — Self-employment (short)", f.microcopy, renderSections(snap, helpers, form, f.sections));
+    return (
+      "<h2>" +
+      f.form +
+      "</h2>" +
+      form.render(f.form + " — Self-employment (short)", f.microcopy, renderSections(snap, helpers, form, f.sections))
+    );
   }
 
   function renderSa103f(snap, state, helpers) {
     if (!layout) return loadingForm("SA103F");
     var f = layout.forms.sa103f;
     var form = helpers.form;
-    return "<h2>" + f.form + "</h2>" + form.render(f.form + " — Self-employment (full)", f.microcopy, renderSections(snap, helpers, form, f.sections));
+    return (
+      "<h2>" +
+      f.form +
+      "</h2>" +
+      form.render(f.form + " — Self-employment (full)", f.microcopy, renderSections(snap, helpers, form, f.sections))
+    );
   }
 
   // ============================== VAT ==============================
@@ -233,10 +257,24 @@
     var rows = v.boxes
       .map(function (box) {
         if (!box.cell) {
-          return form.row({ box: box.box, label: box.label + (box.note ? " (" + box.note + ")" : ""), amount: "", rKeyAttr: "", total: !!box.total, wholePounds: true });
+          return form.row({
+            box: box.box,
+            label: box.label + (box.note ? " (" + box.note + ")" : ""),
+            amount: "",
+            rKeyAttr: "",
+            total: !!box.total,
+            wholePounds: true,
+          });
         }
         var resolved = wholeAmount(snap, helpers, vatRef(v, quarter, box.cell));
-        return form.row({ box: box.box, label: box.label, amount: resolved.amount, rKeyAttr: resolved.rKeyAttr, total: !!box.total, wholePounds: true });
+        return form.row({
+          box: box.box,
+          label: box.label,
+          amount: resolved.amount,
+          rKeyAttr: resolved.rKeyAttr,
+          total: !!box.total,
+          wholePounds: true,
+        });
       })
       .join("");
     return form.render(heading, v.notice, form.section("", rows));

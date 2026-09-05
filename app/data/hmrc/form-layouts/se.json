@@ -19,7 +19,11 @@
         {
           "heading": "Business income",
           "boxes": [
-            { "box": "9", "label": "Your turnover, the takings, fees, sales or money earned by your business", "cell": "Financialaccounts.xlsx!SE Short!D38" },
+            {
+              "box": "9",
+              "label": "Your turnover, the takings, fees, sales or money earned by your business",
+              "cell": "Financialaccounts.xlsx!SE Short!D38"
+            },
             { "box": "10", "label": "Any other business income not included in box 9", "cell": "Financialaccounts.xlsx!SE Short!O38" },
             { "box": "10.1", "label": "Trading income allowance", "cell": null }
           ]
@@ -30,7 +34,11 @@
           "collapseTurnover": "Financialaccounts.xlsx!SE Short!D38",
           "boxes": [
             { "box": "11", "label": "Costs of goods bought for resale or goods used", "cell": "Financialaccounts.xlsx!SE Short!D46" },
-            { "box": "12", "label": "Car, van and travel expenses, after private use proportion", "cell": "Financialaccounts.xlsx!SE Short!D51" },
+            {
+              "box": "12",
+              "label": "Car, van and travel expenses, after private use proportion",
+              "cell": "Financialaccounts.xlsx!SE Short!D51"
+            },
             { "box": "13", "label": "Wages, salaries and other staff costs", "cell": "Financialaccounts.xlsx!SE Short!D55" },
             { "box": "14", "label": "Rent, rates, power and insurance costs", "cell": "Financialaccounts.xlsx!SE Short!D60" },
             { "box": "15", "label": "Repairs and maintenance of property and equipment", "cell": "Financialaccounts.xlsx!SE Short!D64" },
@@ -44,15 +52,28 @@
         {
           "heading": "Net profit or loss",
           "boxes": [
-            { "box": "21", "label": "Net profit, if your business income is more than your expenses", "cell": "Financialaccounts.xlsx!SE Short!D71", "total": true },
-            { "box": "22", "label": "Or, net loss, if your expenses exceed your business income", "cell": "Financialaccounts.xlsx!SE Short!O71" }
+            {
+              "box": "21",
+              "label": "Net profit, if your business income is more than your expenses",
+              "cell": "Financialaccounts.xlsx!SE Short!D71",
+              "total": true
+            },
+            {
+              "box": "22",
+              "label": "Or, net loss, if your expenses exceed your business income",
+              "cell": "Financialaccounts.xlsx!SE Short!O71"
+            }
           ]
         },
         {
           "heading": "Tax allowances for certain buildings, vehicles and equipment",
           "boxes": [
             { "box": "23", "label": "Annual Investment Allowance", "cell": "Financialaccounts.xlsx!SE Short!D80" },
-            { "box": "24", "label": "Allowance for small balance of unrelieved expenditure", "cell": "Financialaccounts.xlsx!SE Short!D85" },
+            {
+              "box": "24",
+              "label": "Allowance for small balance of unrelieved expenditure",
+              "cell": "Financialaccounts.xlsx!SE Short!D85"
+            },
             { "box": "24.1", "label": "Zero-emission car allowance", "cell": null },
             { "box": "25", "label": "Other capital allowances", "cell": "Financialaccounts.xlsx!SE Short!O80" },
             { "box": "25.1", "label": "The Structures and Buildings Allowance", "cell": null },
@@ -65,9 +86,22 @@
           "boxes": [
             { "box": "27", "label": "Goods and/or services for your own use", "cell": "Financialaccounts.xlsx!SE Short!D94" },
             { "box": "28", "label": "Net business profit for tax purposes", "cell": "Financialaccounts.xlsx!SE Short!D99", "total": true },
-            { "box": "29", "label": "Loss brought forward from earlier years set off against this year's profits", "cell": "Financialaccounts.xlsx!SE Short!O94" },
-            { "box": "30", "label": "Any other business income not included in box 9 or box 10", "cell": "Financialaccounts.xlsx!SE Short!O99" },
-            { "box": "31", "label": "Total taxable profits from this business", "cell": "Financialaccounts.xlsx!SE Short!D106", "total": true },
+            {
+              "box": "29",
+              "label": "Loss brought forward from earlier years set off against this year's profits",
+              "cell": "Financialaccounts.xlsx!SE Short!O94"
+            },
+            {
+              "box": "30",
+              "label": "Any other business income not included in box 9 or box 10",
+              "cell": "Financialaccounts.xlsx!SE Short!O99"
+            },
+            {
+              "box": "31",
+              "label": "Total taxable profits from this business",
+              "cell": "Financialaccounts.xlsx!SE Short!D106",
+              "total": true
+            },
             { "box": "32", "label": "Net business loss for tax purposes", "cell": "Financialaccounts.xlsx!SE Short!O106" }
           ]
         },
@@ -75,11 +109,23 @@
           "heading": "Losses, Class 2 and Class 4 NICs and CIS deductions",
           "boxes": [
             { "box": "33", "label": "Loss from this tax year set off against other income", "cell": null },
-            { "box": "34", "label": "Loss to be carried back to previous years and set off against income (or capital gains)", "cell": null },
-            { "box": "35", "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward", "cell": "Financialaccounts.xlsx!SE Short!D124" },
+            {
+              "box": "34",
+              "label": "Loss to be carried back to previous years and set off against income (or capital gains)",
+              "cell": null
+            },
+            {
+              "box": "35",
+              "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward",
+              "cell": "Financialaccounts.xlsx!SE Short!D124"
+            },
             { "box": "36", "label": "Pay Class 2 NICs voluntarily", "cell": null },
             { "box": "37", "label": "Exempt from paying Class 4 NICs", "cell": null },
-            { "box": "38", "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors", "cell": "Financialaccounts.xlsx!SE Short!O124" }
+            {
+              "box": "38",
+              "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors",
+              "cell": "Financialaccounts.xlsx!SE Short!O124"
+            }
           ]
         }
       ]
@@ -93,7 +139,11 @@
         {
           "heading": "Business income",
           "boxes": [
-            { "box": "15", "label": "Your turnover, the takings, fees, sales or money earned by your business", "cell": "Financialaccounts.xlsx!SE Full!D55" },
+            {
+              "box": "15",
+              "label": "Your turnover, the takings, fees, sales or money earned by your business",
+              "cell": "Financialaccounts.xlsx!SE Full!D55"
+            },
             { "box": "16", "label": "Any other business income not included in box 15", "cell": "Financialaccounts.xlsx!SE Full!O55" },
             { "box": "16.1", "label": "Trading income allowance", "cell": null }
           ]
@@ -122,19 +172,51 @@
           "heading": "Disallowable expenses",
           "note": "Use this column only where the figures in boxes 17 to 30 include disallowable amounts. Box 32 pairs with box 17, box 33 with box 18, and so on down the column.",
           "boxes": [
-            { "box": "32", "label": "Disallowable: cost of goods bought for resale or goods used", "cell": "Financialaccounts.xlsx!SE Full!O66" },
-            { "box": "33", "label": "Disallowable: construction industry, payments to subcontractors", "cell": "Financialaccounts.xlsx!SE Full!O70" },
+            {
+              "box": "32",
+              "label": "Disallowable: cost of goods bought for resale or goods used",
+              "cell": "Financialaccounts.xlsx!SE Full!O66"
+            },
+            {
+              "box": "33",
+              "label": "Disallowable: construction industry, payments to subcontractors",
+              "cell": "Financialaccounts.xlsx!SE Full!O70"
+            },
             { "box": "34", "label": "Disallowable: wages, salaries and other staff costs", "cell": "Financialaccounts.xlsx!SE Full!O74" },
             { "box": "35", "label": "Disallowable: car, van and travel expenses", "cell": "Financialaccounts.xlsx!SE Full!O78" },
             { "box": "36", "label": "Disallowable: rent, rates, power and insurance costs", "cell": "Financialaccounts.xlsx!SE Full!O82" },
-            { "box": "37", "label": "Disallowable: repairs and maintenance of property and equipment", "cell": "Financialaccounts.xlsx!SE Full!O86" },
-            { "box": "38", "label": "Disallowable: phone, fax, stationery and other office costs", "cell": "Financialaccounts.xlsx!SE Full!O90" },
-            { "box": "39", "label": "Disallowable: advertising and business entertainment costs", "cell": "Financialaccounts.xlsx!SE Full!O94" },
+            {
+              "box": "37",
+              "label": "Disallowable: repairs and maintenance of property and equipment",
+              "cell": "Financialaccounts.xlsx!SE Full!O86"
+            },
+            {
+              "box": "38",
+              "label": "Disallowable: phone, fax, stationery and other office costs",
+              "cell": "Financialaccounts.xlsx!SE Full!O90"
+            },
+            {
+              "box": "39",
+              "label": "Disallowable: advertising and business entertainment costs",
+              "cell": "Financialaccounts.xlsx!SE Full!O94"
+            },
             { "box": "40", "label": "Disallowable: interest on bank and other loans", "cell": "Financialaccounts.xlsx!SE Full!O98" },
-            { "box": "41", "label": "Disallowable: bank, credit card and other financial charges", "cell": "Financialaccounts.xlsx!SE Full!O102" },
+            {
+              "box": "41",
+              "label": "Disallowable: bank, credit card and other financial charges",
+              "cell": "Financialaccounts.xlsx!SE Full!O102"
+            },
             { "box": "42", "label": "Disallowable: irrecoverable debts written off", "cell": "Financialaccounts.xlsx!SE Full!O106" },
-            { "box": "43", "label": "Disallowable: accountancy, legal and other professional fees", "cell": "Financialaccounts.xlsx!SE Full!O110" },
-            { "box": "44", "label": "Disallowable: depreciation and loss or profit on sale of assets", "cell": "Financialaccounts.xlsx!SE Full!O114" },
+            {
+              "box": "43",
+              "label": "Disallowable: accountancy, legal and other professional fees",
+              "cell": "Financialaccounts.xlsx!SE Full!O110"
+            },
+            {
+              "box": "44",
+              "label": "Disallowable: depreciation and loss or profit on sale of assets",
+              "cell": "Financialaccounts.xlsx!SE Full!O114"
+            },
             { "box": "45", "label": "Disallowable: other business expenses", "cell": "Financialaccounts.xlsx!SE Full!O118" },
             { "box": "46", "label": "Total disallowable expenses", "cell": "Financialaccounts.xlsx!SE Full!O122", "total": true }
           ]
@@ -142,16 +224,33 @@
         {
           "heading": "Net profit or loss",
           "boxes": [
-            { "box": "47", "label": "Net profit, if your business income is more than your expenses", "cell": "Financialaccounts.xlsx!SE Full!D129", "total": true },
-            { "box": "48", "label": "Or, net loss, if your expenses are more than your business income", "cell": "Financialaccounts.xlsx!SE Full!O129" }
+            {
+              "box": "47",
+              "label": "Net profit, if your business income is more than your expenses",
+              "cell": "Financialaccounts.xlsx!SE Full!D129",
+              "total": true
+            },
+            {
+              "box": "48",
+              "label": "Or, net loss, if your expenses are more than your business income",
+              "cell": "Financialaccounts.xlsx!SE Full!O129"
+            }
           ]
         },
         {
           "heading": "Tax allowances for vehicles and equipment",
           "boxes": [
             { "box": "49", "label": "Annual Investment Allowance", "cell": "Financialaccounts.xlsx!SE Full!D139" },
-            { "box": "50", "label": "Capital allowances at 18% on equipment, including cars with lower CO2 emissions", "cell": "Financialaccounts.xlsx!SE Full!D144" },
-            { "box": "51", "label": "Capital allowances at 6% on equipment, including cars with higher CO2 emissions", "cell": "Financialaccounts.xlsx!SE Full!D147" },
+            {
+              "box": "50",
+              "label": "Capital allowances at 18% on equipment, including cars with lower CO2 emissions",
+              "cell": "Financialaccounts.xlsx!SE Full!D144"
+            },
+            {
+              "box": "51",
+              "label": "Capital allowances at 6% on equipment, including cars with higher CO2 emissions",
+              "cell": "Financialaccounts.xlsx!SE Full!D147"
+            },
             { "box": "52", "label": "Zero-emission goods vehicle allowance", "cell": "Financialaccounts.xlsx!SE Full!D152" },
             { "box": "52.1", "label": "Zero-emission car allowance", "cell": "Financialaccounts.xlsx!SE Full!D156" },
             { "box": "53", "label": "The Structures and Buildings Allowance", "cell": "Financialaccounts.xlsx!SE Full!D160" },
@@ -161,16 +260,34 @@
             { "box": "56", "label": "Allowances on sale or cessation of business use", "cell": "Financialaccounts.xlsx!SE Full!O149" },
             { "box": "57", "label": "Total capital allowances", "cell": "Financialaccounts.xlsx!SE Full!O154", "total": true },
             { "box": "58", "label": "Not in use", "cell": null, "notInUse": true },
-            { "box": "59", "label": "Balancing charge on sales of assets or on the cessation of business use", "cell": "Financialaccounts.xlsx!SE Full!O160" }
+            {
+              "box": "59",
+              "label": "Balancing charge on sales of assets or on the cessation of business use",
+              "cell": "Financialaccounts.xlsx!SE Full!O160"
+            }
           ]
         },
         {
           "heading": "Calculating your taxable profit or loss",
           "boxes": [
             { "box": "60", "label": "Goods and services for your own use", "cell": "Financialaccounts.xlsx!SE Full!D169" },
-            { "box": "61", "label": "Total additions to net profit or deductions from net loss", "cell": "Financialaccounts.xlsx!SE Full!D174", "total": true },
-            { "box": "62", "label": "Income, receipts and other profits not taxable as business profits", "cell": "Financialaccounts.xlsx!SE Full!D179" },
-            { "box": "63", "label": "Total deductions from net profit or additions to net loss", "cell": "Financialaccounts.xlsx!SE Full!O169", "total": true },
+            {
+              "box": "61",
+              "label": "Total additions to net profit or deductions from net loss",
+              "cell": "Financialaccounts.xlsx!SE Full!D174",
+              "total": true
+            },
+            {
+              "box": "62",
+              "label": "Income, receipts and other profits not taxable as business profits",
+              "cell": "Financialaccounts.xlsx!SE Full!D179"
+            },
+            {
+              "box": "63",
+              "label": "Total deductions from net profit or additions to net loss",
+              "cell": "Financialaccounts.xlsx!SE Full!O169",
+              "total": true
+            },
             { "box": "64", "label": "Net business profit for tax purposes", "cell": "Financialaccounts.xlsx!SE Full!O174", "total": true },
             { "box": "65", "label": "Net business loss for tax purposes", "cell": "Financialaccounts.xlsx!SE Full!O179" }
           ]
@@ -190,9 +307,22 @@
             { "box": "73.2", "label": "Not in use", "cell": null, "notInUse": true },
             { "box": "73.3", "label": "Spread of the transition profit treated as arising in this tax year", "cell": null },
             { "box": "73.4", "label": "Loss brought forward set against this year's spread of the transition profit", "cell": null },
-            { "box": "74", "label": "Loss brought forward from earlier years set off against this year's adjusted profit", "cell": "Financialaccounts.xlsx!SE Full!O199" },
-            { "box": "75", "label": "Any other business income not included in boxes 15, 16 or 60", "cell": "Financialaccounts.xlsx!SE Full!O204" },
-            { "box": "76", "label": "Total taxable profits from this business", "cell": "Financialaccounts.xlsx!SE Full!O210", "total": true },
+            {
+              "box": "74",
+              "label": "Loss brought forward from earlier years set off against this year's adjusted profit",
+              "cell": "Financialaccounts.xlsx!SE Full!O199"
+            },
+            {
+              "box": "75",
+              "label": "Any other business income not included in boxes 15, 16 or 60",
+              "cell": "Financialaccounts.xlsx!SE Full!O204"
+            },
+            {
+              "box": "76",
+              "label": "Total taxable profits from this business",
+              "cell": "Financialaccounts.xlsx!SE Full!O210",
+              "total": true
+            },
             { "box": "76.1", "label": "Amount claimed under the foreign income and gains (FIG) regime", "cell": null }
           ]
         },
@@ -201,15 +331,31 @@
           "boxes": [
             { "box": "77", "label": "Adjusted loss for 2025-26", "cell": "Financialaccounts.xlsx!SE Full!D219" },
             { "box": "77.1", "label": "Adjustment to losses under the foreign income and gains (FIG) regime", "cell": null },
-            { "box": "78", "label": "Loss from this tax year set off against other income for 2025-26", "cell": "Financialaccounts.xlsx!SE Full!D224" },
-            { "box": "79", "label": "Loss to be carried back to previous years and set off against income (or capital gains)", "cell": null },
-            { "box": "80", "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward", "cell": "Financialaccounts.xlsx!SE Full!O224" }
+            {
+              "box": "78",
+              "label": "Loss from this tax year set off against other income for 2025-26",
+              "cell": "Financialaccounts.xlsx!SE Full!D224"
+            },
+            {
+              "box": "79",
+              "label": "Loss to be carried back to previous years and set off against income (or capital gains)",
+              "cell": null
+            },
+            {
+              "box": "80",
+              "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward",
+              "cell": "Financialaccounts.xlsx!SE Full!O224"
+            }
           ]
         },
         {
           "heading": "CIS deductions and tax taken off",
           "boxes": [
-            { "box": "81", "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors", "cell": "Financialaccounts.xlsx!SE Full!D231" },
+            {
+              "box": "81",
+              "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors",
+              "cell": "Financialaccounts.xlsx!SE Full!D231"
+            },
             { "box": "82", "label": "Other tax taken off trading income", "cell": "Financialaccounts.xlsx!SE Full!O231" }
           ]
         },
@@ -229,7 +375,13 @@
               "label": "Total assets",
               "rule": {
                 "op": "sum",
-                "cells": ["Fixedassets.xlsx!Schedule!K1", "Financialaccounts.xlsx!StockControl!AB30", "Sales.xlsx!ClosingDebtors!G1", "Bank.xlsx!Mar!A2", "Cash.xlsx!Mar!A2"],
+                "cells": [
+                  "Fixedassets.xlsx!Schedule!K1",
+                  "Financialaccounts.xlsx!StockControl!AB30",
+                  "Sales.xlsx!ClosingDebtors!G1",
+                  "Bank.xlsx!Mar!A2",
+                  "Cash.xlsx!Mar!A2"
+                ],
                 "why": "boxes 84 and 89 carry no cell in this template, so the sum runs over boxes 83, 85, 86, 87 and 88 only"
               },
               "total": true
@@ -266,14 +418,29 @@
       "period": "G5",
       "boxes": [
         { "box": "1", "label": "VAT due in the period on sales and other outputs", "cell": "G9" },
-        { "box": "2", "label": "VAT due in the period on acquisitions of goods made in Northern Ireland from EU member states", "cell": "G11", "fixedNil": true },
+        {
+          "box": "2",
+          "label": "VAT due in the period on acquisitions of goods made in Northern Ireland from EU member states",
+          "cell": "G11",
+          "fixedNil": true
+        },
         { "box": "3", "label": "Total VAT due", "cell": "G13", "total": true },
         { "box": "4", "label": "VAT reclaimed in the period on purchases and other inputs", "cell": "G15" },
         { "box": "5", "label": "Net VAT to pay to HMRC or reclaim", "cell": "G17", "total": true },
         { "box": "6", "label": "Total value of sales and all other outputs excluding any VAT", "cell": "G21" },
         { "box": "7", "label": "Total value of purchases and all other inputs excluding any VAT", "cell": "G23" },
-        { "box": "8", "label": "Total value of supplies of goods and related costs to EU member states", "cell": null, "note": "Northern Ireland only" },
-        { "box": "9", "label": "Total value of acquisitions of goods and related costs from EU member states", "cell": null, "note": "Northern Ireland only" }
+        {
+          "box": "8",
+          "label": "Total value of supplies of goods and related costs to EU member states",
+          "cell": null,
+          "note": "Northern Ireland only"
+        },
+        {
+          "box": "9",
+          "label": "Total value of acquisitions of goods and related costs from EU member states",
+          "cell": null,
+          "note": "Northern Ireland only"
+        }
       ]
     },
     "computation": {
@@ -284,9 +451,27 @@
         { "ref": "D2", "label": "Profit from self employment", "cell": "Financialaccounts.xlsx!Income Tax!E5" },
         { "ref": "A125", "label": "Less: Personal Allowance", "cell": "Financialaccounts.xlsx!Income Tax!E6" },
         { "ref": "A131", "label": "Taxable income", "cell": "Financialaccounts.xlsx!Income Tax!E7", "total": true },
-        { "ref": "band", "label": "Basic rate", "cell": "Financialaccounts.xlsx!Income Tax!E8", "rateCell": "Financialaccounts.xlsx!Income Tax!D8", "ceilingCell": "Financialaccounts.xlsx!Income Tax!C9" },
-        { "ref": "band", "label": "Higher rate", "cell": "Financialaccounts.xlsx!Income Tax!E9", "rateCell": "Financialaccounts.xlsx!Income Tax!D9", "ceilingCell": "Financialaccounts.xlsx!Income Tax!C10" },
-        { "ref": "band", "label": "Additional rate", "cell": "Financialaccounts.xlsx!Income Tax!E10", "rateCell": "Financialaccounts.xlsx!Income Tax!D10", "ceilingCell": null },
+        {
+          "ref": "band",
+          "label": "Basic rate",
+          "cell": "Financialaccounts.xlsx!Income Tax!E8",
+          "rateCell": "Financialaccounts.xlsx!Income Tax!D8",
+          "ceilingCell": "Financialaccounts.xlsx!Income Tax!C9"
+        },
+        {
+          "ref": "band",
+          "label": "Higher rate",
+          "cell": "Financialaccounts.xlsx!Income Tax!E9",
+          "rateCell": "Financialaccounts.xlsx!Income Tax!D9",
+          "ceilingCell": "Financialaccounts.xlsx!Income Tax!C10"
+        },
+        {
+          "ref": "band",
+          "label": "Additional rate",
+          "cell": "Financialaccounts.xlsx!Income Tax!E10",
+          "rateCell": "Financialaccounts.xlsx!Income Tax!D10",
+          "ceilingCell": null
+        },
         { "ref": "A328", "label": "Total Income Tax", "cell": "Financialaccounts.xlsx!Income Tax!E11", "total": true },
         { "ref": "CIS", "label": "Less: CIS deducted", "cell": "Financialaccounts.xlsx!Income Tax!E12" },
         { "ref": "D13", "label": "NI Class 4 (lower band)", "cell": "Financialaccounts.xlsx!Income Tax!E15" },

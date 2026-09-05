@@ -129,7 +129,11 @@ describe("every SA103S and SA103F cell the layout names is in CELL_MAP or exists
 
 describe("every CELL_MAP SE Short and SE Full row is named by one box", () => {
   it("SE Short", () => {
-    const layoutCells = new Set(flattenBoxes(layout.forms.sa103s).filter((b) => b.cell).map((b) => parseRef(b.cell).cell));
+    const layoutCells = new Set(
+      flattenBoxes(layout.forms.sa103s)
+        .filter((b) => b.cell)
+        .map((b) => parseRef(b.cell).cell),
+    );
     for (const cell of seShortCellMapCells) {
       // Business Details rows (C8, S17) and the turnover note (A33) are not
       // pound boxes; the form layout has nothing to name them with.
@@ -139,7 +143,11 @@ describe("every CELL_MAP SE Short and SE Full row is named by one box", () => {
   });
 
   it("SE Full", () => {
-    const layoutCells = new Set(flattenBoxes(layout.forms.sa103f).filter((b) => b.cell && parseRef(b.cell).sheet === "SE Full").map((b) => parseRef(b.cell).cell));
+    const layoutCells = new Set(
+      flattenBoxes(layout.forms.sa103f)
+        .filter((b) => b.cell && parseRef(b.cell).sheet === "SE Full")
+        .map((b) => parseRef(b.cell).cell),
+    );
     for (const cell of seFullCellMapCells) {
       expect(layoutCells.has(cell), `SE Full!${cell} is in CELL_MAP but no SA103F box names it`).toBe(true);
     }
