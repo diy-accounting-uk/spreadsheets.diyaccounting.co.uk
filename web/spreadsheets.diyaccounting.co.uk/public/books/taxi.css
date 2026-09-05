@@ -2,9 +2,11 @@
 /* Copyright (C) 2026 DIY Accounting Ltd */
 
 /* books/taxi.css -- the Taxi Driver page's sheet: the shared books sheet,
-   plus the rules the takings grain under the year table needs. */
+   the rules the takings grain under the year table needs, and the
+   comparison, register, computation and form views' own. */
 
 @import url("books.css");
+@import url("taxi-views.css");
 
 /* The week strip and the day grid are nested inside the open month's
    detail, so they take the entries grid's own measure: small caps headers,
