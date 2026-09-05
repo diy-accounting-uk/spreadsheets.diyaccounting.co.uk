@@ -618,6 +618,17 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   with `report-generator.js:19` `reportAmount`'s one-step rounding and `generate-se.yml:251`'s
   scorecard comment.
 
+- T10 `22b0e271`, `994ab82b`, `e1952382`, merged 2026-09-05: the render-coverage sweep parameterised
+  by product, a second describe over `se.html` and the three SE examples (the two BrickWork rows
+  added to `scripts/example-books.json`), `render-unrepresentable/se.json`. The sweep opens
+  `#pl-months-toggle` before collecting and passes `--years se-2025-2026` to S2, since `--data`
+  alone reads no tax year off the book and drops 29 checks the page renders. Eight cases green.
+  The declared list holds 958 keys against BST's 35: the payroll calendar, the Payslips print
+  sheet and its checks, `Salesinvoice.xlsx`, the raw month-tab cells, the report-only `section/*`
+  duplicates, and 248 `Vatinterface` cells and checks declared as a stopgap because the VAT view
+  never got the interface disclosure T7's manifest spec names; `Bank.xlsx!Mar!A1`,
+  `Cash.xlsx!Mar!A1` and every `VATQtr!G5` are rendered without a key. Board row SE-T21.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row
