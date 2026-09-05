@@ -554,6 +554,19 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   mileage route only, so sp-sixty carries three notes and basic and kestrel two; miles print with
   `toLocaleString("en-GB")`. The SA103S render fetches its layout on first render, nothing at load.
 
+- TX-T23 `f1f6ea1a`, `524db88f`, merged 2026-09-05: `bst-excel.xlsx` and `taxi-excel.xlsx` share one
+  `SE Short` layout (`sheet3.xml`); 30 box cells +1 and 13 captions through the shared strings, two
+  parts per template changed, the rest byte-identical. `CELL_MAP` and bridge labels in `bst.js` and
+  `taxi.js`, `taxiIndicators` looking labels up by name, the Taxi check name (box 30), the pinned
+  tests, `CONTEXT_TAXI.md`'s SE Short table, `bst-se-short-sheet.test.js` and
+  `taxi-se-short-sheet.test.js` reading the XML. `form-layouts/taxi.json` unchanged. generate-bst and
+  generate-taxi re-dispatched on the branch. Found: both templates still gate the nine expense
+  boxes and the `A33`/`A41` captions on a `30000` literal while `Admin!F26` holds 90,000, and
+  `calculators/bst.js:293` gates on the same literal (board row TX-T24, with the L111/L116 tick
+  captions once SE-T16b settles the text); the BST page's `SA103S_BOXES` in `products/bst.js`
+  hardcodes a box scheme matching no form, the BST CONTEXT's SA103S tables point D71 and D99 at the
+  wrong boxes, and the `D106` comments call it net business profit (board row BST-T17).
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
