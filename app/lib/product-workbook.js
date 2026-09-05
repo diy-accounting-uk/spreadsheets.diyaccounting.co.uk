@@ -35,14 +35,18 @@ const PRODUCT_MODULES = { bst, taxi, se, ltd };
 const PRODUCT_BY_SCHEMA_NAME = { BasicSoleTrader: "bst", TaxiDriver: "taxi", SelfEmployed: "se", Company: "ltd" };
 
 /**
- * A book that cannot be written into a workbook, naming the field that is missing.
+ * A book that cannot be written into a workbook, naming the field at fault.
  */
 export class BookFieldError extends Error {
-  constructor(field, why) {
-    super(`book has no ${field}, so ${why}`);
+  constructor(field, message) {
+    super(message);
     this.name = "BookFieldError";
     this.field = field;
   }
+}
+
+function missingField(field, why) {
+  return new BookFieldError(field, `book has no ${field}, so ${why}`);
 }
 
 /**
@@ -65,7 +69,7 @@ export class SingleFileOnlyError extends Error {
 export function productOf(book) {
   const declared = book?.entityInformation?.["diya-gl:product"];
   if (!declared) {
-    throw new BookFieldError('entityInformation."diya-gl:product"', "the product to write it as is unknown");
+    throw missingField('entityInformation."diya-gl:product"', "the product to write it as is unknown");
   }
   const product = PRODUCT_BY_SCHEMA_NAME[declared];
   if (!product) {
@@ -78,8 +82,11 @@ export function productOf(book) {
 /**
  * The tax year or financial year a date falls in, as the name of its file in
  * app/data. A self-employment year turns on 6 April, so 31 March 2026 and
- * 5 April 2026 are both se-2025-2026; a company's file is named for the year
- * its accounting period ends in.
+ * 5 April 2026 are both se-2025-2026. A corporation tax financial year turns
+ * on 1 April, and a company's file is named for the calendar year of the
+ * 1 April on or before its year end: a period ending 31 March 2026 is FY2025,
+ * one ending 30 April 2026 is FY2026. It is the same rule the exporter reads
+ * back off a package's Admin sheet (packageTaxDataFile, xlsx-exporter.js).
  *
  * @param {Date} date - the end of the book's accounting period
  * @param {"se"|"ltd"} [taxRegime]
@@ -87,7 +94,7 @@ export function productOf(book) {
  */
 export function taxYearFileName(date, taxRegime = "se") {
   const year = date.getUTCFullYear();
-  if (taxRegime === "ltd") return `ltd-${year}`;
+  if (taxRegime === "ltd") return `ltd-${date.getUTCMonth() < 3 ? year - 1 : year}`;
   if (taxRegime !== "se") throw new Error(`no tax data file is named for the "${taxRegime}" regime`);
 
   const beforeSixthOfApril = date.getUTCMonth() < 3 || (date.getUTCMonth() === 3 && date.getUTCDate() < 6);
@@ -97,14 +104,33 @@ export function taxYearFileName(date, taxRegime = "se") {
 
 function periodCoveredEnd(book) {
   const info = book?.documentInfo;
-  if (!info) throw new BookFieldError("documentInfo", "its accounting period is unknown");
+  if (!info) throw missingField("documentInfo", "its accounting period is unknown");
   if (!info.periodCoveredStart) {
-    throw new BookFieldError("documentInfo.periodCoveredStart", "its accounting period is unknown");
+    throw missingField("documentInfo.periodCoveredStart", "its accounting period is unknown");
   }
   if (!info.periodCoveredEnd) {
-    throw new BookFieldError("documentInfo.periodCoveredEnd", "the tax year to generate for is unknown");
+    throw missingField("documentInfo.periodCoveredEnd", "the tax year to generate for is unknown");
   }
   return new Date(info.periodCoveredEnd);
+}
+
+function isoDay(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+// A company's package is twelve month tabs, a payroll calendar of twelve
+// months and a year's rates, so a book covering anything else has no package
+// to be written into. The refusal comes before the first template read: a
+// half-written package is worse than none.
+function refuseUnlessTwelveWholeMonths(book) {
+  const start = new Date(book.documentInfo.periodCoveredStart);
+  const end = new Date(book.documentInfo.periodCoveredEnd);
+  const twelfthMonthEnd = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 12, 0));
+  if (start.getUTCDate() === 1 && end.getTime() === twelfthMonthEnd.getTime()) return;
+  throw new BookFieldError(
+    "documentInfo.periodCoveredEnd",
+    `book covers ${isoDay(start)} to ${isoDay(end)}, which is not the twelve whole months a company's accounts cover`,
+  );
 }
 
 /**
@@ -139,24 +165,36 @@ async function resolveInputs(book, lines, options) {
   const bookPeriodEnd = periodCoveredEnd(book);
   const templateDir = `templates/${productMod.PRODUCT.dir}`;
 
-  const taxYearName = options.taxYearName || taxYearFileName(bookPeriodEnd, productMod.PRODUCT.taxRegime);
-  const taxData = options.taxData || (await loadTaxDataForBook(book, { resources, taxYearName }));
-  const yearInfo = taxData.tax_year || taxData.financial_year;
-  if (!yearInfo) throw new Error(`${taxYearName}.toml declares neither tax_year nor financial_year`);
-  const endDate = new Date(yearInfo.end);
-
   // A self-employment year always ends on 5 April, on the month tabs the
-  // templates already carry. A company chooses its own year end, and the month
-  // tabs, the links that name them and the payroll periods all move to match.
-  const yearEndMonth = taxData.financial_year ? endDate.getUTCMonth() + 1 : 0;
+  // templates already carry, and the tax file it belongs to declares that
+  // date. A company chooses its own year end, so its book's period is the
+  // year end: it names the package, sets the one date cell the Admin sheet
+  // computes the rest from, moves the month tabs and the links and the
+  // payroll periods, and shifts the scenario's dates onto them.
+  const yearEndFromBook = productMod.PRODUCT.taxRegime === "ltd";
+  if (yearEndFromBook) refuseUnlessTwelveWholeMonths(book);
+
+  const taxYearName = options.taxYearName || taxYearFileName(bookPeriodEnd, productMod.PRODUCT.taxRegime);
+  const taxFile = options.taxData || (await loadTaxDataForBook(book, { resources, taxYearName }));
+  const declaredYear = taxFile.tax_year || taxFile.financial_year;
+  if (!declaredYear) throw new Error(`${taxYearName}.toml declares neither tax_year nor financial_year`);
+
+  const endDate = yearEndFromBook ? bookPeriodEnd : new Date(declaredYear.end);
+  const taxData = yearEndFromBook ? { ...taxFile, financial_year: { ...taxFile.financial_year, end: endDate } } : taxFile;
+  const yearInfo = taxData.tax_year || taxData.financial_year;
+  const yearEndMonth = yearEndFromBook ? endDate.getUTCMonth() + 1 : 0;
 
   const productMeta = parseTOML(await resources.readText(`${templateDir}/meta.toml`));
   const sharedMeta = parseTOML(await resources.readText(SHARED_META));
   const { dirName, xlsxFilename } = packageNaming(productMeta, sharedMeta, endDate);
 
   const scenario = diyaGlToScenario(book, lines, product);
-  const targetStartYear = new Date(yearInfo.start).getUTCFullYear();
-  const writes = productMod.cellWrites(scenario, targetStartYear, bookPeriodEnd.getUTCMonth() + 1);
+  // The tax year the writes are dated into: the year a statutory year opened
+  // in, and for a company the year before the one its year end falls in, which
+  // is what cellWrites turns into the payroll year the package opens with and
+  // what generate.js takes off the package directory's own year-end date.
+  const targetStartYear = yearEndFromBook ? endDate.getUTCFullYear() - 1 : new Date(yearInfo.start).getUTCFullYear();
+  const writes = productMod.cellWrites(scenario, targetStartYear, yearEndMonth);
 
   const templateFiles = productMeta.template.files || [productMeta.template.spreadsheet];
 
