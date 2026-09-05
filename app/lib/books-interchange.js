@@ -33,7 +33,8 @@
 import JSZip from "jszip";
 import { extractBook, extractLines, bstExtractionMap, productIdOf, SCHEMA_PRODUCT_NAMES } from "./xlsx-exporter.js";
 import { validateBstAnchors } from "./anchors/bst.js";
-import { AnchorError } from "./anchors/run.js";
+import { SE_ANCHORS, isSeInputCell, seTemplatePaths } from "./anchors/se.js";
+import { AnchorError, validateAnchors } from "./anchors/run.js";
 import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
 import { buildSheetMap } from "./spreadsheet-runner.js";
 import { validateBook, validateLines } from "./diya-gl-schema.js";
@@ -236,10 +237,15 @@ function packagePartOf(sheetNames) {
 // guard because the Self Employed hub carries a Business Details and an SE
 // Short sheet of its own: what tells it apart is SE Full, Wagesinterface and
 // StockControl, which the single-file templates have not got.
+//
+// A hub carried alongside at least one sibling file is a package: Ltd's own
+// hub keeps Currentaccount.xlsx beside it, so a package that isn't Ltd is
+// read as Self Employed here, missing or renamed sibling included -- the
+// anchor guard (readWorkbookSource, over SE_ANCHORS) is what actually names
+// a missing or swapped file, this sniff only picks which table to run.
 async function sniffProduct(set, name) {
-  if (set.has(PACKAGE_HUB)) {
-    if (set.has("Bank.xlsx")) return "se";
-    if (set.has("Currentaccount.xlsx")) return "ltd";
+  if (set.has(PACKAGE_HUB) && set.names().length > 1) {
+    return set.has("Currentaccount.xlsx") ? "ltd" : "se";
   }
   if (set.names().length !== 1) throw new UnknownBookSourceError(name);
 
@@ -266,6 +272,8 @@ async function readWorkbookSource(kind, bytes, name, deps) {
   const productMod = products[product];
   if (!productMod) throw new ProductNotAvailableError(name, product, Object.keys(products));
 
+  if (product === "se") await validateAnchors(set, SE_ANCHORS, PRODUCT_LABELS.se);
+
   const extractionMap = product === "bst" ? bstExtractionMap() : undefined;
   const lines = await extractLines(set, product, extractionMap);
   const book = await extractBook(set, product, lines, productMod.CELL_MAP);
@@ -274,6 +282,9 @@ async function readWorkbookSource(kind, bytes, name, deps) {
   if (product === "bst") {
     const { overtypedCells } = await import("./overtype-sidecar.js");
     source.overtyped = await overtypedCells(set, { extractionMap, reportLabels: productMod.cellLabels() });
+  } else if (product === "se") {
+    const { overtypedCells } = await import("./overtype-sidecar.js");
+    source.overtyped = await overtypedCells(set, { isInputCell: isSeInputCell, templates: await seTemplatePaths() });
   }
   return source;
 }

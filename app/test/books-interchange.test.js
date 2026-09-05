@@ -309,11 +309,9 @@ describe("a multi-file package, sniffed by the files and sheets it carries", () 
   });
 });
 
-// The SE anchor table itself is T1's row (app/lib/anchors/se.js): S2 only
-// builds the runner and the file-keyed map every product's table shares.
-// Both cases below assert against that table, so they land skipped and T1
-// unskips them once it registers the table in books-interchange.js.
-describe.skip("the SE anchor table (T1 registers it; these two are proved once it lands)", () => {
+// The SE anchor table itself (app/lib/anchors/se.js), registered in
+// books-interchange.js's readWorkbookSource.
+describe("the SE anchor table", () => {
   it("a package set missing Bank.xlsx is refused naming the file", async () => {
     const entries = {};
     for (const name of readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx") && file !== "Bank.xlsx")) {
