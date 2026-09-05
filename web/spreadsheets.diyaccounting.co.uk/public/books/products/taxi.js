@@ -517,6 +517,12 @@
   // and other-income rows. The two captions are matched exactly as
   // cellWrites matches them, so what the view shows is what the sheet will
   // carry.
+  //
+  // A week's and a month's figures are the Sales tab's own two column
+  // totals: takings plus rental is column E, which the P&L reads into row
+  // 5, and otherIncome is the whole of column F -- the day cells and the
+  // week's own other-income row together -- which it reads into row 24.
+  // rentalLines and otherIncomeLines are those caption rows on their own.
   function groupTakings(lines, months) {
     var byMonth = {};
     var monthOf = {};

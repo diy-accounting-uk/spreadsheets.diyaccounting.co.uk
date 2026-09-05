@@ -353,7 +353,20 @@ describe("groupTakings lays the fares out as the Sales sheet holds them", () => 
     expect(grant[0].detail).not.toBe("Any other income");
   });
 
-  it("the month's own totals are its weeks' and the workbook's turnover row", () => {
+  // The Sales tab's own two column totals: column E is the fares and the
+  // week's rental rows, column F the day other-income cells and the week's
+  // own other-income rows. The P&L reads one into row 5 and the other into
+  // row 24, so a month's figures here are those two cells.
+  it("each month's takings and other income are the sheet's own two monthly cells", () => {
+    const results = calculated("basic-taxi-driver").results["Profit & Loss Acc"];
+    for (const month of Object.values(takings.months)) {
+      const col = manifest.yearTable.monthlyCell(month.label, taxi, "sales")[1].replace(/[0-9]/g, "");
+      expect(Math.floor(month.takings + month.rental), `${month.key} takings`).toBe(results[`${col}5`]);
+      expect(month.otherIncome, `${month.key} other income`).toBeCloseTo(results[`${col}24`], 2);
+    }
+  });
+
+  it("the year's takings are the workbook's own turnover row", () => {
     const total = Object.values(takings.months).reduce((sum, month) => sum + month.takings + month.rental, 0);
     expect(Math.floor(total)).toBe(calculated("basic-taxi-driver").results["Profit & Loss Acc"].B5);
   });
