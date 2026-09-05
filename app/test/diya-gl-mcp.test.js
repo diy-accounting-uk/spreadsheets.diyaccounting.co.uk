@@ -31,6 +31,7 @@ import { createMethods } from "../lib/mcp/server.js";
 import { createSession, loadIntoSession } from "../lib/mcp/diya-gl-tools.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { buildFileReportDocument } from "../bin/export.js";
+import { savePackageZip } from "../lib/product-workbook.js";
 import * as bst from "../products/bst.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -221,13 +222,13 @@ describe("save_workbook: the base64 payload decodes to a real workbook", () => {
     }
   }, 30000);
 
-  it("save_workbook format xlsx on an SE session answers with the single-file refusal and format zip returns nine entries under dirName", async () => {
+  it("save_workbook format xlsx on an SE session answers with the single-file refusal and format zip returns nine entries under dirName, byte-identical to savePackageZip", async () => {
     const zipDir = tempDir("mcp-save-se-zip-");
     const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
 
     const client = startMcpClient();
     try {
-      await client.callTool("extract_book", { path: zipPath });
+      const extracted = await client.callTool("extract_book", { path: zipPath });
 
       await expect(client.request("tools/call", { name: "save_workbook", arguments: { format: "xlsx" } })).rejects.toThrow(
         "a Self Employed book saves as its package zip, not as one workbook",
@@ -243,6 +244,13 @@ describe("save_workbook: the base64 payload decodes to a real workbook", () => {
       expect(entries.length).toBe(9);
       const dirName = saved.filename.replace(/\.zip$/, "");
       for (const entry of entries) expect(entry.startsWith(`${dirName}/`)).toBe(true);
+
+      // The same book and lines the session loaded, run through
+      // savePackageZip directly in Node, produce the exact same zip bytes --
+      // the MCP tool adds no distortion of its own.
+      const { zip: directZip, filename: directFilename } = await savePackageZip(extracted.book, extracted.lines);
+      expect(saved.filename).toBe(directFilename);
+      expect(bytes.equals(Buffer.from(directZip))).toBe(true);
     } finally {
       client.close();
     }
@@ -366,18 +374,20 @@ describe("extract_book: byte-for-byte with export.js --file", () => {
     }
   }, 30000);
 
-  it("extract_book on the SE package zip returns product se and the same lines.jsonl as export.js", async () => {
+  it("extract_book on the SE package zip returns product se and the CLI's own --file bytes", async () => {
     const zipDir = tempDir("mcp-extract-se-zip-");
     const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
 
     const cliOutput = tempDir("mcp-extract-se-cli-out-");
-    execFileSync(NODE, [EXPORT_BIN, "--package", "se", "--source-dir", SE_PACKAGE_DIR, "--output-dir", cliOutput], { cwd: ROOT });
+    execFileSync(NODE, [EXPORT_BIN, "--package", "se", "--file", zipPath, "--output-dir", cliOutput], { cwd: ROOT });
+    const cliBookToml = readFileSync(resolve(cliOutput, "book.toml"), "utf8");
     const cliLinesJsonl = readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8");
 
     const client = startMcpClient();
     try {
       const extracted = await client.callTool("extract_book", { path: zipPath });
       expect(extracted.report.package).toBe("se");
+      expect(extracted.bookToml).toBe(cliBookToml);
       expect(extracted.linesJsonl).toBe(cliLinesJsonl);
     } finally {
       client.close();
