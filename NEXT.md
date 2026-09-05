@@ -19,7 +19,7 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R3 and R4 re-dispatched 2026-09-05 after the BrickWork master regained its date order. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 re-dispatched a third time after the Taxi export gained the UTR and the round-trip declaration stopped naming taxi. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. Main carries one stray code commit (`c1923823`, Taxi T20's fixture, committed by an
 agent in the primary tree); PR #61 reverts it on main and waits on the operator: merge to keep main
