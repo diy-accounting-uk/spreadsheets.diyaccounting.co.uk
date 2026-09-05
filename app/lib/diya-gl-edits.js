@@ -191,7 +191,7 @@ export function changeLineBankAccount(book, lines, params) {
       throw new Error(`changeLineBankAccount expects a line on the bank journal, got "${line.sourceJournalID}"`);
     }
     found = true;
-    return { ...line, accountMainID: newBankAccountID, "diya-gl:bankAccountID": newBankAccountID };
+    return { ...line, "accountMainID": newBankAccountID, "diya-gl:bankAccountID": newBankAccountID };
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;

@@ -105,7 +105,7 @@ describe("the Ltd example books", () => {
 
   it("a book naming another product runs the shared eight alone", () => {
     const fixture = clone(FULL);
-    fixture.book.entityInformation["diya-gl:product"] = "SelfEmployed";
+    fixture.book.entityInformation["diya-gl:product"] = "BasicSoleTrader";
     const { results } = runBookChecks(fixture);
     expect(results.map((r) => r.id).sort()).toEqual(SHARED_IDS.slice().sort());
   });
@@ -309,7 +309,7 @@ describe("the shared checks a Company book reads differently", () => {
     // The same lines against the shared rule alone: the chart declares a
     // sales and a purchases table, and nothing those 218 lines post to.
     const asAnotherProduct = clone(fixture);
-    asAnotherProduct.book.entityInformation["diya-gl:product"] = "SelfEmployed";
+    asAnotherProduct.book.entityInformation["diya-gl:product"] = "BasicSoleTrader";
     const shared = resultFor(runBookChecks(asAnotherProduct).results, "book-accounts-in-chart");
     expect(shared.result).toBe("fail");
     expect(shared.actual).toBe(218);
