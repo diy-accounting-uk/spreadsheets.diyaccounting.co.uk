@@ -246,7 +246,7 @@
     },
     {
       "path": "entityInformation.taxRegistrationNumber",
-      "products": ["bst", "taxi", "se"],
+      "products": ["bst", "se"],
       "reason": "The self-employment return prints the unique taxpayer reference from a pair of boxes on the Business Details sheet (\"SE Short\"!O8 and R8 read O5 and R5), each holding part of it. The sheet states nowhere how the reference divides between the two, so two halves do not join back into the one reference the book declares."
     },
     {
