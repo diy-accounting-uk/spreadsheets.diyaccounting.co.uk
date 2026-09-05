@@ -25,12 +25,15 @@ import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { cellWrites as taxiCellWrites, standardReads as taxiReads, checkCompliance as taxiCheckCompliance } from "../products/taxi.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { calculateTaxiResults } from "../lib/calculators/taxi.js";
 
 const SKIP = !hasLibreOffice();
 const describeCalc = SKIP ? describe.skip : describe;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
+const ROOT = resolve(APP_DIR, "..");
 const TAXI_DIR = resolve(APP_DIR, "templates", "taxi");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
@@ -215,5 +218,60 @@ describeCalc("Taxi wages forecast checks catch a broken workbook", () => {
     expect(value).toBe(corruptedValue);
     const corrupted = checksWithCorruptedCell(sheet, cellRef, value);
     expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
+  });
+});
+
+describeCalc("Taxi wages forecast spreads a partial year the way the sheet does", () => {
+  let sheetResults;
+  let jsResults;
+  let expected;
+  let taxData;
+  let populatedPath;
+
+  beforeAll(async () => {
+    const templateBuffer = readFileSync(resolve(TAXI_DIR, "taxi-excel.xlsx"));
+    taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const productMeta = parseTOML(readFileSync(resolve(TAXI_DIR, "meta.toml"), "utf8"));
+    const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+
+    const scenario = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-autumn-start.toml"));
+    expected = { ...scenario, ...scenario.expected };
+
+    populatedPath = join(mkdtempSync(join(tmpdir(), "taxi-autumn-start-")), "populated.xlsx");
+    sheetResults = await runSpreadsheet(xlsxBuffer, taxiCellWrites(scenario), taxiReads(), { saveRecalculatedTo: populatedPath });
+
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "autumn-start-cabs", "taxi"));
+    const bookScenario = diyaGlToScenario(book, lines, "taxi");
+    jsResults = calculateTaxiResults(book, lines, taxData, { ...bookScenario, ...bookScenario.expected });
+  }, 120000);
+
+  it("counts the six months that traded", () => {
+    expect(sheetResults[FORECAST_SHEET].C19).toBe(6);
+    expect(expected.months_traded).toBe(6);
+  });
+
+  it.each(["C19", "C20", "C22", "C24", "C28", "C30", "C34", "C35", "C36", "C37", "C38", "C39", "C40", "C41"])(
+    "the JS engine lands on the sheet's %s",
+    (cellRef) => {
+      expect(jsResults[FORECAST_SHEET][cellRef]).toBeCloseTo(sheetResults[FORECAST_SHEET][cellRef], 0);
+    },
+  );
+
+  it("passes every forecast check on the recalculated book", () => {
+    const checks = taxiCheckCompliance(sheetResults, expected, taxData, calculateExpectedTax);
+    for (const check of checks.filter((c) => c.name.startsWith("Forecast:"))) {
+      expect(check.pass, `${check.name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("corrupting the sheet's forecast turnover fails the spread check and the profit check", async () => {
+    const value = await readCorruptedCell(populatedPath, FORECAST_SHEET, "C20", 1);
+    expect(value).toBe(1);
+    const corrupted = { ...sheetResults, [FORECAST_SHEET]: { ...sheetResults[FORECAST_SHEET], C20: value } };
+    const checks = taxiCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
+    expect(failureNames(checks).sort()).toEqual([
+      "Forecast: profit = turnover + other income - cost of sales - expenses",
+      "Forecast: turnover = the traded months plus the year spread over the rest",
+    ]);
   });
 });
