@@ -278,8 +278,6 @@ describe("SE HEADLINES — a required key with no value in R is an error naming 
       ...report,
       values: report.values.filter((entry) => entry.key !== "cell/Financialaccounts.xlsx!Profit & Loss Account!B9"),
     };
-    expect(() => headlinesFromReport(withoutTurnover, se.HEADLINES)).toThrow(
-      "cell/Financialaccounts.xlsx!Profit & Loss Account!B9",
-    );
+    expect(() => headlinesFromReport(withoutTurnover, se.HEADLINES)).toThrow("cell/Financialaccounts.xlsx!Profit & Loss Account!B9");
   });
 });
