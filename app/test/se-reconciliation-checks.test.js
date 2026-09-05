@@ -735,6 +735,38 @@ describeCalc(
       expect(failureNames(corruptedChecks)).toEqual([`Purchases.xlsx ${month}: CIS tax withheld reaches the certificates column (AD1)`]);
     });
 
+    // ── CIS suffered (Sales.xlsx columns W and X) ──────────────────────────
+    //
+    // This trader is nobody's sub-contractor, so both columns stand at nil
+    // all year. That is the state the return has to reach honestly: the
+    // corruption below moves one cached cell and the check reading it is the
+    // only one that turns.
+
+    it("the sales journal's own CIS columns are read on every month", () => {
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.filter((c) => c.name.includes("CIS suffered reaches the sub-contractor column"))).toHaveLength(12);
+      expect(checks.filter((c) => c.name.includes("CIS suffered for the year to date"))).toHaveLength(12);
+      expect(checks.filter((c) => c.name.includes("CIS suffered") && !c.pass)).toEqual([]);
+    });
+
+    it("fails only the year-to-date check for the month whose cached running total is corrupted", async () => {
+      const month = "Mar";
+      const corrupted = await readCorruptedCell(join(saveDir, "Sales.xlsx"), month, "X1", 200);
+      expect(corrupted).toBe(200);
+      const corruptedResults = { ...results, [`Sales.xlsx!${month}`]: { ...results[`Sales.xlsx!${month}`], X1: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      expect(failureNames(corruptedChecks)).toEqual([`Sales.xlsx ${month}: CIS suffered for the year to date (X1)`]);
+    });
+
+    it("fails only the month's own check when its cached column total is corrupted", async () => {
+      const month = "Jun";
+      const corrupted = await readCorruptedCell(join(saveDir, "Sales.xlsx"), month, "W1", 350);
+      expect(corrupted).toBe(350);
+      const corruptedResults = { ...results, [`Sales.xlsx!${month}`]: { ...results[`Sales.xlsx!${month}`], W1: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      expect(failureNames(corruptedChecks)).toEqual([`Sales.xlsx ${month}: CIS suffered reaches the sub-contractor column (W1)`]);
+    });
+
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {
       const qtr = results["Vat.xlsx!VATQtr5"];
       expect(qtr).toBeDefined();

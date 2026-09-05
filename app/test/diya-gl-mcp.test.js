@@ -568,7 +568,7 @@ const FIXTURES = [
     changePurchaseLine: { entryNumber: "TXN-0028", newAmount: 6450, delta: 450, categoryCell: "C7" },
     removeSaleLine: { entryNumber: "TXN-0018", amount: 1950, monthCell: "D4" },
     removePurchaseLine: { entryNumber: "TXN-0009", amount: 60, categoryCell: "C14" },
-    changeDateLine: { entryNumber: "TXN-0025", oldMonthCell: "E4", newPostingDate: "2025-06-10", newMonthCell: "F4", amount: 4200 },
+    changeDateLine: { entryNumber: "TXN-0025", oldMonthCell: "E4", newPostingDate: "2025-06-10", newMonthCell: "F4", amount: 3200 },
     changeAccountLine: { entryNumber: "TXN-0035", amount: 300, oldCategoryCell: "C17", newAccountMainID: "5501", newCategoryCell: "C14" },
   },
   {

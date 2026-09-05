@@ -1107,11 +1107,16 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
   });
 
+  let cisSufferedToDate = 0;
   MONTH_KEYS.forEach((month, index) => {
     const tab = MONTH_SHEETS[month];
     const sales = salesMonths[index];
     const purchases = purchasesMonths[index];
-    results[`Sales.xlsx!${tab}`] = { G1: sales.gross, H1: sales.vat, I1: sales.net, H2: rate * 100 };
+    // W1 is the month's own CIS suffered and X1 the year to date: April's X1
+    // is its W1 and every later tab adds the month before it, so the March X1
+    // is the figure both returns take off the tax bill.
+    cisSufferedToDate += sales.cis;
+    results[`Sales.xlsx!${tab}`] = { G1: sales.gross, H1: sales.vat, I1: sales.net, H2: rate * 100, W1: sales.cis, X1: cisSufferedToDate };
     results[`Purchases.xlsx!${tab}`] = {
       G1: purchases.gross,
       H1: purchases.vat,

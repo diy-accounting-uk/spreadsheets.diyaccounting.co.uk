@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 842 },
-  { name: "se-brickwork-pro-vat", checkCount: 776 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 771 },
+  { name: "se-scenario-advanced", checkCount: 868 },
+  { name: "se-brickwork-pro-vat", checkCount: 802 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 797 },
 ];
 
 function loadFixture(name) {

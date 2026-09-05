@@ -500,8 +500,17 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // A contractor customer withholds tax from this company's own invoice.
+  // Column V is the sales journal's CIS column ("Sub contractors only / CIS
+  // Tax Deducted", verified against the template: V1 = SUM(V5:V300)).
+  // TrialBalance reads V1 twice: row 20 takes it off trade debtors
+  // ([3]<Month>!$F$1-[3]<Month>!$V$1) and row 32 gives it back against the
+  // CIS creditor ([3]<Month>!$V$1), so the deduction moves from the
+  // customer's ledger to HMRC's without either side of the books moving.
   if (scenario.sales) {
-    processJournal(scenario.sales, salesWrites, "customer", "a");
+    processJournal(scenario.sales, salesWrites, "customer", "a", (sheet, row, tx) => {
+      if (tx.cis_deduction) sheet[`V${row}`] = tx.cis_deduction;
+    });
   }
 
   // A purchase from a CIS sub-contractor carries the tax the company withheld
@@ -2474,14 +2483,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // listing behind.
   if (pubBS && expected.sales && expected.bank && expected.opening_debtors) {
     let invoiced = 0;
+    let cisSuffered = 0;
     for (const transactions of Object.values(expected.sales)) {
-      for (const tx of transactions) invoiced += tx.amount;
+      for (const tx of transactions) {
+        invoiced += tx.amount;
+        cisSuffered += tx.cis_deduction || 0;
+      }
     }
     const broughtForward = expected.opening_debtors.reduce((total, d) => total + d.amount, 0);
     check(
-      "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts",
+      "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered",
       num(pubBS.E11),
-      broughtForward + invoiced + netBankPayments("DR"),
+      broughtForward + invoiced - cisSuffered + netBankPayments("DR"),
     );
   }
 
@@ -3168,15 +3181,21 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // The CIS creditor (row 32) takes the tax withheld from sub-contractors
-  // out of Purchases!AK (-[2]<Month>!$AK$1) and gives back the remittances
-  // paid under "RC" (Currentaccount AJ). What is withheld in a month is
-  // remitted by the 19th of the next one, so the row closes at what the
-  // final months withheld and had not yet paid over.
+  // out of Purchases!AK (-[2]<Month>!$AK$1), gives back the tax a contractor
+  // customer withheld from this company's own invoices ([3]<Month>!$V$1),
+  // which is set against the same bill, and gives back the remittances paid
+  // under "RC" (Currentaccount AJ). What is withheld in a month is remitted
+  // by the 19th of the next one, so the row closes at what the final months
+  // withheld and had not yet paid over.
   if (finalBalances && expected.purchases && expected.bank) {
+    let cisSuffered = 0;
+    for (const transactions of Object.values(expected.sales || {})) {
+      for (const tx of transactions) cisSuffered += tx.cis_deduction || 0;
+    }
     check(
-      "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC",
+      "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC",
       -num(finalBalances.EJ32),
-      (expected.opening_balance?.cis_due || 0) + cisWithheld - netBankPayments("RC"),
+      (expected.opening_balance?.cis_due || 0) + cisWithheld - cisSuffered - netBankPayments("RC"),
     );
   }
 

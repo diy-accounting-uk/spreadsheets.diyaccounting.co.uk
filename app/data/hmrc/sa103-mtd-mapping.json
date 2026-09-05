@@ -1059,6 +1059,15 @@
     },
     {
       "form": "SA103S",
+      "box": "38",
+      "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors - CIS subcontractors only",
+      "cell": "SE Short!O124",
+      "reason": "another API",
+      "otherApi": "CIS Deductions \u2014 Create CIS Deductions for Subcontractor: periodData.deductionAmount",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box 81. se.js's own CELL_MAP label reads '(box 37)' because that is the number printed beside the cell on the sheet; the 2026 SA103S numbering makes it box 38"
+    },
+    {
+      "form": "SA103S",
       "box": "31",
       "label": "Total taxable profits from this business",
       "cell": "SE Short!D106",
