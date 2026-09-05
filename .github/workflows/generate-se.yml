@@ -305,7 +305,7 @@ jobs:
         with:
           name: se-examples
           retention-days: 1
-          path: examples/
+          path: examples/se-latest/
 
   reconcile-extra:
     runs-on: ubuntu-24.04
@@ -381,7 +381,7 @@ jobs:
         continue-on-error: true
         with:
           name: se-examples
-          path: examples/
+          path: examples/se-latest/
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
@@ -402,7 +402,7 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*se-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+          git add packages/ reports/ examples/se-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
