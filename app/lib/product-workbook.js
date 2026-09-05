@@ -179,9 +179,11 @@ async function resolveInputs(book, lines, options) {
   const declaredYear = taxFile.tax_year || taxFile.financial_year;
   if (!declaredYear) throw new Error(`${taxYearName}.toml declares neither tax_year nor financial_year`);
 
+  // The rates are the financial year's, the year end is this company's, and
+  // the generator reads both off the one object.
   const endDate = yearEndFromBook ? bookPeriodEnd : new Date(declaredYear.end);
-  const taxData = yearEndFromBook ? { ...taxFile, financial_year: { ...taxFile.financial_year, end: endDate } } : taxFile;
-  const yearInfo = taxData.tax_year || taxData.financial_year;
+  const yearInfo = yearEndFromBook ? { ...declaredYear, end: endDate } : declaredYear;
+  const taxData = yearEndFromBook ? { ...taxFile, financial_year: yearInfo } : taxFile;
   const yearEndMonth = yearEndFromBook ? endDate.getUTCMonth() + 1 : 0;
 
   const productMeta = parseTOML(await resources.readText(`${templateDir}/meta.toml`));
