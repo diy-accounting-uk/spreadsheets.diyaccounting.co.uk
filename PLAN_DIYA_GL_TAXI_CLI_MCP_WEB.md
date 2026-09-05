@@ -2270,122 +2270,336 @@ Commit before waiting; wait with `timeout 900 bash -c 'while pgrep -f "playwrigh
 
 ##### T15 coding brief
 
-Tier: Opus. Precursors: T13 and T19 merged; SE:T8 merged (for its layout shape and, if it
-exposes one, its renderer).
+Tier: Opus. Precursors: T6, T13 and T19 merged. T19 has already landed, so
+`calculateExpectedTax` returns `ni_class2`, `ni_class2_threshold` and `ni_class2_weekly`
+today. SE:T8 is not a precursor; the layout decision below says why. Wave D, after T14
+because the two share `taxi.css`.
 
-Purpose: the P&L with the comparison panel and the health check, the vehicle register, the tax
-computation in the SA110 working-sheet order with Class 2 and payments on account, the
-quarterly summary, the forecast, and the SA103S with the 2026 numbers.
+Purpose: the five remaining Taxi views. The P&L with the mileage comparison panel and the
+health check; the vehicle register; the tax computation in the SA110 working sheet's order
+with Class 2 and the two payments on account; the quarterly summary; the forecast; and the
+SA103S printed with the 2026 box numbers from a layout file.
 
-Files. Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-views.js`,
+##### Facts this brief settles against the design briefs above
+
+Every cell was read on 2026-09-05 from `packages/GB Accounts Taxi Driver 2026-04-05 (Apr26)
+Excel 2007/Financialaccountsyearto050426.xlsx`, and the DOM from
+`web/spreadsheets.diyaccounting.co.uk/public/books/bst.js` at main.
+
+- `SE Short` prints its own box numbers in columns `A` and `L`, three rows above the entry
+  cell. The block runs `A35 = 8` over `D38` to `A120 = 34` over `D123`. From turnover on,
+  the sheet's box `n` is the 2026 form's box `n + 1`, and the sheet's expense block is ten
+  boxes, 10 to 19.
+- `D51` (sheet box 11, car and van) and `D64` (sheet box 14, repairs) are `<c r="D51"
+  s="379"/>`: a style and nothing else, no formula and no value. The T13 brief's "hold the
+  text `.`" is wrong. Both are empty entry cells. Its conclusion stands: the 2026 form's box
+  15 does have a sheet cell and it is blank, and so does the sheet's own box 11.
+- `O106` does carry a formula, `IF((O71+D80+D85+O80-D71-O85-D94)>=0, ..., 0)`. The spec's
+  "the calculator does not emit it" is what makes box 32 unkeyed, not an absent formula.
+- The sheet's loss block is not empty either. `D123` (sheet box 34, total loss to carry
+  forward) reads `'Business Details'!O34`, and `O123` (sheet box 37, CIS deductions) is a
+  plain input. Neither is in `CELL_MAP` and the calculator emits neither, so R carries no
+  key and both boxes print empty. The numbering shifts again here: the sheet's boxes 32, 33
+  and 34 are the form's 33, 34 and 35; the sheet's 35 (exempt from Class 4) is the form's
+  37, because the form inserts box 36 for voluntary Class 2; the sheet's 36 (deferment
+  certificate) has no 2026 box; the sheet's 37 is the form's 38.
+- `Draft Tax calculation`: `B17`, not `B16`, holds the text "TOTAL Income Tax & NI
+  Liability", and `E17 = SUM(E11:E16)` with row 16 empty. `E24 = E17`, `E25 = E24/2` and
+  `E26 = E24/2`, so each payment on account is half the year's liability. `D25 = Admin!B$21`
+  is 46418 and `D26 = Admin!B$22` is 46599, which are 31 January 2027 and 31 July 2027 in the
+  Apr26 package.
+- The band ceilings the sheet applies are `C9 = Admin!M$11` (37,700) for the basic band and
+  `C10 = Admin!N$13` (125,140) for the higher band. `E8` reads `C9`, `E9` reads `C10`. `C8 =
+  Admin!N$11` is 0 and is not in `CELL_MAP`; ignore it.
+- Class 4 rates live in `D14 = Admin!L$20` and `D15 = Admin!L$23`, and the limits in
+  `Admin!N20` and `Admin!N$23`. `D14` and `D15` are not in `CELL_MAP`; `Admin!L20`, `N20`,
+  `L23` and `N23` all are, so the rate and limit words in a Class 4 label come from
+  `snapshot.admin`.
+- `Profit & Loss Acc!C1 = IF(B1>J1,"MILEAGE ALLOWANCE"," ")`, where `B1 =
+  ROUND(PurchasesMar!$A$2,0)` is the claim and `J1 = ROUND(PurchasesMar!$I$2 + the Fixed
+  Assets allowance columns, 0)` is what the vehicle actually cost. Every running-cost row
+  reads `C1="mileage allowance"`.
+- `Profit & Loss Acc!B27 = SUM(C27:N27)` and `C27 = 'Wages Forecast'!D30`, so `B27` is the
+  same twelve cells `Wages Forecast!C30` sums. `C30` is the `CELL_MAP` cell, `B27` is not, so
+  the health check keys its forecast profit to `Wages Forecast!C30`. Rows 26 to 33 of the P&L
+  carry no `CELL_MAP` row at all.
+- `Fixed Assets!J4 = Admin!G$5` (0.18), `J47 = IF(D47>0,D47*J$4*(1-F47)," ")`, `K47 =
+  IF(D47>0,D47-J47," ")`, `K1 = K33+K62`. `D47` is the first vehicle row's cost, not a total,
+  and `F47` is the personal-use input.
+- The calculator fills `results["Fixed Assets"]` only when the book has an asset addition
+  (`app/lib/calculators/taxi.js`), so on a book with an empty register every register key is
+  absent and `keyed()` returns `""` for all of them.
+- The three fixtures are all 2025-26, so all three print 31 January 2027 and 31 July 2027.
+  `basic-taxi-driver` has no miles, takes the actual-cost route, and carries an £8,000
+  vehicle: WDA £1,440, written down £6,560, running costs £4,980, so `J1` is 6,420.
+  `sp-sixty-driving` has 20,000 miles, a £7,000 claim, £4,640 of running costs and a £200
+  dashcam whose £36 WDA makes `J1` 4,676, so it takes the mileage route and still prints £36
+  in box 25. `kestrel-executive-cars` has no miles and a £900 in-car camera on its register.
+  The design brief's "kestrel (no register, no miles)" is wrong about the register; kestrel is
+  the actual-cost book with a register and no miles, and no fixture is an actual-cost book
+  that carries miles.
+- The form row the shell renders, from `bst.js`, is `<div class="form-row [total-row]"><span
+  class="box-chip">9</span><span class="form-row-label">…</span><span
+  class="form-amount-wrap"><span class="form-amount-box" data-r-key="…">£1,234</span><span
+  class="whole-pounds-note">whole pounds</span></span></div>`.
+- `applyDriftMarks` (`bst.js` around line 326) finds the `.form-row` of any drifting
+  `.form-amount-box`, creates `.form-row-margin` if the row has none, and then sets
+  `margin.innerHTML` whenever the margin holds no `.pencil-correction`. Anything this row
+  pre-renders inside `.form-row-margin` is destroyed the first time that box drifts. A keyed
+  element that is not a `.form-amount-box` has its own `innerHTML` replaced by the inline
+  correction instead.
+- `helpers.form.row({ box, label, amount, rKeyAttr, total, wholePounds })` has no slot for a
+  parts line or a margin note, and this row may not change `shell.js`.
+
+##### The decisions
+
+1. **One layout file per product, in SE:T8's shape, plus one field.** `app/data/hmrc/
+   form-layouts/taxi.json` carries the SA103S alone. The shape is T8's (`form`, `year`,
+   `sheet`, `sections[].boxes[]`), because the box list is the form's and both products
+   carry it, while the cells behind it differ per product. Taxi's one addition is
+   `"derived": "<name>"` on a box, mutually exclusive with a non-null `cell`.
+2. **`taxi-forms.js` carries its own `renderLayout`.** It does not call into `se-forms.js`.
+   SE:T8's brief defines no exported renderer and no global contract for one, and `derived`,
+   `.box-parts` and `.sheet-placement` are Taxi's alone. The alternative was to hold T15 until
+   T8 published a renderer and pass it a `resolveBox`; it is not taken, and the shared thing
+   stays the file shape rather than the code. If a later row wants one renderer, it lifts
+   this one.
+3. **The expense boxes key to the P&L, not to `SE Short`.** The sheet's `D46`, `D55`, `D60`,
+   `O46`, `O51`, `O55`, `O60` and `O64` are formula cells that `CELL_MAP` does not name, so R
+   carries no key for them and a drift mark could never appear. Their P&L sources are all in
+   `CELL_MAP`. The sheet also blanks that whole block below £30,000 turnover, while the form's
+   permission is £90,000 and the plan prints the items at any turnover.
+4. **The static margin note is a sibling of `.form-row-margin`, not inside it.** It renders as
+   `<span class="sheet-placement">` appended to the `.form-row` after `.form-amount-wrap`. The
+   drift walker then appends its own `.form-row-margin` beside it and neither touches the
+   other. The selector T18 uses is `.form-row .sheet-placement`. The design brief's
+   `.form-row-margin .sheet-placement` would be overwritten on box 12 the moment `Profit &
+   Loss Acc!B11` drifts.
+5. **The layout is fetched on first render, not at script load.** A Node test loads
+   `taxi-forms.js` under `globalThis` and there is no `fetch` or `document` in that
+   environment, so the module must do nothing at load beyond assigning its global.
+6. **`taxi.css` is shared with T14.** T14 owns the takings region, T15 appends a views region
+   at the end of the same file. Land after T14 and rebase onto it. If T14 has not merged,
+   create `taxi.css` with the licence header, `@import url("books.css");` and the views region
+   only, and say so in the commit; T14 then appends its region beneath.
+
+##### Files
+
+Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-views.js`,
 `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-forms.js`,
 `app/data/hmrc/form-layouts/taxi.json`, `app/test/taxi-form-layout.test.js`,
-`web/browser-tests/books-taxi-views.browser.test.js`; appends one line to
-`playwright.config.js` after T14's. Modifies `scripts/build-books-bundle.mjs` only if T8's copy
-of `app/data/hmrc/form-layouts/` is per file rather than the directory. Must not touch
-`shell.js`, `data.js`, `books.css`, `products/taxi.js`, `taxi-takings.js`, the engine, the
-template.
+`web/browser-tests/books-taxi-views.browser.test.js`. Modifies
+`web/spreadsheets.diyaccounting.co.uk/public/books/taxi.css` (one appended region),
+`scripts/build-books-bundle.mjs` (one line in `copyRuntimeAssets`) and
+`playwright.config.js` (one line after T14's). Must not touch `shell.js`, `data.js`,
+`edits.js`, `books.css`, `products/taxi.js`, `products/taxi-takings.js`, `products/bst.js`,
+`products/se.js`, the engine, the calculator or any template.
 
-The modules: `window.DiyaGlTaxiViews = { renderProfitLoss, renderVehicles, renderComputation,
-renderQuarterly, renderForecast }` and `window.DiyaGlTaxiForms = { renderSa103s }`, each
-`(snapshot, state, helpers) -> HTML`. Keys through `helpers.rkFor` guarded by presence; the
-guard is one local `keyed(sheet, cell)` returning `""` when `snapshot.results[sheet][cell]` is
-undefined. No module reads `results` for a figure the snapshot already carries.
+`copyRuntimeAssets` gains, next to the tax-year copy, one directory copy so any product's
+layout ships:
 
-**The P&L view.** Order: the comparison panel, the statement, the health check.
+```js
+cpSync(resolve(ROOT, "app", "data", "hmrc", "form-layouts"), resolve(dataOut, "hmrc", "form-layouts"), { recursive: true });
+```
 
-- `.vehicle-comparison[data-route="mileage"|"actual"]` (`.panel-card`): five
-  `.comparison-figure[data-figure="miles"|"allowance"|"running"|"compared"|"charged"]`, each a
-  `.caps-label` and a keyed value (`PurchasesMar!A1` as a count, `A2`, `I2`, `Profit & Loss
-  Acc!J1`, `B12`); `.comparison-sentence` from the two templates in "The mileage comparison"
-  with the figures in words ("The mileage allowance is £7,000 and running the car cost £4,640,
-  so this year's accounts claim the allowance; fuel, repairs, road tax and insurance receipts
-  are recorded but not charged." / "Running the car cost £N and the mileage allowance would be
-  £M, so this year's accounts charge the running costs and the vehicle's capital allowances;
-  the allowance forgone is £M."); `.comparison-route-cell` small text "the sheet says: MILEAGE
-  ALLOWANCE" carrying `keyed("Profit & Loss Acc","C1")` (present on the mileage route only).
-  When `vehicle.present` is false the panel says "This book records no business miles, so the
-  accounts charge the vehicle's running costs" and shows running, compared and charged only.
-- The statement: `helpers.sectionRows("Profit & Loss Account")` in a `.panel-card.panel-form-width
-  table.kv-table`, each row keyed through `rkFor`, `tr.total` on `B12`, `B13`, `B22`, `B23`,
-  indent from the row. Twenty rows, `B24` last under a `tr.below-the-line` caption "Below the
-  line".
-- `<details class="health-check">` with `<summary>Financial business health check</summary>` and a
-  `kv-table`: "Forecast profit" keyed `Wages Forecast!C30`; four rows "Drawings week 1" to
-  "week 4" each an `input.readonly-input[disabled]` with `.field-hint` "an input on the
-  workbook; the book has no field for it"; "Income tax and NI liability, one twelfth"
-  (`healthCheck.liabilityTwelfth`, unkeyed, `.derived`); "Health check" (forecast profit less
-  the twelfth, unkeyed).
+If T8 already added a per-file `se.json` copy, replace it with this line and say so in the
+commit.
 
-**The vehicle register** (`fixed-assets`): `table.register-table.vehicle-register` with head
-Bought, Vehicle, Cost, Personal use, WDA, Written down; one `tr[data-asset="<assetID>"]` per
-register entry; the first row's cost keyed `Fixed Assets!D47` (the cell holds the first asset's
-cost, not a total); Personal use prints "—" with title "the workbook's F column; the book has no
-field for it"; WDA and written down from the snapshot. Foot: cost total keyed
-`PurchasesMar!T1`, WDA total `Fixed Assets!J1`, written-down total `K1`. Below, a `kv-table`
-"Capital allowances": AIA `I1`, disposals `P1`, balancing charge `Q1`, each keyed when present.
-`register.unregistered` renders as `.entries-note` "N vehicle purchases are not on the register;
-the checks panel offers to register them." An empty register on a book with no `capex` line
-prints "This book records no vehicles." with no keys.
+##### The two modules
 
-**The computation** (`tax-computation`), through `helpers.form` in the SA110 working-sheet order,
-`form-name` "Tax computation", `form-microcopy` the sheet's own words "an indication and for your
-information only"; every `form-row` carries `data-line="<cell>"` and a `.working-sheet-ref`
-small-text chip:
+`window.DiyaGlTaxiViews = { renderProfitLoss, renderVehicles, renderComputation,
+renderQuarterly, renderForecast }` and `window.DiyaGlTaxiForms = { renderSa103s,
+DERIVED_NAMES }`. Every render is `(snapshot, state, helpers) -> HTML`. Neither module
+declares a `bind`; the manifest's Taxi view entries carry `render` only, so the shell runs its
+shared bind and the health check's `<details>` and the register's table need nothing else.
 
-| Section | Row | Cell | Ref |
-|---|---|---|---|
-| Income | Profit from self-employment (SA103S box 31) | `E5` | D1 |
-| Allowances | Personal allowance, tapered above £100,000 | `E6` | A125 |
-| Taxable income | Total income on which tax is due | `E7` | A131 |
-| Income tax | Basic rate (`D8`) to `C9`; Higher rate (`D9`) to `C10`; Additional rate (`D10`) | `E8`, `E9`, `E10` | Section 6 |
-| Income tax | Income tax due | `E11` | A328 |
-| National Insurance | Class 4, main rate 6% | `E14` | D15 |
-| National Insurance | Class 4, 2% above the upper limit | `E15` | D17 |
-| National Insurance | Class 4 due (`E14 + E15`, unkeyed, `.derived`) | | D18 |
-| National Insurance | Class 2 | none | D19 |
-| Total | Income tax and Class 4 NI | `E17` | A331 |
-| Payments on account | First payment, due 31 January 2027 | `E25` | SA110 box 11 |
-| Payments on account | Second payment, due 31 July 2027 | `E26` | |
+Three locals every render uses, defined once per module:
 
-The band rows use `helpers.form.rateRow` with the rate and ceiling cells keyed as BST's income
-tax form keys them. The Class 2 row prints `computation.class2`: "nil; profits are above the
-£6,845 small profits threshold, so the year is credited without payment" when `amount` is 0,
-"£182.00 voluntary; profits are below the £6,845 small profits threshold" when above 0, and the
-row is omitted when `class2.threshold` is undefined. The dates come from
-`computation.paymentsOnAccount`, printed "31 January 2027". A `.view-lede` under the masthead:
-"Follows HMRC's SA110 working sheet, top to bottom."
+```js
+function keyed(snapshot, helpers, sheet, cell) {
+  var sheetResults = snapshot.results && snapshot.results[sheet];
+  return sheetResults && sheetResults[cell] !== undefined ? helpers.rkFor(sheet, cell) : "";
+}
+function v(snapshot, sheet, cell) { … the number, or 0 … }
+function text(snapshot, sheet, cell) { … the string, or "" … }
+```
 
-**The quarterly summary**: `table.quarterly-table` with head Quarter, Apr to Jun, Jul to Sep, Oct
-to Dec, Jan to Mar, Year and three rows Turnover (`C5` to `G5`), Other income (`C6` to `G6`),
-Allowable expenses (`C29` to `G29`), every cell keyed. A `.view-lede`: "The shape a cumulative
-period summary takes."
+A figure the snapshot already carries is read from the snapshot. `results` is read for
+presence through `keyed`, and for the computation's own cells, which T13's snapshot names
+rather than values.
 
-**The forecast**: `kv-table` from `forecast.rows` with `C19` printed as a count ("11 of 12
-months"), `tr.total` on `C30` and `C41`; a `.view-lede` when `monthsTraded < 12`: "N of 12
-months traded. The forecast repeats each traded month and spreads the year across the rest."
+**The P&L view**, `renderProfitLoss`. Three blocks in this order: the comparison panel, the
+statement, the health check.
 
-**The SA103S.** The layout module decision, shared with SE:T8: the layout shape is T8's
-(`form`, `year`, `sheet`, `sections[].boxes[] = { box, label, cell }`), one file per product
-under `app/data/hmrc/form-layouts/`, because the cell maps differ per product and the box list
-is data both files carry. Taxi adds one optional field a box may carry instead of `cell`:
-`"derived": "<name>"`, resolved by `taxi-forms.js`. If T8 exposed its renderer as a global that
-takes `(layout, resolveBox, helpers)`, use it and pass a `resolveBox` that handles `derived`;
-otherwise `taxi-forms.js` carries its own `renderLayout` over `helpers.form` (about sixty
-lines) and the commit says which. The layout is fetched once at script load from
-`assets/data/hmrc/form-layouts/taxi.json` into a module promise; `renderSa103s` returns
-`<p class="view-loading">` until it resolves and calls `helpers.render()` then (the fetch
-finishes long before a book loads). `app/data/hmrc/form-layouts/taxi.json`:
+The comparison panel:
+
+```html
+<section class="panel-card vehicle-comparison" data-route="mileage">
+  <h3>The vehicle: the mileage allowance or what the car cost</h3>
+  <div class="comparison-figures">
+    <div class="comparison-figure" data-figure="miles">
+      <span class="caps-label">Business miles</span>
+      <span class="figure-value" data-r-key="cell/PurchasesMar!A1 || …">20,000</span></div>
+    … allowance, running, compared, charged …
+  </div>
+  <p class="comparison-sentence">…</p>
+  <p class="comparison-route-cell">the sheet says: <span data-r-key="cell/Profit &amp; Loss Acc!C1">MILEAGE ALLOWANCE</span></p>
+</section>
+```
+
+`data-route` is `snapshot.vehicle.route`. The five figures are `miles`
+(`PurchasesMar!A1`, a count through `helpers.fmtWhole`), `allowance` (`A2`), `running`
+(`I2`), `compared` (`Profit & Loss Acc!J1`) and `charged` (`B12`), each keyed through
+`keyed`. The `.caps-label` texts are Business miles, Mileage allowance, Running the car,
+The figure the sheet compares, Charged to the accounts.
+
+Three sentences, one per state, `.comparison-sentence`, figures through `helpers.fmtMoney`:
+
+- `route === "mileage"`: "The mileage allowance is £7,000 and running the car cost £4,640, so
+  this year's accounts claim the allowance; fuel, repairs, road tax and insurance receipts are
+  recorded but not charged."
+- `route === "actual"` and `vehicle.present`: "Running the car cost £N and the mileage
+  allowance would be £M, so this year's accounts charge the running costs and the vehicle's
+  capital allowances; the allowance forgone is £M."
+- `vehicle.present === false`: "This book records no business miles, so the accounts charge
+  the vehicle's running costs." Only running, compared and charged render; the miles and
+  allowance figures are left out.
+
+`.comparison-route-cell` renders only when `snapshot.vehicle.routeText` is a non-empty string,
+which is the mileage route alone, and its span carries `keyed(…, "Profit & Loss Acc", "C1")`.
+
+The statement is `helpers.sectionRows("Profit & Loss Account")` inside `<div class="panel-card
+panel-form-width"><table class="kv-table">`. Twenty rows in `CELL_MAP` order, each label
+indented by the row's indent, each value keyed through `rkFor` on the row's own sheet and
+cell, `tr.total` on `B12`, `B13`, `B22` and `B23`. `B24` renders last under a caption row
+`<tr class="below-the-line"><td colspan="2">Below the line</td></tr>`, because the sheet keeps
+other income under the net profit line.
+
+The health check is `<details class="health-check"><summary>Financial business health
+check</summary>` around a `kv-table`:
+
+| Row | Value | Key |
+|---|---|---|
+| Forecast profit | `snapshot.healthCheck.forecastProfit` | `Wages Forecast!C30` |
+| Drawings week 1 to week 4 | `<input class="readonly-input" disabled value="—">` with `<span class="field-hint">an input on the workbook; the book has no field for it</span>` | none |
+| Income tax and NI liability, one twelfth | `snapshot.healthCheck.liabilityTwelfth`, class `derived` | none |
+| Health check | forecast profit less the twelfth, class `derived` | none |
+
+The four drawings rows are `book.healthCheck.drawings`, which T13 fills with nulls. The sheet
+adds them into `C33`; the page cannot, and the hint says why.
+
+**The vehicle register**, `renderVehicles`, view id `fixed-assets`.
+
+`<table class="register-table vehicle-register">` with head Bought, Vehicle, Cost, Personal
+use, WDA, Written down. One `<tr data-asset="<assetID>">` per `snapshot.register` entry in
+book order. The first row's Cost cell carries `keyed(…, "Fixed Assets", "D47")` and no other
+row's does, because `D47` is the first vehicle row and not a total. Personal use prints "—"
+with `title="the workbook's F column; the book has no field for it"`. WDA and Written down
+come from the snapshot entry.
+
+The foot carries three totals: cost keyed `PurchasesMar!T1`, WDA keyed `Fixed Assets!J1`,
+written down keyed `Fixed Assets!K1`. Below the table a `panel-card` with `<h3>Capital
+allowances</h3>` and a `kv-table` of Annual Investment Allowance `Fixed Assets!I1`, Capital
+allowance on disposal `P1`, Balancing charge `Q1`, each keyed through `keyed` so a book with
+no register shows them unkeyed.
+
+`snapshot.register.unregistered` renders, when non-empty, as `<p class="entries-note">N
+vehicle purchases are not on the register; the checks panel offers to register them.</p>`. An
+empty register on a book with no `capex` line prints `<p class="entries-note">This book
+records no vehicles.</p>` and no table.
+
+**The computation**, `renderComputation`, view id `tax-computation`.
+
+A `<p class="view-lede">Follows HMRC's SA110 working sheet, top to bottom.</p>` first, then
+`helpers.form.render("Tax computation", microcopy, sectionsHtml)` with the microcopy "This
+section an indication and for your information only", the sheet's own words from `Draft Tax
+calculation!D2`.
+
+Every row is built by the module's local `boxRow` (below) rather than `helpers.form.row`,
+carries `data-line="<cell>"` on the `.form-row`, and puts its working-sheet reference in a
+`<span class="working-sheet-ref">` inside `.form-row-label`. Cell names come from
+`snapshot.computation`; values from `snapshot.results["Draft Tax calculation"][cell]`.
+
+| Section | Row | Cell | Ref | Format |
+|---|---|---|---|---|
+| Income | Profit from self-employment (SA103S box 31) | `computation.profit` | D1 | whole |
+| Allowances | Personal allowance, tapered above £100,000 | `computation.allowance` | A125 | whole |
+| Taxable income | Total income on which tax is due | `computation.taxable` | A131 | whole |
+| Income tax | the three band rows | `computation.bands` | Section 6 | money |
+| Income tax | Income tax due | `computation.incomeTax` | A328 | money, total |
+| National Insurance | Class 4, main rate | `computation.class4[0]` | D15 | money |
+| National Insurance | Class 4, above the upper limit | `computation.class4[1]` | D17 | money |
+| National Insurance | Class 4 due | derived, unkeyed, `.derived` | D18 | money |
+| National Insurance | Class 2 | none | D19 | sentence |
+| Total | Income tax and Class 4 NI | `computation.total` | A331 | money, total |
+| Payments on account | First payment, due 31 January 2027 | `computation.paymentsOnAccount[0][0]` | SA110 box 11 | money |
+| Payments on account | Second payment, due 31 July 2027 | `computation.paymentsOnAccount[1][0]` | | money |
+
+The three band rows follow BST's income-tax form exactly: the label, then " to " and a keyed
+`<span>` holding the band ceiling when the band has one, then `<span class="form-rate-pencil">`
+holding the rate, then the `.form-amount-box` holding the tax. `computation.bands[i]` is
+`[rateCell, ceilingCell, taxCell]`, all on `Draft Tax calculation`, and the third band's
+ceiling cell is null so it prints no ceiling.
+
+The two Class 4 labels read their rate and limits from `snapshot.admin`, not from a literal:
+"Class 4 at <L20 as a rate> on profit between <N20> and <N23>" and "Class 4 at <L23 as a rate>
+above <N23>". Those spans are not keyed; the amounts are.
+
+The Class 2 row prints `snapshot.computation.class2` as a sentence in place of an amount, with
+`data-line="class2"` and the ref D19:
+
+- `amount === 0`: "Nil. Profits are above the £6,845 small profits threshold, so the year is
+  credited without payment."
+- `amount > 0`: "£182.00 voluntary. Profits are below the £6,845 small profits threshold, so
+  Class 2 is a choice, at £3.50 a week."
+- `class2.threshold === undefined`: the row is not rendered at all.
+
+The threshold and weekly figures in those sentences are `class2.threshold` and `class2.weekly`
+formatted through `helpers.fmtMoney`, never literals. The sheet has no Class 2 line, so the
+row carries no `data-r-key`. `Admin!L16` holds the same weekly rate and an Admin echo check
+already ties the two together; the row does not key to it, because the figure it prints is the
+year's amount, not the rate.
+
+The payment dates come from `computation.paymentsOnAccount[i][1]`, an ISO string, printed as
+"31 January 2027". Both amounts are `fmtBoxMoney`, not whole pounds, because SA110 box 11 asks
+for pence. A one-line note under the section: "Each payment is half of last year's liability,
+which is what the sheet's `E24` copies from `E17`." Print the cell names as words, not code.
+
+`E5`, `E6` and `E7` print through `helpers.fmtBoxWhole`; everything else through
+`helpers.fmtBoxMoney`, as BST's computation does.
+
+**The quarterly summary**, `renderQuarterly`, view id `quarterly`.
+
+`<p class="view-lede">The shape a cumulative period summary takes.</p>` then `<table
+class="quarterly-table">` with head Quarter, Apr to Jun, Jul to Sep, Oct to Dec, Jan to Mar,
+Year and three rows: Turnover `VitalTax!C5` to `G5`, Other income `C6` to `G6`, Allowable
+expenses `C29` to `G29`. Fifteen cells, each keyed through `keyed`. The rows and cells come
+from `snapshot.quarterly`, which T13 already arranges three by five.
+
+**The forecast**, `renderForecast`, view id `forecast`.
+
+A `kv-table` from `snapshot.forecast.rows`, each row keyed on its own cell, `C19` printed as a
+count ("11 of 12 months") and `tr.total` on `C30` and `C41`. When `forecast.monthsTraded < 12`,
+a `<p class="view-lede">N of 12 months traded. The forecast repeats each traded month and
+spreads the year across the rest.</p>` above the table.
+
+##### The SA103S
+
+`app/data/hmrc/form-layouts/taxi.json`. A box carries `box` (the 2026 number as a string),
+`label` (the form's own words), `cell` (a cell on `sheet`, or null), an optional `derived` (a
+resolver name, only when `cell` is null) and an optional `total` (renders `total-row`).
+Sections carry `heading` and `boxes`. Labels are the 2026 form's, from
+`_developers/hmrc-references/hmrc-forms-sole-trader.md` section 1.
 
 ```json
 { "sa103s": { "form": "SA103S", "year": 2026, "sheet": "SE Short", "sections": [
   { "heading": "Business income", "boxes": [
-    { "box": "9", "label": "Your turnover", "cell": "D38" },
+    { "box": "9", "label": "Your turnover, the takings, fees, sales or money earned by your business", "cell": "D38" },
     { "box": "10", "label": "Any other business income not included in box 9", "cell": "O38" },
     { "box": "10.1", "label": "Trading income allowance", "cell": null } ] },
   { "heading": "Allowable business expenses", "boxes": [
     { "box": "11", "label": "Costs of goods bought for resale or goods used", "cell": null, "derived": "goodsForResale" },
-    { "box": "12", "label": "Car, van and travel expenses", "cell": null, "derived": "vehicleTravel" },
+    { "box": "12", "label": "Car, van and travel expenses, after private use proportion", "cell": null, "derived": "vehicleTravel" },
     { "box": "13", "label": "Wages, salaries and other staff costs", "cell": null, "derived": "pl:B14" },
     { "box": "14", "label": "Rent, rates, power and insurance costs", "cell": null, "derived": "pl:B15" },
     { "box": "15", "label": "Repairs and maintenance of property and equipment", "cell": null, "derived": "repairs" },
@@ -2395,15 +2609,16 @@ finishes long before a book loads). `app/data/hmrc/form-layouts/taxi.json`:
     { "box": "19", "label": "Other allowable business expenses", "cell": null, "derived": "sum:B17,B21" },
     { "box": "20", "label": "Total allowable expenses", "cell": null, "derived": "totalExpenses", "total": true } ] },
   { "heading": "Net profit or loss", "boxes": [
-    { "box": "21", "label": "Net profit", "cell": "D71" }, { "box": "22", "label": "Or, net loss", "cell": "O71" } ] },
-  { "heading": "Tax allowances for vehicles and equipment (capital allowances)", "boxes": [
+    { "box": "21", "label": "Net profit, if your business income is more than your expenses", "cell": "D71", "total": true },
+    { "box": "22", "label": "Or, net loss, if your expenses exceed your business income", "cell": "O71", "total": true } ] },
+  { "heading": "Tax allowances for certain buildings, vehicles and equipment (capital allowances)", "boxes": [
     { "box": "23", "label": "Annual Investment Allowance", "cell": "D80" },
     { "box": "24", "label": "Allowance for small balance of unrelieved expenditure", "cell": "D85" },
     { "box": "24.1", "label": "Zero-emission car allowance", "cell": null },
     { "box": "25", "label": "Other capital allowances", "cell": "O80" },
     { "box": "25.1", "label": "The Structures and Buildings Allowance", "cell": null },
     { "box": "25.2", "label": "Freeport and Investment Zones Structures and Buildings Allowance", "cell": null },
-    { "box": "26", "label": "Total balancing charges", "cell": "O85" } ] },
+    { "box": "26", "label": "Total balancing charges, for example where you have disposed of items for more than their tax value", "cell": "O85" } ] },
   { "heading": "Calculating your taxable profits", "boxes": [
     { "box": "27", "label": "Goods and/or services for your own use", "cell": "D94" },
     { "box": "28", "label": "Net business profit for tax purposes", "cell": "D99", "total": true },
@@ -2411,86 +2626,206 @@ finishes long before a book loads). `app/data/hmrc/form-layouts/taxi.json`:
     { "box": "30", "label": "Any other business income not included in box 9 or box 10", "cell": "O99" } ] },
   { "heading": "Total taxable profits or net business loss", "boxes": [
     { "box": "31", "label": "Total taxable profits from this business", "cell": "D106", "total": true },
-    { "box": "32", "label": "Net business loss for tax purposes", "cell": null } ] },
+    { "box": "32", "label": "Net business loss for tax purposes", "cell": null, "total": true } ] },
   { "heading": "Losses, Class 2 and Class 4 NICs and CIS deductions", "boxes": [
-    { "box": "33", "cell": null }, { "box": "34", "cell": null }, { "box": "35", "cell": null },
-    { "box": "36", "label": "Voluntary Class 2 NICs", "cell": null }, { "box": "37", "label": "Exempt from Class 4 NICs", "cell": null },
+    { "box": "33", "label": "Loss from this tax year set off against other income for 2025-26", "cell": null },
+    { "box": "34", "label": "Loss to be carried back to previous years and set off against income (or capital gains)", "cell": null },
+    { "box": "35", "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward", "cell": null },
+    { "box": "36", "label": "Voluntary Class 2 NICs", "cell": null },
+    { "box": "37", "label": "Exempt from Class 4 NICs", "cell": null },
     { "box": "38", "label": "Total CIS deductions taken from your payments by contractors", "cell": null } ] } ] } }
 ```
 
-Labels for 33 to 35 are the form's, from `_developers/hmrc-references/hmrc-forms-sole-trader.md`
-section 1. `O106` (box 32) is not a `CELL_MAP` cell and the calculator does not emit it, so box
-32 is `cell: null` and prints empty. Boxes 33 to 38 print present and empty, as SE:T8's do (T18's
-"33 to 38 absent" reads "present, with no key").
+Thirteen boxes name a cell, and they are exactly the thirteen `SE Short` rows `CELL_MAP`
+carries. Boxes 32, 35 and 38 are null although the sheet computes `O106` and holds `D123` and
+`O123`, because `CELL_MAP` names none of them and the calculator emits none, so R has no key
+and the box would print empty with a cell or without one. Boxes 33 to 38 print present and
+empty, which is what T18's "33 to 38 absent" means.
 
-Resolution rules in `taxi-forms.js`, `route = snapshot.vehicle.route`, `pl = "Profit & Loss Acc"`:
+`renderSa103s(snapshot, state, helpers)`:
 
-- A box with a `cell` prints `snapshot.results["SE Short"][cell]` keyed through `keyed("SE
-  Short", cell)`; an absent value prints empty (`O38` always).
-- `pl:Bn` prints the P&L cell keyed `rkFor(pl, "Bn")`.
-- `sum:B19,B20` prints the sum with no `data-r-key` on the box and a `.box-parts` line under the
-  label, "interest £x · bank charges £y", each part keyed to its own cell. The same for
-  `sum:B17,B21`.
-- `goodsForResale` (box 11) prints empty. Its `.form-row-margin` carries a static
-  `.sheet-placement` note (not a drift mark): "The sheet prints £N here: vehicle costs less
-  capital allowances (P&L B12 − B10)." with N computed from the two P&L cells; no key.
-- `vehicleTravel` (box 12): mileage route prints `B11` keyed `rkFor(pl, "B11")`; actual route
-  prints `B6 + B7 + B9` unkeyed with `.box-parts` "fuel · car hire · road tax and insurance"
-  each keyed. Its margin note on both routes: "The sheet files this under box 11."
-- `repairs` (box 15): actual route prints `B8` keyed; mileage route prints empty with the margin
-  note "Repairs are inside the mileage rate this year; the sheet records £N under box 11."
-- `totalExpenses` (box 20): the sum of boxes 11 to 19 as printed, unkeyed. On both routes it
-  equals the sheet's `O64` (`B12 + B22 − B10`); the test below asserts it.
+1. On the first call, start `fetch("assets/data/hmrc/form-layouts/taxi.json")`, keep the
+   promise in a module variable, and call `helpers.render()` when it resolves. Return `<p
+   class="view-loading">Loading the SA103S…</p>` until then. The fetch finishes long before a
+   book loads, so the loading paragraph is not normally seen. A failed fetch renders `<p
+   class="entries-note">The SA103S layout did not load.</p>` and does not throw.
+2. Render `helpers.form.render("SA103S, Self-employment (short) 2026", microcopy,
+   sectionsHtml)`, microcopy "Check these against your return. Box numbers match the 2026
+   form; nothing here is the HMRC document."
+3. Each section is `helpers.form.section(heading, rowsHtml)`; each row is the module's own
+   `boxRow`.
+
+`boxRow({ box, label, amount, rKeyAttr, total, partsHtml, noteHtml })` writes the shell's own
+markup, because `helpers.form.row` has no slot for parts or a note and `shell.js` is not this
+row's to change:
+
+```
+<div class="form-row[ total-row]">
+  <span class="box-chip">{box}</span>
+  <span class="form-row-label">{label}{partsHtml}</span>
+  <span class="form-amount-wrap">
+    <span class="form-amount-box"{rKeyAttr}>{amount}</span>
+    <span class="whole-pounds-note">whole pounds</span>
+  </span>
+  {noteHtml}
+</div>
+```
+
+`noteHtml` is `<span class="sheet-placement">…</span>` and sits after `.form-amount-wrap`, as
+a sibling of the `.form-row-margin` the drift walker will append. `partsHtml` is `<span
+class="box-parts">…</span>` inside the label. Every amount is `helpers.fmtBoxWhole`.
+
+Resolution, with `route = snapshot.vehicle.route` and `pl = "Profit & Loss Acc"`:
+
+- A box with a `cell` prints `snapshot.results["SE Short"][cell]` keyed through `keyed(…, "SE
+  Short", cell)`. An absent value prints empty and unkeyed. `O38` is absent on every book.
+- A box with neither a `cell` nor a `derived` prints empty and unkeyed.
+- `pl:Bn` prints the P&L cell, keyed `keyed(…, pl, "Bn")`.
+- `sum:B19,B20` prints the sum with no key on the box, and a `.box-parts` line under the
+  label: "interest £x · bank charges £y", each figure in its own keyed span. `sum:B17,B21`
+  reads "advertising £x · other expenses £y".
+- `goodsForResale` (box 11) prints empty and unkeyed. Its note reads "The sheet prints £N
+  here: vehicle costs less capital allowances." with N as `B12 - B10` through `fmtMoney`.
+- `vehicleTravel` (box 12): on the mileage route it prints `B11` keyed `keyed(…, pl, "B11")`;
+  on the actual route it prints `B6 + B7 + B9` with no key and a `.box-parts` line "fuel £x ·
+  car hire £y · road tax and insurance £z", each part keyed to its own cell. Its note on both
+  routes: "The sheet files this under box 11."
+- `repairs` (box 15): on the actual route it prints `B8` keyed `keyed(…, pl, "B8")`; on the
+  mileage route it prints empty with the note "Repairs are inside the mileage rate this year;
+  the sheet records £N under box 11.", N as `B12 - B10`.
+- `totalExpenses` (box 20): the sum of boxes 11 to 19 as printed, unkeyed. On both routes that
+  equals the sheet's `O64`, which is `B12 + B22 - B10`; the browser test asserts it.
 - Boxes 23 to 26 print the sheet's cells on both routes. When `route === "mileage"` and
-  `register.length > 0` and `O80 > 0`, box 25's margin note reads: "The form allows no capital
-  allowance on a vehicle claimed at the mileage rate. This register holds <descriptions>."
-- Whole pounds where the sheet rounds (`helpers.fmtBoxWhole`), as BST's form.
+  `snapshot.register.length > 0` and box 25's value is above 0, box 25 gains the note "The
+  form allows no capital allowance on a vehicle claimed at the mileage rate. This register
+  holds <the descriptions, joined with a comma>."
 
-The `form-name` is "SA103S, Self-employment (short) 2026" and the microcopy "Check these against
-your return. Box numbers match the 2026 form; nothing here is the HMRC document."
+Boxes 11, 12 and 15 are the one place the render follows the form rather than the sheet, and
+the notes are what makes that visible. The coordinator can reverse it by deleting the three
+resolvers and pointing boxes 11 to 19 at `D46`, `D51`, `D55`, `D60`, `D64`, `O46`, `O51`,
+`O55` and `O60`; nothing else in this row depends on the choice.
 
-Tests.
+`DERIVED_NAMES` is `["goodsForResale", "vehicleTravel", "repairs", "totalExpenses"]`, assigned
+on the module's global so a Node test can read it. `pl:` and `sum:` are patterns, not names.
 
-`app/test/taxi-form-layout.test.js`: "every cell the layout names is a CELL_MAP SE Short cell or
-exists on the template" (open `app/templates/taxi/taxi-excel.xlsx`, sheet `SE Short`, assert the
-`<c r>` element exists); "every CELL_MAP SE Short row is named by exactly one box"; "the box list
-is exactly 9, 10, 10.1, 11 to 20, 21, 22, 23, 24, 24.1, 25, 25.1, 25.2, 26 to 38 in order";
-"every derived name is one taxi-forms.js resolves" (read the module's exported `DERIVED_NAMES`
-list; the module assigns it on its global).
+##### `taxi.css`
 
-`web/browser-tests/books-taxi-views.browser.test.js`, on `taxi-scenario-basic` (actual route) and
-`taxi-scenario-sp-sixty` (mileage route):
+Append a views region after T14's, Taxi rules only, on top of the shared sheet: the comparison
+panel's figure grid and `.comparison-figure .figure-value`; `.comparison-sentence` and
+`.comparison-route-cell` as small text; `details.health-check` and `.readonly-input` (a
+disabled input at the `kv-table`'s metrics); `table.vehicle-register` at the shared
+`.register-table` metrics; `table.quarterly-table` the same, with a sticky first column and an
+`overflow-x: auto` wrapper on desktop portrait and mobile landscape; `.working-sheet-ref` and
+`.box-parts` as small text; `.sheet-placement` as small text in the form row's margin column,
+which drops under the row on mobile portrait. Mirror the `@media (max-width: 899px) and
+(orientation: portrait)` block `books.css` already uses. No new colours; take them from the
+existing custom properties.
 
-- "each of the six views renders with no console error and at least one keyed figure".
-- "the comparison panel names the route the sheet took" (`[data-route="actual"]` on basic,
-  `"mileage"` on sp-sixty with the sentence carrying £7,000 and £4,640 and the route cell
-  reading MILEAGE ALLOWANCE).
-- "the computation's total equals S2's E17 and its Class 2 line reads nil on both books".
-- "the payments on account read 31 January 2027 and 31 July 2027 and equal half of E17".
-- "the SA103S box 20 equals P&L B12 + B22 − B10 from S2 on both routes".
-- "box 12 carries B11's key on sp-sixty and no key on basic; box 15 carries B8's key on basic
-  and is empty on sp-sixty" (T18 proves the whole box table).
-- "the quarterly table's Year column equals S2's G5, G6 and G29".
+##### Tests
+
+`app/test/taxi-form-layout.test.js`, Node. It reads
+`app/data/hmrc/form-layouts/taxi.json`, `app/products/taxi.js`, and `taxi-forms.js` evaluated
+with `globalThis` as its global:
+
+- "the box list is exactly 9, 10, 10.1, 11 to 20, 21, 22, 23, 24, 24.1, 25, 25.1, 25.2, 26 to
+  38, in that order".
+- "every box carries a label and either a cell, a derived rule or neither, never both".
+- "every cell the layout names is a CELL_MAP SE Short cell" (thirteen of them).
+- "every CELL_MAP SE Short row is named by exactly one box" (the inverse, thirteen again).
+- "every cell the layout names exists on the template" (open `app/templates/taxi/
+  taxi-excel.xlsx` with JSZip, sheet `SE Short`, assert the `<c r="...">` element is present).
+- "every derived rule is a known name or a P&L pattern" (in `DERIVED_NAMES`, or matching
+  `/^pl:B\d+$/` or `/^sum:B\d+(,B\d+)+$/`).
+- "every cell a P&L pattern names is a CELL_MAP Profit & Loss Account cell".
+- "the forms module defines DiyaGlTaxiForms and nothing else on the global".
+
+`web/browser-tests/books-taxi-views.browser.test.js`, on `books/taxi.html?example=…` for
+`taxi-scenario-basic` (actual route, no miles), `taxi-scenario-sp-sixty` (mileage route) and
+`taxi-scenario-kestrel` (actual route, no miles, a register). Figures come from `report.json`
+through `r-sources.js`'s `s2` with `--package taxi`; add the product argument here if T17 has
+not:
+
+- "each of the six views renders with no console error and at least one keyed figure", over
+  the three books.
+- "the comparison panel names the route the sheet took": `[data-route="actual"]` on basic and
+  kestrel, `[data-route="mileage"]` on sp-sixty, whose sentence carries the formatted `A2` and
+  `I2` from S2 (£7,000 and £4,640) and whose `.comparison-route-cell` reads MILEAGE ALLOWANCE
+  and carries `cell/Profit & Loss Acc!C1`.
+- "a book with no miles says so and shows three figures" (basic: no `[data-figure="miles"]`,
+  no `.comparison-route-cell`, the sentence names no allowance).
+- "an actual-cost book that does carry miles states the allowance forgone": on basic, put 1,000
+  miles on one fare through `window.DiyaGlBooksPage.setLines`, then the panel stays
+  `data-route="actual"`, shows five figures, and the sentence carries the £450 claim. This is
+  the third sentence branch, which no fixture reaches on its own.
+- "the P&L statement lists twenty rows with B12, B13, B22 and B23 as totals and B24 below the
+  line".
+- "the health check folds open and its forecast profit equals S2's Wages Forecast C30".
+- "the computation's total equals S2's E17, and its Class 2 line reads nil on all three
+  books".
+- "the payments on account read 31 January 2027 and 31 July 2027 and each equals half of E17".
+- "the band rows carry the sheet's rate and ceiling cells" (`D8` with `C9`, `D9` with `C10`,
+  `D10` with no ceiling).
 - "the register lists basic's vehicle with an 18% WDA of £1,440 and a written-down value of
-  £6,560, and totals keyed to J1 and K1".
+  £6,560, its cost keyed to Fixed Assets D47, and totals keyed to J1 and K1"; "sp-sixty's
+  register lists the dashcam"; "kestrel's lists the camera".
+- "the SA103S box 20 equals P&L B12 + B22 - B10 from S2, on all three books".
+- "box 12 carries B11's key on sp-sixty and no key on basic, and box 15 carries B8's key on
+  basic and is empty on sp-sixty".
+- "boxes 11, 12 and 15 each carry a sheet-placement note, and the note survives a drift mark"
+  (corrupt the as-read layer for `Profit & Loss Acc!B11` on sp-sixty through the upload path
+  the equivalence spec uses, then assert box 12 holds both `.sheet-placement` and
+  `.form-row-margin .pencil-correction`).
+- "box 25 on sp-sixty prints the dashcam's £36 and carries the register note".
+- "boxes 33 to 38 are present and empty with no key".
+- "the quarterly table's Year column equals S2's G5, G6 and G29".
+- "the forecast prints months traded as a count and totals C30 and C41".
+- "axe reports no serious or critical violation on the six views at the four viewports"
+  through the helper `books-layouts.browser.test.js` uses.
 
-Commands: `npx vitest run --fileParallelism=false app/test/taxi-form-layout.test.js 2>&1 | tee
-<scratch>/t15-unit.log`; `node scripts/build-books-bundle.mjs`; `npx playwright test
---project=browser-tests web/browser-tests/books-taxi-views.browser.test.js 2>&1 | tee
-<scratch>/t15.log`; `npm run test:browser 2>&1 | tee <scratch>/t15-browser.log`; `npm test`
-before the push. Commit before waiting.
+##### Commands
 
-Acceptance: both tests pass; `grep -c '"cell": "' app/data/hmrc/form-layouts/taxi.json` is 13;
-`grep -c "Profit & Loss Acc" .../products/taxi-views.js .../products/taxi-forms.js` counts only
-the `pl` constant and the `keyed` reads named above; no BST or SE spec changes; every view
-renders on kestrel (no register, no miles) without a console error.
+```
+npx vitest run --fileParallelism=false app/test/taxi-form-layout.test.js 2>&1 | tee <scratch>/t15-unit.log
+node scripts/build-books-bundle.mjs 2>&1 | tee <scratch>/t15-bundle.log
+npx playwright test --project=browser-tests web/browser-tests/books-taxi-views.browser.test.js 2>&1 | tee <scratch>/t15.log
+npm run test:browser 2>&1 | tee <scratch>/t15-browser.log
+npm test 2>&1 | tee <scratch>/t15-npm-test.log
+```
 
-Selectors T17 and T18 use, fixed here: `.vehicle-comparison[data-route]`,
-`.comparison-figure[data-figure]`, `.comparison-sentence`, `.comparison-route-cell`,
+Commit before waiting; wait with `timeout 900 bash -c 'while pgrep -f "playwright test"
+>/dev/null; do sleep 15; done'`. Keep the logs outside `target/`.
+
+##### Acceptance
+
+- Both tests pass, and every BST and SE spec is unchanged in count and outcome.
+- `grep -o '"cell": "' app/data/hmrc/form-layouts/taxi.json | wc -l` is 13.
+- `node -e` over the bundle output shows `books/assets/data/hmrc/form-layouts/taxi.json`
+  present after `build-books-bundle.mjs`.
+- `grep -c 'results\[' .../products/taxi-views.js .../products/taxi-forms.js` counts only the
+  `keyed`, `v` and `text` locals and the computation's own cell reads.
+- No `.sheet-placement` element is a child of a `.form-row-margin` in either module's source.
+- `git diff --stat main -- web/.../books` names `taxi-views.js`, `taxi-forms.js` and
+  `taxi.css` only.
+- The six views render on all three fixtures with no console error, including kestrel, which
+  has a register and no miles.
+
+##### Selectors T17 and T18 use, fixed here
+
+`.vehicle-comparison[data-route]`, `.comparison-figures`, `.comparison-figure[data-figure]`,
+`.comparison-figure .figure-value`, `.comparison-sentence`, `.comparison-route-cell`,
 `details.health-check`, `.readonly-input`, `table.vehicle-register tr[data-asset]`,
-`.form-row[data-line]`, `.working-sheet-ref`, `table.quarterly-table`, `.form-render .form-row
-.box-chip` (the box number), `.form-amount-box[data-r-key]`, `.box-parts`, `.form-row-margin
-.sheet-placement`.
+`table.quarterly-table`, `.form-render`, `.form-row[data-line]`, `.form-row .box-chip`,
+`.form-row .working-sheet-ref`, `.form-amount-box[data-r-key]`, `.box-parts`,
+`.form-row .sheet-placement`, `.form-row .form-row-margin .pencil-correction`, `.view-lede`,
+`.view-loading`.
+
+##### Landing order and the plan's own text
+
+T15 lands after T6, T13, T19 and T14, and before T17 and T18. The Collisions section's "no
+shared file" line for `web/.../books/products/` stays true, but `taxi.css` is shared: T14
+writes it, T15 appends. The Waves table's "T14 with T15" becomes T14 then T15 on that one
+file; everything else in the two rows is still concurrent. The Views table's kestrel note and
+T18's "33 to 38 absent" read as this brief states them.
 
 ### T14 The takings view
 
