@@ -21,13 +21,13 @@ additional_rate = 0.45
 personal_allowance_taper_threshold = 100000
 
 [national_insurance]
-class2_rate = 3.50
+class2_rate = 3.65
 class4_lower_rate = 0.06
 class4_lower_limit = 12570
 class4_upper_rate = 0.02
 class4_upper_limit = 50270
-class2_weekly_rate = 3.50
-class2_small_profits_threshold = 6845
+class2_weekly_rate = 3.65
+class2_small_profits_threshold = 7105
 
 [capital_allowances]
 annual_investment_allowance = 1.00
