@@ -9,8 +9,10 @@
 // form export.js compares by -- rather than against itself.
 
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
+import { execFileSync } from "child_process";
+import { mkdtempSync, readdirSync, readFileSync } from "fs";
+import { tmpdir } from "os";
+import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import JSZip from "jszip";
 import {
@@ -23,19 +25,50 @@ import {
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,
   BstAnchorError,
+  PackagePartError,
+  ProductNotAvailableError,
 } from "../lib/books-interchange.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import * as bst from "../products/bst.js";
+import * as taxi from "../products/taxi.js";
+import * as se from "../products/se.js";
+import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const BST_XLSX_PATH = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
 const BST_XLSX_BYTES = readFileSync(BST_XLSX_PATH);
+const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+const LTD_PACKAGE_DIR = resolve(ROOT, "examples", "ltd-latest");
+const SE_TEMPLATE_DIR = resolve(ROOT, "app", "templates", "se");
+const EVERY_PRODUCT = { bst, taxi, se, ltd };
 
 async function zipOf(entries) {
   const zip = new JSZip();
   for (const [name, content] of Object.entries(entries)) zip.file(name, content);
+  return zip.generateAsync({ type: "uint8array" });
+}
+
+// A package zip the way a customer's own download ships: every workbook in
+// the directory, optionally under the package's own folder name.
+async function packageZipOf(dir, folder) {
+  const entries = {};
+  for (const name of readdirSync(dir).filter((file) => file.endsWith(".xlsx"))) {
+    entries[folder ? `${folder}/${name}` : name] = readFileSync(resolve(dir, name));
+  }
+  return zipOf(entries);
+}
+
+// One sheet renamed in a workbook's own xl/workbook.xml, which is where the
+// product sniff reads the sheet list from.
+async function withSheetRenamed(bytes, from, to) {
+  const escape = (name) => name.replace(/&/g, "&amp;");
+  const zip = await JSZip.loadAsync(bytes);
+  const workbookXml = await zip.file("xl/workbook.xml").async("string");
+  const patched = workbookXml.replace(`name="${escape(from)}"`, `name="${escape(to)}"`);
+  expect(patched, `sheet "${from}" is on this workbook`).not.toBe(workbookXml);
+  zip.file("xl/workbook.xml", patched);
   return zip.generateAsync({ type: "uint8array" });
 }
 
@@ -52,6 +85,15 @@ const referenceDiyaGlZipBytes = await writeDiyaGlZip({
   report: referenceReport,
   overtyped: workbookSource.overtyped,
 });
+
+// The reference book with one field changed: which product it says it is.
+// Everything else about it stays the book every other test here reads.
+function bookDeclaring(schemaName) {
+  return {
+    ...workbookSource.book,
+    entityInformation: { ...workbookSource.book.entityInformation, "diya-gl:product": schemaName },
+  };
+}
 
 function expectSameBook(source) {
   expect(canonicalBookToml(source.book)).toBe(referenceBookToml);
@@ -109,8 +151,20 @@ describe("readBookSource: every kind reaches the same D", () => {
     expect(source.kind).toBe("workbook");
     expectSameBook(source);
     expect(source.overtyped).toBeDefined();
-    expect(source.workbookBytes).toBeInstanceOf(Uint8Array);
+    expect(source.product).toBe("bst");
   });
+
+  it("returns the workbook set for a workbook and for a package set, and none for a diya-gl zip", async () => {
+    const workbook = await readBookSource(BST_XLSX_BYTES, "GB_Accounts_Basic_Sole_Trader.xlsx");
+    expect(workbook.workbookSet.names()).toEqual(["GB_Accounts_Basic_Sole_Trader.xlsx"]);
+
+    const packageSet = await readBookSource(await packageZipOf(SE_PACKAGE_DIR), "se.zip", { products: EVERY_PRODUCT });
+    expect(packageSet.workbookSet.names()).toContain("Financialaccounts.xlsx");
+    expect(packageSet.workbookSet.names()).toContain("Bank.xlsx");
+
+    const diyaGlZip = await readBookSource(referenceDiyaGlZipBytes, "book-diya-gl.zip");
+    expect(diyaGlZip.workbookSet).toBeUndefined();
+  }, 60000);
 
   it("reads a package zip to the same D as the workbook inside it", async () => {
     const bytes = await zipOf({ "GB_Accounts_Basic_Sole_Trader.xlsx": BST_XLSX_BYTES });
@@ -173,6 +227,85 @@ describe("readBookSource: every kind reaches the same D", () => {
 
     await expect(readBookSource(badBytes, "renamed.xlsx")).rejects.toThrow(BstAnchorError);
     await expect(readBookSource(badBytes, "renamed.xlsx")).rejects.toThrow(/sheet "SalesApr" not found/);
+  });
+});
+
+describe("a multi-file package, sniffed by the files and sheets it carries", () => {
+  it("detects an SE package zip as a package set", async () => {
+    expect(await detectBookSource(await packageZipOf(SE_PACKAGE_DIR), "se.zip")).toBe("package-set");
+  });
+
+  it("detects it the same way when its entries sit under the package's directory", async () => {
+    const bytes = await packageZipOf(SE_PACKAGE_DIR, "GB_Accounts_Self_Employed");
+    expect(await detectBookSource(bytes, "se.zip")).toBe("package-set");
+  });
+
+  it("reads an SE package zip to the same D as export.js --package se --source-dir", async () => {
+    const outputDir = mkdtempSync(join(tmpdir(), "books-interchange-se-"));
+    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--source-dir", SE_PACKAGE_DIR, "--output-dir", outputDir], {
+      cwd: ROOT,
+      stdio: "pipe",
+    });
+
+    const source = await readBookSource(await packageZipOf(SE_PACKAGE_DIR), "se.zip", { products: EVERY_PRODUCT });
+    expect(source.kind).toBe("package-set");
+    expect(source.product).toBe("se");
+    expect(canonicalBookToml(source.book)).toBe(readFileSync(join(outputDir, "book.toml"), "utf-8"));
+    expect(canonicalLinesJsonl(source.lines)).toBe(readFileSync(join(outputDir, "lines.jsonl"), "utf-8"));
+  }, 120000);
+
+  it("sniffs the product from the files a set carries", async () => {
+    const seSource = await readBookSource(await packageZipOf(SE_PACKAGE_DIR), "se.zip", { products: EVERY_PRODUCT });
+    expect(seSource.product).toBe("se");
+
+    const ltdSource = await readBookSource(await packageZipOf(LTD_PACKAGE_DIR), "ltd.zip", { products: EVERY_PRODUCT });
+    expect(ltdSource.product).toBe("ltd");
+
+    const bstSource = await readBookSource(BST_XLSX_BYTES, "bst.xlsx", { products: EVERY_PRODUCT });
+    expect(bstSource.product).toBe("bst");
+  }, 120000);
+
+  it("refuses a lone hub workbook, naming the package", async () => {
+    const bytes = readFileSync(resolve(SE_TEMPLATE_DIR, "Financialaccounts.xlsx"));
+    await expect(readBookSource(bytes, "Financialaccounts.xlsx", { products: EVERY_PRODUCT })).rejects.toThrow(PackagePartError);
+    await expect(readBookSource(bytes, "Financialaccounts.xlsx", { products: EVERY_PRODUCT })).rejects.toThrow(
+      '"Financialaccounts.xlsx" is the hub workbook of a nine-file Self Employed package; upload the package zip.',
+    );
+  });
+
+  it("refuses a zip whose only workbook is Payslips.xlsx, naming the payslip package", async () => {
+    const bytes = await zipOf({ "Payslips.xlsx": readFileSync(resolve(SE_TEMPLATE_DIR, "Payslips.xlsx")) });
+    expect(await detectBookSource(bytes, "payslips.zip")).toBe("package-zip");
+    await expect(readBookSource(bytes, "payslips.zip", { products: EVERY_PRODUCT })).rejects.toThrow(
+      '"Payslips.xlsx" is the payslips workbook of a package, or of the Payslip package; upload the package zip.',
+    );
+  });
+
+  it("refuses a bank book, which carries twelve month tabs and nothing else", async () => {
+    const bytes = readFileSync(resolve(SE_TEMPLATE_DIR, "Bank.xlsx"));
+    await expect(readBookSource(bytes, "Bank.xlsx", { products: EVERY_PRODUCT })).rejects.toThrow(
+      '"Bank.xlsx" is a bank or cash book of a multi-file package; upload the package zip.',
+    );
+  });
+
+  it("refuses an SE package when only the Basic Sole Trader module is available", async () => {
+    const bytes = await packageZipOf(SE_PACKAGE_DIR);
+    await expect(readBookSource(bytes, "se.zip")).rejects.toThrow(ProductNotAvailableError);
+    await expect(readBookSource(bytes, "se.zip")).rejects.toThrow(
+      '"se.zip" is a Self Employed package; this build reads Basic Sole Trader books only.',
+    );
+  }, 60000);
+
+  it("reads the sheet list, not the file name", async () => {
+    const hub = readFileSync(resolve(SE_TEMPLATE_DIR, "Financialaccounts.xlsx"));
+    for (const sheet of ["Business Details", "SE Full", "Profit & Loss Account", "Wagesinterface", "StockControl"]) {
+      const patched = await withSheetRenamed(hub, sheet, `${sheet}x`);
+      const read = readBookSource(patched, "Financialaccounts.xlsx", { products: EVERY_PRODUCT });
+      await expect(read, `renaming "${sheet}" takes the hub out of the package-part list`).rejects.toThrow(BstAnchorError);
+    }
+
+    // Every sheet left alone, the same bytes are still refused as the hub.
+    await expect(readBookSource(hub, "Financialaccounts.xlsx", { products: EVERY_PRODUCT })).rejects.toThrow(PackagePartError);
   });
 });
 
@@ -269,6 +402,66 @@ describe("writeBookJson: canonical key order, round trips to the same D", () => 
   it("keeps a date as a plain YYYY-MM-DD string, matching the TOML form's bare date", () => {
     const document = JSON.parse(referenceJson);
     expect(document.book.documentInfo.periodCoveredStart).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("writes the JSON product from the book's own field", () => {
+    const document = JSON.parse(writeBookJson(bookDeclaring("SelfEmployed"), workbookSource.lines));
+    expect(document.product).toBe("se");
+  });
+
+  it("refuses to write a book that declares no product, naming the field and the four names", () => {
+    const book = { ...workbookSource.book, entityInformation: { ...workbookSource.book.entityInformation } };
+    delete book.entityInformation["diya-gl:product"];
+    expect(() => writeBookJson(book, workbookSource.lines)).toThrow(/diya-gl:product/);
+    expect(() => writeBookJson(book, workbookSource.lines)).toThrow(/BasicSoleTrader, TaxiDriver, SelfEmployed, Company/);
+  });
+});
+
+describe("the JSON interchange's product, at all four ids", () => {
+  it("reads a JSON document at each product id it accepts", async () => {
+    for (const [id, schemaName] of Object.entries({ bst: "BasicSoleTrader", taxi: "TaxiDriver", se: "SelfEmployed", ltd: "Company" })) {
+      const text = writeBookJson(bookDeclaring(schemaName), workbookSource.lines);
+      expect(JSON.parse(text).product).toBe(id);
+      const source = await readBookSource(new TextEncoder().encode(text), `${id}.json`);
+      expect(source.kind).toBe("json");
+      expect(source.book.entityInformation["diya-gl:product"]).toBe(schemaName);
+    }
+  });
+
+  it("refuses a JSON document whose product disagrees with its book, naming both", async () => {
+    const document = JSON.parse(referenceJson);
+    document.product = "se";
+    const bytes = new TextEncoder().encode(JSON.stringify(document));
+
+    let caught;
+    try {
+      await readBookSource(bytes, "disagrees.json");
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(InvalidDiyaGlJsonError);
+    expect(caught.message).toContain('"se"');
+    expect(caught.message).toContain('"BasicSoleTrader"');
+  });
+
+  it("names the product a diya-gl zip's book declares", async () => {
+    const source = await readBookSource(referenceDiyaGlZipBytes, "book-diya-gl.zip");
+    expect(source.product).toBe("bst");
+  });
+
+  it("refuses a diya-gl zip whose book declares no product, naming the field", async () => {
+    const withoutProduct = referenceBookToml.replace(/^"diya-gl:product" = .*\n/m, "");
+    expect(withoutProduct).not.toBe(referenceBookToml);
+    const bytes = await zipOf({ "book.toml": withoutProduct, "lines.jsonl": referenceLinesJsonl });
+    await expect(readBookSource(bytes, "no-product.zip")).rejects.toThrow(InvalidDiyaGlBookError);
+    await expect(readBookSource(bytes, "no-product.zip")).rejects.toThrow(/diya-gl:product/);
+  });
+
+  it("refuses a JSON document at a product id no product carries", async () => {
+    const document = JSON.parse(referenceJson);
+    document.product = "payslip";
+    const bytes = new TextEncoder().encode(JSON.stringify(document));
+    await expect(readBookSource(bytes, "unknown-product.json")).rejects.toThrow(/expected "product" to be one of bst, taxi, se, ltd/);
   });
 });
 
