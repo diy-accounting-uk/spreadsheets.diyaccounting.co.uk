@@ -19,9 +19,7 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3's third run fails only the Taxi round-trip scorecard (one line lost where two same-day fares sum
-into one row by design, two coarse-code mismatches, and the book fields moved by T6); a fix is in flight on
-`.worktrees/spreadsheets/fix-taxi-scorecard`, after which generate-taxi runs a fourth time. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 runs a fourth time after the scorecard learned day-summed journals and the Taxi export stopped fabricating a VAT table. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. Main carries one stray code commit (`c1923823`, Taxi T20's fixture, committed by an
 agent in the primary tree); PR #61 reverts it on main and waits on the operator: merge to keep main
