@@ -62,10 +62,10 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("bst");
   });
 
-  test("the empty state's example buttons and the unknown-example message come from the manifest", async ({ page }) => {
+  test("the empty state's example buttons and the unknown-example message come from the product's example list", async ({ page }) => {
     await openEmptyPage(page);
     const buttonKeys = await page.locator("[data-example]").evaluateAll((buttons) => buttons.map((b) => b.getAttribute("data-example")));
-    const manifestKeys = await page.evaluate(() => window.DiyaGlBooksPage.manifest.examples.map((e) => e.key));
+    const manifestKeys = await page.evaluate(() => window.DiyaGlExamples[window.DiyaGlBooksPage.manifest.id].map((e) => e.key));
     expect(buttonKeys).toEqual(manifestKeys);
 
     await page.goto(bstUrl("?example=nope"), { waitUntil: "domcontentloaded" });
