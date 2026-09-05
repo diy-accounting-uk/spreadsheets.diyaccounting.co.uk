@@ -19,7 +19,6 @@ import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../../
 import { calculateFromDiyaGl } from "../../app/lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
-import * as bst from "../../app/products/bst.js";
 import { productModule } from "../../app/lib/products.js";
 
 const ROOT = process.cwd();
@@ -254,26 +253,30 @@ export function canonical(value, unit) {
  *   (book, lines) and returns the new lines array; typically one of
  *   diya-gl-edits.js's named edits, or book-checks.js's applyHelper wrapped
  *   to take (book, lines)
+ * @param {string} [product] - the package the edit is applied under; the
+ *   page's own buildReport (data.js) reads this off the loaded manifest's
+ *   own id, so a caller proving a Self Employed edit passes "se" here
  * @returns {{text: string, document: Object, book: Object, lines: Array}}
  */
-export function applyNamedEdit(bookDir, edit) {
+export function applyNamedEdit(bookDir, edit, product = "bst") {
   const resolvedBookDir = path.resolve(ROOT, bookDir);
   const { book, lines } = loadDiyaGlData(resolvedBookDir);
   const newLines = edit(book, lines);
+  const productMod = productModule(product);
 
-  const taxData = extractTaxDataFromBook(book, "bst");
-  const scenario = diyaGlToScenario(book, newLines, "bst");
-  const results = calculateFromDiyaGl(book, newLines, "bst", taxData, scenario);
+  const taxData = extractTaxDataFromBook(book, product);
+  const scenario = diyaGlToScenario(book, newLines, product);
+  const results = calculateFromDiyaGl(book, newLines, product, taxData, scenario);
   const mergedScenario = { ...scenario, ...scenario.expected };
   const periodEnd = book.documentInfo?.periodCoveredEnd;
   const yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
-  const checks = bst.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd);
+  const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd);
 
   const document = buildReportDocument({
-    packageName: "bst",
+    packageName: product,
     engine: "js",
     results,
-    productMod: bst,
+    productMod,
     scenario: mergedScenario,
     checks,
     scenarioName: book.documentInfo?.entriesComment,
