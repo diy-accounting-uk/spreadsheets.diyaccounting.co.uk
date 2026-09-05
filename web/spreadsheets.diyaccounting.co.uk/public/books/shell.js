@@ -379,6 +379,8 @@
   // value struck through in pencil beneath it, signed drift in the margin.
   // Once the book has been edited the same mark says "recalculated" -- the
   // difference is then the edit's own effect, not a reconciliation finding.
+  // A hub cache saved before the leaf it quotes changed says so instead, and
+  // names the leaf.
   function pencilCorrection(computed, asRead, opts) {
     opts = opts || {};
     var rKeyAttr = opts.rKeyAttr || "";
@@ -392,6 +394,7 @@
       '<span class="pencil-correction' +
       (opts.inMargin ? " in-margin" : "") +
       (opts.recalculated ? " is-recalculated" : "") +
+      (opts.state === "stale" ? " is-stale" : "") +
       '">' +
       '<span class="computed-value"' +
       rKeyAttr +
@@ -405,7 +408,11 @@
       sign +
       driftAbs +
       "</span>" +
-      (opts.recalculated ? '<span class="drift-tag">recalculated</span>' : "") +
+      (opts.state === "stale"
+        ? '<span class="drift-tag is-stale" title="' + esc(opts.leaf || "") + '">the hub was saved before this leaf changed</span>'
+        : opts.recalculated
+          ? '<span class="drift-tag">recalculated</span>'
+          : "") +
       "</span>"
     );
   }
@@ -463,6 +470,8 @@
     return pencilCorrection(driftEntry.computed, driftEntry.asRead, {
       inMargin: opts.inMargin,
       recalculated: driftEntry.recalculated,
+      state: driftEntry.state,
+      leaf: driftEntry.leaf,
       rKeyAttr: opts.rKeyAttr,
     });
   }

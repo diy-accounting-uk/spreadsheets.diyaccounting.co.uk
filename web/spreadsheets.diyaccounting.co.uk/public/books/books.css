@@ -1144,6 +1144,11 @@ td.entry-actions {
 .pencil-correction.is-recalculated .drift-amount {
   color: var(--pencil);
 }
+/* A hub cache saved before the leaf it quotes changed is stale, not drifted:
+   the same pencil grey, and the tag names the leaf. */
+.pencil-correction.is-stale .drift-amount {
+  color: var(--pencil);
+}
 
 /* ============================== Checks / inspector ======================= */
 
