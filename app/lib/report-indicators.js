@@ -416,8 +416,8 @@ function taxiIndicators(report) {
   const running = value(report, "Purchase Analysis", "Vehicle running costs for the year");
   const capitalised = value(report, "Purchase Analysis", "Vehicle purchases capitalised");
   const split = allowances(report, {
-    deductions: ["Annual investment allowance (box 22)", "Small-balance allowance (box 23)", "Other capital allowances (box 24)"],
-    additions: ["Balancing charges (box 25)", "Goods and services for own use (box 26)"],
+    deductions: ["Annual investment allowance", "Small-balance allowance", "Other capital allowances"],
+    additions: ["Balancing charges", "Goods and services for own use"],
   });
 
   const vehicleCosts = mileage
@@ -433,7 +433,7 @@ function taxiIndicators(report) {
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",
       fromLabel: "net profit",
-      to: "Net business profit (box 27)",
+      to: "Net business profit",
       toLabel: "net business profit",
     }),
     incomeTaxLine(report, "Draft Tax Calculation"),

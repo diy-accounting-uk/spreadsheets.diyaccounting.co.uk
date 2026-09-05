@@ -43,7 +43,7 @@ Trade: IT consultancy and software development
 | Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
 | Stock: calculated stock = opening + materials bought - materials sold | 6102 | 6102.00000000002 | +2.000888343900442e-11 | PASS |
 | Published balance sheet: trade debtors = closing debtors | 7900 | 7900 | 0 | PASS |
-| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts | 7900 | 7900 | 0 | PASS |
+| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered | 7900 | 7900 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
 | VAT: Q1-Q4 box 4 = Purchases VAT | 22498.708333333332 | 22498.70833333333 | -3.637978807091713e-12 | PASS |
 | VAT Q1: box 5 = box 3 - box 4 | 10896.125 | 10896.125 | 0 | PASS |
@@ -300,7 +300,7 @@ Trade: IT consultancy and software development
 | Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed | 10832.25 | 10832.25 | 0 | PASS |
 | Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | 0 | 0 | 0 | PASS |
 | Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 9135.789999999979 | 9135.78833333336 | -0.0016666666197124869 | PASS |
-| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC | 0 | 0 | 0 | PASS |
+| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC | 0 | 0 | 0 | PASS |
 | Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 29156.76675462949 | 29156.7667546295 | +1.0913936421275139e-11 | PASS |
 | Fixed assets: Schedule additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
@@ -1246,17 +1246,17 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,025 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 10,567.17 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 2,641.79 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 113,852.73 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 28,463.18 |
-| **Box 63: corporation tax** | 31,104.97 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 1,883.7 |
-| **Box 65: corporation tax net of marginal rate relief** | 29,221.27 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year | 2,025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 10,567.17 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax | 25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 2,641.79 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year | 2,026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 113,852.73 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax | 25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 28,463.18 |
+| **Box 430: corporation tax** | 31,104.97 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 1,883.7 |
+| **Box 440: corporation tax net of marginal rate relief** | 29,221.27 |
 
 ## Published P&L
 
@@ -1810,7 +1810,7 @@ Journal amounts include VAT at 20%.
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
 | K28 | **Profit Chargeable to CT** | 124419.897839506 | gl-cor:amount (ct600.box315) |
 | K35 | **Corporation Tax** | 29221.272927469 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 29156.7667546295 | gl-cor:taxAmount (ct600.box515) |
+| K39 | Tax Outstanding | 29156.7667546295 | gl-cor:taxAmount (ct600.box600) |
 | E5 |  | 46082 |  |
 | H5 |  | 46446 |  |
 | I15 |  | 52500 |  |
@@ -1838,17 +1838,17 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C126 | Box 43: financial year | 2025 | gl-cor:period (ct600.box43) |
-| N126 | Box 44: amount of profit | 10567.1694055471 | gl-cor:amount (ct600.box44) |
-| AA126 | Box 45: rate of tax | 25 | gl-cor:rate (ct600.box45) |
-| AJ126 | Box 46: tax | 2641.79235138677 | gl-cor:taxAmount (ct600.box46) |
-| C128 | Box 53: financial year | 2026 | gl-cor:period (ct600.box53) |
-| N128 | Box 54: amount of profit | 113852.728433959 | gl-cor:amount (ct600.box54) |
-| AA128 | Box 55: rate of tax | 25 | gl-cor:rate (ct600.box55) |
-| AJ128 | Box 56: tax | 28463.1821084897 | gl-cor:taxAmount (ct600.box56) |
-| AJ131 | **Box 63: corporation tax** | 31104.9744598764 | gl-cor:taxAmount (ct600.box63) |
-| Y133 | Box 64: marginal rate relief | 1883.70153240741 | gl-cor:taxAmount (ct600.box64) |
-| Y135 | **Box 65: corporation tax net of marginal rate relief** | 29221.272927469 | gl-cor:taxAmount (ct600.box65) |
+| C126 | Box 330: financial year | 2025 | gl-cor:period (ct600.box330) |
+| N126 | Box 335: amount of profit | 10567.1694055471 | gl-cor:amount (ct600.box335) |
+| AA126 | Box 340: rate of tax | 25 | gl-cor:rate (ct600.box340) |
+| AJ126 | Box 345: tax | 2641.79235138677 | gl-cor:taxAmount (ct600.box345) |
+| C128 | Box 380: financial year | 2026 | gl-cor:period (ct600.box380) |
+| N128 | Box 385: amount of profit | 113852.728433959 | gl-cor:amount (ct600.box385) |
+| AA128 | Box 390: rate of tax | 25 | gl-cor:rate (ct600.box390) |
+| AJ128 | Box 395: tax | 28463.1821084897 | gl-cor:taxAmount (ct600.box395) |
+| AJ131 | **Box 430: corporation tax** | 31104.9744598764 | gl-cor:taxAmount (ct600.box430) |
+| Y133 | Box 435: marginal rate relief | 1883.70153240741 | gl-cor:taxAmount (ct600.box435) |
+| Y135 | **Box 440: corporation tax net of marginal rate relief** | 29221.272927469 | gl-cor:taxAmount (ct600.box440) |
 | B33 |  | 46082 |  |
 | M33 |  | 46446 |  |
 | W137 |  | 23.4860126353445 |  |

@@ -456,8 +456,16 @@ export function diyaGlToScenario(book, lines, product) {
       taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
       taxCodeByEmployee.set(employee.name, employee.taxCode);
     }
+    // Sorted by entryNumber, the same key buildPayroll (scenario-extractor.js)
+    // sorts a month's entries by -- a book read back from a package carries
+    // no entryNumber the account-code canonicalisation could have reordered
+    // by, so this is a no-op there and only matters reading a diya-gl book
+    // straight off disk.
+    const sortedPayrollLines = [...payrollLines].sort((a, b) =>
+      a.entryNumber < b.entryNumber ? -1 : a.entryNumber > b.entryNumber ? 1 : 0,
+    );
     const payrollByMonth = {};
-    for (const line of payrollLines) {
+    for (const line of sortedPayrollLines) {
       const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
       if (!payrollByMonth[month]) payrollByMonth[month] = [];
       payrollByMonth[month].push({
@@ -617,6 +625,9 @@ export function extractTaxDataFromBook(book, product) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
+  if (ni.class2WeeklyRate === undefined) {
+    throw new Error("book.toml has no tax.nationalInsurance.class2WeeklyRate, so its Class 2 NI rate is unknown");
+  }
   const ca = tax.capitalAllowances || {};
   const mi = tax.mileage || {};
   const ct = tax.corporationTax || {};
@@ -639,8 +650,8 @@ export function extractTaxDataFromBook(book, product) {
       // employees at all (a sole trader with no payroll) declares only
       // these and none of the class1* employer/employee fields, so the
       // class1* fields are never a fallback for them.
-      class2_rate: ni.class2WeeklyRate ?? 0,
-      class2_weekly_rate: ni.class2WeeklyRate ?? 0,
+      class2_rate: ni.class2WeeklyRate,
+      class2_weekly_rate: ni.class2WeeklyRate,
       class2_small_profits_threshold: ni.class2SmallProfitsThreshold,
       class4_lower_rate: ni.class4MainRate ?? 0.06,
       class4_lower_limit: ni.class4LowerProfits ?? 12570,
