@@ -25,6 +25,7 @@ import { build } from "esbuild";
 import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
 import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -124,9 +125,10 @@ export default Ajv2020Stub;`,
 let EXAMPLE_BOOKS = [];
 
 // The files the engine reads that are not the book itself: the tax year data
-// the save path applies, the BST template with its meta, and the generated
-// examples.js. The two v2 schemas are left where they are — the site already
-// publishes them at /schema/, which is the root the resource loader names them under.
+// the save path applies, each product's templates with their meta, and the
+// generated examples.js. The two v2 schemas are left where they are — the site
+// already publishes them at /schema/, which is the root the resource loader names
+// them under.
 function generateExamplesJs() {
   const examplesJson = JSON.parse(readFileSync(resolve(ROOT, "scripts", "example-books.json"), "utf8"));
   const examplesJs = `window.DiyaGlExamples = ${JSON.stringify(examplesJson)};`;
@@ -156,6 +158,15 @@ function copyRuntimeAssets() {
     cpSync(resolve(ROOT, "app", "templates", "bst", name), resolve(templatesOut, "bst", name));
   }
 
+  // The Self Employed set: nine workbooks and the meta that names them, 3.4
+  // MB the page reads only when a save asks for a template, not at load.
+  // The names come off meta.toml so the two cannot drift apart.
+  const seDir = resolve(ROOT, "app", "templates", "se");
+  const seMeta = parseTOML(readFileSync(resolve(seDir, "meta.toml"), "utf8"));
+  const seFiles = ["meta.toml", ...seMeta.template.files];
+  mkdirSync(resolve(templatesOut, "se"), { recursive: true });
+  for (const name of seFiles) cpSync(resolve(seDir, name), resolve(templatesOut, "se", name));
+
   // Example books, copied under the path the resource loader names them by:
   // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
   // one; an example the page offers is added to this list.
@@ -177,7 +188,7 @@ function copyRuntimeAssets() {
   mkdirSync(vendorOut, { recursive: true });
   cpSync(resolve(ROOT, "node_modules", "jszip", "dist", "jszip.min.js"), resolve(vendorOut, "jszip.min.js"));
 
-  return { yearFiles: yearFiles.length, examples: EXAMPLE_BOOKS.length };
+  return { yearFiles: yearFiles.length, seFiles: seFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
 const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
@@ -215,7 +226,9 @@ async function main() {
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
-  console.log(`  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.examples} example book(s)`);
+  console.log(
+    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, ${assets.examples} example book(s)`,
+  );
 }
 
 await main();

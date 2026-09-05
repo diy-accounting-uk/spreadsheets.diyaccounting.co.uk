@@ -19,11 +19,11 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 runs a fifth time: the scorecard passes on every year end; the judge indicator now reads a label with or without the box number the Taxi sheet prints after it. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The batch's books page no longer boots fully (94 of 168 browser tests red at the head after S7, S8
+and S4 merged; each passed alone): a fix is in flight on `.worktrees/spreadsheets/verify`, branch
+`claude/wt-fix-page-boot`, before any further page row lands. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
-packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. Main carries one stray code commit (`c1923823`, Taxi T20's fixture, committed by an
-agent in the primary tree); PR #61 reverts it on main and waits on the operator: merge to keep main
-clear of the batch until PR #60 lands, close to keep it. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
+packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. PR #61 (the stray Taxi T20 commit on main) merged 2026-09-05; the batch keeps the change. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
 `ready-to-start` with a worktree named have a fresh worktree and no agent yet; merge the batch
 branch into any worktree before dispatching. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
@@ -34,7 +34,6 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-T1 | T1 SE anchor table and input-cell predicate | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t1` |
 | SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t2` |
 | SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T2 | blocked-to-start | Sonnet, wave 7 |
 | SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t7` |
@@ -53,8 +52,8 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13, LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T14, TX-T15, TX-T16, TX-H1, SE-T12 | blocked-to-start | Sonnet, wave 9 |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
-| TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | — | ready-to-start | R3 (generate-taxi, skip-commit) running on the branch |
-| LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T1 | blocked-to-start | Sonnet, wave 6 |
+| TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | — | ready-to-start | all four generate gates green on the branch; merge PR #60 and refresh |
+| LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 6; Ltd held by the operator |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T2 | blocked-to-start | Opus, wave 7 |
 | LT-T6b | Ltd T6 settlement helpers proved on Ltd books | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 7 |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 6 |
