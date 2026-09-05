@@ -570,6 +570,29 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   deferment note the form deleted; both took the mechanical +1 and carry stale captions (board row
   SE-T16b). BST and Taxi templates print the old numbers (board row TX-T23).
 
+- T11 `5097f2f2` to `2c8b81b4`, merged 2026-09-05: `books-se-equivalence.browser.test.js` (17 cases: A1,
+  A2, A3, A4 ×3 over all 16 views, A6 ×3, A7, A8 ×3 with the 576 link-cache cells and the
+  `externalLink2.xml` breakability proof, A9 ×4), `books-se-formats.browser.test.js` (6: E3 as page
+  to package to `export.js --file` to page to package, E4, E5), `SCENARIOS_SE`, `s3Se`, `s3SeYearEnd`,
+  `s2ForPackage` taking a product and deriving `--years` from the product's `taxRegime`, two
+  `playwright.config.js` lines. 199 browser tests, the two stale-package A3s red. The SE A3 names
+  104 keys: `Admin!L16` and the Class 2 section and 50 `Payslips.xlsx` keys clear on the generate-se
+  refresh; 46 `Vat.xlsx` keys, five `section/vat-returns/` keys and the half-penny
+  `taxable-income` do not, because `se-latest` is stamped 2027-04-05 while its transactions keep
+  the master's 2025-26 dates (board row SE-T18). E3 as briefed (package to page to package) needs
+  the SE upload, which the page still refuses, and an SE workbook carries no `entryNumber`,
+  `documentType` or `taxCode` columns, so a package extraction never reproduces `lines.jsonl`
+  byte for byte. E4's bare `Financialaccounts.xlsx` mounts the BST manifest and fails its anchor
+  guard, not the package message; only the hub plus `Bank.xlsx` reaches it. A7's drift and
+  stale-cache proofs and T7's `drift.js` unit read for SE's element rows wait on the upload (board
+  row SE-T19). Source defects found (board row SE-T17): `diya-gl-loader.js`
+  `extractTaxDataFromBook` gives only `ltd` a depreciation table, so `report.js --package se --data`
+  without `--years` computes zero depreciation (30 keys move; the suites pass `--years`);
+  `extract-scenarios.js:401` rounds `total_motor_net` to whole pounds (6434 against B25's 6434.25,
+  so A6 leaves it out); `shell.js` `fmtMoney` can print a penny under `canonicalForUnit`
+  (`Profit Forecast!C41` 119,957.52 against .53); `Payslips.xlsx!Payment!B4:C15` carry unit `money`
+  for day serials.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row
