@@ -432,6 +432,9 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T17 `f86b224f`, merged 2026-09-05: `se-workbook.test.js` compares a save against the generate path
+  plus the same link-cache refresh, and the two "leaves out" cases compare every part except the
+  link caches; no writer defect.
 - T2 `234f4f5e`, `af692871`, `74474967`, `40ba13bb`, merged 2026-09-05: the SE writer leaves out an
   entry with no cell (each former throw covered by a T5 rule), the bundle carries the ten SE
   templates, the saved nine-file package proved against `--data` and, under LibreOffice, against a
