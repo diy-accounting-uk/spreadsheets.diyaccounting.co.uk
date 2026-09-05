@@ -254,6 +254,27 @@ function assetSaleLines(lines) {
   });
 }
 
+// The assets brought forward: the ones the book declares, less any the
+// year's own purchase lines already claim by asset id. An asset bought in
+// the year reaches the Schedule through its purchase line and the New
+// Plant & Machinery block, so counting it against a class block as well
+// would enter it on the sheet twice (diya-gl-loader.js does the same).
+function assetsBroughtForward(book, lines) {
+  const purchased = new Set(
+    lines
+      .filter(function (line) {
+        return line.sourceJournalID === "purchases";
+      })
+      .map(function (line) {
+        return line["diya-gl:assetID"];
+      })
+      .filter(Boolean),
+  );
+  return ((book && book.fixedAssets) || []).filter(function (asset) {
+    return !purchased.has(asset.assetID);
+  });
+}
+
 // The Schedule rows the assets brought forward take up, class block by
 // class block, and the assets that find no row in their own block.
 function existingAssetRows(assets) {
@@ -388,7 +409,7 @@ export const SE_CHECK_SPECS = [
     id: "book-fixed-asset-rows-fit",
     label: "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
     offenders: function (ctx) {
-      const assets = (ctx.book && ctx.book.fixedAssets) || [];
+      const assets = assetsBroughtForward(ctx.book, ctx.lines);
       const agreements = (ctx.book && ctx.book.hpAgreements) || [];
       const purchases = assetPurchaseLines(ctx.lines);
       const offenders = purchases.slice(SCHEDULE_NEW_ASSET_ROWS.length);

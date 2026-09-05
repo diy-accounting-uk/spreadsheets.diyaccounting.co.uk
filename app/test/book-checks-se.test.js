@@ -342,6 +342,32 @@ describe("each Self Employed rule is breakable by one crafted change, and only t
     expect(result.consequence).toContain("5 rows for assets bought in the year");
   });
 
+  it("book-fixed-asset-rows-fit: a motor block that fills up, counting only the assets brought forward", () => {
+    function withMotorAssets(count) {
+      const fixture = brickworkNonVat();
+      fixture.book = {
+        ...fixture.book,
+        fixedAssets: fixture.book.fixedAssets.concat(
+          Array.from({ length: count }, (unused, index) => ({
+            assetID: "FA-MOTOR-" + (index + 1),
+            class: "motorVehicles",
+            description: "Flatbed " + (index + 1),
+            cost: 9000,
+          })),
+        ),
+      };
+      return fixture;
+    }
+
+    // The book's own van is claimed by an "fa" purchase line, so it is on
+    // the Schedule's New block, not the motor block -- five more still fit.
+    assertOnlyTheseRulesFlip(brickworkNonVat(), withMotorAssets(5), [], "pass");
+    assertOnlyTheseRulesFlip(brickworkNonVat(), withMotorAssets(6), ["book-fixed-asset-rows-fit"], "fail");
+    expect(resultFor(runBookChecks(withMotorAssets(6)).results, "book-fixed-asset-rows-fit").offenders.map((o) => o.entryNumber)).toEqual([
+      "FA-MOTOR-6",
+    ]);
+  });
+
   it("book-vat-threshold: a sale that lifts turnover past the registration threshold", () => {
     const mutated = withLine({
       entryNumber: "BREAK-TURNOVER",
