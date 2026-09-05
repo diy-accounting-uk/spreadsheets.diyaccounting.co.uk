@@ -63,6 +63,12 @@ export {
 // book write the same report.json bytes.
 export { buildReportDocument, serializeReportDocument, slug, canonicalValue } from "./report-serializer.js";
 
+// The rounding a reconciliation run compares a figure at (money pre-rounded
+// at a working precision to absorb float noise, then to the penny; a rate
+// to 6 dp), so the page can format a value the same way rather than handing
+// the raw double to Intl.NumberFormat.
+export { canonicalForUnit } from "./money-canonical.js";
+
 // overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
 // that module resolves its template path from import.meta.url at the top
 // level, outside any function, so merely importing it throws under the
