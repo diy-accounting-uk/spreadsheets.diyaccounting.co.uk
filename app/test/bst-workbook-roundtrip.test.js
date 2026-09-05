@@ -17,6 +17,7 @@ import { tmpdir } from "os";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { saveWorkbook } from "../lib/product-workbook.js";
 import { extractBookFromFile, buildFileReportDocument } from "../bin/export.js";
+import * as bst from "../products/bst.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
