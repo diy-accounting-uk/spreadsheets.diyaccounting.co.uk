@@ -4,7 +4,7 @@
 // save-probe.js — the bare harness behind save-probe.html.
 //
 // Loads one book through the bundled engine, same as probe.js, then wires
-// two real buttons to save.js -- the exact module bst.js's save controls
+// two real buttons to save.js -- the exact module shell.js's save controls
 // call. Clicking either button runs the real save path: fetch the template
 // through the resource loader, write the book into it, hand the browser a
 // Blob to download. The result also lands on window.__DIYA_SAVE_RESULT__ so

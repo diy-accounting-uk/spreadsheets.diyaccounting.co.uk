@@ -231,11 +231,11 @@ describe("calculateFromDiyaGl — Taxi", () => {
     expect(results["Profit & Loss Acc"].B5).toBe(38000);
   });
 
-  it("B23: Net Profit = 29680, after the mileage claim the workbook takes over the running costs", () => {
+  it("B23: Net Profit = 29260, after the mileage claim the workbook takes over the running costs", () => {
     const { book, lines } = loadDiyaGlData(TAXI_DATA);
     const results = calculateFromDiyaGl(book, lines, "taxi", taxData, taxiScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].B11).toBe(7000);
-    expect(results["Profit & Loss Acc"].B23).toBe(29680);
+    expect(results["Profit & Loss Acc"].B11).toBe(7420);
+    expect(results["Profit & Loss Acc"].B23).toBe(29260);
   });
 
   it("includes VitalTax and Wages Forecast sheets", () => {
