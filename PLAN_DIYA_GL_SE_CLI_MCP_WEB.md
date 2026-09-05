@@ -432,6 +432,12 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T6 `731748c8`, `1ff365dd`, `2051dc53`, merged 2026-09-05: `addBankLine`, `settlementSuggestions`
+  and `applySettlement` (four kinds, matched as a multiset by counterparty and amount, entries
+  numbered `SET-0001` on), `EDITS` at seven; the twelve BrickWork drawings lines are numbered
+  TXN-0166 to TXN-0177 by the adaptation. `changeLineBankAccount` is not in `EDITS`; T14 registers
+  it. `REPOST_PREFERRED` has no SE entry, so an SE purchase settlement falls back to the chart's
+  first account.
 - S2 `cce2aaee`, `be4672a7`, merged 2026-09-05: `app/lib/anchors/run.js` (`validateAnchors`,
   `AnchorError`, `textAt`), `anchors/bst.js`, the four multi-file extractors recording the map,
   `overtypedCells(set, options)` with `options.templates` and `isInputCell(file, sheet, cell)`;

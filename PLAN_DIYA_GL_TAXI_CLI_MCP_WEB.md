@@ -478,6 +478,9 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 
 - For T9, from SE S2: the sidecar option is `options.templates`, not `templatePaths`.
 
+- T10 `58e2514d`, merged 2026-09-05: `app/lib/anchors/taxi.js` (33 sheets, 13 headers); the
+  single-workbook sniff tries BST then Taxi and rethrows BST's error when both fail.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

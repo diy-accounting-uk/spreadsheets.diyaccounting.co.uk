@@ -499,6 +499,18 @@ each rebasing on the last.
   `bookFieldCells("ltd")` in `xlsx-exporter.js` carries only the entity and stock entries, so T2
   builds Ltd's ledger and register entries there (add `app/lib/xlsx-exporter.js` to T2's files).
 
+- T20 `3e37396c`, `4321f20c`, `418228d4`, `ffc3315a` and part of `cd1193a7`, merged 2026-09-05: E37 and
+  D91 ungated; a balanced pair is not a duplicate; `results` reach `bookchecks.json` and the MCP
+  report; every declared dividend is summed; a BC bank line is the Ltd opening balance only on the
+  period's first day (`bankMonthTotals`), and `MnthP&L!B36` nets code X through the contra rows. The
+  counter leg for TXN-0155 came back out: coded BC it reaches the SE advanced subset as what SE's
+  Bank sheet reads as an opening balance, and twelve SE reconciliation checks disagreed with the
+  sheet by the leg. **T25** (Sonnet, wave 5) maps Ltd transfer codes to SE's in the sole-trader
+  adaptation first, then lands the leg; it also numbers the four VAT settlement twins and
+  `vatBroughtForward` (`extract-scenarios.js:637`, `:724`, `:746`), which reach `se-vat` and
+  `ltd-vat` unnumbered or with `TXN-0002` twice.
+- T23 and T6b are ready; no Ltd row starts until the operator lifts the hold.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
