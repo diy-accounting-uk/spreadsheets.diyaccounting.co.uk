@@ -452,6 +452,11 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   with no key, as SE T8 has them; `app/products/taxi.js` lands in the order T1, T4, T5, T6, T12,
   T13 (T13 adds 48 monthly `CELL_MAP` rows), and the H1 refresh runs again after T13, before T17.
 
+- T20 `c1923823`, merged 2026-09-05: TXN-0166 to TXN-0180 carry miles at the book's own 0.5284
+  miles per pound; SP Sixty's daily miles go from 20,000 to 21,680 and the mileage claim from
+  £7,000 to £7,420 in the calculator and the pinned tests. `taxi-sp-sixty.test.js` and the committed
+  SP Sixty reports move with it at R3.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
