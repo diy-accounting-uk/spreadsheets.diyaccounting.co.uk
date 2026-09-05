@@ -38,6 +38,7 @@ import {
   vatReturnCoverage,
 } from "../lib/report-generator.js";
 import { calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "se",
@@ -995,6 +996,7 @@ export const CELL_MAP = [
   ["Admin", "N12", "Higher Band Start",                    "",                                        "Admin (Generator Injected)", 0],
   ["Admin", "N13", "Higher Band End",                      "tax.incomeTax.additionalRateThreshold",   "Admin (Generator Injected)", 0],
   ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
+  ["Admin", "N16", "NI Class 2 Small Profits Threshold",   "tax.nationalInsurance.class2SmallProfitsThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
@@ -1391,7 +1393,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
   }
   for (const [section, captions] of Object.entries(SECTION_CAPTIONS)) {
     const rows = sectionMap.get(section);
@@ -1647,11 +1649,14 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit = "money") {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  // A nil that arrived by negation carries a sign bit and prints as "-0",
-  // which reads as a defect in a statement.
-  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") {
+    const canonical = Number(canonicalForUnit(v, unit));
+    // A nil that arrived by negation carries a sign bit and prints as "-0",
+    // which reads as a defect in a statement.
+    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
   return String(v);
 }
 
@@ -3103,6 +3108,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
     check("Admin: Higher Band End = tax data", admin.N13, it.higher_band_end);
     check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
+    check("Admin: NI Class 2 Small Profits Threshold = tax data", admin.N16, ni.class2_small_profits_threshold);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
     check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);

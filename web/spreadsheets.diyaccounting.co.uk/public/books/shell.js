@@ -277,7 +277,7 @@
 
   /* The reconciliation compares a money figure pre-rounded at a working
      precision to absorb float noise and then rounded half up to the penny
-     (money-canonical.js's canonicalForUnit, reexported off the engine
+     (canonical-report-value.js's canonicalForUnit, reexported off the engine
      bundle), not the raw double Intl.NumberFormat would otherwise round on
      its own: the two can disagree by a penny on a value sitting right on
      the rounding boundary. */
@@ -1261,6 +1261,11 @@
   function bookWithField(book, path, value) {
     var next = JSON.parse(JSON.stringify(book));
     var segments = path.split(".");
+    for (var s = 0; s < segments.length; s++) {
+      if (segments[s] === "__proto__" || segments[s] === "constructor" || segments[s] === "prototype") {
+        throw new Error("A book field path never names " + segments[s] + ": " + path);
+      }
+    }
     var target = next;
     for (var i = 0; i < segments.length - 1; i++) {
       if (!target[segments[i]]) target[segments[i]] = {};

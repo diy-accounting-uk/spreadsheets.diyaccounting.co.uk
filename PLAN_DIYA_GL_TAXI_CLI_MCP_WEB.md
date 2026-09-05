@@ -554,6 +554,32 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   mileage route only, so sp-sixty carries three notes and basic and kestrel two; miles print with
   `toLocaleString("en-GB")`. The SA103S render fetches its layout on first render, nothing at load.
 
+- TX-T23 `f1f6ea1a`, `524db88f`, merged 2026-09-05: `bst-excel.xlsx` and `taxi-excel.xlsx` share one
+  `SE Short` layout (`sheet3.xml`); 30 box cells +1 and 13 captions through the shared strings, two
+  parts per template changed, the rest byte-identical. `CELL_MAP` and bridge labels in `bst.js` and
+  `taxi.js`, `taxiIndicators` looking labels up by name, the Taxi check name (box 30), the pinned
+  tests, `CONTEXT_TAXI.md`'s SE Short table, `bst-se-short-sheet.test.js` and
+  `taxi-se-short-sheet.test.js` reading the XML. `form-layouts/taxi.json` unchanged. generate-bst and
+  generate-taxi re-dispatched on the branch. Found: both templates still gate the nine expense
+  boxes and the `A33`/`A41` captions on a `30000` literal while `Admin!F26` holds 90,000, and
+  `calculators/bst.js:293` gates on the same literal (board row TX-T24, with the L111/L116 tick
+  captions once SE-T16b settles the text); the BST page's `SA103S_BOXES` in `products/bst.js`
+  hardcodes a box scheme matching no form, the BST CONTEXT's SA103S tables point D71 and D99 at the
+  wrong boxes, and the `D106` comments call it net business profit (board row BST-T17).
+
+- TX-T24 `05d3ae64`, `e173b3fa`, `8aa340f0` on `claude/wt-taxi-t24`, not yet merged (2026-09-05): both
+  templates' nine expense cells and `A41` gate on `Admin!F26`; box 36's caption reads the year from
+  `Admin!G2` and the threshold from a new Admin cell (`N17` BST, `N16` Taxi) the generators write
+  from `class2_small_profits_threshold`; box 37 takes the Class 4 exemption text; `calculators/bst.js`
+  gates on `Admin.F26`; `xlsx-exporter.js` `taxTablesFromRateData` reads the threshold back; nine
+  example books' `class2SmallProfitsThreshold` 6725 to 6845 with subsets regenerated. 1294 Node
+  tests green; 14 red on the committed BST and Taxi packages, whose `N111` is a literal where the
+  template now has a formula (board row TX-T25 makes those tests build from the template). Found:
+  `se-2026-2027.toml`'s Class 2 figures against HMRC 2026/27 (SE-T22).
+- PR #60 fixes, merged 2026-09-05: `render-unrepresentable/taxi.json` and `bst.json` follow the
+  bridge label renumber; `takeSourceCell` links a section row to its cell at the penny, so the
+  sheet's `417.300000000001` no longer leaves an Excel-only row for the roundtrip scorecard.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

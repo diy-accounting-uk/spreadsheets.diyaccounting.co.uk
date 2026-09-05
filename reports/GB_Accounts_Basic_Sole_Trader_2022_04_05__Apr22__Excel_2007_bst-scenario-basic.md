@@ -108,15 +108,15 @@ Trade: IT consultancy and software development
 | Line | Cell | Amount |
 |------|------|-------:|
 | Net profit per the profit and loss account | Profit & Loss Acc!C24 | 265,508 |
-| Add other business income (box 9) | SE Short!O38 | 0 |
-| Less net loss for the year (box 21) | SE Short!O71 | 0 |
-| Less annual investment allowance (box 22) | SE Short!D80 | -39,000 |
-| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
-| Less other capital allowances (box 24) | SE Short!O80 | 0 |
-| Add balancing charges (box 25) | SE Short!O85 | 0 |
-| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
-| Add other business income (box 29) | SE Short!O99 | 0 |
-| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| Add other business income (box 10) | SE Short!O38 | 0 |
+| Less net loss for the year (box 22) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 23) | SE Short!D80 | -39,000 |
+| Less small-balance allowance (box 24) | SE Short!D85 | 0 |
+| Less other capital allowances (box 25) | SE Short!O80 | 0 |
+| Add balancing charges (box 26) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 27) | SE Short!D94 | 0 |
+| Add other business income (box 30) | SE Short!O99 | 0 |
+| Less loss brought forward (box 29) | SE Short!O94 | 0 |
 | **Tax profit the bridge computes** | | **226,508** |
 | Tax profit the sheet carries | Income Tax!E5 | 226,508 |
 | **Residue** | | **0** |
@@ -207,17 +207,17 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 69,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | 1,140 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10) | — |
 | **Net profit/loss** | 265,508 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 39,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 226,508 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30) | 0 |
 | **Net profit for tax calc** | 226,508 |
 
 ## Stock
@@ -392,15 +392,15 @@ Trade: IT consultancy and software development
 | D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
 | D64 | Repairs & maintenance | 1140 | gl-cor:amount (sa103s.repairs) |
 | D71 | **Net profit/loss** | 265508 | gl-cor:amount (sa103s.netProfit) |
-| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
+| O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 39000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 226508 | gl-cor:amount (sa103s.taxableProfit) |
-| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
-| O99 | Other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
+| O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 226508 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock

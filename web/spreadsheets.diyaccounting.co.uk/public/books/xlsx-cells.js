@@ -158,7 +158,9 @@
   // .xlsx entry, addressed by the last segment of its path whatever case it
   // arrived in, and a macOS re-zip's __MACOSX entries and ._ shadows are not
   // workbooks. The page cannot import app/lib, so they are stated twice; the
-  // browser test reads one real package through both.
+  // browser test reads one real package through both. So is the name a
+  // workbook uploaded on its own is addressed by, which the engine's
+  // uploadedWorkbookName settles the same way.
   function workbookBaseName(entryPath) {
     var segments = entryPath.split("/");
     return segments[segments.length - 1];
@@ -172,24 +174,22 @@
     return /\.xlsx$/i.test(base);
   }
 
-  /**
-   * Every workbook in an uploaded package zip, addressed by file name. Each
-   * one opens on the first question asked of it and stays open, so a page
-   * that reads two cells off the hub decompresses nothing else.
-   * @param {Uint8Array} zipBytes
-   * @returns {Promise<{names: () => string[], has: (file: string) => boolean, hasSheet: (file: string, sheet: string) => Promise<boolean>, readCell: (file: string, sheet: string, cellRef: string) => Promise<*>, zip: (file: string) => Promise<Object>}>}
-   */
-  async function openWorkbookSet(zipBytes) {
-    var zip = await global.JSZip.loadAsync(zipBytes);
+  // One set over however many workbooks a source holds, in the shape
+  // app/lib/workbook-set.js keeps (names, has, bytes, zip) plus the two cell
+  // readers the drift layer needs. The engine's own sniff, anchor guard and
+  // extractors take a set, so an upload opens exactly one of these and every
+  // reader page-side and engine-side asks it the same questions. Each
+  // workbook opens on the first question asked of it and stays open, so a
+  // page that reads two cells off the hub decompresses nothing else.
+  function workbookSet(sources) {
     var pathByName = new Map();
-    Object.keys(zip.files).forEach(function (entryPath) {
-      if (zip.files[entryPath].dir || !isWorkbookEntry(entryPath)) return;
-      pathByName.set(workbookBaseName(entryPath).toLowerCase(), entryPath);
+    sources.forEach(function (source) {
+      pathByName.set(source.name.toLowerCase(), source);
     });
 
     var names = [];
-    pathByName.forEach(function (entryPath) {
-      names.push(workbookBaseName(entryPath));
+    pathByName.forEach(function (source) {
+      names.push(source.name);
     });
     names.sort(function (left, right) {
       var a = left.toLowerCase();
@@ -197,36 +197,41 @@
       return a < b ? -1 : a > b ? 1 : 0;
     });
 
-    var cellsByName = new Map();
-    function cellsFor(file) {
-      var key = workbookBaseName(file).toLowerCase();
-      var entryPath = pathByName.get(key);
-      if (!entryPath) return null;
-      if (!cellsByName.has(key)) {
-        cellsByName.set(key, zip.file(entryPath).async("uint8array").then(openWorkbookCells));
-      }
-      return cellsByName.get(key);
+    function sourceFor(file) {
+      return pathByName.get(workbookBaseName(file).toLowerCase()) || null;
     }
 
-    // The workbook's own JSZip, for the engine's link-cache readers, which
-    // take any JSZip-shaped object.
+    var bytesByName = new Map();
+    function bytesFor(file) {
+      var source = sourceFor(file);
+      if (!source) throw new Error("The package holds no workbook named " + file + ".");
+      if (!bytesByName.has(source.name)) bytesByName.set(source.name, source.read());
+      return bytesByName.get(source.name);
+    }
+
+    var cellsByName = new Map();
+    function cellsFor(file) {
+      var source = sourceFor(file);
+      if (!source) return null;
+      if (!cellsByName.has(source.name)) cellsByName.set(source.name, bytesFor(source.name).then(openWorkbookCells));
+      return cellsByName.get(source.name);
+    }
+
+    // The workbook's own JSZip, for the engine's extractors and link-cache
+    // readers, which take any JSZip-shaped object.
     var zipsByName = new Map();
     function zipFor(file) {
-      var key = workbookBaseName(file).toLowerCase();
-      var entryPath = pathByName.get(key);
-      if (!entryPath) throw new Error("The package holds no workbook named " + file + ".");
-      if (!zipsByName.has(key)) {
+      var source = sourceFor(file);
+      if (!source) throw new Error("The package holds no workbook named " + file + ".");
+      if (!zipsByName.has(source.name)) {
         zipsByName.set(
-          key,
-          zip
-            .file(entryPath)
-            .async("uint8array")
-            .then(function (bytes) {
-              return global.JSZip.loadAsync(bytes);
-            }),
+          source.name,
+          bytesFor(source.name).then(function (bytes) {
+            return global.JSZip.loadAsync(bytes);
+          }),
         );
       }
-      return zipsByName.get(key);
+      return zipsByName.get(source.name);
     }
 
     return {
@@ -236,6 +241,7 @@
       has: function (file) {
         return pathByName.has(workbookBaseName(file).toLowerCase());
       },
+      bytes: bytesFor,
       async hasSheet(file, sheetName) {
         var pending = cellsFor(file);
         if (!pending) return false;
@@ -250,5 +256,48 @@
     };
   }
 
-  global.DiyaGlXlsxCells = { xlsxBytesFrom, openWorkbookCells, openWorkbookSet };
+  /**
+   * Every workbook in an uploaded package zip, addressed by file name.
+   * @param {Uint8Array} zipBytes
+   * @returns {Promise<Object>} a workbook set
+   */
+  async function openWorkbookSet(zipBytes) {
+    var zip = await global.JSZip.loadAsync(zipBytes);
+    var sources = Object.keys(zip.files)
+      .filter(function (entryPath) {
+        return !zip.files[entryPath].dir && isWorkbookEntry(entryPath);
+      })
+      .map(function (entryPath) {
+        return {
+          name: workbookBaseName(entryPath),
+          read: function () {
+            return zip.file(entryPath).async("uint8array");
+          },
+        };
+      });
+    return workbookSet(sources);
+  }
+
+  /**
+   * A set of one, for a workbook uploaded on its own. The name is what the
+   * engine's refusals address it by, so a file that arrived under some other
+   * extension is addressed as a workbook rather than by a name no workbook
+   * has.
+   * @param {string} fileName - the name the upload arrived under
+   * @param {Uint8Array} xlsxBytes
+   * @returns {Promise<Object>} a workbook set
+   */
+  async function openWorkbookSetFromWorkbook(fileName, xlsxBytes) {
+    var name = /\.xlsx$/i.test(fileName) ? workbookBaseName(fileName) : "workbook.xlsx";
+    return workbookSet([
+      {
+        name: name,
+        read: function () {
+          return Promise.resolve(xlsxBytes);
+        },
+      },
+    ]);
+  }
+
+  global.DiyaGlXlsxCells = { xlsxBytesFrom, openWorkbookCells, openWorkbookSet, openWorkbookSetFromWorkbook };
 })(window);

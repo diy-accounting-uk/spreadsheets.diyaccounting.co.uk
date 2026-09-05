@@ -53,7 +53,7 @@ Trade: Bricklaying, plastering and general building
 | Closing Creditors total | 1510 | 1510 | 0 | PASS |
 | Income Tax | 0 | 0 | 0 | PASS |
 | NI Class 4 (lower) | 0 | 0 | 0 | PASS |
-| Total Tax + NI | 0 | 0 | 0 | PASS |
+| Total Tax + NI, less the CIS already deducted | -200 | -200 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
@@ -61,7 +61,7 @@ Trade: Bricklaying, plastering and general building
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 0 | 0 | 0 | PASS |
 | Tax: IT = Basic + Higher + Additional | 0 | 0 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 0 | 0 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | -200 | -200 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 59470 | 59470 | 0 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 15530 | 15530 | 0 | PASS |
@@ -118,12 +118,6 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 51 capital allowances at 6% (D147) is nil | 0 | 0 | 0 | PASS |
 | SA103F box 15 turnover: full return (D55) = short return (D38) | 75000 | 75000 | 0 | PASS |
 | SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
-| SA103F box 19 wages, salaries and staff costs: full return (D74) = short return (D55) | 18000 | 18000 | 0 | PASS |
-| SA103F box 20 car, van and travel expenses: full return (D78) = short return (D51) | 2400 | 2400 | 0 | PASS |
-| SA103F box 21 rent, rates, power and insurance: full return (D82) = short return (D60) | 0 | 0 | 0 | PASS |
-| SA103F box 22 repairs and maintenance: full return (D86) = short return (D64) | 350 | 350 | 0 | PASS |
-| SA103F box 23 phone, stationery and office costs: full return (D90) = short return (O55) | 720 | 720 | 0 | PASS |
-| SA103F box 28 accountancy, legal and professional fees: full return (D110) = short return (O46) | 1000 | 1000 | 0 | PASS |
 | SA103F box 48 net loss: full return (O129) = short return (O71) | 0 | 0 | 0 | PASS |
 | SA103F box 49 annual investment allowance: full return (D139) = short return (D80) | 12000 | 12000 | 0 | PASS |
 | SA103F box 55 100% and other enhanced capital allowances: full return (O144) = short return (D85) | 0 | 0 | 0 | PASS |
@@ -134,10 +128,10 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94) | 0 | 0 | 0 | PASS |
 | SA103F box 75 other business income: full return (O204) = short return (O99) | 0 | 0 | 0 | PASS |
 | SA103F box 76 total taxable profits: full return (O210) = short return (D106) | 3530 | 3530 | 0 | PASS |
-| SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 0 | 0 | 0 | PASS |
+| SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 200 | 200 | 0 | PASS |
 | SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back | 60670 | 60670 | 0 | PASS |
 | SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation | 14330 | 14330 | 0 | PASS |
-| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24 | 12000 | 12000 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 | 12000 | 12000 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 46118 | 46118 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 46482 | 46482 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.14 | 0.14 | 0 | PASS |
@@ -152,7 +146,7 @@ Trade: Bricklaying, plastering and general building
 | P&L: Depreciation (row 34, summed) = Schedule I1 | 1200 | 1200 | 0 | PASS |
 | P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) | 0 | 0 | 0 | PASS |
 | P&L: HP interest and charges reach the finance line (B31) | 0 | 0 | 0 | PASS |
-| Bank.xlsx closing balance (Mar!A2) | 5456.699999999997 | 5456.7 | +2.7284841053187847e-12 | PASS |
+| Bank.xlsx closing balance (Mar!A2) | 5256.699999999997 | 5256.7 | +2.7284841053187847e-12 | PASS |
 | Cash.xlsx closing balance (Mar!A2) | 0 | 0 | 0 | PASS |
 | P&L apr col C5 = Sales.xlsx a-coded net | 6500 | 6500 | 0 | PASS |
 | P&L apr col C6 = Sales.xlsx b-coded net | 0 | 0 | 0 | PASS |
@@ -370,6 +364,32 @@ Trade: Bricklaying, plastering and general building
 | Purchases.xlsx Feb: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Mar: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Mar: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Apr: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Apr: CIS suffered for the year to date (X1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx May: CIS suffered reaches the sub-contractor column (W1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx May: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Jun: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jun: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Jul: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jul: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Aug: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Aug: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Sep: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Sep: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Oct: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Oct: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Nov: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Nov: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Dec: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Dec: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Jan: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Jan: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Feb: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Feb: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Sales.xlsx Mar: CIS suffered reaches the sub-contractor column (W1) | 0 | 0 | 0 | PASS |
+| Sales.xlsx Mar: CIS suffered for the year to date (X1) | 200 | 200 | 0 | PASS |
+| Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal | -200 | -200 | 0 | PASS |
+| SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal | 200 | 200 | 0 | PASS |
 | Wagesinterface apr C4 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface apr D4 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface apr E4 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -701,7 +721,8 @@ Trade: Bricklaying, plastering and general building
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Weekly Rate = tax data | 0 | 0 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 3.5 | 3.5 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 6845 | 6845 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -790,14 +811,14 @@ Trade: Bricklaying, plastering and general building
 | Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 14,330 |
 | Add depreciation charged in the accounts | Profit & Loss Account!B34 | 1,200 |
 | Less grants, taxed as other business income below | Profit & Loss Account!B11 | 0 |
-| Less net loss for the year (box 21) | SE Short!O71 | 0 |
-| Less annual investment allowance (box 22) | SE Short!D80 | -12,000 |
-| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
-| Less other capital allowances (box 24) | SE Short!O80 | 0 |
-| Add balancing charges (box 25) | SE Short!O85 | 0 |
-| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
-| Add grants as other business income (box 29) | SE Short!O99 | 0 |
-| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| Less net loss for the year (box 22) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 23) | SE Short!D80 | -12,000 |
+| Less small-balance allowance (box 24) | SE Short!D85 | 0 |
+| Less other capital allowances (box 25) | SE Short!O80 | 0 |
+| Add balancing charges (box 26) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 27) | SE Short!D94 | 0 |
+| Add grants as other business income (box 30) | SE Short!O99 | 0 |
+| Less loss brought forward (box 29) | SE Short!O94 | 0 |
 | **Tax profit the bridge computes** | | **3,530** |
 | Tax profit the sheet carries | Income Tax!E5 | 3,530 |
 | **Residue** | | **0** |
@@ -828,7 +849,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cost of Sales | 35,500 |
 | **Gross Profit** | 39,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Wages & Salaries | 18,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Premises Rent Rates Power | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 350 |
 | &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 720 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 2,400 |
@@ -859,10 +880,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 0 |
 | **Total Income Tax** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
-| **Total Tax + NI** | 0 |
+| **Total Tax + NI** | -200 |
 
 ## Profit Forecast
 
@@ -894,28 +915,30 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Accounting date | 46,118 |
 | Turnover | 75,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 35,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 18,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals | 350 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional | 1,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | 720 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | — |
 | **Total expenses** | 59,470 |
 | **Net profit/loss** | 15,530 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 3,530 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 0 |
-| Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 0 |
+| Turnover note | Business income - if your annual turnover was below £90000 VAT threshold |
 | **Net profit for tax calc** | 3,530 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 200 |
 
 ## Self Assessment (SA103F)
 
@@ -959,7 +982,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | **Total taxable profits from this business (box 76)** | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 200 |
 
 ## Payroll Summary
 
@@ -1009,7 +1032,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Weekly Rate | 0 |
+| NI Class 2 Weekly Rate | 3.5 |
+| NI Class 2 Small Profits Threshold | 6,845 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -1103,7 +1127,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | B17 | Cost of Sales | 35500 | gl-cor:amount (costOfSales) |
 | B19 | **Gross Profit** | 39500 | gl-cor:amount (grossProfit) |
 | B21 | Wages & Salaries | 18000 | accounts.purchases.5101 |
-| B22 | Light, Heat, Power | 0 | accounts.purchases.5201 |
+| B22 | Premises Rent Rates Power | 0 | accounts.purchases.5201 |
 | B23 | Repairs & Maintenance | 350 | accounts.purchases.5400 |
 | B24 | General Admin | 720 | accounts.purchases.5501 |
 | B25 | Motor Expenses | 2400 | accounts.purchases.5601 |
@@ -1375,10 +1399,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E10 | Tax at Additional Rate (45%) | 0 | tax.incomeTax.additionalRate |
 | E11 | **Total Income Tax** | 0 | tax.incomeTax (total) |
-| E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
+| E12 | Less: CIS Deducted | -200 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 0 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 0 | gl-cor:taxAmount (totalTaxNI) |
+| E18 | **Total Tax + NI** | -200 | gl-cor:taxAmount (totalTaxNI) |
 
 ### Profit Forecast
 
@@ -1410,28 +1434,21 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | S17 | Accounting date | 46118 | documentInfo.periodCoveredEnd |
 | D38 | Turnover | 75000 | gl-cor:amount (sa103s.turnover) |
 | O38 | Other business income | 0 | gl-cor:amount (sa103s.otherIncome) |
-| D46 | Cost of sales | 35500 | gl-cor:amount (sa103s.costOfSales) |
-| D51 | Car, van and travel | 2400 | gl-cor:amount (sa103s.travel) |
-| D55 | Employee costs | 18000 | gl-cor:amount (sa103s.employeeCosts) |
-| D60 | Premises costs | 0 | gl-cor:amount (sa103s.premises) |
-| D64 | Repairs and renewals | 350 | gl-cor:amount (sa103s.repairs) |
-| O46 | Accountancy, legal and professional | 1000 | gl-cor:amount (sa103s.legal) |
-| O51 | Interest and bank charges | 0 | gl-cor:amount (sa103s.interest) |
-| O55 | Phone, stationery and office costs | 720 | gl-cor:amount (sa103s.office) |
-| O60 | Other business expenses | 1500 | gl-cor:amount (sa103s.otherExpenses) |
 | O64 | **Total expenses** | 59470 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 15530 | gl-cor:amount (sa103s.netProfit) |
-| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
+| O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
-| O80 | Other capital allowances (box 24) | 0 | tax.capitalAllowances.wda (sa103s) |
-| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
+| O80 | Other capital allowances (box 25) | 0 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 3530 | gl-cor:amount (sa103s.taxableProfit) |
-| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
-| O99 | Grants as other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| A33 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
+| O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Grants as other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
+| A33 | Turnover note | Business income - if your annual turnover was below £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
 | D106 | **Net profit for tax calc** | 3530 | gl-cor:amount (sa103s.profitForTax) |
+| D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
+| O124 | Deductions by contractors (box 38) | 200 | diya-gl:cisDeduction (sa103s) |
 
 ### SE Full
 
@@ -1475,7 +1492,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | O210 | **Total taxable profits from this business (box 76)** | 3530 | gl-cor:amount (sa103f.profitForTax) |
 | D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
 | O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
-| D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
+| D231 | Contractor deductions taken off (box 81) | 200 | diya-gl:cisDeduction (sa103f) |
 | G1 |  | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 |  |
 | Q2 |  | 46118 |  |
 | V2 |  | 46482 |  |
@@ -1562,7 +1579,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N12 | Higher Band Start | 37701 |  |
 | N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
+| L16 | NI Class 2 Weekly Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 6845 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
@@ -1590,8 +1608,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 6366.7 |  |
-| A2 |  | 5456.7 |  |
+| A1 |  | 6166.7 |  |
+| A2 |  | 5256.7 |  |
 
 ### Cash.xlsx!Mar
 
@@ -1619,6 +1637,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6500 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 0 |  |
 
 ### Sales.xlsx!May
 
@@ -1627,6 +1647,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6000 |  |
 | H2 |  | 0 |  |
+| W1 |  | 200 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Jun
 
@@ -1635,6 +1657,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6200 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Jul
 
@@ -1643,6 +1667,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 5800 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Aug
 
@@ -1651,6 +1677,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6500 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Sep
 
@@ -1659,6 +1687,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6300 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Oct
 
@@ -1667,6 +1697,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6800 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Nov
 
@@ -1675,6 +1707,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6200 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Dec
 
@@ -1683,6 +1717,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 5500 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Jan
 
@@ -1691,6 +1727,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6000 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Feb
 
@@ -1699,6 +1737,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6500 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Sales.xlsx!Mar
 
@@ -1707,6 +1747,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H1 |  | 0 |  |
 | I1 |  | 6700 |  |
 | H2 |  | 0 |  |
+| W1 |  | 0 |  |
+| X1 |  | 200 |  |
 
 ### Purchases.xlsx!OpeningCreditors
 
@@ -2205,6 +2247,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
 | M49 |  | 45866 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
 | N51 |  | 90.5 |  |
@@ -2258,6 +2301,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
 | M49 |  | 45897 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
 | N51 |  | 90.5 |  |

@@ -21,7 +21,7 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateSeCells } from "../lib/calculators/se.js";
-import { canonicalForUnit } from "../lib/money-canonical.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");

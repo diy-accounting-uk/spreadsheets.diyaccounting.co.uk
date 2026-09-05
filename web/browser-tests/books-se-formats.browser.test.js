@@ -7,11 +7,10 @@
 // downloads make with the CLI, the files it refuses and what it says about
 // them, and that every download the save menu offers is well-formed.
 //
-// The page reads a Self Employed book back from a diya-gl zip or a diya-gl
-// JSON file; products/se.js's upload.validate still refuses the nine
-// workbooks themselves. So E3's round trip runs the other way round from
-// BST's -- the page writes the package zip and the CLI reads it back -- and
-// E4 asserts each refusal by the message it actually prints.
+// The page reads a Self Employed book back from the nine workbooks
+// themselves, from a diya-gl zip or from a diya-gl JSON file. So E3 runs the
+// full lap -- package zip in, package zip out, and round again -- and E4
+// asserts each refusal by the message it actually prints.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -132,48 +131,70 @@ async function triggerSaveDownload(page, menuItemName) {
 
 // ── E3: round trips ──────────────────────────────────────────────────────
 
+// The nine workbooks zipped the way a customer's own download ships.
+async function sePackageZipBytes() {
+  const zip = new JSZip();
+  for (const name of fs.readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+    zip.file(name, fs.readFileSync(path.join(SE_PACKAGE_DIR, name)));
+  }
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+async function uploadPackage(page, bytes, name) {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
+  await dropFile(page, bytes, name);
+  await waitForLoaded(page);
+}
+
+// R's figures alone. The lap's two books name different files they were
+// uploaded from, which the report carries as its scenario name, so the
+// comparison is over what the report measures rather than what it was
+// called.
+function reportValues(report) {
+  return report.values.map((entry) => `${entry.key}=${entry.unit ?? ""}:${entry.value}`);
+}
+
+function cliExport(zipBytes, name) {
+  const zipPath = path.join(TARGET_DIR, `${name}.zip`);
+  const outputDir = path.join(TARGET_DIR, name);
+  fs.writeFileSync(zipPath, zipBytes);
+  execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", outputDir], {
+    cwd: ROOT,
+    stdio: "pipe",
+  });
+  return {
+    bookToml: fs.readFileSync(path.join(outputDir, "book.toml"), "utf-8"),
+    linesJsonl: fs.readFileSync(path.join(outputDir, "lines.jsonl"), "utf-8"),
+  };
+}
+
 test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
-  // Package zip -> page -> package zip. The nine workbooks carry no column
-  // for an entry number, a document type or a tax code, so a line that goes
-  // in through the master book comes back out renumbered and without them:
-  // the round trip settles from the first extraction on, not before it. So
-  // the page's package zip goes to the CLI, the CLI's book comes back to the
-  // page, and the second lap has to reproduce both files exactly.
-  test("page to package zip to CLI and back: the second lap writes the same zip and reads the same lines", async ({ page }) => {
-    await openAdvancedExample(page);
-
+  // Package zip -> page -> package zip, twice. The nine workbooks carry no
+  // column for an entry number, a document type or a tax code, so a line
+  // that went in through the master book comes back out renumbered and
+  // without them: the lap settles from the first extraction on, not before
+  // it. What has to hold from there is that a second lap reads the same
+  // figures, writes the same nine workbooks, and reads back exactly what the
+  // CLI reads from the same zip.
+  test("package zip to page to package zip: the second lap holds the first's report and writes the same zip", async ({ page }) => {
+    await uploadPackage(page, await sePackageZipBytes(), "se-latest-package.zip");
+    const firstReport = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report);
     const firstPackage = await triggerSaveDownload(page, "Download package (.zip)");
-    const firstZipPath = path.join(TARGET_DIR, "e3-se-package-1.zip");
-    fs.writeFileSync(firstZipPath, firstPackage.bytes);
 
-    const firstExport = path.join(TARGET_DIR, "e3-se-export-1");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", firstZipPath, "--output-dir", firstExport], {
-      cwd: ROOT,
-      stdio: "pipe",
-    });
-    const firstBookToml = fs.readFileSync(path.join(firstExport, "book.toml"), "utf-8");
-    const firstLinesJsonl = fs.readFileSync(path.join(firstExport, "lines.jsonl"), "utf-8");
-
-    await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
-    await dropFile(
-      page,
-      await zipOf({ "book.toml": firstBookToml, "lines.jsonl": firstLinesJsonl, "report.json": "{}\n" }),
-      "e3-se-extracted-diya-gl.zip",
-    );
-    await waitForLoaded(page);
-
+    await uploadPackage(page, firstPackage.bytes, "se-page-package.zip");
+    const secondReport = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report);
     const secondPackage = await triggerSaveDownload(page, "Download package (.zip)");
-    const secondZipPath = path.join(TARGET_DIR, "e3-se-package-2.zip");
-    fs.writeFileSync(secondZipPath, secondPackage.bytes);
+    const secondDiyaGl = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
 
-    const secondExport = path.join(TARGET_DIR, "e3-se-export-2");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "se", "--file", secondZipPath, "--output-dir", secondExport], {
-      cwd: ROOT,
-      stdio: "pipe",
-    });
-
-    expect(fs.readFileSync(path.join(secondExport, "lines.jsonl"), "utf-8")).toBe(firstLinesJsonl);
+    expect(reportValues(secondReport)).toEqual(reportValues(firstReport));
     expect(Buffer.compare(secondPackage.bytes, firstPackage.bytes)).toBe(0);
+    expect(secondPackage.download.suggestedFilename()).toBe(firstPackage.download.suggestedFilename());
+
+    // The CLI reads the page's package the same way the page just did.
+    const cli = cliExport(firstPackage.bytes, "e3-se-package-1");
+    const pageZip = await JSZip.loadAsync(secondDiyaGl.bytes);
+    expect(await pageZip.file("lines.jsonl").async("string")).toBe(cli.linesJsonl);
   });
 
   test("diya-gl zip to page to diya-gl zip is identical, and so is JSON to page to JSON", async ({ page }) => {
@@ -198,7 +219,7 @@ test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
 // ── E4: what the page refuses, and what it says ──────────────────────────
 
 test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
-  test("a bare Financialaccounts.xlsx is refused by name, not read as anything else", async ({ page }) => {
+  test("a bare Financialaccounts.xlsx is refused as the hub of a package, not read as anything else", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(
@@ -208,9 +229,14 @@ test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
 
+    // The sheets on it say which part of which package it is, so the page
+    // says so and asks for the package, rather than running some other
+    // product's anchor table over it and printing that product's name.
     const message = page.locator("#empty-state-message");
     await expect(message).toHaveClass(/upload-error/);
-    await expect(message).toContainText("does not match the current Basic Sole Trader template");
+    await expect(message).toHaveText(
+      '"Financialaccounts.xlsx" is the hub workbook of a nine-file Self Employed package; upload the package zip.',
+    );
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 
@@ -219,12 +245,11 @@ test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.payslipsOnlyZip.bytes, FIXTURES.payslipsOnlyZip.name);
 
-    // One workbook in a zip is a package zip of a single-file product, so
-    // the sniff hands it to the Basic Sole Trader manifest and its anchor
-    // guard is what names the mismatch.
     const message = page.locator("#empty-state-message");
     await expect(message).toHaveClass(/upload-error/);
-    await expect(message).toContainText("does not match the current Basic Sole Trader template");
+    await expect(message).toHaveText(
+      '"Payslips.xlsx" is the payslips workbook of a package, or of the Payslip package; upload the package zip.',
+    );
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 

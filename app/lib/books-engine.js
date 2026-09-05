@@ -20,6 +20,7 @@ export {
   extractBstTransactions,
   extractTaxiTransactions,
   extractLines,
+  extractBook,
   extractMetadata,
   bstExtractionMap,
   bookFieldCells,
@@ -34,7 +35,8 @@ export {
 // and the one error class every product's table throws.
 export { validateAnchors, AnchorError } from "./anchors/run.js";
 export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
-export { validateTaxiAnchors } from "./anchors/taxi.js";
+export { validateTaxiAnchors, TAXI_ANCHORS } from "./anchors/taxi.js";
+export { SE_ANCHORS } from "./anchors/se.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset, resolveBstPurchaseCodeMap } from "./diya-gl-loader.js";
@@ -67,7 +69,7 @@ export { buildReportDocument, serializeReportDocument, slug, canonicalValue } fr
 // at a working precision to absorb float noise, then to the penny; a rate
 // to 6 dp), so the page can format a value the same way rather than handing
 // the raw double to Intl.NumberFormat.
-export { canonicalForUnit } from "./money-canonical.js";
+export { canonicalForUnit } from "./canonical-report-value.js";
 
 // overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
 // that module resolves its template path from import.meta.url at the top
@@ -81,10 +83,12 @@ export { canonicalForUnit } from "./money-canonical.js";
 // writing D back out as a diya-gl zip or a single JSON file.
 export {
   detectBookSource,
+  sniffProduct,
   readBookSource,
   writeBookJson,
   writeDiyaGlZip,
   UnknownBookSourceError,
+  PackagePartError,
   XlsBookSourceError,
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,

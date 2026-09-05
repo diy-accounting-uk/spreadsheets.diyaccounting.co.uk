@@ -10,6 +10,7 @@ import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSeri
 import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "taxi",
@@ -245,8 +246,8 @@ export const CELL_MAP = [
   ["Business Details", "C8",  "Description of business", "entityInformation.organizationDescription", "Business Details", 0, "text"],
   ["Business Details", "C17", "Postcode",            "entityInformation.organizationPostcode",     "Business Details", 0, "text"],
   ["Business Details", "O5",  "UTR",                 "entityInformation.taxRegistrationNumber",   "Business Details", 0, "identifier"],
-  ["Business Details", "D29", "Losses brought forward (box 28)", "gl-cor:amount (sa103s.lossBroughtForwardInput)", "Business Details", 0, "money"],
-  ["Business Details", "O29", "Goods and services for own use (box 26)", "gl-cor:amount (sa103s.ownUseInput)", "Business Details", 0, "money"],
+  ["Business Details", "D29", "Losses brought forward (box 29)", "gl-cor:amount (sa103s.lossBroughtForwardInput)", "Business Details", 0, "money"],
+  ["Business Details", "O29", "Goods and services for own use (box 27)", "gl-cor:amount (sa103s.ownUseInput)", "Business Details", 0, "money"],
   // ── Profit & Loss Account (column B) ──
   ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0, "money"],
   ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1, "money"],
@@ -343,19 +344,19 @@ export const CELL_MAP = [
   ["VitalTax", "F29", "Q4 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q4Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "G29", "**Annual Total Allowable Expenses**", "gl-cor:amount (vitalTax.annualExpenses)", "Quarterly Summary", 0, "money"],
   // ── SE Short (SA103S) — formula cells only ──
-  ["SE Short", "D38",  "Turnover (box 8)",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0, "money"],
-  ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D71",  "**Net profit/loss (box 20)**",           "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
-  ["SE Short", "O71",  "Net loss (box 21)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D80",  "Annual investment allowance (box 22)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D85",  "Small-balance allowance (box 23)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "O80",  "Other capital allowances (box 24)",      "tax.capitalAllowances.wda (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "O85",  "Balancing charges (box 25)",             "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D94",  "Goods and services for own use (box 26)","gl-cor:amount (sa103s.ownUse)",             "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D99",  "**Net business profit (box 27)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
-  ["SE Short", "O94",  "Loss brought forward (box 28)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "O99",  "Other business income (box 29)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D106", "**Net profit for tax calc (box 30)**",   "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D38",  "Turnover (box 9)",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O38",  "Other business income (box 10)",         "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D71",  "**Net profit/loss (box 21)**",           "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O71",  "Net loss (box 22)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D80",  "Annual investment allowance (box 23)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D85",  "Small-balance allowance (box 24)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O80",  "Other capital allowances (box 25)",      "tax.capitalAllowances.wda (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O85",  "Balancing charges (box 26)",             "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D94",  "Goods and services for own use (box 27)","gl-cor:amount (sa103s.ownUse)",             "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D99",  "**Net business profit (box 28)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O94",  "Loss brought forward (box 29)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O99",  "Other business income (box 30)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D106", "**Net profit for tax calc (box 31)**",   "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
   // ── Draft Tax Calculation ──
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0, "money"],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1, "money"],
@@ -512,10 +513,10 @@ function monthlyProfitAndLossCells() {
 
 export function reportSections(results) {
   const sectionMap = new Map();
-  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+  for (const [sheet, cell, label, , section, indent, unit] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unit), indent });
   }
   return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
 }
@@ -536,9 +537,9 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
@@ -561,15 +562,15 @@ export function profitBridge(results) {
   const rows = [
     { label: "Net profit per the profit and loss account", cell: "Profit & Loss Acc!B23", value: num(pl.B23) },
     { label: "Add capital allowances charged in cost of sales", cell: "Profit & Loss Acc!B10", value: num(pl.B10) },
-    { label: "Add other business income (box 9)", cell: "SE Short!O38", value: num(seShort.O38) },
-    { label: "Less net loss for the year (box 21)", cell: "SE Short!O71", value: -num(seShort.O71) },
-    { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -num(seShort.D80) },
-    { label: "Less small-balance allowance (box 23)", cell: "SE Short!D85", value: -num(seShort.D85) },
-    { label: "Less other capital allowances (box 24)", cell: "SE Short!O80", value: -num(seShort.O80) },
-    { label: "Add balancing charges (box 25)", cell: "SE Short!O85", value: num(seShort.O85) },
-    { label: "Add goods and services for own use (box 26)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Add other business income (box 29)", cell: "SE Short!O99", value: num(seShort.O99) },
-    { label: "Less loss brought forward (box 28)", cell: "SE Short!O94", value: -num(seShort.O94) },
+    { label: "Add other business income (box 10)", cell: "SE Short!O38", value: num(seShort.O38) },
+    { label: "Less net loss for the year (box 22)", cell: "SE Short!O71", value: -num(seShort.O71) },
+    { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
+    { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
+    { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
+    { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
+    { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Add other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
@@ -719,10 +720,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (seShort.D38 !== undefined) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B5);
     if (seShort.D71 !== undefined)
       check("SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances", seShort.D71, (pl.B23 || 0) + (pl.B10 || 0));
-    // Box 29 (verified against the template: 'SE Short'!O99 = 'Profit & Loss
+    // Box 30 (verified against the template: 'SE Short'!O99 = 'Profit & Loss
     // Acc'!B24), the same other-business-income figure VitalTax's own
     // annual re-sum is checked against above.
-    if (seShort.O99 !== undefined) check("SA103S: Other business income (box 29) = P&L other income", seShort.O99, pl.B24 || 0);
+    if (seShort.O99 !== undefined) check("SA103S: Other business income (box 30) = P&L other income", seShort.O99, pl.B24 || 0);
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L Capital Allowances (B10).

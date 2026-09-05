@@ -354,7 +354,7 @@ describe("Taxi calculator checks are breakable", () => {
 
     expect(newlyBroken.sort()).toEqual([
       "Other business income",
-      "SA103S: Other business income (box 29) = P&L other income",
+      "SA103S: Other business income (box 30) = P&L other income",
       "VitalTax: annual other income = P&L annual other income",
     ]);
   });

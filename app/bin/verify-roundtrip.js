@@ -28,7 +28,7 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { parse as parseTOML } from "smol-toml";
-import { roundHalfUp, canonicalForUnit, isDecimal, MONEY_DECIMALS } from "../lib/money-canonical.js";
+import { MONEY_DECIMALS, roundHalfUp, isDecimal, canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export { roundHalfUp, canonicalForUnit };
 
@@ -36,8 +36,9 @@ export { roundHalfUp, canonicalForUnit };
 //
 // The rounding rules themselves (a money value pre-rounded at a working
 // precision to absorb float noise, then to the penny; a rate to 6 dp) live
-// in money-canonical.js, shared with the books bundle so the page can format
-// a figure at the same precision this script reconciles it at.
+// in canonical-report-value.js, shared with each product's fmt() and with
+// the books bundle so the page can format a figure at the same precision
+// this script reconciles it at.
 
 // A money string already rounded to the penny, as a whole number of pence.
 // Comparing a window in pence keeps the arithmetic exact: 100.01 minus

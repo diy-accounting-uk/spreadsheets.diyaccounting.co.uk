@@ -376,8 +376,8 @@ describe("buildIndicators for the Taxi Driver", () => {
   it("itemises an allowance this product really does split across two boxes", () => {
     const split = indicatorText("taxi", "taxiSpSixty");
     expect(split).toContain(
-      "less 200.00 of capital allowances (Annual investment allowance (box 22) 0.00, " +
-        "Small-balance allowance (box 23) 172.00, Other capital allowances (box 24) 28.00)",
+      "less 200.00 of capital allowances (Annual investment allowance 0.00, " +
+        "Small-balance allowance 172.00, Other capital allowances 28.00)",
     );
     expect(split).toContain("gives a net business profit of 29,480.00.");
   });

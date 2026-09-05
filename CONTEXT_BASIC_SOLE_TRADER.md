@@ -449,28 +449,35 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 
 ### Profit & Loss Acc
 
+The SA103S Box column below names the 2026 form's own box number, read off
+`SE Short`'s A-column box tags (`unzip -p` against `bst-excel.xlsx`), not the
+sheet's own printed number, which sits one behind the form from turnover on.
+A P&L cell that feeds a box only combined with others says which cell it
+shares the box with; a cell that is not itself a filed box (a P&L subtotal,
+a tax or NI line) carries "—".
+
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
-| C4 | Sales Turnover | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| C6 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | Box 11 |
-| C7 | Direct Costs | `gl-cor:amount (directCosts)` | `dpl:OtherCosts` (CoS dimension) | Box 13 |
-| C9 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
-| C11 | Employee Costs | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 16 |
-| C12 | Premises Costs | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` | Box 17 |
-| C13 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
-| C14 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 20 |
-| C15 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 19 |
-| C16 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 19 |
-| C17 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 20 |
-| C18 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 21 |
-| C19 | Bad Debts | `accounts.purchases.5801` | `dpl:BadDebts` | Box 22 |
-| C20 | Interest & Finance | `accounts.purchases.5803` | `dpl:BankCharges` | Box 23 |
-| C21 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 24 |
-| C22 | Total Expenses | `gl-cor:amount (totalExpenses)` | `frs102:AdministrativeExpenses` | Box 25 |
-| C24 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| C26 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Boxes 22-25 net |
-| C28 | Taxable Profit | `gl-cor:amount (taxableProfit)` | `frs102:ProfitLossForFinancialYear` | — |
-| C30 | Other Business Income | `gl-cor:amount (otherIncomeReceived)` | `frs102:OtherOperatingIncome` | Box 9 |
+| C4 | Sales Turnover | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 9 (SE Short D38) |
+| C6 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | Box 11, combined with C7 (SE Short D46) |
+| C7 | Direct Costs | `gl-cor:amount (directCosts)` | `dpl:OtherCosts` (CoS dimension) | Box 11, combined with C6 (SE Short D46) |
+| C9 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | — (P&L subtotal) |
+| C11 | Employee Costs | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 13 (SE Short D55) |
+| C12 | Premises Costs | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` | Box 14 (SE Short D60) |
+| C13 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 15 (SE Short D64) |
+| C14 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 18 (SE Short O46's neighbour, O55, carries no CELL_MAP row) |
+| C15 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 12, combined with C16 (SE Short D51) |
+| C16 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 12, combined with C15 (SE Short D51) |
+| C17 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 19, combined with C19, C21 (SE Short O60, no CELL_MAP row) |
+| C18 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 16 (SE Short O46, no CELL_MAP row) |
+| C19 | Bad Debts | `accounts.purchases.5801` | `dpl:BadDebts` | Box 19, combined with C17, C21 (SE Short O60, no CELL_MAP row) |
+| C20 | Interest & Finance | `accounts.purchases.5803` | `dpl:BankCharges` | Box 17 (SE Short O51, no CELL_MAP row) |
+| C21 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 19, combined with C17, C19 (SE Short O60, no CELL_MAP row) |
+| C22 | Total Expenses | `gl-cor:amount (totalExpenses)` | `frs102:AdministrativeExpenses` | Box 20, combined with C6, C7 (SE Short O64, no CELL_MAP row) |
+| C24 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | — (P&L subtotal; SE Short D71 files box 21 from its own formula) |
+| C26 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | — (see SE Short boxes 23 to 26) |
+| C28 | Taxable Profit | `gl-cor:amount (taxableProfit)` | `frs102:ProfitLossForFinancialYear` | — (P&L's own figure; SE Short D99 files box 28) |
+| C30 | Other Business Income | `gl-cor:amount (otherIncomeReceived)` | `frs102:OtherOperatingIncome` | Box 30 (SE Short O99) |
 | C32 | Income Tax (less CIS) | `tax.incomeTax (net of CIS)` | `uk-tax:IncomeTaxCharged` | — |
 | C33 | NI Class 4 | `tax.nationalInsurance.class4` | `uk-tax:Class4NICsLowerRate` | — |
 | C35 | **Net Income After Tax** | `gl-cor:amount (netIncome)` | — | — |
@@ -479,19 +486,24 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
-| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `frs102:OtherOperatingIncome` | Box 9 |
-| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | — | Box 21 |
-| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 22 |
-| D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
-| O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
-| O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 25 |
-| D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 26 |
-| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 28 |
-| O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 29 |
-| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
-| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
+| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 9 |
+| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `frs102:OtherOperatingIncome` | Box 10 |
+| D46 | Cost of goods | `gl-cor:amount (sa103s.costOfGoods)` | — | Box 11 |
+| D51 | Motor & travel expenses | `gl-cor:amount (sa103s.motorAndTravel)` | — | Box 12 |
+| D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | — | Box 13 |
+| D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | — | Box 14 |
+| D64 | Repairs & maintenance | `gl-cor:amount (sa103s.repairs)` | — | Box 15 |
+| D71 | **Net profit/loss** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 21 |
+| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | — | Box 22 |
+| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
+| D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
+| O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 25 |
+| O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 26 |
+| D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 27 |
+| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 28, net business profit for tax purposes |
+| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 29 |
+| O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 30 |
+| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 31, total taxable profits from this business |
 
 ### Income Tax
 

@@ -365,6 +365,7 @@ export function buildSeCellEdits(taxData, startYear) {
 
   // NI — L16 not L17 for Class 2
   numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
+  numericEdits.N16 = ni.class2_small_profits_threshold; // SE Short box 36 caption reads this
   numericEdits.L20 = ni.class4_lower_rate;
   numericEdits.N20 = ni.class4_lower_limit;
   numericEdits.L23 = ni.class4_upper_rate;
@@ -613,7 +614,17 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
 // always the template's shipped 0, which keeps A33 on the "below" branch;
 // only the VAT threshold Admin!F26 echoes needs rolling. SE Short!C8 reads
 // 'Business Details'!C5, which the generator never writes either, so it
-// keeps the template's shipped blank and needs no roll.
+// keeps the template's shipped blank and needs no roll. SE Short!N111 is
+// "If your total profits for "&Admin!G2&" are less than £"&TEXT(Admin!N16,
+// "#,##0")&" and you" (box 36, the voluntary Class 2 tick): the tax year
+// rolls with Admin!G2 and the threshold with the new Admin!N16 cell.
+
+function seShortClass2Caption(numericEdits) {
+  const startYear = fromExcelSerial(numericEdits.B4).getUTCFullYear();
+  const yearLabel = `${startYear}-${String((startYear + 1) % 100).padStart(2, "0")}`;
+  const threshold = numericEdits.N16.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `If your total profits for ${yearLabel} are less than £${threshold} and you`;
+}
 
 export function seFinancialaccountsDependentCaches(numericEdits) {
   return {
@@ -627,6 +638,7 @@ export function seFinancialaccountsDependentCaches(numericEdits) {
       Q2: numericEdits.B4, // =Admin!B4
       S17: numericEdits.B4, // =Q2 (=Admin!B4)
       A33: `Business income - if your annual turnover was below £${numericEdits.F26} VAT threshold`,
+      N111: seShortClass2Caption(numericEdits),
     },
     "Profit Forecast": {
       C40: 0,

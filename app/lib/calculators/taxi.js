@@ -204,23 +204,23 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const otherBusinessIncome = Math.floor(MONTH_ORDER.reduce((sum, month) => sum + monthlyOther[month], 0));
 
   // SE Short (SA103S), computed ahead of the Draft Tax calculation sheet
-  // because that sheet's own profit input reads this form's box 27
+  // because that sheet's own profit input reads this form's box 28
   // (verified against the template: 'Draft Tax calculation'!E5 = 'SE
-  // Short'!D106). D71 (box 20, HMRC's pre-capital-allowance profit) adds
+  // Short'!D106). D71 (box 21, HMRC's pre-capital-allowance profit) adds
   // the capital allowances the P&L already charged inside cost of sales
-  // back in (verified: 'SE Short'!O64 = P&L!B12+B22-B10). O38 (box 9) is a
+  // back in (verified: 'SE Short'!O64 = P&L!B12+B22-B10). O38 (box 10) is a
   // manual entry with no formula at all and no cached value on the sheet in
-  // any fixture, unlike O99 (box 29), which does carry a real formula
+  // any fixture, unlike O99 (box 30), which does carry a real formula
   // reading P&L!B24.
   const o64 = costOfSales + totalGenExpenses - capitalAllowancesCharged;
-  const seShortOtherIncomeBox9 = 0;
-  const seShortNetProfitRaw = totalSales + seShortOtherIncomeBox9 - o64;
+  const seShortOtherIncomeBox10 = 0;
+  const seShortNetProfitRaw = totalSales + seShortOtherIncomeBox10 - o64;
   const seShortNetProfit = Math.max(0, seShortNetProfitRaw);
   const seShortNetLoss = Math.max(0, -seShortNetProfitRaw);
-  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
+  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 27 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
   const seShortD99 = Math.max(0, seShortD99Raw);
-  const seShortOtherIncomeBox29 = otherBusinessIncome; // O99 = P&L!B24
-  const seShortD106 = Math.max(0, seShortD99 + seShortOtherIncomeBox29 - 0 /* loss brought forward */);
+  const seShortOtherIncomeBox30 = otherBusinessIncome; // O99 = P&L!B24
+  const seShortD106 = Math.max(0, seShortD99 + seShortOtherIncomeBox30 - 0 /* loss brought forward */);
 
   // Draft Tax calculation
   const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, additionalRateTax, totalIncomeTax } = calculateIncomeTax(
@@ -266,7 +266,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     "VitalTax": {},
     "SE Short": {
       D38: totalSales,
-      // O38 (box 9) is a permanently blank manual entry — left unset.
+      // O38 (box 10) is a permanently blank manual entry — left unset.
       D71: seShortNetProfit,
       O71: seShortNetLoss,
       D80: Math.round(seShortCA.d80 * 100) / 100,
@@ -280,7 +280,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       D94: 0,
       D99: seShortD99,
       O94: 0,
-      O99: seShortOtherIncomeBox29,
+      O99: seShortOtherIncomeBox30,
       D106: seShortD106,
     },
     "Draft Tax calculation": {

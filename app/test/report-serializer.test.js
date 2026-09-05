@@ -203,6 +203,16 @@ describe("buildReportDocument units", () => {
     expect(keys.get("section/profit-loss-account/total-sales").unit).toBe("money");
   });
 
+  it("gives a section row the value of the cell it reprints, not the penny the row prints", () => {
+    const productMod = stubProduct();
+    productMod.cellLabels = () => ({ "Profit & Loss Acc!C30": { diyLabel: "Taxable income", glMapping: "", unit: "money" } });
+    productMod.reportSections = () => [
+      { title: "Profit & Loss Account", rows: [{ label: "Taxable income", value: "119,699.52", indent: 0 }] },
+    ];
+    const keys = byKey(build({ productMod, results: { "Profit & Loss Acc": { C30: 119699.524999999 } } }));
+    expect(keys.get("section/profit-loss-account/taxable-income").value).toBe("119699.524999999");
+  });
+
   it("declares every check a verdict", () => {
     const checks = [{ name: "A", actual: 1, expected: 1, pass: true, diff: 0 }];
     expect(byKey(build({ checks })).get("check/A").unit).toBe("verdict");
