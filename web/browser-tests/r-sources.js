@@ -256,21 +256,27 @@ export function canonical(value, unit) {
  * @param {string} [product] - the package the edit is applied under; the
  *   page's own buildReport (data.js) reads this off the loaded manifest's
  *   own id, so a caller proving a Self Employed edit passes "se" here
+ * @param {Object} [taxData] - the year's rates, in the same shape
+ *   extractTaxDataFromBook and app/data/*.toml both carry; defaults to
+ *   extracting them off the book's own [tax] section (report.js's --data
+ *   route), the same imprecise reading s2 carries and s2ForPackage exists
+ *   to avoid -- a caller comparing against a loaded page, which always
+ *   reads the year file through loadTaxDataForBook, passes that here
  * @returns {{text: string, document: Object, book: Object, lines: Array}}
  */
-export function applyNamedEdit(bookDir, edit, product = "bst") {
+export function applyNamedEdit(bookDir, edit, product = "bst", taxData) {
   const resolvedBookDir = path.resolve(ROOT, bookDir);
   const { book, lines } = loadDiyaGlData(resolvedBookDir);
   const newLines = edit(book, lines);
   const productMod = productModule(product);
 
-  const taxData = extractTaxDataFromBook(book, product);
+  const resolvedTaxData = taxData || extractTaxDataFromBook(book, product);
   const scenario = diyaGlToScenario(book, newLines, product);
-  const results = calculateFromDiyaGl(book, newLines, product, taxData, scenario);
+  const results = calculateFromDiyaGl(book, newLines, product, resolvedTaxData, scenario);
   const mergedScenario = { ...scenario, ...scenario.expected };
   const periodEnd = book.documentInfo?.periodCoveredEnd;
   const yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
-  const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd);
+  const checks = productMod.checkCompliance({ ...results }, mergedScenario, resolvedTaxData, calculateExpectedTax, yearEnd);
 
   const document = buildReportDocument({
     packageName: product,
