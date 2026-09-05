@@ -138,9 +138,17 @@ describeCalc(
       expect(results["Income Tax"].E5).toBeGreaterThan(0);
     });
 
-    it("Income Tax: a profit under the personal allowance leaves nothing to pay", () => {
+    it("Income Tax: a profit under the personal allowance leaves the CIS suffered repayable", () => {
       expect(results["Income Tax"].E5).toBeLessThan(results["Income Tax"].E6 || 12570);
-      expect(results["Income Tax"].E18).toBe(0);
+      // Nothing is charged on a profit this small, so the whole line is the
+      // CIS the contractors already took off the year's sales, which comes
+      // back. E12 carries it negated, and E18 sums the column.
+      const cisSuffered = Object.values(scenario.sales || {})
+        .flat()
+        .reduce((total, sale) => total + (sale.cis_deduction || 0), 0);
+      expect(cisSuffered).toBeGreaterThan(0);
+      expect(results["Income Tax"].E11).toBe(0);
+      expect(results["Income Tax"].E18).toBe(-cisSuffered);
     });
 
     it("passes every compliance check on the intact book", () => {

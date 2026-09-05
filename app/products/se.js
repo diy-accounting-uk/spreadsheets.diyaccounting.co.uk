@@ -815,7 +815,7 @@ export const CELL_MAP = [
   ["Profit & Loss Account", "B17", "Cost of Sales",             "gl-cor:amount (costOfSales)",    "Profit & Loss Account", 0],
   ["Profit & Loss Account", "B19", "**Gross Profit**",          "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
   ["Profit & Loss Account", "B21", "Wages & Salaries",          "accounts.purchases.5101",        "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B22", "Light, Heat, Power",        "accounts.purchases.5201",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B22", "Premises Rent Rates Power", "accounts.purchases.5201",        "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B23", "Repairs & Maintenance",     "accounts.purchases.5400",        "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B24", "General Admin",             "accounts.purchases.5501",        "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B25", "Motor Expenses",            "accounts.purchases.5601",        "Profit & Loss Account", 1],
@@ -890,18 +890,19 @@ export const CELL_MAP = [
   ["SE Short", "O60",  "Other business expenses",        "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
   ["SE Short", "O64",  "**Total expenses**",             "gl-cor:amount (sa103s.totalExpenses)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
-  ["SE Short", "O71",  "Net loss (box 21)",              "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1],
+  ["SE Short", "O71",  "Net loss (box 22)",              "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "O80",  "Other capital allowances (box 24)", "tax.capitalAllowances.wda (sa103s)",     "Self Assessment (SA103S)", 1],
-  ["SE Short", "O85",  "Balancing charges (box 25)",     "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O80",  "Other capital allowances (box 25)", "tax.capitalAllowances.wda (sa103s)",     "Self Assessment (SA103S)", 1],
+  ["SE Short", "O85",  "Balancing charges (box 26)",     "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1],
   ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
-  ["SE Short", "O94",  "Loss brought forward (box 28)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
-  ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O94",  "Loss brought forward (box 29)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O99",  "Grants as other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
-  ["SE Short", "O124", "Deductions by contractors (box 37)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
+  ["SE Short", "D124", "Total loss to carry forward (box 35)", "gl-cor:amount (sa103s.lossCarriedForward)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O124", "Deductions by contractors (box 38)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
   // ── SE Full (SA103F) ──
   // The full return, live in the same workbook as the short one and fed from
   // the same profit and loss account and fixed asset schedule. Every cell
@@ -1655,8 +1656,8 @@ function fmt(v) {
 // Depreciation is not allowable for income tax, so the return's total
 // expenses line takes it back out and the capital allowance boxes stand in
 // for it. Grants sit in the accounts above gross profit; on the return they
-// are box 29, added after the trade's own taxable profit. Interest received
-// stays put: profit before tax carries it and box 9 carries it, so it is
+// are box 30, added after the trade's own taxable profit. Interest received
+// stays put: profit before tax carries it and box 10 carries it, so it is
 // inside both ends of the bridge and needs no line of its own.
 export function profitBridge(results) {
   const pl = results["Profit & Loss Account"];
@@ -1669,14 +1670,14 @@ export function profitBridge(results) {
     { label: "Profit before tax per the profit and loss account", cell: "Profit & Loss Account!B39", value: num(pl.B39) },
     { label: "Add depreciation charged in the accounts", cell: "Profit & Loss Account!B34", value: num(pl.B34) },
     { label: "Less grants, taxed as other business income below", cell: "Profit & Loss Account!B11", value: -num(pl.B11) },
-    { label: "Less net loss for the year (box 21)", cell: "SE Short!O71", value: -num(seShort.O71) },
-    { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -num(seShort.D80) },
-    { label: "Less small-balance allowance (box 23)", cell: "SE Short!D85", value: -num(seShort.D85) },
-    { label: "Less other capital allowances (box 24)", cell: "SE Short!O80", value: -num(seShort.O80) },
-    { label: "Add balancing charges (box 25)", cell: "SE Short!O85", value: num(seShort.O85) },
-    { label: "Add goods and services for own use (box 26)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Add grants as other business income (box 29)", cell: "SE Short!O99", value: num(seShort.O99) },
-    { label: "Less loss brought forward (box 28)", cell: "SE Short!O94", value: -num(seShort.O94) },
+    { label: "Less net loss for the year (box 22)", cell: "SE Short!O71", value: -num(seShort.O71) },
+    { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
+    { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
+    { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
+    { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
+    { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
@@ -2268,7 +2269,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         ["O210", "D106", "box 76 total taxable profits"],
         ["D231", "O124", "box 81 contractor deductions taken off"],
       ];
+      // Six of these read the short return's expense analysis, which the sheet
+      // leaves blank when turnover is under the VAT threshold. There is
+      // nothing to compare then; the total expenses box below still stands.
+      const shortExpenseBoxes = new Set(["D55", "D51", "D60", "D64", "O55", "O46"]);
+      const shortAnalysisShown = typeof sa103s.D46 === "number";
       for (const [fullCell, shortCell, caption] of sa103fCounterparts) {
+        if (!shortAnalysisShown && shortExpenseBoxes.has(shortCell)) continue;
         check(`SA103F ${caption}: full return (${fullCell}) = short return (${shortCell})`, num(seFull[fullCell]), num(sa103s[shortCell]));
       }
 
@@ -2289,7 +2296,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(sa103s.D71) - num(seFull.O122),
       );
       check(
-        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24",
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25",
         num(seFull.O154),
         num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80),
       );
