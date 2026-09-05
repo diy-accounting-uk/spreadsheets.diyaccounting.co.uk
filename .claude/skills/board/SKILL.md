@@ -53,6 +53,12 @@ the branch audit.
 
 ### Rules
 
+- **Row order.** `ready-to-resume` rows first, then `blocked-to-resume`, then rows with no
+  product (`CQ-n`); then one block per product in the order BST, SE, Taxi, Ltd. A product's
+  block runs: the rows of other products its rows name as precursors, transitively,
+  precursors before dependants (each row is placed once, in the first block that needs
+  it); its `ready-to-start` rows; its `blocked-to-start` rows. `H` rows sit at the end of
+  their product's blocked rows.
 - One row per discrete task. When a plan defines tasks, the board carries one row per
   task, never one per wave or bullet; grouping is visible through `Precursors`.
 - Verification is never a human row. Confirming a deploy, checking a page loads, looking
