@@ -189,7 +189,14 @@ function sectionRowEntries(sections, byLabel, consumed, labels) {
       occurrences.set(rowSlug, seen);
       const key = `section/${sectionSlug}/${rowSlug}${seen > 1 ? `#${seen}` : ""}`;
       const source = takeSourceCell(byLabel, consumed, plainLabel(row.label), value);
-      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value };
+      // A row that reprints a cell carries that cell's own value, not the
+      // print: the print is rounded straight to the penny, and a figure a
+      // hair under a half-penny rounds one way out of the sheet's cached
+      // float and the other way out of the engine's, so two runs of the same
+      // figure would disagree at a key the cell's own entry compares clean.
+      // The bridge rows already carry their raw number for the same reason.
+      // The printed value stands for a row that names no cell.
+      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value: source ? source.value : value };
       if (source) entry.source = source.key;
       entries.push(entry);
     }
