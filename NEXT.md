@@ -19,9 +19,7 @@ for two reasons: `books-equivalence` A3 compares the committed `examples/bst-lat
 still 0) with the engine (3.50), which only the bst-latest refresh clears (the operator's main-side
 generate-bst after merge, or a commit-mode generate-bst on the branch if the operator prefers the
 PR green first); and two `taxi-wages-forecast-checks` expectations predate Taxi T4's other income,
-which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The batch's books page no longer boots fully (94 of 168 browser tests red at the head after S7, S8
-and S4 merged; each passed alone): a fix is in flight on `.worktrees/spreadsheets/verify`, branch
-`claude/wt-fix-page-boot`, before any further page row lands. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
+which Taxi T5 corrects. R4 is green (generate-se, -bst, -ltd). R3 is green on its fifth run, so all four generate gates pass on the branch. The page-boot regression after S8 (the loader still read the manifest's examples) is fixed in T7's first commit; the browser suite is 175 of 176 with the known bst-latest red. Operator, 2026-09-05: no further Ltd rows go in flight until the three running (T20, T4a,
 T24) land; sub-agents run no LibreOffice, and test the JS calculations against the committed
 packages' extraction (`report.js --source-dir` over `packages/` or `examples/*-latest`) instead. PR #61 (the stray Taxi T20 commit on main) merged 2026-09-05; the batch keeps the change. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
@@ -34,22 +32,20 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t2` |
-| SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T2 | blocked-to-start | Sonnet, wave 7 |
-| SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t7` |
-| SE-T8 | T8 SE forms as layout modules: SA103S, SA103F, VAT, computation | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7 | blocked-to-start | Sonnet, wave 7, after SE-T7 |
-| SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, TX-T16 | blocked-to-start | Sonnet, wave 8 |
-| SE-T10 | T10 SE render coverage and unrepresentable list | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T16 | blocked-to-start | Haiku, wave 9 |
-| SE-T11 | T11 SE equivalence, formats, round trips (A1–A9, E3–E5) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T14 | blocked-to-start | Opus, wave 8 |
-| SE-T12 | T12 SE edit and warning proofs in the browser | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T11 | blocked-to-start | Sonnet, wave 9 |
-| SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T7, SE-T8, SE-T12 | blocked-to-start | Fable, wave 10 |
-| SE-T14 | T14 CLI and MCP on SE; `changeLineBankAccount` joins the edit map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T2 | blocked-to-start | Sonnet, wave 7 |
+| SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t4` |
+| SE-T8 | T8 SE forms as layout modules: SA103S, SA103F, VAT, computation | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t8` |
+| SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T16 | blocked-to-start | Sonnet, wave 8 |
+| SE-T10 | T10 SE render coverage and unrepresentable list | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T8, SE-T16 | blocked-to-start | Haiku, wave 9 |
+| SE-T11 | T11 SE equivalence, formats, round trips (A1–A9, E3–E5) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T8, SE-T14 | blocked-to-start | Opus, wave 8 |
+| SE-T12 | T12 SE edit and warning proofs in the browser | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T11 | blocked-to-start | Sonnet, wave 9 |
+| SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T8, SE-T12 | blocked-to-start | Fable, wave 10 |
+| SE-T14 | T14 CLI and MCP on SE; `changeLineBankAccount` joins the edit map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/se-t14` |
 | SE-T16 | T16 `SE Short` prints the 2026 numbers; gates on `Admin!F26`; regenerated | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T4 | blocked-to-start | Opus, wave 8, R5 after merge |
+| SE-T17 | SE T17 the saved-package tests follow S4: `se-workbook.test.js`'s byte identity with the generate path and two skip cases fail on the batch since the writer refreshes the link caches | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/fix-se-workbook` |
 | SE-H1 | Merge the batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T10, SE-T11, SE-T12, SE-T13, SE-T14, SE-T16 | blocked-to-start | after wave 10 and R6 |
-| TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/taxi-t13` |
-| TX-T14 | Taxi T14 the takings view: year, month, week, day, fares | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13 | blocked-to-start | Fable, wave 7 |
-| TX-T15 | Taxi T15 the remaining views and the SA103S render | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13, SE-T8 | blocked-to-start | Opus, wave 8 |
-| TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13, LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
+| TX-T14 | Taxi T14 the takings view: year, month, week, day, fares | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable, `.worktrees/spreadsheets/taxi-t14` |
+| TX-T15 | Taxi T15 the remaining views and the SA103S render | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-T8 | blocked-to-start | Opus, wave 8 |
+| TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T14, TX-T15, TX-T16, TX-H1, SE-T12 | blocked-to-start | Sonnet, wave 9 |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | — | ready-to-start | all four generate gates green on the branch; merge PR #60 and refresh |

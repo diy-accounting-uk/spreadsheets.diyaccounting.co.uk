@@ -519,6 +519,12 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 - After T6's box annotations, `report-indicators.js` matches a label with or without a trailing
   "(box N)", so the judge's `Net profit/loss` indicator reads the Taxi report again.
 
+- T13 `fd7d526f` to `ef203638`, merged 2026-09-05: `products/taxi.js` (ten views, `snapshot.takings`
+  grouped by the sheet's own monthly cells), `render-unrepresentable/taxi.json`, the 48 monthly
+  `CELL_MAP` rows, `changeLineDetail` and `changeLineQuantity` in the edit map, `field: "miles"` on
+  the fare-miles helper, Class 2 voluntary below the threshold. The manifest still carries an empty
+  `examples` field S8 made redundant; T16 drops it.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

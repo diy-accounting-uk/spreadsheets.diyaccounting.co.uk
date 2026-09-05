@@ -432,6 +432,22 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T2 `234f4f5e`, `af692871`, `74474967`, `40ba13bb`, merged 2026-09-05: the SE writer leaves out an
+  entry with no cell (each former throw covered by a T5 rule), the bundle carries the ten SE
+  templates, the saved nine-file package proved against `--data` and, under LibreOffice, against a
+  recalculated package. On the merged batch four `se-workbook.test.js` cases fail because S4's
+  writer now refreshes the link caches, so the saved bytes differ from the generate path; **T17**
+  (Sonnet) makes the tests compare after the same refresh or on the cells that carry no cache.
+- T7 `2ed6d36c` to `4d382713`, merged 2026-09-05: `products/se.js` (twelve views), `se.html`,
+  `se.css`, `books-se.browser.test.js` (8), the SE example row, `s2(bookDir, name, product)`; the
+  year table's month rows read the statement's own month columns from `calculateLinkCells`, and all
+  29 sum to their year totals on the three SE fixtures. Its first commit fixed the batch's page boot
+  (`data.js` read the manifest's removed `examples`) and guards the strip for a product with no
+  `HEADLINES`. Remainders assigned: `drift.js` reads the unit at `cellMap[i][6]`, which SE's six
+  element rows lack (T11); `rkFor` finds only `CELL_MAP` rows, so month cells get no key (T10);
+  `.journal-switch` styling belongs in `books.css` (T13); the cash and payroll journals' empty
+  charts in the entries grid (T14); `extractMultiFileTransactions` is not on the engine, so an SE
+  upload is refused (T14).
 - S4 `adad372c`, `2468cd38`, `87642dd4`, `5fc50081`, `6183ddb6`, merged 2026-09-05: `xlsx-parts.js`,
   `link-caches.js` (`refreshLinkCaches`, `resultsReader`, `classifyLinkCell`, `LINK_ORDER.se`), the
   SE calculator's leaf cells (543 addressed, 539 covered, 4 blank; the brief's 356/15 was wrong),
