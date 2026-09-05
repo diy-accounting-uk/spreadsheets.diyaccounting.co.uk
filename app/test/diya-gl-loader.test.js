@@ -190,7 +190,10 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
       { boardMeetingDate: new Date("2026-06-30"), amount: 4000 },
     ];
     const scenario = diyaGlToScenario(book, lines, "ltd");
-    expect(scenario.dividend).toEqual({ board_meeting: fullFixture.dividend.board_meeting, declared: fullFixture.dividend.declared + 4000 });
+    expect(scenario.dividend).toEqual({
+      board_meeting: fullFixture.dividend.board_meeting,
+      declared: fullFixture.dividend.declared + 4000,
+    });
   });
 });
 
