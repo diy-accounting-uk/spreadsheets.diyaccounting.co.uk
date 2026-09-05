@@ -886,40 +886,42 @@
   function bind(root, state, helpers) {
     var bag = bagFor(helpers);
 
-    function toggleWeek(start) {
-      if (bag.openWeek === start) {
-        bag.openWeek = null;
-        bag.openDay = null;
-        bag.draft = null;
-      } else {
-        bag.openWeek = start;
-        bag.openDay = null;
-        bag.draft = null;
-      }
+    // A toggle re-renders the whole view, so the control asks for its own
+    // focus back; otherwise a keyboard reader lands at the top of the page
+    // after every Enter.
+    function toggleWeek(start, focusSelector) {
+      bag.openWeek = bag.openWeek === start ? null : start;
+      bag.openDay = null;
+      bag.draft = null;
+      bag.pendingFocus = focusSelector;
       helpers.render();
     }
 
     each(root, "tr.week-row", function (tr) {
+      var start = tr.getAttribute("data-week");
+      var selector = 'tr.week-row[data-week="' + start + '"]';
       tr.addEventListener("click", function () {
-        toggleWeek(tr.getAttribute("data-week"));
+        toggleWeek(start, selector);
       });
       tr.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          toggleWeek(tr.getAttribute("data-week"));
+          toggleWeek(start, selector);
         }
       });
     });
     each(root, "[data-week-toggle]", function (btn) {
+      var start = btn.getAttribute("data-week-toggle");
       btn.addEventListener("click", function () {
-        toggleWeek(btn.getAttribute("data-week-toggle"));
+        toggleWeek(start, '[data-week-toggle="' + start + '"]');
       });
     });
 
     each(root, "[data-day-toggle]", function (btn) {
+      var date = btn.getAttribute("data-day-toggle");
       btn.addEventListener("click", function () {
-        var date = btn.getAttribute("data-day-toggle");
         bag.openDay = bag.openDay === date ? null : date;
+        bag.pendingFocus = '[data-day-toggle="' + date + '"]';
         helpers.render();
       });
     });
