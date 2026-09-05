@@ -27,7 +27,7 @@
 // extract_book call first.
 
 import { resolve as resolvePath } from "path";
-import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
+import { extractBstFromFile, buildFileReportDocument, calculatedResultsFor } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
 import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
 import { saveWorkbook, savePackageZip, loadTaxDataForBook } from "../product-workbook.js";
@@ -73,10 +73,13 @@ function reportFor(book, lines) {
 // The book checks and warnings, with the book's own tax year's data behind
 // the VAT threshold warning -- the same loadTaxDataForBook call export.js's
 // --file mode makes, so a session's report and a CLI export of the same
-// book carry the same bookchecks.json content.
+// book carry the same bookchecks.json content -- and R alongside it, so a
+// product's own warning that reads the calculated accounts (Ltd's dividend
+// warning against distributable profits) sees them here too.
 async function bookChecksFor(book, lines) {
   const taxData = await loadTaxDataForBook(book);
-  return runBookChecks({ book, lines, taxData });
+  const results = calculatedResultsFor(book, lines, taxData);
+  return runBookChecks({ book, lines, taxData, results });
 }
 
 // Every R key whose canonicalised value changed between two reports, with

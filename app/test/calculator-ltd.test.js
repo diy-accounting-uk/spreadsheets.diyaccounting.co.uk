@@ -16,6 +16,8 @@ import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { calculatedResultsFor } from "../bin/export.js";
+import { runBookChecks } from "../lib/book-checks.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -281,6 +283,37 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
         results["Fixedassets.xlsx!Schedule"].E1 += 250;
       }),
     ).toEqual(["Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals"]);
+  });
+});
+
+// ============================== export.js's shared R for the book checks ==============================
+// export.js's writeBookChecksJson and the MCP server's report tool both
+// build R through calculatedResultsFor rather than calculateFromDiyaGl
+// directly, so a Ltd book's distributable-profits warning sees the same
+// calculated accounts either way.
+
+describe("calculatedResultsFor matches the engine's own D-to-R loop", () => {
+  it("is the same R calculateFromDiyaGl produces from the same book and lines", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const direct = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    const wired = calculatedResultsFor(book, lines, taxData);
+    expect(wired).toEqual(direct);
+  });
+
+  it("lets the dividend warning read real distributable profits, not the calculated-accounts placeholder", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const results = calculatedResultsFor(book, lines, taxData);
+    const withoutResults = runBookChecks({ book, lines, taxData }).results.find(
+      (r) => r.id === "ltd-dividend-within-distributable-profits",
+    );
+    const withResults = runBookChecks({ book, lines, taxData, results }).results.find(
+      (r) => r.id === "ltd-dividend-within-distributable-profits",
+    );
+    expect(withoutResults.label).toContain("not known without the calculated accounts");
+    expect(withResults.label).toContain("retained profit brought forward plus profit after tax");
   });
 });
 

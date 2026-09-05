@@ -45,7 +45,7 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/product-workbook.js";
+import { loadTaxDataForBook, productOf } from "../lib/product-workbook.js";
 import {
   readBookSource,
   BstAnchorError,
@@ -160,13 +160,27 @@ function writeOvertypedJson(outputDir, overtyped) {
   console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
 }
 
+// R's calculated cell map alone, the same D -> R half buildFileReportDocument
+// runs before it builds a whole report document -- for a caller (the book
+// checks, which only read a handful of R's cells for a warning like Ltd's
+// distributable-profits one) that has no use for the rest of it.
+export function calculatedResultsFor(book, lines, taxData) {
+  const packageName = productOf(book);
+  const scenario = diyaGlToScenario(book, lines, packageName);
+  return calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
+}
+
 // The book checks and warnings, run over D with the book's own tax year's
 // data behind the VAT threshold warning -- loadTaxDataForBook resolves that
 // year from book.documentInfo alone, so this runs the same way whichever of
-// the five kinds --file read the book from.
+// the five kinds --file read the book from. Also carries R, so a
+// product's own warning that reads the calculated accounts (Ltd's dividend
+// warning against distributable profits) sees them here too, not just
+// through the report.
 async function writeBookChecksJson(outputDir, book, lines) {
   const taxData = await loadTaxDataForBook(book);
-  const { results } = runBookChecks({ book, lines, taxData });
+  const calculatedResults = calculatedResultsFor(book, lines, taxData);
+  const { results } = runBookChecks({ book, lines, taxData, results: calculatedResults });
   writeFileSync(resolve(outputDir, "bookchecks.json"), bookChecksJson(results));
   const failing = results.filter((r) => r.result === "fail").length;
   console.log(`  bookchecks.json: ${results.length} rules, ${failing} failing`);
