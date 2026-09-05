@@ -2361,6 +2361,7 @@ Journal amounts include VAT at 20%.
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
 | M49 |  | 45869 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -2368,6 +2369,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-07 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -2375,6 +2377,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-07 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |
@@ -2422,6 +2425,7 @@ Journal amounts include VAT at 20%.
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
 | M49 |  | 45900 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -2429,6 +2433,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-08 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -2436,6 +2441,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-08 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |

@@ -2247,6 +2247,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
 | M49 |  | 45866 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
 | N51 |  | 90.5 |  |
@@ -2300,6 +2301,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
 | M49 |  | 45897 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
 | N51 |  | 90.5 |  |
