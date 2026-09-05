@@ -223,7 +223,7 @@
   // onto.
   function headlinesFromReport(report) {
     if (!loadedEngine) throw new Error("The books engine has not finished loading yet.");
-    return loadedEngine.headlinesFromReport(report);
+    return loadedEngine.headlinesFromReport(report, loadedEngine.HEADLINES);
   }
 
   var resourcesPromise = null;

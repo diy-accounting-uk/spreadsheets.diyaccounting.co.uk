@@ -1,0 +1,688 @@
+{
+  "product": "ltd",
+  "hub": "Financialaccounts.xlsx",
+  "filingData": {
+    "ct600": "app/data/filing/ct600-v3.toml",
+    "computation": "app/data/filing/ct-computation-v1.1.toml",
+    "accounts": "app/data/filing/frs105-formats.toml"
+  },
+  "refShapes": {
+    "box": "ct600-v3.toml [[box]] number",
+    "line": "ct-computation-v1.1.toml <section>.<part>/<label>",
+    "heading": "frs105-formats.toml <statement>/<format or ->/<letter>"
+  },
+  "forms": {
+    "accounts": {
+      "title": "Accounts",
+      "microcopy": "Check these against the accounts you file. Headings follow the micro-entity formats; nothing here is a Companies House document.",
+      "source": "accounts",
+      "sections": [
+        {
+          "heading": "Balance sheet",
+          "twoYear": true,
+          "rows": [
+            {
+              "heading": "balance-sheet/1/A"
+            },
+            {
+              "heading": "balance-sheet/1/B"
+            },
+            {
+              "heading": "balance-sheet/1/C"
+            },
+            {
+              "heading": "balance-sheet/1/D"
+            },
+            {
+              "heading": "balance-sheet/1/E"
+            },
+            {
+              "heading": "balance-sheet/1/F"
+            },
+            {
+              "heading": "balance-sheet/1/G"
+            },
+            {
+              "heading": "balance-sheet/1/H"
+            },
+            {
+              "heading": "balance-sheet/1/I"
+            },
+            {
+              "heading": "balance-sheet/1/J"
+            },
+            {
+              "heading": "balance-sheet/1/K",
+              "total": true
+            }
+          ],
+          "priorYearNote": "The prior-year column stays blank until the comparatives are entered on the opening balance sheet."
+        },
+        {
+          "heading": "Profit and loss account",
+          "twoYear": true,
+          "rows": [
+            {
+              "heading": "profit-and-loss/-/A",
+              "priorCell": "Financialaccounts.xlsx!PubP&L!B9"
+            },
+            {
+              "heading": "profit-and-loss/-/B",
+              "rule": {
+                "op": "sum",
+                "cells": ["Financialaccounts.xlsx!CorporationTax!K24"],
+                "why": "other income is the gross bank interest; PubP&L!F48 holds it but is not a read, and the working sheet's K24 is the same figure"
+              }
+            },
+            {
+              "heading": "profit-and-loss/-/C",
+              "priorCell": "Financialaccounts.xlsx!PubP&L!B14"
+            },
+            {
+              "heading": "profit-and-loss/-/D",
+              "rule": {
+                "op": "sum",
+                "cells": ["Financialaccounts.xlsx!MnthP&L!B18", "Financialaccounts.xlsx!MnthP&L!B19", "Financialaccounts.xlsx!MnthP&L!B20"],
+                "why": "the published P&L folds wages, directors' wages and employers' NI into one administrative expenses total, so the three lines come from the management sheet"
+              }
+            },
+            {
+              "heading": "profit-and-loss/-/E",
+              "rule": {
+                "op": "sum",
+                "cells": ["Financialaccounts.xlsx!MnthP&L!B39", "Financialaccounts.xlsx!MnthP&L!B40"],
+                "why": "loss on disposal and depreciation, the two amounts written off assets the management sheet separates"
+              }
+            },
+            {
+              "heading": "profit-and-loss/-/F",
+              "rule": {
+                "op": "deduct",
+                "cells": [
+                  "Financialaccounts.xlsx!PubP&L!F44",
+                  "Financialaccounts.xlsx!MnthP&L!B18",
+                  "Financialaccounts.xlsx!MnthP&L!B19",
+                  "Financialaccounts.xlsx!MnthP&L!B20",
+                  "Financialaccounts.xlsx!MnthP&L!B39",
+                  "Financialaccounts.xlsx!MnthP&L!B40"
+                ],
+                "why": "administrative expenses less the staff costs and the amounts written off assets already printed above; goodwill written off stays here"
+              }
+            },
+            {
+              "heading": "profit-and-loss/-/G"
+            },
+            {
+              "heading": "profit-and-loss/-/H",
+              "total": true
+            }
+          ],
+          "priorYearNote": "Only turnover and cost of sales carry a prior-year figure; the rest stay blank until the comparatives are entered."
+        },
+        {
+          "heading": "Statements above the signature",
+          "rows": [
+            {
+              "text": "These accounts have been prepared in accordance with the provisions applicable to companies subject to the micro-entities regime."
+            },
+            {
+              "text": "For the year ending {periodEnd} the company was entitled to exemption from audit under section 477 of the Companies Act 2006 relating to small companies."
+            },
+            {
+              "text": "The members have not required the company to obtain an audit of its accounts for the year in question in accordance with section 476 of the Companies Act 2006."
+            },
+            {
+              "text": "The directors acknowledge their responsibilities for complying with the requirements of the Act with respect to accounting records and the preparation of accounts."
+            },
+            {
+              "text": "Signed on behalf of the board by {directorName}, director.",
+              "from": "book"
+            }
+          ]
+        }
+      ]
+    },
+    "computation": {
+      "title": "Corporation tax computation",
+      "microcopy": "Check these against the computation you file. The order follows HMRC's prescribed computation format; nothing here is an HMRC document.",
+      "source": "computation",
+      "sections": [
+        {
+          "heading": "Profit before tax",
+          "rows": [
+            {
+              "line": "1.1/Profit/(loss) before tax per statutory accounts"
+            }
+          ]
+        },
+        {
+          "heading": "Income deducted that is not trading income",
+          "rows": [
+            {
+              "line": "1.2/Non-trading loan relationship credit",
+              "deduct": true
+            }
+          ]
+        },
+        {
+          "heading": "Disallowable expenditure added back",
+          "rows": [
+            {
+              "line": "1.3/Depreciation"
+            },
+            {
+              "line": "1.3/Trading debits in respect of intangible fixed assets"
+            },
+            {
+              "line": "1.3/Donations",
+              "status": "not-added-back",
+              "note": "The working sheet does not add charitable donations back. The figure is shown for checking and is not in the total below."
+            }
+          ]
+        },
+        {
+          "heading": "Adjusted profit",
+          "rows": [
+            {
+              "line": "1.1/Adjusted Profit/(Loss)",
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Capital allowances, main pool",
+          "rows": [
+            {
+              "line": "2.2d/AIA claimed",
+              "cell": "Financialaccounts.xlsx!CorporationTax!I15"
+            },
+            {
+              "line": "2.2d/WDA claimed",
+              "rule": {
+                "op": "sum",
+                "cells": ["Financialaccounts.xlsx!CorporationTax!I16", "Financialaccounts.xlsx!CorporationTax!I17"],
+                "why": "the working sheet splits the writing-down allowance into cars bought in the year and assets held at the start; the main pool is one line"
+              }
+            },
+            {
+              "line": "2.2d/Balancing charge",
+              "rule": {
+                "op": "negate",
+                "cells": ["Financialaccounts.xlsx!CorporationTax!I18"],
+                "why": "the working sheet carries a balancing charge as a negative allowance so the allowances total nets it"
+              }
+            },
+            {
+              "line": "2.1/Total Capital Allowances",
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Trading profit and taxable total profits",
+          "rows": [
+            {
+              "box": 155,
+              "cell": "Financialaccounts.xlsx!CorporationTax!K22"
+            },
+            {
+              "box": 170,
+              "cell": "Financialaccounts.xlsx!CorporationTax!K24"
+            },
+            {
+              "box": 160,
+              "cell": "Financialaccounts.xlsx!CorporationTax!K26",
+              "deduct": true
+            },
+            {
+              "box": 315,
+              "cell": "Financialaccounts.xlsx!CorporationTax!K28",
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Tax",
+          "rows": [
+            {
+              "group": "financial-year",
+              "caption": "First financial year",
+              "boxes": [
+                {
+                  "box": 330,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!E33"
+                },
+                {
+                  "box": 335,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!F33"
+                },
+                {
+                  "box": 340,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!G33"
+                },
+                {
+                  "box": 345,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!J33"
+                },
+                {
+                  "label": "Marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!L33",
+                  "format": "pence"
+                },
+                {
+                  "label": "Tax after marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!I33",
+                  "format": "pence"
+                }
+              ]
+            },
+            {
+              "group": "financial-year",
+              "caption": "Second financial year",
+              "blankWhen": "Financialaccounts.xlsx!CorporationTax!A34",
+              "boxes": [
+                {
+                  "box": 380,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!E34"
+                },
+                {
+                  "box": 385,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!F34"
+                },
+                {
+                  "box": 390,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!G34"
+                },
+                {
+                  "box": 395,
+                  "cell": "Financialaccounts.xlsx!CorporationTax!J34"
+                },
+                {
+                  "label": "Marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!L34",
+                  "format": "pence"
+                },
+                {
+                  "label": "Tax after marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!I34",
+                  "format": "pence"
+                }
+              ]
+            },
+            {
+              "box": 440,
+              "cell": "Financialaccounts.xlsx!CorporationTax!K35",
+              "total": true
+            }
+          ]
+        }
+      ]
+    },
+    "ct600": {
+      "title": "CT600",
+      "microcopy": "Check these against your return. Box numbers are the 2026 Version 3 form's; nothing here is an HMRC document.",
+      "source": "ct600",
+      "sections": [
+        {
+          "heading": "Company information",
+          "rows": [
+            {
+              "box": 1,
+              "from": "book",
+              "field": "entityInformation.organizationIdentifier"
+            },
+            {
+              "box": 2,
+              "from": "book",
+              "field": "diya-gl:companyNumber"
+            },
+            {
+              "box": 3,
+              "from": "book",
+              "field": "gl-taf:taxRegistrationNumber"
+            }
+          ]
+        },
+        {
+          "heading": "About this return",
+          "rows": [
+            {
+              "box": 30
+            },
+            {
+              "box": 35
+            },
+            {
+              "box": 80,
+              "rule": {
+                "op": "fixed",
+                "value": "X",
+                "why": "the page always attaches accounts and a computation"
+              }
+            }
+          ]
+        },
+        {
+          "heading": "Turnover",
+          "rows": [
+            {
+              "box": 145
+            }
+          ]
+        },
+        {
+          "heading": "Income",
+          "rows": [
+            {
+              "box": 155
+            },
+            {
+              "box": 160
+            },
+            {
+              "box": 165,
+              "total": true
+            },
+            {
+              "box": 170
+            }
+          ]
+        },
+        {
+          "heading": "Profits before deductions and reliefs",
+          "rows": [
+            {
+              "box": 235,
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Deductions and reliefs",
+          "rows": [
+            {
+              "box": 295
+            },
+            {
+              "box": 300
+            },
+            {
+              "box": 305
+            },
+            {
+              "box": 315,
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Rates, associated companies and marginal relief",
+          "rows": [
+            {
+              "box": 326,
+              "rule": {
+                "op": "fixed",
+                "value": 0,
+                "why": "the working sheet's marginal relief assumes no associated companies"
+              }
+            },
+            {
+              "box": 327,
+              "rule": {
+                "op": "fixed",
+                "value": 0,
+                "why": "the working sheet's marginal relief assumes no associated companies"
+              }
+            },
+            {
+              "box": 328,
+              "rule": {
+                "op": "fixed",
+                "value": 0,
+                "why": "the working sheet's marginal relief assumes no associated companies"
+              }
+            },
+            {
+              "box": 329,
+              "rule": {
+                "op": "tickIfAny",
+                "tests": [
+                  {
+                    "cell": "Financialaccounts.xlsx!CT600!Y133",
+                    "test": "gt0"
+                  },
+                  {
+                    "cell": "Financialaccounts.xlsx!CT600!AA126",
+                    "test": "lt",
+                    "against": "Financialaccounts.xlsx!Admin!P8"
+                  }
+                ],
+                "why": "the form ticks 329 for marginal relief or the small profits rate; the sheet prints neither tick"
+              }
+            },
+            {
+              "group": "financial-year",
+              "caption": "First financial year",
+              "boxes": [
+                {
+                  "box": 330
+                },
+                {
+                  "box": 335
+                },
+                {
+                  "box": 340
+                },
+                {
+                  "box": 345
+                }
+              ]
+            },
+            {
+              "group": "financial-year",
+              "caption": "Second financial year",
+              "blankWhen": "Financialaccounts.xlsx!CorporationTax!A34",
+              "boxes": [
+                {
+                  "box": 380
+                },
+                {
+                  "box": 385
+                },
+                {
+                  "box": 390
+                },
+                {
+                  "box": 395
+                }
+              ]
+            },
+            {
+              "box": 430
+            },
+            {
+              "box": 435
+            },
+            {
+              "box": 440,
+              "total": true
+            }
+          ]
+        },
+        {
+          "heading": "Tax outstanding or overpaid",
+          "rows": [
+            {
+              "box": 475
+            },
+            {
+              "box": 510
+            },
+            {
+              "box": 515
+            },
+            {
+              "box": 525
+            },
+            {
+              "box": 528
+            }
+          ]
+        },
+        {
+          "heading": "Tax reconciliation",
+          "rows": [
+            {
+              "box": 595
+            },
+            {
+              "box": 600
+            },
+            {
+              "box": 605,
+              "rule": {
+                "op": "positiveDifference",
+                "cells": ["Financialaccounts.xlsx!CT600!AJ163", "Financialaccounts.xlsx!CT600!AJ159"],
+                "why": "the sheet's own overpaid cell is not a read; box 605 is tax already paid less the self-assessment, floored at nil"
+              }
+            }
+          ]
+        },
+        {
+          "heading": "Capital allowances and balancing charges",
+          "rows": [
+            {
+              "box": 690,
+              "cell": "Financialaccounts.xlsx!CorporationTax!I15"
+            },
+            {
+              "box": 695,
+              "empty": true,
+              "note": "The working sheet has no special rate pool."
+            },
+            {
+              "box": 700,
+              "empty": true,
+              "note": "The working sheet has no special rate pool."
+            },
+            {
+              "box": 705,
+              "rule": {
+                "op": "sum",
+                "cells": ["Financialaccounts.xlsx!CorporationTax!I16", "Financialaccounts.xlsx!CorporationTax!I17"],
+                "why": "Version 3 has one main pool box, so the cars line and the assets-held line join it; the CT600 sheet's own AA177 and AA179 read column H of the working sheet, which is empty, and always print blank"
+              },
+              "note": "The CT600 sheet leaves this box blank. The figure comes from the corporation tax working sheet."
+            },
+            {
+              "box": 710,
+              "rule": {
+                "op": "negate",
+                "cells": ["Financialaccounts.xlsx!CorporationTax!I18"],
+                "why": "the working sheet carries a balancing charge as a negative allowance"
+              },
+              "note": "The CT600 sheet leaves this box blank. The figure comes from the corporation tax working sheet."
+            },
+            {
+              "box": 760,
+              "empty": true,
+              "note": "The working sheet claims the annual investment allowance, not a first year allowance."
+            }
+          ]
+        },
+        {
+          "heading": "Declaration",
+          "rows": [
+            {
+              "box": 975,
+              "cell": "Financialaccounts.xlsx!OpenAccounts!E5"
+            },
+            {
+              "box": 980,
+              "empty": true,
+              "note": "Enter the date you sign the return."
+            },
+            {
+              "box": 985,
+              "rule": {
+                "op": "fixed",
+                "value": "Director",
+                "why": "the CT600 sheet prints DIRECTOR as the signing status"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "vat": {
+      "title": "VAT return",
+      "microcopy": "Check these against your return. Box numbers are the nine boxes of the VAT return; nothing here is an HMRC document.",
+      "source": "sheet",
+      "sheets": ["VATQtr1", "VATQtr2", "VATQtr3", "VATQtr4", "VATQtr5"],
+      "file": "Vatreturns.xlsx",
+      "period": {
+        "endCell": "G5",
+        "dueCell": "G7"
+      },
+      "fifthFormCaption": "the quarter after the year end",
+      "boxes": [
+        {
+          "box": 1,
+          "label": "VAT due on sales and other outputs",
+          "cell": "G9"
+        },
+        {
+          "box": 2,
+          "label": "VAT due on acquisitions from Northern Ireland from EU member states",
+          "cell": null,
+          "rule": {
+            "op": "fixed",
+            "value": 0,
+            "why": "the sheet fixes G11 at nil and does not read it"
+          },
+          "note": "The sheet sets box 2 to zero. Work out any amount due and enter it yourself."
+        },
+        {
+          "box": 3,
+          "label": "Total VAT due",
+          "cell": "G13",
+          "total": true
+        },
+        {
+          "box": 4,
+          "label": "VAT reclaimed on purchases and other inputs",
+          "cell": "G15"
+        },
+        {
+          "box": 5,
+          "label": "Net VAT to pay or reclaim",
+          "cell": "G17",
+          "total": true
+        },
+        {
+          "box": 6,
+          "label": "Total value of sales excluding VAT",
+          "labelWhenFlatRate": "Total value of sales including VAT",
+          "cell": "G21"
+        },
+        {
+          "box": 7,
+          "label": "Total value of purchases excluding VAT",
+          "cell": "G23"
+        },
+        {
+          "box": 8,
+          "label": "Total value of dispatches of goods to Northern Ireland",
+          "cell": null,
+          "note": "The sheet leaves boxes 8 and 9 blank."
+        },
+        {
+          "box": 9,
+          "label": "Total value of acquisitions of goods from Northern Ireland",
+          "cell": null,
+          "note": "The sheet leaves boxes 8 and 9 blank."
+        }
+      ]
+    }
+  }
+}

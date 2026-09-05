@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
 
-import { saveBstWorkbook, saveBstPackageZip, taxYearFileName, BookFieldError } from "../lib/bst-workbook.js";
+import { saveWorkbook, savePackageZip, taxYearFileName, BookFieldError } from "../lib/product-workbook.js";
 import { nodeResourceLoader } from "../lib/app-resources.js";
 import { generateSpreadsheet, packageNaming } from "../lib/generator.js";
 import { applyCellWrites, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
@@ -49,12 +49,12 @@ async function readCell(workbook, sheetName, cellRef) {
   return readCellValue(await zip.file(sheetPath).async("string"), cellRef, sharedStrings);
 }
 
-describe("saveBstWorkbook", () => {
+describe("saveWorkbook", () => {
   for (const [name, dir] of FIXTURES) {
     it(`writes ${name} to the same bytes the generate path composes`, async () => {
       const { book, lines } = loadDiyaGlData(resolve(ROOT, dir));
 
-      const carved = await saveBstWorkbook(book, lines);
+      const carved = await saveWorkbook(book, lines);
       const composed = await workbookTheGeneratePathComposes(book, lines);
 
       expect(carved.filename).toBe(composed.filename);
@@ -64,13 +64,13 @@ describe("saveBstWorkbook", () => {
 
   it("names the workbook for the tax year the book's period ends in", async () => {
     const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/precision-code-ltd/bst"));
-    const { filename } = await saveBstWorkbook(book, lines);
+    const { filename } = await saveWorkbook(book, lines);
     expect(filename).toBe("Financialaccountsto050426.xlsx");
   }, 120000);
 
   it("carries the book's own figures, not the template's", async () => {
     const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/brickwork-pro/bst-nonvat"));
-    const { workbook } = await saveBstWorkbook(book, lines);
+    const { workbook } = await saveWorkbook(book, lines);
 
     expect(await readCell(workbook, "Business Details", "C5")).toBe(book.entityInformation.organizationIdentifier);
     expect(await readCell(workbook, "Business Details", "C10")).toBe(book.entityInformation.organizationTown);
@@ -78,7 +78,7 @@ describe("saveBstWorkbook", () => {
 
   it("asks the spreadsheet app to recalculate on open", async () => {
     const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/sp-sixty-driving/bst"));
-    const { workbook } = await saveBstWorkbook(book, lines);
+    const { workbook } = await saveWorkbook(book, lines);
     const zip = await JSZip.loadAsync(workbook);
     expect(await zip.file("xl/workbook.xml").async("string")).toContain('fullCalcOnLoad="1"');
   }, 120000);
@@ -111,8 +111,8 @@ describe("the resource loader seam", () => {
       },
     };
 
-    const injected = await saveBstWorkbook(book, lines, { resources });
-    const onDisk = await saveBstWorkbook(book, lines);
+    const injected = await saveWorkbook(book, lines, { resources });
+    const onDisk = await saveWorkbook(book, lines);
 
     expect(asked.sort()).toEqual([...held.keys()].sort());
     expect(Buffer.compare(injected.workbook, onDisk.workbook)).toBe(0);
@@ -152,14 +152,14 @@ describe("a book the writer cannot use", () => {
       const { book, lines } = bookWithout(field);
       const named = field === "documentInfo" ? "documentInfo" : `documentInfo.${field}`;
 
-      await expect(saveBstWorkbook(book, lines)).rejects.toThrow(BookFieldError);
-      await expect(saveBstWorkbook(book, lines)).rejects.toThrow(named);
+      await expect(saveWorkbook(book, lines)).rejects.toThrow(BookFieldError);
+      await expect(saveWorkbook(book, lines)).rejects.toThrow(named);
     });
   }
 
   it("names the field on the error itself", async () => {
     const { book, lines } = bookWithout("periodCoveredEnd");
-    await expect(saveBstWorkbook(book, lines)).rejects.toMatchObject({
+    await expect(saveWorkbook(book, lines)).rejects.toMatchObject({
       name: "BookFieldError",
       field: "documentInfo.periodCoveredEnd",
     });
@@ -175,22 +175,22 @@ describe("a book the writer cannot use", () => {
         throw new Error("the save path reached for a resource before checking the book");
       },
     };
-    await expect(saveBstWorkbook(book, lines, { resources })).rejects.toThrow(BookFieldError);
+    await expect(saveWorkbook(book, lines, { resources })).rejects.toThrow(BookFieldError);
   });
 });
 
-describe("saveBstPackageZip", () => {
+describe("savePackageZip", () => {
   it("wraps the workbook as the package zip the download page serves", async () => {
     const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/precision-code-ltd/bst"));
 
-    const { zip: zipBuffer, filename } = await saveBstPackageZip(book, lines);
+    const { zip: zipBuffer, filename } = await savePackageZip(book, lines);
     expect(filename).toBe("GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007.zip");
 
     const zip = await JSZip.loadAsync(zipBuffer);
     expect(Object.keys(zip.files)).toEqual(["Financialaccountsto050426.xlsx"]);
 
     const held = await zip.file("Financialaccountsto050426.xlsx").async("nodebuffer");
-    const { workbook } = await saveBstWorkbook(book, lines);
+    const { workbook } = await saveWorkbook(book, lines);
     expect(Buffer.compare(held, workbook)).toBe(0);
   }, 180000);
 });

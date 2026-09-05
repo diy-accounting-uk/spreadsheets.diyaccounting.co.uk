@@ -1,0 +1,244 @@
+# FRS 105 micro-entity accounts formats, Companies House / Schedule 1 Section C.
+#
+# Sources:
+# - Small Companies and Groups (Accounts and Directors' Report) Regulations 2008, SI 2008/409,
+#   Schedule 1, Section C (micro-entity formats, inserted by SI 2013/3008):
+#   https://www.legislation.gov.uk/uksi/2008/409/schedule/1
+#   In-force consolidated text, last modified 16 April 2025, valid from 6 April 2025.
+# - Headings transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 4.
+# - sheetCell: the Companies House accounts mapping in "The look-alike forms" section of
+#   PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked against CELL_MAP/standardReads() in
+#   app/products/ltd.js. Only one of Format 1 or Format 2 may be used for the balance sheet
+#   (Sch.1 para.1(1A)); this product's PubBalSht sheet follows Format 1, so only Format 1
+#   headings carry a sheetCell. Format 2 is recorded for completeness (it is part of the same
+#   statutory source) with no sheetCell, since the product does not use it.
+source = "https://www.legislation.gov.uk/uksi/2008/409/schedule/1"
+regulation = "SI 2008/409, Schedule 1, Section C, as inserted by SI 2013/3008"
+inForceDate = "2025-04-16"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "A"
+label = "Called up share capital not paid"
+status = "no-sheet-figure"
+statusNote = "the template prints this heading as nil"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "B"
+label = "Fixed assets"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!F6"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "C"
+label = "Current assets"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!E13"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "D"
+label = "Prepayments and accrued income"
+status = "no-sheet-figure"
+statusNote = "the template prints this heading as nil"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "E"
+label = "Creditors: amounts falling due within one year"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!E20"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "F"
+label = "Net current assets (liabilities)"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!F22"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "G"
+label = "Total assets less current liabilities"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!F26"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "H"
+label = "Creditors: amounts falling due after more than one year"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!F31"
+note = "The template sums E29 (directors' loan) and E30 (creditors due after more than one year) into F31."
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "I"
+label = "Provisions for liabilities"
+status = "no-sheet-figure"
+statusNote = "the template prints this heading as nil"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "J"
+label = "Accruals and deferred income"
+status = "no-sheet-figure"
+statusNote = "the template prints this heading as nil"
+
+[[heading]]
+statement = "balance-sheet"
+format = 1
+letter = "K"
+label = "Capital and reserves"
+sheetCell = "Financialaccounts.xlsx!PubBalSht!F39"
+note = "The template sums F36 (share capital) and F37 (profit and loss account) into F39; F37 is not yet a wired sheet read."
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "assets"
+letter = "-"
+label = "ASSETS"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+note = "Heading row, not a lettered item."
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "assets"
+letter = "A"
+label = "Called up share capital not paid"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "assets"
+letter = "B"
+label = "Fixed assets"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "assets"
+letter = "C"
+label = "Current Assets"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "assets"
+letter = "D"
+label = "Prepayments and accrued income"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "liabilities"
+letter = "-"
+label = "CAPITAL, RESERVES AND LIABILITIES"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+note = "Heading row; wording substituted by SI 2015/980 reg.16(4)."
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "liabilities"
+letter = "A"
+label = "Capital and reserves"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "liabilities"
+letter = "B"
+label = "Provisions for liabilities"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "liabilities"
+letter = "C"
+label = "Creditors"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+note = "Note (1): aggregate amounts falling due within one year and after one year shown separately."
+
+[[heading]]
+statement = "balance-sheet"
+format = 2
+group = "liabilities"
+letter = "D"
+label = "Accruals and deferred income"
+status = "format-not-used"
+statusNote = "this product's PubBalSht sheet follows Format 1, so Format 2 carries no sheetCell"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "A"
+label = "Turnover"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F9"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "B"
+label = "Other income"
+status = "unmapped"
+statusNote = "named in the plan's look-alike-forms mapping but the cell is not yet a wired sheet read"
+note = "Plan names PubP&L!F48; not yet wired in CELL_MAP/standardReads()."
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "C"
+label = "Cost of raw materials and consumables"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F16"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "D"
+label = "Staff costs"
+sheetCell = "Financialaccounts.xlsx!MnthP&L!B18+B19+B20"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "E"
+label = "Depreciation and other amounts written off assets"
+sheetCell = "Financialaccounts.xlsx!MnthP&L!B39+B40"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "F"
+label = "Other charges"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F44"
+note = "The remainder of F44 (administrative expenses) after staff costs and depreciation are deducted."
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "G"
+label = "Tax"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F50"
+
+[[heading]]
+statement = "profit-and-loss"
+letter = "H"
+label = "Profit or loss"
+sheetCell = "Financialaccounts.xlsx!PubP&L!F51"

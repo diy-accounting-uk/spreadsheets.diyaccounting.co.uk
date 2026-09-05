@@ -164,3 +164,35 @@ export function changeLineAccount(book, lines, params) {
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;
 }
+
+/**
+ * Move one existing bank entry to another of the book's own bank accounts,
+ * identified by its entryNumber. A bank line names its account twice -- as
+ * the line's own account and as the bank account the workbook is keyed by --
+ * and both move together, or the entry would reach one workbook and be
+ * totalled under another. The new account has to be one the book's chart
+ * declares under [accounts.bank], and the named line has to be on the bank
+ * journal. Every other field, including the line's position in the array,
+ * is carried over unchanged.
+ * @param {Object} book - parsed book.toml, for its declared bank accounts
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, newBankAccountID: string}} params
+ * @returns {Array} a new lines array with the named line's bank account changed
+ */
+export function changeLineBankAccount(book, lines, params) {
+  const { entryNumber, newBankAccountID } = params;
+  if (!Object.keys(book?.accounts?.bank || {}).includes(newBankAccountID)) {
+    throw new Error(`changeLineBankAccount expects a bank account declared in the book's own chart, got "${newBankAccountID}"`);
+  }
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    if (line.sourceJournalID !== "bank") {
+      throw new Error(`changeLineBankAccount expects a line on the bank journal, got "${line.sourceJournalID}"`);
+    }
+    found = true;
+    return { ...line, "accountMainID": newBankAccountID, "diya-gl:bankAccountID": newBankAccountID };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
