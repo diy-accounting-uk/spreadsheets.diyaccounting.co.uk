@@ -4523,6 +4523,16 @@ description = "Aggregate supplier payments"
 reference = "BNK-CR-MISC-003"
 
 [[bank.jun]]
+date = 2025-06-10
+account = "1200"
+source = "Cash float withdrawal"
+code = "BC"
+direction = "out"
+amount = 100
+description = "Cash drawn for the cash float"
+reference = "BNK-BC-001"
+
+[[bank.jun]]
 date = 2025-06-19
 account = "1200"
 source = "HMRC"

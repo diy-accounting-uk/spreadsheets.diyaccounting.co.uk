@@ -373,9 +373,13 @@ function journalMonthTotals(transactions, rate, analysisColumns, defaultCode, ci
 // ── Bank workbooks ─────────────────────────────────────────────────────────
 
 // Each workbook's month tabs: the receipts and payments totals and each code
-// letter's own total. A "BC"-coded entry is the account's opening balance,
-// which the workbook takes in A1 rather than as a statement line.
-function bankMonthTotals(scenario, tabs) {
+// letter's own total. A "BC"-coded entry dated the period's own opening day
+// is the account's opening balance, which the workbook takes in A1 rather
+// than as a statement line; a "BC"-coded entry any other day is an ordinary
+// transfer statement line, the same as any other code (BC also names the
+// sibling a Cashaccount.xlsx transfer points at, on every other workbook's
+// own tabs -- see BANK_TRANSFER_CODES).
+function bankMonthTotals(scenario, tabs, periodStart) {
   const files = {};
   for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
     files[fileName] = {
@@ -388,7 +392,7 @@ function bankMonthTotals(scenario, tabs) {
       const fileName = BANK_ACCOUNT_FILES[transaction.account || "1200"];
       if (!fileName) continue;
       const file = files[fileName];
-      if (transaction.code === "BC") {
+      if (transaction.code === "BC" && parseDate(transaction.date).getTime() === periodStart.getTime()) {
         file.opening = transaction.amount;
         continue;
       }
@@ -643,7 +647,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const salesMonthly = (column) => tabs.map((tab) => salesMonths[tab][`${column}1`] || 0);
   const purchasesMonthly = (column) => tabs.map((tab) => purchaseMonths[tab][`${column}1`] || 0);
 
-  const banks = bankMonthTotals(scenario, tabs);
+  const banks = bankMonthTotals(scenario, tabs, period.start);
   for (const [fileName, file] of Object.entries(banks)) {
     let balance = file.opening;
     let openingOfLastMonth = balance;
