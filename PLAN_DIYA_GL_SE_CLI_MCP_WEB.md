@@ -432,6 +432,12 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S6 `9215c63a`, merged 2026-09-05: `app/lib/products.js` (`PRODUCTS`, `productModule`), the MCP
+  server named `diya-gl`, `extractBookFromFile` with the product from the book or the sniff and a
+  `PackageMismatchError`; BST `--file` output byte-identical; the browser suite is 161 with S1's
+  test. Two remainders: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of
+  `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES` (S7 or T14 folds them into `products.js`); and
+  `app/bin/generate.js` runs `main()` on import with no CLI guard, so no test or agent may import it.
 - For S7: the page's three `engine.taxYearFileName(new Date(...))` calls (`bst-data.js:907`,
   `925`, `1077`) pass no regime and so name an `se-*` file for every product; the shell passes
   the product module's `taxRegime`.
