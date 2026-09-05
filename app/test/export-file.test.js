@@ -106,7 +106,7 @@ async function packageZipOf(dir, zipPath) {
 // A sheet name as workbook.xml spells it. "Debtors & Creditors" is stored
 // with its ampersand escaped, so a literal match on the name the code uses
 // finds nothing.
-const asXml = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const asXml = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // A copy of the fixture with one workbook.xml sheet name swapped for
 // another -- the shape a customer's own renamed tab takes.
