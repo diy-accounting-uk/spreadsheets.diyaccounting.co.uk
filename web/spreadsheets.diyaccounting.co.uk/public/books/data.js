@@ -542,13 +542,15 @@
   }
 
   /**
-   * Load one of the manifest's example books: book.toml + lines.jsonl only,
-   * no workbook to read an as-read layer from.
-   * @param {string} exampleKey - a key of manifest.examples
+   * Load one of the product's example books: book.toml + lines.jsonl only,
+   * no workbook to read an as-read layer from. The list is the generated
+   * examples.js the bundle build writes from scripts/example-books.json,
+   * the same one the shell's own example buttons come from.
+   * @param {string} exampleKey - a key of the product's example list
    * @param {Object} manifest
    */
   async function loadExample(exampleKey, manifest) {
-    var meta = manifest.examples.filter(function (example) {
+    var meta = ((global.DiyaGlExamples && global.DiyaGlExamples[manifest.id]) || []).filter(function (example) {
       return example.key === exampleKey;
     })[0];
     if (!meta) throw new Error('Unknown example "' + exampleKey + '"');

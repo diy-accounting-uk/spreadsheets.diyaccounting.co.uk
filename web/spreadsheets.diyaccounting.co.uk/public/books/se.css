@@ -1,0 +1,84 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 DIY Accounting Ltd */
+
+/* books/se.css -- the Self Employed page's sheet: the shared books sheet,
+   plus the rules the views only this product has need. */
+
+@import url("books.css");
+
+/* The journal switch above the entries grid, and the bank book's own
+   account switch: one row of buttons, the chosen one filled in. */
+.journal-switch,
+.account-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
+
+.journal-switch-btn,
+.account-switch-btn {
+  border: 1px solid var(--rule-faint);
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.75rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.journal-switch-btn:hover,
+.account-switch-btn:hover {
+  border-color: var(--rule);
+}
+
+.journal-switch-btn[aria-pressed="true"],
+.account-switch-btn[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* The statement's twelve month columns and the bank book's analysis
+   columns are both wider than the view, so each scrolls inside its own
+   box rather than pushing the page sideways. */
+.se-months-scroll {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.se-months-scroll table {
+  min-width: 100%;
+}
+
+.se-months-table th:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* One settlement a row: what is missing, then the preview and the two
+   controls that apply or drop it. */
+.settlement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settlement {
+  border-top: 1px solid var(--rule-faint);
+  padding: 0.6rem 0;
+}
+
+.settlement:first-child {
+  border-top: none;
+}
+
+.settlement p {
+  margin: 0 0 0.4rem;
+}
+
+.settlement-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
