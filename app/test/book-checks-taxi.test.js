@@ -128,6 +128,14 @@ describe("each Taxi rule is breakable by one crafted change, and only that rule 
     expect(resultFor(after, "book-taxi-fare-miles").offenders).toEqual([
       { entryNumber: "TXN-0001", postingDate: "2025-04-07", accountMainID: "4000", detail: "Daily fares", amount: 174 },
     ]);
+    // The helper takes the reader to the offending day's miles input, so it
+    // names the field as well as the entry.
+    expect(resultFor(after, "book-taxi-fare-miles").helper).toEqual({
+      id: "book-taxi-fare-miles",
+      label: "Enter the day's miles",
+      kind: "focus",
+      field: "miles",
+    });
   });
 
   it("book-taxi-vehicle-register: the registered vehicle's schedule entry removed", () => {

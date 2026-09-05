@@ -228,3 +228,70 @@ export function changeLineBankAccount(book, lines, params) {
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;
 }
+
+/**
+ * Change one existing line's detail comment, identified by its entryNumber.
+ * The detail is what the workbook prints beside the entry -- a fare's name
+ * on the Taxi Sales sheet, a supplier on a Purchases sheet -- and it also
+ * decides where a Taxi sales line lands: "Rental due" and "Any other
+ * income" are the week's own caption rows, not a day's fare. Every other
+ * field, including the line's position in the array, is carried over
+ * unchanged.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, detailComment: string}} params
+ * @returns {Array} a new lines array with the named line's detail changed
+ */
+export function changeLineDetail(book, lines, params) {
+  const { entryNumber, detailComment } = params;
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    found = true;
+    return { ...line, detailComment };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
+
+// A measured quantity is three fields at once -- how many, of what, and
+// what the measurement is of -- so they are written and removed together.
+// Miles name themselves: a Taxi fare day's quantity is always the business
+// miles that day drove, which is what the mileage claim is priced from.
+const MILES_DESCRIPTION = "Business miles driven";
+
+/**
+ * Set or remove one existing line's measured quantity, identified by its
+ * entryNumber. A quantity above zero writes all three measurable fields; a
+ * quantity of zero or null removes all three, leaving a line that measures
+ * nothing rather than one measuring none of something. Every other field,
+ * including the line's position in the array, is carried over unchanged.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, quantity: number|null, unit: string, description: string}} params
+ * @returns {Array} a new lines array with the named line's quantity changed
+ */
+export function changeLineQuantity(book, lines, params) {
+  const { entryNumber, quantity, unit, description } = params;
+  if (quantity !== null && quantity !== undefined && (typeof quantity !== "number" || !Number.isFinite(quantity) || quantity < 0)) {
+    throw new Error(`changeLineQuantity expects a non-negative number or null, got "${quantity}"`);
+  }
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    found = true;
+    const next = { ...line };
+    if (quantity) {
+      next.measurableQuantity = quantity;
+      next.measurableUnitOfMeasure = unit;
+      next.measurableDescription = unit === "miles" ? MILES_DESCRIPTION : description;
+    } else {
+      delete next.measurableQuantity;
+      delete next.measurableUnitOfMeasure;
+      delete next.measurableDescription;
+    }
+    return next;
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}

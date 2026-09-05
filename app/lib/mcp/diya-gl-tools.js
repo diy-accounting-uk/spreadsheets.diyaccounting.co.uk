@@ -40,10 +40,22 @@ import {
   removeLine,
   changeLinePostingDate,
   changeLineAccount,
+  changeLineDetail,
+  changeLineQuantity,
 } from "../diya-gl-edits.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 
-const EDITS = { addSaleLine, addPurchaseLine, addBankLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount };
+const EDITS = {
+  addSaleLine,
+  addPurchaseLine,
+  addBankLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+  changeLineDetail,
+  changeLineQuantity,
+};
 
 /**
  * A fresh, empty session: no book loaded.
