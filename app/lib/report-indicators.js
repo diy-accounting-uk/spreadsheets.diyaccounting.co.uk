@@ -382,8 +382,8 @@ function bstIndicators(report) {
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",
       fromLabel: "net profit",
-      to: "Taxable profit",
-      toLabel: "taxable profit",
+      to: "Net business profit",
+      toLabel: "net business profit",
     }),
     incomeTaxLine(report, "Income Tax Calculation"),
     bridgeLine(report),

@@ -500,10 +500,10 @@ a tax or NI line) carries "—".
 | O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 25 |
 | O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 26 |
 | D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 27 |
-| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 28, net business profit for tax purposes |
+| D99 | **Net business profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 28, net business profit for tax purposes |
 | O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 29 |
 | O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 30 |
-| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 31, total taxable profits from this business |
+| D106 | Net profit for tax calc | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 31, total taxable profits from this business |
 
 ### Income Tax
 

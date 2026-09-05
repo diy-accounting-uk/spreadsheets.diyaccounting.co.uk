@@ -299,9 +299,9 @@ Single-file workbook. Maps to SA103S like the SE product but with a simpler stru
 | SE Short | D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | Box 29 | Total capital allowances |
 | SE Short | D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | Box 30 | Annual Investment Allowance |
 | SE Short | D94 | Other tax adjustments | `gl-cor:amount (sa103s.otherAdjust)` | Box 33 | Other tax adjustments |
-| SE Short | D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 35 | Net business profit for tax |
+| SE Short | D99 | **Net business profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 28 | Net business profit for tax |
 | SE Short | A32 | VAT threshold note | `gl-cor:detailComment (sa103s.notes)` | -- | Advisory text |
-| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 35 | Final figure for tax calc |
+| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 31 | Total taxable profits, final figure for tax calc |
 
 ### 3.6 Stock (PurchasesStock sheet)
 

@@ -315,12 +315,12 @@ No entries are required. All the information is updated automatically from the w
 This return is provided to assist in the completion of the year end self employed section of the tax return. All box references on this document are the same as the actual tax return. The SE Short sheet is laid out to match the HMRC Self-Employment (Short) form and includes:
 
 - **Business details** — description, postcode, start/cease dates, accounts date
-- **Business income** — turnover (box 8) and other business income (box 9)
-- **Allowable business expenses** — boxes 10–19 populated from the expense analysis
-- **Net profit or loss** — box 20 (profit) or box 21 (loss)
+- **Business income** — turnover (box 9) and other business income (box 10)
+- **Allowable business expenses** — boxes 11–20 populated from the expense analysis
+- **Net profit or loss** — box 21 (profit) or box 22 (loss)
 - **Tax allowances** — capital allowances from the Fixed Assets sheet
-- **Taxable profit** — box 27, net business profit for tax purposes
-- **Total taxable profits** — box 30
+- **Net business profit** — box 28, net business profit for tax purposes
+- **Total taxable profits** — box 31
 
 ### Draft Tax Calculation
 
