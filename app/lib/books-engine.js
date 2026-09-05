@@ -73,7 +73,17 @@ export {
 export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
 
 // The checks and the report shape.
-export { reportSections, checkCompliance, cellLabels, profitBridge, standardReads, CELL_MAP, HEADLINES, TAX_SHEET, PRODUCT } from "../products/bst.js";
+export {
+  reportSections,
+  checkCompliance,
+  cellLabels,
+  profitBridge,
+  standardReads,
+  CELL_MAP,
+  HEADLINES,
+  TAX_SHEET,
+  PRODUCT,
+} from "../products/bst.js";
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
 // Editing it.

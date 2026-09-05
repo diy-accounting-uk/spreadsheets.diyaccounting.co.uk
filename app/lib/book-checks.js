@@ -554,7 +554,8 @@ export function previewBookHelper({ book, lines }, checkId) {
   if (!plan) return null;
   return {
     title: plan.title,
-    summary: "This will add " + plan.changes.length + (plan.changes.length === 1 ? " entry" : " entries") + " to the book. Nothing else moves.",
+    summary:
+      "This will add " + plan.changes.length + (plan.changes.length === 1 ? " entry" : " entries") + " to the book. Nothing else moves.",
     changes: plan.changes,
   };
 }
