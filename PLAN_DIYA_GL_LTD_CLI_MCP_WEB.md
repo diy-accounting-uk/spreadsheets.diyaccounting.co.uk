@@ -456,19 +456,6 @@ each rebasing on the last.
   raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
   payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
 
-- T8 design `d1161d69`, 2026-09-04: the coding brief under T8 and the layout draft
-  `app/data/hmrc/form-layouts/ltd.json` on the batch branch. It found the CT600 sheet's capital
-  allowance boxes dead on every package: `AA177`, `AL177` and `AA179` read the working sheet's
-  column H, which is empty on rows 15 to 18, while the allowances sit in column I. **T21** (Sonnet,
-  with R6) points them at column I in the template and regenerates; until then the layout takes
-  boxes 690, 705 and 710 from `CorporationTax!I15`, `I16+I17` and `-I18`.
-
-- T3b `6272e953`, merged 2026-09-04: the declaration runs through `headlines.js`, which gains
-  `tax.secondLine`, `assets.secondLine` and `turnover.pieExtra` (the dividends slice); B11 to B13
-  left `expenseLines` because the reducer already carries cost of sales as one slice. The shared
-  reducer has no label hook, so Ltd's pie says "Running costs" and "Tax and NI" until **T22**
-  (Sonnet, before Taxi T12 in `headlines.js`) adds `runningCosts.label` and `tax.label`.
-
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
@@ -897,6 +884,146 @@ matches `--data` on every shared key it matched before.
 
 Tier: Fable for the design wave; the implementation brief it produces names its own tier.
 
+#### T4 coding brief
+
+**Partial. The design wave was paused on 2026-09-04 before the brief was finished.** What
+follows is measured and decided; the sections marked "to write" are the remainder for a
+fresh agent in this worktree. Every count below was measured by a script over the thirteen
+templates in `app/templates/ltd`, the shipped 2026-03-31 package and `examples/ltd-latest`,
+not taken from the design text above.
+
+Measured. The Ltd templates address 2,214 distinct `file!sheet!cell` leaf cells across
+2,334 cache cells (the same cell cached by several readers: Admin `B9` to `B32` by the four
+bank books, Sales and Purchases `G1` by the hub and Vatreturns, and so on). Per target:
+the four bank books 1,344 (three statement books at 29 cells a tab, Cashaccount at 25);
+Purchases 303 (25 a tab, `AI2` on the last tab, the two ledgers' `G2`); Sales 161 (13 a tab,
+`U2` on the last tab, the two ledgers' `G2` and `G4`); Fixedassets 186 (Schedule 185,
+`HPfinance!E2`); Payslips 156 (13 a tab); the hub 57 (Admin `B6` to `B40` less the odd
+rows above 32, `G5`, `G6`, `G7`, `L6`, `M19`, `N7`, `N11`; OpenAccounts `E16` and
+`G13` to `K13`, `M13` to `Q13`; TrialBalance `D28` to `D31`, `EJ20`, `EJ28` to `EJ31`);
+Companysecretary 7. In every template the cached set equals the addressed set (the union is
+2,334 in both), except that the hub template caches none of Schedule `B`, `C`, `E` on rows
+67 to 107, none of Boardmeeting `E4`, `E6`, RegisterofMembers `A3`, `A4`, and Fixedassets
+caches none of OpenAccounts row 13 or Admin `G6`; those are the input cells Excel had no
+value for when it last saved.
+
+The fixture `app/test/fixtures/ltd-link-cells.json` is committed in first cut with the 2,214
+`addressed` keys and 109 `blank` entries, each with a `why` and, where `cellWrites` may fill
+the cell, `writer: true`. The blank set: Schedule `B`, `C`, `E` on the 31 new-asset rows
+(67 to 74, 78 to 82, 86 to 93, 97 to 101, 103 to 107), OpenAccounts `G13` to `K13` and `M13`
+to `Q13`, OpenAccounts `E16`, Boardmeeting `E4` and `E6`, RegisterofMembers `A3` and `A4`,
+and `Sales.xlsx!Apr!G4`. So 2,105 cells must come from the calculator.
+
+Verified from the leaf XML (what each analysis total is):
+
+- Bank books, every tab: `F1 = SUM(F6:F200)` (receipts), `G1` to `Q1` (Cash `G1` to `N1`)
+  `= SUM(<col>6:<col>200)` one column per receipt code letter in row 5, which is
+  `bankLayout(file).receiptCodes` in order (Currentaccount row 5: BS BD BC DR K LDR LCR RV RC
+  DL X; Cash: BB BS BD DR K LDR LCR DL); `X1` (Cash `U1`) `= SUM(X6:X200)` (payments);
+  `Y1` to `AN1` (Cash `V1` to `AJ1`) one per `paymentCodes` in order. The hub reads them as
+  `TrialBalance!H22 = [4]Apr!$F$1-[4]Apr!$X$1`, `H26 = -G1-H1-I1+Y1+Z1+AA1` (transfers),
+  `H20 = -J1` (DR), `H58 = -K1` (K), `H28 = AB1` (CR), `H82 = AE1` (J), and so on; Cash on
+  column K with `K25 = F1-U1`. Source figures: `bankMonthTotals` `month.receipts`,
+  `month.payments`, `month.receiptCodes[code] || 0`, `month.paymentCodes[code] || 0`
+  (`calculators/ltd.js` 378). The BC column reads 0: an opening balance goes to `A1`.
+- Sales tabs: `F1 = SUM(F5:F300)` gross, `G1` VAT, `H1` net, `O1` to `U1` one per
+  `SALES_ANALYSIS_COLUMNS` (`journalMonthTotals` already computes every one of them),
+  `V1` CIS suffered; `G2 = [1]Admin!$M$19` on Apr and `=<previous>!G2` after (rate × 100;
+  `cellWrites` overwrites Apr `G2` with 0 for a non-VAT book); `G4` empty on Apr and
+  `=<previous>!G4` after, so 0; last tab `U2 = Apr!U1+...+Mar!U1` (`FAreconciliation!K13`
+  reads `[3]Mar!$U$2`). OpeningDebtors `G2 = Apr!G2`, `G4 = Apr!G4`; ClosingDebtors `G2 =
+  Mar!G2`, `G4 = Mar!G4`.
+- Purchases tabs: `F1`, `G1`, `H1`, `O1` to `AI1` (`PURCHASE_ANALYSIS_COLUMNS`), `AK1` CIS
+  deductions; `G2 = IF([2]Apr!$G$4>0,0,[2]Apr!$G$2)`; last tab `AI2 = Apr!AI1+...+Mar!AI1`
+  (`FAreconciliation!E13`). OpeningCreditors `G2 = IF([2]Apr!$G$4>0,0,[2]Apr!$G$2)`;
+  ClosingCreditors `G2 = IF([2]Feb!$G$4>0,0,[2]Feb!$G$2)`.
+- Payslips tabs: row 1 `M1 = M16+M26+M36+M46+M56` (gross), `N1`, `O1`, `P1`, `Q1`, `T1` the
+  same shape, `G1 = SUM(AD60:AG60)+SUM(AE62:AG62)` (statutory pay, 0 for every fixture);
+  row 2 is the directors' block below the monthly block: `M2 = M65`, `M65 = SUM(M60:M64)`,
+  `M60 = IF(B51="D",M51," ")` (Jun, a five-week month, uses rows 70 to 75). Column B of the
+  monthly block is the employee's NI category, which `cellWrites` sets to `D` for a
+  director, so row 2 is `directorPayroll[tab]` (grossPay, incomeTax, employeeNI, employerNI)
+  with `P2` and `Q2` 0. The hub: `WagesInterface!C4 = [9]Apr!$M$1-C17`, `C17 = [9]Apr!$M$2`,
+  `F4 = P1+Q1-F17`, `I4 = G1`.
+- Schedule: row 1 totals and the class totals rows are emitted today except `R22`, `R30`,
+  `R41`, `R55` (`= SUM(R14:R21)` and so on, `block.existing.R`). Per row: `Q67 =
+  IF(E67>0,E67*P67/100," ")` on the new-asset rows of plant, fixtures, computer and vans
+  (67 to 74, 78 to 82, 86 to 93, 103 to 107; 26 cells), `R97 = IF(E97>0,E97*R$4/100*(1-M97)," ")`
+  on the cars rows 97 to 101 (5 cells). `P67 = IF(B67>0,IF(B67>[1]Admin!$N$11,[1]Admin!$G$7,[1]Admin!$G$5),[1]Admin!$G$5)`
+  and `R4 = [1]Admin!$G$6`. So `Q<row>` is `row.investmentAllowance` where a schedule row
+  sits there and `SHEET_BLANK` (" ") otherwise; `R97` to `R101` are always `SHEET_BLANK`
+  (the calculator never places an asset on the cars rows). The template caches these as
+  `t="str"` spaces, which is why they are formula cells, not blanks. The hub reads them as
+  `CorporationTax!F49 = IF([1]Schedule!$E$67>0,[1]Schedule!$E$67," ")`, `B49` the same over
+  `C67`, and the `Q`/`R` cells one row each down to `E107`.
+- Admin: `B6` to `B40` is the date chain (`B32 = F21`, even rows `DATE(...)-1` month ends,
+  odd rows the first of the next month). `period.adminMonthEnd(row)` already computes the
+  even rows; odd row = even row above + 1 day. `N11 = B32`. `G5`, `G6`, `G7`, `L6`, `M19`,
+  `N7` are emitted today.
+- TrialBalance `D29 = -OpenAccounts!E21`, `D30 = -OpenAccounts!E22`, `EJ29`, `EJ30`: computed
+  in `buildTrialBalance` today and dropped by `trialBalanceReads`.
+- Companysecretary: `RegisterofMembers!G1 = SUM(G3:G19)`, `G3`, `G4` (template literal 0),
+  `Boardmeeting` `E4`, `E6` inputs. `HPfinance!E2 = SUM(E8:E26)` emitted today.
+
+Corrections to the design text above, from the XML:
+
+- Schedule column `B` is addressed on the new-asset rows 67 to 107 (the date purchased, an
+  input), not on the class totals rows; the "Existing Plant & Machinery" text in `B11`,
+  `B22` and so on is read by the reconciliation, not by any link. Column `C` (description)
+  is addressed on the same rows. The per-row set starts at 67, not 61: land's new rows 60 to
+  63 carry no capital allowance formulas and nothing reads them.
+- Payslips `G2` is not addressed; the 13 cells a tab are `G1`, `M1`, `M2`, `N1`, `N2`, `O1`,
+  `O2`, `P1`, `P2`, `Q1`, `Q2`, `T1`, `T2`.
+- The hub does not read `Sales.xlsx!<tab>!H1`; only Vatreturns does, so the stale-cache
+  test cannot corrupt `H1` in the hub's `externalLink3.xml` (the hub caches no such cell).
+  Use `Sales.xlsx!Apr!O1` (read by `TrialBalance!F53` and `Stock!J8`).
+- `examples/ltd-latest` is an October year-end package (tabs Nov to Oct). Its last tab is
+  `Oct`, so `U2` and `AI2` sit on `Oct`, and the bank books' `C1`/`C2` are remapped to the
+  Admin rows of their own month. The calculator must key these on `tabs[11]`, never `Mar`.
+- SE:S4 makes `resultsReader(results)` product-agnostic. `app/products/ltd.js` needs no
+  `linkCacheReader`; the design text's function is superseded.
+- `Sales.xlsx!<tab>!G4` is empty only on Apr. The other eleven tabs and both ledgers are
+  formula cells reading the previous tab, cached as 0, so the calculator emits 0 for them.
+
+Decisions so far:
+
+1. The calculator emits exactly what the recalculated sheet holds a value for: every
+   addressed formula cell (its computed value, `SHEET_BLANK` where the sheet's own formula
+   returns " "), and no input cell. Input cells are `written` (by `cellWrites`) or `blank`.
+   That makes the cache-agreement test exact: results-reader refresh equals sibling-reader
+   refresh cell for cell over a recalculated package of the same fixture, with one allowance
+   still to settle: LibreOffice writes `Sales.xlsx!Apr!G4` as a literal 0 in a roundtripped
+   leaf (the template has it empty), so the sibling reader caches it and the results reader
+   does not.
+2. Bank column letters come from `bankLayout(file)` in `app/products/ltd.js`, which the
+   calculator cannot import (products would then import calculators for T-something and
+   cycle). Move `bankLayout`, `BANK_LAYOUTS`, `BANK_ACCOUNT_FILES` and `BANK_TRANSFER_CODES`
+   to a new `app/lib/ltd-layout.js` and import from both; T2's anchor table pins the same
+   row-5 letters.
+3. `calculateLtdResults` stays as the report's cell set (R unchanged). The body becomes
+   `computeLtd(book, lines, taxData, scenario)` returning `{ results, linkCells }`;
+   `calculateLtdResults` returns `results`; new `calculateLtdCells` merges `linkCells` into a
+   copy of `results` sheet by sheet. `calculateLinkCells` in `diya-gl-calculator.js`
+   dispatches `ltd` to `calculateLtdCells`.
+4. Odd Admin rows and the whole `B6` to `B40` chain are emitted from one helper
+   `adminDateChain(period)`; the coverage test checks only the addressed 30.
+5. Tiers: T4a Opus (the cell list is exact and the arithmetic already exists in the
+   calculator); T4b Opus.
+
+To write (the remainder): the per-group emission table with the calculator source for each
+group in `calculateLtdCells`; `LINK_ORDER.ltd = ["Sales.xlsx", "Purchases.xlsx",
+"Currentaccount.xlsx", "Savingaccount.xlsx", "Cashaccount.xlsx", "Creditcardaccount.xlsx",
+"Fixedassets.xlsx", "Financialaccounts.xlsx", "Vatreturns.xlsx"]` with its template test;
+today's emitted count against the fixture (the script exists in the scratchpad only; rerun
+`calculateFromDiyaGl` over `examples/precision-code-ltd/full` with `ltd-2024` and offset
+`-P1Y` and intersect with `addressed`); the coverage test text; the agreement test (results
+reader over `saveWorkbookFiles` output against a sibling reader over `examples/ltd-latest`
+only if the fixture behind `ltd-latest` still matches the calculator, else idempotence plus
+a spot list); the stale-cache Node test over `classifyLinkCell` for one addressed cell per
+link-reading hub sheet (TrialBalance, Stock, WagesInterface, CorporationTax, PubNotes,
+Report), with the page half deferred to T11's A7; the serial commands; acceptance; the
+landing order in `ltd.js`, `calculators/ltd.js` and `ltd-layout.js`.
+
 ### T5 Ltd book checks and warnings
 
 Purpose: the things a customer can get wrong on a Company book that the sheet still
@@ -1132,267 +1259,6 @@ one is present and empty; a Node test holds the layout's cells to `CELL_MAP` and
 `standardReads()`).
 
 Tier: Opus for the design wave.
-
-#### T8 coding brief
-
-Tier: Opus. Precursors: SE:S7 and SE:T8 merged, Ltd T3, T7 and T19 merged. Land after
-SE:T8, because both rows add a copy step to `scripts/build-books-bundle.mjs`. Before the
-first edit, merge the batch branch and run the render-coverage sweep and
-`books-bundle-gate.browser.test.js` on it, keeping the log; if T7 left either red, say so
-and stop rather than fixing another row's file.
-
-Purpose: the Accounts, Corporation tax computation, CT600 and VAT return views render from
-`app/data/hmrc/form-layouts/ltd.json` through the shell's form builders, and the Payroll
-and Company views render from `R` and the book. Six view ids join the manifest T7 built.
-
-##### Facts this brief settles against the design brief above
-
-Every cell below was read from `packages/GB Accounts Company 2026-03-31 (Mar26) Excel
-2007/Financialaccounts.xlsx`, `Vatreturns.xlsx`, `Payslips.xlsx` and
-`Companysecretary.xlsx` on 2026-09-04, and cross-checked against `CELL_MAP`,
-`CT600_CELLS` and `standardReads()` in `app/products/ltd.js`.
-
-- The CT600 sheet's capital allowance boxes are dead. `AA177 = IF((CorporationTax!H15 +
-  CorporationTax!H17) > 0, ...)`, `AL177 = IF(CorporationTax!H18 <> 0, ...)` and `AA179 =
-  IF(CorporationTax!H16 > 0, ...)` all read column H of the working sheet. Column H is
-  empty on rows 15 to 18; the allowances sit in column I. Those three cells print blank on
-  every package. The design brief's row "AA175/AL175 | 695/700 special rate pool" is wrong
-  twice over: `AA175` and `AL175` carry no formula and no value at all, and the sheet has
-  no special rate pool line. The layout takes boxes 690, 705 and 710 from
-  `CorporationTax!I15`, `I16 + I17` and `-I18`, and prints 695, 700 and 760 as present and
-  empty.
-- `CorporationTax!K5 = 'PubP&L'!F46`, the operating profit, not `F49`. The computation
-  still opens on `F49` per the prescribed format, because `F49 = F46 + F48`, `F48 =
-  -TrialBalance!EJ58` and `K24 = -TrialBalance!EJ58`, so profit before tax less the
-  non-trading credit plus the add-backs is exactly `K12`. The same bank interest figure
-  therefore appears twice in the computation, deducted in the adjustment and added back as
-  box 170. The microcopy says so.
-- `CorporationTax!K35 = SUM(I33:I34)` is box 440, not box 430. `CT600!Y135 = AJ131 - Y133`
-  reduces to `I33 + I34`, so the two agree. The design brief's mapping of `AJ131` to 430
-  and `Y135` to 440 holds; `K35` joins 440.
-- `PubP&L!F48` (other income) and `PubP&L!E21` to `E43` are not reads. The accounts form
-  takes staff costs and the amounts written off assets from `MnthP&L!B18`, `B19`, `B20`,
-  `B39` and `B40`, and other income from `CorporationTax!K24`. `frs105-formats.toml` marks
-  heading B `status = "unmapped"` for this reason; the layout supplies the cell.
-- `Vatreturns.xlsx` reads are `G5, G7, G9, G13, G15, G17, G21, G23`. `G11` is not read: it
-  is the literal zero the sheet fixes box 2 at. Box 2 renders nil from a rule, with no key.
-- `CT600!AJ163` and `AJ149` do not exist in the shipped XML. Box 595 renders empty until
-  someone types into the sheet, and box 605 is a rule over `AJ163` and `AJ159` rather than
-  the sheet's `AJ169`, which is not read.
-- `CT600!B19, B21, U21, Y21, AE21` and `B274` are not reads. Boxes 1, 2 and 3 render from
-  `book.entityInformation`, and box 975 from `OpenAccounts!E5`, which `CELL_MAP` names and
-  which `B274` mirrors.
-- `CT600!B276` is the literal "DIRECTOR". Box 985 renders that as fixed text.
-- `CELL_MAP`'s CT600 rows already carry Version 3 numbers (330 to 345, 380 to 395, 430,
-  435, 440). T16 landed. The design brief's line about relabelling rows 126 to 135 is spent.
-- `Companysecretary.xlsx!Boardmeeting!F2` and `E4` are reads, and so are
-  `RegisterofMembers` column A and column G a row. `book.dividends[0]` is
-  `{ boardMeetingDate, amount }` and `book.members` is
-  `[{ memberID, name, shares, acquiredDate }]`. On `ltd-scenario-full` that is £15,000
-  across 60, 25 and 15 shares.
-- `Payslips.xlsx!Payment` rows 4 to 15 hold the PAYE schedule a month a row, columns B, C,
-  D, E, F, G, H, I, M and N, with the totals on row 16. `WagesInterface` rows 4 to 15 and
-  17 to 28 hold gross, PAYE, employee NI and employer NI in columns C, D, E and H, the
-  employees' block and the directors' block. Both are reads.
-
-##### Files
-
-Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/ltd-forms.js` and
-`app/test/ltd-form-layouts.test.js`. `app/data/hmrc/form-layouts/ltd.json` is drafted in
-this repo already; finish it, do not start again. Modifies
-`scripts/build-books-bundle.mjs` (one copy step), `books/products/ltd.js` (the six view
-entries only) and `books/ltd.css` (the form rules). Must not touch `shell.js`, `data.js`,
-`bst.js`, `app/products/ltd.js` or any SE file.
-
-##### The layout file
-
-One file, four form blocks, because the three that mirror a filed document reference the
-filing TOMLs T19 landed and the VAT return has no TOML of its own to reference. The file
-never restates a label, a format or a section name that a TOML already carries. It carries
-order, source and rules.
-
-A row names its filing row one of three ways. `"box": 145` is a `[[box]]` `number` in
-`ct600-v3.toml`. `"line": "1.3/Depreciation"` is `<section>.<part>/<label>` in
-`ct-computation-v1.1.toml`, which is unique across that file. `"heading":
-"balance-sheet/1/B"` is `<statement>/<format or ->/<letter>` in `frs105-formats.toml`. A
-row with none of the three carries its own `label`, which only the VAT block and the two
-marginal relief lines do.
-
-A row's figure comes from the referenced row's `sheetCell` when it has one. Where the
-filing row has no `sheetCell`, the layout carries `"cell"`. Where the figure needs more
-than one cell, the layout carries `"rule"` instead: `sum`, `deduct` (the first cell minus
-the rest), `negate`, `positiveDifference` (the first minus the second, floored at nil),
-`tickIfAny` and `fixed`. Every rule carries a `why` in plain words. A row that is present
-on the form and has no figure carries `"empty": true` and a `note`.
-
-`"cell"` is a `referenceKey`-shaped string, `<file>!<sheet>!<cell>`, the same shape the
-filing TOMLs use, so `report-serializer.js`'s `referenceKey` splits it and
-`helpers.rkFor(resultsKey, cell)` builds the attribute. Hub cells and
-`Vatreturns.xlsx!VATQtr1` style keys both work, which is why the VAT block names its file
-once and its boxes carry the bare cell.
-
-Formats come from the filing row, mapped once in `ltd-forms.js`: `whole` and
-`money-composite` to whole pounds, `pounds-and-pence` to pence, `rate`, `year`, `date` and
-`text` as they are, `integer` to a count, `tick` to an X or nothing, `unresolved` to text.
-No format lives in the layout except on a row that has no filing row.
-
-##### The six views
-
-All six join `VIEWS` in `books/products/ltd.js` in the order T7 lists, each as
-`{ id, label, sheets, render }` with `render(snapshot, state, helpers)` returning HTML.
-Only `company` needs a `bind`, for the voucher's member toggle.
-
-- `accounts`, "Accounts", the FRS 105 balance sheet in Format 1 letter order then the
-  micro-entity profit and loss in letter order, then the statements above the signature as
-  fixed wording with the period end and the director's name from the book. Below the form,
-  the directors' report (`Report` rows the `CELL_MAP` "Directors' Report" section names)
-  and the fixed asset and emoluments notes (`PubNotes`) render as ordinary sections, since
-  a micro-entity files neither and the sheet produces both.
-- `corporation-tax`, "Corporation tax", the computation in prescribed order. Each row
-  carries the referenced line's XBRL tag as `data-xbrl` when the TOML gives one. The rows
-  past version 1.1's coverage carry `data-ct600-box` instead. That is the answer to the
-  design brief's third question: the computation is a layout module like the others, and
-  the tag is data on the row, not a reason for a bespoke renderer.
-- `ct600`, "CT600", the Version 3 boxes in the layout's section order.
-- `vat-returns`, "VAT returns", one form per `VATQtr` sheet, five forms, the fifth headed
-  as the quarter after the year end. Box 6's label switches to the flat rate wording when
-  the period's `Vatinterface` flat rate column is above nil. The coverage rows
-  `vatCycleRows` produces render above the forms, saying which months each form covers and
-  which month no form does.
-- `payroll`, "Payroll", the employee-by-month grid. Rows are the employees `book.employees`
-  names, columns the twelve months in year-end order, cells the month tab's gross for that
-  employee. Above it the PAYE payment schedule from `Payslips.xlsx!Payment` rows 4 to 15,
-  and beside it the `WagesInterface` split between the employees' block and the directors'
-  block. The grid scrolls inside its own panel. The printed payslip page stays a horizon.
-- `company`, "Company", the registers (`Directors&Secretary`, `RegisterofMembers`,
-  `DirectorsInterests`, `Charges&Debentures`), the board minute (`Boardmeeting!F2` and
-  `E4`) and the dividend voucher.
-
-##### The voucher
-
-The voucher renders from the book, not the sheet. `book.dividends[0].amount` is the
-declared total and `book.dividends[0].boardMeetingDate` the date. Each member of
-`book.members` gets `amount * shares / totalShares`, rounded to pence, with the rounding
-remainder added to the largest holding so the parts total the declared figure exactly. The
-voucher prints the company name, registered number, registered office, the payment date,
-the member's name, the class and number of shares, the dividend per share, the member's
-total, and a signature line naming the director and their position. It prints no dividend
-tax credit; the credit ended in April 2016. Per-member figures carry no `data-r-key`,
-because they are not `R` keys. The declared total carries
-`Companysecretary.xlsx!Boardmeeting!E4` and the P&L's `PubP&L!F52`. Writing the figures
-into the docx stays a horizon.
-
-##### The drift mark and the financial-year rows
-
-`applyDriftMarks` appends one `.form-row-margin` to the `.form-row` a drifting
-`.form-amount-box` sits in, and fills the first one it finds. A row holding four boxes
-would therefore show one mark with nothing saying which box it belongs to. So no
-`.form-row` ever holds more than one amount box. The two financial-year rows render as a
-`.fy-group` with a caption and one `.form-row` per box inside it, and each box keeps its
-own margin. That is the answer to the design brief's fourth question, and it needs no
-change to `shell.js`.
-
-`ltd.css` lays a `.fy-group` out as a four-column grid at the form width, with
-`.fy-group .form-row-margin { width: auto; }` overriding the shared 7.5rem. At mobile
-portrait the grid collapses to one column, the caption becomes the group's heading, and
-each box keeps its label, its chip and its own margin beneath it. The second group renders
-blank when `CorporationTax!A34` is nil, which is every March year end, so its rows print
-present and empty rather than disappearing.
-
-The accounts form's prior-year column follows the same rule: at mobile portrait each row
-becomes two lines, this year then last year, each with its own margin. Only turnover and
-cost of sales carry a prior-year figure today; the rest print blank under the section's
-own note.
-
-##### Microcopy
-
-Each form's masthead carries its name and one line. CT600: "Check these against your
-return. Box numbers are the 2026 Version 3 form's; nothing here is an HMRC document."
-Computation: "Check these against the computation you file. The order follows HMRC's
-prescribed computation format; nothing here is an HMRC document." Accounts: "Check these
-against the accounts you file. Headings follow the micro-entity formats; nothing here is a
-Companies House document." VAT: "Check these against your return. Box numbers are the nine
-boxes of the VAT return; nothing here is an HMRC document." No HMRC or Companies House
-branding anywhere.
-
-Three rows carry their own note, and each says what the sheet does rather than what it
-ought to do. Boxes 705 and 710: "The CT600 sheet leaves this box blank. The figure comes
-from the corporation tax working sheet." The computation's donations line: "The working
-sheet does not add charitable donations back. The figure is shown for checking and is not
-in the total below." VAT box 2: "The sheet sets box 2 to zero. Work out any amount due and
-enter it yourself."
-
-##### Loading the layout
-
-`build-books-bundle.mjs` writes `books/assets/form-layouts/ltd.layout.js`, a classic
-script that sets `window.DiyaGlFormLayouts.ltd`, from `app/data/hmrc/form-layouts/ltd.json`.
-`ltd.html` loads it before `ltd-forms.js`, so `render()` stays synchronous. If SE:T8
-already shipped a loader for `se.json`, use that one unchanged and drop this step; say
-which in the commit message.
-
-##### Tests
-
-`app/test/ltd-form-layouts.test.js`, a Node test:
-
-- "every box the CT600 form renders is in the filing data" (each `box` resolves to exactly
-  one `[[box]]` in `ct600-v3.toml`; each `line` to exactly one `[[line]]` in
-  `ct-computation-v1.1.toml`; each `heading` to exactly one `[[heading]]` in
-  `frs105-formats.toml`).
-- "every cell a layout row names is a read" (each `cell`, each `priorCell` and every cell
-  inside a rule splits through `referenceKey` and appears in `standardReads()` or in the
-  Ltd `additionalReads` map).
-- "a row never names a cell the filing data already carries" (no row has both a `cell` and
-  a filing row with a `sheetCell`, so there is one source for each figure).
-- "every rule carries a reason" (`why` is a non-empty sentence on every rule).
-- "the FRS 105 sums match the filing data" (the `sum` rule's cells equal the referenced
-  heading's `sheetCell` split on `+`, for headings D and E).
-- "box numbers are unique within a form and rise through it".
-- "the CT600 form prints the boxes the plan names" (the exact list, 1 through 985).
-
-Browser, A9, added to `books-ltd-equivalence.browser.test.js` in T11:
-
-- "each rendered box number equals the layout's list, in order".
-- "every box with a cell carries its report key, and the key is in `report.js --data`
-  output".
-- "every box without a cell is present and empty".
-- "the accounts profit and loss adds up" (headings A plus B minus C, D, E, F and G equal
-  heading H to the penny, which is the same thing as proving `PubP&L!F44` equals the
-  `MnthP&L` administrative lines the form splits it into).
-- "the six views render on `ltd-scenario-full` with no console error", and the same for the
-  other two Ltd examples.
-- "a drifting financial-year box marks its own row" (corrupt one cached `<v>` under
-  `CorporationTax!J33` and assert one `.pencil-correction` inside that box's own
-  `.form-row-margin` and none elsewhere).
-
-T9's render-key coverage sweep gains the six views' keys. Expect the six to render the
-`CT600`, `CorporationTax`, `PubP&L`, `PubBalSht`, `PubNotes`, `Report`, `VATQtr1` to `5`,
-`Payment`, `WagesInterface`, `Boardmeeting` and register keys, so T9's unrepresentable
-list should not grow for those sheets. The `Payslips.xlsx!Payslips` print page, the
-`Salesinvoice.xlsx` sheets and the `Vatinterface` rolling sums stay declared.
-
-##### Commands
-
-```
-npx vitest run --fileParallelism=false app/test/ltd-form-layouts.test.js
-node scripts/build-books-bundle.mjs
-npx playwright test --project=browser-tests web/browser-tests/books-bundle-gate.browser.test.js 2>&1 | tee target/ltd-t8-gate.log
-npx playwright test --project=browser-tests web/browser-tests/books-ltd-render-coverage.browser.test.js 2>&1 | tee target/ltd-t8-coverage.log
-npm test
-```
-
-Then the four viewports by hand against `books-layouts`, mobile portrait first, since that
-is where the financial-year groups stack.
-
-##### Acceptance
-
-The Node test passes. `books/ltd.html?example=ltd-scenario-full` renders all fifteen views
-with no console error, and so do the other two Ltd examples. Every figure on the four forms
-carries a `data-r-key` present in `report.js --data examples/precision-code-ltd/full`
-output, or is a book field, or is present and empty. The accounts profit and loss adds up
-to the penny. A drift on `CorporationTax!J33` marks exactly one box. `grep -c '"cell"'
-app/data/hmrc/form-layouts/ltd.json` is at least 45.
-
-Tier: Opus.
 
 ### T9 Ltd unrepresentable list and render coverage
 

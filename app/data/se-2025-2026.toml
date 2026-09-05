@@ -21,7 +21,7 @@ additional_rate = 0.45
 personal_allowance_taper_threshold = 100000
 
 [national_insurance]
-class2_rate = 0
+class2_rate = 3.50
 class4_lower_rate = 0.06
 class4_lower_limit = 12570
 class4_upper_rate = 0.02
