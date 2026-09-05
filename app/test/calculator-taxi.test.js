@@ -77,11 +77,11 @@ describe("Taxi calculator — capital allowances and mileage are mutually exclus
 // ── The mileage route ────────────────────────────────────────────────────
 
 describe("Taxi calculator — the mileage claim", () => {
-  it("SP Sixty Driving's 20,000 business miles claim 7,000", () => {
+  it("SP Sixty Driving's 21,680 business miles claim 7,420", () => {
     const { lines } = loadDiyaGlData(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
     const miles = totalBusinessMiles(lines);
-    expect(miles).toBe(20000);
-    expect(calculateMileageAllowance(miles, taxData.mileage)).toBe(10000 * 0.45 + 10000 * 0.25);
+    expect(miles).toBe(21680);
+    expect(calculateMileageAllowance(miles, taxData.mileage)).toBe(10000 * 0.45 + 11680 * 0.25);
   });
 
   it("stays under the higher-rate limit for a short year", () => {
@@ -91,15 +91,15 @@ describe("Taxi calculator — the mileage claim", () => {
   it("charges SP Sixty Driving the claim and none of the running costs", () => {
     const { results } = runFixture(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
     const pl = results["Profit & Loss Acc"];
-    expect(pl.B11).toBe(7000);
+    expect(pl.B11).toBe(7420);
     expect([pl.B6, pl.B7, pl.B8, pl.B9, pl.B10]).toEqual([0, 0, 0, 0, 0]);
-    expect(pl.B12).toBe(7000);
+    expect(pl.B12).toBe(7420);
   });
 
   it("carries the year's miles and claim on the last month's purchase sheet", () => {
     const { results } = runFixture(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
-    expect(results.PurchasesMar.A1).toBe(20000);
-    expect(results.PurchasesMar.A2).toBe(7000);
+    expect(results.PurchasesMar.A1).toBe(21680);
+    expect(results.PurchasesMar.A2).toBe(7420);
   });
 
   it("charges the running costs where they beat the claim", () => {
