@@ -602,6 +602,22 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   generated package sets `fullCalcOnLoad`). R5 dispatched again; the refresh adds the "NI Class 2
   Small Profits Threshold" row to `admin-generator-injected.md` in every SE report.
 
+- SE-T18 `400e27c1`, `43709145`, `94aec6a3`, merged 2026-09-05: no period frame exists for SE. `se.js`
+  `cellWrites` copies dates through (Ltd's shifts), and S2 at 2027-04-05 already reproduces S3's
+  Admin and VAT calendar serials; the shift route changed nothing and broke four date cells. The 46
+  `Vat.xlsx` and five `section/vat-returns/` keys differ because `extract-scenarios.js:148` drops
+  every `diya-gl:vatPeriodEnd` line from the subset books and `diyaGlToScenario` has no straddling
+  path, so S3 carries the fixture's straddling entries and S2 cannot. A3 now adds what those entries
+  contribute through `buildVatinterface`/`vatReturnBoxes` (proved breakable) and names 52 keys, all
+  cleared by the generate-se refresh (50 `Payslips.xlsx`, `Admin!L16` and its section row).
+  `se-period-frame.test.js` (4). `report-serializer.js:191`: a section row naming a source cell
+  carries the cell's value, so `taxable-income` no longer loses `canonicalForUnit`'s working
+  precision. For Ltd T11: frame S2 only where the product's own `cellWrites` shifts; Ltd's `full`
+  book has the same straddling gap and can reuse the contribution shape. The straddling gap is a
+  product defect too (the SE page shows VAT Q5 as nil for a straddling book): board row SE-T20,
+  with `report-generator.js:19` `reportAmount`'s one-step rounding and `generate-se.yml:251`'s
+  scorecard comment.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row
