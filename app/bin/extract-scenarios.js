@@ -18,6 +18,7 @@
 //         examples/sp-sixty-driving/{book.toml,lines.jsonl}
 //         examples/kestrel-executive-cars/{book.toml,lines.jsonl}
 //         examples/basic-taxi-driver/{book.toml,lines.jsonl}
+//         examples/autumn-start-cabs/{book.toml,lines.jsonl}
 //
 // Writes: a book.toml and lines.jsonl subset directory under each master,
 //         and the twelve fixtures under app/test/fixtures/.
@@ -651,27 +652,34 @@ function twinBankLine(date, amount, comment, reference) {
   };
 }
 
-// What the month's purchase invoices come to, and the tax withheld from the
-// sub-contractors among them. A supplier payment settles the first less the
-// second, and the remittance pays the second over.
-function purchasesByMonth(lines) {
+// What a month's invoices come to on one journal. A supplier payment settles
+// the purchases month less the tax withheld from the sub-contractors among
+// them, and a customer receipt settles the sales month less the tax a
+// contractor customer withheld from this business.
+function invoicedByMonth(lines, journal) {
   const invoiced = {};
   for (const line of lines) {
-    if (line.sourceJournalID !== "purchases") continue;
+    if (line.sourceJournalID !== journal) continue;
     const month = line.postingDate.slice(0, 7);
     invoiced[month] = round2((invoiced[month] || 0) + line.amount);
   }
   return invoiced;
 }
 
-function cisWithheldByMonth(lines) {
-  const withheld = {};
+// The month's tax under the Construction Industry Scheme on one journal. On
+// purchases that is what the company withheld from its own sub-contractors
+// and owes over to HMRC; on sales it is the other side of the scheme, the tax
+// a contractor customer withheld from this business, which is never part of
+// what the business remits.
+function cisByMonth(lines, journal) {
+  const deducted = {};
   for (const line of lines) {
+    if (line.sourceJournalID !== journal) continue;
     if (!line[CIS_DEDUCTION_FIELD]) continue;
     const month = line.postingDate.slice(0, 7);
-    withheld[month] = round2((withheld[month] || 0) + line[CIS_DEDUCTION_FIELD]);
+    deducted[month] = round2((deducted[month] || 0) + line[CIS_DEDUCTION_FIELD]);
   }
-  return withheld;
+  return deducted;
 }
 
 function monthsBefore(month, count) {
@@ -692,13 +700,23 @@ function registeredTwin(lines, book) {
     return traded;
   });
 
-  const invoiced = purchasesByMonth(twinTrade);
-  const withheld = cisWithheldByMonth(twinTrade);
+  const invoiced = invoicedByMonth(twinTrade, "purchases");
+  const withheld = cisByMonth(twinTrade, "purchases");
+  const sold = invoicedByMonth(twinTrade, "sales");
+  const suffered = cisByMonth(twinTrade, "sales");
   const openingMonth = dateOnly(book.documentInfo.periodCoveredStart).slice(0, 7);
 
   const scaled = twinTrade.map((line) => {
     if (line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "DR") {
-      return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+      // The receipt in the year's first month settles the debtors brought
+      // forward, which scale with the ledger. Every later one settles the
+      // month before it, net of the tax a contractor customer withheld from
+      // those invoices -- worked out on the amount before VAT, so it does not
+      // scale with the invoice the way the trade does.
+      const month = line.postingDate.slice(0, 7);
+      if (month === openingMonth) return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+      const settles = monthsBefore(month, 1);
+      return { ...line, amount: round2((sold[settles] || 0) - (suffered[settles] || 0)) };
     }
     if (line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "CR") {
       // The payment in the year's first month settles the creditors brought
@@ -770,6 +788,19 @@ const SOLE_TRADER_MONTHLY_DRAWINGS = 1200;
 const SOLE_TRADER_DRAWINGS_DAY = 25;
 const SOLE_TRADER_NINO = "EF112233B";
 
+// The next entry numbers in the master's own scheme, one past the highest it
+// hands out. A line the adaptation invents still has to be addressable: an
+// edit and a fix-it helper both name the line they change by its entry
+// number, so a line without one can never be changed or removed.
+function nextEntryNumbers(lines, count) {
+  let highest = 0;
+  for (const line of lines) {
+    const digits = String(line.entryNumber || "").match(/^TXN-(\d+)$/);
+    if (digits) highest = Math.max(highest, Number(digits[1]));
+  }
+  return Array.from({ length: count }, (unused, index) => `TXN-${String(highest + 1 + index).padStart(4, "0")}`);
+}
+
 function soleTraderAdaptation(lines, book) {
   const staffOnly = withoutDirectorPayroll(lines, book);
   const netWagesByMonth = {};
@@ -802,23 +833,24 @@ function soleTraderAdaptation(lines, book) {
     adapted.push(line);
   }
 
-  const drawings = Object.keys(netWagesByMonth)
-    .sort()
-    .map((month, index) => ({
-      "sourceJournalID": "bank",
-      "postingDate": `${month}-${SOLE_TRADER_DRAWINGS_DAY}`,
-      "accountMainID": "1200",
-      "amount": SOLE_TRADER_MONTHLY_DRAWINGS,
-      "detailComment": "Proprietor",
-      "lineItemComment": "Drawings",
-      "documentType": "bank-statement",
-      "documentReference": `BNK-DL-${String(index + 1).padStart(3, "0")}`,
-      "taxCode": "OS",
-      "taxRate": 0,
-      "diya-gl:bankCode": "DL",
-      "debitCreditCode": "C",
-      "diya-gl:bankAccountID": "1200",
-    }));
+  const drawingsMonths = Object.keys(netWagesByMonth).sort();
+  const drawingsEntryNumbers = nextEntryNumbers(adapted, drawingsMonths.length);
+  const drawings = drawingsMonths.map((month, index) => ({
+    "entryNumber": drawingsEntryNumbers[index],
+    "sourceJournalID": "bank",
+    "postingDate": `${month}-${SOLE_TRADER_DRAWINGS_DAY}`,
+    "accountMainID": "1200",
+    "amount": SOLE_TRADER_MONTHLY_DRAWINGS,
+    "detailComment": "Proprietor",
+    "lineItemComment": "Drawings",
+    "documentType": "bank-statement",
+    "documentReference": `BNK-DL-${String(index + 1).padStart(3, "0")}`,
+    "taxCode": "OS",
+    "taxRate": 0,
+    "diya-gl:bankCode": "DL",
+    "debitCreditCode": "C",
+    "diya-gl:bankAccountID": "1200",
+  }));
 
   return [...adapted, ...drawings].sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0));
 }
@@ -1107,7 +1139,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
     },
     grouped,
     {
-      ...taxiExpectedFigures(lines),
+      ...taxiExpectedFigures(lines, book.documentInfo.periodCoveredStart),
       fixed_asset_additions: additions,
     },
   );
@@ -1125,6 +1157,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
 const spSixty = readMaster("sp-sixty-driving");
 const kestrel = readMaster("kestrel-executive-cars");
 const basicTaxi = readMaster("basic-taxi-driver");
+const autumnStart = readMaster("autumn-start-cabs");
 
 const spSixtyTaxiDiya = writeTaxiScenario(spSixty, {
   fixtureName: "taxi-scenario-sp-sixty",
@@ -1147,6 +1180,13 @@ const basicTaxiDiya = writeTaxiScenario(basicTaxi, {
   name: "Basic taxi driver",
   description:
     "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental.",
+});
+
+const autumnStartDiya = writeTaxiScenario(autumnStart, {
+  fixtureName: "taxi-scenario-autumn-start",
+  subsetName: "taxi",
+  name: "Autumn Start Cabs",
+  description: "Owner-driver who started trading in October, so the year's takings and costs sit in the last six month tabs",
 });
 
 // ---------------------------------------------------------------------------
@@ -1225,6 +1265,7 @@ const subsetLines = [
   ["sp-sixty-driving/taxi", spSixtyTaxiDiya],
   ["kestrel-executive-cars/taxi", kestrelDiya],
   ["basic-taxi-driver/taxi", basicTaxiDiya],
+  ["autumn-start-cabs/taxi", autumnStartDiya],
 ];
 
 console.log(`Extracted ${extracted.length} fixtures and ${subsetLines.length} diya-gl subsets`);

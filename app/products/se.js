@@ -64,7 +64,7 @@ export const MULTI_FILE = true;
 //   a=advertising, l=legal, y=other expenses, fa=fixed assets
 
 // Bank/cash entries route to one of two leaf files by account ID.
-const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
+export const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
 
 // Column layout of the receipts and payments blocks in each workbook's month
 // tabs, and the code letters each block has an analysis column for --
@@ -86,7 +86,7 @@ const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
 // payment reference") -- which the sheet keeps for the payer's own reference
 // rather than a description, but is a real, otherwise-empty cell all the
 // same, so a line's own free-text comment goes there.
-const BANK_LAYOUTS = {
+export const BANK_LAYOUTS = {
   "Bank.xlsx": {
     receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
     payment: { date: "O", source: "P", reference: "Q", comment: "R", code: "S", amount: "T" },
@@ -153,14 +153,20 @@ export function vatRateFor(scenario) {
 // used to read a literal 0.2; it now reads 'Product Details'!$D$2, the same
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
-const SALESINVOICE_VAT_REG_CELL = "B11";
+export const SALESINVOICE_VAT_REG_CELL = "B11";
 // The same sheet's "Telephone" box, the entry cell beside its A8 label.
-const SALESINVOICE_TELEPHONE_CELL = "B8";
-const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
-const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
-const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
-const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
-const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+export const SALESINVOICE_TELEPHONE_CELL = "B8";
+export const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
+export const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+export const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
+export const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = {
+  activate: "A",
+  invoiceNumber: "B",
+  carriage: "E",
+  productCode1: "F",
+  quantity1: "G",
+};
 const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
 
@@ -181,25 +187,66 @@ const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
 
 // Straddling VAT period name to the Vatinterface row it feeds, and to the
 // pair of entry sheets it is entered on (S<period> and P<period>).
-const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
+export const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // The straddling entry sheets take the same fields as the month tabs but in
 // their own columns, and the sales and purchases sheets do not agree on them.
 // Both compute VAT and net from the gross figure in the amount column.
-const STRADDLING_SALES_COLUMNS = { date: "A", name: "B", invoice: "C", amount: "E" };
-const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", description: "E", amount: "G" };
+export const STRADDLING_SALES_COLUMNS = { date: "A", name: "B", invoice: "C", amount: "E" };
+export const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", description: "E", amount: "G" };
 
 // The StockControl physical-count cells for the two ends of the accounting
 // year -- row 6 is the opening count and row 30 the count at the year end.
 // The SA103F front page's "Description of business" box, the merged
 // C17:J17 entry cell under the label in C16.
-const BUSINESS_DESCRIPTION_CELL = "C17";
-const STOCK_OPENING_COUNT_CELL = "AB6";
-const STOCK_CLOSING_COUNT_CELL = "AB30";
+export const BUSINESS_DESCRIPTION_CELL = "C17";
+export const STOCK_OPENING_COUNT_CELL = "AB6";
+export const STOCK_CLOSING_COUNT_CELL = "AB30";
 
-// targetStartYear is the year the package's tax year opens in, which for a
-// 5 April year end is the year before the one its directory names.
-export function cellWrites(scenario, targetStartYear) {
+// Fixedassets.xlsx Schedule sheet -- verified against the template:
+//   Existing assets (bought before the year start): rows 8-10 land,
+//   14-18 plant, 22-26 fixtures, 30-34 computers, 38-54 motor. Each row:
+//   C=asset description, D=purchase reference, E=original cost,
+//   F=accumulated depreciation brought forward.
+//   New assets (bought during the year): rows 61-63 land, 67-71 plant,
+//   75-79 fixtures, 83-87 computers, 91-107 motor. Same C/D/E layout;
+//   B=date purchased, U=date sold, V=sale value (net of VAT) for an
+//   in-year disposal recorded on the same row as the asset it disposes of.
+// Row 1 carries the sheet's own column totals (E1=total cost,
+// F1=total acc dep b/f, G1=total WDV b/f, I1=total depreciation charge,
+// J1=total acc dep c/f, K1=total WDV c/f, Q1/R1/S1=capital allowance
+// totals, V1/W1/X1/Y1/Z1=disposal totals) -- these feed both the P&L
+// depreciation/disposal lines and the SA103S capital allowance boxes via
+// cross-file external links, and FAreconciliation (a second sheet in the
+// same workbook) independently sums the New-asset rows and compares the
+// total against Purchases.xlsx's and Sales.xlsx's own fa/fs-coded column
+// totals -- the workbook's own note-vs-schedule tie-out.
+export const EXISTING_ASSET_ROWS = { motor: [38, 39, 40, 41, 42], computer: [30, 31, 32, 33, 34] };
+export const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
+
+// Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
+// rows are available for scenario agreements before the sheet's own
+// layout runs out: row 8 (the "New" block's working master, whose
+// monthly-payment formula was never broken) and row 10 (the first row
+// the #REF! repair fixes). B=agreement date, C=finance company,
+// D=reference, E=amount financed, F=admin charges, G=total interest,
+// H=term in months, L=supplier. Written left to right per row, matching
+// the Schedule writer below.
+export const HP_AGREEMENT_ROWS = [8, 10];
+
+// One entry the writer left out of the package, named the way a check names
+// its offender: what it was, when, under which code, for how much, and why
+// none of the nine workbooks had a cell to hold it.
+function skipped(kind, entry, why) {
+  return { kind: kind, date: entry.date, code: entry.code, amount: entry.amount, why: why };
+}
+
+// Every cell the writer puts in the package, and everything it left out, in
+// one pass. targetStartYear is the year the package's tax year opens in,
+// which for a 5 April year end is the year before the one its directory
+// names.
+function composeWrites(scenario, targetStartYear) {
+  const skips = [];
   const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
@@ -232,6 +279,13 @@ export function cellWrites(scenario, targetStartYear) {
         if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
+        // W is the sheet's "Sub contractors only / CIS Tax Deducted" column,
+        // where a sub-contractor records the tax its contractor customer
+        // withheld from this invoice. W1 totals the month and X1 runs the
+        // year to date, which is what Income Tax!E12 and SE Full!D231 read.
+        // The column sits outside the month's own analysis check total (A1 =
+        // G1 - H1 - SUM(P1:V1)), so recording it leaves that check nil.
+        if (tx.cis_deduction) sheet[`W${row}`] = tx.cis_deduction;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -297,7 +351,10 @@ export function cellWrites(scenario, targetStartYear) {
       for (const tx of transactions) {
         const acct = tx.account || "1200";
         const fileName = BANK_ACCOUNT_FILES[acct];
-        if (!fileName) throw new Error(`cellWrites: bank entry dated ${tx.date} names unknown account "${acct}"`);
+        if (!fileName) {
+          skips.push(skipped("bank", tx, `no workbook in the package keeps account "${acct}"`));
+          continue;
+        }
         const targetWrites = fileName === "Cash.xlsx" ? cashWrites : bankWrites;
         if (!targetWrites[sheetName]) targetWrites[sheetName] = {};
         const sheet = targetWrites[sheetName];
@@ -309,7 +366,8 @@ export function cellWrites(scenario, targetStartYear) {
         }
 
         if (tx.direction !== "in" && tx.direction !== "out") {
-          throw new Error(`cellWrites: bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
+          skips.push(skipped("bank", tx, "the entry is neither a receipt nor a payment"));
+          continue;
         }
         const layout = BANK_LAYOUTS[fileName];
         const isReceipt = tx.direction === "in";
@@ -317,7 +375,8 @@ export function cellWrites(scenario, targetStartYear) {
         const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
         const code = isReceipt ? tx.code : paymentCodeFor(tx.code);
         if (!analysedCodes.has(code)) {
-          throw new Error(`cellWrites: ${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code "${tx.code}"`);
+          skips.push(skipped("bank", tx, `${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under this code`));
+          continue;
         }
 
         const rowKey = `${fileName}:${sheetName}`;
@@ -501,27 +560,6 @@ export function cellWrites(scenario, targetStartYear) {
     };
   }
 
-  // Fixedassets.xlsx Schedule sheet -- verified against the template:
-  //   Existing assets (bought before the year start): rows 8-10 land,
-  //   14-18 plant, 22-26 fixtures, 30-34 computers, 38-54 motor. Each row:
-  //   C=asset description, D=purchase reference, E=original cost,
-  //   F=accumulated depreciation brought forward.
-  //   New assets (bought during the year): rows 61-63 land, 67-71 plant,
-  //   75-79 fixtures, 83-87 computers, 91-107 motor. Same C/D/E layout;
-  //   B=date purchased, U=date sold, V=sale value (net of VAT) for an
-  //   in-year disposal recorded on the same row as the asset it disposes of.
-  // Row 1 carries the sheet's own column totals (E1=total cost,
-  // F1=total acc dep b/f, G1=total WDV b/f, I1=total depreciation charge,
-  // J1=total acc dep c/f, K1=total WDV c/f, Q1/R1/S1=capital allowance
-  // totals, V1/W1/X1/Y1/Z1=disposal totals) -- these feed both the P&L
-  // depreciation/disposal lines and the SA103S capital allowance boxes via
-  // cross-file external links, and FAreconciliation (a second sheet in the
-  // same workbook) independently sums the New-asset rows and compares the
-  // total against Purchases.xlsx's and Sales.xlsx's own fa/fs-coded column
-  // totals -- the workbook's own note-vs-schedule tie-out.
-  const EXISTING_ASSET_ROWS = { motor: [38, 39, 40, 41, 42], computer: [30, 31, 32, 33, 34] };
-  const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
-
   const fixedAssetsWrites = {};
   const existingAssetRowsUsed = { motor: [], computer: [] };
 
@@ -531,10 +569,17 @@ export function cellWrites(scenario, targetStartYear) {
     const nextRow = { motor: 0, computer: 0 };
     for (const asset of scenario.opening_fixed_assets) {
       const rows = EXISTING_ASSET_ROWS[asset.category];
-      if (!rows) throw new Error(`cellWrites: unknown opening_fixed_assets category "${asset.category}"`);
+      const assetEntry = { code: asset.category, amount: asset.cost };
+      if (!rows) {
+        skips.push(skipped("openingFixedAsset", assetEntry, "the Schedule carries no block for this asset category"));
+        continue;
+      }
       const row = rows[nextRow[asset.category]++];
-      if (row === undefined)
-        throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
+      if (row === undefined) {
+        const why = `the Schedule's ${asset.category} block holds ${rows.length} assets brought forward`;
+        skips.push(skipped("openingFixedAsset", assetEntry, why));
+        continue;
+      }
       // Written left-to-right (C, then E, then F). setCellValue/setCellString
       // in spreadsheet-runner.js replaces a matched cell together with every
       // self-closing sibling up to the row's next already-closed cell -- an
@@ -572,12 +617,10 @@ export function cellWrites(scenario, targetStartYear) {
   if (faPurchases.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    if (faPurchases.length > NEW_PLANT_ROWS.length) {
-      throw new Error(
-        `cellWrites: ${faPurchases.length} "fa" purchase(s) exceed the ${NEW_PLANT_ROWS.length} Schedule New Plant & Machinery rows`,
-      );
+    for (const tx of faPurchases.slice(NEW_PLANT_ROWS.length)) {
+      skips.push(skipped("assetPurchase", tx, `the Schedule holds ${NEW_PLANT_ROWS.length} assets bought during the year`));
     }
-    faPurchases.forEach((tx, i) => {
+    faPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
       const d = parseDate(tx.date);
       // Left-to-right column order (B, then C, then E) -- see the opening
@@ -603,12 +646,11 @@ export function cellWrites(scenario, targetStartYear) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
     const disposalRows = [...existingAssetRowsUsed.motor, ...existingAssetRowsUsed.computer];
-    if (fsDisposals.length > disposalRows.length) {
-      throw new Error(
-        `cellWrites: ${fsDisposals.length} "fs" disposal(s) but only ${disposalRows.length} existing fixed asset row(s) to attach them to`,
-      );
+    for (const tx of fsDisposals.slice(disposalRows.length)) {
+      const why = `${disposalRows.length} asset(s) brought forward have a row for a disposal to be written on`;
+      skips.push(skipped("assetDisposal", tx, why));
     }
-    fsDisposals.forEach((tx, i) => {
+    fsDisposals.slice(0, disposalRows.length).forEach((tx, i) => {
       const row = disposalRows[i];
       const d = parseDate(tx.date);
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -616,24 +658,14 @@ export function cellWrites(scenario, targetStartYear) {
     });
   }
 
-  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
-  // rows are available for scenario agreements before the sheet's own
-  // layout runs out: row 8 (the "New" block's working master, whose
-  // monthly-payment formula was never broken) and row 10 (the first row
-  // the #REF! repair fixes). B=agreement date, C=finance company,
-  // D=reference, E=amount financed, F=admin charges, G=total interest,
-  // H=term in months, L=supplier. Written left to right per row, matching
-  // the Schedule writer above.
-  const HP_AGREEMENT_ROWS = [8, 10];
   if (scenario.hp_agreements) {
     if (!fixedAssetsWrites.HPfinance) fixedAssetsWrites.HPfinance = {};
     const hp = fixedAssetsWrites.HPfinance;
-    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
-      throw new Error(
-        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
-      );
+    for (const agreement of scenario.hp_agreements.slice(HP_AGREEMENT_ROWS.length)) {
+      const entry = { date: agreement.date, code: agreement.reference, amount: agreement.amount_financed };
+      skips.push(skipped("hpAgreement", entry, `the HPfinance sheet carries ${HP_AGREEMENT_ROWS.length} rows for agreements`));
     }
-    scenario.hp_agreements.forEach((agreement, i) => {
+    scenario.hp_agreements.slice(0, HP_AGREEMENT_ROWS.length).forEach((agreement, i) => {
       const row = HP_AGREEMENT_ROWS[i];
       const d = parseDate(agreement.date);
       hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -720,7 +752,32 @@ export function cellWrites(scenario, targetStartYear) {
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   if (Object.keys(salesinvoiceWrites).length > 0) result["Salesinvoice.xlsx"] = salesinvoiceWrites;
-  return result;
+  return { writes: result, skips: skips };
+}
+
+/**
+ * The cells the package's workbooks carry, keyed file, then sheet, then cell.
+ *
+ * @param {Object} scenario - the scenario diyaGlToScenario builds from a book
+ * @param {number} [targetStartYear] - the year the package's tax year opens in
+ * @returns {Object}
+ */
+export function cellWrites(scenario, targetStartYear) {
+  return composeWrites(scenario, targetStartYear).writes;
+}
+
+/**
+ * What a save would leave out of the package: an entry none of the nine
+ * workbooks has a cell for. A save never stops half way through, so each of
+ * these is dropped and named here. The book checks report the same
+ * conditions before a save is offered, so this is the second net, not the
+ * first.
+ *
+ * @param {Object} scenario - the scenario diyaGlToScenario builds from a book
+ * @returns {Array<{kind: string, date: string, code: string, amount: number, why: string}>}
+ */
+export function writerSkips(scenario) {
+  return composeWrites(scenario).skips;
 }
 
 // ── Standard reads for reconciliation ──────────────────────────────────────
@@ -844,6 +901,7 @@ export const CELL_MAP = [
   ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "O124", "Deductions by contractors (box 37)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
   // ── SE Full (SA103F) ──
   // The full return, live in the same workbook as the short one and fed from
   // the same profit and loss account and fixed asset schedule. Every cell
@@ -982,7 +1040,10 @@ export function multiFileOptions() {
   const salesMonthReads = {};
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
-    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    // W1 is the month's own CIS suffered total (SUM(W5:W300)) and X1 the year
+    // to date (Apr!X1 = W1, every later tab = W1 + the month before), which
+    // is the figure Income Tax!E12 and SE Full!D231 read off Mar.
+    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL, "W1", "X1"];
     // AD1 is the month's CIS certificates total (SUM(AD5:AD300)) and A1 the
     // sheet's own check total, G1 - H1 - SUM(P1:AB1), which is the closest
     // this product has to a trial balance: nil means every row's gross has
@@ -1889,7 +1950,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+    // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already deducted,
+    // carried negative) sits inside that range, so the sheet's total is the
+    // computed tax and NI less what the contractors have already paid over.
+    const cisSuffered = Object.values(expected.sales || {})
+      .flat()
+      .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -2424,6 +2491,41 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     });
   }
 
+  // ── CIS suffered on the business's own invoices (Sales.xlsx column W) ────
+  //
+  // The other side of the scheme: a contractor customer withholds tax from
+  // this business's invoice, and the sub-contractor records it beside that
+  // sale. W1 totals the month and X1 runs the year to date (Apr!X1 = W1,
+  // every later tab = W1 + the month before), which is the figure the return
+  // takes off the tax bill -- Income Tax!E12 = -[2]Mar!$X$1 and
+  // SE Full!D231 = [2]Mar!$X$1. Both sides of each check are anchored in the
+  // scenario's own sales, so a return that agrees with the journals only
+  // because every figure is nil fails.
+  if (expected.sales) {
+    let sufferedToDate = 0;
+    Object.values(MONTH_SHEETS).forEach((tab, i) => {
+      const suffered = (expected.sales[MONTH_KEYS[i]] || []).reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+      sufferedToDate += suffered;
+      const month = results[`Sales.xlsx!${tab}`];
+      if (!month) return;
+      check(`Sales.xlsx ${tab}: CIS suffered reaches the sub-contractor column (W1)`, num(month.W1), suffered, 0.01);
+      check(`Sales.xlsx ${tab}: CIS suffered for the year to date (X1)`, num(month.X1), sufferedToDate, 0.01);
+    });
+    const taxSheet = results[TAX_SHEET];
+    if (taxSheet) {
+      check("Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal", num(taxSheet.E12), -sufferedToDate, 0.01);
+    }
+    const fullReturn = results["SE Full"];
+    if (fullReturn) {
+      check(
+        "SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal",
+        num(fullReturn.D231),
+        sufferedToDate,
+        0.01,
+      );
+    }
+  }
+
   // ── Payroll: Wagesinterface monthly ties (item 4) ──
   //
   // Wagesinterface reads Payslips.xlsx directly (no subtraction/second row
@@ -2945,7 +3047,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
-    if (taxData.tax_year?.end) {
+    if (taxData?.tax_year?.end) {
       const deadlineYear = new Date(taxData.tax_year.end).getUTCFullYear() + 1;
       check(
         "Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends",
@@ -2979,7 +3081,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(results.Admin.B17),
       0,
     );
-    if (taxData) {
+    if (taxData?.tax_year) {
       checkText(
         "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
         payrollCalendar.N1,

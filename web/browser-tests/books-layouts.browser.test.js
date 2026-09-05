@@ -86,7 +86,7 @@ test.describe("DIYA-GL books page — accessibility per viewport (E6)", () => {
 // ── E6b: keyboard-only traversal ────────────────────────────────────────
 
 // A month or entries toggle replaces the view's own innerHTML (render(),
-// bst.js), which drops keyboard focus back to <body> -- the same thing a
+// shell.js), which drops keyboard focus back to <body> -- the same thing a
 // real browser does when the focused element leaves the document. An amount
 // commit is the one edit that restores focus itself (restoreEditFocus()), to
 // the very input just edited. tabTo() re-walks from wherever focus has

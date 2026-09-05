@@ -314,6 +314,7 @@ Three fixtures under `app/test/fixtures/`, each extracted from a diya-gl master 
 - **`taxi-scenario-basic.toml`** (from `examples/basic-taxi-driver`) -- steady daily fares, no mileage claimed. Used by the `generate-taxi.yml` reconciliation job (`--scenario basic`).
 - **`taxi-scenario-sp-sixty.toml`** (from `examples/sp-sixty-driving/taxi`) -- SP Sixty Driving, a private-hire driver who claims mileage on both the fare days and a March mileage-log purchase. Used by `app/test/taxi-sp-sixty.test.js` and the `roundtrip-taxi` job in `.github/workflows/test.yml`.
 - **`taxi-scenario-kestrel.toml`** (from `examples/kestrel-executive-cars/taxi`) -- Kestrel Executive Cars, a VAT-registered chauffeur operator whose profit reaches the additional rate band, exercising the higher/additional bands the other two scenarios never touch. Used by `taxi-income-tax-checks.test.js`, `taxi-wages-forecast-checks.test.js` and `calculator-taxi.test.js`.
+- **`taxi-scenario-autumn-start.toml`** (from `examples/autumn-start-cabs/taxi`) -- Autumn Start Cabs, a driver who started trading in October. Six months traded and six months forecast, with a grant that proves the Wages Forecast's other income is repeated month for month rather than spread. Used by `calculator-taxi.test.js` and `taxi-wages-forecast-checks.test.js`.
 
 ### SP Sixty Driving mileage route
 
@@ -337,10 +338,12 @@ Purchases:
 
 The `cellWrites()` function in `app/products/taxi.js` produces writes for:
 
-**Sales writes** -- date-based row lookup:
-- Builds a `dateRowMap` using `generateTaxYearWeeks` + `groupWeeksIntoMonths`
-- Each transaction date is converted to an Excel serial, mapped to a sheet name and row
-- Writes go to `E{row}` (fares), optionally `C{row}` (customer), `D{row}` (the day's business miles) and `F{row}` (other income)
+**Sales writes** -- one row a day:
+- Builds a sales grid using `generateTaxYearWeeks` + `groupWeeksIntoMonths`, then groups every transaction by day, by the week's rental caption or by the week's other-income caption before writing anything
+- A day with two lines writes one `E{row}` holding their sum and one `C{row}` joining the entries' customer names with "; ", rather than the second line overwriting the first
+- Writes `E{row}` (fares) and `D{row}` (business miles) when the day carries either, `F{row}` (other income) when the day does
+- A line whose customer is exactly "Rental due" sums into the week's own `E{rentalRow}`; a 4001 line whose customer is exactly "Any other income" sums into the week's `F{otherIncomeRow}` -- both caption rows, not day rows
+- A sale dated outside the package's own tax year throws `TaxiDateOffGridError` naming every off-grid date at once, and writes nothing
 - Supports date translation for different tax years via `targetStartYear`
 
 **Purchase writes** -- sequential rows starting at 5:
@@ -354,14 +357,14 @@ The `cellWrites()` function in `app/products/taxi.js` produces writes for:
 
 `standardReads()` builds itself from `CELL_MAP` (plus, for the Profit & Loss Acc, every monthly column C:N on rows 5, 12, 22 and 24 that the VitalTax and Wages Forecast re-sum checks need):
 
-- **Business Details**: the 6 entered fields (name, description, address, town, postcode, UTR)
-- **Profit & Loss Acc**: B5-B24 (20 cells covering sales, vehicle costs, gross profit, expenses, net profit)
+- **Business Details**: the four cells the form actually reads (name, description, postcode, UTR), plus losses brought forward (D29) and goods and services for own use (O29) as manual inputs the book has no field for
+- **Profit & Loss Acc**: B5-B24 (20 cells covering sales, vehicle costs, gross profit, expenses, net profit), plus J1 (the sheet's own running-costs-vs-mileage comparison figure) and C1 (the route it reads off that comparison)
 - **VitalTax**: C5:G5 and C29:G29 (quarterly and annual turnover/expenses)
 - **SE Short**: the SA103S box cells (D38, O38, D71, O71, D80, D85, O80, O85, D94, D99, O94, O99, D106)
-- **Fixed Assets**: D47, I1, J1, P1, Q1
+- **Fixed Assets**: D47, I1, J1, K1, P1, Q1
 - **PurchasesMar**: A1, A2, I2, T1 (the year's business miles, mileage claim, vehicle running costs, and capitalised vehicle purchases)
 - **Admin**: the 20 injected tax-rate cells (see Tax Data Injection above)
-- **Draft Tax calculation**: E5, E6, E7, C9, D8, C10, D10, E8, E9, E10, E11, E14, E15, E17 (profit, allowances, the rates and band edges the sheet applies, tax bands, NI, total)
+- **Draft Tax calculation**: E5, E6, E7, C9, D8, C10, D10, E8, E9, E10, E11, E14, E15, E17, E25, E26 (profit, allowances, the rates and band edges the sheet applies, tax bands, NI, total, the two payments on account)
 - **Wages Forecast**: C19, C20, C22, C24, C28, C30, C34, C35, C36, C37, C38, C39, C40, C41 (months traded, the projected year, allowance, tax bands, NI, total)
 
 ### Compliance Checks
@@ -371,11 +374,13 @@ The `cellWrites()` function in `app/products/taxi.js` produces writes for:
 - **P&L internal consistency**: Cost of Sales = the six vehicle-cost lines (B6:B11), Gross Profit = Turnover - Cost of Sales, Total General Expenses = the sum of its own lines, Net = Gross - General Expenses, and capital allowances/mileage allowance (B10 x B11 = 0) are mutually exclusive
 - **The purchase journal closure**: every coded cash purchase reaches either the P&L's general expenses, the Purchases sheets' vehicle running-cost total (`PurchasesMar!I2`), or the capitalised-vehicle total (`PurchasesMar!T1`) -- nothing is dropped
 - **The mileage route**: the year's business miles land on `PurchasesMar!A1`, the claim at `A2` matches those miles banded at the tax year's approved rates, and the P&L charges the claim at B11 (zeroing B6:B10) exactly when it beats the running costs plus capital allowances
+- **The vehicle-cost comparison**: the sheet's own comparison figure (`Profit & Loss Acc!J1`) ties to `PurchasesMar!I2` plus the Fixed Assets schedule's allowances, and the route cell (`C1`) reads "MILEAGE ALLOWANCE" exactly when the mileage claim beats it, blank otherwise
 - **VitalTax's quarterly re-sum**: each quarter and the annual total tie to the P&L's own monthly turnover, Cost of Sales and Total Expenses
 - **The SA103S cross-check**: SE Short's turnover and pre-capital-allowance net profit tie back to the P&L
-- **The fixed-asset chain**: the recorded asset cost, the WDA the schedule claims (cost x the Admin WDA rate), and the P&L's Capital Allowances line (zero on the mileage route) all tie together
+- **The fixed-asset chain**: the recorded asset cost, the WDA the schedule claims (cost x the Admin WDA rate), the written-down value carried forward (`K1`, the cost less that allowance), and the P&L's Capital Allowances line (zero on the mileage route) all tie together
 - **The Admin echo**: every tax rate, band and threshold `buildTaxiCellEdits()` injects reads back unchanged from the Admin sheet
 - **The tax and NI chain**: `calculateExpectedTax()` (in `app/lib/tax/income-tax.js`) independently recomputes income tax and NI from the tax data's rates and bands -- including the personal allowance taper and the rate/band-edge cells the sheet itself applies (D8:D10, C9:C10), not just the totals -- and the Wages Forecast repeats the same chain against its own projected profit
+- **The payments on account**: `E25` and `E26` are each half of `E17`, the total tax and NI liability
 - **The profit bridge**: the whole walk from the P&L's net profit to the Draft Tax calculation's taxable profit, adjustment by adjustment, closes on zero residue
 
 ### E2E Tests
@@ -418,9 +423,9 @@ Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicl
 
 | Cell | DIY Label | SA103S Box |
 |------|-----------|-----------|
-| D38 | Turnover | -- |
+| D38 | Turnover | Box 8 |
 | O38 | Other business income | Box 9 |
-| D71 | **Net profit/loss** (pre-capital-allowance) | -- |
+| D71 | **Net profit/loss** (pre-capital-allowance) | Box 20 |
 | O71 | Net loss | Box 21 |
 | D80 | Annual investment allowance | Box 22 |
 | D85 | Small-balance allowance | Box 23 |
@@ -430,9 +435,11 @@ Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicl
 | D99 | **Net business profit** | Box 27 |
 | O94 | Loss brought forward | Box 28 |
 | O99 | Other business income | Box 29 |
-| D106 | **Net profit for tax calc** | -- |
+| D106 | **Net profit for tax calc** | Box 30 |
 
-Box numbers above are as annotated in `app/products/taxi.js`'s `CELL_MAP`; D38, D71 and D106 carry no box annotation there.
+Box numbers above are as annotated in `app/products/taxi.js`'s `CELL_MAP`, read off the sheet's own printed box numbers (`A35`, `L35`, `A68`, `L68`, `A78`, `L78`, `A82`, `L82`, `A91`, `L91`, `A96`, `L96`, `A103`, `L103`).
+
+The two Business Details manual inputs the form feeds carry box numbers of their own: `Business Details!O29` (goods and services for own use) is box 26, the same box `SE Short!D94` prints; `Business Details!D29` (losses brought forward) is box 28, the same box `SE Short!O94` prints.
 
 D71 is HMRC's pre-capital-allowance figure: turnover minus total expenses with capital allowances subtracted back out. The P&L's own net profit (B23) folds capital allowances into cost of sales instead, so the two agree only when B10 is zero -- otherwise they differ by exactly B10.
 
@@ -450,6 +457,8 @@ D71 is HMRC's pre-capital-allowance figure: turnover minus total expenses with c
 | E14 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` |
 | E15 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` |
 | E17 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` |
+| E25 | First payment on account (31 January) | `gl-cor:taxAmount (paymentOnAccount1)` | -- |
+| E26 | Second payment on account (31 July) | `gl-cor:taxAmount (paymentOnAccount2)` | -- |
 
 ## CI Pipeline (.github/workflows/generate-taxi.yml)
 
