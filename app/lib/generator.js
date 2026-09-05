@@ -18,6 +18,7 @@ import {
   payslipsMonthPeriod,
   payslipsPeriodStartCell,
   payslipsWagesPaidCell,
+  payrollYearStart,
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 
@@ -956,6 +957,34 @@ function replaceSalesSheetData(sheetXml, monthWeeks) {
 
 // ── Generate one spreadsheet ────────────────────────────────────────────────
 
+// A workbook.xml that asks the spreadsheet application to recalculate every
+// formula when the file is opened, so cached values written by the template
+// or by a cell write are replaced with the figures the book implies.
+function withFullCalcOnLoad(wbXml) {
+  if (wbXml.includes('fullCalcOnLoad="1"')) return wbXml;
+  const set = wbXml.replace(/(<calcPr[^/]*)\/?>/, '$1 fullCalcOnLoad="1"/>');
+  if (set === wbXml) throw new Error("workbook.xml has no calcPr element to set fullCalcOnLoad on");
+  return set;
+}
+
+// The same setting, applied to a finished workbook. A workbook that already
+// carries it comes back as the same bytes, so a caller can ask for it on
+// every file of a package whether or not generateSpreadsheet touched that one.
+export async function setFullCalcOnLoad(xlsxBuffer) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const wbXml = await zip.file("xl/workbook.xml").async("string");
+  const set = withFullCalcOnLoad(wbXml);
+  if (set === wbXml) return xlsxBuffer;
+
+  zip.file("xl/workbook.xml", set, { date: zip.file("xl/workbook.xml").date });
+  stabilizeDirDates(zip);
+  return zip.generateAsync({
+    type: "uint8array",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
+  });
+}
+
 export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig) {
   // SE/BST use tax_year, Ltd uses financial_year
   const yearInfo = taxData.tax_year || taxData.financial_year;
@@ -1336,10 +1365,9 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   }
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
-  let wbXml = await zip.file("xl/workbook.xml").async("string");
-  wbXml = wbXml.replace(/(<calcPr[^/]*)\/?>/, '$1 fullCalcOnLoad="1"/>');
+  const wbXml = await zip.file("xl/workbook.xml").async("string");
   const wbDate = zip.file("xl/workbook.xml").date;
-  zip.file("xl/workbook.xml", wbXml, { date: wbDate });
+  zip.file("xl/workbook.xml", withFullCalcOnLoad(wbXml), { date: wbDate });
 
   stabilizeDirDates(zip);
   return zip.generateAsync({
@@ -1775,6 +1803,62 @@ export async function renameExternalLinkSheetNames(xlsxBuffer, yearEndMonth) {
 }
 
 // ── Output naming ───────────────────────────────────────────────────────────
+
+// The ledger workbooks whose month tabs are named for the accounting months
+// they hold, so a year end other than March renames them.
+const TAB_RENAME_FILES = new Set([
+  "Sales.xlsx",
+  "Purchases.xlsx",
+  "Currentaccount.xlsx",
+  "Savingaccount.xlsx",
+  "Cashaccount.xlsx",
+  "Creditcardaccount.xlsx",
+  "Payslips.xlsx",
+]);
+
+// Workbooks with no month tabs of their own that still address the
+// ledgers' month tabs by name across a link: the hub reads every month's
+// totals, and the asset workbook's reconciliation reads the two ledgers'
+// annual fixed asset rows off their final month tab.
+const LINK_RENAME_FILES = new Set(["Financialaccounts.xlsx", "Fixedassets.xlsx"]);
+
+// Everything a year end other than the template's own March asks of one file
+// of a package: the month tabs renamed, the links that address them by name
+// followed, the payroll calendar reoriented and the VAT interface's formulas
+// rewritten. A March year end leaves every file as it is. The CLI and the
+// book writer both compose a package through this, so there is one sequence.
+export async function applyYearEndSequence(xlsxBuffer, templateFile, sheetsConfig, yearEndMonth, endDate, yearInfo) {
+  if (!yearEndMonth) return xlsxBuffer;
+  let buffer = xlsxBuffer;
+
+  if (templateFile.endsWith(".xlsx") && TAB_RENAME_FILES.has(templateFile)) {
+    buffer = await renameMonthTabs(buffer, yearEndMonth);
+    buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
+  }
+
+  // The Payslips Admin sheet names the month tab each payroll month belongs
+  // on, which the printed payslip joins through, so it moves with the tabs.
+  if (sheetsConfig?.payslipsAdmin) {
+    buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
+    // Each month tab's monthly payroll block already covers a month of the
+    // payroll year. The tab's name is the accounting period's month, so on
+    // another year end that is the month the block moves to.
+    buffer = await reorientPayslipsMonthTabPeriods(buffer, endDate, payrollYearStart(new Date(yearInfo.start).getUTCFullYear()));
+    // Each PAYE schedule row then takes the tab holding the payroll paid
+    // in its tax month rather than the tab the rename left it pointing at.
+    buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
+  }
+
+  if (templateFile === "Vatreturns.xlsx" && sheetsConfig) {
+    buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
+  }
+
+  if (LINK_RENAME_FILES.has(templateFile)) {
+    buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
+  }
+
+  return buffer;
+}
 
 export function formatDateDDMMYY(date) {
   const d = date.getUTCDate().toString().padStart(2, "0");

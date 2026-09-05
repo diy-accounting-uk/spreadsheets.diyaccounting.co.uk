@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// bst-workbook-roundtrip.test.js — import a book, save it as a workbook the
+// Import a book, save it as a workbook the
 // way the browser save button does, then re-import that workbook and prove
 // the report computed from it is unchanged. This is the save path's own
 // correctness rung: a byte-identity test proves the writer reproduces the
@@ -15,8 +15,8 @@ import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
-import { saveBstWorkbook } from "../lib/bst-workbook.js";
-import { extractBstFromFile, buildFileReportDocument } from "../bin/export.js";
+import { saveWorkbook } from "../lib/product-workbook.js";
+import { extractBookFromFile, buildFileReportDocument } from "../bin/export.js";
 import * as bst from "../products/bst.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,13 +35,13 @@ const ROUND_TRIPPING_FIXTURES = [
 
 async function saveAndReimport(dir) {
   const { book, lines } = loadDiyaGlData(resolve(ROOT, dir));
-  const { workbook } = await saveBstWorkbook(book, lines);
+  const { workbook } = await saveWorkbook(book, lines);
 
-  const stageDir = mkdtempSync(join(tmpdir(), "bst-workbook-roundtrip-"));
+  const stageDir = mkdtempSync(join(tmpdir(), "bst-save-roundtrip-"));
   try {
     const xlsxPath = resolve(stageDir, "book.xlsx");
     writeFileSync(xlsxPath, workbook);
-    const reimported = await extractBstFromFile(xlsxPath, bst);
+    const reimported = await extractBookFromFile(xlsxPath, { product: "bst" });
     return { book, lines, reimported };
   } finally {
     rmSync(stageDir, { recursive: true, force: true });
@@ -52,7 +52,7 @@ function valuesByKey(document) {
   return Object.fromEntries(document.values.map((entry) => [entry.key, entry.value]));
 }
 
-describe("saveBstWorkbook round trip: import -> save -> re-import", () => {
+describe("saveWorkbook round trip: import -> save -> re-import", () => {
   for (const [name, dir] of ROUND_TRIPPING_FIXTURES) {
     it(`recomputes the same figures for ${name} after the workbook is saved and re-imported`, async () => {
       const { book, lines, reimported } = await saveAndReimport(dir);

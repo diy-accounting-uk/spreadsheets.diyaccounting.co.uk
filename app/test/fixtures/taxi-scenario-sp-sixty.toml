@@ -842,62 +842,77 @@ mileage = 122
 [[sales.mar]]
 date = 2026-03-02
 amount = 197
+mileage = 104
 
 [[sales.mar]]
 date = 2026-03-03
 amount = 213
+mileage = 113
 
 [[sales.mar]]
 date = 2026-03-04
 amount = 205
+mileage = 108
 
 [[sales.mar]]
 date = 2026-03-05
 amount = 228
+mileage = 120
 
 [[sales.mar]]
 date = 2026-03-06
 amount = 230
+mileage = 122
 
 [[sales.mar]]
 date = 2026-03-09
 amount = 188
+mileage = 99
 
 [[sales.mar]]
 date = 2026-03-10
 amount = 185
+mileage = 98
 
 [[sales.mar]]
 date = 2026-03-11
 amount = 208
+mileage = 110
 
 [[sales.mar]]
 date = 2026-03-12
 amount = 231
+mileage = 122
 
 [[sales.mar]]
 date = 2026-03-13
 amount = 233
+mileage = 123
 
 [[sales.mar]]
 date = 2026-03-16
 amount = 191
+mileage = 101
 
 [[sales.mar]]
 date = 2026-03-17
 amount = 188
+mileage = 99
 
 [[sales.mar]]
 date = 2026-03-18
 amount = 211
+mileage = 112
 
 [[sales.mar]]
 date = 2026-03-19
 amount = 234
+mileage = 124
 
 [[sales.mar]]
 date = 2026-03-20
 amount = 236
+mileage = 125
 
 [[purchases.apr]]
 date = 2025-04-06
@@ -1581,5 +1596,6 @@ cost = 200
 
 [expected]
 total_sales = 38000
-total_mileage = 20000
+total_mileage = 21680
+months_traded = 12
 fixed_asset_cost = 200
