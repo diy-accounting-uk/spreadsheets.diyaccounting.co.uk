@@ -432,6 +432,17 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- For S7: the page's three `engine.taxYearFileName(new Date(...))` calls (`bst-data.js:907`,
+  `925`, `1077`) pass no regime and so name an `se-*` file for every product; the shell passes
+  the product module's `taxRegime`.
+- T5 the SE checks and warnings `223a8880`, `6f932139`, `ca9c386d`, merged 2026-09-05 with a
+  formatting commit for `book-checks.js` and `books-engine.js`. Eight SE rules in
+  `app/lib/book-checks/se.js`; `book-accounts-in-chart` and `book-dates-in-period` read the SE way
+  through the hook (all three SE books failed the chart check before). Two remainders: the twelve
+  `DL` bank lines in `examples/brickwork-pro/se-nonvat` and `se-vat` carry no `entryNumber`, so no
+  edit or helper can address them, which T6 fixes in the master before its settlement proof; and
+  the rule ids follow two conventions (`book-*` for SE and Taxi, `ltd-*` for Ltd), settled by Ltd
+  T23 renaming to `book-ltd-*`.
 - S1 the workbook set (`app/lib/workbook-set.js`, the three adapters, `extractLines`,
   `productIdOf`, `SCHEMA_PRODUCT_NAMES`, the sheet-name product sniff, `openWorkbookSet` in
   `xlsx-cells.js`) `cb939928` to `05af3a27`, merged 2026-09-04; the four `--source-dir` outputs

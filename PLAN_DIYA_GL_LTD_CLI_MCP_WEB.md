@@ -472,6 +472,20 @@ each rebasing on the last.
   no per-cell allowance. T11's A7 corrupts `Sales.xlsx!<first>!O1`, since the hub caches no
   `Apr!H1`.
 
+- **T23** (Haiku, after T20, before SE T7 and Taxi T13 hard-code ids): the Ltd rule ids `ltd-*`
+  become `book-ltd-*`, matching SE's `book-*` and Taxi's `book-taxi-*`, with the tests following.
+
+- T1 `ebeb2cca`, `893b415e`, `cdb18cbb`, merged 2026-09-05: `taxYearFileName(date, "ltd")` names the
+  1 April on or before the year end; a Ltd save takes `endDate`, `yearEndMonth` and
+  `targetStartYear` (`endYear - 1`) from the book's period and refuses a period that is not twelve
+  whole months; no `WRITER_PROFILE`, every field already had a home. BST, SE and Taxi saves
+  byte-identical. Three findings: `examples/ltd-latest` extracts to a book covering 2025-11-01 to
+  2026-10-31 (its postings, not its `Admin!F21`), so T11's S3 row builds on `ltd-2026` and a
+  2026-10-31 package; `payrollYearOf` (`app/lib/calculators/ltd.js:1037`) falls back to the year
+  end's calendar year on every book path, a year late for January to March year ends, carried as
+  **T24** (Sonnet); and the page calls `engine.taxYearFileName(date)` with no regime
+  (`bst-data.js:907`, `925`, `1077`), which S7's shell passes the product's regime.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
