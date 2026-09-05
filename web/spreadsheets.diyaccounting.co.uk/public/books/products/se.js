@@ -1186,12 +1186,38 @@
 
     return (
       "<h2>Payroll</h2>" +
+      renderEmployees(snap, helpers) +
       '<div class="panel-card"><h3>Every payslip</h3><div class="se-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
       body +
       "</tbody></table></div></div>" +
       renderWagesInterface(snap, helpers) +
       renderPayeSchedule(snap, helpers)
+    );
+  }
+
+  // The people the book declares, which is what the Employee sheet's five
+  // blocks hold and what a payslip has to name.
+  function renderEmployees(snap, helpers) {
+    var employees = snap.payroll.employees;
+    if (!employees.length) return "";
+    return (
+      '<div class="panel-card"><h3>Employees</h3>' +
+      '<table class="register-table"><thead><tr><th>Employee</th><th>Reference</th><th>Role</th></tr></thead><tbody>' +
+      employees
+        .map(function (employee) {
+          return (
+            "<tr><td>" +
+            helpers.esc(employee.name || "") +
+            "</td><td>" +
+            helpers.esc(employee.employeeID || "") +
+            "</td><td>" +
+            helpers.esc(employee.role || "") +
+            "</td></tr>"
+          );
+        })
+        .join("") +
+      "</tbody></table></div>"
     );
   }
 
