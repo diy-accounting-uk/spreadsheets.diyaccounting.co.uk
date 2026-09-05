@@ -283,3 +283,32 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
     ).toEqual(["Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals"]);
   });
 });
+
+// ============================== the opening balance sheet's own audit checks ==============================
+// E37 and D91 compare a trial balance row to zero and need no [opening_balance]
+// table to do it, so they run whether or not diyaGlToScenario found one to
+// set -- a book with nothing brought forward (a first year with no opening
+// balance sheet at all) still owes the sheet a zero on both rows.
+
+describe("the opening balance sheet's own audit checks run without an [opening_balance] table", () => {
+  it("run and pass on the full fixture from the book path even with no such table stated", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    const yearEnd = new Date(book.documentInfo.periodCoveredEnd).toISOString().slice(0, 10);
+
+    expect(merged.opening_balance).toBeDefined();
+    const withoutOpeningBalance = { ...merged };
+    delete withoutOpeningBalance.opening_balance;
+
+    const checks = ltd.checkCompliance({ ...results }, withoutOpeningBalance, taxData, calculateExpectedTax, yearEnd);
+    const e37 = checks.find((c) => c.name === "Opening balance sheet: accuracy check (E37)");
+    const d91 = checks.find((c) => c.name === "Trial Balance: opening balances audit check (D91)");
+    expect(e37).toBeDefined();
+    expect(e37.pass).toBe(true);
+    expect(d91).toBeDefined();
+    expect(d91.pass).toBe(true);
+  });
+});

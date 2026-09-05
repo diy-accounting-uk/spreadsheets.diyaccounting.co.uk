@@ -2366,18 +2366,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
   // Opening balances. A balance sheet that never posts is still balanced, so
-  // EJ91 alone cannot tell an unposted opening from a posted one. These
-  // checks tie each opening figure to the trial balance row it feeds.
+  // EJ91 alone cannot tell an unposted opening from a posted one. The next
+  // two checks tie the sheet's own opening balance sheet and trial balance
+  // audit rows to zero; both need only the calculated results, not a
+  // fixture's [opening_balance] table, so they run whether or not one is
+  // there -- a book loaded straight from a diya-gl file carries no such
+  // table.
+  const oa = results.OpenAccounts;
+  const tb = results.TrialBalance;
+  check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
+  check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
+
+  // The rest tie each opening figure to the trial balance row it feeds, so
+  // they run only where the fixture states an [opening_balance] table.
   if (expected.opening_balance) {
     const ob = expected.opening_balance;
-    const oa = results.OpenAccounts;
-    const tb = results.TrialBalance;
     const cost = ob.fixed_asset_cost || {};
     const depreciation = ob.fixed_asset_depreciation || {};
     const sum = (o) => Object.values(o).reduce((s, v) => s + v, 0);
-
-    check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
-    check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
 
     check("Trial Balance opening: fixed asset cost", (tb.D6 || 0) + (tb.D7 || 0) + (tb.D8 || 0) + (tb.D9 || 0) + (tb.D10 || 0), sum(cost));
     check(
