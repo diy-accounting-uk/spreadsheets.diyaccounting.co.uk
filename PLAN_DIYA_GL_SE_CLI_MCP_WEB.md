@@ -432,6 +432,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T1 `dd7366c0`, merged 2026-09-05: `app/lib/anchors/se.js` (nine files, 102 header cells from the
+  exported column constants), `isSeInputCell`, `seTemplatePaths`; `sniffProduct` reads a hub with
+  siblings and no Currentaccount as SE, so a set missing a leaf reaches the guard and is named; the
+  Payslips print sheet's `H3`, `H4`, `L7`, `I9`, `I10` carry formulas and are not inputs.
 - S6 `9215c63a`, merged 2026-09-05: `app/lib/products.js` (`PRODUCTS`, `productModule`), the MCP
   server named `diya-gl`, `extractBookFromFile` with the product from the book or the sniff and a
   `PackageMismatchError`; BST `--file` output byte-identical; the browser suite is 161 with S1's

@@ -38,8 +38,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | SE-S4 | S4 `link-caches.js`, the calculator's leaf cells, the stale-cache state | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T3, SE-S7 | blocked-to-start | Fable, wave 6 |
 | SE-S7 | S7 the shell, `data.js`, `products/bst.js`, `books.css` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable, `.worktrees/spreadsheets/se-s7` |
 | SE-S8 | S8 example books per product from `scripts/example-books.json` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Haiku, wave 6, after SE-T2 in the bundle script |
-| SE-T1 | T1 SE anchor table and input-cell predicate | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 5 |
-| SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T1 | blocked-to-start | Opus, wave 6 |
+| SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus, wave 6 |
 | SE-T3 | T3 CIS both ways; BrickWork CIS-suffered sale; regeneration point | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Opus, wave 5, R4 after merge |
 | SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T3, SE-T2 | blocked-to-start | Sonnet, wave 7 |
 | SE-T6 | T6 settlement helpers and `addBankLine` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/se-t6` |
@@ -65,7 +64,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T11, TX-T14, TX-T15, TX-T16, TX-H1, SE-T12 | blocked-to-start | Sonnet, wave 9 |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | TX-T6 | blocked-to-start | after R3 is green |
-| LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S2, SE-T1, TX-T10 | blocked-to-start | Sonnet, wave 6 |
+| LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 6 |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S4, LT-T2 | blocked-to-start | Opus, wave 7 |
 | LT-T6b | Ltd T6 settlement helpers proved on Ltd books | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T6 | blocked-to-start | Sonnet, wave 7 |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Sonnet, wave 6 |

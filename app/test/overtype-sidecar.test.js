@@ -20,6 +20,7 @@ import { workbookSetFromWorkbook } from "../lib/workbook-set.js";
 import { overtypedCells, BST_TEMPLATE_PATH } from "../lib/overtype-sidecar.js";
 import { parseCells, formulaCells, sortCellRefs } from "../lib/template-formula-map.js";
 import { cellLabels, CELL_MAP } from "../products/bst.js";
+import { isSeInputCell, seTemplatePaths } from "../lib/anchors/se.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -316,10 +317,9 @@ describe("the extraction map's cell-to-field half", () => {
   });
 });
 
-// SE's own templates and input-cell predicate are T1's row (app/lib/anchors/se.js
-// and app/products/se.js); this proves the sidecar's file-keyed result shape
-// once T1 supplies them.
-describe.skip("an SE upload's overtyped keys (T1 supplies the SE templates and isInputCell)", () => {
+// SE's own templates and input-cell predicate (app/lib/anchors/se.js), which
+// this proves the sidecar's file-keyed result shape against.
+describe("an SE upload's overtyped keys", () => {
   it("keys an SE upload's entries by file, sheet and cell", async () => {
     const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
     const hubBytes = readFileSync(resolve(SE_PACKAGE_DIR, "Financialaccounts.xlsx"));
@@ -340,7 +340,7 @@ describe.skip("an SE upload's overtyped keys (T1 supplies the SE templates and i
     const { workbookSetFromZipBytes } = await import("../lib/workbook-set.js");
     const set = await workbookSetFromZipBytes(packageBytes);
 
-    const overtyped = await overtypedCells(set, {});
+    const overtyped = await overtypedCells(set, { isInputCell: isSeInputCell, templates: await seTemplatePaths() });
     expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
     expect(overtyped["Financialaccounts.xlsx!Profit & Loss Account!B9"].kind).toBe("literal");
   });
