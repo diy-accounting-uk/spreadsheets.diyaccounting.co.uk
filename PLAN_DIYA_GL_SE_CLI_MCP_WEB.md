@@ -593,6 +593,15 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   (`Profit Forecast!C41` 119,957.52 against .53); `Payslips.xlsx!Payment!B4:C15` carry unit `money`
   for day serials.
 
+- SE-T16b `7d45b58c`, `870471b4`, `019c3877`, merged 2026-09-05: `L111` (36) and `L116` (37) already
+  printed the right numbers; the captions were wrong. Box 36's caption is a live formula reading
+  the tax year from `Admin!G2` and the small profits threshold from the new `Admin!N16`, which
+  `generator.js` writes from `class2_small_profits_threshold` and `calculators/se.js` echoes (one
+  `CELL_MAP` row, one cross-check); box 37 took the Class 4 exemption text; the deferment cells
+  `R116`, `U116`, `N118` are blank. Three zip parts changed. `calcChain.xml` untouched (every
+  generated package sets `fullCalcOnLoad`). R5 dispatched again; the refresh adds the "NI Class 2
+  Small Profits Threshold" row to `admin-generator-injected.md` in every SE report.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row
