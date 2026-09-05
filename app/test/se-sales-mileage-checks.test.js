@@ -21,6 +21,7 @@ import { runMultiFileSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runn
 import { generateSpreadsheet, setCellValue } from "../lib/generator.js";
 import { cellWrites as seCellWrites, standardReads as seReads, multiFileOptions as seOptions } from "../products/se.js";
 import { extractMultiFileTransactions } from "../lib/xlsx-exporter.js";
+import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
 
 const SKIP = !hasLibreOffice();
@@ -115,7 +116,7 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
   });
 
   it("the exporter reads the mileage day's line back as a measured quantity in miles", async () => {
-    const lines = await extractMultiFileTransactions(savedDir, "se");
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(savedDir), "se");
     const sale = lines.find((l) => l.sourceJournalID === "sales" && l.detailComment === "Acme");
     expect(sale.measurableQuantity).toBe(SALES_MILEAGE);
     expect(sale.measurableUnitOfMeasure).toBe("miles");
@@ -147,7 +148,7 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
     const { writeFileSync } = await import("fs");
     writeFileSync(join(corruptedDir, "Sales.xlsx"), corruptedBuffer);
 
-    const lines = await extractMultiFileTransactions(corruptedDir, "se");
+    const lines = await extractMultiFileTransactions(await workbookSetFromDirectory(corruptedDir), "se");
     const sale = lines.find((l) => l.sourceJournalID === "sales" && l.detailComment === "Acme");
     expect(sale.measurableQuantity).toBe(999);
     expect(sale.measurableQuantity).not.toBe(SALES_MILEAGE);

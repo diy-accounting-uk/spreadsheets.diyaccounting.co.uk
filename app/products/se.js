@@ -2979,7 +2979,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(results.Admin.B17),
       0,
     );
-    if (taxData) {
+    if (taxData.tax_year) {
       checkText(
         "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
         payrollCalendar.N1,

@@ -323,6 +323,34 @@ export const CELL_MAP = [
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0, "money"],
 ];
 
+// The year-at-a-glance strip's tiles and pies, declared as data rather than
+// read as literal cell keys inside headlines.js (see headlinesFromReport()
+// there for how a declaration like this one is reduced against R).
+export const HEADLINES = {
+  turnover: { key: "cell/Profit & Loss Acc!C4" },
+  costOfSales: { keys: ["cell/Profit & Loss Acc!C6", "cell/Profit & Loss Acc!C7"] },
+  runningCosts: { key: "cell/Profit & Loss Acc!C22" },
+  tax: { key: "cell/Income Tax!E18" },
+  assets: {
+    writtenDown: { key: "cell/Fixed Assets!M1", optional: true },
+    stock: { key: "cell/PurchasesStock!D30", optional: true },
+    debtors: { key: "cell/Debtors & Creditors!C29", optional: true },
+  },
+  expenseLines: [
+    ["cell/Profit & Loss Acc!C11", "Employee Costs"],
+    ["cell/Profit & Loss Acc!C12", "Premises Costs"],
+    ["cell/Profit & Loss Acc!C13", "Repairs & Maintenance"],
+    ["cell/Profit & Loss Acc!C14", "General Admin"],
+    ["cell/Profit & Loss Acc!C15", "Motor Expenses"],
+    ["cell/Profit & Loss Acc!C16", "Travel & Subsistence"],
+    ["cell/Profit & Loss Acc!C17", "Advertising"],
+    ["cell/Profit & Loss Acc!C18", "Legal & Professional"],
+    ["cell/Profit & Loss Acc!C19", "Bad Debts"],
+    ["cell/Profit & Loss Acc!C20", "Interest & Finance"],
+    ["cell/Profit & Loss Acc!C21", "Other Expenses"],
+  ],
+};
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {

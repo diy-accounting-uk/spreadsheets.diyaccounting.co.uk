@@ -21,7 +21,6 @@ import {
   payslipsMonthEntryRows,
   payslipsWagesPaidCell,
 } from "./payslips-layout.js";
-import { findXlsx } from "./xlsx-reader.js";
 import { parseCellRef } from "./template-formula-map.js";
 import { readFileSync as readSchemaFile, existsSync as fileExists } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
@@ -463,8 +462,14 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
 // the day rows carry a day's trade, and a day row is the one holding the date
 // in both A and B -- the two named rows caption column B and the subtotal row
 // carries no date at all. C names the customer, D takes the day's business
-// miles and E the gross takings.
-const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E" };
+// miles, E the gross takings and F any other income the row also carries.
+const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E", otherIncome: "F" };
+
+// The account a Sales tab's other-income column posts to, and the captions
+// the rental and other-income rows carry in column B.
+const TAXI_OTHER_INCOME_ACCOUNT = "4001";
+const TAXI_RENTAL_CAPTION = "Rental due";
+const TAXI_OTHER_INCOME_CAPTION = "Any other income";
 
 // A Taxi Driver Purchases tab, read off its own row 2 and 3 headings: A the
 // purchase date, B the supplier, C the invoice reference, D the expense code
@@ -527,31 +532,70 @@ export async function extractTaxiTransactions(xlsxBuffer) {
       const xml = await zip.file(salesPath).async("string");
       for (const row of rowNumbers(xml)) {
         const dateVal = enteredNumber(xml, `A${row}`, sharedStrings);
+        if (dateVal === undefined) continue;
+
+        // A day row holds a number in B (the day of month, unread beyond
+        // this test); the rental and other-income rows caption B with text
+        // instead, and the subtotal row's date cells carry a formula, which
+        // enteredNumber never reports as a number entered.
         const day = enteredNumber(xml, `B${row}`, sharedStrings);
-        if (dateVal === undefined || day === undefined) continue;
+        const caption = day === undefined ? textAt(xml, `B${row}`, sharedStrings) : undefined;
+        const isDay = day !== undefined;
+        const isRental = caption === TAXI_RENTAL_CAPTION;
+        const isOtherIncomeRow = caption === TAXI_OTHER_INCOME_CAPTION;
+        if (!isDay && !isRental && !isOtherIncomeRow) continue;
 
-        const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
-        const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
-        if (takings === undefined && miles === undefined) continue;
+        const names = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
 
-        const line = {
-          sourceJournalID: "sales",
-          postingDate: excelSerialToDate(dateVal),
-          accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
-          // A day the driver logged miles on but took no fare still counts
-          // its miles towards the claim, so it posts at nil rather than not
-          // at all.
-          amount: takings ?? 0,
-          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-        };
-        const customer = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
-        if (customer) line.detailComment = customer;
-        if (miles !== undefined) {
-          line.measurableQuantity = miles;
-          line.measurableUnitOfMeasure = "miles";
-          milesToDate += miles;
+        if (isDay) {
+          const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
+          if (takings !== undefined || miles !== undefined) {
+            const line = {
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
+              // A day the driver logged miles on but took no fare still counts
+              // its miles towards the claim, so it posts at nil rather than not
+              // at all.
+              amount: takings ?? 0,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            };
+            if (names) line.detailComment = names;
+            if (miles !== undefined) {
+              line.measurableQuantity = miles;
+              line.measurableUnitOfMeasure = "miles";
+              milesToDate += miles;
+            }
+            lines.push(line);
+          }
         }
-        lines.push(line);
+
+        if (isRental) {
+          const rental = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          if (rental !== undefined) {
+            lines.push({
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: TAXI_SALES_ACCOUNT,
+              amount: rental,
+              detailComment: TAXI_RENTAL_CAPTION,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            });
+          }
+        }
+
+        const otherIncome = enteredNumber(xml, `${TAXI_SALES_COLUMNS.otherIncome}${row}`, sharedStrings);
+        if (otherIncome !== undefined && (isDay || isOtherIncomeRow)) {
+          lines.push({
+            sourceJournalID: "sales",
+            postingDate: excelSerialToDate(dateVal),
+            accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
+            amount: otherIncome,
+            detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
+            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+          });
+        }
       }
     }
 
@@ -635,10 +679,8 @@ async function adminMileageRates(sheetMap, zip, sharedStrings) {
 // The same rates for a multi-file package, where the Admin sheet sits in
 // Financialaccounts.xlsx -- the workbook the Purchases mileage formulas reach
 // through their own external link ([2]Admin!$F$21 and the rest).
-async function seAdminMileageRates(sourceDir) {
-  const { readFileSync } = await import("fs");
-  const { resolve } = await import("path");
-  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Financialaccounts.xlsx")));
+async function seAdminMileageRates(set) {
+  const zip = await set.zip("Financialaccounts.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   return adminMileageRates(sheetMap, zip, sharedStrings);
@@ -647,10 +689,7 @@ async function seAdminMileageRates(sourceDir) {
 /**
  * Extract transaction lines from a multi-file SE/Ltd product.
  */
-export async function extractMultiFileTransactions(sourceDir, product) {
-  const { readFileSync, readdirSync } = await import("fs");
-  const { resolve } = await import("path");
-
+export async function extractMultiFileTransactions(set, product) {
   const reversePurchase = buildReverseCodeMap(product === "ltd" ? LTD_PURCHASE_CODE_MAP : SE_PURCHASE_CODE_MAP);
   // Ltd: E=code, F=amount; SE: F=code, G=amount. Column C is the invoice
   // reference on both journals in both products. The description column sits
@@ -681,15 +720,14 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   // files the claim under Motor Expenses. The export prices such a row back
   // the same way, banding it against every mile claimed ahead of it.
   const purchasesMileageCol = product === "se" ? "D" : null;
-  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(sourceDir) : null;
+  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(set) : null;
   const salesMilesByMonth = new Map();
   let milesToDate = 0;
   const lines = [];
   let entryNum = 1;
 
   // Sales.xlsx: one sheet per month of the accounting period
-  const salesPath = resolve(sourceDir, "Sales.xlsx");
-  const salesZip = await JSZip.loadAsync(readFileSync(salesPath));
+  const salesZip = await set.zip("Sales.xlsx");
   const salesSheetMap = await buildSheetMap(salesZip);
   const salesStrings = await loadSharedStrings(salesZip);
 
@@ -738,8 +776,7 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   }
 
   // Purchases.xlsx: one sheet per month of the accounting period
-  const purchasesPath = resolve(sourceDir, "Purchases.xlsx");
-  const purchasesZip = await JSZip.loadAsync(readFileSync(purchasesPath));
+  const purchasesZip = await set.zip("Purchases.xlsx");
   const purchasesSheetMap = await buildSheetMap(purchasesZip);
   const purchasesStrings = await loadSharedStrings(purchasesZip);
 
@@ -834,23 +871,19 @@ const BANK_FILES = {
  * Payments: rows 6+, columns per BANK_FILES[product] payment layout
  * Opening balance: A1 (code "BC")
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd
  * @param {{start: string, end: string}} period - the accounting period the package covers
  */
-export async function extractBankTransactions(sourceDir, product, period) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
-
+export async function extractBankTransactions(set, product, period) {
   const bankFiles = BANK_FILES[product] || BANK_FILES.se;
   const lines = [];
   let entryNum = 1;
 
   for (const { file, accountID, payment } of bankFiles) {
-    const filePath = resolve(sourceDir, file);
-    if (!existsSync(filePath)) continue;
+    if (!set.has(file)) continue;
 
-    const zip = await JSZip.loadAsync(readFileSync(filePath));
+    const zip = await set.zip(file);
     const sheetMap = await buildSheetMap(zip);
     const sharedStrings = await loadSharedStrings(zip);
     let obEmitted = false;
@@ -953,14 +986,10 @@ export async function extractBankTransactions(sourceDir, product, period) {
  * in the package's year -- reading fixed rows instead loses every 5- and
  * 6-week month outright.
  */
-export async function extractPayrollTransactions(sourceDir) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
+export async function extractPayrollTransactions(set) {
+  if (!set.has("Payslips.xlsx")) return [];
 
-  const filePath = resolve(sourceDir, "Payslips.xlsx");
-  if (!existsSync(filePath)) return [];
-
-  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const zip = await set.zip("Payslips.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
@@ -1123,21 +1152,21 @@ const SINGLE_FILE_ASSET_BLOCKS = {
   },
 };
 
-async function scheduleSheet(sourceDir) {
-  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+async function scheduleSheet(set) {
+  const zip = await openWorkbook(set, "Fixedassets.xlsx");
   return zip ? openSheet(zip, "Schedule") : null;
 }
 
 /**
  * The fixed asset register a single-file product's Fixed Assets sheet
  * carries: one entry per filled row of its in-year addition block.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst or taxi
  */
-async function singleFileAssetRegisterFrom(sourceDir, product) {
+async function singleFileAssetRegisterFrom(set, product) {
   const layout = SINGLE_FILE_ASSET_BLOCKS[product];
   if (!layout) return [];
-  const zip = await openWorkbook(sourceDir, findXlsxName(sourceDir));
+  const zip = await openWorkbook(set, singleWorkbookName(set));
   const sheet = zip ? await openSheet(zip, layout.sheet) : null;
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -1161,19 +1190,19 @@ async function singleFileAssetRegisterFrom(sourceDir, product) {
  * row the writer filled in. Assets bought during the year are left out --
  * they reach the Schedule through their own "fa"-coded purchase line, so
  * reading their rows back as opening assets would enter each of them twice.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst, taxi, se or ltd
  */
-async function fixedAssetRegisterFrom(sourceDir, product) {
+async function fixedAssetRegisterFrom(set, product) {
   const blocks = SCHEDULE_EXISTING_ASSET_ROWS[product];
   if (!blocks) {
     // The single-file products have no asset classes and no opening block:
     // their register is the in-year additions their own Fixed Assets sheet
     // records, numbered the same way as the Schedule's below.
-    const singleFile = await singleFileAssetRegisterFrom(sourceDir, product);
+    const singleFile = await singleFileAssetRegisterFrom(set, product);
     return singleFile.map((asset, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
   }
-  const sheet = await scheduleSheet(sourceDir);
+  const sheet = await scheduleSheet(set);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
 
@@ -1233,13 +1262,13 @@ const HP_FINANCE_COLUMNS = {
 /**
  * The hire purchase agreements the HPfinance sheet carries, one entry per
  * row that names an amount financed.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the single-file templates have no HP sheet
  */
-async function hpAgreementsFrom(sourceDir, product) {
+async function hpAgreementsFrom(set, product) {
   const extent = HP_FINANCE_ROWS[product];
   if (!extent) return [];
-  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+  const zip = await openWorkbook(set, "Fixedassets.xlsx");
   const sheet = zip ? await openSheet(zip, "HPfinance") : null;
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -1269,8 +1298,8 @@ async function hpAgreementsFrom(sourceDir, product) {
   return agreements;
 }
 
-async function extractSeOpeningFixedAssets(sourceDir, period) {
-  const sheet = await scheduleSheet(sourceDir);
+async function extractSeOpeningFixedAssets(set, period) {
+  const sheet = await scheduleSheet(set);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
 
@@ -1321,21 +1350,17 @@ async function extractSeOpeningFixedAssets(sourceDir, period) {
  * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows -- and,
  * for Ltd, the year's stock movement.
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the other two keep no journal
  * @param {{start: string, end: string}} period - the accounting period the package covers
  */
-export async function extractJournalEntries(sourceDir, product, period) {
-  if (product === "se") return extractSeOpeningFixedAssets(sourceDir, period);
+export async function extractJournalEntries(set, product, period) {
+  if (product === "se") return extractSeOpeningFixedAssets(set, period);
   if (product !== "ltd") return [];
 
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
+  if (!set.has("Financialaccounts.xlsx")) return [];
 
-  const hubPath = resolve(sourceDir, "Financialaccounts.xlsx");
-  if (!existsSync(hubPath)) return [];
-
-  const zip = await JSZip.loadAsync(readFileSync(hubPath));
+  const zip = await set.zip("Financialaccounts.xlsx");
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
 
@@ -1436,14 +1461,12 @@ async function stockMovementJournal(hubZip, openAccountsXml, sharedStrings, peri
  * order names the period. The single-file templates carry one fixed April-March
  * period and never rename their tabs.
  */
-export async function extractPeriodStartMonth(sourceDir, product) {
+export async function extractPeriodStartMonth(set, product) {
   if (product === "bst" || product === "taxi") return CALENDAR_MONTHS.indexOf("Apr");
 
-  const { readFileSync } = await import("fs");
-  const { resolve } = await import("path");
-  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Sales.xlsx")));
+  const zip = await set.zip("Sales.xlsx");
   const first = monthSheetsInPeriodOrder(await buildSheetMap(zip))[0];
-  if (!first) throw new Error(`Sales.xlsx in ${sourceDir} has no month tabs, so its accounting period is unknown`);
+  if (!first) throw new Error("Sales.xlsx has no month tabs, so its accounting period is unknown");
   return CALENDAR_MONTHS.indexOf(first);
 }
 
@@ -1469,6 +1492,31 @@ export function periodCovered(startMonthIndex, lines) {
     start: isoDay(new Date(Date.UTC(startYear, startMonthIndex, 1))),
     end: isoDay(new Date(Date.UTC(startYear + 1, startMonthIndex, 0))),
   };
+}
+
+/**
+ * Every transaction line a package carries, whichever product it is. The
+ * single-file products read their one workbook; the multi-file ones read the
+ * journals first, because the sales and purchases tabs fix the accounting
+ * period the bank balances and the opening journal are dated by.
+ * @param {Object} set - the package's workbooks
+ * @param {"bst"|"taxi"|"se"|"ltd"} product
+ * @param {Object} [extractionMap] - which sheet cell produced which line
+ * @returns {Promise<Array>}
+ */
+export async function extractLines(set, product, extractionMap) {
+  if (product === "bst" || product === "taxi") {
+    const workbook = await set.bytes(singleWorkbookName(set));
+    return product === "taxi" ? extractTaxiTransactions(workbook) : extractBstTransactions(workbook, extractionMap);
+  }
+
+  const journalLines = await extractMultiFileTransactions(set, product);
+  const period = periodCovered(await extractPeriodStartMonth(set, product), journalLines);
+  return journalLines.concat(
+    await extractBankTransactions(set, product, period),
+    await extractPayrollTransactions(set),
+    await extractJournalEntries(set, product, period),
+  );
 }
 
 /**
@@ -1646,7 +1694,18 @@ const STOCK_CELLS = {
 
 // The book schema's own name for each product, which is not the short name
 // the CLI and the directory layout use.
-const SCHEMA_PRODUCT_NAMES = { bst: "BasicSoleTrader", taxi: "TaxiDriver", se: "SelfEmployed", ltd: "Company" };
+export const SCHEMA_PRODUCT_NAMES = { bst: "BasicSoleTrader", taxi: "TaxiDriver", se: "SelfEmployed", ltd: "Company" };
+
+const PRODUCT_IDS_BY_SCHEMA_NAME = new Map(Object.entries(SCHEMA_PRODUCT_NAMES).map(([id, schemaName]) => [schemaName, id]));
+
+/**
+ * The short product id behind a book's own declared product name.
+ * @param {string} schemaName
+ * @returns {string|undefined} undefined for a name no product here carries
+ */
+export function productIdOf(schemaName) {
+  return PRODUCT_IDS_BY_SCHEMA_NAME.get(schemaName);
+}
 
 // The section of the chart of accounts a four-digit code belongs to. The
 // leading digit is the division the templates' own code ranges follow.
@@ -1666,12 +1725,15 @@ async function openSheet(zip, sheetName) {
   return { xml: await zip.file(path).async("string"), sharedStrings: await loadSharedStrings(zip) };
 }
 
-async function openWorkbook(sourceDir, fileName) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
-  const path = resolve(sourceDir, fileName);
-  if (!existsSync(path)) return null;
-  return JSZip.loadAsync(readFileSync(path));
+async function openWorkbook(set, fileName) {
+  return set.has(fileName) ? set.zip(fileName) : null;
+}
+
+// The single-file products carry one workbook, whatever it is named.
+function singleWorkbookName(set) {
+  const [name] = set.names();
+  if (!name) throw new Error("No xlsx workbook found in this package");
+  return name;
 }
 
 // The letters spreadsheet columns run through, far enough right to reach the
@@ -2177,18 +2239,18 @@ const LEDGER_BLOCKS = {
 /**
  * One named ledger the package carries, in the order the book declares it:
  * every opening entry the sheet names, then every closing one.
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {Object} hubZip - the single-file workbook, where the ledger lives on it
  * @param {string} product
  * @param {string} ledger - debtors or creditors
  */
-async function ledgerFrom(sourceDir, hubZip, product, ledger) {
+async function ledgerFrom(set, hubZip, product, ledger) {
   const timings = LEDGER_BLOCKS[product]?.[ledger];
   if (!timings) return [];
 
   const entries = [];
   for (const [timing, block] of Object.entries(timings)) {
-    const zip = block.file ? await openWorkbook(sourceDir, block.file) : hubZip;
+    const zip = block.file ? await openWorkbook(set, block.file) : hubZip;
     const sheet = zip ? await openSheet(zip, block.sheet) : null;
     if (!sheet) continue;
     const { xml, sharedStrings } = sheet;
@@ -2243,16 +2305,16 @@ async function stockFrom(hubZip, product) {
  * registers the product keeps (stock, opening balances, fixed assets, hire
  * purchase agreements, employees, directors, members, charges, dividends).
  *
- * @param {string} sourceDir - the populated package
+ * @param {Object} set - the populated package's workbooks
  * @param {string} product - bst, taxi, se or ltd
  * @param {Array} lines - the transaction lines already exported, for the chart of accounts
  * @param {Array} cellMap - the product module's CELL_MAP, retained for callers; no longer consulted for tax
  * @returns {Object} a book that validates against the published v2 book schema
  */
-export async function extractBook(sourceDir, product, lines, cellMap) {
+export async function extractBook(set, product, lines, cellMap) {
   const multiFile = product === "se" || product === "ltd";
-  const hubZip = await openWorkbook(sourceDir, multiFile ? "Financialaccounts.xlsx" : findXlsxName(sourceDir));
-  if (!hubZip) throw new Error(`No workbook to read a book from in ${sourceDir}`);
+  const hubZip = await openWorkbook(set, multiFile ? "Financialaccounts.xlsx" : singleWorkbookName(set));
+  if (!hubZip) throw new Error("This package has no workbook to read a book from");
 
   const entityCells = ENTITY_CELLS[product];
   const entitySheet = await openSheet(hubZip, entityCells.sheet);
@@ -2264,8 +2326,8 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     }
   }
 
-  const salesZip = multiFile ? await openWorkbook(sourceDir, "Sales.xlsx") : hubZip;
-  const purchasesZip = multiFile ? await openWorkbook(sourceDir, "Purchases.xlsx") : hubZip;
+  const salesZip = multiFile ? await openWorkbook(set, "Sales.xlsx") : hubZip;
+  const purchasesZip = multiFile ? await openWorkbook(set, "Purchases.xlsx") : hubZip;
   const salesSheetName = multiFile ? monthSheetsInPeriodOrder(await buildSheetMap(salesZip))[0] : "SalesApr";
   const purchasesSheetName = multiFile ? monthSheetsInPeriodOrder(await buildSheetMap(purchasesZip))[0] : "PurchasesApr";
   const salesSheet = salesSheetName ? await openSheet(salesZip, salesSheetName) : null;
@@ -2283,7 +2345,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   }
 
   if (multiFile) {
-    const salesinvoiceZip = await openWorkbook(sourceDir, "Salesinvoice.xlsx");
+    const salesinvoiceZip = await openWorkbook(set, "Salesinvoice.xlsx");
     const letterhead = salesinvoiceZip ? await openSheet(salesinvoiceZip, "Business Details") : null;
     if (letterhead) {
       for (const [field, cell] of Object.entries(SALESINVOICE_ENTITY_CELLS)) {
@@ -2299,7 +2361,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
 
-  const period = periodCovered(await extractPeriodStartMonth(sourceDir, product), lines);
+  const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {
     documentInfo: {
       entriesType: "journal",
@@ -2313,7 +2375,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     accounts: chartOfAccounts(lines, salesHeadings, purchaseHeadings, product),
   };
 
-  const payslipsZip = multiFile ? await openWorkbook(sourceDir, "Payslips.xlsx") : null;
+  const payslipsZip = multiFile ? await openWorkbook(set, "Payslips.xlsx") : null;
   if (payslipsZip) {
     const employerSheet = await openSheet(payslipsZip, "Employee");
     if (employerSheet) {
@@ -2343,7 +2405,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   if (stock) book.stock = stock;
 
   for (const ledger of ["debtors", "creditors"]) {
-    const entries = await ledgerFrom(sourceDir, hubZip, product, ledger);
+    const entries = await ledgerFrom(set, hubZip, product, ledger);
     if (entries.length > 0) book[ledger] = entries;
   }
 
@@ -2352,17 +2414,17 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     if (openingLedger) book.openingBalances = openingLedger;
   }
 
-  const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
+  const fixedAssets = await fixedAssetRegisterFrom(set, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
 
-  const hpAgreements = await hpAgreementsFrom(sourceDir, product);
+  const hpAgreements = await hpAgreementsFrom(set, product);
   if (hpAgreements.length > 0) book.hpAgreements = hpAgreements;
 
   if (product === "ltd") {
     const openingBalances = await openingBalancesFrom(hubZip);
     if (openingBalances) book.openingBalances = openingBalances;
 
-    const companySecretaryZip = await openWorkbook(sourceDir, "Companysecretary.xlsx");
+    const companySecretaryZip = await openWorkbook(set, "Companysecretary.xlsx");
     if (companySecretaryZip) Object.assign(book, await registersFrom(companySecretaryZip));
   }
 
@@ -2517,11 +2579,3 @@ export function bstExtractionMap() {
   };
 }
 // ─── end BST extraction map ─────────────────────────────────────────────
-
-// findXlsx takes a directory and returns a file name; the single-file
-// products need that name to open their one workbook.
-function findXlsxName(sourceDir) {
-  const name = findXlsx(sourceDir);
-  if (!name) throw new Error(`No xlsx file found in ${sourceDir}`);
-  return name;
-}
