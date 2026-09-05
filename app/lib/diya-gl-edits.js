@@ -51,6 +51,40 @@ export function addPurchaseLine(book, lines, params) {
 }
 
 /**
+ * Append a bank line. A bank entry reaches its month tab through four
+ * fields at once -- the workbook it belongs to, the block it lands in, the
+ * column it is analysed under and the amount -- so all four are checked
+ * here rather than left to fail later inside the writer, where the message
+ * names a cell instead of a field. The bank account has to be one the
+ * book's own chart declares under [accounts.bank].
+ * @param {Object} book - parsed book.toml, for its declared bank accounts
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{line: Object}} params - the bank line to add
+ * @returns {Array} a new lines array with the line appended
+ */
+export function addBankLine(book, lines, params) {
+  const { line } = params;
+  if (line.sourceJournalID !== "bank") {
+    throw new Error(`addBankLine expects a line with sourceJournalID "bank", got "${line.sourceJournalID}"`);
+  }
+  if (line.debitCreditCode !== "D" && line.debitCreditCode !== "C") {
+    throw new Error(`addBankLine expects debitCreditCode "D" or "C", got "${line.debitCreditCode}"`);
+  }
+  if (!Object.keys(book?.accounts?.bank || {}).includes(line["diya-gl:bankAccountID"])) {
+    throw new Error(
+      `addBankLine expects a diya-gl:bankAccountID declared in the book's own chart, got "${line["diya-gl:bankAccountID"]}"`,
+    );
+  }
+  if (!line["diya-gl:bankCode"]) {
+    throw new Error("addBankLine expects a diya-gl:bankCode naming the column the entry is analysed under");
+  }
+  if (typeof line.amount !== "number" || !Number.isFinite(line.amount)) {
+    throw new Error(`addBankLine expects amount to be a number, got "${line.amount}"`);
+  }
+  return [...lines, line];
+}
+
+/**
  * Change one existing line's amount, identified by its entryNumber. Every
  * other field on the line is carried over unchanged.
  * @param {Object} book - parsed book.toml (unused; see addSaleLine)

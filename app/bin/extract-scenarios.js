@@ -771,6 +771,19 @@ const SOLE_TRADER_MONTHLY_DRAWINGS = 1200;
 const SOLE_TRADER_DRAWINGS_DAY = 25;
 const SOLE_TRADER_NINO = "EF112233B";
 
+// The next entry numbers in the master's own scheme, one past the highest it
+// hands out. A line the adaptation invents still has to be addressable: an
+// edit and a fix-it helper both name the line they change by its entry
+// number, so a line without one can never be changed or removed.
+function nextEntryNumbers(lines, count) {
+  let highest = 0;
+  for (const line of lines) {
+    const digits = String(line.entryNumber || "").match(/^TXN-(\d+)$/);
+    if (digits) highest = Math.max(highest, Number(digits[1]));
+  }
+  return Array.from({ length: count }, (unused, index) => `TXN-${String(highest + 1 + index).padStart(4, "0")}`);
+}
+
 function soleTraderAdaptation(lines, book) {
   const staffOnly = withoutDirectorPayroll(lines, book);
   const netWagesByMonth = {};
@@ -803,23 +816,24 @@ function soleTraderAdaptation(lines, book) {
     adapted.push(line);
   }
 
-  const drawings = Object.keys(netWagesByMonth)
-    .sort()
-    .map((month, index) => ({
-      "sourceJournalID": "bank",
-      "postingDate": `${month}-${SOLE_TRADER_DRAWINGS_DAY}`,
-      "accountMainID": "1200",
-      "amount": SOLE_TRADER_MONTHLY_DRAWINGS,
-      "detailComment": "Proprietor",
-      "lineItemComment": "Drawings",
-      "documentType": "bank-statement",
-      "documentReference": `BNK-DL-${String(index + 1).padStart(3, "0")}`,
-      "taxCode": "OS",
-      "taxRate": 0,
-      "diya-gl:bankCode": "DL",
-      "debitCreditCode": "C",
-      "diya-gl:bankAccountID": "1200",
-    }));
+  const drawingsMonths = Object.keys(netWagesByMonth).sort();
+  const drawingsEntryNumbers = nextEntryNumbers(adapted, drawingsMonths.length);
+  const drawings = drawingsMonths.map((month, index) => ({
+    "entryNumber": drawingsEntryNumbers[index],
+    "sourceJournalID": "bank",
+    "postingDate": `${month}-${SOLE_TRADER_DRAWINGS_DAY}`,
+    "accountMainID": "1200",
+    "amount": SOLE_TRADER_MONTHLY_DRAWINGS,
+    "detailComment": "Proprietor",
+    "lineItemComment": "Drawings",
+    "documentType": "bank-statement",
+    "documentReference": `BNK-DL-${String(index + 1).padStart(3, "0")}`,
+    "taxCode": "OS",
+    "taxRate": 0,
+    "diya-gl:bankCode": "DL",
+    "debitCreditCode": "C",
+    "diya-gl:bankAccountID": "1200",
+  }));
 
   return [...adapted, ...drawings].sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0));
 }
