@@ -163,6 +163,12 @@ function copyRuntimeAssets() {
   // product that adds a layout needs no line of its own here.
   cpSync(resolve(ROOT, "app", "data", "hmrc", "form-layouts"), resolve(dataOut, "hmrc", "form-layouts"), { recursive: true });
 
+  // The filing data the Ltd layout points at rather than restating: the CT600
+  // box list, HMRC's prescribed computation format and the FRS 105 formats.
+  // products/ltd-forms.js reads each row's label, format and sheet cell out
+  // of these, so the page and the CLI's reports quote one source.
+  cpSync(resolve(ROOT, "app", "data", "filing"), resolve(dataOut, "filing"), { recursive: true });
+
   const templatesOut = resolve(ASSETS_DIR, "templates");
   mkdirSync(resolve(templatesOut, "bst"), { recursive: true });
   cpSync(resolve(ROOT, "app", "templates", "meta.toml"), resolve(templatesOut, "meta.toml"));
