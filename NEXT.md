@@ -9,11 +9,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 PR #63, #64 and #65 merged to main on 2026-09-06; every product's packages, reports and
 reconciliation pages are regenerated on main from the merged writers, prod deployed from the Ltd
 package commit `c97b2c81` through deploy run 34038592549 with the judge on Nova passing all four
-products under the actions role, and `test` is green on main at `39f27536`. No worktree exists under
-`../.worktrees/spreadsheets/`, and `main` is the only local branch. Sub-agents run no LibreOffice
-and prove JS calculations against the committed packages' extraction (`report.js --source-dir`).
-Every worktree lives at `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` while its row is in
-flight, and the board names it. The generate workflows cancel their own in-progress run on a push
+products under the actions role, and `test` is green on main at `39f27536`. The three PR branches
+are deleted at origin; `main` is the only branch locally and at origin, and no worktree exists
+under `../.worktrees/spreadsheets/`. Sub-agents run no LibreOffice and prove JS calculations
+against the committed packages' extraction (`report.js --source-dir`). Every worktree lives at
+`../.worktrees/spreadsheets/<row>` on a branch named `claude/<ns>-<topic>` (`CLAUDE.md`'s
+convention, the distinctive part right after `claude/`) while its row is in flight, and the board
+names it. The generate workflows cancel their own in-progress run on a push
 to their ref, so a session pushes nothing to a branch while a generate run is in progress on it.
 `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
 
