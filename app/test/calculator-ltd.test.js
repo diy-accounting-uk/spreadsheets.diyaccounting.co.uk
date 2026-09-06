@@ -448,7 +448,14 @@ function ltdPayrollResultsAtYearEnd20271031() {
   const printedTab = fiscalTabs[printedMonthIndex];
   const printedDate = payslips[printedTab]?.[payslipsWagesPaidCell(printedMonthIndex)];
 
-  const results = { ...baseResults, Admin: { ...baseResults.Admin, B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1) } };
+  const results = {
+    ...baseResults,
+    Admin: {
+      ...baseResults.Admin,
+      B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1),
+      F21: toExcelSerial(targetStartYear + 1, yearEndMonth + 1, 1) - 1,
+    },
+  };
   results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = {
     ...results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`],
     [PAYSLIP_PRINT_CELLS.periodEnd]: printedDate,
@@ -487,6 +494,70 @@ describe("Ltd payroll date checks on a year end nineteen months from the scenari
     const mar = checks.find((c) => c.name === "Payslips!Mar M49 wages paid date");
     expect(mar).toBeDefined();
     expect(mar.pass).toBe(false);
+  });
+});
+
+// A June year end's month tabs run Jul through Jun, so the reference and
+// wages-paid-date checks land on Oct/Nov (fiscalTabs' positions 3/4 from a
+// July opening) rather than the March-year-end Jul/Aug. The payroll-by-tab
+// shift these checks read comes off the book's own Admin!F21 (LT-T28), not
+// off a packageYearEnd a caller may omit or get wrong, so they pass here
+// with no packageYearEnd argument at all -- payslips-calendar-year-end.test.js's
+// June-year-end package never carries one.
+function ltdPayrollResultsAtJuneYearEnd() {
+  const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+  const taxData = taxDataFor("ltd-2026");
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const merged = { ...scenario, ...scenario.expected };
+  const baseResults = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+
+  const targetStartYear = 2025;
+  const yearEndMonth = 6;
+  const writes = ltd.cellWrites(merged, targetStartYear, yearEndMonth);
+  const payslips = writes["Payslips.xlsx"] || {};
+
+  const results = {
+    ...baseResults,
+    Admin: {
+      ...baseResults.Admin,
+      B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1),
+      F21: toExcelSerial(targetStartYear + 1, yearEndMonth + 1, 1) - 1,
+    },
+  };
+  for (const [tab, cells] of Object.entries(payslips)) {
+    results[`Payslips.xlsx!${tab}`] = { ...results[`Payslips.xlsx!${tab}`], ...cells };
+  }
+  return { merged, results };
+}
+
+const LTD_JUNE_YEAR_END_PAYROLL_CHECK_NAMES = [
+  "Payslips!Oct S51 reference",
+  "Payslips!Oct S52 reference",
+  "Payslips!Oct S53 reference",
+  "Payslips!Oct M49 wages paid date",
+  "Payslips!Nov S51 reference",
+  "Payslips!Nov S52 reference",
+  "Payslips!Nov S53 reference",
+];
+
+describe("Ltd payroll reference and date checks on a June year end, without a packageYearEnd argument", () => {
+  it("pass when checkCompliance derives the payroll shift off the book's own Admin!F21", () => {
+    const { merged, results } = ltdPayrollResultsAtJuneYearEnd();
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax);
+    for (const name of LTD_JUNE_YEAR_END_PAYROLL_CHECK_NAMES) {
+      const check = checks.find((c) => c.name === name);
+      expect(check, `expected a check named "${name}"`).toBeDefined();
+      expect(check.pass, `${name}: expected ${check.expected}, got ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("still fails a reference the writer did not actually produce", () => {
+    const { merged, results } = ltdPayrollResultsAtJuneYearEnd();
+    results["Payslips.xlsx!Oct"].S51 = "PAY-EMP001-2025-04";
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax);
+    const oct = checks.find((c) => c.name === "Payslips!Oct S51 reference");
+    expect(oct).toBeDefined();
+    expect(oct.pass).toBe(false);
   });
 });
 
