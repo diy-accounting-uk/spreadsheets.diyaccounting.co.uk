@@ -1334,7 +1334,11 @@
       if (!target[segments[i]]) target[segments[i]] = {};
       target = target[segments[i]];
     }
-    target[segments[segments.length - 1]] = value;
+    var lastSegment = segments[segments.length - 1];
+    if (lastSegment === "__proto__" || lastSegment === "constructor" || lastSegment === "prototype") {
+      throw new Error("A book field path never names " + lastSegment + ": " + path);
+    }
+    target[lastSegment] = value;
     return next;
   }
 
