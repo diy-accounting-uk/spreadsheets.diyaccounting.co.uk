@@ -383,6 +383,33 @@ describe("scoreDataHalves", () => {
     expect(scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory)).wholeLineMatches).toBe(1);
   });
 
+  // A line the package holds outside the journals the export reads is
+  // neither a loss nor a match: the inventory's "lines" section names its
+  // block, and scoreDataHalves counts it apart before scoring anything.
+  it("counts a declared line block apart from the lines it scores", () => {
+    const inventory = {
+      lines: [{ block: "vat-straddling", products: ["se"], reason: "returned on a period outside the year" }],
+    };
+    const straddling = { ...LINE, "postingDate": "2025-02-20", "diya-gl:vatPeriodEnd": "2025-02-28" };
+    const { fixture, exported } = writePair([LINE, straddling], [LINE]);
+    const undeclared = scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory));
+    expect(undeclared).toMatchObject({ fixtureLines: 2, linesLost: 1, linesUnrepresentable: 0 });
+    expect(undeclared.fieldsDropped).toEqual(["diya-gl:vatPeriodEnd"]);
+
+    const declared = scoreDataHalves(fixture, exported, unrepresentableScope("se", inventory));
+    expect(declared).toMatchObject({ fixtureLines: 1, linesLost: 0, linesUnrepresentable: 1 });
+    expect(declared.coarseMatches).toBe(1);
+    expect(declared.fieldsDropped).toEqual([]);
+  });
+
+  it("throws on a line-block declaration no line in the run scopes to", () => {
+    const inventory = {
+      lines: [{ block: "vat-straddling", products: ["se"], reason: "returned on a period outside the year" }],
+    };
+    const { fixture, exported } = writePair([LINE], [LINE]);
+    expect(() => scoreDataHalves(fixture, exported, unrepresentableScope("se", inventory))).toThrow(/matches nothing/);
+  });
+
   it("matches on the full field set only when every field survives", () => {
     const { fixture, exported } = writePair([LINE], [LINE]);
     expect(scoreDataHalves(fixture, exported).wholeLineMatches).toBe(1);

@@ -246,13 +246,18 @@ jobs:
           node app/bin/report.js --package se --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/se-scorecard-excel
           node app/bin/export.js --package se --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/se-scorecard-excel/data
           node app/bin/report.js --package se --data examples/precision-code-ltd/advanced --years ${{ steps.roundtrip.outputs.years }} --output-dir target/se-scorecard-js
-          # Only linesLost and fieldsDropped are gated here
-          # (app/data/roundtrip-matrix-budget.json), not differing/noJsValue/
-          # noExcelValue: the report-half comparison is only exact for the one
-          # year-end that happens to equal the master's own period end
-          # (examples/precision-code-ltd/advanced/book.toml's periodCoveredEnd);
-          # every other year picks up whatever that year's own tax-rate
-          # tables move. The scorecard still prints in full for visibility.
+          # The budget (app/data/roundtrip-matrix-budget.json) gates the data
+          # half alone: linesLost, fieldsDropped, coarseUnmatched and
+          # accountUnmatched. It gates none of the report half's differing,
+          # noJsValue or noExcelValue, because that comparison is only exact
+          # for the one year-end that happens to equal the master's own period
+          # end (examples/precision-code-ltd/advanced/book.toml's
+          # periodCoveredEnd); every other year picks up whatever that year's
+          # own tax-rate tables move. The scorecard still prints in full for
+          # visibility. The book's VAT-straddling lines are counted apart from
+          # the data half rather than against it: they reach Vat.xlsx's
+          # out-of-year entry sheets, which the export does not read
+          # (app/data/roundtrip-unrepresentable.json states the reason).
           node app/bin/verify-roundtrip.js --package se --excel target/se-scorecard-excel --js target/se-scorecard-js --budget app/data/roundtrip-matrix-budget.json
       - name: 'EQ3: stability of the recalculated package'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
