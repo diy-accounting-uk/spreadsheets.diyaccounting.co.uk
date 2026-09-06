@@ -45,6 +45,7 @@ export default defineConfig({
         "**/books-taxi-formats.browser.test.js",
         "**/books-taxi-edits.browser.test.js",
         "**/books-taxi-layouts.browser.test.js",
+        "**/books-taxi-forms.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",
