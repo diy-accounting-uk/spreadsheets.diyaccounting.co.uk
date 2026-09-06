@@ -571,18 +571,25 @@ function driftFromPage(page) {
 
 // What the engine itself now holds for the cell a mark stands on: a hub cell
 // for a mark read straight off the hub, and the leaf cell for a mark that
-// came through a link cache.
+// came through a link cache. The engine keys its link cells the way the
+// package addresses them -- a hub sheet under its bare name, a leaf sheet
+// under "File.xlsx!Sheet" -- and a leaf can be a hub sheet, since the
+// workbooks read each other both ways.
 function engineFiguresFor(page, entries) {
-  return page.evaluate((wanted) => {
-    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-    const linkCells = snapshot.context.linkCells;
-    return wanted.map((entry) => {
-      if (entry.leaf === null) return snapshot.results[entry.sheet][entry.cell];
-      const at = entry.leaf.lastIndexOf("!");
-      const sheetKey = entry.leaf.slice(0, at);
-      return linkCells[sheetKey][entry.leaf.slice(at + 1)];
-    });
-  }, entries);
+  return page.evaluate(
+    ({ wanted, hubFile }) => {
+      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const linkCells = snapshot.context.linkCells;
+      return wanted.map((entry) => {
+        if (entry.leaf === null) return snapshot.results[entry.sheet][entry.cell];
+        const at = entry.leaf.lastIndexOf("!");
+        const addressed = entry.leaf.slice(0, at);
+        const sheetKey = addressed.startsWith(`${hubFile}!`) ? addressed.slice(hubFile.length + 1) : addressed;
+        return linkCells[sheetKey][entry.leaf.slice(at + 1)];
+      });
+    },
+    { wanted: entries, hubFile: HUB_FILE },
+  );
 }
 
 // The figure the uploaded package itself carries at the cell a mark names.

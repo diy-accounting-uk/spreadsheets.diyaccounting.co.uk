@@ -450,6 +450,53 @@ function shiftMonths(d, monthOffset) {
   return new Date(Date.UTC(year, month, Math.min(d.getUTCDate(), lastDayOfShiftedMonth)));
 }
 
+// The year the scenario's own accounting period opens in, read off the
+// earliest date its posting journals carry. A date outside the period is not
+// a posting -- a charge registered years before it, a straddling VAT entry
+// after it -- so only the four journals whose entries belong to the period
+// are read. A scenario with no postings at all has no period to read.
+function postingPeriodStartYear(scenario, startMonth) {
+  let earliest = null;
+  for (const journal of ["sales", "purchases", "bank", "payroll"]) {
+    for (const entries of Object.values(scenario[journal] || {})) {
+      for (const entry of entries) {
+        const date = parseDate(entry.date);
+        if (earliest === null || date < earliest) earliest = date;
+      }
+    }
+  }
+  if (earliest === null) return null;
+  return earliest.getUTCFullYear() - (earliest.getUTCMonth() < startMonth ? 1 : 0);
+}
+
+/**
+ * The whole-month gap between the accounting period a scenario's dates sit in
+ * and the period a package covers, counting years as well as months. The
+ * package's period opens the day after its year-end month, eleven months
+ * back; the scenario states the month its own period opens in, and its year
+ * comes from the book that declared it or from the earliest date its journals
+ * post. A scenario already in the package's period has a zero gap and is
+ * written as it stands, which is what makes exporting a package and
+ * generating from the export reproduce the same cells.
+ *
+ * @param {Object} scenario
+ * @param {number} targetStartYear - the year the package's period opens in
+ *   for every year end but December's, which generate.js still names as the
+ *   year before the year end
+ * @param {number} yearEndMonth - 1-indexed month the package's year end falls in
+ * @returns {number} months to shift each of the scenario's dates by
+ */
+function periodShiftMonths(scenario, targetStartYear, yearEndMonth) {
+  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
+  const sourceStartYear = scenario.period_start_year || postingPeriodStartYear(scenario, sourceStartMonth);
+  if (sourceStartYear === null) return 0;
+  if (!targetStartYear) {
+    throw new Error("cellWrites: a Company package needs the calendar year its accounting period opens in");
+  }
+  const targetStartIndex = (targetStartYear + 1) * 12 + (yearEndMonth - 1) - 11;
+  return targetStartIndex - (sourceStartYear * 12 + sourceStartMonth);
+}
+
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -458,17 +505,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const yem = yearEndMonth || 3;
 
   // Dates belong to the accounting period their own scenario covers, and get
-  // shifted by the whole-month gap between that period and the target's, so
-  // the twelve months land on the twelve month tabs in order. A scenario
-  // already in the target's period has a zero gap and is written as it stands,
-  // which is what makes exporting a package and generating from the export
-  // reproduce the same cells. A scenario that does not name its period start
-  // is in the April-March frame its apr..mar month keys describe.
+  // shifted onto the package's own period, so the twelve months land on the
+  // twelve month tabs in order and in the years the package's accounts are
+  // drawn up for. A scenario that does not name its period start is in the
+  // April-March frame its apr..mar month keys describe.
   const rate = vatRateFor(scenario);
 
-  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
-  const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
+  const monthOffset = periodShiftMonths(scenario, targetStartYear, yem);
 
   const shiftDate = (d) => shiftMonths(d, monthOffset);
 
@@ -953,17 +997,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // opposite sides of each month tab.
   //
   // The period's first day, in the same shifted frame as every "d" below:
-  // the earliest of the scenario's own bank dates, shifted the same way
-  // "d" is, rather than reconstructed from targetStartYear and yearEndMonth.
-  // shiftDate keeps a date's own year and lets the month overflow, so a
-  // month shift that does not cross a year boundary (a March year end,
-  // whose target frame already starts in April) agrees with targetStartYear
-  // by coincidence, but one that does (a May year end shifts an April
-  // opening two months into the same calendar year, not into
-  // targetStartYear's, which generate.js names one year further back) does
-  // not -- the true opening then misses periodStart and reads as a
-  // transfer, while every genuine transfer misses it too and reads as an
-  // opening instead.
+  // the earliest of the scenario's own bank dates, shifted the same way "d"
+  // is. An opening balance is the one bank line dated it, and the workbook
+  // takes that as the account's A1 figure rather than as a statement line;
+  // read a day out, the opening reads as a transfer and every transfer as an
+  // opening.
   const bankDates = Object.values(scenario.bank || {}).flatMap((transactions) => transactions.map((tx) => shiftDate(parseDate(tx.date))));
   const periodStart = bankDates.length > 0 ? bankDates.reduce((earliest, date) => (date < earliest ? date : earliest)) : null;
   const bankFileWrites = {};
@@ -3048,8 +3086,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // scenario's dates shift by the gap between its own accounting period
     // and the package's, so the year end on the Admin sheet is what says how
     // far this book moved the meeting.
-    const yearEndMonth = dateFromSerial(num(results.Admin.F21)).getUTCMonth() + 1;
-    const monthOffset = ((yearEndMonth % 12) - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const packageYearEnd = dateFromSerial(num(results.Admin.F21));
+    const monthOffset = periodShiftMonths(expected, packageYearEnd.getUTCFullYear() - 1, packageYearEnd.getUTCMonth() + 1);
     const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
     check(
       "Board minute: meeting date = the scenario's board meeting",

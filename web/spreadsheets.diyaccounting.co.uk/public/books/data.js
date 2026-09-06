@@ -624,7 +624,7 @@
     var cellMapFile = manifest.multiFile ? engine.HUB_FILE : set.names()[0];
     var hubFile = manifest.multiFile ? engine.HUB_FILE : null;
     var asReadLayer = await global.DiyaGlDrift.captureAsReadLayer(productMod.CELL_MAP, productMod.cellLabels(), set, cellMapFile, manifest);
-    var linkLayer = hubFile ? await global.DiyaGlDrift.captureLinkLayer(set, hubFile, engine) : null;
+    var linkLayer = hubFile ? await global.DiyaGlDrift.captureLinkLayer(set, hubFile, engine, manifest.id) : null;
     var linkCells = null;
     if (manifest.multiFile) {
       var scenario = engine.diyaGlToScenario(book, lines, manifest.id);
