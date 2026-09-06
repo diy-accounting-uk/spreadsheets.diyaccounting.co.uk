@@ -351,8 +351,8 @@
     },
     {
       "path": "tax.nationalInsurance.class2SmallProfitsThreshold",
-      "products": ["bst", "taxi", "se", "ltd"],
-      "reason": "No app/data year file carries the Class 2 small profits threshold; the files declare the weekly rate and the Class 4 limits, and the threshold below which Class 2 stops being due is not one of them."
+      "products": ["ltd"],
+      "reason": "A company runs payroll, not Class 2: the Ltd year files carry no small profits threshold and no Admin cell reads one. The sole-trader Admin sheets carry it (BST N17, Taxi and SE N16) from the year file's class2_small_profits_threshold."
     },
     {
       "path": "tax.nationalInsurance.class2WeeklyRate",
