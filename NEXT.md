@@ -6,9 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #67 merged to main on 2026-09-06 with the b1 batch (CodeQL fixes, four SE rows, two Taxi
-specs, the save-menu, download-page and title changes); prod deploys from that merge. CodeQL
-runs from `.github/workflows/codeql.yml` on `test.yml`'s trigger criteria. Sub-agents run no
+PR #68 merged to main on 2026-09-06 with the T37 batch: the entries grid's add row works on the
+bank, cash and payroll journals for SE and Ltd, with the SE and Ltd proofs in the browser specs.
+PR #67 landed earlier the same day with the b1 batch. Prod deploys from each merge. CodeQL runs
+from `.github/workflows/codeql.yml` on `test.yml`'s trigger criteria. Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). Every worktree lives at `../.worktrees/spreadsheets/<row>` on a
 branch named `claude/<ns>-<topic>` while its row is in flight, and the board names it; a fresh
@@ -19,23 +20,11 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 
 ## Context for the open rows
 
-- **SE-T37a to T37g**: the design is `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`'s "T37 design" section:
-  bank already has `addBankLine`; SE's cash grid is a view of bank lines on account 1220; only payroll
-  needs a new edit; Ltd's payroll chart section is T33's gap on Ltd; the bank row's account select must
-  commit `changeLineBankAccount`, not `changeLineAccount`.
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-T37a | `addPayrollLine` beside `addBankLine`, the net-and-amount derivation shared with `changePayrollLine`; bundle and MCP edit map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`f46c7eba`); 326 cases pass |
-| SE-T37b | The add row renders the controls the journal's `add` descriptor names; the draft store reads them; a bank row's account select routes by journal | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`744f73b9`); 67 cases pass |
-| SE-T37c | `addEntry` routes on the descriptor's kind and builds the bank and payroll line shapes | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`239542a0`); 51 edit cases pass |
-| SE-T37d | The SE manifest's bank, cash and payroll `add` descriptors | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`294f978f`); 13 SE cases pass |
-| SE-T37e | The Ltd manifest's bank and payroll descriptors and its payroll chart section | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`4804000c`); 15 Ltd cases pass |
-| SE-T37f | The SE proof: add rows render; a bank receipt, a cash payment and a payslip land with anchored figures | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`2d4a116d`); 39 SE cases pass |
-| SE-T37g | The Ltd proof: the bank add and the transfer pair with its counter-leg | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`e634c03a`); 20 Ltd cases pass |
-| H4 | Merge batch PR #68; T37a to T37g are code complete | none | human | — | ready-to-start | checks green on `4f1aa6fb` |
 
 ## Plans not tracked here
 
