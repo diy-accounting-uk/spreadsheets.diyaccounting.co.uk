@@ -281,7 +281,20 @@
         return sum + num(entry.amount);
       }, 0);
     }
+    // The listing's own total and the trial balance cell named for it are
+    // the same figure for the debtors listings and the opening creditors
+    // one -- the balance is nothing more than what was outstanding at that
+    // moment. The closing creditors listing is not: the trial balance nets
+    // a year of invoices, payments, CIS withholding and the hire purchase
+    // agreements moved off the row, none of which the listing carries, so
+    // it lands on a different figure from EJ28's signed balance. Where the
+    // two agree the listing carries the key; where they do not, the listing
+    // stays unkeyed (it is not EJ28's figure) and the trial balance's own
+    // figure gets a row of its own, keyed to EJ28.
     function side(title, ledger, trialBalanceCell) {
+      var listingTotal = total(ledger.rows);
+      var trialBalanceValue = cellValue(snap.results, S.TRIAL_BALANCE_SHEET, trialBalanceCell);
+      var listingIsTrialBalanceFigure = Math.round(listingTotal * 100) === Math.round(trialBalanceValue * 100);
       var body = ledger.rows.length
         ? ledger.rows
             .map(function (entry) {
@@ -297,16 +310,28 @@
             })
             .join("")
         : '<tr><td colspan="3">This book records none.</td></tr>';
+      var totalRow =
+        '<tr class="total"><th colspan="2">Total</th><td class="num"' +
+        (listingIsTrialBalanceFigure ? cellRk(snap, helpers, S.TRIAL_BALANCE_SHEET, trialBalanceCell) : "") +
+        ">" +
+        helpers.fmtMoney(listingTotal) +
+        "</td></tr>";
+      var trialBalanceRow = listingIsTrialBalanceFigure
+        ? ""
+        : '<tr class="total"><th colspan="2">Per trial balance</th><td class="num"' +
+          cellRk(snap, helpers, S.TRIAL_BALANCE_SHEET, trialBalanceCell) +
+          ">" +
+          helpers.fmtMoney(trialBalanceValue) +
+          "</td></tr>";
       return (
         '<div class="panel-card"><h3>' +
         title +
         '</h3><table class="register-table"><thead><tr><th>Contact</th><th>Invoice</th><th>Amount</th></tr></thead><tbody>' +
         body +
-        '</tbody><tfoot><tr class="total"><th colspan="2">Total</th><td class="num"' +
-        cellRk(snap, helpers, S.TRIAL_BALANCE_SHEET, trialBalanceCell) +
-        ">" +
-        helpers.fmtMoney(total(ledger.rows)) +
-        "</td></tr></tfoot></table></div>"
+        "</tbody><tfoot>" +
+        totalRow +
+        trialBalanceRow +
+        "</tfoot></table></div>"
       );
     }
     var ledgers = snap.ledgers;
