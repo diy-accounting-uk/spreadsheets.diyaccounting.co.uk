@@ -66,7 +66,7 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 on main's scan after PR #62 |
+| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 open on main's scan |
 | CQ-5 | CodeQL runs on every push, docs-only included; move it from GitHub's default setup to a workflow with `test.yml`'s trigger criteria (the same branch and path filters, schedule and PR trigger) | operator | machine | H2 | blocked-to-start | Haiku; GitHub refuses an advanced CodeQL workflow while default setup is on |
 | H2 | Disable CodeQL default setup in the repository's Code security settings, so the CQ-5 workflow can run | operator | human | — | ready-to-start | Settings, Code security, Code scanning, CodeQL analysis |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
