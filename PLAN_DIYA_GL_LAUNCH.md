@@ -2,9 +2,12 @@
 
 The BST books page shipped on 2026-09-03 (PR #57) and proved the thing this plan sells: a
 full year of a sole trader's accounts fits in a 15 KB zip, recalculates in a browser or on a
-command line without Excel or a server, and produces the same bytes on every surface. This
-document turns that into a product line with a revenue stream, checks the operator's sketch
-against the market and the arithmetic, and lays out a launch sequence with gates.
+command line without Excel or a server, and produces the same bytes on every surface. Self
+Employed, Taxi and Limited Company followed by 2026-09-06 (PRs #60 to #68): four products on
+the page, in the CLI and in the MCP server, each reconciled in CI, their plans archived under
+`_developers/archive/`. This document turns that into a product line with a revenue stream,
+checks the operator's sketch against the market and the arithmetic, and lays out a launch
+sequence with gates. State lines are as of 2026-09-06.
 
 ## User assertions (verbatim)
 
@@ -24,10 +27,9 @@ credibility this company can buy. The paid tier stores that file, keeps its vers
 syncs it between devices, priced so low that the question is not "is it worth it" but "why
 not". Making Tax Digital for Income Tax is the reason a sole trader will need software at
 all from April 2026, and Submit is already HMRC-recognised for VAT, so the filing tier is a
-path this company can walk rather than a claim it has to make. The 99p headline survives
-the arithmetic only when billed yearly, and the certification the operator wants does not
+path this company can walk rather than a claim it has to make. The certification the operator wants does not
 exist as such; the credible substitutes are HMRC recognition and published, reproducible
-proof.
+proof. The 99p headline is billed monthly, as decided; section 3 carries the fee that costs.
 
 ## 1. The market
 
@@ -215,10 +217,10 @@ measure.
 
 | Per subscriber per month | Cost |
 | --- | --- |
-| Cognito (Essentials, beyond the free 10,000) | about 1.1p |
+| Cognito (Plus, as decided) | about 1.5p |
 | S3 and CloudFront | under 0.1p |
-| Stripe, at 99p billed yearly | 3.2p |
-| Total infrastructure | about 4.5p against 99p kept as 96p |
+| Stripe, at 99p billed monthly | 21.5p |
+| Total infrastructure | about 23p against 99p, leaving about 76p |
 
 Break-even on infrastructure is a handful of subscribers. Break-even on the operator's time
 is the only number that matters, and it is set by the support rate the first hundred
@@ -228,17 +230,22 @@ subscribers produce.
 
 ### 5a. The free public face
 
-The live page at `spreadsheets.diyaccounting.co.uk/books/bst.html` is already the free face:
-loads a workbook, a package zip, a diya-gl zip or JSON by content; recalculates; shows the
-ledger, the P&L, the SA103S-shaped form and the Income Tax computation; runs the engine and
-book checks; exports the workbook, the package, the diya-gl zip and JSON; nothing leaves
-the machine. The gaps between that and the operator's sketch:
+The live pages at `spreadsheets.diyaccounting.co.uk/books/{bst,se,taxi,ltd}.html`, titled
+"DIYA-GL — <Product>", are already the free face: each loads a workbook, a package zip, a
+diya-gl zip or JSON by content; recalculates; shows the ledger views, the P&L, the HMRC
+look-alike forms (SA103S, SA103F, the VAT return, CT600) and the tax computation; runs the
+engine and book checks with their helpers; edits lines in place, including adding to the
+bank, cash and payroll journals; saves the diya-gl zip and JSON; nothing leaves the machine.
+The page's own workbook and package downloads were removed on 2026-09-06 (operator): the
+`.xlsx` and the package come from the CLI (`app/bin/export.js --package <product> --file`)
+and the MCP server's `save_workbook`, and the engine bundle still carries the writer. The
+gaps between that and the operator's sketch:
 
 **The local runner for non-technical desktop users.** Four packagings, weighed:
 
 | Packaging | Size | Signing cost | Update path | Verdict |
 | --- | --- | --- | --- | --- |
-| Single-file HTML, opened by double-click | about 1 MB with the engine (539 KB measured), schemas and tax data inlined; about 4 MB if the 2.5 MB BST template is inlined for `.xlsx` export | none; browsers open local HTML without a signature | download the new file; the file carries its own version stamp | first, and the "distro" the operator describes |
+| Single-file HTML, opened by double-click | about 1.2 MB with the engine (794 KB measured 2026-09-06, all four products), schemas and tax data inlined; about 4 MB if the 2.5 MB BST template is inlined for `.xlsx` export | none; browsers open local HTML without a signature | download the new file; the file carries its own version stamp | first, and the "distro" the operator describes |
 | PWA (install from the live page) | the site's own assets, cached | none | automatic on next visit | second; gives an icon and offline use with no build |
 | Tauri app | about 3 to 10 MB | Apple Developer Program $99 a year for notarisation; Windows OV certificate about $216 a year or Azure Artifact Signing $9.99 a month | an updater to build and maintain | later, if the file-association and menu-bar experience earns it |
 | Electron app | 85 to 100+ MB | as Tauri | as Tauri | no; size without benefit |
@@ -258,29 +265,34 @@ stamp it. "Just the extraction and templates for the chosen product" is the buil
 list. The page already generates the `.xlsx` client-side, so the runner does too. The
 operator's "packaging TBD" resolves to: HTML file now, PWA with it, Tauri only on demand.
 
-**Donation prompts.** The page shows no ask today. The right moments are after a successful
+**Donation prompts.** The books pages show no ask (2026-09-06); the download page now leads
+only to the donation page, whose "download without donating" link is the one skip. The right moments are after a successful
 save and after a year's figures first appear, each once, each dismissable, each pointing at
 the existing Stripe links, with the 99p cloud offer beside them once it exists.
 
 ### 5b. The tech-community launch
 
 **The package.** `@diy-accounting-uk/diya-gl` with three entry points: `recalc` (zip or
-JSON in, `report.json` and `bookchecks.json` out), `read-workbook` (the BST extractor, Node
-only), `write-workbook` (the generator over the template). `npx diya-gl recalc
-my-books.zip` is the demo. Measured today the recalc path bundles at 468 KB minified, 145
-KB gzipped; precompiling the validators (done for the browser this week) and leaving the
-workbook reader out of the recalc entry lands near 250 KB. The MCP server already exists
-(`diya-gl-bst`) and ships in the same package. The DIYA Cloud plan's assertion 2 asks this
-repository for exactly this library; this is its first cut.
+JSON in, `report.json` and `bookchecks.json` out), `read-workbook` (the extractors, Node
+only), `write-workbook` (the generator over the templates). `npx diya-gl recalc
+my-books.zip` is the demo. Not published (2026-09-06): this repository's own package is
+private, and the CLI is `app/bin/report.js` and `app/bin/export.js` with no `bin` entry.
+Measured on 2026-09-03 the recalc path bundled at 468 KB minified, 145 KB gzipped;
+precompiling the validators (done for the browser) and leaving the workbook reader out of
+the recalc entry lands near 250 KB. The MCP server exists as `diya-gl`
+(`app/bin/diya-gl-mcp.js`) with four tools over all four products: `extract_book`,
+`report`, `edit_lines`, `save_workbook`; it ships in the same package. The DIYA Cloud plan's
+assertion 2 asks this repository for exactly this library; this is its first cut.
 
-**The format.** Publish the two v2 schemas (already served from the site), the JSON Lines
+**The format.** Publish the two v2 schemas (served at `/schema/diya-gl-book-v2.schema.json`
+and `/schema/diya-gl-lines-v2.schema.json`), the JSON Lines
 convention, the zip layout, and a spec page that states the declared subset: the field
 mapping to XBRL GL 2015, the box mapping to SA103S, the check catalogue, and the
 reconciliation evidence. Version the format (`diya-gl-books` version 1 is already in the
 JSON envelope); put the same version in `book.toml`.
 
-**Docker and Homebrew.** A Docker image is `node:alpine` plus the package, a one-line
-Dockerfile, useful for CI users. A Homebrew formula needs a tap and a release artefact; it is
+**Docker and Homebrew.** Neither exists yet. A Docker image is `node:alpine` plus the
+package, a one-line Dockerfile, useful for CI users. A Homebrew formula needs a tap and a release artefact; it is
 a morning's work once the npm package is stable. Both follow the package; neither leads.
 
 **A Rust port, funded (operator, 2026-09-04).** The provenance tests are the asset here:
@@ -304,7 +316,7 @@ workbook layer is a second step of the same size once the core is proven, with t
 template surgery as its one real risk. Four to six coordinator days in all, kept in step
 with each tax year by the same oracle. The earlier estimate that it would consume the
 year's engineering budget was wrong; the measured throughput says days. Its plan of record
-is `PLAN_DIYA_GL_RUST.md`, drafted next.
+is `PLAN_DIYA_GL_RUST.md`, not yet drafted (open item X1).
 
 **The launch itself.** A Show HN post and an AccountingWEB piece with the same three facts:
 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and
@@ -354,7 +366,9 @@ and only if an accountant or a bank asks for it with a number attached.
 
 ## 6. Provenance and versioning as a feature
 
-Every diya-gl zip carries, in `book.toml`'s document info and in `report.json`'s header:
+Every diya-gl zip is to carry, in `book.toml`'s document info and in `report.json`'s header
+(2026-09-06: only the format version exists, as `diya-gl-books` version 1 in the JSON
+envelope; the other four stamps are not written yet):
 
 | Stamp | Value | What it answers |
 | --- | --- | --- |
@@ -365,7 +379,8 @@ Every diya-gl zip carries, in `book.toml`'s document info and in `report.json`'s
 | reconciled commit | the commit whose CI reconciliations passed | the proof this release rests on |
 
 A public **reconciled releases** page lists every release with those five values and links
-to the CI scorecard: the LibreOffice recalculation agreement, the roundtrip budget at zero,
+to the CI scorecard (the per-product reconciliation pages under `/reconciliation/` are the
+scorecard today; the releases page over them does not exist yet): the LibreOffice recalculation agreement, the roundtrip budget at zero,
 the check counts. Recalculating a 2026 file in 2030 either reproduces its `report.json`
 byte-for-byte or names the stamp that differs.
 
@@ -382,12 +397,13 @@ community, the thing they check first. It costs a build step and a page.
 | 0. Provenance | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
 | 1. The free face | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
 | 2. Tech launch | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
-| 3. Cloud, 99p a month | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; Stripe Payment Link for £11.88 a year and the £29 founder offer; the customer portal | phase 1; a decision on the pool tier | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
-| 4. The other products | SE, Taxi and Ltd on the page and in the package, in that order (their plans exist as successors of the BST plan) | phase 3 revenue covering the operator's time | each product reconciles in CI and loads on the page | per product, the BST spike's own record: about a week each with the learnings applied |
+| 3. Cloud, 99p a month | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; one Stripe Payment Link at 99p a month; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
+| 4. The other products | SE, Taxi and Ltd on the page and in the package | none: landed 2026-09-04 to 2026-09-06 (PRs #60 to #68), ahead of phase 3 | done: each product reconciles in CI and loads on the page; the plans are archived | three days for the three, under the coordinator model |
 | 5. Filing | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
-What to leave: Tauri (until the HTML runner's users ask for an app), white-label (until
-Filing exists), a merge story for concurrent edits, and any second price.
+Phases 0, 1, 2, 3 and 5 have not started (2026-09-06). What to leave: Tauri (until the HTML
+runner's users ask for an app), white-label (until Filing exists), a merge story for
+concurrent edits, and any second price.
 
 ## 8. Risks
 
@@ -419,7 +435,7 @@ Filing exists), a merge story for concurrent edits, and any second price.
 2. **Sign-in domain.** Submit's hosted sign-in page with a redirect to the spreadsheets
    site; nothing moves.
 3. **Runner build.** From this repository's bundle, cut from a reconciled commit.
-4. **Next product.** Self Employed.
+4. **Next product.** Self Employed; landed, with Taxi and Ltd after it, by 2026-09-06.
 5. **HMRC application.** Start the Developer Hub application for Income Tax during phase 3
    for the 2027–28 window, and ask HMRC for special consideration for 2026–27 if the
    product is solid by then: a non-zero chance at a low cost to ask.
@@ -505,6 +521,7 @@ its phases 3 to 5 are absorbed by the page; its phase 6 is this plan's Filing ru
   (read 2026-09-03)
 - tech-insider.org, Tauri vs Electron sizes: https://tech-insider.org/tauri-vs-electron-2026/
   (read 2026-09-03)
-- This repository: `_developers/archive/PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`, `_developers/PLAN_DIYA_CLOUD.md`,
+- This repository: the four product plans under `_developers/archive/`
+  (`PLAN_DIYA_GL_{BST,SE,TAXI,LTD}_CLI_MCP_WEB.md`), `_developers/PLAN_DIYA_CLOUD.md`,
   `_developers/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
   repository's `README.md` (HMRC recognition for VAT) and `AWS_COSTS.md` (Cognito cost).
