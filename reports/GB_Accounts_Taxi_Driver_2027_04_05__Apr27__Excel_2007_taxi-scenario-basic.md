@@ -65,8 +65,8 @@ Trade: Owner-driver private hire and taxi services
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Income Tax | 3299 | 3299 | 0 | PASS |
-| NI Class 4 (lower) | 989.6999999999999 | 989.7 | +1.1368683772161603e-13 | PASS |
-| Total Tax + NI | 4288.7 | 4288.7 | 0 | PASS |
+| NI Class 4 (lower) | 989.7 | 989.7 | 0 | PASS |
+| Total Tax + NI | 4289 | 4288.7 | -0.3000000000001819 | PASS |
 | Tax: first payment on account is half the liability | 2144.35 | 2144.35 | 0 | PASS |
 | Tax: second payment on account is half the liability | 2144.35 | 2144.35 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
@@ -96,8 +96,8 @@ Trade: Owner-driver private hire and taxi services
 | Forecast: tax at standard rate | 3299 | 3299 | 0 | PASS |
 | Forecast: tax at higher rate | 0 | 0 | 0 | PASS |
 | Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
-| Forecast: National Insurance | 989.6999999999999 | 989.7 | +1.1368683772161603e-13 | PASS |
-| Forecast: tax and NI liability | 4288.7 | 4288.7 | 0 | PASS |
+| Forecast: National Insurance | 989.7 | 989.7 | 0 | PASS |
+| Forecast: tax and NI liability | 4289 | 4288.7 | -0.3000000000001819 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge

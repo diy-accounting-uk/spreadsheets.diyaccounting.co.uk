@@ -54,9 +54,9 @@ Trade: IT consultancy and software development
 | Closing Debtors total | 7900 | 7900 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
-| Income Tax | 40340 | 40339.8099999998 | -0.19000000019877916 | PASS |
+| Income Tax | 40339.8099999996 | 40339.8099999998 | +2.0372681319713593e-10 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 44027 | 44026.6703333331 | -0.32966666689753765 | PASS |
+| Total Tax + NI, less the CIS already deducted | 44026.67033333292 | 44026.6703333331 | +1.8189894035458565e-10 | PASS |
 | Tax: Personal allowance after taper | 1813.4916666670033 | 1813.49166666687 | -1.3324097380973399e-10 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
@@ -85,8 +85,8 @@ Trade: IT consultancy and software development
 | Forecast: tax at standard rate | 7540 | 7540 | 0 | PASS |
 | Forecast: tax at higher rate | 32903.009999999595 | 32903.0099999998 | +2.0372681319713593e-10 | PASS |
 | Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
-| Forecast: National Insurance | 3690.3 | 3690.30033333333 | +0.00033333332976326346 | PASS |
-| Forecast: tax and NI liability | 44133 | 44133.3103333331 | +0.31033333310188027 | PASS |
+| Forecast: National Insurance | 3690.30033333332 | 3690.30033333333 | +1.000444171950221e-11 | PASS |
+| Forecast: tax and NI liability | 44133.31033333291 | 44133.3103333331 | +1.8917489796876907e-10 | PASS |
 | SA103F box 15 turnover (D55) = the profit and loss account | 339200 | 339200 | 0 | PASS |
 | SA103F box 16 other business income (O55) = the profit and loss account | 0 | 0 | 0 | PASS |
 | SA103F box 17 goods bought for resale (D66) = the profit and loss account | 13470 | 13470 | 0 | PASS |
@@ -529,7 +529,7 @@ Trade: IT consultancy and software development
 | Payslips print: the page reads the May tab | May | May |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
-| Payslips print: the period ends the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 46173 | 46173 | 0 | PASS |
 | Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
 | Payslips print: gross pay is the pay the scenario recorded | 3500 | 3500 | 0 | PASS |
 | Payslips print: income tax is the tax the scenario recorded | 530 | 530 | 0 | PASS |
@@ -539,7 +539,7 @@ Trade: IT consultancy and software development
 | Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
-| Payslips print: the payment date is the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 46173 | 46173 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 92735.73333333332 | 92735.7333333333 | -2.9103830456733704e-11 | PASS |
 | Payslips!Jul F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Jul M51 gross pay | 3500 | 3500 | 0 | PASS |
@@ -562,7 +562,7 @@ Trade: IT consultancy and software development
 | Payslips!Jul R53 net pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Jul T53 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Jul S53 reference | PAY-EMP003-2025-07 | PAY-EMP003-2025-07 |  | PASS |
-| Payslips!Jul M49 wages paid date | 45869 | 45869 | 0 | PASS |
+| Payslips!Jul M49 wages paid date | 46234 | 46234 | 0 | PASS |
 | Payslips!Aug F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Aug M51 gross pay | 3500 | 3500 | 0 | PASS |
 | Payslips!Aug N51 income tax | 530 | 530 | 0 | PASS |
@@ -584,7 +584,7 @@ Trade: IT consultancy and software development
 | Payslips!Aug R53 net pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Aug T53 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Aug S53 reference | PAY-EMP003-2025-08 | PAY-EMP003-2025-08 |  | PASS |
-| Payslips!Aug M49 wages paid date | 45900 | 45900 | 0 | PASS |
+| Payslips!Aug M49 wages paid date | 46265 | 46265 | 0 | PASS |
 | Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
@@ -2364,7 +2364,7 @@ Journal amounts include VAT at 20%.
 | N1 |  | 800 |  |
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
-| M49 |  | 45869 |  |
+| M49 |  | 46234 |  |
 | D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
@@ -2428,7 +2428,7 @@ Journal amounts include VAT at 20%.
 | J15 |  | 0 |  |
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
-| M49 |  | 45900 |  |
+| M49 |  | 46265 |  |
 | D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
@@ -2595,7 +2595,7 @@ Journal amounts include VAT at 20%.
 | H3 |  | May |  |
 | H4 |  | 48 |  |
 | L7 |  | MONTHLY PAYROLL |  |
-| I9 |  | 45808 |  |
+| I9 |  | 46173 |  |
 | I10 |  | 2 |  |
 | M8 |  | 1 |  |
 | G14 |  | 3500 |  |
@@ -2606,7 +2606,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 1060 |  |
 | I16 |  | 400 |  |
 | M16 |  | 5540 |  |
-| M18 |  | 45808 |  |
+| M18 |  | 46173 |  |
 
 ### Payslips.xlsx!Admin
 
