@@ -25,10 +25,9 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T27 | `products/ltd.js:3642` indexes the tab list with a negative month offset for a year end before the scenario's period (`report.js --years ltd-2025` throws); `verify-roundtrip.test.js` fails three cases after PL-4 and SE-T20; `se-workbook.test.js` counts the ten straddling lines the save cannot write (697 against 707) | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t27` on `claude/wt-lt-t27`; Sonnet |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
-| LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
+| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
+| SE-H1 | Merge the batch to main; the four `generate-*` on the branch first; the refresh on main | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, draft until the CI gate is green |
+| LT-M1 | Merge the batch PR; generate-ltd on the branch; the refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
 ## Plans not tracked here
 
