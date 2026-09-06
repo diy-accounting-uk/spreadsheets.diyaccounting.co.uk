@@ -638,7 +638,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   refuses the edit); `edits.js:128` `changeAmount` moves no payroll gross because
   `diya-gl-loader.js:466` reads `diya-gl:grossPay` first; `checkCompliance` shows four spurious
   mismatches on a book with no `[expected]` table that nets to a loss (board rows SE-T26, SE-T27).
-- SE-T17 six commits to `d39a96f2` on `claude/wt-se-t17`, not yet merged: the loader derives every
+- SE-T17 six commits to `d39a96f2`, merged into `claude/diya-gl-wave-2` at `f606c926` (2026-09-06): the loader derives every
   product's depreciation table from the book's tax year (new `app/lib/tax-year.js`), throwing when
   no file covers the period; `extract-scenarios.js` keeps `total_motor_net` pence (the advanced
   fixture 6434 to 6434.25); `fmtMoney` runs through `canonicalForUnit` (new
