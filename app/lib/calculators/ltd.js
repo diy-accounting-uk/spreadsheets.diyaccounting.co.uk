@@ -24,7 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -405,7 +405,7 @@ function bankMonthTotals(scenario, tabs, periodStart) {
       const fileName = BANK_ACCOUNT_FILES[transaction.account || "1200"];
       if (!fileName) continue;
       const file = files[fileName];
-      if (transaction.code === "BC" && parseDate(transaction.date).getTime() === periodStart.getTime()) {
+      if (isLtdOpeningBankLine(transaction.code, parseDate(transaction.date), periodStart)) {
         file.opening = transaction.amount;
         continue;
       }
