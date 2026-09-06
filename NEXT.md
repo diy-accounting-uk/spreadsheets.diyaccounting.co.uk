@@ -19,6 +19,68 @@ A freeze is in effect from 2026-09-06: no push to origin and no workflow dispatc
 lifts it; sessions work locally and propose fixes. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
 plan of record and carries its own open items.
 
+## Freeze (operator, 2026-09-06, verbatim)
+
+> We need to freeze now. Do not push to origin or run a github workflow until the freeze is
+> lifted. You may work locally if you see a job fail but propose the fixes to me until the freeze
+> is lifted.
+
+Acknowledged in session: no pushes to origin and no workflow dispatches until the operator lifts
+it; the operator's `generate-all.yml` run 34026795912 on main is watched read-only; any failure is
+diagnosed locally and the fix proposed, not landed. At the freeze, local `main` held eight
+docs-only commits ahead of origin (the four plan audits, the board updates, the freeze note); they
+push after the lift, rebased onto the run's package commits. Prod was already deployed from
+`d235d704` (the PR #62 merge). The memory `freeze-no-push-no-workflow` carries the same rule.
+
+## Context for the open rows
+
+- **M1** (operator): `generate-all.yml` run 34026795912 on main, dispatched at 10:12 UTC; BST was at
+  its latest year-end reconcile at the freeze. Each product's commit job pushes its packages,
+  reports and reconciliation pages to main and `deploy.yml` follows each push. If a product fails
+  at the reconcile job's "Unit tests against the fresh packages and example" step, the test names
+  in the log say which product's file; the four generate workflows scope that step to the
+  product's own and the shared unit tests (PL-2). If the reconciliation itself reports
+  ANOMALYDETECTED, the failing checks are only in the report file the job writes, not in the log:
+  reproduce with `node app/bin/report.js --package <p> --data <book> --years <year file>
+  --year-end <date> --output-dir <scratch>` (no LibreOffice) and read the compliance section, or
+  run one targeted `npm run reconciliation -- --package <p> --scenario <s> --year-end <date>`.
+- **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
+  lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
+  it starts with the public directory; CodeQL wants a sanitiser it recognises, so serve from an
+  allowlist built by walking the public directory once, or reject any path whose `path.normalize`
+  result contains `..` before joining. `books/shell.js:1337` trips
+  js/prototype-pollution-utility: the CQ-1 guard in `bookWithField` refuses `__proto__`,
+  `constructor` and `prototype` segments, but the flagged site is a later recursive assignment
+  (the property chain set while walking); apply the same segment check there or build the chain
+  with `Object.create(null)` objects. Prove with the unit and shell specs; CodeQL re-scans on push.
+- **SE-T32**: `app/lib/book-checks.js` `REPOST_PREFERRED` names `BasicSoleTrader` and
+  `TaxiDriver` only; `settlementSuggestions`' repost helper for an SE purchase therefore falls to
+  the chart's first account. Add the `SelfEmployed` entry from SE's chart (the account the
+  purchase analysis would pick for a payment with no invoice; read `app/products/se.js`'s
+  purchase code map) and prove it in `app/test/settlement-helpers.test.js` on the SE advanced book.
+- **SE-T33**: the SE manifest's `cash` and `payroll` journals have no chart data, so the entries
+  grid renders an empty chart; T7 assigned the fix to T14, which landed without it. Either
+  `entriesGrid: false`/`chart: false` for those journals in `web/.../books/products/se.js` or a
+  chart from the journal's own categories; prove in `web/browser-tests/books-se.browser.test.js`.
+- **SE-T34**: `app/lib/report-indicators.js` `seIndicators` has no CIS-suffered line, so the judge
+  reads a negative "Total Tax + NI, less the CIS already deducted" as an unexplained query on a
+  CIS-heavy SE book (brickwork-pro). Add the indicator sentence from `SE Short!O124`'s figure and
+  assert it in `app/test/judge-reconciliation.test.js` the way the net-business-profit line is.
+- **SE-T35**: `app/lib/product-workbook.js:40` `PRODUCT_BY_SCHEMA_NAME` is the inverse of
+  `app/lib/xlsx-exporter.js` `SCHEMA_PRODUCT_NAMES`; keep one and derive the other, updating both
+  callers, no alias.
+- **SE-T36**: `app/bin/generate.js:348` runs `main().catch(...)` at module scope; guard it with the
+  `import.meta.url` versus `process.argv[1]` check the other bins use, so tests can import its
+  functions; prove by importing it in `app/test/generate.test.js`.
+- **TX-T21**: T14's brief (Taxi plan, "Takings view") names `books-taxi-takings.browser.test.js`
+  with cases T17 did not absorb: undo after a fare edit, the mobile-portrait week and day cards,
+  and `changeLineDetail` committed through the page DOM. TX-T17's four specs cover the rest; build
+  the file in their shape, expected figures through `web/browser-tests/r-sources.js`.
+- **TX-T22**: T15's note says the view-level proofs land as `books-taxi-views.browser.test.js`
+  once `taxi.html` exists; TX-T18 landed only the forms spec. Cases: the comparison panel (all five
+  vehicle figures on every book after TX-T18), the vehicle register, the quarterly and forecast
+  summaries, and drift survival across a re-render at the DOM level.
+
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
