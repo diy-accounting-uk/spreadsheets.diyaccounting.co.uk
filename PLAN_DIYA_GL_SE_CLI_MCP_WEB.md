@@ -506,6 +506,10 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
+- T37a `f46c7eba`: `addPayrollLine` added beside `addBankLine` in `diya-gl-edits.js`, guarding the
+  journal, the employee, a numeric gross and the account; `derivePayrollNetAndAmount` lifted out of
+  `changePayrollLine` and shared by both. Re-exported from `books-engine.js` alongside `bankLayout`,
+  and reaches the MCP edit map through `EDITS`.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
