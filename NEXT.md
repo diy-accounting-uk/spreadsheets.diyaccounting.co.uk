@@ -20,8 +20,7 @@ and revenue plan of record and carries its own open items.
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after the BST package refresh carries `Admin!N17` |
-| LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t7` on `claude/wt-lt-t7`; Sonnet |
-| TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
+| TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t16-lt-t10` on `claude/wt-tx-t16-lt-t10`; Sonnet, with LT-T10 |
 | SE-T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` (business miles, the month's claim, claim to date) and Sales `W1`, `X1`, Purchases `AD1` (CIS suffered and deducted) per month, 72 cells `render-unrepresentable/se.json` still declares | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t28` on `claude/wt-se-t28`; Sonnet |
 | SE-T9 | T9 SE examples, deep links, download panel, behaviour probe | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T16 | blocked-to-start | Sonnet, wave 8 |
 | SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T28 | blocked-to-start | Fable; after SE-T28 settles the SE page |
@@ -32,13 +31,13 @@ and revenue plan of record and carries its own open items.
 | LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | landed at `260632cb`; remainder: opening-balance journal lines reach the extraction map |
 | LT-T25 | Ltd T25 the cash top-up's counter leg: the sole-trader adaptation in `extract-scenarios.js` maps Ltd transfer codes to SE's before the leg lands in the master; the VAT settlement twins and `vatBroughtForward` get their own entry numbers | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t25` on `claude/wt-lt-t25`; Sonnet |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t4b` on `claude/wt-lt-t4b`; Opus |
-| LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Opus, wave 8 |
-| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, LT-T8 | blocked-to-start | Haiku, wave 9 |
-| LT-T10 | Ltd T10 example rows in `scripts/example-books.json`, bundle assets, deep links | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with TX-T16 |
+| LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t8` on `claude/wt-lt-t8`; Opus |
+| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Haiku, wave 9 |
+| LT-T10 | Ltd T10 example rows in `scripts/example-books.json`, bundle assets, deep links | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t16-lt-t10` on `claude/wt-tx-t16-lt-t10`; Sonnet, with TX-T16 |
 | LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T2, LT-T4b, LT-T7, LT-T8, TX-T17 | blocked-to-start | Opus, wave 9 |
 | LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T2, LT-T11 | blocked-to-start | Sonnet, wave 10 |
-| LT-T13 | Ltd T13 edits and warnings suites | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T6b, LT-T7 | blocked-to-start | Sonnet, wave 8 |
-| LT-T14 | Ltd T14 layouts and axe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, LT-T8 | blocked-to-start | Sonnet, wave 9 |
+| LT-T13 | Ltd T13 edits and warnings suites | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t13` on `claude/wt-lt-t13`; Sonnet; plus LT-T7's findings: entity fields reach the calculator, unmatched settlements, class labels |
+| LT-T14 | Ltd T14 layouts and axe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Sonnet, wave 9 |
 | LT-T15 | Ltd T15 CLI and MCP harness; Ltd edits in the edit map | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t15` on `claude/wt-lt-t15`; Sonnet |
 | LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T10, LT-T11, SE-T9 | blocked-to-start | Sonnet, wave 10 |
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, TX-T18 | blocked-to-start | Haiku, wave 11 |
