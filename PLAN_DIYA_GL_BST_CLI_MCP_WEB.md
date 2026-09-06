@@ -156,7 +156,7 @@ same book are the same bytes. That equality is the test approach's spine.
 
 ### Data model and drift
 
-Edits mutate the book's lines through one commit route (`bst-edits.js`); the calculator
+Edits mutate the book's lines through one commit route (`edits.js`); the calculator
 re-runs on every commit (whole-book, milliseconds); undo is a book-state stack of 50.
 
 Drift: for every calculated cell the page shows the diya-gl value as the value, with the
@@ -225,7 +225,7 @@ code if the operator prefers it. The summary tiles count "need attention" as fai
 warnings; the panel tells them apart by icon, word and colour. BST computes no Class 2 NI (the sheet carries only the
 rate); the tax tile states what it includes.
 
-The derivation lives in `app/lib/bst-headlines.js` (task T4), a pure function from an `R`
+The derivation lives in `app/lib/headlines.js` (task T4), a pure function from an `R`
 document to the tile figures and the two pie datasets, so the Node test and the page
 compute them the same way and the DOM hooks can name them (`headline/turnover`,
 `headline/outgoings`, `headline/assets`, `headline/tax`).
@@ -355,7 +355,7 @@ Assertions, per scenario unless stated:
   `headline/` keys through `bst-headlines.js` run in Node over S2.
 - **A5 Everything is shown.** The set of `cell/`, `section/` and `check/` keys in S2 minus
   the set of `data-r-key`s the page renders (across all views and both drill levels)
-  equals the declared list in `app/data/render-unrepresentable.json`, each entry with a
+  equals the declared list in `app/data/render-unrepresentable/bst.json`, each entry with a
   reason. An undeclared absence fails. This is the render-equivalence sweep the record
   claimed and never had.
 - **A6 The fixture holds.** S1's totals equal the corresponding S2 keys (already true in
@@ -406,7 +406,7 @@ Infrastructure:
 - **Serial and teed.** Browser specs run with one worker; anything longer than a glance is
   teed to a log. No fixed sleeps; `expect.poll` on state.
 - **Where the tests live.** `web/browser-tests/books-equivalence.browser.test.js` (A1–A7),
-  `books-edits.browser.test.js` grows E1–E2, `books-formats.browser.test.js` (E3–E5),
+  `books-bst-edits.browser.test.js` grows E1–E2, `books-formats.browser.test.js` (E3–E5),
   `books-layouts.browser.test.js` (E6); a Node helper `web/browser-tests/r-sources.js`
   produces S1–S3 and canonicalises. `app/test/books-interchange.test.js`,
   `book-checks.test.js`, `bst-headlines.test.js` cover the engine modules with breakability
@@ -432,15 +432,29 @@ Phase 1 (CLI), phase 2 (MCP) and phase 3 (web) landed across `claude/bst-cli-pha
 tested and deployed. The per-track record, the byte-identity proofs and the two big
 corrections (the Debtors & Creditors fiction and the settlement column) are in the commit
 messages on those branches and in the As-built notes at the end of this document. The
-Playwright suite stands at 63 tests across five books specs.
+Playwright suite stands at 83 tests across five books specs (`books-equivalence`,
+`books-formats`, `books-layouts`, `books-bst-edits`, `books-bst`).
 
 BST-T17 `9a7c3e8a`, `2f0af482`, `240b7ad5`, merged into `claude/diya-gl-wave-2` at `ac3d3eff` (2026-09-05):
 `form-layouts/bst.json` (34 boxes: 18 cells, 5 derived, 11 present and empty),
 `products/bst-forms.js` fetching it on first render, `SA103S_BOXES` gone, A9 in
-`books-equivalence`, the CONTEXT SA103S tables rewritten from the sheet, the `D106` wording. 26 BST
-browser cases green. Found: the `CELL_MAP` labels for `D99` and `D106` carry the box-28 and box-31
-confusion, and the judge and nine golden reports key off them (board row BST-T18); the page has no
-profit-bridge panel though S2 always carries the nine bridge keys (BST-T19).
+`books-equivalence`, the CONTEXT SA103S tables rewritten from the sheet, the `D106` wording.
+
+BST-T18 `03dab696`, `c6d380b2`, merged at `0222b87c`/`c16f011f` (2026-09-06): `bst.js` and `se.js`
+CELL_MAP relabel `D99`/`D106` to box 28/31 correctly, `report-indicators.js`, `judge-reconciliation.test.js`,
+the CONTEXT and cell-to-xbrl docs and the nine committed SE reconciliation reports follow. 108
+judge-reconciliation tests pass.
+
+BST-T19 `48655e4e`, merged at `39683c21` (2026-09-06): the Income Tax view renders the ten-row
+accounting-profit-to-tax-profit bridge and its total under its own panel, and the Admin view's
+NI Class 2 Small Profits Threshold (Admin!N17) is asserted; `render-unrepresentable/bst.json`
+drops from 35 to 22 entries. 46 bst-headlines tests pass; 28 books-bst browser cases green.
+
+BST-T20 `fa162aea`, `92771283`, merged at `332e324c` (2026-09-06): `cellWrites`,
+`calculateBstResults` and `extractBstTransactions` carry a sale's CIS deduction to the Sales
+sheet, the JS calculator and reimport; the "Total Tax + NI" check is renamed "Total Tax + NI,
+less the CIS already deducted" and nets CIS off; `brickwork-pro/bst-nonvat` draws as a refund bar,
+not a pie. 286 calculator-bst tests pass.
 
 ## Task list
 
@@ -695,7 +709,7 @@ number is its row on the sheet.
   and marks any figure whose workbook cell disagrees with the calculated book (`cdfcd714`,
   `33f15cef`). The same keys feed a sweep over the three example books that asserts the
   rendered key set covers the report exactly, in both directions, with the 43 unrenderable
-  keys listed with reasons in `app/data/render-unrepresentable.json` (`ddf23204`).
+  keys listed with reasons in `app/data/render-unrepresentable/bst.json` (`ddf23204`).
 - **Chart labels were clipped at every viewport.** The off-centre donut and a value label
   tracking its own bar's length. Fixed by a centred pie with truncated direct labels,
   fixed-position bar and line layouts, and a horizontally scrolling twelve-category chart
