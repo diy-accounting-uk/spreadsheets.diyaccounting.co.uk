@@ -38,7 +38,6 @@
   var PL_SHEET = "MnthP&L";
   var PL_SECTION = "Profit & Loss Account";
   var STOCK_SHEET = "Stock";
-  var BUSINESS_DETAILS_SHEET = "OpenAccounts";
   var BUSINESS_DETAILS_SECTION = "Business Details";
   var OPENING_BALANCE_SECTION = "Opening Balance Sheet";
   var ADMIN_SECTION = "Admin";
@@ -50,7 +49,6 @@
   var CLOSING_DEBTORS_SHEET = "Sales.xlsx!ClosingDebtors";
   var OPENING_CREDITORS_SHEET = "Purchases.xlsx!OpeningCreditors";
   var CLOSING_CREDITORS_SHEET = "Purchases.xlsx!ClosingCreditors";
-  var LEDGER_TOTAL_CELL = "H1";
 
   // Snapshot key per row of the management P&L (MnthP&L), in the sheet's
   // own row order. Labels, sections and cells come from CELL_MAP; this
