@@ -75,6 +75,15 @@ commits. Prod was already deployed from
 - **SE-T36**: `app/bin/generate.js:348` runs `main().catch(...)` at module scope; guard it with the
   `import.meta.url` versus `process.argv[1]` check the other bins use, so tests can import its
   functions; prove by importing it in `app/test/generate.test.js`.
+- **SE-T37** (SE-T29's remainder): the scheduled `test.yml` run 34030029314 on `2d809143` failed three
+  browser cases and `generate-all.yml` run 34026795912 failed Ltd's unit-test step, all because the
+  regenerated `*-latest` examples now carry the dates of the year they were generated for.
+  `claude/se-shifted-dates` (local only until the freeze lifts) makes `calculateSeCells` land the
+  wages-paid dates through the writer's `periodShiftMonths` (proved in `calculator-se.test.js`),
+  finds the April row by month in `books-bst-edits`, gives A7's mark proof its own bent leaf and
+  asserts the true upload is clean, and reads the Ltd October year end off `ltd-latest`'s export.
+  After the merge: the Ltd generate run again (its reconcile passed; only the unit step failed),
+  then `deploy.yml` for prod.
 - **TX-T21**: T14's brief (Taxi plan, "Takings view") names `books-taxi-takings.browser.test.js`
   with cases T17 did not absorb: undo after a fare edit, the mobile-portrait week and day cards,
   and `changeLineDetail` committed through the page DOM. TX-T17's four specs cover the rest; build
@@ -96,6 +105,7 @@ commits. Prod was already deployed from
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
+| SE-T37 | The regenerated `bst-latest`, `se-latest` and `ltd-latest` sit in the year they were generated for; three browser specs and one unit spec still pinned the master books' dates (the BST edits April row, the SE payslip dates the calculator emitted unshifted, the SE A7 true upload expecting incidental drift, the Ltd October package's year end) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `claude/se-shifted-dates`: fix built, awaiting the operator's push under the freeze |
 | M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | — | in-flight | run 34026795912: BST and Taxi on origin/main, SE testing; deploy needs a dispatch after |
 
 ## Plans not tracked here

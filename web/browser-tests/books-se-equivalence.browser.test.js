@@ -259,9 +259,10 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
   test("S3 (se-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const s3Map = s3Se();
     // se-latest stamps its Admin and VAT calendar on the year end it was
-    // generated for and writes every entry on the book's own date, so S2
-    // reproduces both by asking for that same year end -- no date shift.
-    // se-period-frame.test.js proves the two calendars.
+    // generated for and dates every entry into that year, so S2 reproduces
+    // both by asking for that same year end: the calculator lands its
+    // wages-paid dates through the writer's own shift. se-period-frame.test.js
+    // proves the calendars, calculator-se.test.js the dates.
     const s2Map = s2ForPackage(FEATURED.bookDir, s3SeYearEnd(), "se-advanced-s3-year", "se");
 
     const onlyS2 = [...s2Map.keys()].filter((key) => !s3Map.has(key));
@@ -497,10 +498,11 @@ function engineFiguresFor(page, entries) {
   );
 }
 
-// The figure the uploaded package itself carries at the cell a mark names.
-async function uploadedFigureFor(entry) {
+// The figure the uploaded package itself carries at the cell a mark names,
+// read from the bytes that went up: a workbook the upload bent is read bent.
+async function uploadedFigureFor(entry, overrides = {}) {
   const [file, sheet, cell] = entry.leaf === null ? [HUB_FILE, entry.sheet, entry.cell] : entry.leaf.split("!");
-  const read = await readXlsxCellValues(fs.readFileSync(path.join(SE_PACKAGE_DIR, file)), { [sheet]: [cell] });
+  const read = await readXlsxCellValues(overrides[file] || fs.readFileSync(path.join(SE_PACKAGE_DIR, file)), { [sheet]: [cell] });
   return read[sheet][cell];
 }
 
@@ -535,18 +537,27 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
     expect(loaded.lines).toBe(cliLines);
   });
 
-  test("every drift mark reads the uploaded figure against the engine's", async ({ page }) => {
+  test("the se-latest package uploaded as generated carries nothing to mark", async ({ page }) => {
     await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
+    expect(await driftFromPage(page)).toEqual([]);
+  });
+
+  test("every drift mark reads the uploaded figure against the engine's", async ({ page }) => {
+    // A generated package agrees with the engine everywhere, so the marks
+    // come from a leaf whose cached value the upload bends: the Schedule's
+    // other capital allowances, which SE Short box 25 reads across a link.
+    const overrides = { "Fixedassets.xlsx": await workbookWithBentCell("Fixedassets.xlsx", "Schedule", "R1", 999999) };
+    await uploadPackage(page, await seLatestZipBytes(overrides), "se-latest-bent-schedule.zip");
 
     const drift = await driftFromPage(page);
-    expect(drift.length, "the package's own cached figures give the page something to mark").toBeGreaterThan(0);
+    expect(drift.length, "a bent leaf gives the page something to mark").toBeGreaterThan(0);
     expect(drift.every((entry) => entry.state === "drift")).toBe(true);
 
     const engineFigures = await engineFiguresFor(page, drift);
     const mismatches = [];
     for (let i = 0; i < drift.length; i++) {
       const entry = drift[i];
-      const uploaded = await uploadedFigureFor(entry);
+      const uploaded = await uploadedFigureFor(entry, overrides);
       const where = `${entry.id}${entry.leaf ? ` via ${entry.leaf}` : ""}`;
       if (canonical(entry.asRead, "money") !== canonical(uploaded, "money")) {
         mismatches.push(`${where}: marked as-read ${entry.asRead}, the package holds ${uploaded}`);

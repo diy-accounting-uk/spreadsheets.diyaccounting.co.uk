@@ -40,8 +40,18 @@ const NODE = process.execPath;
 
 const MARCH_BOOK = "examples/precision-code-ltd/full";
 const MARCH_DIR_NAME = "GB Accounts Company 2026-03-31 (Mar26) Excel 2007";
+// The populated October package the reconciliation matrix copies here sits
+// in whichever year the matrix last generated for, so its year end is read
+// off the book it exports to rather than pinned.
 const OCTOBER_PACKAGE = "examples/ltd-latest";
-const OCTOBER_DIR_NAME = "GB Accounts Company 2026-10-31 (Oct26) Excel 2007";
+
+// The directory name packages/ gives a Company package for a year end,
+// spelled out by hand so the saver's own naming is checked against it.
+function companyPackageDirName(yearEnd) {
+  const date = new Date(yearEnd);
+  const month = date.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  return `GB Accounts Company ${yearEnd} (${month}${String(date.getUTCFullYear()).slice(2)}) Excel 2007`;
+}
 
 const scratchDirs = [];
 function scratchDir(prefix) {
@@ -207,6 +217,7 @@ describe("the Company package for the year end the templates carry", () => {
 
 describe("the Company package for a year end that moves the month tabs", () => {
   let saved;
+  let octoberYearEnd;
 
   beforeAll(async () => {
     // The populated October package the reconciliation matrix builds, read
@@ -221,12 +232,13 @@ describe("the Company package for a year end that moves the month tabs", () => {
       },
     );
     const { book, lines } = loadDiyaGlData(exported);
-    expect(book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10)).toBe("2026-10-31");
+    octoberYearEnd = book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10);
+    expect(octoberYearEnd.slice(5), "ltd-latest is an October package").toBe("10-31");
     saved = await saveWorkbookFiles(book, lines);
   }, 600000);
 
   it("names the package for the book's own year end", () => {
-    expect(saved.dirName).toBe(OCTOBER_DIR_NAME);
+    expect(saved.dirName).toBe(companyPackageDirName(octoberYearEnd));
   });
 
   it("puts the ledger month tabs in the period's own order", async () => {

@@ -15,7 +15,8 @@
 // them is under test.
 
 import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
-import { standardReads, multiFileOptions } from "../../products/se.js";
+import { shiftMonths, periodShiftMonths } from "../period-shift.js";
+import { standardReads, multiFileOptions, SE_YEAR_END_MONTH } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateMileageAllowance } from "../tax/mileage.js";
@@ -336,7 +337,7 @@ const PAYSLIP_PRINT_BLANK_CELLS = ["M8", "G14", "H14", "I14", "M14", "G16", "H16
 // 3, with the wages-paid date above them. A row the scenario has no employee
 // for keeps the three columns the template ships as a literal zero and stays
 // blank in the other five, which is what the workbook itself carries there.
-function buildPayslipsMonthTab(monthIndex, entries) {
+function buildPayslipsMonthTab(monthIndex, entries, paidOn) {
   const sheet = {};
   const columns = PAYSLIPS_ENTRY_COLUMNS;
   payslipsMonthEntryRows(monthIndex).forEach((row, index) => {
@@ -355,7 +356,7 @@ function buildPayslipsMonthTab(monthIndex, entries) {
     sheet[`${columns.employerNI}${row}`] = entry.employerNI || 0;
     sheet[`${columns.reference}${row}`] = entry.reference || SHEET_BLANK;
   });
-  if (entries.length > 0) sheet[payslipsWagesPaidCell(monthIndex)] = excelSerial(new Date(entries[0].date));
+  if (entries.length > 0) sheet[payslipsWagesPaidCell(monthIndex)] = paidOn(entries[0]);
 
   // Template position 3 keeps its weekly employee lines and its period total;
   // position 4 keeps the cells that would bring an unfinished weekly cycle in
@@ -380,7 +381,7 @@ function buildPayslipsMonthTab(monthIndex, entries) {
 // year-to-date row adds the same employee's line over every month up to the
 // one printed. A month with no payroll leaves the page blank below the
 // heading, which is the sheet's own gated branch.
-function buildPayslipsPrintPage(period, payroll) {
+function buildPayslipsPrintPage(period, payroll, paidOn) {
   const monthIndex = period - 1;
   const sheet = {
     [PAYSLIP_PRINT_CELLS.tab]: MONTH_SHEETS[MONTH_KEYS[monthIndex]],
@@ -395,7 +396,7 @@ function buildPayslipsPrintPage(period, payroll) {
   }
 
   const entry = entries[0];
-  sheet[PAYSLIP_PRINT_CELLS.periodEnd] = excelSerial(new Date(entry.date));
+  sheet[PAYSLIP_PRINT_CELLS.periodEnd] = paidOn(entry);
   sheet.M8 = PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER;
   for (const [cell, field] of Object.entries(PAYSLIP_PRINT_PERIOD_CELLS)) sheet[cell] = entry[field] || 0;
 
@@ -727,6 +728,14 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const rate = vatRateFor(scenario);
   const startYear = taxData?.tax_year?.start ? new Date(taxData.tax_year.start).getUTCFullYear() : extractTaxYearStart(scenario);
   const dateSerials = adminDateSerials(startYear);
+  // The writer dates a posting onto the tax year it is writing into, whole
+  // years past the scenario's own where the two differ (period-shift.js), and
+  // the wages-paid date is the one posting date the sheets carry as a value.
+  // Landing it in the same year keeps a package generated for another year
+  // equal to the engine asked for that year; a book in its own year moves
+  // by nothing.
+  const monthOffset = startYear ? periodShiftMonths(scenario, startYear, SE_YEAR_END_MONTH) : 0;
+  const paidOn = (entry) => excelSerial(shiftMonths(new Date(entry.date), monthOffset));
   const admin = buildAdmin(taxData, dateSerials);
 
   const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a");
@@ -1122,7 +1131,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     ...buildSalesInvoice(scenario, rate, taxData),
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
-    [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, scenario.payroll || {}),
+    [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, scenario.payroll || {}, paidOn),
     ...bankMonthTabs("Bank.xlsx", bank),
     ...bankMonthTabs("Cash.xlsx", cash),
     "Sales.xlsx!OpeningDebtors": { G1: ledgerTotal(scenario.opening_debtors), H2: rate * 100 },
@@ -1135,7 +1144,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
 
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
     const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
-    results[`Payslips.xlsx!${tab}`] = buildPayslipsMonthTab(monthIndex, scenario.payroll?.[MONTH_KEYS[monthIndex]] || []);
+    results[`Payslips.xlsx!${tab}`] = buildPayslipsMonthTab(monthIndex, scenario.payroll?.[MONTH_KEYS[monthIndex]] || [], paidOn);
   }
 
   // Every month tab carries its own whole-month totals on row 1, which is

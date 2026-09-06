@@ -76,14 +76,18 @@ async function openBook(page, example = /bst-scenario-basic/) {
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 }
 
-// April is the month the fixture opens on and the one it carries entries
+// April is the month every book here opens on and the one it carries entries
 // for, so every hand edit below is made in a grid that is already showing.
+// The year is the book's own -- a generated package sits in the year it was
+// generated for -- so the row is found by month and its key handed back for
+// dating an entry into it.
 async function openAprilEntries(page) {
-  const april = page.locator('.year-row[data-month="2025-04"]');
+  const april = page.locator('.year-row[data-month$="-04"]');
   if ((await april.getAttribute("aria-expanded")) !== "true") await april.click();
   const toggle = page.locator("#entries-toggle");
   if ((await toggle.innerText()).includes("Show entries")) await toggle.click();
   await expect(page.locator("table.entries-table")).toHaveCount(2);
+  return april.getAttribute("data-month");
 }
 
 // A commit is asynchronous -- the whole book recalculates before the page
@@ -705,8 +709,8 @@ test.describe("DIYA-GL books page — drift after an edit", () => {
     // A freshly generated package reconciles, so nothing is annotated yet.
     await expect(page.locator(".pencil-correction")).toHaveCount(0);
 
-    await openAprilEntries(page);
-    await addEntry(page, "sales", { date: "2025-04-21", account: "4001", detail: "Sale the workbook never saw", amount: 1000 });
+    const april = await openAprilEntries(page);
+    await addEntry(page, "sales", { date: `${april}-21`, account: "4001", detail: "Sale the workbook never saw", amount: 1000 });
 
     // Now the calculated side has moved away from the cached workbook
     // values, and every annotation says so rather than reading as a
