@@ -388,7 +388,13 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
 | T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
 | T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | — | Sonnet | `app/lib/report-indicators.js`, `app/test/judge-reconciliation.test.js` |
-| T37 | The entries grid's Add button routes every journal but sales through `addPurchaseLine` (`web/.../books/edits.js:195`), which throws for bank, cash and payroll lines; the add row needs a direction and bank account for bank and cash lines and payslip fields for payroll, then a per-journal edit call | T33 | Opus | `web/.../books/edits.js`, `web/.../books/shell.js` (the add row), `app/lib/diya-gl-edits.js`, `web/browser-tests/books-se.browser.test.js` |
+| T37a | `addPayrollLine` beside `addBankLine`, with the net-and-amount derivation `changePayrollLine` already runs lifted into one shared helper; registered in the bundle and the MCP edit map | — | Sonnet | `app/lib/diya-gl-edits.js`, `app/lib/diya-gl-edits-ltd.js`, `app/lib/books-engine.js` (that re-export and `bankLayout`), `app/lib/mcp/diya-gl-tools.js`, `app/test/diya-gl-edits-payroll.test.js` (new), `app/test/diya-gl-mcp.test.js` |
+| T37b | The add row renders whatever controls the journal's `add` descriptor names, the draft store reads them all, and a bank row's account select routes by its journal | — | Sonnet | `web/.../books/shell.js` |
+| T37c | `addEntry` routes on the descriptor's kind and builds the bank and payroll line shapes, `documentType` with them | T37a | Sonnet | `web/.../books/edits.js` |
+| T37d | The SE manifest's three descriptors: bank and cash on their own accounts with each workbook's receipt and payment code lists, payroll on the employee register | — | Sonnet | `web/.../books/products/se.js` |
+| T37e | The Ltd manifest's bank and payroll descriptors, and the payroll chart section no Ltd book declares | — | Sonnet | `web/.../books/products/ltd.js` |
+| T37f | The SE proof: the three add rows render their own controls, and a bank receipt, a cash payment and a payslip each land with their anchored figures | T37b, T37c, T37d | Sonnet | `web/browser-tests/books-se.browser.test.js`, `web/browser-tests/books-se-edits.browser.test.js` |
+| T37g | The Ltd proof: the bank add, and the transfer pair whose counter-leg keeps the warning and `TrialBalance!EJ91` where they are | T37b, T37c, T37e, T37f | Haiku | `web/browser-tests/books-ltd-edits.browser.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
 | T15 | The SA103 box-to-API mapping as data, keyed by tax year, each entry naming the SE sheet cell or its reason; HMRC's CSV copied beside it with its source; a Node test that every `SE Full` and `SE Short` `CELL_MAP` box has an entry | — | Sonnet | `app/data/hmrc/sa103-mtd-mapping.json` (new), `app/data/hmrc/sa103f_mapping_v3.csv` (new), `app/data/hmrc/SOURCE.md` (new), `app/test/sa103-mtd-mapping.test.js` (new) |
 | T16 | The `SE Short` sheet prints the 2026 SA103S box numbers and gates the nine expense cells and the `A33` note on `Admin!F26` in place of the 30,000 and 67,000 literals; the calculator's threshold follows; `CELL_MAP` gains `D124` and `O124` and its SE Short labels renumber; the CONTEXT doc's SA103S table follows; regenerated and reconciled | T4 | Opus | `app/templates/se/Financialaccounts.xlsx`, `app/lib/calculators/se.js` (the threshold, `A33`, `D124`, `O124`), `app/products/se.js` (SE Short labels, two `CELL_MAP` rows, `profitBridge` labels), `CONTEXT_SELF_EMPLOYED.md`, `app/test/se-full-return-checks.test.js`, `app/test/calculator-se.test.js`, `packages/GB Accounts Self Employed */` (regenerated) |
@@ -411,6 +417,92 @@ series; `scripts/build-books-bundle.mjs` by T2, S8, T8, Taxi T16 and Ltd T10;
 `behaviour-tests/spreadsheets.behaviour.test.js` by Taxi T16, T9 and Ltd T17. Every agent
 commits before it waits
 and never ends a turn with a Playwright run going, per the BST plan's as-built note 11.
+
+### T37 design
+
+**What the code does now.** `addEntry` in `web/.../books/edits.js:184` builds one line shape and
+hands it to `addSaleLine` for the sales journal and to `addPurchaseLine` for every other one. It
+sets `sourceJournalID` to the grid journal's own id, so on SE that id is `bank`, `cash` or
+`payroll` and `addPurchaseLine`'s guard in `app/lib/diya-gl-edits.js` throws. Two more faults sit
+in the same five lines: `cash` is not a value the lines schema's `sourceJournalID` enum carries
+(`web/.../schema/diya-gl-lines-v2.schema.json`), and `documentType` falls back to `invoice` on
+every journal.
+
+**Which grids it reaches.** `months.journals` in the four page manifests: SE (`products/se.js:1636`)
+declares sales, purchases, bank, cash and payroll; Ltd (`products/ltd.js:806`) sales, purchases,
+bank and payroll; BST (`bst.js:854`) and Taxi (`taxi.js:1022`) declare none of the three. SE has
+three broken Add buttons, Ltd two.
+
+**Where the code differs from the defect as stated.**
+
+- `addBankLine` already exists, is already in the bundle (`books-engine.js:146`) and is already in
+  the MCP edit map (`mcp/diya-gl-tools.js:57`). T6 built it, and the settlement helpers add bank
+  lines through it (`book-checks.js` `bankLineFor`). The bank journal needs routing, not a new edit.
+- SE's `cash` grid is a view journal, not a source journal. `classify` (`products/se.js:374`) puts a
+  `bank` line on the cash grid when its `diya-gl:bankAccountID` is `1220` (`BANK_ACCOUNTS`,
+  `se.js:112`). A cash add is an `addBankLine` on account 1220.
+- Ltd's payroll Add does not throw today. `buildChart` (`books/data.js:346`) reads
+  `book.accounts.payroll`, which no Ltd book declares, so the picker is empty and the handler's own
+  guard toasts first. T33 gave SE its cash and payroll chart sections; Ltd's payroll section is
+  still missing.
+- The grid's account `<select>` on a bank row commits `changeLineAccount`, which moves
+  `accountMainID` and leaves `diya-gl:bankAccountID` behind, so the entry shows under one account
+  and totals under another. `changeLineBankAccount` exists for that pair and is in the bundle. Same
+  grid, same wave, so it lands here.
+
+**The line each journal needs**, read off `examples/precision-code-ltd/advanced/lines.jsonl` and
+`bankLineFor`:
+
+- bank and cash: `sourceJournalID` `bank`; `accountMainID` and `diya-gl:bankAccountID` both the bank
+  account code; `debitCreditCode` `D` for a receipt or `C` for a payment; `diya-gl:bankCode` a letter
+  the account's own workbook analyses; `documentType` `bank-statement`.
+- payroll: `sourceJournalID` `payroll`; `accountMainID` a wage code; `diya-gl:employeeID` naming one
+  of `book.employees`; `detailComment` that employee's name, which is what the Payslips sheets key
+  on; `diya-gl:grossPay` equal to `amount`; `diya-gl:incomeTax`, `diya-gl:employeeNI`,
+  `diya-gl:employerNI`; `diya-gl:netPay` gross less income tax less employee NI; `documentType`
+  `payslip`.
+
+**The add row's fields.** The four it renders today (date, account, detail, amount) stay, and on a
+bank or cash grid the account picker is the bank account. Bank and cash gain two controls. A
+direction, because `CR` is a refund received on one side of a month tab and a creditor paid on the
+other (`book-checks/se.js` `book-bank-line-has-side`). A code letter, offered from the account's own
+workbook list filtered by the direction (`BANK_LAYOUTS`, `app/products/se.js:92`; `bankLayout`,
+`app/lib/ltd-layout.js` for Ltd). Payroll gains an employee picker and three deduction boxes that
+default to nil. The rest derives: gross is the amount field, net is gross less the two employee
+deductions, the detail is the employee's name.
+
+**The descriptor and the routing.** Each `months.journals` entry gains an optional `add`:
+`{kind: "trade"|"bank"|"payroll", fields, codes(snapshot, account, direction)}`. A journal with no
+`add` keeps today's trade row, which is why BST and Taxi need no manifest change. `addEntryRow` and
+`bindEntriesGrid` (`shell.js:1834`, `shell.js:2114`) render and read whatever `[data-add-field]`
+controls the descriptor names, so the draft store and the browser helpers generalise with them.
+`addEntry` then switches on the kind: `trade` to `addSaleLine`/`addPurchaseLine` as now, `bank` to
+`addBankLine`, `payroll` to a new `addPayrollLine`. `entryAccountCell` stamps the journal on its
+select so a bank row's account change routes to `changeLineBankAccount`.
+
+`addPayrollLine` goes in `app/lib/diya-gl-edits.js` beside `addBankLine`, since SE and Ltd both
+carry payroll. It guards the journal, an `employeeID` the book declares, a numeric gross and an
+`accountMainID` in the chart, then fills `diya-gl:netPay` and `amount` from the four figures the way
+`changePayrollLine` does (`diya-gl-edits-ltd.js:73`). That derivation becomes one exported helper
+both call. Register it in `books-engine.js` and the MCP `EDITS` map. Undo needs nothing new: every
+Add already runs through `commit` (`shell.js:1236`), which pushes one state.
+
+**Proof.** Unit, on `examples/precision-code-ltd/advanced`: a new `app/test/diya-gl-edits-payroll.test.js`
+proves each `addPayrollLine` guard throws on its own bad field, that a good line lands with
+`lines.length` up by one, and that a gross of 2000 with 300 tax and 100 employee NI derives net 1600
+and amount 2000. `app/test/diya-gl-mcp.test.js` gains the `edit_lines` case and the enum assertion.
+
+Browser, on the SE featured example: `books-se.browser.test.js` asserts each add row renders its own
+controls, with `Bank.xlsx`'s seven receipt codes, `Cash.xlsx`'s four, and an employee select of
+three. `books-se-edits.browser.test.js` adds three E1 cases. A £120.00 `DR` receipt on 1200 dated
+2025-04-15: April's `DR` receipt cell and Bank.xlsx's March closing balance both rise by 120.00, and
+the browser's `report.json` equals `applyNamedEdit`'s over the same `addBankLine` call with entry
+number `NEW-0001`. A £15.00 `CR` cash payment on 1220: the cash journal's line count rises by one
+and `book-cash-never-overdrawn` stays at pass. A £1,000.00 payslip for EMP001 on 5101:
+Wagesinterface's April column and the P&L wages row both rise by 1,000.00. Every engine check and
+the SE bank and payroll book checks stay green in all three. `books-ltd-edits.browser.test.js`
+mirrors the bank case and adds the transfer pair: a `BB`-coded receipt on 1210 with its counter-leg
+payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBalance!EJ91` at 0.
 
 ### Landed
 
