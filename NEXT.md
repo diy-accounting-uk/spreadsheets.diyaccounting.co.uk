@@ -44,10 +44,6 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 - **SE-T36**: `app/bin/generate.js:348` runs `main().catch(...)` at module scope; guard it with the
   `import.meta.url` versus `process.argv[1]` check the other bins use, so tests can import its
   functions; prove by importing it in `app/test/generate.test.js`.
-- **TX-T21**: T14's brief (Taxi plan, "Takings view") names `books-taxi-takings.browser.test.js`
-  with cases T17 did not absorb: undo after a fare edit, the mobile-portrait week and day cards,
-  and `changeLineDetail` committed through the page DOM. TX-T17's four specs cover the rest; build
-  the file in their shape, expected figures through `web/browser-tests/r-sources.js`.
 - **TX-T22**: T15's note says the view-level proofs land as `books-taxi-views.browser.test.js`
   once `taxi.html` exists; TX-T18 landed only the forms spec. Cases: the comparison panel (all five
   vehicle figures on every book after TX-T18), the vehicle register, the quarterly and forecast
@@ -63,7 +59,7 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`b7d2aea1`) |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`3e762a5a`) |
-| TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree TX-T21, `claude/tx-takings-spec`, batch `claude/b1-board` |
+| TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`471d3e99`); 3 cases pass |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree TX-T22, `claude/tx-views-spec`, batch `claude/b1-board` |
 
 ## Plans not tracked here
