@@ -216,10 +216,11 @@ async function sweepPage(page, example) {
 //    fails -- and the family empties itself when the refresh lands.
 //
 // 2. Vatreturns.xlsx carries the fixture's straddling VAT periods, the two
-//    quarters before the accounting year and the three after it. The
-//    extractor splits every line carrying diya-gl:vatPeriodEnd out of the
-//    books it writes, so no diya-gl book has them and S2 leaves those rows
-//    nil. The package can only hold more VAT than the book, never less.
+//    quarters before the accounting year and the three after it. S2 here is
+//    the book the package exports, and the export reads the twelve month
+//    tabs rather than Vat.xlsx's own out-of-year entry sheets, so those rows
+//    come back nil. The package can only hold more VAT than the book, never
+//    less.
 
 const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
 const MS_PER_DAY = 86400000;

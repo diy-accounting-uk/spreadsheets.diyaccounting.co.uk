@@ -832,6 +832,29 @@ test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
     expect(problems, problems.join("\n")).toEqual([]);
   });
 
+  // The fifth quarter falls wholly outside the accounting year: the only
+  // thing that puts a figure on it is the straddling entries the book holds.
+  // The figure is worked out from those entries' own amounts, so a page
+  // showing the quarter nil -- or showing the wrong VAT on it -- fails.
+  test("the fifth quarter's box 1 is the VAT on the straddling sales the book carries", async ({ page }) => {
+    const s2Map = seReport(FEATURED);
+    const { book, lines } = loadDiyaGlData(path.join(ROOT, FEATURED.bookDir));
+    const scenario = diyaGlToScenario(book, lines, "se");
+    const rate = Number(s2Map.get("cell/Sales.xlsx!Apr!H2").value) / 100;
+    expect(scenario.vat_straddling_sales, "the straddling sales the book carries").toBeDefined();
+    expect(scenario.vat_straddling_sales, "the straddling sales the book carries").toBeDefined();
+    const afterTheYear = scenario.vat_straddling_sales.filter((entry) => entry.period.endsWith("Y2"));
+    expect(afterTheYear.length).toBeGreaterThan(0);
+    const outputVat = afterTheYear.reduce((total, entry) => total + (entry.amount * rate) / (1 + rate), 0);
+    expect(outputVat).toBeGreaterThan(0);
+
+    await openBook(page, FEATURED);
+    const rows = await formRows(page, "vat");
+    const box1 = rows.find((row) => row.rKey && row.rKey.split(" || ").includes("cell/Vat.xlsx!VATQtr5!G9"));
+    expect(box1, "the fifth quarter's box 1").toBeDefined();
+    expect(parseFigure(box1.amount).value).toBeCloseTo(outputVat, 2);
+  });
+
   test("the Income Tax computation prints the working sheet's own lines in order", async ({ page }) => {
     const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);
