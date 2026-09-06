@@ -567,7 +567,7 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   hardcodes a box scheme matching no form, the BST CONTEXT's SA103S tables point D71 and D99 at the
   wrong boxes, and the `D106` comments call it net business profit (board row BST-T17).
 
-- TX-T24 `05d3ae64`, `e173b3fa`, `8aa340f0` on `claude/wt-taxi-t24`, not yet merged (2026-09-05): both
+- TX-T24 `05d3ae64`, `e173b3fa`, `8aa340f0`, merged into `claude/diya-gl-wave-2` (2026-09-06): both
   templates' nine expense cells and `A41` gate on `Admin!F26`; box 36's caption reads the year from
   `Admin!G2` and the threshold from a new Admin cell (`N17` BST, `N16` Taxi) the generators write
   from `class2_small_profits_threshold`; box 37 takes the Class 4 exemption text; `calculators/bst.js`
