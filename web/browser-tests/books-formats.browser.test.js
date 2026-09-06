@@ -330,21 +330,10 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
     expect(pageReportText).toBe(cliReportText);
   });
 
-  test("E5: all four downloads are well-formed", async ({ page }) => {
+  test("E5: both downloads are well-formed", async ({ page }) => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await waitForLoaded(page);
-
-    const xlsx = await triggerSaveDownload(page, "Download bst-excel.xlsx");
-    const xlsxZip = await JSZip.loadAsync(xlsx.bytes);
-    expect(await xlsxZip.file("xl/workbook.xml").async("string")).toContain('fullCalcOnLoad="1"');
-
-    const zip = await triggerSaveDownload(page, "Download package (.zip)");
-    const packageZip = await JSZip.loadAsync(zip.bytes);
-    const entries = Object.keys(packageZip.files);
-    expect(entries.length).toBe(1);
-    const innerXlsx = await JSZip.loadAsync(await packageZip.file(entries[0]).async("uint8array"));
-    expect(await innerXlsx.file("xl/workbook.xml").async("string")).toContain('fullCalcOnLoad="1"');
 
     const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);
@@ -357,39 +346,29 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
     expect(document.product).toBe("bst");
   });
 
-  test("E3: workbook round trip through a diya-gl zip reproduces the same D; JSON round trips identically", async ({ page }) => {
+  test("E3: a workbook upload's diya-gl zip agrees with the CLI's own extraction of that same workbook; JSON round trips identically", async ({
+    page,
+  }) => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.workbook.bytes, FIXTURES.workbook.name);
     await waitForLoaded(page);
 
-    const firstZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
-    const firstZipFiles = await JSZip.loadAsync(firstZip.bytes);
-    const firstBookToml = await firstZipFiles.file("book.toml").async("string");
-    const firstLinesJsonl = await firstZipFiles.file("lines.jsonl").async("string");
-
-    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await dropFile(page, firstZip.bytes, "roundtrip-diya-gl.zip");
-    await waitForLoaded(page);
-
-    const secondWorkbook = await triggerSaveDownload(page, "Download bst-excel.xlsx");
-    const workbookOut = path.join(TARGET_DIR, "e3-second.xlsx");
-    fs.writeFileSync(workbookOut, secondWorkbook.bytes);
+    const pageZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const pageZipFiles = await JSZip.loadAsync(pageZip.bytes);
+    const pageBookToml = await pageZipFiles.file("book.toml").async("string");
+    const pageLinesJsonl = await pageZipFiles.file("lines.jsonl").async("string");
 
     const exportOutDir = path.join(TARGET_DIR, "e3-export");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "bst", "--file", workbookOut, "--output-dir", exportOutDir], {
+    execFileSync(process.execPath, ["app/bin/export.js", "--package", "bst", "--file", WORKBOOK_PATH, "--output-dir", exportOutDir], {
       cwd: ROOT,
       stdio: "pipe",
     });
-    const exportedBook = parseTOML(fs.readFileSync(path.join(exportOutDir, "book.toml"), "utf-8"));
-    const firstBook = parseTOML(firstBookToml);
-    expect(withoutUploadOnlyGaps(exportedBook)).toEqual(withoutUploadOnlyGaps(firstBook));
+    const cliBook = parseTOML(fs.readFileSync(path.join(exportOutDir, "book.toml"), "utf-8"));
+    const pageBook = parseTOML(pageBookToml);
+    expect(withoutUploadOnlyGaps(pageBook)).toEqual(withoutUploadOnlyGaps(cliBook));
 
-    // extractBstTransactions (app/lib/xlsx-exporter.js) re-extracts the
-    // workbook after the round trip. The aligned writer and canonical row
-    // order put every line back on the row it started on, so the
-    // re-extracted lines.jsonl matches the first zip's byte for byte.
-    const exportedLinesJsonl = fs.readFileSync(path.join(exportOutDir, "lines.jsonl"), "utf-8");
-    expect(exportedLinesJsonl).toBe(firstLinesJsonl);
+    const cliLinesJsonl = fs.readFileSync(path.join(exportOutDir, "lines.jsonl"), "utf-8");
+    expect(pageLinesJsonl).toBe(cliLinesJsonl);
 
     // JSON -> page -> JSON is identical.
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });

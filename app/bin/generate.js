@@ -191,7 +191,7 @@ function parseArgs(argv) {
   return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir, offset };
 }
 
-async function main() {
+export async function main() {
   console.log("=== generate.js ===");
 
   const {
@@ -345,7 +345,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

@@ -25,6 +25,7 @@ import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "./link-cac
 import { calculateLinkCells } from "./diya-gl-calculator.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { nodeResourceLoader } from "./app-resources.js";
+import { SCHEMA_PRODUCT_NAMES } from "./xlsx-exporter.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
@@ -35,9 +36,7 @@ const DOS_EPOCH = new Date(Date.UTC(1980, 0, 1));
 
 const PRODUCT_MODULES = { bst, taxi, se, ltd };
 
-// The book schema's own name for each product, which is not the short name
-// the CLI, the template directories and the product map above use.
-const PRODUCT_BY_SCHEMA_NAME = { BasicSoleTrader: "bst", TaxiDriver: "taxi", SelfEmployed: "se", Company: "ltd" };
+const PRODUCT_BY_SCHEMA_NAME = Object.fromEntries(Object.entries(SCHEMA_PRODUCT_NAMES).map(([id, name]) => [name, id]));
 
 /**
  * A book that cannot be written into a workbook, naming the field at fault.

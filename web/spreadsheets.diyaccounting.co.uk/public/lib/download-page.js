@@ -189,10 +189,6 @@ function updateLinks() {
   // Donate link passes parameters
   const donateBtn = document.getElementById("download-donate-btn");
   donateBtn.href = "donate.html?product=" + encodeURIComponent(product.id) + "&filename=" + encodeURIComponent(filename);
-
-  // Direct download link to zip on this site
-  const directBtn = document.getElementById("download-direct-btn");
-  directBtn.href = "/zips/" + encodeURIComponent(filename);
 }
 
 document.getElementById("product-select").addEventListener("change", function () {
@@ -217,32 +213,6 @@ document.getElementById("download-donate-btn").addEventListener("click", functio
         },
       ],
     });
-  }
-});
-
-// GA4 ecommerce: add_to_cart when user clicks "Download without donating" (free download)
-document.getElementById("download-direct-btn").addEventListener("click", function (e) {
-  e.preventDefault();
-  const product = getSelectedProduct();
-  if (product) {
-    trackEvent("add_to_cart", {
-      currency: "GBP",
-      value: 0,
-      items: [
-        {
-          item_id: product.id,
-          item_name: product.name,
-          price: 0,
-          currency: "GBP",
-        },
-      ],
-    });
-  }
-  var directBtn = document.getElementById("download-direct-btn");
-  var fileUrl = directBtn.href;
-  if (fileUrl) {
-    showDownloadAvailable(fileUrl);
-    window.location = fileUrl;
   }
 });
 

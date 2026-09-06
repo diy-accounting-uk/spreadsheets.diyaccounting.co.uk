@@ -9,8 +9,8 @@
 //
 // r-sources.js supplies S1 (a fixture's own totals), S2 (the JS engine over
 // a book's diya-gl data) and S3 (the saved se-latest package's cached
-// cells); this file joins each against the page's own rendered figures, its
-// diya-gl zip and its package zip.
+// cells); this file joins each against the page's own rendered figures and
+// its diya-gl zip.
 //
 // Only the advanced book is served as an example the page has a button for.
 // The two BrickWork books reach the page as a diya-gl zip built here from
@@ -25,11 +25,9 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { s1, s2ForPackage, s3Se, s3SeYearEnd, canonical, parseFigure, SCENARIOS_SE } from "./r-sources.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.js";
-import { calculateSeCells } from "../../app/lib/calculators/se.js";
-import { savePackageZip, taxYearFileName } from "../../app/lib/product-workbook.js";
-import { linkCacheValues, externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
+import { taxYearFileName } from "../../app/lib/product-workbook.js";
+import { externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
 import { readXlsxCellValues } from "../../app/lib/xlsx-reader.js";
-import { canonicalValue } from "../../app/lib/report-serializer.js";
 import { parse as parseTOML } from "smol-toml";
 
 const ROOT = process.cwd();
@@ -638,100 +636,6 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
     await expect(warning).toHaveCount(1);
     await expect(warning.locator(".drift-tag.is-stale")).toHaveText("the hub was saved before this leaf changed");
     await expect(warning.locator(".drift-tag.is-stale")).toHaveAttribute("title", "Payslips.xlsx!Aug!M1");
-  });
-});
-
-// ── A8: the saved package agrees with the calculator ─────────────────────
-
-// Every cell the SE calculator holds, keyed the way an external link
-// addresses it: the hub's own sheets under the hub file name, a leaf sheet
-// under its own file.
-function calculatorCellsByLinkKey(bookDir) {
-  const { book, lines } = loadDiyaGlData(path.join(ROOT, bookDir));
-  const scenario = diyaGlToScenario(book, lines, "se");
-  const taxYear = taxYearFileName(new Date(book.documentInfo.periodCoveredEnd), "se");
-  const taxData = parseTOML(fs.readFileSync(path.join(ROOT, "app/data", `${taxYear}.toml`), "utf-8"));
-  const cells = calculateSeCells(book, lines, taxData, scenario);
-  const keys = new Map();
-  for (const [sheetKey, sheet] of Object.entries(cells)) {
-    const prefix = sheetKey.includes("!") ? sheetKey : `${HUB_FILE}!${sheetKey}`;
-    for (const [cell, value] of Object.entries(sheet)) keys.set(`${prefix}!${cell}`, value);
-  }
-  return { book, lines, keys };
-}
-
-async function packageWorkbooks(zipBytes) {
-  const zip = await JSZip.loadAsync(zipBytes);
-  const workbooks = new Map();
-  for (const [name, entry] of Object.entries(zip.files)) {
-    if (entry.dir || !name.endsWith(".xlsx")) continue;
-    workbooks.set(path.basename(name), await JSZip.loadAsync(await entry.async("uint8array")));
-  }
-  return workbooks;
-}
-
-// Every cached link value in a set of workbooks, against the calculator's
-// own figure for the cell each one addresses.
-async function cacheDisagreements(workbooks, keys) {
-  let compared = 0;
-  const disagreements = [];
-  for (const [name, workbook] of workbooks) {
-    for (const [key, cached] of await linkCacheValues(workbook)) {
-      if (!keys.has(key)) continue;
-      compared++;
-      if (canonicalValue(cached) !== canonicalValue(keys.get(key))) {
-        disagreements.push(`${name} caches ${key} as ${cached}, the calculator holds ${keys.get(key)}`);
-      }
-    }
-  }
-  return { compared, disagreements };
-}
-
-test.describe("DIYA-GL books page — the saved package agrees with the calculator (A8)", () => {
-  test("the package zip the page downloads is Node's savePackageZip, byte for byte", async ({ page }) => {
-    await openBook(page, FEATURED);
-    const { download, bytes } = await triggerSaveDownload(page, "Download package (.zip)");
-
-    const { book, lines } = calculatorCellsByLinkKey(FEATURED.bookDir);
-    const node = await savePackageZip(book, lines);
-
-    expect(download.suggestedFilename()).toBe(node.filename);
-    expect(Buffer.compare(bytes, Buffer.from(node.zip))).toBe(0);
-  });
-
-  test("every link cache in the nine downloaded workbooks holds the calculator's value", async ({ page }) => {
-    await openBook(page, FEATURED);
-    const { bytes } = await triggerSaveDownload(page, "Download package (.zip)");
-
-    const { keys } = calculatorCellsByLinkKey(FEATURED.bookDir);
-    const workbooks = await packageWorkbooks(bytes);
-    expect(workbooks.size).toBe(9);
-
-    const { compared, disagreements } = await cacheDisagreements(workbooks, keys);
-
-    console.log(`A8: ${compared} link cache cells compared against the calculator`);
-    expect(disagreements, disagreements.join("\n")).toEqual([]);
-    expect(compared).toBeGreaterThanOrEqual(539);
-  });
-
-  test("one cached value bent in the downloaded hub is the only cell that then disagrees", async ({ page }) => {
-    await openBook(page, FEATURED);
-    const { bytes } = await triggerSaveDownload(page, "Download package (.zip)");
-
-    const { keys } = calculatorCellsByLinkKey(FEATURED.bookDir);
-    const workbooks = await packageWorkbooks(bytes);
-    const hub = workbooks.get(HUB_FILE);
-
-    const salesLink = (await externalLinks(hub)).find((link) => link.targetFile === "Sales.xlsx");
-    const aprilId = salesLink.sheetNames.indexOf("Apr");
-    const xml = await hub.file(salesLink.path).async("string");
-    const block = new RegExp(`<sheetData\\s+sheetId="${aprilId}"[^>]*>[\\s\\S]*?</sheetData>`).exec(xml)[0];
-    const cell = /<cell r="P1"><v>([^<]*)<\/v><\/cell>/.exec(block);
-    expect(cell, "the hub caches Sales.xlsx!Apr!P1").not.toBeNull();
-    hub.file(salesLink.path, xml.replace(block, block.replace(cell[0], `<cell r="P1"><v>${Number(cell[1]) + 1000}</v></cell>`)));
-
-    const { disagreements } = await cacheDisagreements(workbooks, keys);
-    expect(disagreements.map((line) => line.split(" caches ")[1].split(" as ")[0])).toEqual(["Sales.xlsx!Apr!P1"]);
   });
 });
 

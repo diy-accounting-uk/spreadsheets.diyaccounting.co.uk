@@ -261,9 +261,7 @@ test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () 
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    // Ltd is a several-file package (save.singleFile: false), so the menu
-    // carries three downloads rather than a single-workbook one.
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(3);
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(2);
     await page.keyboard.press("Escape");
 
     expect(focusRingSamples.length).toBeGreaterThanOrEqual(5);

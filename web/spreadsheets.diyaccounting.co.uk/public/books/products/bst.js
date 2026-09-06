@@ -905,6 +905,5 @@
     },
     bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
     drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: DRIFT_EXCLUDED_SECTIONS },
-    save: { singleFile: true, workbookName: "bst-excel.xlsx" },
   };
 })(typeof window !== "undefined" ? window : globalThis);

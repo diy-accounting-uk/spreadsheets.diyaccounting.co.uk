@@ -556,6 +556,41 @@
     return { employees: employees, rows: rows };
   }
 
+  // The second bank account for cash lines, the two wage codes (directors'
+  // and employees') for payroll lines: neither journal keeps an [accounts]
+  // table of its own in book.toml, so the shared loader's chart -- one entry
+  // a journal id, straight off the book's own tables -- leaves the entries
+  // grid's account picker with nothing to offer on either one. Each takes
+  // its own slice of an account another journal already declares.
+  var CASH_ACCOUNT_CODE = BANK_ACCOUNTS.filter(function (account) {
+    return account.journal === "cash";
+  })[0].id;
+  var PAYROLL_ACCOUNT_CODES = ["5100", "5101"];
+
+  function chartSection(accounts, codes) {
+    var section = accounts || {};
+    var keys = codes || Object.keys(section).sort();
+    return keys
+      .filter(function (code) {
+        return section[code];
+      })
+      .map(function (code) {
+        var account = section[code];
+        return { code: code, description: account.accountMainDescription || "Account " + code };
+      });
+  }
+
+  function journalChart(book) {
+    var accounts = book.accounts || {};
+    return {
+      sales: chartSection(accounts.sales),
+      purchases: chartSection(accounts.purchases),
+      bank: chartSection(accounts.bank),
+      cash: chartSection(accounts.bank, [CASH_ACCOUNT_CODE]),
+      payroll: chartSection(accounts.purchases, PAYROLL_ACCOUNT_CODES),
+    };
+  }
+
   function snapshot(ctx) {
     return {
       annual: buildAnnual(ctx),
@@ -564,6 +599,7 @@
       fixedAssets: buildFixedAssets(ctx),
       bank: buildBank(ctx),
       payroll: buildPayroll(ctx),
+      chart: journalChart(ctx.book),
     };
   }
 
@@ -1655,6 +1691,5 @@
     },
     bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
     drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: { "Admin (Generator Injected)": 1 } },
-    save: { singleFile: false },
   };
 })(typeof window !== "undefined" ? window : globalThis);
