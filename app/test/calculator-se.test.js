@@ -159,6 +159,17 @@ describe("Self Employed engine: payslip dates against a package generated years 
     expect(bent).toBeDefined();
     expect(bent.pass).toBe(false);
   });
+
+  // se-profit-forecast-checks.test.js built a package this way -- cellWrites
+  // given a targetStartYear years past the scenario's own -- while its call
+  // to checkCompliance carried no packageYearEnd at all, leaving these date
+  // checks comparing the writer's shifted package against an unshifted
+  // expectation. Proves the omission is what broke it, on the engine alone.
+  it("fails those same date checks when checkCompliance is not told the package's own year end", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(failures(dateChecks).map(describeFailure)).not.toEqual([]);
+  });
 });
 
 describe("Self Employed engine: the return boxes against the statutory computation", () => {
