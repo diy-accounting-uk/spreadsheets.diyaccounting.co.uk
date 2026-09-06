@@ -624,6 +624,15 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   floor the old Taxi check never applied. `forecast-tax-precision.test.js` (4 tests) proves it
   against BST, SE and Taxi fixtures.
 
+- TX-T21 `471d3e99` (2026-09-06): `books-taxi-takings.browser.test.js` covers the three
+  takings-view cases T17 left out: undo after a fare edit, restored by button and by keyboard;
+  mobile portrait's week cards opening to day cards with an edit inside a fare card moving the
+  month card's own figure; and a fare's name and mileage committed through `changeLineDetail`
+  and `changeLineQuantity` with focus returned to the field. Found: typing a mileage figure onto
+  basic-taxi-driver, which otherwise carries none, flags every other fare day in the week as
+  missing miles — the existing `carriesMiles` rule working as designed, not a defect. 3 tests
+  pass; no source change needed.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
