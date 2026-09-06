@@ -50,6 +50,7 @@ export default defineConfig({
         "**/books-taxi-edits.browser.test.js",
         "**/books-taxi-layouts.browser.test.js",
         "**/books-taxi-forms.browser.test.js",
+        "**/books-taxi-views.browser.test.js",
         "**/books-ltd-edits.browser.test.js",
         "**/books-ltd-warnings.browser.test.js",
       ],
