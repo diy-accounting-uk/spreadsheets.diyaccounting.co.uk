@@ -49,6 +49,14 @@ const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 // year the Employee sheet's start dates are read against.
 const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
 
+// The 5 April year end cellWrites' own shift is built for, so checkCompliance
+// derives the same monthOffset it did: passing seTaxYearStart(taxData) as
+// cellWrites' targetStartYear but nothing as checkCompliance's packageYearEnd
+// left the payslip date checks comparing a shifted package to an unshifted
+// expectation on the 2023-24 rates, which sit two years short of the
+// scenario's own 2025 opening.
+const sePackageYearEnd = (taxData) => `${seTaxYearStart(taxData) + 1}-04-05`;
+
 const FORECAST_SHEET = "Profit Forecast";
 
 // The taxable profit is the same in both years: the forecast's 171,875.39
@@ -158,7 +166,7 @@ for (const rateYear of RATE_YEARS) {
 
     function checksWithCorruptedCell(resultKey, cellRef, value) {
       const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
-      return seCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
+      return seCheckCompliance(corrupted, expected, taxData, calculateExpectedTax, sePackageYearEnd(taxData));
     }
 
     beforeAll(async () => {
@@ -190,7 +198,7 @@ for (const rateYear of RATE_YEARS) {
           saveRecalculatedTo: saveDir,
         },
       );
-      checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
+      checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax, sePackageYearEnd(taxData));
     }, 600000);
 
     it("passes every forecast check on the intact book", () => {
