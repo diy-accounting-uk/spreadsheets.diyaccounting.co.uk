@@ -47,6 +47,28 @@
     return '<div class="editable-field"><label>' + helpers.esc(label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>";
   }
 
+  // A fixed asset's own class enum, translated to the Schedule block's label
+  // through S.SCHEDULE_ASSET_CLASSES -- the same key
+  // diya-gl-loader.js's ASSET_CLASS_TO_CATEGORY maps a class onto for the
+  // calculator, kept here rather than reached for across the bundle
+  // boundary.
+  var ASSET_CLASS_KEY_BY_ENUM = {
+    landBuildings: "land",
+    plantMachinery: "plant",
+    fixturesFittings: "fixtures",
+    computerTechnology: "computer",
+    motorVehicles: "motor",
+  };
+
+  function assetClassLabel(rawClass) {
+    var key = ASSET_CLASS_KEY_BY_ENUM[rawClass];
+    var found = null;
+    S.SCHEDULE_ASSET_CLASSES.forEach(function (klass) {
+      if (klass.key === key) found = klass;
+    });
+    return (found && found.label) || rawClass || "";
+  }
+
   // ============================== the bank book ==============================
 
   function bankViewState(helpers) {
@@ -463,7 +485,7 @@
               "<tr><td>" +
               helpers.esc(asset.description) +
               "</td><td>" +
-              helpers.esc(asset.assetClass) +
+              helpers.esc(assetClassLabel(asset.assetClass)) +
               '</td><td class="num">' +
               helpers.fmtMoney(asset.cost) +
               '</td><td class="num">' +
@@ -688,13 +710,39 @@
 
   // ============================== admin ==============================
 
+  // Every cell in this list already declares unit "rate" (RATE_CELLS.Admin,
+  // app/products/ltd.js), which the shared formatByUnit reads as a fraction
+  // and multiplies by 100 -- correct for P9 (marginal relief) and G15-G19
+  // (depreciation), both genuine fractions. P6/P7/P8 (corporation tax
+  // rates), M19 (VAT rate) and G5-G8 (capital allowances) hold a whole
+  // percent instead -- the calculator's own Math.round(rate * 100), the
+  // same fact ltd-forms.js's own "percent" format documents against the
+  // same cells -- so the shared formatter doubles them (P6's 19 becomes
+  // "1900%"). Formatted here the way ltd-forms.js already does, rather than
+  // widening the shared "rate" unit's own meaning for every other view.
+  var ADMIN_WHOLE_PERCENT_CELLS = ["P6", "P7", "P8", "M19", "G5", "G6", "G7", "G8"];
+
+  // O16/O17 hold the mileage rate in pounds per mile (0.45 = 45p), not a
+  // rate at all -- fmtRate would print "45%".
+  var ADMIN_PENCE_PER_MILE_CELLS = ["O16", "O17"];
+
+  function adminCellText(value, cell, helpers) {
+    if (ADMIN_WHOLE_PERCENT_CELLS.indexOf(cell) !== -1) {
+      return typeof value === "number" ? String(Math.round(value * 100) / 100) + "%" : helpers.esc(String(value));
+    }
+    if (ADMIN_PENCE_PER_MILE_CELLS.indexOf(cell) !== -1) {
+      return typeof value === "number" ? helpers.fmtPence(value) : helpers.esc(String(value));
+    }
+    return null;
+  }
+
   function renderAdmin(snap, state, helpers) {
     var productMod = snap.context.productMod;
     function row(cell, label) {
       var value = cellValue(snap.results, S.ADMIN_SECTION, cell);
       return {
         label: label || labelFor(productMod, S.ADMIN_SECTION, cell, S.ADMIN_SECTION + "!" + cell),
-        text: formatByUnit(value, unitOf(productMod, S.ADMIN_SECTION, cell), helpers),
+        text: adminCellText(value, cell, helpers) || formatByUnit(value, unitOf(productMod, S.ADMIN_SECTION, cell), helpers),
         rKeyAttr: cellRk(snap, helpers, S.ADMIN_SECTION, cell),
       };
     }

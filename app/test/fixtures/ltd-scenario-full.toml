@@ -5828,11 +5828,11 @@ reference = "BNK-CC-006"
 [[bank.oct]]
 date = 2025-10-18
 account = "1230"
-source = "Trainline"
+source = "Premier Inn"
 code = "CR"
 direction = "out"
 amount = 120
-description = "Train ticket on credit card"
+description = "Hotel on credit card"
 reference = "BNK-CC-002"
 
 [[bank.oct]]

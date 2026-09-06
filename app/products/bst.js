@@ -637,9 +637,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
+    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni, 0.01);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
