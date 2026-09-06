@@ -26,6 +26,7 @@ import {
   PRODUCTS,
   reportStatus,
   requestVerdict,
+  REASONING_EFFORT,
   scenarioHeadline,
   selectRuns,
   vatRegistrationOf,
@@ -75,12 +76,13 @@ function reportsDirWith(files) {
   return dir;
 }
 
+// Responses in the Converse API's shape: the tool call, or prose, under output.message.
 function messageWith(input) {
-  return { content: [{ type: "tool_use", name: VERDICT_TOOL, input }] };
+  return { output: { message: { content: [{ toolUse: { toolUseId: "t1", name: VERDICT_TOOL, input } }] } } };
 }
 
 function textOnlyMessage(text) {
-  return { content: [{ type: "text", text }] };
+  return { output: { message: { content: [{ text }] } } };
 }
 
 const PASSING = { verdict: "pass", summary: "The indicators match the headline.", concerns: [] };
@@ -632,13 +634,15 @@ describe("parseVerdict", () => {
     expect(verdict.concerns).toHaveLength(1);
   });
 
-  it("ignores thinking blocks and reads the tool call", () => {
-    const message = { content: [{ type: "thinking", thinking: "" }, ...messageWith(PASSING).content] };
+  it("ignores reasoning blocks and reads the tool call", () => {
+    const reasoning = { reasoningContent: { reasoningText: { text: "" } } };
+    const message = { output: { message: { content: [reasoning, ...messageWith(PASSING).output.message.content] } } };
     expect(parseVerdict(message).verdict).toBe("pass");
   });
 
   it("throws when the response holds no verdict tool call", () => {
-    expect(() => parseVerdict({ content: [{ type: "thinking", thinking: "" }] })).toThrow(/no record_verdict call/);
+    const reasoning = { reasoningContent: { reasoningText: { text: "" } } };
+    expect(() => parseVerdict({ output: { message: { content: [reasoning] } } })).toThrow(/no record_verdict call/);
   });
 
   it("throws when the model answers in prose instead of calling the tool", () => {
@@ -664,49 +668,58 @@ describe("requestVerdict", () => {
   const prompt = { system: "system", user: "user" };
 
   it("forces the verdict tool and sends no sampling parameters", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
-    await requestVerdict({ messages: { create } }, prompt);
-    const request = create.mock.calls[0][0];
-    expect(request.model).toBe(DEFAULT_MODEL);
-    expect(request.tools[0]).toMatchObject({ name: VERDICT_TOOL, input_schema: VERDICT_SCHEMA });
-    expect(request.tools[0].strict).toBeUndefined();
-    expect(request.tool_choice).toEqual({ type: "tool", name: VERDICT_TOOL });
-    expect(request.output_config).toEqual({ effort: "high" });
-    expect(request.temperature).toBeUndefined();
-    expect(request.top_p).toBeUndefined();
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ send }, prompt);
+    const request = send.mock.calls[0][0].input;
+    expect(request.modelId).toBe(DEFAULT_MODEL);
+    expect(request.toolConfig.tools[0].toolSpec).toMatchObject({ name: VERDICT_TOOL, inputSchema: { json: VERDICT_SCHEMA } });
+    expect(request.toolConfig.toolChoice).toEqual({ tool: { name: VERDICT_TOOL } });
+    expect(request.inferenceConfig.temperature).toBeUndefined();
+    expect(request.inferenceConfig.topP).toBeUndefined();
   });
 
   it("caps output tokens for a terse concern list rather than a long report", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
-    await requestVerdict({ messages: { create } }, prompt);
-    expect(create.mock.calls[0][0].max_tokens).toBe(MAX_TOKENS);
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ send }, prompt);
+    expect(send.mock.calls[0][0].input.inferenceConfig.maxTokens).toBe(MAX_TOKENS);
   });
 
   it("marks the system preamble and rubric as a cached prefix", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
-    await requestVerdict({ messages: { create } }, prompt);
-    const request = create.mock.calls[0][0];
-    expect(request.system).toEqual([{ type: "text", text: prompt.system, cache_control: { type: "ephemeral" } }]);
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ send }, prompt);
+    const request = send.mock.calls[0][0].input;
+    expect(request.system).toEqual([{ text: prompt.system }, { cachePoint: { type: "default" } }]);
+    expect(request.messages).toEqual([{ role: "user", content: [{ text: prompt.user }] }]);
+  });
+
+  it("asks the primary model to reason at the capped effort and the escalation model for nothing extra", async () => {
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ send }, prompt);
+    expect(send.mock.calls[0][0].input.additionalModelRequestFields).toEqual({
+      reasoningConfig: { type: "enabled", maxReasoningEffort: REASONING_EFFORT },
+    });
+    await requestVerdict({ send }, prompt, { model: ESCALATION_MODEL });
+    expect(send.mock.calls[1][0].input.additionalModelRequestFields).toBeUndefined();
   });
 
   it("retries once when the first call throws", async () => {
-    const create = vi.fn().mockRejectedValueOnce(new Error("socket hang up")).mockResolvedValue(messageWith(PASSING));
-    const verdict = await requestVerdict({ messages: { create } }, prompt);
-    expect(create).toHaveBeenCalledTimes(2);
+    const send = vi.fn().mockRejectedValueOnce(new Error("socket hang up")).mockResolvedValue(messageWith(PASSING));
+    const verdict = await requestVerdict({ send }, prompt);
+    expect(send).toHaveBeenCalledTimes(2);
     expect(verdict.verdict).toBe("pass");
   });
 
   it("retries once when the first response cannot be parsed", async () => {
-    const create = vi.fn().mockResolvedValueOnce(textOnlyMessage("not a tool call")).mockResolvedValue(messageWith(PASSING));
-    const verdict = await requestVerdict({ messages: { create } }, prompt);
-    expect(create).toHaveBeenCalledTimes(2);
+    const send = vi.fn().mockResolvedValueOnce(textOnlyMessage("not a tool call")).mockResolvedValue(messageWith(PASSING));
+    const verdict = await requestVerdict({ send }, prompt);
+    expect(send).toHaveBeenCalledTimes(2);
     expect(verdict.verdict).toBe("pass");
   });
 
   it("throws the second failure instead of retrying again", async () => {
-    const create = vi.fn().mockRejectedValueOnce(new Error("first")).mockRejectedValueOnce(new Error("second"));
-    await expect(requestVerdict({ messages: { create } }, prompt)).rejects.toThrow("second");
-    expect(create).toHaveBeenCalledTimes(2);
+    const send = vi.fn().mockRejectedValueOnce(new Error("first")).mockRejectedValueOnce(new Error("second"));
+    await expect(requestVerdict({ send }, prompt)).rejects.toThrow("second");
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it("returns a fail verdict rather than treating it as an error", async () => {
@@ -715,10 +728,10 @@ describe("requestVerdict", () => {
       summary: "All four VAT quarters read zero for a registered trader.",
       concerns: [{ figure: "VAT box 1", where: "VAT indicator", why: "Nil for a registered trader.", severity: "blocking" }],
     };
-    const create = vi.fn().mockResolvedValue(messageWith(failing));
-    const verdict = await requestVerdict({ messages: { create } }, prompt);
+    const send = vi.fn().mockResolvedValue(messageWith(failing));
+    const verdict = await requestVerdict({ send }, prompt);
     expect(verdict.verdict).toBe("fail");
-    expect(create).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it("retries a fail that records nothing blocking, and takes the coherent answer", async () => {
@@ -727,9 +740,9 @@ describe("requestVerdict", () => {
       summary: "Something looked wrong.",
       concerns: [{ figure: "Net assets", where: "Balance sheet indicator", why: "On second look this balances.", severity: "note" }],
     };
-    const create = vi.fn().mockResolvedValueOnce(messageWith(outranItsEvidence)).mockResolvedValue(messageWith(PASSING));
-    const verdict = await requestVerdict({ messages: { create } }, prompt);
-    expect(create).toHaveBeenCalledTimes(2);
+    const send = vi.fn().mockResolvedValueOnce(messageWith(outranItsEvidence)).mockResolvedValue(messageWith(PASSING));
+    const verdict = await requestVerdict({ send }, prompt);
+    expect(send).toHaveBeenCalledTimes(2);
     expect(verdict.verdict).toBe("pass");
   });
 });
@@ -742,47 +755,47 @@ describe("judgeWithEscalation", () => {
     concerns: [{ figure: "VAT box 1", where: "VAT indicator", why: "Nil for a registered trader.", severity: "blocking" }],
   };
 
-  it("stands on a Sonnet pass without escalating to Opus", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
-    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+  it("stands on a primary pass without escalating", async () => {
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    const result = await judgeWithEscalation({ send }, prompt);
     expect(result.escalated).toBe(false);
     expect(result.model).toBe(DEFAULT_MODEL);
     expect(result.verdict.verdict).toBe("pass");
-    expect(create).toHaveBeenCalledTimes(1);
-    expect(create.mock.calls[0][0].model).toBe(DEFAULT_MODEL);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0].input.modelId).toBe(DEFAULT_MODEL);
   });
 
-  it("escalates a Sonnet fail to Opus for confirmation, on the same digest", async () => {
-    const create = vi.fn().mockResolvedValueOnce(messageWith(FAILING)).mockResolvedValueOnce(messageWith(PASSING));
-    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+  it("escalates a primary fail to the second model for confirmation, on the same digest", async () => {
+    const send = vi.fn().mockResolvedValueOnce(messageWith(FAILING)).mockResolvedValueOnce(messageWith(PASSING));
+    const result = await judgeWithEscalation({ send }, prompt);
     expect(result.escalated).toBe(true);
     expect(result.model).toBe(ESCALATION_MODEL);
     expect(result.verdict.verdict).toBe("pass");
-    expect(create).toHaveBeenCalledTimes(2);
-    expect(create.mock.calls[0][0].model).toBe(DEFAULT_MODEL);
-    expect(create.mock.calls[1][0].model).toBe(ESCALATION_MODEL);
-    expect(create.mock.calls[1][0].user).toBe(create.mock.calls[0][0].user);
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(send.mock.calls[0][0].input.modelId).toBe(DEFAULT_MODEL);
+    expect(send.mock.calls[1][0].input.modelId).toBe(ESCALATION_MODEL);
+    expect(send.mock.calls[1][0].input.messages).toEqual(send.mock.calls[0][0].input.messages);
   });
 
-  it("keeps a fail that Opus also confirms, rather than softening it", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(FAILING));
-    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+  it("keeps a fail the second model also confirms, rather than softening it", async () => {
+    const send = vi.fn().mockResolvedValue(messageWith(FAILING));
+    const result = await judgeWithEscalation({ send }, prompt);
     expect(result.escalated).toBe(true);
     expect(result.model).toBe(ESCALATION_MODEL);
     expect(result.verdict.verdict).toBe("fail");
   });
 
-  it("escalates to Opus when Sonnet cannot reach a verdict at all", async () => {
-    const create = vi
+  it("escalates when the primary cannot reach a verdict at all", async () => {
+    const send = vi
       .fn()
       .mockRejectedValueOnce(new Error("socket hang up"))
       .mockRejectedValueOnce(new Error("socket hang up"))
       .mockResolvedValueOnce(messageWith(PASSING));
-    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+    const result = await judgeWithEscalation({ send }, prompt);
     expect(result.escalated).toBe(true);
     expect(result.model).toBe(ESCALATION_MODEL);
-    // Two exhausted attempts on Sonnet (requestVerdict's own retry), then one on Opus.
-    expect(create).toHaveBeenCalledTimes(3);
+    // Two exhausted attempts on the primary (requestVerdict's own retry), then one on the second model.
+    expect(send).toHaveBeenCalledTimes(3);
   });
 });
 
@@ -795,7 +808,7 @@ describe("computeDigestHash", () => {
     expect(computeDigestHash(prompt, DEFAULT_MODEL)).toBe(computeDigestHash({ ...prompt }, DEFAULT_MODEL));
   });
 
-  it("hashes differently when the model differs, so a Sonnet pass and an Opus verdict never collide", () => {
+  it("hashes differently when the model differs, so a primary pass and an escalated verdict never collide", () => {
     expect(computeDigestHash(prompt, DEFAULT_MODEL)).not.toBe(computeDigestHash(prompt, ESCALATION_MODEL));
   });
 
@@ -835,9 +848,9 @@ describe("judgeAndRecord", () => {
   it("skips the Bedrock call when a committed verdict's hash already matches", async () => {
     const hash = computeDigestHash(prompt, DEFAULT_MODEL);
     const existing = verdictRecord({ product: "ltd", model: DEFAULT_MODEL, region: "us-east-1" }, prompt, PASSING, hash);
-    const create = vi.fn();
-    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { messages: { create } } });
-    expect(create).not.toHaveBeenCalled();
+    const send = vi.fn();
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { send } });
+    expect(send).not.toHaveBeenCalled();
     expect(result.skipped).toBe(true);
     expect(result.verdict).toBe(existing);
   });
@@ -845,17 +858,17 @@ describe("judgeAndRecord", () => {
   it("recognises a verdict memoized under the escalation model's hash too", async () => {
     const hash = computeDigestHash(prompt, ESCALATION_MODEL);
     const existing = verdictRecord({ product: "ltd", model: ESCALATION_MODEL, region: "us-east-1" }, prompt, PASSING, hash);
-    const create = vi.fn();
-    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { messages: { create } } });
-    expect(create).not.toHaveBeenCalled();
+    const send = vi.fn();
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { send } });
+    expect(send).not.toHaveBeenCalled();
     expect(result.skipped).toBe(true);
   });
 
   it("calls the model and writes a new verdict when no memoized hash matches", async () => {
-    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
     const runArgs = args();
-    const result = await judgeAndRecord(runArgs, prompt, { loadExistingVerdict: () => null, client: { messages: { create } } });
-    expect(create).toHaveBeenCalledTimes(1);
+    const result = await judgeAndRecord(runArgs, prompt, { loadExistingVerdict: () => null, client: { send } });
+    expect(send).toHaveBeenCalledTimes(1);
     expect(result.skipped).toBe(false);
     expect(result.verdict.digestHash).toBe(computeDigestHash(prompt, DEFAULT_MODEL));
     const written = JSON.parse(readFileSync(runArgs.outPath, "utf8"));
@@ -863,14 +876,14 @@ describe("judgeAndRecord", () => {
     expect(written.verdict).toBe("pass");
   });
 
-  it("records the escalation model's hash when Sonnet failed and Opus confirmed", async () => {
+  it("records the escalation model's hash when the primary failed and the second model confirmed", async () => {
     const failing = {
       verdict: "fail",
       summary: "Something is off.",
       concerns: [{ figure: "x", where: "y", why: "z", severity: "blocking" }],
     };
-    const create = vi.fn().mockResolvedValueOnce(messageWith(failing)).mockResolvedValueOnce(messageWith(PASSING));
-    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => null, client: { messages: { create } } });
+    const send = vi.fn().mockResolvedValueOnce(messageWith(failing)).mockResolvedValueOnce(messageWith(PASSING));
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => null, client: { send } });
     expect(result.verdict.model).toBe(ESCALATION_MODEL);
     expect(result.verdict.digestHash).toBe(computeDigestHash(prompt, ESCALATION_MODEL));
   });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// judge-reconciliation.js — Ask Claude whether a run's headline indicators hold together.
+// judge-reconciliation.js — Ask a model whether a run's headline indicators hold together.
 //
 // The deterministic checks in app/products/*.js stay authoritative for arithmetic. This
 // script covers the judgment they cannot make: figures that add up and still make no sense,
@@ -26,22 +26,23 @@
 // Exit codes: 0 for a pass verdict, 1 for a fail verdict and 1 when the model cannot be
 // reached or its answer cannot be parsed after one retry.
 //
-// Sonnet judges every digest by default; a fail or an unparseable answer escalates the same
-// digest to Opus for confirmation before anything blocks. A digest, rubric and model whose hash
-// matches an already-committed verdict skips the Bedrock call entirely.
+// Nova 2 Lite judges every digest by default; a fail or an unparseable answer escalates the
+// same digest to Nova Pro for confirmation before anything blocks. A digest, rubric and model
+// whose hash matches an already-committed verdict skips the Bedrock call entirely.
 //
 // What this needs in AWS:
 //   1. The workflow role (SPREADSHEETS_ACTIONS_ROLE_ARN, assumed by OIDC) allows
 //      bedrock:InvokeModel and bedrock:InvokeModelWithResponseStream on
-//      arn:aws:bedrock:*::foundation-model/anthropic.* and the account's anthropic
-//      inference profiles.
-//   2. The model agreements for anthropic.claude-sonnet-5 and anthropic.claude-opus-5 (the
-//      escalation model) are both accepted in us-east-1. Model access is granted per account
-//      and region.
-//   3. The ENABLE_LLM_JUDGE repository variable is set to "true". Until it is, every judge
+//      arn:aws:bedrock:*::foundation-model/amazon.* and the account's amazon inference
+//      profiles (the us. cross-region profiles both models are served through).
+//   2. The ENABLE_LLM_JUDGE repository variable is set to "true". Until it is, every judge
 //      step and job is skipped and nothing calls Bedrock.
+//
+// Amazon's own models need no marketplace agreement, which is what took the Anthropic models
+// off this path: every Sonnet call came back 403 on aws-marketplace:Subscribe.
 
 import { createHash } from "crypto";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -54,19 +55,27 @@ const REPORTS_DIR = resolve(ROOT, "reports");
 const FIXTURES_DIR = resolve(ROOT, "app", "test", "fixtures");
 const RUBRIC_PATH = resolve(ROOT, "app", "data", "judge-rubric.md");
 
-// Bedrock model ids carry the anthropic. prefix; the region comes from the workflow.
-// Sonnet judges every run by default; a fail or an unparseable answer escalates the same
-// digest to Opus for confirmation before anything blocks (see judgeWithEscalation).
-export const DEFAULT_MODEL = "anthropic.claude-sonnet-5";
-export const ESCALATION_MODEL = "anthropic.claude-opus-5";
+// Both models are served through their us. cross-region inference profiles; the region comes
+// from the workflow. Nova 2 Lite judges every run by default; a fail or an unparseable answer
+// escalates the same digest to Nova Pro for confirmation before anything blocks (see
+// judgeWithEscalation). Nova Premier is retired on Bedrock, so Pro is the second reader.
+export const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
+export const ESCALATION_MODEL = "us.amazon.nova-pro-v1:0";
 export const DEFAULT_REGION = "us-east-1";
 
-// Both models reject temperature and the other sampling parameters. Effort is the tuning knob.
-const EFFORT = "high";
+// No sampling parameters are sent; the models take their own defaults. Nova 2 Lite reasons
+// before it answers, and the effort is capped at medium because high forbids an output cap
+// and takes ten times as long on a digest this size. Nova Pro takes no reasoning field.
+export const REASONING_EFFORT = "medium";
+const MODEL_REQUEST_FIELDS = {
+  [DEFAULT_MODEL]: { reasoningConfig: { type: "enabled", maxReasoningEffort: REASONING_EFFORT } },
+};
 // Concerns and a summary, not a second report: the digest already carries the figures, so the
 // model's own output only needs to name what does not fit. Output tokens price at several times
-// the input rate, and a terse answer parses just as reliably as a long one.
-export const MAX_TOKENS = 2000;
+// the input rate, and a terse answer parses just as reliably as a long one. The cap covers the
+// reasoning too, which is why it sits well above what the verdict itself needs: a cap the
+// reasoning exhausts leaves no tool call behind.
+export const MAX_TOKENS = 6000;
 
 // More runs than this in one directory means a local tree with years of history in it.
 const MAX_RUNS = 6;
@@ -119,8 +128,8 @@ export const PRODUCTS = {
   },
 };
 
-// This Bedrock endpoint rejects output_config.format and strict tool schemas, so the JSON
-// comes back as a forced call to this tool.
+// The answer comes back as a forced call to this tool: the Converse API's toolChoice pins
+// the call and the schema shapes the JSON.
 export const VERDICT_TOOL = "record_verdict";
 
 // Concerns come first, then the verdict, then the summary. The fields are
@@ -402,10 +411,14 @@ export function assemblePrompt(product, options = {}) {
 
 // ── The model call ──────────────────────────────────────────────────────────
 
-export function parseVerdict(message) {
-  const block = (message?.content ?? []).find((item) => item.type === "tool_use" && item.name === VERDICT_TOOL);
-  if (!block) throw new Error(`Model response carried no ${VERDICT_TOOL} call`);
-  const parsed = block.input ?? {};
+export function parseVerdict(response) {
+  const content = response?.output?.message?.content ?? [];
+  const block = content.find((item) => item.toolUse?.name === VERDICT_TOOL);
+  if (!block) {
+    const stop = response?.stopReason ? ` (stop reason ${response.stopReason})` : "";
+    throw new Error(`Model response carried no ${VERDICT_TOOL} call${stop}`);
+  }
+  const parsed = block.toolUse.input ?? {};
   if (parsed.verdict !== "pass" && parsed.verdict !== "fail")
     throw new Error(`Model returned an unknown verdict: ${JSON.stringify(parsed.verdict)}`);
   if (typeof parsed.summary !== "string" || parsed.summary.length === 0) throw new Error("Model returned no summary");
@@ -420,26 +433,45 @@ export function parseVerdict(message) {
   return { verdict: parsed.verdict, summary: parsed.summary, concerns: parsed.concerns };
 }
 
-// One retry covers a dropped connection or a mangled response. A second failure is real.
+// The Converse request for one digest on one model.
+export function verdictRequest(prompt, model) {
+  const request = {
+    modelId: model,
+    // The system preamble and rubric are identical on every one of the four products' calls;
+    // the cache point after them lets every call after the first pay the cached-read rate on
+    // that prefix instead of the full input rate.
+    system: [{ text: prompt.system }, { cachePoint: { type: "default" } }],
+    messages: [{ role: "user", content: [{ text: prompt.user }] }],
+    inferenceConfig: { maxTokens: MAX_TOKENS },
+    toolConfig: {
+      tools: [
+        {
+          toolSpec: {
+            name: VERDICT_TOOL,
+            description: "Record the verdict on the reconciliation reports.",
+            inputSchema: { json: VERDICT_SCHEMA },
+          },
+        },
+      ],
+      toolChoice: { tool: { name: VERDICT_TOOL } },
+    },
+  };
+  if (MODEL_REQUEST_FIELDS[model]) request.additionalModelRequestFields = MODEL_REQUEST_FIELDS[model];
+  return request;
+}
+
+// One retry covers a dropped connection or a mangled response: Nova 2 Lite now and then ends
+// a turn with stop reason malformed_tool_use and no verdict call, about one attempt in four
+// on a digest this size, and the retry (then the escalation) absorbs it. A second failure is
+// real.
 export async function requestVerdict(client, prompt, options = {}) {
   const model = options.model ?? DEFAULT_MODEL;
   const attempts = options.attempts ?? 2;
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      const message = await client.messages.create({
-        model,
-        max_tokens: MAX_TOKENS,
-        // The system preamble and rubric are identical on every one of the four products'
-        // calls; marking the block cached lets every call after the first pay the cached-read
-        // rate on it instead of the full input rate.
-        system: [{ type: "text", text: prompt.system, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: prompt.user }],
-        output_config: { effort: EFFORT },
-        tools: [{ name: VERDICT_TOOL, description: "Record the verdict on the reconciliation reports.", input_schema: VERDICT_SCHEMA }],
-        tool_choice: { type: "tool", name: VERDICT_TOOL },
-      });
-      return parseVerdict(message);
+      const response = await client.send(new ConverseCommand(verdictRequest(prompt, model)));
+      return parseVerdict(response);
     } catch (error) {
       lastError = error;
       if (attempt < attempts) console.warn(`Judge attempt ${attempt} failed, retrying: ${error.message}`);
@@ -448,9 +480,8 @@ export async function requestVerdict(client, prompt, options = {}) {
   throw lastError;
 }
 
-async function createClient(region) {
-  const { AnthropicBedrockMantle } = await import("@anthropic-ai/bedrock-sdk");
-  return new AnthropicBedrockMantle({ awsRegion: region });
+function createClient(region) {
+  return new BedrockRuntimeClient({ region });
 }
 
 // ── Entry point ─────────────────────────────────────────────────────────────
@@ -482,8 +513,8 @@ export function parseArgs(argv) {
 
 // Content plus rubric plus model id: unchanged reports judged by the same model against the
 // same rubric hash the same, so a later run (the next deploy, or the same digest reaching a
-// different generate-* job) can skip the Bedrock call. Keying on the model id keeps a Sonnet
-// pass and an Opus escalation from being read as the same verdict (see judgeAndRecord).
+// different generate-* job) can skip the Bedrock call. Keying on the model id keeps a Nova 2 Lite
+// pass and a Nova Pro escalation from being read as the same verdict (see judgeAndRecord).
 export function computeDigestHash(prompt, model) {
   return createHash("sha256")
     .update(JSON.stringify({ system: prompt.system, user: prompt.user, model }))
@@ -513,8 +544,8 @@ export function verdictRecord(args, prompt, verdict, digestHash) {
   };
 }
 
-// The judge stands on Sonnet's verdict when it passes; a fail or an unparseable answer (both
-// exhausted requestVerdict's own retry) escalates the same digest to Opus for confirmation
+// The judge stands on Nova 2 Lite's verdict when it passes; a fail or an unparseable answer (both
+// exhausted requestVerdict's own retry) escalates the same digest to Nova Pro for confirmation
 // before anything blocks a deploy. The rubric applied is identical either way -- escalation
 // buys a second read, never a softer one.
 export async function judgeWithEscalation(client, prompt, options = {}) {
@@ -541,7 +572,7 @@ export async function judgeWithEscalation(client, prompt, options = {}) {
 // Orchestrates one product's judging: skip the Bedrock call entirely when a committed verdict
 // already carries this exact digest, rubric and model's hash; otherwise judge (with escalation)
 // and write the new verdict. Checked against both the primary and the escalation model's hash,
-// so a digest that previously needed escalation is recognised without re-running Sonnet first.
+// so a digest that previously needed escalation is recognised without re-running the primary first.
 export async function judgeAndRecord(args, prompt, options = {}) {
   const createClientFn = options.createClient ?? createClient;
   const readExisting = options.loadExistingVerdict ?? loadExistingVerdict;

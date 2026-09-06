@@ -34,19 +34,22 @@ commits. Prod was already deployed from
 
 ## Context for the open rows
 
-- **M1** (operator): `generate-all.yml` run 34026795912 committed BST, Taxi and SE to main; Ltd's
-  reconcile passed but its unit step failed on the pinned October year end, fixed in PR #63, and
-  the operator dispatched `generate-ltd` again as run 34032585902. The commit jobs push with the
-  default `GITHUB_TOKEN`, which fires no workflow, so `deploy.yml` never follows a package push.
-  The scheduled deploy run 34030850798 then failed at its judge gate: the SE verdict fails on the
-  brickwork-pro non-VAT book's negative Total Tax + NI (SE-T34), and every product's Sonnet call
-  403s and escalates to Opus (H1). Prod serves `d235d704`'s packages until a deploy passes the
-  judge: after SE-T34 lands, `gh workflow run deploy.yml -f environment-name=prod`. If a generate
-  product fails at the reconcile job's "Unit tests against the fresh packages and example" step,
-  the test names in the log say which product's file. If the reconciliation itself reports
-  ANOMALYDETECTED, the failing checks are only in the report file the job writes: reproduce with
-  `node app/bin/report.js --package <p> --data <book> --years <year file> --year-end <date>
-  --output-dir <scratch>` (no LibreOffice) and read the compliance section.
+- **M1** (operator): `generate-all.yml` run 34026795912 committed BST, Taxi and SE to main. Ltd's
+  reconcile passes but its unit step has failed twice on `ltd-workbook.test.js` pinning the old
+  October year end (run 34026795912) and then its Admin serial (run 34032585902); both pins are
+  derived on `claude/ops-green-deploy`. The commit jobs push with the default `GITHUB_TOKEN`, which
+  fires no workflow, so `deploy.yml` never follows a package push. The scheduled deploy run
+  34030850798 failed at its judge gate on SE's negative Total Tax + NI (SE-T34, same branch), with
+  every Sonnet call 403ing on `aws-marketplace:Subscribe` and escalating to Opus; the judge now
+  runs on Nova (J1, same branch), which needs the role policy H1 before CI can call it:
+  `aws --profile spreadsheets iam put-role-policy --role-name spreadsheets-github-actions-role
+  --policy-name InvokeAmazonBedrock --policy-document file://invoke-amazon-bedrock.json` (the
+  document allows `bedrock:InvokeModel` and `InvokeModelWithResponseStream` on
+  `arn:aws:bedrock:*::foundation-model/amazon.*` and
+  `arn:aws:bedrock:*:064390746177:inference-profile/*amazon*`), then `delete-role-policy
+  --policy-name InvokeAnthropicBedrock`. Prod serves `d235d704`'s packages until a deploy passes
+  the judge: after the branch merges and H1 lands, `generate-ltd` once more, then `gh workflow run
+  deploy.yml -f environment-name=prod`.
 - **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
   lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
   it starts with the public directory; CodeQL wants a sanitiser it recognises, so serve from an
@@ -97,7 +100,8 @@ commits. Prod was already deployed from
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | SE-T34 | in-flight | `generate-ltd` run 34032585902 after PR #63; deploy waits on the judge passing SE |
-| H1 | Accept the Bedrock model agreement for `anthropic.claude-sonnet-5` in the spreadsheets account, us-east-1 (or let the actions role subscribe): every judge call to Sonnet returns 403 on `aws-marketplace:Subscribe` and escalates straight to Opus | none | human | — | ready-to-start | seen on every product in deploy run 34030850798 and the generate runs |
+| H1 | Replace the actions role's inline `InvokeAnthropicBedrock` policy with one that allows `bedrock:InvokeModel` on `foundation-model/amazon.*` and the account's `inference-profile/*amazon*`; the policy lives in no repo | operator | human | — | ready-to-start | command in the M1 context; the judge's Nova calls 403 in CI until it lands |
+| J1 | The reconciliation judge runs on Amazon's models through the Bedrock Converse API (Nova 2 Lite, escalating to Nova Pro) instead of Sonnet and Opus, whose marketplace agreement the account never established | operator | machine | — | in-flight | `claude/ops-green-deploy`: switch built, awaiting the operator's push under the freeze |
 
 ## Plans not tracked here
 
