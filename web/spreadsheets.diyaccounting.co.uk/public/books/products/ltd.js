@@ -753,6 +753,54 @@
           return global.DiyaGlLtdLedger.renderAdmin(snap, state, helpers);
         },
       },
+      {
+        id: "accounts",
+        label: "Accounts",
+        sheets: "PubBalSht, PubP&L, PubNotes, Report",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderAccounts(snap, state, helpers);
+        },
+      },
+      {
+        id: "corporation-tax",
+        label: "Corporation tax",
+        sheets: "CorporationTax",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderComputation(snap, state, helpers);
+        },
+      },
+      {
+        id: "ct600",
+        label: "CT600",
+        sheets: "CT600",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderCt600(snap, state, helpers);
+        },
+      },
+      {
+        id: "vat-returns",
+        label: "VAT returns",
+        sheets: "VATQtr1, VATQtr2, VATQtr3, VATQtr4, VATQtr5, Vatinterface",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderVatReturns(snap, state, helpers);
+        },
+      },
+      {
+        id: "payroll",
+        label: "Payroll",
+        sheets: "Payment, WagesInterface",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderPayroll(snap, state, helpers);
+        },
+      },
+      {
+        id: "company",
+        label: "Company",
+        sheets: "Directors&Secretary, RegisterofMembers, DirectorsInterests, Charges&Debentures, Boardmeeting",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdForms.renderCompany(snap, state, helpers);
+        },
+      },
     ],
     months: {
       journals: [
