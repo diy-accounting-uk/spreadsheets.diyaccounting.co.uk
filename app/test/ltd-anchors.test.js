@@ -308,7 +308,7 @@ describe("the four multi-file extractors over examples/ltd-latest", () => {
   // ltd-link-caches.test.js read a package's period.
   const PERIOD = { start: "2025-11-01", end: "2026-10-31" };
 
-  it("record 724 lines between them, keyed file!sheet!cell and unique", async () => {
+  it("record 725 lines between them, keyed file!sheet!cell and unique", async () => {
     const set = await workbookSetFromDirectory(LTD_LATEST_DIR);
     const extractionMap = bstExtractionMap("ltd");
 
@@ -317,11 +317,11 @@ describe("the four multi-file extractors over examples/ltd-latest", () => {
     const payroll = await extractPayrollTransactions(set, extractionMap);
     const stock = await extractJournalEntries(set, "ltd", PERIOD, extractionMap);
 
-    expect(journal.length + bank.length + payroll.length + stock.length).toBe(724);
-    // 723 of the 724: every line but the stock movement's own "cost of
+    expect(journal.length + bank.length + payroll.length + stock.length).toBe(725);
+    // 724 of the 725: every line but the stock movement's own "cost of
     // sales" leg, whose only input cell is already the "Opening stock"
     // line's own address (see xlsx-exporter.test.js's recordLine coverage).
-    expect(extractionMap.lines().length).toBe(723);
+    expect(extractionMap.lines().length).toBe(724);
 
     const keys = [];
     for (const record of extractionMap.lines()) {

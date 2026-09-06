@@ -397,9 +397,9 @@ export function diyaGlToScenario(book, lines, product) {
     }
   }
 
-  // The month the book's own accounting period starts in. cellWrites maps that
-  // period onto the target package's month tabs, so a book already exported
-  // from a package of the same year end is left where it is.
+  // The accounting period the book's own dates sit in. cellWrites maps that
+  // period onto the target package's own, so a book already exported from a
+  // package of the same year end is left where it is.
   const periodStart = book.documentInfo?.periodCoveredStart;
   if (!periodStart) throw new Error("book.toml has no documentInfo.periodCoveredStart, so its accounting period is unknown");
 
@@ -407,6 +407,7 @@ export function diyaGlToScenario(book, lines, product) {
     metadata,
     business,
     period_start_month: new Date(periodStart).getUTCMonth() + 1,
+    period_start_year: new Date(periodStart).getUTCFullYear(),
     sales: grouped.sales,
     purchases: grouped.purchases,
     expected,

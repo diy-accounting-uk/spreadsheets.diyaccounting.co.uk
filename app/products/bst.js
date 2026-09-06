@@ -8,6 +8,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
@@ -51,8 +52,19 @@ function outstandingAmount(transaction) {
 
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
-export function cellWrites(scenario) {
+// A Basic Sole Trader year always opens 6 April and closes 5 April, the same
+// month-tab shape a Company keeps for a March year end -- so a scenario's
+// dates shift onto the package's period by whole years only, and the month a
+// date falls in, and the tab it lands on, never move. The interactive save
+// path (product-workbook.js) passes no target year at all -- the book's own
+// period is already the grid its dates belong on -- so a missing target
+// year leaves every date exactly where the scenario put it.
+const BST_YEAR_END_MONTH = 3;
+
+export function cellWrites(scenario, targetStartYear) {
   const writes = {};
+  const monthOffset = targetStartYear ? periodShiftMonths(scenario, targetStartYear, BST_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   // Business Details
   if (scenario.business || scenario.metadata) {
@@ -74,7 +86,7 @@ export function cellWrites(scenario) {
 
       let row = 4;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -101,7 +113,7 @@ export function cellWrites(scenario) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -155,7 +167,7 @@ export function cellWrites(scenario) {
     const fa = writes["Fixed Assets"];
     let row = 67;
     for (const asset of assetAdditions) {
-      const d = parseDate(asset.date);
+      const d = shiftDate(parseDate(asset.date));
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`C${row}`] = asset.description;
       if (asset.reference) fa[`D${row}`] = asset.reference;

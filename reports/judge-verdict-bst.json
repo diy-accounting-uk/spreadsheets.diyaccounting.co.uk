@@ -1,24 +1,18 @@
 {
   "product": "bst",
   "verdict": "pass",
-  "summary": "Indicators agree with the headline: no VAT boxes for an unregistered trader, tax charged on a positive taxable profit, capital allowances match the capitalised spend, and the profit bridge residue is zero. Only minor notes on the nil personal allowance and the unsettled debtor balance.",
+  "summary": "Indicators match the headline: no VAT anywhere, turnover and profit on scale, capital spend excluded from P&L and claimed as allowances, bridge residue nil and tax charged on the taxable profit. Only note is the tapered nil personal allowance.",
   "concerns": [
     {
       "figure": "Personal allowance 0.00",
       "where": "Income tax indicator",
-      "why": "Consistent with taper at £226,508 income, but worth a glance that the allowance is deliberately nil rather than unpopulated.",
-      "severity": "note"
-    },
-    {
-      "figure": "Debtors 420,700.00 vs sales invoiced 409,900.00",
-      "where": "Debtors and creditors indicator",
-      "why": "Debtors exceed the year's sales; explained by the stated opening balance and no settlements recorded, so behavioural rather than wrong.",
+      "why": "Consistent with taper at 226,508.00 income, but worth a glance that the taper is intended rather than a missing allowance.",
       "severity": "note"
     }
   ],
   "model": "anthropic.claude-opus-5",
   "region": "us-east-1",
-  "digestHash": "2a6089c4f0248e89307299defab9e867f1ade0758d079f326aef1d07414d7035",
+  "digestHash": "50a47f1138687614cf9af8233d1a86022d6d101bf19bb8af748814e42e17ed30",
   "runs": [
     {
       "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
@@ -27,33 +21,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-03T20:55:00.185Z"
-}
-but the AIA/WDA boxes on the return read zero. Worth checking the return would be filed with the allowance in the correct box.",
-      "severity": "note"
-    },
-    {
-      "figure": "SA103S expense analysis: cost of goods £18,540, other direct costs £9,458, other expenses £1,140",
-      "where": "Self Assessment (SA103S) section vs Profit & Loss Account expense lines",
-      "why": "The SA103S breakdown does not obviously map to the P&L lines (P&L cost of sales £10,540 plus direct costs £8,000; expenses of £57,452 against only £26,438 analysed on the return). Net profit and taxable profit agree, so this looks like a grouping/mapping difference rather than a missing journal, but the allocation between SA103S boxes should be checked.",
-      "severity": "note"
-    },
-    {
-      "figure": "Motor Expenses £7,598 and Other Expenses £17,882",
-      "where": "Profit & Loss Account, expense lines",
-      "why": "For an IT consultancy with no payroll, motor costs of £7,598 and an unanalysed \"Other Expenses\" figure of £17,882 (the largest single expense) are plausible but worth a look — the \"other\" bucket being the biggest cost is unusual and may indicate codes that should sit in a named line.",
-      "severity": "note"
-    }
-  ],
-  "model": "anthropic.claude-opus-5",
-  "region": "us-east-1",
-  "runs": [
-    {
-      "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
-      "scenario": "bst-scenario-basic",
-      "yearEnd": "2027-04-05",
-      "status": "RECONCILES"
-    }
-  ],
-  "timestamp": "2026-08-28T13:39:29.358Z"
+  "timestamp": "2026-09-06T03:03:17.729Z"
 }

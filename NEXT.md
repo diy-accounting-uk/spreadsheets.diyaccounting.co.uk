@@ -12,8 +12,8 @@ worktrees first, then each product's block. Every worktree lives at
 coordinator merges each landed commit into the batch branch, runs the row's non-LibreOffice tests,
 and pushes; `NEXT.md` tracking commits ride on the batch branch. The four `generate-*` refreshes run on
 `claude/diya-gl-wave-2-refresh` (cut from the batch head, so the batch's own pushes cannot cancel
-them) and merge back; until they land, the batch's `overtype-sidecar` BST cases and the committed
-half of `ltd-link-caches` read the stale packages and are red. Sub-agents run no LibreOffice and
+them) and merge back; all four have landed once, and the rows that change packages or reports
+since then need another pass before the PR leaves draft. Sub-agents run no LibreOffice and
 prove JS calculations against the committed packages' extraction (`report.js --source-dir`). The
 wave schedule is in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. `PLAN_DIYA_GL_LAUNCH.md` is the launch
 and revenue plan of record and carries its own open items.
@@ -22,16 +22,11 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after the BST package refresh carries `Admin!N17` |
-| SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus; after the SE package refresh on the batch |
+| BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t19` on `claude/wt-bst-t19`; Sonnet |
+| SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t20` on `claude/wt-se-t20`; Opus |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T12, SE-T13, SE-T17, SE-T19, SE-T20, SE-T21 | blocked-to-start | after the next batch |
-| UI-2 | The shared shell takes SE-T13's notes: `.btn:hover` contrast, form rows wrapping at 390px, the toast clear of the mobile action bar, `.entries-columns` sizing by count, the under-44px targets | operator | machine | — | in-flight | `../.worktrees/spreadsheets/ui-2` on `claude/wt-ui-2`; Sonnet |
-| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t9` on `claude/wt-lt-t9`; Haiku |
 | BST-T20 | BST's `Total Tax + NI` check subtracts the CIS already deducted, as SE's does, proved on a CIS-bearing BST book (`brickwork-pro/bst-nonvat`) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t20` on `claude/wt-bst-t20`; Sonnet |
-| LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift; the page's drift layer reads all nine link-bearing files, not the hub alone; `examples/ltd-latest` line dates and CT600 `C126`/`C128` sit a year off its Admin period, so S3's shift is settled against the generator | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t11` on `claude/wt-lt-t11`; Opus |
-| LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
-| LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12 | blocked-to-start | Haiku, wave 11 |
+| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | every Ltd spec is already registered; the full browser run is the coordinator's gate before the PR leaves draft |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
 
 ## Plans not tracked here

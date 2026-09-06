@@ -11,6 +11,7 @@ import { s2 } from "../web/browser-tests/r-sources.js";
 import { canonicalForUnit } from "../app/lib/canonical-report-value.js";
 import { headlinesFromReport } from "../app/lib/headlines.js";
 import { HEADLINES as SE_HEADLINES } from "../app/products/se.js";
+import { HEADLINES as LTD_HEADLINES } from "../app/products/ltd.js";
 
 // Spreadsheets tests run against deployed CI or prod environments only.
 // The spreadsheets site is a separate CloudFront distribution from the submit site.
@@ -1136,6 +1137,82 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
     console.log("\n" + "=".repeat(60));
     console.log("TEST COMPLETE - DIYA-GL Taxi books page verified");
+    console.log("=".repeat(60));
+  });
+
+  test("DIYA-GL books page loads the ltd-scenario-full example under production's security headers", async ({ page }) => {
+    const consoleErrors = [];
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+
+    // ============================================================
+    // STEP 1: Open the Ltd books page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 1: Open the Ltd books page");
+    console.log("=".repeat(60));
+
+    const booksUrl = `${spreadsheetsBaseUrl}/books/ltd.html`;
+    console.log(` Navigating to: ${booksUrl}`);
+    await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-24-books-ltd-empty.png` });
+
+    // ============================================================
+    // STEP 2: Load the ltd-scenario-full example
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 2: Load the ltd-scenario-full example");
+    console.log("=".repeat(60));
+
+    await page.locator('[data-example="ltd-scenario-full"]').click();
+    console.log(" Clicked the ltd-scenario-full example button");
+
+    // ============================================================
+    // STEP 3: Wait for the headlines strip and the year totals row,
+    // and check both against S2 (the JS engine over the same book) run
+    // through headlinesFromReport and the page's own fmtMoney rule --
+    // the expected text is derived here, not typed.
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 3: Check the headlines strip and year totals against derived figures");
+    console.log("=".repeat(60));
+
+    await expect(page.locator(".headlines-strip")).toBeVisible({ timeout: 30000 });
+
+    const ltdReportMap = s2("examples/precision-code-ltd/full", "ltd-full", "ltd");
+    const ltdReport = { values: Array.from(ltdReportMap, ([key, entry]) => ({ key, value: entry.value, unit: entry.unit })) };
+    const ltdHeadlines = headlinesFromReport(ltdReport, LTD_HEADLINES);
+    const ltdMoneyFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
+    const fmtMoney = (n) => ltdMoneyFmt.format(Number(canonicalForUnit(String(n), "money")));
+
+    for (const [key, value] of Object.entries(ltdHeadlines.keys)) {
+      await expect(page.locator(`[data-r-key="${key}"]`)).toHaveText(fmtMoney(value));
+      console.log(` ${key} carries ${fmtMoney(value)}`);
+    }
+
+    const yearTotals = page.locator("tfoot.year-totals");
+    await expect(yearTotals).toContainText(fmtMoney(ltdHeadlines.keys["headline/turnover"]), { timeout: 30000 });
+    console.log(" Year totals row carries the same turnover figure as the headline tile");
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-25-books-ltd-loaded.png` });
+
+    // ============================================================
+    // STEP 4: No console error, no CSP violation shown on the page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 4: Check for console errors and CSP violations");
+    console.log("=".repeat(60));
+
+    const ltdBodyText = await page.locator("body").innerText();
+    expect(ltdBodyText).not.toContain("Content Security Policy");
+    console.log(" Page text carries no Content Security Policy violation");
+
+    expect(consoleErrors, `no console error, saw: ${consoleErrors.join(" | ")}`).toEqual([]);
+    console.log(" No console errors were raised while loading the example");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL Ltd books page verified");
     console.log("=".repeat(60));
   });
 });

@@ -10,6 +10,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, registerOfficers } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_DUE_DAY,
@@ -70,6 +71,17 @@ function getMonthTabNames(yearEndMonth) {
     tabs.push(SHORT_MONTHS[(yearEndMonth + i) % 12]);
   }
   return tabs;
+}
+
+// The calendar year the payroll year opens in, from the accounting period's
+// own year end alone -- the same fallback app/lib/calculators/ltd.js's
+// payrollYearOf() uses when taxData carries no financial_year: the year
+// before the year end's calendar year, unless the year end falls in January
+// to March, when the payroll year already opened the April before that year.
+function payrollYearFromAccountingYearEnd(yearEndDate) {
+  const targetStartYear = yearEndDate.getUTCFullYear() - 1;
+  const yearEndMonth = yearEndDate.getUTCMonth() + 1;
+  return yearEndMonth <= 3 ? targetStartYear : targetStartYear + 1;
 }
 
 // TrialBalance's own closing-balance echo of each bank workbook (verified
@@ -428,17 +440,6 @@ function writeOpeningBalance(sheet, openingBalance) {
   if (taxPosted) sheet.E26 = taxTotal;
 }
 
-// Move a date forward by whole months. A day the shifted month does not have
-// clamps to that month's end, so each of the period's twelve months lands on
-// its own tab: a 31st shifted into a 30-day month stays in that month rather
-// than rolling into the next one and doubling up with the month after it.
-function shiftMonths(d, monthOffset) {
-  const year = d.getUTCFullYear();
-  const month = d.getUTCMonth() + monthOffset;
-  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(d.getUTCDate(), lastDayOfShiftedMonth)));
-}
-
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -447,17 +448,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const yem = yearEndMonth || 3;
 
   // Dates belong to the accounting period their own scenario covers, and get
-  // shifted by the whole-month gap between that period and the target's, so
-  // the twelve months land on the twelve month tabs in order. A scenario
-  // already in the target's period has a zero gap and is written as it stands,
-  // which is what makes exporting a package and generating from the export
-  // reproduce the same cells. A scenario that does not name its period start
-  // is in the April-March frame its apr..mar month keys describe.
+  // shifted onto the package's own period, so the twelve months land on the
+  // twelve month tabs in order and in the years the package's accounts are
+  // drawn up for. A scenario that does not name its period start is in the
+  // April-March frame its apr..mar month keys describe.
   const rate = vatRateFor(scenario);
 
-  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
-  const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
+  const monthOffset = periodShiftMonths(scenario, targetStartYear, yem);
 
   const shiftDate = (d) => shiftMonths(d, monthOffset);
 
@@ -942,17 +940,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // opposite sides of each month tab.
   //
   // The period's first day, in the same shifted frame as every "d" below:
-  // the earliest of the scenario's own bank dates, shifted the same way
-  // "d" is, rather than reconstructed from targetStartYear and yearEndMonth.
-  // shiftDate keeps a date's own year and lets the month overflow, so a
-  // month shift that does not cross a year boundary (a March year end,
-  // whose target frame already starts in April) agrees with targetStartYear
-  // by coincidence, but one that does (a May year end shifts an April
-  // opening two months into the same calendar year, not into
-  // targetStartYear's, which generate.js names one year further back) does
-  // not -- the true opening then misses periodStart and reads as a
-  // transfer, while every genuine transfer misses it too and reads as an
-  // opening instead.
+  // the earliest of the scenario's own bank dates, shifted the same way "d"
+  // is. An opening balance is the one bank line dated it, and the workbook
+  // takes that as the account's A1 figure rather than as a statement line;
+  // read a day out, the opening reads as a transfer and every transfer as an
+  // opening.
   const bankDates = Object.values(scenario.bank || {}).flatMap((transactions) => transactions.map((tx) => shiftDate(parseDate(tx.date))));
   const periodStart = bankDates.length > 0 ? bankDates.reduce((earliest, date) => (date < earliest ? date : earliest)) : null;
   const bankFileWrites = {};
@@ -3037,8 +3029,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // scenario's dates shift by the gap between its own accounting period
     // and the package's, so the year end on the Admin sheet is what says how
     // far this book moved the meeting.
-    const yearEndMonth = dateFromSerial(num(results.Admin.F21)).getUTCMonth() + 1;
-    const monthOffset = ((yearEndMonth % 12) - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const packageYearEnd = dateFromSerial(num(results.Admin.F21));
+    const monthOffset = periodShiftMonths(expected, packageYearEnd.getUTCFullYear() - 1, packageYearEnd.getUTCMonth() + 1);
     const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
     check(
       "Board minute: meeting date = the scenario's board meeting",
@@ -3561,10 +3553,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // so they are the payroll year's first day plus a fixed count of days --
   // measured here against the year the package's own tax data opens in, not
   // against the calendar the sheet built them from.
+  //
+  // A --data run's own extracted tax data carries no financial_year (it never
+  // reads a tax-year TOML), so this falls back to the accounting period's own
+  // year end the same way payrollYearOf() does in app/lib/calculators/ltd.js:
+  // the year before the year end's calendar year, unless the year end falls
+  // in January to March, when the payroll year already opened the April
+  // before that year.
   const paymentSchedule = results["Payslips.xlsx!Payment"];
   const payrollYearOpens = taxData?.financial_year?.start
     ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear())
-    : null;
+    : packageYearEnd
+      ? payrollYearStart(payrollYearFromAccountingYearEnd(new Date(packageYearEnd)))
+      : null;
   if (paymentSchedule && payrollYearOpens) {
     const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
