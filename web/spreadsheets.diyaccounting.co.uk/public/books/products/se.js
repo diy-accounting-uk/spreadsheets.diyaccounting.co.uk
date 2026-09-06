@@ -620,6 +620,14 @@
     return helpers.kvRows(rows);
   }
 
+  // A table wider than the view scrolls inside its own box rather than
+  // pushing the page sideways. The box is a keyboard stop that carries the
+  // table's name, so a reader tabbing through can scroll it with the arrow
+  // keys and hears what it holds.
+  function scrollBox(helpers, label, html) {
+    return '<div class="se-months-scroll" role="region" aria-label="' + helpers.esc(label) + '" tabindex="0">' + html + "</div>";
+  }
+
   // ============================== the views ==============================
 
   // The statement's own rows, in the order the sheet prints them: the year
@@ -687,12 +695,10 @@
         return "<tr><th>" + helpers.esc(row.label) + "</th>" + cells + "</tr>";
       })
       .join("");
-    return (
-      '<div class="se-months-scroll"><table class="register-table se-months-table"><thead>' +
-      head +
-      "</thead><tbody>" +
-      body +
-      "</tbody></table></div>"
+    return scrollBox(
+      helpers,
+      "Profit and loss by month",
+      '<table class="register-table se-months-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>",
     );
   }
 
@@ -917,9 +923,14 @@
     return (
       "<h2>Fixed assets</h2>" +
       '<div class="panel-card"><h3>Brought into the year</h3>' +
-      '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th></tr></thead><tbody>' +
-      broughtForward +
-      "</tbody></table></div>" +
+      scrollBox(
+        helpers,
+        "Assets brought into the year",
+        '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th></tr></thead><tbody>' +
+          broughtForward +
+          "</tbody></table>",
+      ) +
+      "</div>" +
       '<div class="panel-card"><h3>Bought during the year</h3>' +
       '<table class="register-table"><thead><tr><th>Date</th><th>Asset</th><th>Cost</th></tr></thead><tbody>' +
       additions +
@@ -930,14 +941,19 @@
       '<div class="panel-card"><h3>The schedule against the journals</h3>' +
       helpers.kvRows(reconciliationRows) +
       "</div>" +
-      '<div class="panel-card"><h3>Hire purchase</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
-      agreements +
-      '</tbody><tfoot><tr class="total"><th colspan="2">Long-term creditor</th><td class="num"' +
-      cellRk(snap, helpers, HP_SHEET, HP_TOTAL_CELL) +
-      ">" +
-      helpers.fmtMoney(cellValue(snap.results, HP_SHEET, HP_TOTAL_CELL)) +
-      '</td><td colspan="4"></td></tr></tfoot></table></div></div>'
+      '<div class="panel-card"><h3>Hire purchase</h3>' +
+      scrollBox(
+        helpers,
+        "Hire purchase agreements",
+        '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
+          agreements +
+          '</tbody><tfoot><tr class="total"><th colspan="2">Long-term creditor</th><td class="num"' +
+          cellRk(snap, helpers, HP_SHEET, HP_TOTAL_CELL) +
+          ">" +
+          helpers.fmtMoney(cellValue(snap.results, HP_SHEET, HP_TOTAL_CELL)) +
+          '</td><td colspan="4"></td></tr></tfoot></table>',
+      ) +
+      "</div>"
     );
   }
 
@@ -966,8 +982,10 @@
             '" aria-pressed="' +
             (candidate.id === account.id ? "true" : "false") +
             '">' +
-            helpers.esc(candidate.label + " — " + candidate.id) +
-            "</button>"
+            helpers.esc(candidate.label) +
+            ' <span class="account-switch-code">' +
+            helpers.esc(candidate.id) +
+            "</span></button>"
           );
         })
         .join("") +
@@ -1019,9 +1037,14 @@
       '<div class="panel-card"><h3>' +
       helpers.esc(account.label + " balances, month by month") +
       "</h3>" +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Opening</th><th>Receipts</th><th>Payments</th><th>Closing</th></tr></thead><tbody>' +
-      rows +
-      "</tbody></table></div>"
+      scrollBox(
+        helpers,
+        account.label + " balances",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Opening</th><th>Receipts</th><th>Payments</th><th>Closing</th></tr></thead><tbody>' +
+          rows +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
   }
 
@@ -1056,11 +1079,9 @@
       return (
         '<div class="panel-card"><h3>' +
         title +
-        '</h3><div class="se-months-scroll"><table class="register-table"><thead>' +
-        head +
-        "</thead><tbody>" +
-        body +
-        "</tbody></table></div></div>"
+        "</h3>" +
+        scrollBox(helpers, title, '<table class="register-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>") +
+        "</div>"
       );
     }
     return (
@@ -1108,9 +1129,9 @@
             '">Cancel</button></div>'
           : '<button type="button" class="btn" data-settlement-preview="' + helpers.esc(settlement.id) + '">Preview</button>';
         return (
-          '<li class="settlement"><p><strong>' +
+          '<li class="settlement"><p class="settlement-title">' +
           helpers.esc(settlement.title) +
-          "</strong> — " +
+          '</p><p class="settlement-meta">' +
           helpers.esc(settlement.entryNumber) +
           " · " +
           helpers.esc(change.counterparty) +
@@ -1207,10 +1228,15 @@
     return (
       "<h2>Payroll</h2>" +
       renderEmployees(snap, helpers) +
-      '<div class="panel-card"><h3>Every payslip</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div></div>" +
+      '<div class="panel-card"><h3>Every payslip</h3>' +
+      scrollBox(
+        helpers,
+        "Every payslip",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>" +
       renderWagesInterface(snap, helpers) +
       renderPayeSchedule(snap, helpers)
     );
@@ -1270,9 +1296,14 @@
       .join("");
     return (
       '<div class="panel-card"><h3>Month totals</h3>' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div>"
+      scrollBox(
+        helpers,
+        "Payroll month totals",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
   }
 
@@ -1307,10 +1338,15 @@
       })
       .join("");
     return (
-      '<div class="panel-card"><h3>PAYE remittance schedule</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Tax month end</th><th>Due</th><th>National Insurance</th><th>Income Tax</th><th>Total payable</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div></div>"
+      '<div class="panel-card"><h3>PAYE remittance schedule</h3>' +
+      scrollBox(
+        helpers,
+        "PAYE remittance schedule",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Tax month end</th><th>Due</th><th>National Insurance</th><th>Income Tax</th><th>Total payable</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
   }
 
@@ -1396,11 +1432,12 @@
     return (
       '<details class="vat-interface"><summary>The interface table behind these five returns</summary>' +
       '<p class="view-lede">Read-only. Each return looks its boxes up against the row whose period it names.</p>' +
-      '<div class="se-months-scroll"><table class="register-table"><thead><tr>' +
-      head +
-      "</tr></thead><tbody>" +
-      body +
-      "</tbody></table></div></details>"
+      scrollBox(
+        helpers,
+        "VAT interface table",
+        '<table class="register-table"><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table>",
+      ) +
+      "</details>"
     );
   }
 
