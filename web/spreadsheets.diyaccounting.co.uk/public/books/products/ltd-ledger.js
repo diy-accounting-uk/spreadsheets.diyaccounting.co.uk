@@ -248,7 +248,7 @@
 
   // ============================== ledgers ==============================
 
-  function renderLedgers(snap, helpers) {
+  function renderLedgers(snap, state, helpers) {
     function total(rows) {
       return rows.reduce(function (sum, entry) {
         return sum + num(entry.amount);

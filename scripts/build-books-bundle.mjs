@@ -148,7 +148,11 @@ function copyRuntimeAssets() {
   const dataOut = resolve(ASSETS_DIR, "data");
   mkdirSync(dataOut, { recursive: true });
   const dataIn = resolve(ROOT, "app", "data");
-  const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name));
+  // se's own regime file names a two-year span (se-2026-2027.toml); Ltd's
+  // (LT-T7) names the single financial year its Admin sheet declares
+  // (ltd-2027.toml). bst and taxi both read se's files, so no pattern of
+  // their own is needed.
+  const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name) || /^ltd-\d{4}\.toml$/.test(name));
   for (const name of yearFiles) cpSync(resolve(dataIn, name), resolve(dataOut, name));
 
   // The form layouts, one per product, fetched by the books page at runtime
