@@ -895,6 +895,18 @@
     );
   }
 
+  // A book with no dividend declared writes nothing to Boardmeeting at all,
+  // so R carries neither cell -- the key, like cellCell()'s, is left off
+  // rather than pointing at a value that is really just cellText()'s "—".
+  function boardMinuteRow(snap, helpers, sheet, cell, label, format) {
+    var value = rawValue(snap, sheet + "!" + cell);
+    return {
+      label: label,
+      text: cellText(snap, helpers, sheet, cell, format),
+      rKeyAttr: isBlank(value) ? "" : keyAttrFor(helpers, sheet + "!" + cell),
+    };
+  }
+
   function boardMinuteHtml(snap, helpers) {
     var productMod = snap.context.productMod;
     var cells = productMod.BOARD_MINUTE_CELLS;
@@ -902,16 +914,8 @@
     return (
       '<div class="panel-card"><h3>Board minute</h3>' +
       helpers.kvRows([
-        {
-          label: "Meeting date",
-          text: cellText(snap, helpers, sheet, cells.date, "date"),
-          rKeyAttr: keyAttrFor(helpers, sheet + "!" + cells.date),
-        },
-        {
-          label: "Dividend declared",
-          text: cellText(snap, helpers, sheet, cells.dividendDeclared, "money"),
-          rKeyAttr: keyAttrFor(helpers, sheet + "!" + cells.dividendDeclared),
-        },
+        boardMinuteRow(snap, helpers, sheet, cells.date, "Meeting date", "date"),
+        boardMinuteRow(snap, helpers, sheet, cells.dividendDeclared, "Dividend declared", "money"),
       ]) +
       "</div>"
     );
