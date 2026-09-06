@@ -681,7 +681,9 @@ function expectedBoxes(form, s2Map) {
 // A box prints the cell it names; a box with no cell, and a box whose cell
 // R carries no entry for (report-serializer.js drops a blank), prints
 // present and empty with no key of its own -- empty but for the standing
-// note a computation line may carry in place of a figure.
+// note a computation line may carry in place of a figure. A box whose cell
+// CELL_MAP names carries the section key of the report row that reprints
+// it alongside its own, so the cell key has to be named rather than alone.
 function checkBoxes(rows, boxes, s2Map, problems) {
   expect(rows.map((row) => row.box)).toEqual(boxes.map((box) => box.box));
   rows.forEach((row, i) => {
@@ -690,7 +692,8 @@ function checkBoxes(rows, boxes, s2Map, problems) {
     if (box.rule) return; // A rule box computes from its siblings and carries no cell of its own.
     const key = box.cell ? `cell/${box.cell}` : null;
     if (key && s2Map.has(key)) {
-      if (row.rKey !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected "${key}"`);
+      const keys = row.rKey === null ? [] : row.rKey.split(" || ");
+      if (!keys.includes(key)) problems.push(`box ${box.box} carries "${row.rKey}", which does not name "${key}"`);
     } else {
       const empty = box.text || "";
       if (row.rKey !== null) problems.push(`box ${box.box} names no cell R carries, yet carries "${row.rKey}"`);
