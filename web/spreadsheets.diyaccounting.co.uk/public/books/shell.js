@@ -65,6 +65,8 @@
     els.themeToggle = document.getElementById("theme-toggle");
     els.saveBtn = document.getElementById("save-btn");
     els.saveBtnMobile = document.getElementById("save-btn-mobile");
+    els.newBtn = document.getElementById("new-btn");
+    els.newBtnMobile = document.getElementById("new-btn-mobile");
     els.undoBtn = document.getElementById("undo-btn");
     els.undoBtnMobile = document.getElementById("undo-btn-mobile");
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
@@ -268,6 +270,20 @@
     var next = window.location.pathname + "?" + params.toString() + window.location.hash;
     var current = window.location.pathname + window.location.search + window.location.hash;
     if (next !== current) window.history.replaceState(null, "", next);
+  }
+
+  // The reader has left the example the URL names, so the address bar stops
+  // claiming it. Any other parameter the reader arrived with is kept.
+  function clearDeepLinkUrl() {
+    var params = new URLSearchParams(window.location.search);
+    ["example", "view", "month"].forEach(function (key) {
+      params.delete(key);
+    });
+    var query = params.toString();
+    var next = window.location.pathname + (query ? "?" + query : "") + window.location.hash;
+    if (next !== window.location.pathname + window.location.search + window.location.hash) {
+      window.history.replaceState(null, "", next);
+    }
   }
 
   // ============================== formatting ==============================
@@ -489,6 +505,7 @@
     renderTopbarTitle();
     renderSheetTabs();
     renderUndoControls();
+    renderNewControls();
     if (!state.loaded) {
       els.viewRoot.innerHTML = renderEmptyState();
       bindEmptyState();
@@ -532,6 +549,14 @@
     state.focusEntry = null;
     state.focusField = null;
     if (input) input.focus();
+  }
+
+  // "New" only has somewhere to go once a book is loaded: on the empty state
+  // the reader is already at the screen it returns them to.
+  function renderNewControls() {
+    [els.newBtn, els.newBtnMobile].forEach(function (btn) {
+      if (btn) btn.classList.toggle("hidden", !state.loaded);
+    });
   }
 
   function renderUndoControls() {
@@ -725,7 +750,7 @@
   function renderEmptyState() {
     return (
       '<div class="empty-state">' +
-      "<h2>View your books in DIYA-GL</h2>" +
+      '<h2 tabindex="-1">View your books in DIYA-GL</h2>' +
       "<p>" +
       esc(active.emptyState.intro) +
       "</p>" +
@@ -1048,8 +1073,8 @@
   // dragenter/dragleave pairs (every element under the pointer fires its
   // own), so the highlight only clears once the pointer has actually left
   // the page. A drop while a book is loaded is refused -- the toast's own
-  // control clears the page back to the empty state without touching the
-  // autosave record, exactly what Discard is for.
+  // control is New, which clears the page back to the empty state without
+  // touching the autosave record.
 
   var dragDepth = 0;
 
@@ -1073,7 +1098,7 @@
       var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
       if (!file) return;
       if (state.loaded) {
-        showToast("Close this book first", { label: "Close this book", onClick: closeCurrentBook });
+        showToast("Close this book first", { label: "Close this book", onClick: startNewBook });
         return;
       }
       if (isLegacyXlsName(file.name)) {
@@ -1120,6 +1145,19 @@
     state.openHelper = null;
     window.DiyaGlBooksEdits.undo.clear();
     render();
+  }
+
+  // "New": back to the screen that offers a file, a fresh book and the
+  // examples. The book being left is held in state.savedBook, so the
+  // continue offer on that screen restores it from memory whether or not
+  // the autosave store took a copy -- nothing to confirm before leaving.
+  function startNewBook() {
+    closeSaveMenu();
+    closeDrawer();
+    clearDeepLinkUrl();
+    closeCurrentBook();
+    var heading = document.querySelector(".empty-state h2");
+    if (heading) heading.focus();
   }
 
   function applySnapshot(snapshot, opts) {
@@ -2508,6 +2546,8 @@
 
     els.saveBtn.addEventListener("click", handleSave);
     els.saveBtnMobile.addEventListener("click", handleSave);
+    els.newBtn.addEventListener("click", startNewBook);
+    els.newBtnMobile.addEventListener("click", startNewBook);
     els.undoBtn.addEventListener("click", undoLastEdit);
     els.undoBtnMobile.addEventListener("click", undoLastEdit);
 
