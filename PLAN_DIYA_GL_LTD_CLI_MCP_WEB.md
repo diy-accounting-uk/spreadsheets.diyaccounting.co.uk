@@ -1318,14 +1318,14 @@ at `book-checks.js` 125: `id`, `label`, `offenders(ctx)`, `consequence(ctx)`,
 
 | id | tier | offenders | helper |
 |---|---|---|---|
-| `ltd-bank-line-has-side` | fail | `sourceJournalID === "bank"` and `debitCreditCode` not `"D"` or `"C"` | none |
-| `ltd-bank-code-analysed` | fail | a bank line whose `diya-gl:bankCode` is not in `bankLayout(BANK_ACCOUNT_FILES[line["diya-gl:bankAccountID"]])` `.receiptCodes` (D) or `.paymentCodes` (C), or whose account is not one of 1200, 1210, 1220, 1230; `BC` lines are exempt (opening balance) | "recode to CR/DR" is not mechanical; none |
-| `ltd-transfer-has-counter-leg` | warn | a line coded BS, BD, BC or BB (transfers; `BC` only when not the opening balance) with no line of the same date and amount on the sibling account the code names (`BANK_TRANSFER_CODES`) | none |
-| `ltd-straddling-line-has-vat-period` | fail | a sales or purchases line dated outside `period` without `diya-gl:vatPeriodEnd`; a line with it is exempt from `book-dates-in-period` (this rule replaces that check's verdict for such lines, by filtering them out of its offenders through the product hook) | the existing "move into the period" helper |
-| `ltd-payroll-line-names-employee` | fail | `sourceJournalID === "payroll"` and neither `diya-gl:employeeID` matches a `book.employees[].employeeID` nor `detailComment` matches a name | none |
-| `ltd-dividend-within-distributable-profits` | warn | `sum(book.dividends[].amount)` above `results.OpenAccounts.E34 + results["PubP&L"].F51` (the warning takes `results` as its third argument) | none |
-| `ltd-cis-on-subcontractor-line` | warn | `diya-gl:cisDeduction` present on a purchases line whose `accountMainID` is not 5001 | none |
-| `ltd-fixed-asset-rows-fit-schedule` | fail | more `fa`-mapped purchases (`PURCHASE_CODE_MAPS.ltd`) than `SCHEDULE_NEW_ASSET_ROWS.length` (8); more `book.fixedAssets` of one class than that class's `existingRows`; more `fs`-mapped sales than assets; more than two `book.hpAgreements` | none |
+| `book-ltd-bank-line-has-side` | fail | `sourceJournalID === "bank"` and `debitCreditCode` not `"D"` or `"C"` | none |
+| `book-ltd-bank-code-analysed` | fail | a bank line whose `diya-gl:bankCode` is not in `bankLayout(BANK_ACCOUNT_FILES[line["diya-gl:bankAccountID"]])` `.receiptCodes` (D) or `.paymentCodes` (C), or whose account is not one of 1200, 1210, 1220, 1230; `BC` lines are exempt (opening balance) | "recode to CR/DR" is not mechanical; none |
+| `book-ltd-transfer-has-counter-leg` | warn | a line coded BS, BD, BC or BB (transfers; `BC` only when not the opening balance) with no line of the same date and amount on the sibling account the code names (`BANK_TRANSFER_CODES`) | none |
+| `book-ltd-straddling-line-has-vat-period` | fail | a sales or purchases line dated outside `period` without `diya-gl:vatPeriodEnd`; a line with it is exempt from `book-dates-in-period` (this rule replaces that check's verdict for such lines, by filtering them out of its offenders through the product hook) | the existing "move into the period" helper |
+| `book-ltd-payroll-line-names-employee` | fail | `sourceJournalID === "payroll"` and neither `diya-gl:employeeID` matches a `book.employees[].employeeID` nor `detailComment` matches a name | none |
+| `book-ltd-dividend-within-distributable-profits` | warn | `sum(book.dividends[].amount)` above `results.OpenAccounts.E34 + results["PubP&L"].F51` (the warning takes `results` as its third argument) | none |
+| `book-ltd-cis-on-subcontractor-line` | warn | `diya-gl:cisDeduction` present on a purchases line whose `accountMainID` is not 5001 | none |
+| `book-ltd-fixed-asset-rows-fit-schedule` | fail | more `fa`-mapped purchases (`PURCHASE_CODE_MAPS.ltd`) than `SCHEDULE_NEW_ASSET_ROWS.length` (8); more `book.fixedAssets` of one class than that class's `existingRows`; more `fs`-mapped sales than assets; more than two `book.hpAgreements` | none |
 
 The chart check: `book-accounts-in-chart` keeps its offenders to `sales` and `purchases`
 lines when the product is Ltd, because bank, payroll and journal lines post to bank,

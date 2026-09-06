@@ -173,7 +173,7 @@ function scheduleOffender(entryNumber, postingDate, detailComment, amount) {
 
 export const LTD_CHECK_SPECS = [
   {
-    id: "ltd-bank-line-has-side",
+    id: "book-ltd-bank-line-has-side",
     label: "Every bank entry is a receipt or a payment",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -187,7 +187,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-bank-code-analysed",
+    id: "book-ltd-bank-code-analysed",
     label: "Every bank entry is coded to a column its workbook analyses",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -208,7 +208,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-straddling-line-has-vat-period",
+    id: "book-ltd-straddling-line-has-vat-period",
     label: "Every sale and purchase outside the period names the VAT period it belongs to",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -251,7 +251,7 @@ export const LTD_CHECK_SPECS = [
     },
   },
   {
-    id: "ltd-payroll-line-names-employee",
+    id: "book-ltd-payroll-line-names-employee",
     label: "Every payroll entry names someone on the payroll",
     offenders: function (ctx) {
       const ids = employeeIDs(ctx.book);
@@ -269,7 +269,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-fixed-asset-rows-fit-schedule",
+    id: "book-ltd-fixed-asset-rows-fit-schedule",
     label: "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
     offenders: function (ctx) {
       const assets = (ctx.book && ctx.book.fixedAssets) || [];
@@ -334,7 +334,7 @@ function transferCounterLegWarning(ctx) {
     .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
-    id: "ltd-transfer-has-counter-leg",
+    id: "book-ltd-transfer-has-counter-leg",
     tier: "warning",
     label: "Every transfer between the company's own accounts appears on both of them",
     result: warn ? "warn" : "pass",
@@ -355,7 +355,7 @@ function dividendsWarning(ctx, taxData, results) {
   const publishedPl = (results && results["PubP&L"]) || null;
   if (!openAccounts || !publishedPl) {
     return {
-      id: "ltd-dividend-within-distributable-profits",
+      id: "book-ltd-dividend-within-distributable-profits",
       tier: "warning",
       label:
         "Dividends declared are " +
@@ -371,7 +371,7 @@ function dividendsWarning(ctx, taxData, results) {
   const available = (openAccounts.E34 || 0) + (publishedPl.F51 || 0);
   const warn = declared > available;
   return {
-    id: "ltd-dividend-within-distributable-profits",
+    id: "book-ltd-dividend-within-distributable-profits",
     tier: "warning",
     label:
       "Dividends declared are " +
@@ -400,7 +400,7 @@ function cisAccountWarning(ctx) {
     .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
-    id: "ltd-cis-on-subcontractor-line",
+    id: "book-ltd-cis-on-subcontractor-line",
     tier: "warning",
     label: "Every CIS deduction sits on a sub-contractor purchase",
     result: warn ? "warn" : "pass",
@@ -431,7 +431,7 @@ export const LTD_SHARED_OFFENDERS = {
     });
   },
   // A line carrying a VAT period end is a straddling entry, dated outside
-  // the year on purpose. ltd-straddling-line-has-vat-period is the rule
+  // the year on purpose. book-ltd-straddling-line-has-vat-period is the rule
   // that judges it.
   "book-dates-in-period": function (ctx, offenders) {
     return offenders.filter(function (line) {
