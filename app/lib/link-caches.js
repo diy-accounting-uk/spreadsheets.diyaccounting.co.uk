@@ -25,6 +25,17 @@ export const HUB_FILE = "Financialaccounts.xlsx";
 // The files of each product that carry external links, in dependency order.
 export const LINK_ORDER = {
   se: ["Purchases.xlsx", "Bank.xlsx", "Cash.xlsx", "Fixedassets.xlsx", "Financialaccounts.xlsx", "Vat.xlsx"],
+  ltd: [
+    "Sales.xlsx",
+    "Purchases.xlsx",
+    "Currentaccount.xlsx",
+    "Savingaccount.xlsx",
+    "Cashaccount.xlsx",
+    "Creditcardaccount.xlsx",
+    "Fixedassets.xlsx",
+    "Financialaccounts.xlsx",
+    "Vatreturns.xlsx",
+  ],
 };
 
 // External references appear in formulas as [3]Mar!$AB$2 or '[1]Mnth P&L'!A1,
@@ -222,6 +233,36 @@ export async function linkCacheValues(zip) {
     }
   }
   return values;
+}
+
+/**
+ * Every value a whole package's link caches hold, one entry per addressed
+ * leaf cell, keyed "file!sheet!cell". More than one workbook can cache the
+ * same leaf cell -- the Company hub and Vatreturns both read a Sales tab's
+ * G1 -- so an entry carries one reading per workbook that caches it, and a
+ * cache left behind in one reader is never hidden by a fresh copy in
+ * another. An addressed cell no workbook holds a value for is left out.
+ *
+ * @param {Map<string, Object>} zips - workbook file name to its JSZip
+ * @param {string[]} order - the workbooks that carry links, LINK_ORDER[product]
+ * @returns {Promise<Map<string, {targetFile: string, sheet: string, cell: string, readings: Array<{file: string, value: *, sources: string[]}>}>>}
+ */
+export async function packageLinkCaches(zips, order) {
+  const cells = new Map();
+  for (const file of order) {
+    const zip = zips.get(file);
+    if (!zip) throw new Error(`${file} carries link caches but the package does not hold it`);
+    const cached = await linkCacheValues(zip);
+    for (const entry of await linkAddressedCells(zip)) {
+      const key = `${entry.targetFile}!${entry.sheet}!${entry.cell}`;
+      if (!cached.has(key)) continue;
+      if (!cells.has(key)) {
+        cells.set(key, { targetFile: entry.targetFile, sheet: entry.sheet, cell: entry.cell, readings: [] });
+      }
+      cells.get(key).readings.push({ file, value: cached.get(key), sources: entry.sources });
+    }
+  }
+  return cells;
 }
 
 /**

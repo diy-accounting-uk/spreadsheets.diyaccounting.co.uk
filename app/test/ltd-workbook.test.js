@@ -30,6 +30,9 @@ import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad } from "..
 import { applyCellWrites, buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { cellWrites } from "../products/ltd.js";
+import { monthTabOrder } from "../lib/ltd-layout.js";
+import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "../lib/link-caches.js";
+import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
@@ -55,11 +58,19 @@ afterAll(() => {
 // the year's rates into the sheets that carry them, the year-end sequence,
 // the scenario's cells, and the recalculate-on-open flag every workbook gets.
 // A difference here means the writer and the CLI have drifted apart.
+//
+// The writer (product-workbook.js's composeFiles) also refreshes every
+// link-bearing file's external link caches from the calculator once every
+// file is composed, so the two paths are mirrored here to the same point:
+// generate.js does not refresh (CI recalculates through LibreOffice instead),
+// so composing "the generate path" and then applying that same refresh is
+// what makes the two comparable byte for byte.
 async function packageTheGeneratePathComposes(book, lines, taxYearName, yearEndMonth) {
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates/ltd/meta.toml"), "utf8"));
   const taxData = parseTOML(readFileSync(resolve(APP_DIR, `data/${taxYearName}.toml`), "utf8"));
   const endDate = new Date(book.documentInfo.periodCoveredEnd);
-  const writes = cellWrites(diyaGlToScenario(book, lines, "ltd"), endDate.getUTCFullYear() - 1, yearEndMonth);
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const writes = cellWrites(scenario, endDate.getUTCFullYear() - 1, yearEndMonth);
 
   const files = [];
   for (const templateFile of productMeta.template.files) {
@@ -74,6 +85,12 @@ async function packageTheGeneratePathComposes(book, lines, taxYearName, yearEndM
       buffer = await setFullCalcOnLoad(buffer);
     }
     files.push({ name: templateFile, bytes: buffer });
+  }
+
+  const reader = resultsReader(calculateLinkCells(book, lines, "ltd", taxData, scenario));
+  for (const name of LINK_ORDER.ltd) {
+    const file = files.find((entry) => entry.name === name);
+    file.bytes = (await refreshWorkbookLinkCaches(file.bytes, reader)).bytes;
   }
   return files;
 }
@@ -249,6 +266,57 @@ describe("the Company package for a year end that moves the month tabs", () => {
     // Excel serial 46326 is 31 October 2026.
     expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(46326);
   });
+});
+
+// TXN-0918, the cash top-up's counter leg, sits two calendar months after
+// the master's own period start (April 2025 to June 2025), so it lands on
+// whichever tab sits at that same period-relative position once the year
+// end shifts every date -- monthTabOrder(yearEndMonth) names the twelve
+// tabs in the order cellWrites' own shiftDate puts them in, so position 0
+// is always the opening tab and position 2 is always the counter leg's,
+// whatever year end generates the package. isLtdOpeningBankLine's period
+// start used to be reconstructed from targetStartYear and yearEndMonth,
+// which drifted from cellWrites' own shiftDate arithmetic whenever the
+// month shift crossed a calendar year boundary shiftDate does not (see
+// app/products/ltd.js) -- every year end here but March exercises that.
+describe("the BC gate holds at every year end the generator supports", () => {
+  const { book, lines } = bookAt(MARCH_BOOK);
+
+  // March: the templates' own native tab order (LT-T25's own proof). May:
+  // the year end that first exposed the drift. June and February: two of
+  // the three representative rewrite classes generate-ltd.yml's own
+  // reconciliation matrix runs (the third, the latest year end, is March
+  // or June depending on when this runs).
+  const YEAR_ENDS = [3, 5, 6, 2];
+
+  for (const yearEndMonth of YEAR_ENDS) {
+    it(`keeps Currentaccount's opening balance and the counter leg's transfer apart at a year end in month ${yearEndMonth}`, async () => {
+      const composed = await packageTheGeneratePathComposes(book, lines, "ltd-2025", yearEndMonth);
+      const currentAccount = workbookNamed(composed, "Currentaccount.xlsx");
+
+      const tabs = monthTabOrder(yearEndMonth);
+      const openingTab = tabs[0];
+      const transferTab = tabs[2];
+      const priorTab = tabs[1];
+
+      const opening = await cellValue(currentAccount, openingTab, "A1");
+      expect(typeof opening).toBe("number");
+      expect(opening).toBeGreaterThan(0);
+
+      const priorClosing = await cellValue(currentAccount, priorTab, "A2");
+      const transferTabOpening = await cellValue(currentAccount, transferTab, "A1");
+      expect(transferTabOpening).toBe(priorClosing);
+      expect(transferTabOpening).not.toBe(100);
+
+      const { xml, sharedStrings } = await sheetXml(currentAccount, transferTab);
+      let transferRow = null;
+      for (let row = 6; row <= 300 && transferRow === null; row++) {
+        if (readCellValue(xml, `W${row}`, sharedStrings) === "BC") transferRow = row;
+      }
+      expect(transferRow, `no ${transferTab} payment row is coded BC`).not.toBeNull();
+      expect(readCellValue(xml, `X${transferRow}`, sharedStrings)).toBe(100);
+    }, 600000);
+  }
 });
 
 describe("the tax data file a company's year end names", () => {

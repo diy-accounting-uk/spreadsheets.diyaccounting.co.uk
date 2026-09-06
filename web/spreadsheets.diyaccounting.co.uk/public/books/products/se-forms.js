@@ -38,8 +38,18 @@
       // The fetch is already in flight before the page's first paint; a
       // reader who has switched to one of these views before it resolves
       // gets one re-render once the layout arrives, through the same
-      // render() the topbar and every commit already use.
-      if (global.DiyaGlBooksPage && global.DiyaGlBooksPage.helpers) global.DiyaGlBooksPage.helpers.render();
+      // render() the topbar and every commit already use. Gated on a book
+      // already being loaded -- firing this before then re-renders the
+      // empty state itself, wiping whatever ephemeral message (an unknown
+      // deep-link example, an upload error) it was showing at the moment
+      // the fetch resolved.
+      if (
+        global.DiyaGlBooksPage &&
+        global.DiyaGlBooksPage.helpers &&
+        global.document.body.classList.contains("is-loaded")
+      ) {
+        global.DiyaGlBooksPage.helpers.render();
+      }
     })
     .catch(function (err) {
       layoutFailed = err;

@@ -15,51 +15,16 @@
 
 import { changeLinePostingDate } from "../diya-gl-edits.js";
 import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../scenario-extractor.js";
+import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, bankLayout } from "../ltd-layout.js";
 
-// The bank workbook each bank account is kept in, and the transfer letter
-// each workbook stands for -- Currentaccount is BB, so a BB-coded line on
-// any other workbook is a transfer to or from the current account.
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
+// The bank account each transfer letter names: Currentaccount is BB, so a
+// BB-coded line on any other workbook is a transfer to or from the current
+// account.
 const TRANSFER_SIBLING_ACCOUNTS = Object.fromEntries(
   Object.entries(BANK_ACCOUNT_FILES).map(function (entry) {
     return [BANK_TRANSFER_CODES[entry[1]], String(entry[0])];
   }),
 );
-
-// The code letters each workbook's month tabs carry an analysis column
-// for, receipts and payments apart. Cashaccount analyses four fewer
-// receipt codes than the three statement books, and no payment X. These
-// are the lists bankLayout() lays the columns out from in
-// app/lib/ltd-layout.js; cellWrites() refuses to write a code outside them,
-// which is the failure this check catches before the writer runs.
-function analysedCodes(fileName) {
-  const transfers = Object.values(BANK_TRANSFER_CODES).filter(function (code) {
-    return code !== BANK_TRANSFER_CODES[fileName];
-  });
-  if (fileName === "Cashaccount.xlsx") {
-    return {
-      receipts: transfers.concat(["DR", "K", "LDR", "LCR", "DL"]),
-      payments: transfers.concat(["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"]),
-    };
-  }
-  return {
-    receipts: transfers.concat(["DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"]),
-    payments: transfers.concat(["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"]),
-  };
-}
 
 // The Fixed Assets Schedule's rows for assets already owned, one block per
 // class, keyed by the class name a book declares (app/products/ltd.js
@@ -196,8 +161,8 @@ export const LTD_CHECK_SPECS = [
         const fileName = bankFileOf(line);
         if (!fileName) return true;
         if (line.debitCreditCode !== "D" && line.debitCreditCode !== "C") return false;
-        const codes = analysedCodes(fileName);
-        const analysed = line.debitCreditCode === "D" ? codes.receipts : codes.payments;
+        const layout = bankLayout(fileName);
+        const analysed = line.debitCreditCode === "D" ? layout.receiptCodes : layout.paymentCodes;
         return !analysed.includes(line["diya-gl:bankCode"]);
       });
     },
