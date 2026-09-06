@@ -5,8 +5,10 @@
 // to the scenario format that product modules' cellWrites() expect.
 
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, existsSync } from "fs";
+import { join, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { taxYearFileName } from "./tax-year.js";
 import {
   BST_PURCHASE_CODE_MAP,
   SE_PURCHASE_CODE_MAP,
@@ -615,6 +617,44 @@ export function diyaGlToScenario(book, lines, product) {
 }
 
 /**
+ * The depreciation table for a book's own accounting period. book.toml
+ * carries no depreciation rates at all, so unlike the rest of
+ * extractTaxDataFromBook's fields this cannot be bridged from book.tax --
+ * it is read from the app/data/<year>.toml file the period falls in, the
+ * same file --years names and the page's loadTaxDataForBook resolves via
+ * taxYearFileName, so a --data extraction and a --years run agree.
+ *
+ * Resolves app/data's path from import.meta.url lazily, on the first call,
+ * rather than at module load: this module is bundled into the books page
+ * (books-engine.js re-exports diyaGlToScenario from it), where url and path
+ * are stubs that throw when called -- extractTaxDataFromBook itself is
+ * Node-only and never reached from the bundle, but a module-scope call
+ * would run for every importer, browser included.
+ * @param {Object} book - parsed book.toml
+ * @param {"se"|"ltd"} taxRegime
+ * @returns {Object} the tax-year file's [depreciation] table
+ */
+function depreciationForBook(book, taxRegime) {
+  const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
+  if (!periodCoveredEnd) {
+    throw new Error(
+      "book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table",
+    );
+  }
+  const taxYearName = taxYearFileName(new Date(periodCoveredEnd), taxRegime);
+  const taxDataDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");
+  const taxYearPath = resolve(taxDataDir, `${taxYearName}.toml`);
+  if (!existsSync(taxYearPath)) {
+    throw new Error(`no tax-year file covers ${periodCoveredEnd} (looked for ${taxYearName}.toml)`);
+  }
+  const taxYearData = parseTOML(readFileSync(taxYearPath, "utf8"));
+  if (!taxYearData.depreciation) {
+    throw new Error(`${taxYearName}.toml declares no [depreciation] table`);
+  }
+  return taxYearData.depreciation;
+}
+
+/**
  * Extract tax data from book.toml tax section into the format matching app/data/*.toml.
  * Bridges diya-gl field names (camelCase) to tax data field names (snake_case).
  * @param {Object} book - parsed book.toml
@@ -686,15 +726,6 @@ export function extractTaxDataFromBook(book, product) {
       main_rate_limit: ct.mainRateThreshold || 250000,
       marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
     };
-    // Depreciation rates for Ltd asset classes. Not available from book.toml;
-    // use standard accounting rates. These match app/data/ltd-*.toml values.
-    baseTaxData.depreciation = {
-      land_and_property: 0.0,
-      plant_and_machinery: 0.1,
-      fixtures_and_fittings: 0.2,
-      computer_equipment: 0.33,
-      motor_vehicles: 0.25,
-    };
   } else {
     // SE/BST/Taxi use a single writing_down_allowance key
     baseTaxData.capital_allowances = {
@@ -702,6 +733,7 @@ export function extractTaxDataFromBook(book, product) {
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
   }
+  baseTaxData.depreciation = depreciationForBook(book, product === "ltd" ? "ltd" : "se");
 
   return baseTaxData;
 }

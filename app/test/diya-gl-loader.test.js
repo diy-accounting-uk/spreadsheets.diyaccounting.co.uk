@@ -237,4 +237,46 @@ describe("extractTaxDataFromBook", () => {
     const taxData = extractTaxDataFromBook(book, "ltd");
     expect(taxData.capital_allowances.full_expensing_rate).toBe(0);
   });
+
+  // Depreciation rates are not a field book.toml carries, so every product
+  // reads them off the app/data/<year>.toml file its own period falls in --
+  // the same file --years names -- rather than leaving them out (as bst, se
+  // and taxi did) or hardcoding standard rates (as the old ltd branch did).
+  it("derives a depreciation table for bst, se and taxi from the book's own period", () => {
+    const { book } = loadDiyaGlData(BST_DATA); // periodCoveredEnd 2026-03-31 -> se-2025-2026
+    for (const product of [undefined, "bst", "taxi", "se"]) {
+      const taxData = extractTaxDataFromBook(book, product);
+      expect(taxData.depreciation, `product ${product}`).toEqual({
+        land_and_property: 0,
+        plant_and_machinery: 0.1,
+        fixtures_and_fittings: 0.2,
+        computer_equipment: 0.33,
+        motor_vehicles: 0.25,
+      });
+    }
+  });
+
+  it("still derives a depreciation table for ltd, from the ltd tax-year file rather than a hardcoded copy", () => {
+    const { book } = loadDiyaGlData(FULL_DATA); // periodCoveredEnd 2026-03-31 -> ltd-2025
+    const taxData = extractTaxDataFromBook(book, "ltd");
+    expect(taxData.depreciation).toEqual({
+      land_and_property: 0,
+      plant_and_machinery: 0.1,
+      fixtures_and_fittings: 0.2,
+      computer_equipment: 0.33,
+      motor_vehicles: 0.25,
+    });
+  });
+
+  it("throws rather than deriving a depreciation table for a book with no accounting period", () => {
+    const { book } = loadDiyaGlData(BST_DATA);
+    const noPeriod = { ...book, documentInfo: { ...book.documentInfo, periodCoveredEnd: undefined } };
+    expect(() => extractTaxDataFromBook(noPeriod, "se")).toThrow(/periodCoveredEnd/);
+  });
+
+  it("throws rather than deriving a depreciation table for a period no tax-year file covers", () => {
+    const { book } = loadDiyaGlData(BST_DATA);
+    const outOfRange = { ...book, documentInfo: { ...book.documentInfo, periodCoveredEnd: new Date("1999-03-31") } };
+    expect(() => extractTaxDataFromBook(outOfRange, "se")).toThrow(/no tax-year file covers/);
+  });
 });

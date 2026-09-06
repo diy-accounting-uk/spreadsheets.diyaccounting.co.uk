@@ -291,8 +291,14 @@
   var moneyFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
   var moneyWholeFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
+  /* The reconciliation compares a money figure pre-rounded at a working
+     precision to absorb float noise and then rounded half up to the penny
+     (canonical-report-value.js's canonicalForUnit, reexported off the engine
+     bundle), not the raw double Intl.NumberFormat would otherwise round on
+     its own: the two can disagree by a penny on a value sitting right on
+     the rounding boundary. */
   function fmtMoney(n) {
-    return moneyFmt.format(n);
+    return moneyFmt.format(Number(SNAPSHOT.context.engine.canonicalForUnit(String(n), "money")));
   }
   function fmtWhole(n) {
     return moneyWholeFmt.format(Math.round(n));
