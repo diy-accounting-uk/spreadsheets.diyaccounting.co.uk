@@ -541,6 +541,66 @@
     );
   }
 
+  // "Profit & Loss Acc!C24" -> ["Profit & Loss Acc", "C24"]
+  function splitSheetCell(reference) {
+    var split = reference.lastIndexOf("!");
+    return [reference.slice(0, split), reference.slice(split + 1)];
+  }
+
+  var PROFIT_BRIDGE_TITLE = "Accounting profit to tax profit bridge";
+
+  // A bridge row's own cell key, only where the snapshot actually carries a
+  // value for it: report-serializer.js links a row to its cell by A1
+  // reference alone, with no read-set check of its own, so a box the sheet's
+  // read set never reaches (SE Short!O38, the SA103S box 10 cell no CELL_MAP
+  // row names) would otherwise key to a "cell/" reference R carries no entry
+  // for.
+  function bridgeCellKey(snap, helpers, reference) {
+    var sheetCell = splitSheetCell(reference);
+    var sheetResults = snap.results && snap.results[sheetCell[0]];
+    return sheetResults && sheetResults[sheetCell[1]] !== undefined ? helpers.cellKey(sheetCell[0], sheetCell[1]) : null;
+  }
+
+  // The bridge (app/products/bst.js profitBridge, report-generator.js's
+  // table) as its own panel: one row a line of the bridge, each keyed to
+  // both the cell it reprints (where the read set carries one) and the
+  // section key report-serializer.js gives that row. The total and residue
+  // rows name no cell of their own, so they carry the section key alone.
+  function renderProfitBridge(snap, state, helpers) {
+    var productMod = snap.context.productMod;
+    var bridge = productMod.profitBridge(snap.results);
+    if (!bridge) return "";
+    var sectionSlug = snap.context.engine.slug(PROFIT_BRIDGE_TITLE);
+    var rows = bridge.rows.map(function (row) {
+      var rowSlug = snap.context.engine.slug(row.label);
+      return {
+        label: row.label,
+        value: row.value,
+        rKeyAttr: helpers.rk(bridgeCellKey(snap, helpers, row.cell), helpers.sectionKey(sectionSlug, rowSlug)),
+      };
+    });
+    rows.push({
+      label: "Tax profit the bridge computes",
+      value: bridge.computed,
+      total: true,
+      rKeyAttr: helpers.rk(helpers.sectionKey(sectionSlug, "tax-profit-the-bridge-computes")),
+    });
+    rows.push({
+      label: "Tax profit the sheet carries",
+      value: bridge.sheetProfit,
+      rKeyAttr: helpers.rk(
+        bridgeCellKey(snap, helpers, bridge.sheetCell),
+        helpers.sectionKey(sectionSlug, "tax-profit-the-sheet-carries"),
+      ),
+    });
+    rows.push({
+      label: "Residue",
+      value: bridge.residue,
+      rKeyAttr: helpers.rk(helpers.sectionKey(sectionSlug, "residue")),
+    });
+    return '<div class="panel-card panel-form-width"><h3>' + helpers.esc(PROFIT_BRIDGE_TITLE) + "</h3>" + helpers.kvRows(rows) + "</div>";
+  }
+
   function renderIncomeTaxForm(snap, state, helpers) {
     var t = snap.incomeTax;
     var sheet = snap.context.productMod.TAX_SHEET;
@@ -768,7 +828,14 @@
       { id: "stock", label: "Stock", sheets: "PurchasesStock", render: renderStock },
       { id: "debtors-creditors", label: "Debtors/Creditors", sheets: "Debtors & Creditors", render: renderDebtorsCreditors },
       { id: "fixed-assets", label: "Fixed Assets", sheets: "Fixed Assets", render: renderFixedAssets },
-      { id: "income-tax", label: "Income Tax", sheets: "Income Tax", render: renderIncomeTaxForm },
+      {
+        id: "income-tax",
+        label: "Income Tax",
+        sheets: "Income Tax",
+        render: function (snap, state, helpers) {
+          return renderIncomeTaxForm(snap, state, helpers) + renderProfitBridge(snap, state, helpers);
+        },
+      },
       {
         id: "sa103s",
         label: "SA103S",
