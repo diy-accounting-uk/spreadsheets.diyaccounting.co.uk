@@ -83,6 +83,28 @@
   margin-top: 0.4rem;
 }
 
+/* The mileage-and-CIS strip under a month's summary grid: the same
+   label/value grid the month card's own figures use, ruled off above so it
+   reads as the sheet's own extra row rather than part of the summary. */
+.month-card-strip {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.6rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--rule-faint);
+  font-size: 0.8rem;
+}
+
+.month-card-strip .figure-label {
+  color: var(--ink-faint);
+}
+
+.month-card-strip .figure-value {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
 /* The VAT hub table, under the five return forms: a disclosure, closed
    until a reader asks for the workings behind a box. */
 .vat-interface {

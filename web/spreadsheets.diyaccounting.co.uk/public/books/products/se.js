@@ -1314,6 +1314,49 @@
     );
   }
 
+  // ============================== the month-card mileage-and-CIS strip ==============================
+
+  // Six figures on the two journals' own month tabs that no category column,
+  // P&L row or VAT box carries through to a rendered view (verified against
+  // the template): Purchases C2 pools the month's own mileage-log column
+  // with the Sales month's D1 into a running total of business miles;
+  // Purchases G2 bands that total at the Admin approved rates into the
+  // month's own mileage claim, and A2 carries the claim on to the next
+  // month (C2 = <prior>!C2 + D1 + [1]<month>!$D$1; G2 the IF() band; A2 =
+  // G2 + <prior>!A2, first month A2 = G2). Sales W1 is a month's own CIS
+  // suffered on its sales (SUM(W5:W300)) and X1 carries it to the next
+  // month (X1 = W1 + <prior>!X1, first month X1 = W1). Purchases AD1 is the
+  // month's own CIS certificates total, the tax withheld on subcontractor
+  // payments (SUM(AD5:AD300)).
+  var MONTH_CARD_ROWS = [
+    { label: "Business miles to date", sheet: "Purchases.xlsx", cell: "C2" },
+    { label: "Mileage claim this month", sheet: "Purchases.xlsx", cell: "G2" },
+    { label: "Mileage claim to date", sheet: "Purchases.xlsx", cell: "A2" },
+    { label: "CIS suffered", sheet: "Sales.xlsx", cell: "W1" },
+    { label: "CIS suffered to date", sheet: "Sales.xlsx", cell: "X1" },
+    { label: "CIS deducted", sheet: "Purchases.xlsx", cell: "AD1" },
+  ];
+
+  // The shell's month-card hook: one row a figure, its label, the value
+  // formatted in the cell's own unit (miles a plain count, everything else
+  // money) and the r-key a blank cell carries none of, the same trim-aware
+  // test cellRk uses everywhere else in this manifest.
+  function monthCardRows(snap, monthIndex, helpers) {
+    var month = snap.months[monthIndex];
+    if (!month) return [];
+    var productMod = snap.context.productMod;
+    return MONTH_CARD_ROWS.map(function (row) {
+      var sheet = row.sheet + "!" + month.label;
+      var sheetResults = snap.results[sheet];
+      var value = sheetResults ? sheetResults[row.cell] : undefined;
+      return {
+        label: row.label,
+        value: formatByUnit(value, unitOf(productMod, sheet, row.cell), helpers),
+        rkAttr: cellRk(snap, helpers, sheet, row.cell),
+      };
+    });
+  }
+
   // ============================== the VAT interface ==============================
 
   // The hub table the five return forms read: one row per VAT period in date
@@ -1533,6 +1576,7 @@
       alwaysHidden: [POSTED_TOTAL_KEY],
       composite: [],
       monthlyCell: monthlyCell,
+      monthCardRows: monthCardRows,
       summary: [
         ["Sales Turnover", "sales", true],
         ["Gross Profit", "grossProfit"],
