@@ -79,9 +79,13 @@
     return v === undefined || v === null || (typeof v === "string" && v.trim() === "");
   }
 
+  // A box's cell carries two keys when CELL_MAP names it: its own, and the
+  // section key the report gives the row that reprints it. rkFor pairs them
+  // from CELL_MAP itself; a cell CELL_MAP does not name gets the cell key
+  // alone.
   function keyAttrFor(helpers, ref) {
     var parts = splitRef(ref);
-    return helpers.rk(helpers.cellKey(parts[0], parts[1]));
+    return helpers.rkFor(resultsKeyFor(parts[0]), parts[1]) || helpers.rk(helpers.cellKey(parts[0], parts[1]));
   }
 
   // What one box prints: the amount (already formatted, "" for a blank
@@ -249,11 +253,30 @@
     return new Date(EXCEL_EPOCH_MS + serial * MS_PER_DAY).toISOString().slice(0, 10);
   }
 
+  // The period the return covers and the day its payment falls due: the two
+  // dates the sheet carries above box 1, each printed as the date it names
+  // rather than the serial the cell holds. They sit above the boxes rather
+  // than among them -- a form row's box is a money box, down to the pound
+  // sign it prints.
+  function dateRow(snap, helpers, v, quarter, cell, label) {
+    var value = rawValue(snap, vatRef(v, quarter, cell));
+    if (typeof value !== "number") return "";
+    return (
+      '<div class="form-period-row"><span class="form-period-label">' +
+      helpers.esc(label) +
+      '</span><span class="form-period-date"' +
+      keyAttrFor(helpers, vatRef(v, quarter, cell)) +
+      ">" +
+      helpers.esc(excelDate(value)) +
+      "</span></div>"
+    );
+  }
+
   function renderVatQuarter(snap, helpers, form, v, quarter) {
-    var periodValue = rawValue(snap, vatRef(v, quarter, v.period));
-    var periodText = typeof periodValue === "number" ? excelDate(periodValue) : "";
-    var heading = "Quarter " + quarter + (periodText ? ", period ending " + periodText : "");
+    var heading = "Quarter " + quarter;
     if (quarter === Math.max.apply(null, v.quarters)) heading += " (" + v.fifthQuarterNote + ")";
+    var dates =
+      dateRow(snap, helpers, v, quarter, v.period, "Period ending") + dateRow(snap, helpers, v, quarter, v.paymentDue, "Payment due by");
     var rows = v.boxes
       .map(function (box) {
         if (!box.cell) {
@@ -277,7 +300,7 @@
         });
       })
       .join("");
-    return form.render(heading, v.notice, form.section("", rows));
+    return form.render(heading, v.notice, '<div class="form-period">' + dates + "</div>" + form.section("", rows));
   }
 
   function renderVat(snap, state, helpers) {
