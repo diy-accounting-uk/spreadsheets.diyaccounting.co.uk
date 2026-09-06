@@ -47,21 +47,6 @@
     return '<div class="editable-field"><label>' + helpers.esc(label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>";
   }
 
-  // A section of CELL_MAP rows as a kv-table, each figure in the unit the
-  // product module gives its cell.
-  function sectionTable(snap, helpers, section) {
-    var productMod = snap.context.productMod;
-    var rows = helpers.sectionRows(section).map(function (row) {
-      return {
-        label: row.label,
-        text: formatByUnit(row.value, unitOf(productMod, row.sheet, row.cell), helpers),
-        rKeyAttr: cellRk(snap, helpers, row.sheet, row.cell),
-        total: row.indent === 0,
-      };
-    });
-    return helpers.kvRows(rows);
-  }
-
   // ============================== the bank book ==============================
 
   function bankViewState(helpers) {
