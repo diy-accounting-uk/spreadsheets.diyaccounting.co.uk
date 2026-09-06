@@ -145,8 +145,14 @@
   // stock values are written into.
   var STOCK_CELLS = { opening: "AB6", closing: "AB30" };
 
-  // The schedule's totals row, in the order a fixed asset note reads.
-  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "I1", "Q1", "K1"];
+  // The schedule's totals row, in the order a fixed asset note reads: cost
+  // first, then the depreciation that takes it to net book value, then the
+  // capital allowances the return claims, then the year's disposals.
+  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "X1", "Y1", "Z1"];
+  // The schedule against the journals: what the register lists, what the
+  // sales and purchase journals carry, and the difference between them.
+  var FA_RECONCILIATION_SHEET = "Fixedassets.xlsx!FAreconciliation";
+  var FA_RECONCILIATION_CELLS = ["E11", "E13", "E15", "K11", "K13", "K15"];
   // One hire purchase agreement a row, at the two rows the writer fills.
   var HP_ROWS = [8, 10];
   var HP_COLUMNS = { monthlyPayment: "I", capital: "J", interest: "K" };
@@ -571,7 +577,9 @@
     var sheetResults = snap.results[sheet];
     if (!sheetResults) return "";
     var value = sheetResults[cell];
-    if (value === undefined || value === null || value === "") return "";
+    // A sheet blank arrives as a space, which R drops the same as an absent
+    // cell, so it earns no key either.
+    if (value === undefined || value === null || String(value).trim() === "") return "";
     return helpers.rkFor(sheet, cell) || helpers.rk(helpers.cellKey(qualified(sheet), cell));
   }
 
@@ -587,7 +595,7 @@
   }
 
   function formatByUnit(value, unit, helpers) {
-    if (value === undefined || value === null || value === "") return "—";
+    if (value === undefined || value === null || String(value).trim() === "") return "—";
     if (unit === "text") return helpers.esc(String(value));
     if (typeof value !== "number") return helpers.esc(String(value));
     if (unit === "rate") return helpers.fmtRate(value);
@@ -865,6 +873,14 @@
       };
     });
 
+    var reconciliationRows = FA_RECONCILIATION_CELLS.map(function (cell) {
+      return {
+        label: labelFor(productMod, FA_RECONCILIATION_SHEET, cell, FA_RECONCILIATION_SHEET + "!" + cell),
+        value: cellValue(snap.results, FA_RECONCILIATION_SHEET, cell),
+        rKeyAttr: cellRk(snap, helpers, FA_RECONCILIATION_SHEET, cell),
+      };
+    });
+
     var agreements = assets.agreements.length
       ? assets.agreements
           .map(function (agreement) {
@@ -910,6 +926,9 @@
       "</tbody></table></div>" +
       '<div class="panel-card"><h3>The schedule\'s own totals</h3>' +
       helpers.kvRows(scheduleRows) +
+      "</div>" +
+      '<div class="panel-card"><h3>The schedule against the journals</h3>' +
+      helpers.kvRows(reconciliationRows) +
       "</div>" +
       '<div class="panel-card"><h3>Hire purchase</h3><div class="se-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
@@ -969,26 +988,27 @@
     return monthKey;
   }
 
-  // The month tabs' own opening and closing balances. Only the last month's
-  // closing is a figure the report carries -- A2 on the March tab, the one
-  // cell the read scope takes off each bank workbook.
+  // The month tabs' own opening and closing balances. Each month's opening is
+  // A1 on its own tab and its closing A2, so every cell the read scope takes
+  // off a bank workbook carries its key.
   function renderBalances(snap, helpers, account) {
     var months = account.months;
     var rows = months
-      .map(function (month, index) {
-        var closingRk =
-          index === months.length - 1 ? cellRk(snap, helpers, account.file + "!" + monthLabelOf(snap, month.month), "A2") : "";
+      .map(function (month) {
+        var tab = account.file + "!" + monthLabelOf(snap, month.month);
         return (
           "<tr><th>" +
           helpers.esc(monthLabelOf(snap, month.month)) +
-          '</th><td class="num">' +
+          '</th><td class="num"' +
+          cellRk(snap, helpers, tab, "A1") +
+          ">" +
           helpers.fmtMoney(month.opening) +
           '</td><td class="num">' +
           helpers.fmtMoney(month.receipts) +
           '</td><td class="num">' +
           helpers.fmtMoney(month.payments) +
           '</td><td class="num"' +
-          closingRk +
+          cellRk(snap, helpers, tab, "A2") +
           ">" +
           helpers.fmtMoney(month.closing) +
           "</td></tr>"
@@ -1294,6 +1314,67 @@
     );
   }
 
+  // ============================== the VAT interface ==============================
+
+  // The hub table the five return forms read: one row per VAT period in date
+  // order, the two periods before the accounting year and the three after it
+  // included. D, F, H and J are the period's own sales and purchases, net and
+  // VAT; E, G, I and K sum each period with the two before it, which is the
+  // figure the return's box picks up. The first two rows close no quarter, so
+  // the sheet leaves their quarter columns empty.
+  var VATINTERFACE_SHEET = "Vat.xlsx!Vatinterface";
+  var VATINTERFACE_FIRST_ROW = 4;
+  var VATINTERFACE_LAST_ROW = 20;
+  var VATINTERFACE_COLUMNS = [
+    ["B", "Period ending"],
+    ["C", "Final date for VAT payment"],
+    ["D", "Month sales"],
+    ["E", "Quarter sales net of VAT"],
+    ["F", "Month VAT output"],
+    ["G", "Quarter VAT due, sales"],
+    ["H", "Month purchases"],
+    ["I", "Quarter purchases net of VAT"],
+    ["J", "Month VAT input"],
+    ["K", "Quarter VAT reclaimed, purchases"],
+    ["M", "Flat rate"],
+  ];
+
+  function renderVatInterface(snap, helpers) {
+    var productMod = snap.context.productMod;
+    var sheetResults = snap.results[VATINTERFACE_SHEET];
+    if (!sheetResults) return "";
+    var head = VATINTERFACE_COLUMNS.map(function (column) {
+      return "<th>" + helpers.esc(column[1]) + "</th>";
+    }).join("");
+    var body = "";
+    for (var row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+      body += "<tr>" + vatInterfaceRow(snap, helpers, productMod, row) + "</tr>";
+    }
+    return (
+      '<details class="vat-interface"><summary>The interface table behind these five returns</summary>' +
+      '<p class="view-lede">Read-only. Each return looks its boxes up against the row whose period it names.</p>' +
+      '<div class="se-months-scroll"><table class="register-table"><thead><tr>' +
+      head +
+      "</tr></thead><tbody>" +
+      body +
+      "</tbody></table></div></details>"
+    );
+  }
+
+  function vatInterfaceRow(snap, helpers, productMod, row) {
+    var sheetResults = snap.results[VATINTERFACE_SHEET];
+    return VATINTERFACE_COLUMNS.map(function (column) {
+      var cell = column[0] + row;
+      return (
+        '<td class="num"' +
+        cellRk(snap, helpers, VATINTERFACE_SHEET, cell) +
+        ">" +
+        formatByUnit(sheetResults[cell], unitOf(productMod, VATINTERFACE_SHEET, cell), helpers) +
+        "</td>"
+      );
+    }).join("");
+  }
+
   // ============================== book details ==============================
 
   function renderBusinessDetails(snap, state, helpers) {
@@ -1421,9 +1502,9 @@
       {
         id: "vat",
         label: "VAT return",
-        sheets: "VATQtr1–5",
+        sheets: "VATQtr1–5, Vatinterface",
         render: function (snap, state, helpers) {
-          return global.DiyaGlSeForms.renderVat(snap, state, helpers);
+          return global.DiyaGlSeForms.renderVat(snap, state, helpers) + renderVatInterface(snap, helpers);
         },
       },
       {

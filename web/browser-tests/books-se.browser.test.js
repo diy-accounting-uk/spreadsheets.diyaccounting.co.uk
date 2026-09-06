@@ -19,6 +19,7 @@ import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 const BOOK_DIR = "examples/precision-code-ltd/advanced";
 const FEATURED_EXAMPLE = "se-scenario-advanced";
 const OPEN_MONTH = "2025-04";
@@ -27,6 +28,12 @@ const SE_EXAMPLES = JSON.parse(fs.readFileSync(path.join(process.cwd(), "scripts
 
 const TURNOVER_KEY = "cell/Financialaccounts.xlsx!Profit & Loss Account!B9";
 const BANK_CLOSING_KEY = "cell/Bank.xlsx!Mar!A2";
+const BANK_OPENING_KEY = "cell/Bank.xlsx!Mar!A1";
+const CASH_OPENING_KEY = "cell/Cash.xlsx!Mar!A1";
+// The interface's first and last period rows: the two months before the
+// accounting year opens and the third one after it closes.
+const VATINTERFACE_FIRST_ROW = 4;
+const VATINTERFACE_LAST_ROW = 20;
 
 let closeServer;
 let baseUrl;
@@ -64,6 +71,12 @@ async function openExample(page, key) {
 
 function money(text) {
   return Number(String(text).replace(/[£,\s]/g, ""));
+}
+
+// Excel keeps a date as the days since 1899-12-30; the page prints the day
+// the serial names, so a date cell meets its report figure on the day.
+function excelDate(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + serial * 86400000).toISOString().slice(0, 10);
 }
 
 // S2 for the featured book, computed under the Self Employed package.
@@ -163,6 +176,85 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
 
     await page.locator('[data-account="1220"]').click();
     await expect(page.locator(`#view-root [data-r-key*="cell/Cash.xlsx!Mar!A2"]`)).toHaveCount(1);
+  });
+
+  test("the bank book's opening balances are the month tabs' own cells", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+    await page.locator('.tab-btn[data-view="bank"]').click();
+
+    const opening = page.locator(`#view-root [data-r-key*="${BANK_OPENING_KEY}"]`);
+    await expect(opening).toHaveCount(1);
+    const expected = reportFigure(BANK_OPENING_KEY);
+    expect(Math.abs(money(await opening.innerText()) - expected) < 0.005).toBe(true);
+    // Breakability: the same comparison against a corrupted report figure fails.
+    expect(Math.abs(money(await opening.innerText()) - (expected + 0.01)) < 0.005).toBe(false);
+
+    // Every month prints an opening balance; March's is the one the read
+    // scope carries, so it is the one that takes a key.
+    const balances = page.locator("#view-root .register-table").first();
+    expect(await balances.locator("tbody tr").count()).toBe(12);
+
+    await page.locator('[data-account="1220"]').click();
+    const cashOpening = page.locator(`#view-root [data-r-key*="${CASH_OPENING_KEY}"]`);
+    await expect(cashOpening).toHaveCount(1);
+    expect(Math.abs(money(await cashOpening.innerText()) - reportFigure(CASH_OPENING_KEY)) < 0.005).toBe(true);
+  });
+
+  test("each VAT return names the period and the payment date its own sheet carries", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+    await page.locator('.tab-btn[data-view="vat"]').click();
+
+    for (const quarter of [1, 2, 3, 4, 5]) {
+      for (const cell of ["G5", "G7"]) {
+        const key = `cell/Vat.xlsx!VATQtr${quarter}!${cell}`;
+        const box = page.locator(`#view-root [data-r-key*="${key}"]`);
+        await expect(box, key).toHaveCount(1);
+        expect((await box.innerText()).trim(), key).toBe(excelDate(reportFigure(key)));
+      }
+    }
+  });
+
+  test("the VAT view carries the interface table under a disclosure", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+    await page.locator('.tab-btn[data-view="vat"]').click();
+
+    const disclosure = page.locator("#view-root details.vat-interface");
+    await expect(disclosure).toHaveCount(1);
+    expect(await disclosure.evaluate((el) => el.open)).toBe(false);
+
+    await disclosure.locator("summary").click();
+    expect(await disclosure.evaluate((el) => el.open)).toBe(true);
+
+    // The first row is the earliest VAT period the interface carries and the
+    // last the latest, each read against the report's own figure for it.
+    for (const row of [VATINTERFACE_FIRST_ROW, VATINTERFACE_LAST_ROW]) {
+      const periodKey = `cell/Vat.xlsx!Vatinterface!B${row}`;
+      const period = disclosure.locator(`[data-r-key*="${periodKey}"]`);
+      await expect(period, periodKey).toHaveCount(1);
+      expect((await period.innerText()).trim(), periodKey).toBe(excelDate(reportFigure(periodKey)));
+
+      for (const column of ["D", "F", "H", "J"]) {
+        const key = `cell/Vat.xlsx!Vatinterface!${column}${row}`;
+        const figure = disclosure.locator(`[data-r-key*="${key}"]`);
+        await expect(figure, key).toHaveCount(1);
+        expect(Math.abs(money(await figure.innerText()) - reportFigure(key)) < 0.005, key).toBe(true);
+      }
+    }
+
+    // The two rows before the first accounting month close no quarter, so
+    // the sheet leaves their quarter columns empty and R carries no entry
+    // for them; every later row carries all four.
+    await expect(disclosure.locator(`[data-r-key*="cell/Vat.xlsx!Vatinterface!E${VATINTERFACE_FIRST_ROW}"]`)).toHaveCount(0);
+    for (const column of ["E", "G", "I", "K"]) {
+      const key = `cell/Vat.xlsx!Vatinterface!${column}${VATINTERFACE_LAST_ROW}`;
+      const figure = disclosure.locator(`[data-r-key*="${key}"]`);
+      await expect(figure, key).toHaveCount(1);
+      expect(Math.abs(money(await figure.innerText()) - reportFigure(key)) < 0.005, key).toBe(true);
+    }
+
+    fs.mkdirSync(screenshotsDir, { recursive: true });
+    await disclosure.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(screenshotsDir, "se-t21-vat-interface.png"), fullPage: false });
   });
 
   test("changing one sale's amount recalculates the whole book", async ({ page }) => {

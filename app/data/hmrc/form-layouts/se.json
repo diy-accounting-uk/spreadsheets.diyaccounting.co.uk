@@ -416,6 +416,7 @@
       "quarters": [1, 2, 3, 4, 5],
       "fifthQuarterNote": "the quarter after the year end",
       "period": "G5",
+      "paymentDue": "G7",
       "boxes": [
         { "box": "1", "label": "VAT due in the period on sales and other outputs", "cell": "G9" },
         {
