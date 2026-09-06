@@ -66,3 +66,46 @@ export function periodShiftMonths(scenario, targetStartYear, yearEndMonth) {
   const targetStartIndex = (targetStartYear + 1) * 12 + (yearEndMonth - 1) - 11;
   return targetStartIndex - (sourceStartYear * 12 + sourceStartMonth);
 }
+
+// The calendar month a book's own accounting period opens in, as a single
+// monthly index (year*12 + zero-based month) so two periods' starts subtract
+// straight into a whole-month gap, years included. documentInfo's own
+// periodCoveredStart is authoritative when a book declares one; a book that
+// does not falls back to the earliest date among its own lines, exactly as
+// postingPeriodStartYear does for a scenario's journals.
+function bookPeriodStartMonthIndex(book, lines) {
+  const declared = book?.documentInfo?.periodCoveredStart;
+  if (declared) {
+    const date = parseDate(declared);
+    return date.getUTCFullYear() * 12 + date.getUTCMonth();
+  }
+  let earliest = null;
+  for (const line of lines ?? []) {
+    if (line.postingDate === undefined) continue;
+    const date = parseDate(line.postingDate);
+    if (earliest === null || date < earliest) earliest = date;
+  }
+  if (earliest === null) return null;
+  return earliest.getUTCFullYear() * 12 + earliest.getUTCMonth();
+}
+
+/**
+ * The whole-month shift, years included, between the accounting period a
+ * fixture's own book declares and the period an export's book declares --
+ * read straight off the two book.tomls rather than passed as a flag, so a
+ * scorecard run needs no separate argument to know which frame the export's
+ * dates landed in.
+ * @param {Object} fixtureBook - the fixture's parsed book.toml
+ * @param {Array} fixtureLines - the fixture's parsed lines.jsonl, for a book
+ *   that declares no period of its own
+ * @param {Object} exportBook - the export's parsed book.toml
+ * @param {Array} exportLines - the export's parsed lines.jsonl
+ * @returns {number} months to shift the fixture's dates by to land in the
+ *   export's own period; 0 when either side's period cannot be read
+ */
+export function bookPeriodShiftMonths(fixtureBook, fixtureLines, exportBook, exportLines) {
+  const fixtureStart = bookPeriodStartMonthIndex(fixtureBook, fixtureLines);
+  const exportStart = bookPeriodStartMonthIndex(exportBook, exportLines);
+  if (fixtureStart === null || exportStart === null) return 0;
+  return exportStart - fixtureStart;
+}
