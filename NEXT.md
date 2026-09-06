@@ -10,7 +10,7 @@ PR #63, #64 and #65 merged to main on 2026-09-06; every product's packages, repo
 reconciliation pages are regenerated on main from the merged writers, prod deployed from the Ltd
 package commit `c97b2c81` through deploy run 34038592549 with the judge on Nova passing all four
 products under the actions role, and `test` is green on main at `39f27536`. Batch `claude/b1-board` (worktree `batch`) collects the board rows below as each verifies; its
-draft PR is #67. CQ-5 is PR #66 on `claude/ops-codeql` (worktree CQ-5). Sub-agents run no LibreOffice and prove JS calculations
+draft PR is #67. Sub-agents run no LibreOffice and prove JS calculations
 against the committed packages' extraction (`report.js --source-dir`). Every worktree lives at
 `../.worktrees/spreadsheets/<row>` on a branch named `claude/<ns>-<topic>` (`CLAUDE.md`'s
 convention, the distinctive part right after `claude/`) while its row is in flight, and the board
@@ -29,14 +29,6 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
   `constructor` and `prototype` segments, but the flagged site is a later recursive assignment
   (the property chain set while walking); apply the same segment check there or build the chain
   with `Object.create(null)` objects. Prove with the unit and shell specs; CodeQL re-scans on push.
-- **CQ-5** (operator): CodeQL is GitHub's default setup here, which analyses every push to main and
-  every PR with no path filter, so a docs-only commit spends a full scan. Default setup cannot take
-  a path filter; the way to get one is an advanced setup: `.github/workflows/codeql.yml` whose
-  `on:` block copies `test.yml`'s (the same `push` branches and `paths`, the `pull_request` branches,
-  the schedule and `workflow_dispatch`, plus the workflow's own file in `paths`), running
-  `github/codeql-action/init` and `analyze` for the languages default setup covers today (`actions`,
-  `java-kotlin`, `javascript-typescript`). Default setup is off since 2026-09-06; the existing alerts (CQ-4) carry over to the new
-  analysis while the categories stay `/language:<lang>`.
 - **SE-T32**: `app/lib/book-checks.js` `REPOST_PREFERRED` names `BasicSoleTrader` and
   `TaxiDriver` only; `settlementSuggestions`' repost helper for an SE purchase therefore falls to
   the chart's first account. Add the `SelfEmployed` entry from SE's chart (the account the
@@ -65,9 +57,7 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | in-flight | code complete in batch PR #67 (`f1ab329a`, `cdd1deb3`); CodeQL rescans on merge |
-| CQ-5 | CodeQL runs on every push, docs-only included; move it from GitHub's default setup to a workflow with `test.yml`'s trigger criteria (the same branch and path filters, schedule and PR trigger) | operator | machine | — | in-flight | PR #66 code complete; codeql runs green, three analyses uploaded |
-| H1 | Merge PR #66 once its codeql run uploads three analyses and the alerts page shows 12, 19, 20 under them | none | human | — | ready-to-start | PR #66's codeql runs are green |
+| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | in-flight | code complete in batch PR #67 (`f1ab329a`, `cdd1deb3`); CodeQL scans the batch under `codeql.yml` |
 | H3 | Merge batch PR #67 once every row in it is code complete and its checks are green | none | human | CQ-4, SE-T32, SE-T33, SE-T35, SE-T36, TX-T21, TX-T22 | blocked-to-start | draft until the last row merges into the batch |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
 | SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
