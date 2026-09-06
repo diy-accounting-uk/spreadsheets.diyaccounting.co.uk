@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from "vitest";
 import JSZip from "jszip";
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -18,6 +18,7 @@ import {
   extractPayrollTransactions,
   extractBook,
   extractMultiFileTransactions,
+  extractLines,
   extractMetadata,
   normaliseLine,
   AdminSheetMissingError,
@@ -28,6 +29,7 @@ import { isTaxiInputCell } from "../lib/anchors/taxi.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
+import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { parse as parseTOML } from "smol-toml";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
@@ -1643,4 +1645,71 @@ describe("CIS both ways on the SE journals", () => {
       ["purchases", "2025-04-07", "JB Plastering", 300],
     ]);
   });
+});
+
+// LT-T25's cash top-up counter leg (TXN-0918 in the master) is a "BC"-coded
+// bank line dated after the period's first day -- a real transfer, not an
+// opening balance. cellWrites() used to take any "BC" line as an opening
+// balance regardless of date, so this line would land nowhere a
+// row-scanning reader looks: not the opening-balance check (which reads
+// only the first tab's own literal value, once) and not the payment rows
+// (the writer never reaches them for a "BC" line). The round trip through
+// the writer and the export is the proof that it does now, on both the
+// Company's own book and the SE subset the leg reaches remapped to "X".
+describe("the counter leg's round trip through the writer and the export", () => {
+  const COUNTER_LEG_FIELDS = [
+    "sourceJournalID",
+    "postingDate",
+    "accountMainID",
+    "amount",
+    "detailComment",
+    "lineItemComment",
+    "documentReference",
+    "diya-gl:bankCode",
+    "debitCreditCode",
+    "diya-gl:bankAccountID",
+  ];
+
+  function pick(line, fields) {
+    return Object.fromEntries(fields.map((field) => [field, line[field]]));
+  }
+
+  async function exportedLinesOf(dir, product) {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, dir));
+    const { files } = await saveWorkbookFiles(book, lines);
+    const stageDir = mkdtempSync(join(tmpdir(), "counter-leg-rt-"));
+    try {
+      for (const file of files) writeFileSync(join(stageDir, file.name), file.bytes);
+      const set = await workbookSetFromDirectory(stageDir);
+      return { originalLines: lines, exportedLines: await extractLines(set, product) };
+    } finally {
+      rmSync(stageDir, { recursive: true, force: true });
+    }
+  }
+
+  const findCounterLeg = (lines) =>
+    lines.find(
+      (line) =>
+        line.sourceJournalID === "bank" &&
+        line.accountMainID === "1200" &&
+        line.amount === 100 &&
+        String(line.postingDate).slice(0, 10) === "2025-06-10",
+    );
+
+  for (const [product, dir] of [
+    ["ltd", "examples/precision-code-ltd/full"],
+    ["se", "examples/precision-code-ltd/advanced"],
+  ]) {
+    it(`brings the ${product} package's counter leg back as the transfer it is, not dropped`, async () => {
+      const { originalLines, exportedLines } = await exportedLinesOf(dir, product);
+      expect(exportedLines.length).toBe(originalLines.length);
+
+      const originalLeg = findCounterLeg(originalLines);
+      expect(originalLeg, "the master's own counter leg").toBeDefined();
+
+      const exportedLeg = findCounterLeg(exportedLines);
+      expect(exportedLeg, "the counter leg comes back as a statement line, not silently dropped").toBeDefined();
+      expect(pick(exportedLeg, COUNTER_LEG_FIELDS)).toEqual(pick(originalLeg, COUNTER_LEG_FIELDS));
+    }, 60000);
+  }
 });
