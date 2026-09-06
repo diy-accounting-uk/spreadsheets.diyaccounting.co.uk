@@ -14,6 +14,7 @@
 // than removing and re-adding is what keeps the rows still.
 
 import { validateBook, validateLines } from "./diya-gl-schema.js";
+import { derivePayrollNetAndAmount } from "./diya-gl-edits.js";
 
 const PAYROLL_FIGURE_FIELDS = {
   grossPay: "diya-gl:grossPay",
@@ -68,14 +69,12 @@ export function changePayrollLine(book, lines, params) {
     changed.detailComment = employee.name;
   }
 
-  const grossPay = changed["diya-gl:grossPay"];
-  changed["diya-gl:netPay"] = grossPay - changed["diya-gl:incomeTax"] - changed["diya-gl:employeeNI"];
-  changed.amount = grossPay;
+  const derived = derivePayrollNetAndAmount(changed);
 
-  const { valid, errors } = validateLines([changed], book);
+  const { valid, errors } = validateLines([derived], book);
   if (!valid) throw new Error(`changePayrollLine would leave line ${entryNumber} invalid: ${errors.join("; ")}`);
 
-  return lines.map((entry) => (entry.entryNumber === entryNumber ? changed : entry));
+  return lines.map((entry) => (entry.entryNumber === entryNumber ? derived : entry));
 }
 
 /**

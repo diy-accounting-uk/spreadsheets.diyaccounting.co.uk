@@ -17,6 +17,8 @@
 // double-entry pair the way a full ledger journal would post it), so adding
 // one line needs no separate counter-leg entry.
 
+import { validateLines } from "./diya-gl-schema.js";
+
 /**
  * Append a sales line. Refuses a line posted to any other journal, so a
  * caller cannot silently add a purchase under this name.
@@ -80,6 +82,60 @@ export function addBankLine(book, lines, params) {
     throw new Error(`addBankLine expects amount to be a number, got "${line.amount}"`);
   }
   return [...lines, line];
+}
+
+/**
+ * Recompute a payroll line's net pay and amount from its own gross pay and
+ * employee deductions. Net is gross less income tax less employee NI, and
+ * amount is the gross -- every payroll line the exporter writes carries
+ * amount === diya-gl:grossPay (xlsx-exporter.js), and diya-gl-loader.js reads
+ * grossPay ahead of amount. Employer NI plays no part in an employee's own
+ * net pay. Shared by addPayrollLine here and changePayrollLine
+ * (diya-gl-edits-ltd.js), so the two edits derive these figures the same way.
+ * @param {Object} line - a payroll line carrying diya-gl:grossPay,
+ *   diya-gl:incomeTax and diya-gl:employeeNI
+ * @returns {Object} a new line with diya-gl:netPay and amount recomputed
+ */
+export function derivePayrollNetAndAmount(line) {
+  const grossPay = line["diya-gl:grossPay"];
+  return {
+    ...line,
+    "diya-gl:netPay": grossPay - line["diya-gl:incomeTax"] - line["diya-gl:employeeNI"],
+    "amount": grossPay,
+  };
+}
+
+/**
+ * Append a payroll line. A payslip reaches its month tab through the
+ * employee it is posted to and the wage account it lands under, so both are
+ * checked here alongside a numeric gross, the figure everything else on the
+ * line derives from. Net pay and amount are recomputed from the line's own
+ * gross, income tax and employee NI rather than trusted from the caller.
+ * @param {Object} book - parsed book.toml, for its employees register and
+ *   declared chart of accounts
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{line: Object}} params - the payroll line to add
+ * @returns {Array} a new lines array with the line appended
+ */
+export function addPayrollLine(book, lines, params) {
+  const { line } = params;
+  if (line.sourceJournalID !== "payroll") {
+    throw new Error(`addPayrollLine expects a line with sourceJournalID "payroll", got "${line.sourceJournalID}"`);
+  }
+  const employeeID = line["diya-gl:employeeID"];
+  if (!(book?.employees || []).some((employee) => employee.employeeID === employeeID)) {
+    throw new Error(`addPayrollLine expects a diya-gl:employeeID declared in the book's own employees, got "${employeeID}"`);
+  }
+  if (typeof line["diya-gl:grossPay"] !== "number" || !Number.isFinite(line["diya-gl:grossPay"])) {
+    throw new Error(`addPayrollLine expects diya-gl:grossPay to be a number, got "${line["diya-gl:grossPay"]}"`);
+  }
+  if (!declaredAccountCodes(book).has(line.accountMainID)) {
+    throw new Error(`addPayrollLine expects an accountMainID declared in the book's own chart, got "${line.accountMainID}"`);
+  }
+  const derived = derivePayrollNetAndAmount(line);
+  const { valid, errors } = validateLines([derived], book);
+  if (!valid) throw new Error(`addPayrollLine would add an invalid line: ${errors.join("; ")}`);
+  return [...lines, derived];
 }
 
 /**

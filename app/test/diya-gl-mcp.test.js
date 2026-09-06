@@ -808,3 +808,52 @@ for (const fixture of FIXTURES) {
     });
   });
 }
+
+// ============================================================================
+// addPayrollLine: the edit_lines tool's enum names it, and applying it on the
+// SE Precision Code advanced book behaves the same through the tool layer as
+// diya-gl-edits-payroll.test.js proves it does called directly.
+// ============================================================================
+
+describe("diya-gl MCP: addPayrollLine", () => {
+  it("lists addPayrollLine among edit_lines's known edit names", async () => {
+    const client = startMcpClient();
+    try {
+      await client.request("initialize", { protocolVersion: "2025-06-18" });
+      client.notify("notifications/initialized");
+      const listResult = await client.request("tools/list");
+      const editTool = listResult.tools.find((tool) => tool.name === "edit_lines");
+      expect(editTool.inputSchema.properties.edit.enum).toContain("addPayrollLine");
+    } finally {
+      client.close();
+    }
+  });
+
+  it("adds a payslip through edit_lines: lines.length rises by one and net pay derives from gross less tax and employee NI", async () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "advanced"));
+    const tools = toolLayer(book, lines);
+    const line = {
+      "entryNumber": "TEST-PAYROLL-MCP-1",
+      "sourceJournalID": "payroll",
+      "postingDate": "2025-05-31",
+      "accountMainID": "5101",
+      "documentType": "payslip",
+      "documentReference": "PAY-EMP001-2025-05",
+      "detailComment": "Alice Johnson",
+      "lineItemComment": "Salary May 2025",
+      "taxCode": "OS",
+      "taxRate": 0,
+      "diya-gl:employeeID": "EMP001",
+      "diya-gl:grossPay": 2000,
+      "diya-gl:incomeTax": 300,
+      "diya-gl:employeeNI": 100,
+      "diya-gl:employerNI": 138,
+    };
+    const result = await tools.call("edit_lines", { edit: "addPayrollLine", params: { line } });
+
+    expect(result.lines.length).toBe(lines.length + 1);
+    const added = result.lines.find((entry) => entry.entryNumber === "TEST-PAYROLL-MCP-1");
+    expect(added["diya-gl:netPay"]).toBe(1600);
+    expect(added.amount).toBe(2000);
+  });
+});
