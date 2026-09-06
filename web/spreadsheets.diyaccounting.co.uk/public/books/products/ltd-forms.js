@@ -121,7 +121,9 @@
       // The fetches are in flight before the page's first paint; a reader
       // who reached one of these views first gets one re-render once they
       // land, through the same render() every commit already uses.
-      if (global.DiyaGlBooksPage && global.DiyaGlBooksPage.helpers) global.DiyaGlBooksPage.helpers.render();
+      if (global.DiyaGlBooksPage && global.DiyaGlBooksPage.helpers && global.document.body.classList.contains("is-loaded")) {
+        global.DiyaGlBooksPage.helpers.render();
+      }
     })
     .catch(function (err) {
       loadFailed = err;
