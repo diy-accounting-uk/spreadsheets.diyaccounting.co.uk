@@ -3631,9 +3631,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // years as well as months, so a year end more than twelve months out
     // from the scenario's own period shifts a full year further than a
     // month-only offset would -- the same gap cellWrites moves every
-    // posting date by.
-    const [pkgYear, pkgMonth] = packageYearEnd ? packageYearEnd.split("-").map(Number) : [null, null];
-    const monthOffset = pkgYear ? periodShiftMonths(expected, pkgYear - 1, pkgMonth) : 0;
+    // posting date by. The year end comes off the book's own Admin sheet,
+    // the same as the board minute date shift above, rather than off
+    // packageYearEnd: that argument names the year end the check should
+    // measure the seed against, which is not always the year end the book
+    // in hand was actually built for.
+    const bookYearEnd = results.Admin?.F21 ? dateFromSerial(num(results.Admin.F21)) : null;
+    const monthOffset = bookYearEnd ? periodShiftMonths(expected, bookYearEnd.getUTCFullYear() - 1, bookYearEnd.getUTCMonth() + 1) : 0;
     const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {
       const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
