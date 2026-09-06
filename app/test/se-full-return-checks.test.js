@@ -296,7 +296,14 @@ const SA103F_CORRUPTIONS = [
     143632.058333333,
     [TAXABLE_PROFIT, ADJUSTED_PROFIT, "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99)"],
   ],
-  ["O179", 1000, ["SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106)"]],
+  [
+    "O179",
+    1000,
+    [
+      "SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106)",
+      "Accounting profit to tax profit bridge closes to zero",
+    ],
+  ],
   ["O194", 143632.058333333, [ADJUSTED_PROFIT, TOTAL_TAXABLE_PROFITS]],
   [
     "O199",

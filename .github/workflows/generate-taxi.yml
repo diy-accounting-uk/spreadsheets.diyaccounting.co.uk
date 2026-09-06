@@ -292,7 +292,9 @@ jobs:
       # committed example compare it against the template that produced it.
       - name: Unit tests against the fresh packages and example
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        run: npm test
+        run: |
+          cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
+          npm test
       - name: Build the reconciliation page
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
