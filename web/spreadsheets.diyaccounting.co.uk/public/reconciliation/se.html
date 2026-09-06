@@ -77,17 +77,17 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 869 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 870 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Turnover net of VAT and disposals, capital allowances, the grants uplift, the SA103F reconciliation, VAT boxes for a registered trader and a zero-residue bridge all line up with the headline. Only the small tapered personal allowance is worth a passing look.</p>
+          <p>Indicators are consistent with the headline: VAT-registered with all four quarters carrying VAT, turnover net of the 15,000 disposals at the headline scale, capital allowances explaining the lower taxable profit, tax charged on the profit plus grants, and a zero-residue bridge. Only minor items worth a glance.</p>
           <ul>
-            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): An abated allowance is expected at this income level, but the tapered figure looks unusually low for a profit of 121,513.02 (full taper would exhaust it) — worth a glance, not a fault. [note]</li>
-            <li><strong>Taxable income 119,699.52 vs net profit 121,513.02</strong> (Income tax indicator): Consistent with the stated allowance; noted only because tax of 40,339.81 is a high effective rate driven by that abatement. [note]</li>
+            <li><strong>SA103S net profit 183,429.68 vs profit before tax 171,773.02</strong> (Turnover/profit indicator and self assessment indicator): The two profit figures differ by 11,656.66 with no stated bridging item; worth a glance though the deterministic checks and the zero-residue bridge pass. [note]</li>
+            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): Unusually small tapered allowance for income of ~121.5k (full taper would normally exhaust it); plausible but worth a look. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-06. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -141,7 +141,7 @@
 <tr><td>P&amp;L: Admin lines sum = Total</td><td>149373.64999999994</td><td>149373.65</td><td>+5.820766091346741e-11</td><td>PASS</td></tr>
 <tr><td>VitalTax: annual product sales = P&amp;L Products A+B+C</td><td>335500</td><td>335500</td><td>0</td><td>PASS</td></tr>
 <tr><td>VitalTax: annual direct costs = P&amp;L Materials + Other Direct Costs</td><td>13470</td><td>13470</td><td>0</td><td>PASS</td></tr>
-<tr><td>Motor Expenses</td><td>6434</td><td>6434.25</td><td>+0.25</td><td>PASS</td></tr>
+<tr><td>Motor Expenses</td><td>6434.25</td><td>6434.25</td><td>0</td><td>PASS</td></tr>
 <tr><td>Legal &amp; Professional</td><td>6925</td><td>6925</td><td>0</td><td>PASS</td></tr>
 <tr><td>Purchases: business miles pooled for the year</td><td>1365</td><td>1365</td><td>0</td><td>PASS</td></tr>
 <tr><td>Purchases: mileage claimed = those miles at the tax year's approved rates</td><td>614.25</td><td>614.25</td><td>0</td><td>PASS</td></tr>
@@ -167,6 +167,7 @@
 <tr><td>SA103S: Turnover = P&amp;L Sales</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: total expenses = cost of sales + admin expenses less depreciation</td><td>155770.3166666667</td><td>155770.316666667</td><td>+2.9103830456733704e-10</td><td>PASS</td></tr>
 <tr><td>SA103S: net profit = turnover + other business income - total expenses</td><td>183429.683333333</td><td>183429.683333333</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: net loss = total expenses - turnover - other business income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: Profit for tax = Income Tax E5</td><td>121513.016666666</td><td>121513.016666666</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: Capital allowances (AIA/FYA) = Schedule Q1</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: months of actual trade = P&amp;L months with turnover</td><td>12</td><td>12</td><td>0</td><td>PASS</td></tr>
@@ -260,7 +261,7 @@
 <tr><td>HP: second agreement capital and interest split sums to the monthly payment</td><td>405</td><td>405</td><td>0</td><td>PASS</td></tr>
 <tr><td>HP: long term creditors = the agreements' amounts financed</td><td>20000</td><td>20000</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: HP interest and charges reach the finance line (B31)</td><td>3900</td><td>3900</td><td>0</td><td>PASS</td></tr>
-<tr><td>Bank.xlsx closing balance (Mar!A2)</td><td>181315.43</td><td>181315.43</td><td>0</td><td>PASS</td></tr>
+<tr><td>Bank.xlsx closing balance (Mar!A2)</td><td>181215.43</td><td>181215.43</td><td>0</td><td>PASS</td></tr>
 <tr><td>Cash.xlsx closing balance (Mar!A2)</td><td>480</td><td>480</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L apr col C5 = Sales.xlsx a-coded net</td><td>25333.33</td><td>25333.3333333333</td><td>+0.0033333332976326346</td><td>PASS</td></tr>
 <tr><td>P&amp;L apr col C6 = Sales.xlsx b-coded net</td><td>1800</td><td>1800</td><td>0</td><td>PASS</td></tr>
@@ -883,8 +884,8 @@
 <tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band End = tax data</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>3.5</td><td>3.5</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Small Profits Threshold = tax data</td><td>6845</td><td>6845</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Weekly Rate = tax data</td><td>3.65</td><td>3.65</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Small Profits Threshold = tax data</td><td>7105</td><td>7105</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
@@ -1005,7 +1006,7 @@
 <tbody>
 <tr><td>Apr</td><td class="num">9</td><td class="num">33,400.00</td><td class="num">31</td><td class="num">5,111.25</td><td class="num">16</td><td class="num">82,240.20</td></tr>
 <tr><td>May</td><td class="num">9</td><td class="num">32,920.00</td><td class="num">34</td><td class="num">6,375.00</td><td class="num">11</td><td class="num">47,070.20</td></tr>
-<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">34</td><td class="num">24,657.00</td><td class="num">14</td><td class="num">62,900.20</td></tr>
+<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">34</td><td class="num">24,657.00</td><td class="num">15</td><td class="num">63,000.20</td></tr>
 <tr><td>Jul</td><td class="num">9</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">9,059.25</td><td class="num">12</td><td class="num">50,185.20</td></tr>
 <tr><td>Aug</td><td class="num">10</td><td class="num">36,020.00</td><td class="num">32</td><td class="num">4,405.25</td><td class="num">11</td><td class="num">64,753.37</td></tr>
 <tr><td>Sep</td><td class="num">10</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">13,375.00</td><td class="num">13</td><td class="num">54,011.20</td></tr>
@@ -1015,7 +1016,7 @@
 <tr><td>Jan</td><td class="num">11</td><td class="num">35,440.00</td><td class="num">33</td><td class="num">4,511.25</td><td class="num">12</td><td class="num">56,065.20</td></tr>
 <tr><td>Feb</td><td class="num">9</td><td class="num">34,360.00</td><td class="num">33</td><td class="num">4,396.50</td><td class="num">10</td><td class="num">58,002.70</td></tr>
 <tr><td>Mar</td><td class="num">8</td><td class="num">31,360.00</td><td class="num">31</td><td class="num">3,726.50</td><td class="num">13</td><td class="num">44,222.20</td></tr>
-<tr><td>Year</td><td class="num">112</td><td class="num"><strong>424,900.00</strong></td><td class="num">395</td><td class="num"><strong>134,992.25</strong></td><td class="num">149</td><td class="num"><strong>735,004.57</strong></td></tr>
+<tr><td>Year</td><td class="num">112</td><td class="num"><strong>424,900.00</strong></td><td class="num">395</td><td class="num"><strong>134,992.25</strong></td><td class="num">150</td><td class="num"><strong>735,104.57</strong></td></tr>
 </tbody>
 </table></div>
 <h4>Every entry</h4>
@@ -1677,7 +1678,7 @@
 </table></div>
 </details>
 <details class="recon-details" id="bank-journal">
-<summary>Bank and cash entries: 149 entries, 735,004.57</summary>
+<summary>Bank and cash entries: 150 entries, 735,104.57</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
@@ -1724,6 +1725,7 @@
 <tr><td>2025-06-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-003</td></tr>
 <tr><td>2025-06-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-003</td></tr>
 <tr><td>2025-06-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td><td>BNK-CR-MISC-003</td></tr>
+<tr><td>2025-06-10</td><td>1200</td><td>Cash top-up</td><td>Transfer to cash float</td><td>X</td><td class="num">100.00</td><td>out</td><td>BNK-BC-001</td></tr>
 <tr><td>2025-06-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-003</td></tr>
 <tr><td>2025-06-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-003</td></tr>
 <tr><td>2025-06-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-015</td></tr>
@@ -1997,14 +1999,15 @@
 <tr><td>Profit before tax per the profit and loss account</td><td>Profit &amp; Loss Account!B39</td><td class="num">171,773.02</td></tr>
 <tr><td>Add depreciation charged in the accounts</td><td>Profit &amp; Loss Account!B34</td><td class="num">13,740</td></tr>
 <tr><td>Less grants, taxed as other business income below</td><td>Profit &amp; Loss Account!B11</td><td class="num">-2,083.33</td></tr>
-<tr><td>Less net loss for the year (box 22)</td><td>SE Short!O71</td><td class="num">0</td></tr>
 <tr><td>Less annual investment allowance (box 23)</td><td>SE Short!D80</td><td class="num">-52,500</td></tr>
 <tr><td>Less small-balance allowance (box 24)</td><td>SE Short!D85</td><td class="num">0</td></tr>
 <tr><td>Less other capital allowances (box 25)</td><td>SE Short!O80</td><td class="num">-11,500</td></tr>
 <tr><td>Add balancing charges (box 26)</td><td>SE Short!O85</td><td class="num">0</td></tr>
 <tr><td>Add goods and services for own use (box 27)</td><td>SE Short!D94</td><td class="num">0</td></tr>
-<tr><td>Add grants as other business income (box 30)</td><td>SE Short!O99</td><td class="num">2,083.33</td></tr>
+<tr><td>Less the full return's own box 62 adjustment</td><td>SE Full!D179</td><td class="num">0</td></tr>
+<tr><td>Add back the year's loss, carried forward rather than reducing tax below nil</td><td>SE Full!O179</td><td class="num">0</td></tr>
 <tr><td>Less loss brought forward (box 29)</td><td>SE Short!O94</td><td class="num">0</td></tr>
+<tr><td>Add grants as other business income (box 30)</td><td>SE Short!O99</td><td class="num">2,083.33</td></tr>
 <tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>121,513.02</strong></td></tr>
 <tr><td>Tax profit the sheet carries</td><td>Income Tax!E5</td><td class="num">121,513.02</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
@@ -2092,7 +2095,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less Capital Allowances</td><td class="num">64,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax</td><td class="num">121,685.02</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance</td><td class="num">1,727.49</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance</td><td class="num">119,957.52</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance</td><td class="num">119,957.53</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate</td><td class="num">7,540</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate</td><td class="num">32,903.01</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate</td><td class="num">0</td></tr>
@@ -2150,8 +2153,8 @@
 <tr><td>Basic Band End</td><td class="num">37,700</td></tr>
 <tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
 <tr><td>Higher Band End</td><td class="num">125,140</td></tr>
-<tr><td>NI Class 2 Weekly Rate</td><td class="num">3.5</td></tr>
-<tr><td>NI Class 2 Small Profits Threshold</td><td class="num">6,845</td></tr>
+<tr><td>NI Class 2 Weekly Rate</td><td class="num">3.65</td></tr>
+<tr><td>NI Class 2 Small Profits Threshold</td><td class="num">7,105</td></tr>
 <tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
 <tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
 <tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
@@ -2574,11 +2577,12 @@
 <tr><td>O80</td><td>Other capital allowances (box 25)</td><td>11500</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
 <tr><td>O85</td><td>Balancing charges (box 26)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
 <tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
-<tr><td>D99</td><td><strong>Taxable profit</strong></td><td>119429.683333333</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
+<tr><td>D99</td><td><strong>Net business profit (box 28)</strong></td><td>119429.683333333</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
 <tr><td>O94</td><td>Loss brought forward (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
 <tr><td>O99</td><td>Grants as other business income (box 30)</td><td>2083.33333333333</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
 <tr><td>A33</td><td>Turnover note</td><td>SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td><td>gl-cor:detailComment (sa103s.notes)</td></tr>
-<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>121513.016666666</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>D106</td><td><strong>Net profit for tax calc (box 31)</strong></td><td>121513.016666666</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>O106</td><td>Net loss for tax calc</td><td>0</td><td>gl-cor:amount (sa103s.lossForTax)</td></tr>
 <tr><td>D124</td><td>Total loss to carry forward (box 35)</td><td>0</td><td>gl-cor:amount (sa103s.lossCarriedForward)</td></tr>
 <tr><td>O124</td><td>Deductions by contractors (box 38)</td><td>0</td><td>diya-gl:cisDeduction (sa103s)</td></tr>
 </tbody>
@@ -2715,8 +2719,8 @@
 <tr><td>M11</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
 <tr><td>N12</td><td>Higher Band Start</td><td>37701</td><td></td></tr>
 <tr><td>N13</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
-<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>3.5</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
-<tr><td>N16</td><td>NI Class 2 Small Profits Threshold</td><td>6845</td><td>tax.nationalInsurance.class2SmallProfitsThreshold</td></tr>
+<tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>3.65</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>N16</td><td>NI Class 2 Small Profits Threshold</td><td>7105</td><td>tax.nationalInsurance.class2SmallProfitsThreshold</td></tr>
 <tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
@@ -2746,8 +2750,8 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>A1</td><td></td><td>183605.63</td><td></td></tr>
-<tr><td>A2</td><td></td><td>181315.43</td><td></td></tr>
+<tr><td>A1</td><td></td><td>183505.63</td><td></td></tr>
+<tr><td>A2</td><td></td><td>181215.43</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Cash.xlsx!Mar</h5>
@@ -3768,7 +3772,7 @@
 <tbody>
 <tr><td>Profit from Self Employment</td><td class="num">121,513.02</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">1,813.49</td></tr>
-<tr><td>Taxable Income</td><td class="num">119,699.52</td></tr>
+<tr><td>Taxable Income</td><td class="num">119,699.53</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%)</td><td class="num">7,540</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies</td><td class="num">37,700</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">32,799.81</td></tr>
@@ -3807,11 +3811,12 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25)</td><td class="num">11,500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
-<tr><td><strong>Taxable profit</strong></td><td class="num">119,429.68</td></tr>
+<tr><td><strong>Net business profit (box 28)</strong></td><td class="num">119,429.68</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30)</td><td class="num">2,083.33</td></tr>
 <tr><td>Turnover note</td><td class="num">SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td></tr>
-<tr><td><strong>Net profit for tax calc</strong></td><td class="num">121,513.02</td></tr>
+<tr><td><strong>Net profit for tax calc (box 31)</strong></td><td class="num">121,513.02</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net loss for tax calc</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38)</td><td class="num">0</td></tr>
 </tbody>

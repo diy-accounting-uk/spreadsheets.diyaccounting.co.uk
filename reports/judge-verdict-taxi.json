@@ -1,29 +1,24 @@
 {
   "product": "taxi",
   "verdict": "pass",
-  "summary": "The figures read as a plausible set of owner-driver taxi accounts: £36,000 fares, £3,600 fuel, £1,380 road tax and insurance, an £8,000 vehicle capitalised with a £1,120 writing down allowance, and tax/NI of £4,147 on £28,520 profit. Two presentational oddities are worth a look but do not block the run.",
+  "summary": "Indicators are consistent with the headline: unregistered for VAT with no VAT returns published, running costs taken with mileage deliberately zero, tax charged on a real profit and the bridge residue nil. Only minor unexplained differences between headline sales and turnover, and between the several profit figures, are worth a glance.",
   "concerns": [
     {
-      "figure": "Cost of Sales (vehicle costs) 6,100 vs listed vehicle cost lines 3,600 fuel + 1,380 road tax/insurance + 1,120 capital allowances = 6,100, while Purchase Analysis shows vehicle running costs of 4,980",
-      "where": "Profit & Loss Account B12 and PurchasesMar I2",
-      "why": "The Purchases sheet reports £4,980 of vehicle running costs for the year but the P&L vehicle cost lines only pick up £4,980 (3,600 + 1,380) plus allowances; the two labels agree numerically but the £4,980 figure is not itself shown on the P&L, so a reader reconciling the sheets should confirm which vehicle codes feed which line. No arithmetic gap, purely a traceability point.",
+      "figure": "Turnover 36,045.00 vs sales invoiced 36,545.00",
+      "where": "Turnover indicator against headline scale",
+      "why": "500.00 short of the headline's invoiced sales with no explanation; same order of magnitude so not a scale break, but worth a glance",
       "severity": "note"
     },
     {
-      "figure": "General Admin 480 and Legal & Professional 900 sitting below Gross Profit while road tax and insurance sit in cost of sales",
-      "where": "Profit & Loss Account B16, B18 vs B9",
-      "why": "Classification is consistent with the scenario's code mapping (g and l to general expenses, t to vehicle costs), but a taxi driver with £900 of legal and professional fees against £36,000 of fares is on the high side and is worth a sanity check against the underlying journal. Not a blocker.",
-      "severity": "note"
-    },
-    {
-      "figure": "Repairs & Servicing 0",
-      "where": "Profit & Loss Account B8",
-      "why": "An owner-driver working a full year with £3,600 of fuel would normally incur some servicing or repair cost. The scenario's journal genuinely contains no code for repairs, so the zero is faithful to the input rather than a workbook fault, but it makes the expense profile look thin for the trade.",
+      "figure": "Net profit 28,565.00 vs self assessment starting net profit 29,685.00 and tax profit 29,065.00",
+      "where": "Net profit, self assessment and income tax indicators",
+      "why": "Three different profit figures circulate; the bridge residue is 0.00 and checks pass, but the differing starting points deserve a look",
       "severity": "note"
     }
   ],
   "model": "anthropic.claude-opus-5",
   "region": "us-east-1",
+  "digestHash": "eaee17b6331e5c50a3f9f056ffb9e57d946448ab7c8bd64ef68e9e13939b466d",
   "runs": [
     {
       "file": "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-basic.md",
@@ -32,5 +27,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T13:38:27.999Z"
+  "timestamp": "2026-09-06T03:18:23.646Z"
 }
