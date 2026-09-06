@@ -179,6 +179,13 @@ function copyRuntimeAssets() {
   mkdirSync(resolve(templatesOut, "se"), { recursive: true });
   for (const name of seFiles) cpSync(resolve(seDir, name), resolve(templatesOut, "se", name));
 
+  // The Taxi Driver workbook: one xlsx named by its own meta rather than a
+  // files list.
+  mkdirSync(resolve(templatesOut, "taxi"), { recursive: true });
+  for (const name of ["meta.toml", "taxi-excel.xlsx"]) {
+    cpSync(resolve(ROOT, "app", "templates", "taxi", name), resolve(templatesOut, "taxi", name));
+  }
+
   // Example books, copied under the path the resource loader names them by:
   // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
   // one; an example the page offers is added to this list.
@@ -239,7 +246,7 @@ async function main() {
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
   console.log(
-    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, ${assets.examples} example book(s)`,
+    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.examples} example book(s)`,
   );
 }
 
