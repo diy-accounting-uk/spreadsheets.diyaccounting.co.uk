@@ -2675,15 +2675,11 @@
     openSaveMenu(event && event.currentTarget, current);
   }
 
-  // The four downloads, less the single workbook for a product whose package
-  // is several files.
   function saveMenuItems() {
-    var items = [];
-    if (active.save.singleFile) items.push({ label: "Download " + active.save.workbookName, format: "xlsx" });
-    items.push({ label: "Download package (.zip)", format: "zip" });
-    items.push({ label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" });
-    items.push({ label: "Download books as JSON (.json)", format: "json" });
-    return items;
+    return [
+      { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
+      { label: "Download books as JSON (.json)", format: "json" },
+    ];
   }
 
   function openSaveMenu(anchorEl, current) {
@@ -2740,20 +2736,16 @@
   }
 
   function saveFormatLabel(format) {
-    if (format === "xlsx") return active.save.workbookName;
-    if (format === "zip") return "the package zip";
     if (format === "diya-gl-zip") return "the diya-gl zip";
     if (format === "json") return "the diya-gl JSON";
     return "the download";
   }
 
-  // save.js wraps saveWorkbook/savePackageZip -- the same functions
-  // the CLI and the MCP server write a workbook through -- and
-  // writeDiyaGlZip/writeBookJson -- the same functions export.js writes
-  // through -- behind the engine bundle and a fetch-backed resource loader,
-  // then turns the bytes into a download. Dynamic import keeps this a
-  // plain script: no engine code loads until a save is actually asked for.
-  // The diya-gl formats need R, already sitting on the live snapshot.
+  // save.js wraps writeDiyaGlZip/writeBookJson -- the same functions
+  // export.js writes through -- behind the engine bundle, then turns the
+  // bytes into a download. Dynamic import keeps this a plain script: no
+  // engine code loads until a save is actually asked for. Both formats need
+  // R, already sitting on the live snapshot.
   // The diya-gl zip's fourth file: the same book checks and warnings
   // export.js's --file mode writes as bookchecks.json and the MCP report
   // tool returns alongside R, run over this page's own live book and lines

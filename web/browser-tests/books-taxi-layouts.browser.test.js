@@ -161,7 +161,7 @@ test.describe("DIYA-GL Taxi books page — keyboard-only traversal (E6)", () => 
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(4);
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(2);
     await page.keyboard.press("Escape");
 
     expect(focusRingSamples.length).toBeGreaterThanOrEqual(6);

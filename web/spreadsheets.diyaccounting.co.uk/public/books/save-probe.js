@@ -5,13 +5,15 @@
 //
 // Loads one book through the bundled engine, same as probe.js, then wires
 // two real buttons to save.js -- the exact module shell.js's save controls
-// call. Clicking either button runs the real save path: fetch the template
-// through the resource loader, write the book into it, hand the browser a
-// Blob to download. The result also lands on window.__DIYA_SAVE_RESULT__ so
-// the browser test can read the bytes back without depending on how the
+// call. Clicking either button runs the real save path: build the diya-gl
+// zip or the JSON document, hand the browser a Blob to download. The
+// report each carries is a placeholder ({}), since this probe proves the
+// save mechanism, not the report's own fidelity -- that is books-formats
+// browser test's job. The result also lands on window.__DIYA_SAVE_RESULT__
+// so the browser test can read the bytes back without depending on how the
 // browser's own download UI behaves.
 
-import { parseDiyaGlData } from "./engine/diya-gl-engine.js";
+import { parseDiyaGlData, loadSchemasFrom, loadCanonicalSchemasFrom } from "./engine/diya-gl-engine.js";
 import { browserResourceLoader } from "./bundle-resources.js";
 import { buildSaveArtifact, downloadArtifact } from "./save.js";
 
@@ -32,6 +34,11 @@ function toBase64(bytes) {
 async function loadFixture() {
   const status = document.getElementById("save-probe-status");
   const resources = browserResourceLoader();
+  // The diya-gl zip and JSON writers read field order and typing off the
+  // canonical schemas (diya-gl-canonical.js), which a browser build cannot
+  // read off disk -- probe.js loads the same pair before it validates
+  // anything, and shell.js's own data.js loads them once at first save.
+  await Promise.all([loadSchemasFrom(resources), loadCanonicalSchemasFrom(resources)]);
   const bookToml = await resources.readText(`${FIXTURE}/book.toml`);
   const linesRaw = await resources.readText(`${FIXTURE}/lines.jsonl`);
   const { book, lines } = parseDiyaGlData(bookToml, linesRaw);
@@ -39,8 +46,8 @@ async function loadFixture() {
   currentLines = lines;
 
   status.textContent = `loaded ${lines.length} lines`;
-  document.getElementById("save-xlsx-btn").disabled = false;
-  document.getElementById("save-zip-btn").disabled = false;
+  document.getElementById("save-diya-gl-btn").disabled = false;
+  document.getElementById("save-json-btn").disabled = false;
   document.body.dataset.saveState = "ready";
 }
 
@@ -49,7 +56,7 @@ async function handleSaveClick(format) {
   status.textContent = "saving…";
   document.body.dataset.saveState = "saving";
   try {
-    const artifact = await buildSaveArtifact(currentBook, currentLines, format);
+    const artifact = await buildSaveArtifact(currentBook, currentLines, format, { report: {} });
     downloadArtifact(artifact);
     window.__DIYA_SAVE_RESULT__ = {
       ok: true,
@@ -67,8 +74,8 @@ async function handleSaveClick(format) {
   }
 }
 
-document.getElementById("save-xlsx-btn").addEventListener("click", () => handleSaveClick("xlsx"));
-document.getElementById("save-zip-btn").addEventListener("click", () => handleSaveClick("zip"));
+document.getElementById("save-diya-gl-btn").addEventListener("click", () => handleSaveClick("diya-gl-zip"));
+document.getElementById("save-json-btn").addEventListener("click", () => handleSaveClick("json"));
 
 loadFixture().catch((error) => {
   document.getElementById("save-probe-status").textContent = "load failed";

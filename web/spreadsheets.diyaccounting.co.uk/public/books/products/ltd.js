@@ -857,6 +857,5 @@
     },
     bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
     drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: {} },
-    save: { singleFile: false },
   };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -3,7 +3,7 @@
 
 // web/browser-tests/books-taxi-edits.browser.test.js
 //
-// E1 and E2 from PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md's test approach: the four
+// E1 and E2 from PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md's test approach: the three
 // E1 edit cases and the E2 warning table, driven through the Taxi page.
 //
 // Every E1 assertion anchors in a figure the page renders (never the page's
@@ -15,9 +15,7 @@
 // proved breakable before it is proved fixable.
 
 import { test, expect } from "@playwright/test";
-import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { applyNamedEdit } from "./r-sources.js";
@@ -25,8 +23,6 @@ import { addSaleLine, changeLineQuantity } from "../../app/lib/diya-gl-edits.js"
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const TARGET_DIR = path.join(ROOT, "target", "books-taxi-edits");
-fs.mkdirSync(TARGET_DIR, { recursive: true });
 
 const BASIC_DIR = "examples/basic-taxi-driver/taxi";
 const SP_SIXTY_DIR = "examples/sp-sixty-driving/taxi";
@@ -188,93 +184,6 @@ test.describe("DIYA-GL Taxi books page — E1: add a fare on a day that has one"
       "taxi",
     );
     expect(browserReport).toBe(nodeReport.text);
-  });
-
-  test("the saved workbook carries one row for the day, sum and joined names, which the CLI re-extracts as one line", async ({ page }) => {
-    await openBook(page, /taxi-scenario-basic/);
-    await openMonth(page, "2025-06");
-    await openWeek(page, "2025-06-09");
-    await addFareViaUI(page, "2025-06-11", { amount: 45, detail: "Airport run" });
-    await expect(page.locator("#toast")).toContainText("Added a fare of £45.00");
-
-    await page.click("#save-btn");
-    const item = page.getByRole("menuitem", { name: "Download taxi-excel.xlsx", exact: true });
-    await item.waitFor({ state: "visible" });
-    const [download] = await Promise.all([page.waitForEvent("download"), item.click()]);
-    const stream = await download.createReadStream();
-    const chunks = [];
-    for await (const chunk of stream) chunks.push(chunk);
-    const workbookPath = path.join(TARGET_DIR, "e1a-workbook.xlsx");
-    fs.writeFileSync(workbookPath, Buffer.concat(chunks));
-
-    const outDir = path.join(TARGET_DIR, "e1a-export");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "taxi", "--file", workbookPath, "--output-dir", outDir], {
-      cwd: ROOT,
-      stdio: "pipe",
-    });
-    const lines = fs
-      .readFileSync(path.join(outDir, "lines.jsonl"), "utf-8")
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => JSON.parse(line));
-    const dayLines = lines.filter((l) => l.sourceJournalID === "sales" && l.postingDate === "2025-06-11");
-    expect(dayLines).toHaveLength(1);
-    expect(dayLines[0].amount).toBeCloseTo(245, 2);
-    // The loader sorts a day's lines by entryNumber before the writer joins
-    // their names; the browser's own added line takes "NEW-0001" (edits.js),
-    // which sorts ahead of the existing "TXN-0045" lexically.
-    expect(dayLines[0].detailComment).toBe("Airport run; Daily fares");
-  });
-});
-
-// ── E1b: a fare dated outside the grid refuses the save, by name ───────────
-
-test.describe("DIYA-GL Taxi books page — E1: a fare dated outside the grid refuses the save", () => {
-  test("save names the off-grid date; the helper moves it and the save then succeeds", async ({ page }) => {
-    await openBook(page, /taxi-scenario-basic/);
-
-    await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-      const offGrid = {
-        entryNumber: "OFFGRID-0001",
-        sourceJournalID: "sales",
-        postingDate: "2024-04-01",
-        accountMainID: "4000",
-        amount: 50,
-        documentType: "receipt",
-        detailComment: "Booked before the year started",
-      };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([offGrid]), "test: an off-grid fare");
-    });
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
-
-    // The date sits in a <input type="date"> in this panel, so its value --
-    // not its text content -- carries the date.
-    await expect(page.locator(".takings-offgrid")).toContainText("Booked before the year started");
-    expect(await page.locator('.offgrid-row[data-entry="OFFGRID-0001"] input[type="date"]').inputValue()).toBe("2024-04-01");
-    await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/fail/);
-
-    await page.click("#save-btn");
-    const xlsxItem = page.getByRole("menuitem", { name: "Download taxi-excel.xlsx", exact: true });
-    await xlsxItem.waitFor({ state: "visible" });
-    await xlsxItem.click();
-    await expect(page.locator("#toast")).toContainText("2024-04-01");
-    await expect(page.locator("#toast")).toContainText("Could not generate the download");
-
-    await page.locator('[data-offgrid-helper="book-dates-in-period"]').click();
-    await expect(page.locator("#toast")).toContainText("Moved");
-    await expect(page.locator(".takings-offgrid")).toHaveCount(0);
-    await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/pass/);
-
-    await page.click("#save-btn");
-    await xlsxItem.waitFor({ state: "visible" });
-    const [download] = await Promise.all([page.waitForEvent("download"), xlsxItem.click()]);
-    // The output name follows the year-end naming convention
-    // (Financialaccountsyearto<ddmmyy>.xlsx, CONTEXT_TAXI.md), not the menu
-    // item's own label -- which always names the template file, taxi-excel.xlsx.
-    expect(download.suggestedFilename()).toMatch(/^Financialaccountsyearto\d{6}\.xlsx$/);
-    await expect(page.locator("#toast")).toContainText("Saved");
-    await expect(page.locator("#toast")).not.toContainText("Could not generate");
   });
 });
 
