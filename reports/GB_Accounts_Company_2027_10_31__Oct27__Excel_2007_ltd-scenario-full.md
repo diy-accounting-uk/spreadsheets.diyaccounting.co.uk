@@ -316,11 +316,11 @@ Trade: IT consultancy and software development
 | HP: second agreement capital and interest split sums to the monthly payment | 405 | 405 | 0 | PASS |
 | HP: long term creditors = the agreements' amounts financed | 20000 | 20000 | 0 | PASS |
 | P&L: HP interest and charges reach the Bank Charges line (B36) | 3935 | 3935 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 181315.43 | 181315.43 | 0 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 181215.43 | 181215.43 | 0 | PASS |
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
-| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 181315.43 | 181315.43 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 181215.43 | 181215.43 | 0 | PASS |
 | Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 10275 | 10275 | 0 | PASS |
 | Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 480 | 480 | 0 | PASS |
 | Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 1025 | 1025 | 0 | PASS |
@@ -1354,6 +1354,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Cash Account | 500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors | -2,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Vat | -1,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Corporation Tax | -4,500 |
@@ -1362,11 +1364,14 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -180,702 |
 | **Opening Balances Audit Check** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,315.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Trade Debtors | 7,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,215.43 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 1,025 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 480 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | -100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term | -45,000 |
@@ -2021,6 +2026,8 @@ Journal amounts include VAT at 20%.
 | D24 | Opening: Credit Card Account | 0 | accounts.assets.1230 (opening) |
 | D25 | Opening: Cash Account | 500 | accounts.assets.1220 (opening) |
 | D28 | Opening: Trade Creditors | -2400 | accounts.liabilities.2100 (opening) |
+| D29 | Opening: Net Wages Creditor | 0 | openingBalance.net_wages_due |
+| D30 | Opening: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due |
 | D31 | Opening: Dividends Creditor | 0 | accounts.capital.3200 (opening) |
 | D33 | Opening: Creditor HMRC Vat | -1500 | accounts.liabilities.2200 (opening) |
 | D35 | Opening: Creditor HMRC Corporation Tax | -4500 | accounts.liabilities.2300 (opening) |
@@ -2029,11 +2036,14 @@ Journal amounts include VAT at 20%.
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -180702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
-| EJ22 | Final: Bank Current Account | 181315.43 | accounts.assets.1200 (final) |
+| EJ20 | Final: Trade Debtors | 7900 | accounts.assets.1300 (final) |
+| EJ22 | Final: Bank Current Account | 181215.43 | accounts.assets.1200 (final) |
 | EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
 | EJ24 | Final: Credit Card Account | 1025 | accounts.assets.1230 (final) |
 | EJ25 | Final: Cash Account | 480 | accounts.assets.1220 (final) |
-| EJ26 | Final: Intra Cash & Bank Transfers | -100 | gl-cor:amount (intraTransfers) |
+| EJ26 | Final: Intra Cash & Bank Transfers | 0 | gl-cor:amount (intraTransfers) |
+| EJ29 | Final: Net Wages Creditor | 0 | openingBalance.net_wages_due (final) |
+| EJ30 | Final: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due (final) |
 | EJ31 | Final: Dividends Creditor | 0 | accounts.capital.3200 (final) |
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
@@ -2996,6 +3006,7 @@ Journal amounts include VAT at 20%.
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
 | M49 |  | 46081 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -3003,6 +3014,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-07 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -3010,6 +3022,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-07 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |
@@ -3058,6 +3071,7 @@ Journal amounts include VAT at 20%.
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
 | M49 |  | 46112 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -3065,6 +3079,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-08 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -3072,6 +3087,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-08 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |
@@ -3294,8 +3310,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 183605.63 |  |
-| A2 |  | 181315.43 |  |
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
 
 ### Savingaccount.xlsx!Oct
 

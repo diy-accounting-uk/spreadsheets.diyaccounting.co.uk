@@ -1,36 +1,37 @@
 {
   "product": "ltd",
   "verdict": "pass",
-  "summary": "The accounts read as a credible set for an IT consultancy: £341,283 turnover, all twelve months of sales and purchases present, payroll of £80,976 gross plus £6,926 employer NI, depreciation of £11,740 on the asset note, four VAT quarters with realistic output and input tax, and a balance sheet that carries fixed assets, stock, debtors and bank without a suspense line. Two items are worth a look but neither blocks the run.",
+  "summary": "Indicators are consistent with the headline: turnover net of VAT and disposals fits the journal scale, balance sheet and trial balance balance, VAT boxes are populated for a registered business, and tax is charged on a positive chargeable profit with a zero-residue bridge. Only the unreported CT600 boxes 63-65 are worth a glance.",
   "concerns": [
     {
-      "figure": "Corporation tax £28,028.78 on chargeable profit £147,519.90 (CorporationTax K35 / PubNotes D41)",
-      "where": "Corporation Tax (CT600) section and Fixed Asset Note 'Corporation tax for the year'",
-      "why": "The effective rate is 19.0% of chargeable profit, and the run's own check 'CT: Marginal relief expected (profit > £50K)' reports a WARNING with expected 36,880 against actual 28,028.78. Separately the CT600 sheet shows tax chargeable of £13,995.22 (19% of £73,659 of profit, i.e. roughly half the chargeable profit) while the note and CT summary carry £28,028.78 — the two tax figures in the same report do not describe the same charge, and neither reflects the 25% main rate that would apply to a £147k profit. Worth checking the rate/apportionment logic on the CorporationTax sheet, though the figure is the right order of magnitude and the sign is correct.",
+      "figure": "box 63 \"not reported\", marginal relief \"not reported\", box 65 \"not reported\"",
+      "where": "Corporation tax indicator",
+      "why": "CT600 boxes not read back, so the 29,221.27 charge cannot be traced to the return; worth a glance but not contradicted by anything",
       "severity": "note"
     },
     {
-      "figure": "Profit before tax: £177,215.39 (MnthP&L B45) versus £177,279.90 (PubP&L F49)",
-      "where": "Profit & Loss Account vs Published P&L",
-      "why": "The management P&L adds interest received of £275 while the published P&L and CT600 use gross bank interest of £339.51, giving a £64.51 difference in profit before tax between the two statements of the same year. That is the tax-deducted-at-source element (CT600 AJ154 = 64.51), so it is explicable, but two different PBT figures presented side by side is worth a reviewer's eye.",
+      "figure": "trading margin 0.94",
+      "where": "Directors' report",
+      "why": "Very high margin, but consistent with gross profit 322,496.67 on turnover 341,283.33 for a consultancy with little cost of sales",
       "severity": "note"
     },
     {
-      "figure": "Cash at bank and in hand £250,544 (PubBalSht E12)",
-      "where": "Published Balance Sheet, current assets",
-      "why": "Cash has grown from £30,500 to £250,544 in the year on turnover of £341,283 with only £13,000 of director's loan repayment and no dividends. It is arithmetically supported by the bank sheets (current £238,864 + savings £10,275 + cash £480, less the £1,025 card balance) and is consistent with the scenario's £692,906 bank journal, so it is not implausible, merely a striking cash retention for a consultancy of this size.",
+      "figure": "tax owed 38,292.56 vs charge 29,221.27",
+      "where": "Cash indicator",
+      "why": "Tax creditor exceeds the CT charge; explainable by PAYE/VAT timing creditors, flagged only for a glance",
       "severity": "note"
     }
   ],
   "model": "anthropic.claude-opus-5",
   "region": "us-east-1",
+  "digestHash": "43c6de1a7913479a3ca23e56f1343e437d6ae986d6b9b498ccfd60bf494f3303",
   "runs": [
     {
-      "file": "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-scenario-full.md",
+      "file": "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-scenario-full.md",
       "scenario": "ltd-scenario-full",
-      "yearEnd": "2027-09-30",
-      "status": "RECONCILES (with warnings)"
+      "yearEnd": "2027-10-31",
+      "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T13:46:42.867Z"
+  "timestamp": "2026-09-06T04:24:59.775Z"
 }

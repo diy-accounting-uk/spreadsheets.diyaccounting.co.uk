@@ -82,13 +82,13 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators line up with the headline: VAT boxes are populated for a registered business, net assets equal shareholders' funds, audit cell and profit bridge residue are zero, and tax is charged on a positive chargeable profit at the headline's scale. Only presentational notes, chiefly the unreported CT600 boxes 63 to 65.</p>
+          <p>Indicators are consistent with the headline: turnover net of VAT and disposals fits the journal scale, balance sheet and trial balance balance, VAT boxes are populated for a registered business, and tax is charged on a positive chargeable profit with a zero-residue bridge. Only the unreported CT600 boxes 63-65 are worth a glance.</p>
           <ul>
-            <li><strong>box 63 &quot;not reported&quot;, marginal relief &quot;not reported&quot;, box 65 &quot;not reported&quot;</strong> (Corporation tax indicator): The CT600 boxes are absent from the digest even though a charge of 29,221.27 exists, so the gross-to-net tax trail cannot be read; not a contradiction of the headline. [note]</li>
-            <li><strong>trading margin 0.94</strong> (Directors' report): Margin looks high for a consultancy (gross profit 322,496.67 on turnover 341,283.33 with little cost of sales); worth a glance but consistent with the scenario's low purchase base. [note]</li>
-            <li><strong>owes -0.00 to the members</strong> (Cash at bank commentary): Negative-zero presentation of the directors' loan balance; cosmetic only. [note]</li>
+            <li><strong>box 63 &quot;not reported&quot;, marginal relief &quot;not reported&quot;, box 65 &quot;not reported&quot;</strong> (Corporation tax indicator): CT600 boxes not read back, so the 29,221.27 charge cannot be traced to the return; worth a glance but not contradicted by anything [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report): Very high margin, but consistent with gross profit 322,496.67 on turnover 341,283.33 for a consultancy with little cost of sales [note]</li>
+            <li><strong>tax owed 38,292.56 vs charge 29,221.27</strong> (Cash indicator): Tax creditor exceeds the CT charge; explainable by PAYE/VAT timing creditors, flagged only for a glance [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-06. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -500,11 +500,11 @@
 <tr><td>HP: second agreement capital and interest split sums to the monthly payment</td><td>405</td><td>405</td><td>0</td><td>PASS</td></tr>
 <tr><td>HP: long term creditors = the agreements' amounts financed</td><td>20000</td><td>20000</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: HP interest and charges reach the Bank Charges line (B36)</td><td>3935</td><td>3935</td><td>0</td><td>PASS</td></tr>
-<tr><td>Currentaccount.xlsx: closing balance = opening + receipts - payments</td><td>181315.43</td><td>181315.43</td><td>0</td><td>PASS</td></tr>
+<tr><td>Currentaccount.xlsx: closing balance = opening + receipts - payments</td><td>181215.43</td><td>181215.43</td><td>0</td><td>PASS</td></tr>
 <tr><td>Savingaccount.xlsx: closing balance = opening + receipts - payments</td><td>10275</td><td>10275</td><td>0</td><td>PASS</td></tr>
 <tr><td>Cashaccount.xlsx: closing balance = opening + receipts - payments</td><td>480</td><td>480</td><td>0</td><td>PASS</td></tr>
 <tr><td>Creditcardaccount.xlsx: closing balance = opening + receipts - payments</td><td>1025</td><td>1025</td><td>0</td><td>PASS</td></tr>
-<tr><td>Trial Balance: Currentaccount.xlsx closing balance echo (EJ22)</td><td>181315.43</td><td>181315.43</td><td>0</td><td>PASS</td></tr>
+<tr><td>Trial Balance: Currentaccount.xlsx closing balance echo (EJ22)</td><td>181215.43</td><td>181215.43</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: Savingaccount.xlsx closing balance echo (EJ23)</td><td>10275</td><td>10275</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: Cashaccount.xlsx closing balance echo (EJ25)</td><td>480</td><td>480</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24)</td><td>1025</td><td>1025</td><td>0</td><td>PASS</td></tr>
@@ -1312,7 +1312,7 @@
 <tbody>
 <tr><td>Apr</td><td class="num">9</td><td class="num">33,400.00</td><td class="num">31</td><td class="num">5,111.25</td><td class="num">18</td><td class="num">87,740.20</td></tr>
 <tr><td>May</td><td class="num">9</td><td class="num">32,920.00</td><td class="num">34</td><td class="num">6,375.00</td><td class="num">12</td><td class="num">47,105.20</td></tr>
-<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">34</td><td class="num">24,657.00</td><td class="num">15</td><td class="num">63,080.20</td></tr>
+<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">34</td><td class="num">24,657.00</td><td class="num">16</td><td class="num">63,180.20</td></tr>
 <tr><td>Jul</td><td class="num">9</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">9,059.25</td><td class="num">13</td><td class="num">50,485.20</td></tr>
 <tr><td>Aug</td><td class="num">10</td><td class="num">36,020.00</td><td class="num">32</td><td class="num">4,405.25</td><td class="num">11</td><td class="num">64,753.37</td></tr>
 <tr><td>Sep</td><td class="num">10</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">13,375.00</td><td class="num">14</td><td class="num">54,136.20</td></tr>
@@ -1322,7 +1322,7 @@
 <tr><td>Jan</td><td class="num">11</td><td class="num">35,440.00</td><td class="num">33</td><td class="num">4,511.25</td><td class="num">13</td><td class="num">56,365.20</td></tr>
 <tr><td>Feb</td><td class="num">9</td><td class="num">34,360.00</td><td class="num">33</td><td class="num">4,396.50</td><td class="num">11</td><td class="num">58,242.70</td></tr>
 <tr><td>Mar</td><td class="num">8</td><td class="num">31,360.00</td><td class="num">31</td><td class="num">3,726.50</td><td class="num">15</td><td class="num">49,372.20</td></tr>
-<tr><td>Year</td><td class="num">112</td><td class="num"><strong>424,900.00</strong></td><td class="num">395</td><td class="num"><strong>134,992.25</strong></td><td class="num">161</td><td class="num"><strong>747,454.57</strong></td></tr>
+<tr><td>Year</td><td class="num">112</td><td class="num"><strong>424,900.00</strong></td><td class="num">395</td><td class="num"><strong>134,992.25</strong></td><td class="num">162</td><td class="num"><strong>747,554.57</strong></td></tr>
 </tbody>
 </table></div>
 <h4>Every entry</h4>
@@ -1984,7 +1984,7 @@
 </table></div>
 </details>
 <details class="recon-details" id="bank-journal">
-<summary>Bank and cash entries: 161 entries, 747,454.57</summary>
+<summary>Bank and cash entries: 162 entries, 747,554.57</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
@@ -2034,6 +2034,7 @@
 <tr><td>2025-06-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-003</td></tr>
 <tr><td>2025-06-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-003</td></tr>
 <tr><td>2025-06-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td><td>BNK-CR-MISC-003</td></tr>
+<tr><td>2025-06-10</td><td>1200</td><td>Cash top-up</td><td>Transfer to cash float</td><td>BC</td><td class="num">100.00</td><td>out</td><td>BNK-BC-001</td></tr>
 <tr><td>2025-06-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-003</td></tr>
 <tr><td>2025-06-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-003</td></tr>
 <tr><td>2025-06-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-015</td></tr>
@@ -2122,7 +2123,7 @@
 <tr><td>2025-10-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-007</td></tr>
 <tr><td>2025-10-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-019</td></tr>
 <tr><td>2025-10-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td><td>out</td><td>BNK-X-CC-003</td></tr>
-<tr><td>2025-10-18</td><td>1230</td><td>Trainline</td><td>Train ticket on credit card</td><td>CR</td><td class="num">120.00</td><td>out</td><td>BNK-CC-002</td></tr>
+<tr><td>2025-10-18</td><td>1230</td><td>Premier Inn</td><td>Hotel on credit card</td><td>CR</td><td class="num">120.00</td><td>out</td><td>BNK-CC-002</td></tr>
 <tr><td>2025-10-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">500.00</td><td>in</td><td>BNK-CC-007</td></tr>
 </tbody>
 </table></div>
@@ -2579,6 +2580,8 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Credit Card Account</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Cash Account</td><td class="num">500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors</td><td class="num">-2,400</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Net Wages Creditor</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Other Deductions from Wages</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Dividends Creditor</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Vat</td><td class="num">-1,500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Corporation Tax</td><td class="num">-4,500</td></tr>
@@ -2587,11 +2590,14 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital</td><td class="num">-100</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&amp;L Account</td><td class="num">-180,702</td></tr>
 <tr><td><strong>Opening Balances Audit Check</strong></td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account</td><td class="num">181,315.43</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Trade Debtors</td><td class="num">7,900</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account</td><td class="num">181,215.43</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account</td><td class="num">10,275</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account</td><td class="num">1,025</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account</td><td class="num">480</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash &amp; Bank Transfers</td><td class="num">-100</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash &amp; Bank Transfers</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Net Wages Creditor</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Other Deductions from Wages</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends Creditor</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account</td><td class="num">-13,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term</td><td class="num">-45,000</td></tr>
@@ -3255,6 +3261,8 @@
 <tr><td>D24</td><td>Opening: Credit Card Account</td><td>0</td><td>accounts.assets.1230 (opening)</td></tr>
 <tr><td>D25</td><td>Opening: Cash Account</td><td>500</td><td>accounts.assets.1220 (opening)</td></tr>
 <tr><td>D28</td><td>Opening: Trade Creditors</td><td>-2400</td><td>accounts.liabilities.2100 (opening)</td></tr>
+<tr><td>D29</td><td>Opening: Net Wages Creditor</td><td>0</td><td>openingBalance.net_wages_due</td></tr>
+<tr><td>D30</td><td>Opening: Other Deductions from Wages</td><td>0</td><td>openingBalance.wage_deductions_due</td></tr>
 <tr><td>D31</td><td>Opening: Dividends Creditor</td><td>0</td><td>accounts.capital.3200 (opening)</td></tr>
 <tr><td>D33</td><td>Opening: Creditor HMRC Vat</td><td>-1500</td><td>accounts.liabilities.2200 (opening)</td></tr>
 <tr><td>D35</td><td>Opening: Creditor HMRC Corporation Tax</td><td>-4500</td><td>accounts.liabilities.2300 (opening)</td></tr>
@@ -3263,11 +3271,14 @@
 <tr><td>D42</td><td>Opening: Share Capital</td><td>-100</td><td>accounts.capital.3000 (opening)</td></tr>
 <tr><td>D43</td><td>Opening: Revenue Reserve P&amp;L Account</td><td>-180702</td><td>accounts.capital.3100 (opening)</td></tr>
 <tr><td>D91</td><td><strong>Opening Balances Audit Check</strong></td><td>0</td><td>gl-cor:amount (openingColumnCheck)</td></tr>
-<tr><td>EJ22</td><td>Final: Bank Current Account</td><td>181315.43</td><td>accounts.assets.1200 (final)</td></tr>
+<tr><td>EJ20</td><td>Final: Trade Debtors</td><td>7900</td><td>accounts.assets.1300 (final)</td></tr>
+<tr><td>EJ22</td><td>Final: Bank Current Account</td><td>181215.43</td><td>accounts.assets.1200 (final)</td></tr>
 <tr><td>EJ23</td><td>Final: Bank Savings Account</td><td>10275</td><td>accounts.assets.1210 (final)</td></tr>
 <tr><td>EJ24</td><td>Final: Credit Card Account</td><td>1025</td><td>accounts.assets.1230 (final)</td></tr>
 <tr><td>EJ25</td><td>Final: Cash Account</td><td>480</td><td>accounts.assets.1220 (final)</td></tr>
-<tr><td>EJ26</td><td>Final: Intra Cash &amp; Bank Transfers</td><td>-100</td><td>gl-cor:amount (intraTransfers)</td></tr>
+<tr><td>EJ26</td><td>Final: Intra Cash &amp; Bank Transfers</td><td>0</td><td>gl-cor:amount (intraTransfers)</td></tr>
+<tr><td>EJ29</td><td>Final: Net Wages Creditor</td><td>0</td><td>openingBalance.net_wages_due (final)</td></tr>
+<tr><td>EJ30</td><td>Final: Other Deductions from Wages</td><td>0</td><td>openingBalance.wage_deductions_due (final)</td></tr>
 <tr><td>EJ31</td><td>Final: Dividends Creditor</td><td>0</td><td>accounts.capital.3200 (final)</td></tr>
 <tr><td>EJ39</td><td>Final: Directors Loan Account</td><td>-13000</td><td>accounts.liabilities.2500 (final)</td></tr>
 <tr><td>EJ40</td><td>Final: Creditor Long Term</td><td>-45000</td><td>accounts.liabilities.2600 (final)</td></tr>
@@ -4272,6 +4283,7 @@
 <tr><td>P1</td><td></td><td>0</td><td></td></tr>
 <tr><td>T41</td><td></td><td>0</td><td></td></tr>
 <tr><td>M49</td><td></td><td>46081</td><td></td></tr>
+<tr><td>D51</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
 <tr><td>M51</td><td></td><td>3500</td><td></td></tr>
 <tr><td>N51</td><td></td><td>530</td><td></td></tr>
@@ -4279,6 +4291,7 @@
 <tr><td>R51</td><td></td><td>2770</td><td></td></tr>
 <tr><td>S51</td><td></td><td>PAY-EMP001-2025-07</td><td></td></tr>
 <tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
+<tr><td>D52</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
 <tr><td>M52</td><td></td><td>2200</td><td></td></tr>
 <tr><td>N52</td><td></td><td>270</td><td></td></tr>
@@ -4286,6 +4299,7 @@
 <tr><td>R52</td><td></td><td>1834</td><td></td></tr>
 <tr><td>S52</td><td></td><td>PAY-EMP002-2025-07</td><td></td></tr>
 <tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
+<tr><td>D53</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
 <tr><td>M53</td><td></td><td>1048</td><td></td></tr>
 <tr><td>N53</td><td></td><td>0</td><td></td></tr>
@@ -4335,6 +4349,7 @@
 <tr><td>L15</td><td></td><td>0</td><td></td></tr>
 <tr><td>K15</td><td></td><td>0</td><td></td></tr>
 <tr><td>M49</td><td></td><td>46112</td><td></td></tr>
+<tr><td>D51</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
 <tr><td>M51</td><td></td><td>3500</td><td></td></tr>
 <tr><td>N51</td><td></td><td>530</td><td></td></tr>
@@ -4342,6 +4357,7 @@
 <tr><td>R51</td><td></td><td>2770</td><td></td></tr>
 <tr><td>S51</td><td></td><td>PAY-EMP001-2025-08</td><td></td></tr>
 <tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
+<tr><td>D52</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
 <tr><td>M52</td><td></td><td>2200</td><td></td></tr>
 <tr><td>N52</td><td></td><td>270</td><td></td></tr>
@@ -4349,6 +4365,7 @@
 <tr><td>R52</td><td></td><td>1834</td><td></td></tr>
 <tr><td>S52</td><td></td><td>PAY-EMP002-2025-08</td><td></td></tr>
 <tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
+<tr><td>D53</td><td></td><td>1257L</td><td></td></tr>
 <tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
 <tr><td>M53</td><td></td><td>1048</td><td></td></tr>
 <tr><td>N53</td><td></td><td>0</td><td></td></tr>
@@ -4598,8 +4615,8 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>A1</td><td></td><td>183605.63</td><td></td></tr>
-<tr><td>A2</td><td></td><td>181315.43</td><td></td></tr>
+<tr><td>A1</td><td></td><td>183505.63</td><td></td></tr>
+<tr><td>A2</td><td></td><td>181215.43</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Savingaccount.xlsx!Oct</h5>
