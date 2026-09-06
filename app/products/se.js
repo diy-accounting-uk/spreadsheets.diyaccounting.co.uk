@@ -244,16 +244,17 @@ function skipped(kind, entry, why) {
   return { kind: kind, date: entry.date, code: entry.code, amount: entry.amount, why: why };
 }
 
+// A self-employment year always opens 6 April and closes 5 April, the same
+// month-tab shape a Company keeps for a March year end -- so a scenario's
+// dates shift onto the package's period by whole years only, and the month a
+// date falls in, and the tab it lands on, never move. The calculator lands
+// its own wages-paid dates through the same constant.
+export const SE_YEAR_END_MONTH = 3;
+
 // Every cell the writer puts in the package, and everything it left out, in
 // one pass. targetStartYear is the year the package's tax year opens in,
 // which for a 5 April year end is the year before the one its directory
 // names.
-// A self-employment year always opens 6 April and closes 5 April, the same
-// month-tab shape a Company keeps for a March year end -- so a scenario's
-// dates shift onto the package's period by whole years only, and the month a
-// date falls in, and the tab it lands on, never move.
-const SE_YEAR_END_MONTH = 3;
-
 function composeWrites(scenario, targetStartYear) {
   const skips = [];
   const rate = vatRateFor(scenario);

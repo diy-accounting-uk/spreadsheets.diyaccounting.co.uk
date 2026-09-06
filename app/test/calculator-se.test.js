@@ -28,7 +28,13 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
 import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor, unitFor, cellWrites } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
-import { payslipsWagesPaidCell, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_PERIOD, PAYSLIP_PRINT_CELLS } from "../lib/payslips-layout.js";
+import {
+  payslipsWagesPaidCell,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+} from "../lib/payslips-layout.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -158,6 +164,40 @@ describe("Self Employed engine: payslip dates against a package generated years 
     const bent = checks.find((check) => check.name === `Payslips!Jul ${julDateCell} wages paid date`);
     expect(bent).toBeDefined();
     expect(bent.pass).toBe(false);
+  });
+
+  // The calculator asked for the package's own tax year lands the same dates
+  // the writer does, so the engine's cells and the package's agree without
+  // an overlay: the four cells checkCompliance reads, and I9/M18's join onto
+  // the printed month's wages-paid cell, all come out shifted.
+  it("emits the writer's shifted wages-paid dates when given the package's own tax year", () => {
+    const taxData = { ...TAX_DATA, tax_year: { ...TAX_DATA.tax_year, start: `${TARGET_START_YEAR}-04-06` } };
+    const results = calculateSeResults({}, [], taxData, scenario);
+    const ownYear = calculateSeResults({}, [], TAX_DATA, scenario);
+    const writes = cellWrites(scenario, TARGET_START_YEAR)["Payslips.xlsx"];
+    // The two month tabs the engine carries cell by cell, both of which the
+    // fixture pays wages in.
+    for (const index of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
+      expect((scenario.payroll?.[MONTH_KEYS[index]] || []).length).toBeGreaterThan(0);
+      const tab = MONTH_SHEETS[MONTH_KEYS[index]];
+      const cell = payslipsWagesPaidCell(index);
+      expect(results[`Payslips.xlsx!${tab}`][cell], `${tab}!${cell}`).toBe(writes[tab][cell]);
+      expect(
+        results[`Payslips.xlsx!${tab}`][cell] - ownYear[`Payslips.xlsx!${tab}`][cell],
+        `${tab}!${cell} moved by two years`,
+      ).toBeGreaterThanOrEqual(730);
+    }
+    const printedTab = MONTH_SHEETS[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]];
+    const printed = results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`];
+    expect(printed[PAYSLIP_PRINT_CELLS.periodEnd]).toBe(writes[printedTab][payslipsWagesPaidCell(PAYSLIP_PRINT_PERIOD - 1)]);
+    expect(printed.M18).toBe(printed[PAYSLIP_PRINT_CELLS.periodEnd]);
+    expect(
+      failures(
+        checkCompliance(results, expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END).filter((check) =>
+          DATE_CHECK_PATTERN.test(check.name),
+        ),
+      ),
+    ).toEqual([]);
   });
 
   // se-profit-forecast-checks.test.js built a package this way -- cellWrites

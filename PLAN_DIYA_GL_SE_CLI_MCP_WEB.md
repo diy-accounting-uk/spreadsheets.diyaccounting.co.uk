@@ -75,9 +75,8 @@ keys hub sheets bare and leaf sheets `File.xlsx!Sheet`; the report key is
 `report.js --package se --data` already produces S2 (`generate-se.yml:249`). SE is 5 April
 year end only (`Admin!B17`; the directory name), so the writer never renames tabs.
 
-**The reconciliation.** 842 checks pass on the 2026-04-05 package for
+**The reconciliation.** 869 checks pass on the 2026-04-05 package for
 `se-scenario-advanced` (`reports/GB_Accounts_Self_Employed_2026_04_05__Apr26__Excel_2007_se-scenario-advanced.md`).
-The CONTEXT doc says 683.
 
 **The fixtures.** Three, all carrying `"diya-gl:product" = "SelfEmployed"`:
 
@@ -90,38 +89,17 @@ The CONTEXT doc says 683.
 `examples/se-latest` holds the nine recalculated workbooks of the advanced scenario at the
 latest year end, link caches populated by CI. That is S3 for SE, one scenario, as for BST.
 
-**What cannot happen yet.** `zipKind` returns `unknown` for a nine-file zip
-(`books-interchange.js:144`); the interchange's JSON refuses `product` other than `bst`
-(`:52`); the page's `loadFromFile` builds the book from BST cells in the browser
-(`bst-data.js:1031`); `bst-workbook.js` reads `template.spreadsheet`, which SE's `meta.toml`
-does not declare; `bst-headlines.js` names eighteen BST keys; `books-engine.js` exports one
-product; the MCP server is `diya-gl-bst` with four `"bst"` literals (`diya-gl-tools.js`);
-the SE extractor never reads back the `AD` CIS column the SE writer fills (`xlsx-exporter.js:796`
-reads it for Ltd only, and `app/data/roundtrip-unrepresentable.json` records the gap as if
-the sheet had no such column).
-
-**The HMRC forms today.** SA103S is the `SE Short` sheet, box numbers in columns A and L,
-`D38` = `'Profit & Loss Account'!B9` (box 8), `O64` = `B17+B35-B34` (box 19), `D71` (box 20),
-`D99` (box 27), `D106` (box 30); `D46` (box 10) prints only when turnover exceeds 30,000.
-SA103F is the `SE Full` sheet: `D55` box 15, `D66` = `B14+B16` box 17, `D122` = `B17+B35`
-box 31, `D129` box 47, `D139` box 49, `O154` box 57, `O174` box 64, `O210` box 76, `D231`
-box 81. The VAT return is `Vat.xlsx!VATQtr1..5`: `G5` the period end, `G9` box 1, `G11` box
-2 (static 0), `G13` box 3, `G15` box 4, `G17` box 5, `G21` box 6, `G23` box 7, each a
-`LOOKUP` on `Vatinterface!B:B`. The tax computation is the `Income Tax` sheet, and its `E5`
-is `'SE Full'!O210`, the return's own taxable profit; the P&L's `B39` feeds it through the return.
-
-Against the 2026 forms (the research note `_developers/hmrc-references/hmrc-forms-sole-trader.md`, sources at the end of this section):
-the `SE Full` sheet prints the current SA103F numbering (its `A52` says 15, `A120` 31,
-`A126` 47, `A136` 49, `L206` 76, `A228` 81). The `SE Short` sheet prints a numbering the
-form left behind: its `A35` says 8 for turnover where SA103S 2026 says 9, and every box
-from there to its `L103` (31, the net loss) is one behind the form's (32). The 2026 form
-also carries boxes the sheet has no cell for: 10.1 trading income allowance, 24.1, 25.1,
-25.2, and the losses and NIC boxes 33, 34, 36 and 37. The sheet does print the two others:
-its box 34 at `D124` (`='Business Details'!O55`, the loss to carry forward, the form's 35)
-and its box 37 at `O124` (`=[2]Mar!$X$1`, CIS deductions, the form's 38), neither in
-`CELL_MAP`. The nine expense cells `D46` to `D64` and `O46` to `O60` gate on turnover over a
-literal 30,000, and `A33`'s note on a literal 67,000; the form's permission to give a total
-only is the VAT threshold the sheet already holds at `Admin!F26`.
+**The HMRC forms.** SA103S is the `SE Short` sheet, box numbers in columns A and L, on the
+2026 form's own numbering (T16, SE-T16b): `D38` = `'Profit & Loss Account'!B9` (box 9), `O64`
+= `B17+B35-B34` (box 20), `D71` (box 21), `D99` (box 28), `D106` (box 31), `D124` (box 35),
+`O124` (box 38); `D46` (box 11) prints only when turnover exceeds `Admin!F26`, the VAT
+threshold, not a literal. SA103F is the `SE Full` sheet, still on its current numbering:
+`D55` box 15, `D66` = `B14+B16` box 17, `D122` = `B17+B35` box 31, `D129` box 47, `D139` box
+49, `O154` box 57, `O174` box 64, `O210` box 76, `D231` box 81. The VAT return is
+`Vat.xlsx!VATQtr1..5`: `G5` the period end, `G9` box 1, `G11` box 2 (static 0), `G13` box 3,
+`G15` box 4, `G17` box 5, `G21` box 6, `G23` box 7, each a `LOOKUP` on `Vatinterface!B:B`.
+The tax computation is the `Income Tax` sheet, and its `E5` is `'SE Full'!O210`, the return's
+own taxable profit; the P&L's `B39` feeds it through the return.
 
 ## Specification
 
@@ -409,6 +387,11 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T13 | UX pass at four viewports with the frontend-design skill's questions; axe gate; keyboard run | T7, T8, T12 | Fable | `web/.../books/products/se.js`, `books/se.css`, `web/browser-tests/books-se-layouts.browser.test.js` (new), `playwright.config.js` |
 | T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
 | T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
+| T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | — | Sonnet | `app/lib/book-checks.js`, `app/test/settlement-helpers.test.js` |
+| T33 | The cash and payroll journals render an empty chart in the entries grid | — | Sonnet | `web/.../books/products/se.js`, `web/browser-tests/books-se.browser.test.js` |
+| T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | — | Sonnet | `app/lib/report-indicators.js`, `app/test/judge-reconciliation.test.js` |
+| T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | — | Haiku | `app/lib/product-workbook.js`, `app/lib/xlsx-exporter.js` |
+| T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | — | Haiku | `app/bin/generate.js`, `app/test/generate.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
 | T15 | The SA103 box-to-API mapping as data, keyed by tax year, each entry naming the SE sheet cell or its reason; HMRC's CSV copied beside it with its source; a Node test that every `SE Full` and `SE Short` `CELL_MAP` box has an entry | — | Sonnet | `app/data/hmrc/sa103-mtd-mapping.json` (new), `app/data/hmrc/sa103f_mapping_v3.csv` (new), `app/data/hmrc/SOURCE.md` (new), `app/test/sa103-mtd-mapping.test.js` (new) |
 | T16 | The `SE Short` sheet prints the 2026 SA103S box numbers and gates the nine expense cells and the `A33` note on `Admin!F26` in place of the 30,000 and 67,000 literals; the calculator's threshold follows; `CELL_MAP` gains `D124` and `O124` and its SE Short labels renumber; the CONTEXT doc's SA103S table follows; regenerated and reconciled | T4 | Opus | `app/templates/se/Financialaccounts.xlsx`, `app/lib/calculators/se.js` (the threshold, `A33`, `D124`, `O124`), `app/products/se.js` (SE Short labels, two `CELL_MAP` rows, `profitBridge` labels), `CONTEXT_SELF_EMPLOYED.md`, `app/test/se-full-return-checks.test.js`, `app/test/calculator-se.test.js`, `packages/GB Accounts Self Employed */` (regenerated) |
@@ -664,6 +647,63 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   `examples/<product>-latest/`, because the whole-directory artifact let a later product's commit
   put stale copies of the others' packages back. The SE sidecar tests build their package from the
   template, so a template change no longer reads the committed example as overtyped.
+- SE-T20 `70c4e636` to `0847961b`, merged 2026-09-06: the extractor carries a VAT-registered
+  subset's straddling `diya-gl:vatPeriodEnd` lines beside its own year's, and the loader splits
+  them back out so `buildVatinterface`/`vatReturnBoxes` see them as the TOML does; `applyOffset`
+  shifts a straddling line's period end with its posting date; `report-generator.js`'s `reportAmount`
+  rounds once, half away from zero; the roundtrip scorecard counts a line held outside the journals
+  apart and states which book lacks the straddling rows; the SE page's VAT Q5 carries the
+  straddling entries instead of nil. `examples/precision-code-ltd/{advanced,full}/lines.jsonl` each
+  gain the master's ten straddling lines. `calculator-ltd.test.js` (32 new), `calculator-se.test.js`
+  (19 new), `diya-gl-loader.test.js` (36 new/changed), `report-generator.test.js` (29 new),
+  `verify-roundtrip.test.js` (27 new, LibreOffice-bound).
+- SE-T21 `39afc69a`, `72138cdc`, `1a0a8a42`, merged 2026-09-06: the SE VAT view carries the
+  `Vatinterface` table under a disclosure; every month's balances and each quarter's dates carry
+  their own r-key; `render-unrepresentable/se.json` falls from 958 to 523 keys.
+- SE-T22 `c9ba5f1d`, merged 2026-09-06: `se-2026-2027.toml` carries HMRC's actual 2026/27 Class 2
+  figures (7,105 threshold, 3.65 weekly) in place of placeholder values.
+- SE-T23 `8ce5635b`, `d5d1f789`, merged 2026-09-06: `products/{bst,se,taxi,ltd}.js`'s `fmt()` rounds
+  section values through the shared `canonicalForUnit` (new `app/lib/canonical-report-value.js`)
+  instead of the raw double; `product-fmt-canonical.test.js` (new, 69 cases).
+- SE-T24 `8b2e6ecd`, `aae0abe9`, merged 2026-09-06: `xlsx-exporter.js` numbers each extracted
+  journal from its own prefix and counter (`entry-number-uniqueness.test.js`, new, 53 cases), so an
+  uploaded SE package's lines stay addressable across all four ledgers, not just purchases.
+- SE-T25 `da943d51`, merged 2026-09-06: `drift.js` emits one entry per hub cell, not two under one
+  id, when the cell's link and its own read both drift; `books-page-upload.test.js` (56 new).
+- SE-T26 `52a13743`, `935e4596`, merged 2026-09-06: `scenario-extractor.js` no longer throws on a
+  bank line with neither a debit nor a credit side, so `book-bank-line-has-side` can fire instead
+  of the extraction failing first; `diya-gl-edits.js`'s `changeAmount` moves a payroll line's
+  `grossPay` with it, reading `diya-gl:grossPay` the way `diya-gl-loader.js` does.
+  `diya-gl-edit-recalc.test.js` (43 new), `scenario-extractor.test.js` (changed).
+- SE-T27 `a8824fe6`, `c31426f6`, `8bf24274`, `ab0181e7`, merged 2026-09-06: `checkCompliance` no
+  longer reports spurious mismatches on a loss-making book with no `[expected]` table
+  (`se-loss-no-expected.toml`, new fixture); the JS engine floors `Income Tax!E6` on a loss as the
+  template's own formula does, and the check's comparison floors to match. `calculator-se.test.js`
+  (65+19 new cases across both landings).
+- SE-T28 `1da4449c`, `c5fa3dab`, `8fd5dc00`, `77e4ce08`, `c01beabc`, merged 2026-09-06: `shell.js`
+  gains an optional `monthCardRows` hook; the SE year view's month card carries a mileage-and-CIS
+  strip (Purchases `C2`, `G2`, `A2`, Sales `W1`, `X1`, Purchases `AD1`, verified against the
+  template's own formulas); `render-unrepresentable/se.json` drops the 72 cells the strip now
+  renders and gains back the two profit-bridge rows the coverage sweep found undeclared, net 523
+  to 453; a browser case proves all six figures against June's own CIS-withheld payment.
+- SE-T29 `d6d32bd2`, `957a0830`, merged 2026-09-06: `se.js`'s and `bst.js`'s `cellWrites` shift
+  posting dates into the package's period through the shared `period-shift.js` (`shiftMonths`,
+  `postingPeriodStartYear`, `periodShiftMonths`, lifted out of `ltd.js`), closing the SE-T18 stale
+  A3 pair (`se-latest` no longer carries dates a year off its own stamped year end);
+  `se-period-frame.test.js` rewritten off the bug it used to assert and gains three cases; the A7
+  re-render case bends its own leaf's cached value so it no longer depends on what `se-latest`
+  happens to carry.
+- SE-T30 `ce102f37`, `4c16c859`, merged 2026-09-06: `checkCompliance` derives the same whole-year
+  `monthOffset` `cellWrites` uses and shifts its own expected payslip dates through it, so the four
+  date-bearing payslip checks (period-end `I9`, payment-date `M18`, the Jul/Aug wages-paid dates)
+  hold for any package year end, not only the fixture's own. A no-LibreOffice case in
+  `calculator-se.test.js` proves it against the writer's actual shifted cells.
+- SE-T31 `0af2d958`, `db11a3b6`, merged 2026-09-06: `se-profit-forecast-checks.test.js` (LibreOffice-
+  bound) passes `checkCompliance` the `sePackageYearEnd(taxData)` its own shifted 2023-24-rates
+  package implies, so the corruption cases in that rate year assert against the one check they mean
+  to break rather than inheriting four pre-existing failures; a fast JS-only case in
+  `calculator-se.test.js` proves the omitted-`packageYearEnd` pattern is what breaks a shifted
+  package.
 
 ### Verification ladder
 
@@ -683,11 +723,8 @@ S3 re-pins as a rider on that refresh.
 PAYE and NI computed by the engine for a new payslip (today a payroll line carries its own
 figures, so the payroll view edits amounts and dates and a new entry is typed with its
 deductions); box 1 under the flat-rate scheme, which applies a sector percentage to gross
-turnover the sheet does not hold; Class 2 as a figure, once the year's data carries the
-small profits threshold; the capital account behind SA103F boxes 95 to 99; the Payslip 05
-companion package as its own product on the page; reading the
-straddling VAT entry sheets (`S02Y1` and the rest) back into lines carrying
-`diya-gl:vatPeriodEnd`, which the Ltd extractor does and the SE one does not yet; archiving
+turnover the sheet does not hold; Class 2 as a figure; the capital account behind SA103F
+boxes 95 to 99; the Payslip 05 companion package as its own product on the page; archiving
 CI's Excel-side `report.json` for the two BrickWork scenarios so S3 covers all three books;
 the single-file HTML runner's input list for SE, nine templates at 2.36 MB, which the launch
 plan's phase 1 decides for BST first.
