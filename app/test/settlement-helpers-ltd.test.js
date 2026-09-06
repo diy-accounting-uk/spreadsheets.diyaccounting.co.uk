@@ -77,10 +77,32 @@ describe("the settlements the Precision Code Ltd book is missing", () => {
 
     expect(counts).toEqual({
       "sale-from-receipt": 25,
-      "purchase-from-payment": 20,
+      "purchase-from-payment": 19,
       "receipt-for-sale": 96,
-      "payment-for-purchase": 368,
+      "payment-for-purchase": 367,
     });
+  });
+
+  // The bulk of these 507 are not a matching defect: "Various suppliers" and
+  // "Various customers" bank lines settle many invoices in one lump the
+  // counterparty+amount key cannot decompose, payroll (W), HMRC (RP), the
+  // director's loan (DL) and card/cash transfers (X, BC, BB, K) never carry
+  // a sales or purchases counterpart at all, and most of the smaller named
+  // subscriptions and one-off purchases (GitHub, Costa Coffee, and so on)
+  // were never individually reconciled to a bank line in this fixture. This
+  // is a one-sided helper by design (T6's own docs: "each settlement helper
+  // needs a book with exactly one unsettled half"), not a many-to-one
+  // reconciler, so a book this size is expected to carry a long tail of
+  // genuinely one-sided lines.
+  it("Trainline's credit card charge on 2025-10-18 was Premier Inn's, mislabelled -- fixed at source, not papered over here", () => {
+    const ids = settlementSuggestions({ book, lines }).map((s) => s.id);
+    // TXN-0407 (credit card, £120, 2025-10-18) and TXN-0405 (a Premier Inn
+    // purchase, same amount, same date) matched once the fixture's own
+    // narrative was corrected -- before the fix, TXN-0407 carried "Trainline",
+    // a name no £120 Trainline invoice exists to pair it with, while TXN-0405
+    // sat unmatched under "Premier Inn" for want of a same-named receipt.
+    expect(ids).not.toContain("purchase-from-payment:TXN-0407");
+    expect(ids).not.toContain("payment-for-purchase:TXN-0405");
   });
 });
 

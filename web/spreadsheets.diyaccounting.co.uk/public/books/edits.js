@@ -88,8 +88,17 @@
   function bookChecks(snapshot) {
     var api = requireEngine();
     var taxData = (snapshot.context && snapshot.context.taxData) || null;
-    var results = api.runBookChecks({ book: snapshot.book, lines: snapshot.lines, taxData: taxData }).results;
-    return results.map(function (r) {
+    // results: the calculated accounts (R), which a product warning may
+    // read (book-checks.js's own runBookChecks doc) -- Ltd's dividend
+    // warning needs OpenAccounts and PubP&L off it, and reports every
+    // dividend as within profits, whatever its size, when this is left out.
+    var checkResults = api.runBookChecks({
+      book: snapshot.book,
+      lines: snapshot.lines,
+      taxData: taxData,
+      results: snapshot.results,
+    }).results;
+    return checkResults.map(function (r) {
       var helper = r.helper
         ? {
             title: r.helper.label,
