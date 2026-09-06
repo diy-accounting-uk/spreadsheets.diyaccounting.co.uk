@@ -625,7 +625,7 @@
   // table's name, so a reader tabbing through can scroll it with the arrow
   // keys and hears what it holds.
   function scrollBox(helpers, label, html) {
-    return '<div class="se-months-scroll" role="region" aria-label="' + helpers.esc(label) + '" tabindex="0">' + html + "</div>";
+    return '<div class="se-table-scroll" role="region" aria-label="' + helpers.esc(label) + '" tabindex="0">' + html + "</div>";
   }
 
   // ============================== the views ==============================

@@ -76,17 +76,17 @@
    scrolls inside its own box rather than pushing the page sideways. The
    cells stay on one line so the box scrolls instead of squeezing a name
    onto two. */
-.se-months-scroll {
+.se-table-scroll {
   overflow-x: auto;
   margin-top: 0.75rem;
 }
 
-.se-months-scroll table {
+.se-table-scroll table {
   min-width: 100%;
 }
 
-.se-months-scroll .register-table th,
-.se-months-scroll .register-table td {
+.se-table-scroll .register-table th,
+.se-table-scroll .register-table td {
   white-space: nowrap;
 }
 
