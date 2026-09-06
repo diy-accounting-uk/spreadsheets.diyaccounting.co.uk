@@ -12,22 +12,41 @@
 // later as a cache nobody refreshed.
 
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
-import { buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
+import { buildSheetMap, loadSharedStrings, readCellValue } from "../lib/xlsx-parts.js";
 import { ltdAdminBColumnSerial } from "../lib/generator.js";
 import { canonicalValue } from "../lib/report-serializer.js";
 import { calculateLtdCells, calculateLtdResults } from "../lib/calculators/ltd.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, nextColumn } from "../lib/ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, monthTabOrder, nextColumn } from "../lib/ltd-layout.js";
+import { LINK_ORDER, linkAddressedCells } from "../lib/link-caches.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const TEMPLATES = resolve(ROOT, "app", "templates", "ltd");
+
+async function workbookZips(dir) {
+  const zips = new Map();
+  for (const name of readdirSync(dir).filter((entry) => entry.endsWith(".xlsx"))) {
+    zips.set(name, await JSZip.loadAsync(readFileSync(resolve(dir, name))));
+  }
+  return zips;
+}
+
+// Every leaf cell a set of workbooks addresses across their links, keyed the
+// way a cache keys it.
+async function addressedKeys(zips) {
+  const keys = new Set();
+  for (const zip of zips.values()) {
+    for (const entry of await linkAddressedCells(zip)) keys.add(`${entry.targetFile}!${entry.sheet}!${entry.cell}`);
+  }
+  return keys;
+}
 
 async function firstTabOf(fileName) {
   const zip = await JSZip.loadAsync(readFileSync(resolve(TEMPLATES, fileName)));
@@ -196,4 +215,30 @@ describe("the report's cells do not move", () => {
   ])("keeps %s out of the report", (_name, key) => {
     expect(reported.has(key)).toBe(false);
   });
+});
+
+describe("LINK_ORDER.ltd names exactly the Ltd templates that carry external links", () => {
+  it("matches the templates that hold an externalLink1.xml", async () => {
+    const linkBearing = [];
+    for (const [name, zip] of await workbookZips(TEMPLATES)) {
+      if (zip.file("xl/externalLinks/externalLink1.xml")) linkBearing.push(name);
+    }
+    expect(new Set(linkBearing)).toEqual(new Set(LINK_ORDER.ltd));
+  });
+});
+
+describe("every link-addressed cell in the thirteen templates is pinned", () => {
+  it("lists 2,214 cells, no more and no fewer", async () => {
+    const addressed = await addressedKeys(await workbookZips(TEMPLATES));
+    const pinned = new Set(FIXTURE.addressed);
+    expect(
+      [...addressed].filter((key) => !pinned.has(key)),
+      "addressed by a template but not pinned",
+    ).toEqual([]);
+    expect(
+      FIXTURE.addressed.filter((key) => !addressed.has(key)),
+      "pinned but no template addresses it",
+    ).toEqual([]);
+    expect(FIXTURE.addressed.length).toBe(2214);
+  }, 120000);
 });
