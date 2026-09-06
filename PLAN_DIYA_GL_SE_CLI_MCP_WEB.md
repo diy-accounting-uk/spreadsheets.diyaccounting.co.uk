@@ -506,7 +506,7 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
-- T37d `8db14254`: the SE manifest's three `add` descriptors — bank and cash both `kind: "bank"`
+- T37d `294f978f`: the SE manifest's three `add` descriptors — bank and cash both `kind: "bank"`
   with a direction and code field, payroll `kind: "payroll"` with an employee field and three
   deduction fields defaulting to nil. `codes` reads the code letters off the snapshot's own bank
   account analysis (T33's chart) and the employees off `snapshot.payroll.employees`; nothing
