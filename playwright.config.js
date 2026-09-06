@@ -44,6 +44,7 @@ export default defineConfig({
         "**/books-ltd-equivalence.browser.test.js",
         "**/books-ltd-render-coverage.browser.test.js",
         "**/books-ltd-layouts.browser.test.js",
+        "**/books-ltd-formats.browser.test.js",
         "**/books-taxi-equivalence.browser.test.js",
         "**/books-taxi-formats.browser.test.js",
         "**/books-taxi-edits.browser.test.js",

@@ -339,15 +339,9 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
 
 // ── A4: the screen agrees ────────────────────────────────────────────────
 
-// One figure the page prints that R does not agree with, open on another row
-// rather than on this one: the ledger view's closing creditors row prints the
-// creditor listing's own total (1,710.00 on the full book) under the trial
-// balance's closing creditors key, which carries the signed balance
-// (-10,832.25). The opening row beside it agrees.
-//
 // A figure that starts agreeing fails here too, which is the point: the list
 // shrinks as they are fixed.
-const KNOWN_PAGE_DISAGREEMENTS = ["cell/Financialaccounts.xlsx!TrialBalance!EJ28"];
+const KNOWN_PAGE_DISAGREEMENTS = [];
 
 test.describe("DIYA-GL Company books page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS_LTD) {
