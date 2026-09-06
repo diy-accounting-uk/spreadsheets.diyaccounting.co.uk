@@ -777,7 +777,7 @@ test.describe("DIYA-GL Self Employed page — E2: each settlement helper's previ
 
     await page.locator(`[data-settlement-preview="${id}"]`).click();
     await expect(page.locator(".helper-changes li")).toContainText(
-      "purchase 5000 — Purchases after stock adjustment — £320.00 on 2025-07-21",
+      "purchase 5002 — Other Direct Cost of Sales — £320.00 on 2025-07-21",
     );
 
     const before = await lineCount(page);
