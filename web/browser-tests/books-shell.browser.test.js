@@ -208,7 +208,9 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
 
   test("New is enabled beside Save once a book is loaded, on desktop and on a phone", async ({ page }) => {
     await openEmptyPage(page);
+    // Neither has anything to act on until a book is loaded.
     await expect(page.locator("#new-btn")).toBeHidden();
+    await expect(page.locator("#save-btn")).toBeHidden();
 
     await page.locator(`[data-example="${EXAMPLE_KEY}"]`).click();
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
@@ -258,6 +260,7 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     await expect(page.locator('label[for="file-picker"]')).toHaveText("Choose a file");
     await expect(page.locator("[data-example]").first()).toBeVisible();
     await expect(page.locator("#new-btn")).toBeHidden();
+    await expect(page.locator("#save-btn")).toBeHidden();
     await expect(page.locator("#mobile-action-bar")).toBeHidden();
 
     const offer = page.locator(".continue-offer");
@@ -289,9 +292,50 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     await page.locator("#continue-btn").click();
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
     expect(await businessName(page)).toBe(loadedName);
-    // The reader is looking at that example again, so the address bar names
-    // it again -- a link they can copy back out, exactly as before New.
+    // The book was never changed, so it is still the example the link
+    // fetches and the address bar names it again.
     expect(new URL(page.url()).searchParams.get("example")).toBe(EXAMPLE_KEY);
+  });
+
+  test("the address bar names the example only while the book is still that example", async ({ page }) => {
+    await openLoadedBook(page);
+    expect(new URL(page.url()).searchParams.get("example")).toBe(EXAMPLE_KEY);
+
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+    expect(new URL(page.url()).searchParams.get("view")).toBe("business-details");
+
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await name.fill("Precision Code Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
+
+    // The link would fetch the example, and the screen is no longer it.
+    expect(new URL(page.url()).search).toBe("");
+
+    await page.locator("#undo-btn").click();
+    await expect(page.locator("#app-title")).not.toContainText("Ltd");
+    expect(new URL(page.url()).searchParams.get("example")).toBe(EXAMPLE_KEY);
+  });
+
+  test("an edited book keeps the address bar clear through New and continue", async ({ page }) => {
+    await openLoadedBook(page);
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await name.fill("Precision Code Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
+    expect(new URL(page.url()).search).toBe("");
+
+    await page.locator("#new-btn").click();
+    await expect(page.locator(".continue-offer")).toBeVisible();
+    await page.locator("#continue-btn").click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    // Continue restores the edited book with an empty undo stack, and the
+    // address bar still knows it is not the example.
+    expect(await businessName(page)).toBe("Precision Code Trading Ltd");
+    expect(await page.evaluate(() => window.DiyaGlBooksEdits.undo.depth())).toBe(0);
+    expect(new URL(page.url()).search).toBe("");
   });
 
   test("the header and the chooser New returns to", async ({ page }) => {
