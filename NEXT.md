@@ -12,8 +12,11 @@ worktrees first, then each product's block. Every worktree lives at
 coordinator merges each landed commit into the batch branch, runs the row's non-LibreOffice tests,
 and pushes; `NEXT.md` tracking commits ride on the batch branch. The four `generate-*` refreshes run on
 `claude/diya-gl-wave-2-refresh` (cut from the batch head, so the batch's own pushes cannot cancel
-them) and merge back; all four have landed once, and the rows that change packages or reports
-since then need another pass before the PR leaves draft. Sub-agents run no LibreOffice and
+them) and merge back; all four have landed once; the operator's own rerun on the batch failed on the writers' date
+shift (the scorecard, fixed by PL-4, and the date-bearing compliance checks, SE-T30 and LT-T26).
+Closing order once those land: the formatter over the batch's touched files, the full unit and
+browser runs (LT-T18), the four generate runs on the batch (`generate-all.yml`), test.yml green,
+then the PR leaves draft. Sub-agents run no LibreOffice and
 prove JS calculations against the committed packages' extraction (`report.js --source-dir`). The
 wave schedule is in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. `PLAN_DIYA_GL_LAUNCH.md` is the launch
 and revenue plan of record and carries its own open items.
