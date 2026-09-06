@@ -684,7 +684,6 @@
   "cell/expensesform.xlsx!Month 10!C30": "Expense form monthly entries; the admin view shows rates only.",
   "cell/expensesform.xlsx!Month 11!C30": "Expense form monthly entries; the admin view shows rates only.",
   "cell/expensesform.xlsx!Month 12!C30": "Expense form monthly entries; the admin view shows rates only.",
-  "check/Admin: year-end seed = the package's own year end": "This check only runs when checkCompliance() is passed an expected package year end; the browser engine's own call never supplies one.",
   "section/accounting-profit-to-tax-profit-bridge/add-back-depreciation-charged-in-the-year": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
   "section/accounting-profit-to-tax-profit-bridge/add-back-goodwill-written-off": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
   "section/accounting-profit-to-tax-profit-bridge/add-gross-bank-interest-received": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
