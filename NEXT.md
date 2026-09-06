@@ -22,7 +22,6 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| PL-3 | `generate-all.yml`: one dispatch with the union of the four generate workflows' inputs (`skip-tests`, `skip-generation`, `skip-reconciliation`, `skip-commit`, and Ltd's `reconcile-all`), calling `generate-bst`, `generate-taxi`, `generate-se` then `generate-ltd` through their `workflow_call` triggers with each one's own inputs, in sequence so each product's commit lands before the next reads it | operator | machine | — | in-flight | `../.worktrees/spreadsheets/pl-3` on `claude/wt-pl-3`; Sonnet |
 | SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t20` on `claude/wt-se-t20`; Opus |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T20, LT-T18 | blocked-to-start | PR #62, draft until the closing gates are green |
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T20 | blocked-to-start | the full unit and browser runs and one more four-product refresh, on the batch head |
