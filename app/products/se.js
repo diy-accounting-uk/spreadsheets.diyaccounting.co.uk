@@ -1873,13 +1873,22 @@ export function categoryNetting(results, scenario) {
 
 // ── Compliance checks ──────────────────────────────────────────────────────
 
-export function checkCompliance(results, expected, taxData, calculateExpectedTax) {
+export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
+
+  // The same whole-year shift cellWrites applies before writing a posting
+  // date onto the package. packageYearEnd is the YYYY-MM-DD the package's own
+  // directory name carries; its year, minus one, is the year the package's
+  // tax year opens in, the targetStartYear cellWrites derives from the
+  // package it is writing into.
+  const packageStartYear = packageYearEnd ? parseInt(packageYearEnd.slice(0, 4), 10) - 1 : null;
+  const monthOffset = packageStartYear ? periodShiftMonths(expected, packageStartYear, SE_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   // Some of the workbook's own cells hold wording rather than arithmetic.
   // The report shows both sides as text and the diff column stays empty.
@@ -2733,7 +2742,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       checkText("Payslips print: the block the page reads is a monthly payroll", String(printed.L7 ?? "").trim(), "MONTHLY PAYROLL");
       check(`Payslips print: the period printed is payroll month ${PAYSLIP_PRINT_PERIOD}`, num(printed.I10), PAYSLIP_PRINT_PERIOD, 0);
       if (printedEntries.length > 0) {
-        const paidOn = parseDate(printedEntries[0].date);
+        const paidOn = shiftDate(parseDate(printedEntries[0].date));
         check(
           "Payslips print: the period ends the day the scenario paid that month's wages",
           num(printed.I9),
@@ -2826,7 +2835,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         if (e.reference) checkText(`Payslips!${tab} S${row} reference`, month[`S${row}`], e.reference);
       });
       if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
+        const d = shiftDate(parseDate(entries[0].date));
         const dateCell = `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
         check(
           `Payslips!${tab} ${dateCell} wages paid date`,
