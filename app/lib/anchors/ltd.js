@@ -216,7 +216,7 @@ export function ltdAnchors(yearEndMonth) {
     "Companysecretary.xlsx": {
       sheets: ["Boardmeeting", "Directors&Secretary", "RegisterofMembers", "DirectorsInterests", "Charges&Debentures"],
       headers: [
-        { sheet: "Directors&Secretary", cell: "D2", label: "Director" },
+        { sheet: "Directors&Secretary", cell: "D1", label: "Capacity in which appointed" },
         { sheet: "RegisterofMembers", cell: "A2", label: "Full name of Member" },
       ],
     },
