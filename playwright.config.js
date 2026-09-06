@@ -37,6 +37,7 @@ export default defineConfig({
         "**/books-se-equivalence.browser.test.js",
         "**/books-se-formats.browser.test.js",
         "**/books-se-edits.browser.test.js",
+        "**/books-se-layouts.browser.test.js",
         "**/books-ltd-page.browser.test.js",
         "**/books-ltd-deep-links.browser.test.js",
       ],
