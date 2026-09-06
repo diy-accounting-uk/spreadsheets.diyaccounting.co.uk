@@ -3317,3 +3317,41 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | A1 |  | 1025 |  |
 | A2 |  | 1025 |  |
+l | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 1200 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 247.5 |  |
+| P64 |  | 1485 |  |
+| J38 |  | 1200 |  |
+| L38 |  | 1 |  |
+| P38 |  | 1200 |  |
+| V38 |  | 240 |  |
+
+### Currentaccount.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
+
+### Savingaccount.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 5125 |  |
+| A2 |  | 10275 |  |
+
+### Cashaccount.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 492 |  |
+| A2 |  | 480 |  |
+
+### Creditcardaccount.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 1025 |  |
+| A2 |  | 1025 |  |

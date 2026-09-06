@@ -1,30 +1,11 @@
 {
   "product": "ltd",
   "verdict": "pass",
-  "summary": "Indicators are consistent with the headline: turnover net of VAT and disposals fits the journal scale, balance sheet and trial balance balance, VAT boxes are populated for a registered business, and tax is charged on a positive chargeable profit with a zero-residue bridge. Only the unreported CT600 boxes 63-65 are worth a glance.",
-  "concerns": [
-    {
-      "figure": "box 63 \"not reported\", marginal relief \"not reported\", box 65 \"not reported\"",
-      "where": "Corporation tax indicator",
-      "why": "CT600 boxes not read back, so the 29,221.27 charge cannot be traced to the return; worth a glance but not contradicted by anything",
-      "severity": "note"
-    },
-    {
-      "figure": "trading margin 0.94",
-      "where": "Directors' report",
-      "why": "Very high margin, but consistent with gross profit 322,496.67 on turnover 341,283.33 for a consultancy with little cost of sales",
-      "severity": "note"
-    },
-    {
-      "figure": "tax owed 38,292.56 vs charge 29,221.27",
-      "where": "Cash indicator",
-      "why": "Tax creditor exceeds the CT charge; explainable by PAYE/VAT timing creditors, flagged only for a glance",
-      "severity": "note"
-    }
-  ],
-  "model": "anthropic.claude-opus-5",
+  "summary": "All indicators align with the headline. The reconciliation run is clean and consistent.",
+  "concerns": [],
+  "model": "us.amazon.nova-pro-v1:0",
   "region": "us-east-1",
-  "digestHash": "43c6de1a7913479a3ca23e56f1343e437d6ae986d6b9b498ccfd60bf494f3303",
+  "digestHash": "a376b7ace10f5e2043d89230f2964da59777672b2826728aea746c556e7a76cc",
   "runs": [
     {
       "file": "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-scenario-full.md",
@@ -33,5 +14,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-06T04:24:59.775Z"
+  "timestamp": "2026-09-06T13:33:45.396Z"
 }

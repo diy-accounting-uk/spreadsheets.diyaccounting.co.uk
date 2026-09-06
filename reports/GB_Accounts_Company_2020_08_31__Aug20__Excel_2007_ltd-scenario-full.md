@@ -43,7 +43,7 @@ Trade: IT consultancy and software development
 | Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
 | Stock: calculated stock = opening + materials bought - materials sold | 6102 | 6102.00000000002 | +2.000888343900442e-11 | PASS |
 | Published balance sheet: trade debtors = closing debtors | 7900 | 7900 | 0 | PASS |
-| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts | 7900 | 7900 | 0 | PASS |
+| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered | 7900 | 7900 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
 | VAT: Q1-Q4 box 4 = Purchases VAT | 22498.708333333332 | 22498.70833333333 | -3.637978807091713e-12 | PASS |
 | VAT Q1: box 5 = box 3 - box 4 | 10896.125 | 10896.125 | 0 | PASS |
@@ -292,7 +292,7 @@ Trade: IT consultancy and software development
 | DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries | 43831 | 43831 | 0 | PASS |
 | Directors' report: dividend declared = the board minute | 15000 | 15000 | 0 | PASS |
 | Board minute: dividend declared = the scenario's declaration | 15000 | 15000 | 0 | PASS |
-| Board minute: meeting date = the scenario's board meeting | 46265 | 46265 | 0 | PASS |
+| Board minute: meeting date = the scenario's board meeting | 44074 | 44074 | 0 | PASS |
 | Published P&L: dividends appropriated = the dividend the board declared | 15000 | 15000 | 0 | PASS |
 | Trial Balance: dividends creditor = opening plus declared less paid | 0 | 0 | 0 | PASS |
 | Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements | 45000 | 45000 | 0 | PASS |
@@ -300,7 +300,7 @@ Trade: IT consultancy and software development
 | Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed | 10832.25 | 10832.25 | 0 | PASS |
 | Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | 0 | 0 | 0 | PASS |
 | Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 9135.789999999979 | 9135.78833333336 | -0.0016666666197124869 | PASS |
-| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC | 0 | 0 | 0 | PASS |
+| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC | 0 | 0 | 0 | PASS |
 | Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 23575.274416666594 | 23575.2744166666 | +7.275957614183426e-12 | PASS |
 | Fixed assets: Schedule additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
@@ -316,11 +316,11 @@ Trade: IT consultancy and software development
 | HP: second agreement capital and interest split sums to the monthly payment | 405 | 405 | 0 | PASS |
 | HP: long term creditors = the agreements' amounts financed | 20000 | 20000 | 0 | PASS |
 | P&L: HP interest and charges reach the Bank Charges line (B36) | 3935 | 3935 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 181315.43 | 181315.43 | 0 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 181215.43 | 181215.43 | 0 | PASS |
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
-| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 181315.43 | 181315.43 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 181215.43 | 181215.43 | 0 | PASS |
 | Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 10275 | 10275 | 0 | PASS |
 | Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 480 | 480 | 0 | PASS |
 | Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 1025 | 1025 | 0 | PASS |
@@ -871,7 +871,7 @@ Trade: IT consultancy and software development
 | Payslips print: the page reads the Oct tab | Oct | Oct |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
-| Payslips print: the period ends the day the scenario paid that month's wages | 45961 | 45961 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 43769 | 43769 | 0 | PASS |
 | Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
 | Payslips print: gross pay is the pay the scenario recorded | 3500 | 3500 | 0 | PASS |
 | Payslips print: income tax is the tax the scenario recorded | 530 | 530 | 0 | PASS |
@@ -881,7 +881,7 @@ Trade: IT consultancy and software development
 | Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
-| Payslips print: the payment date is the day the scenario paid that month's wages | 45961 | 45961 | 0 | PASS |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 43769 | 43769 | 0 | PASS |
 | Payslips!Dec F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Dec M51 gross pay | 3500 | 3500 | 0 | PASS |
 | Payslips!Dec N51 income tax | 530 | 530 | 0 | PASS |
@@ -903,7 +903,7 @@ Trade: IT consultancy and software development
 | Payslips!Dec R53 net pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Dec T53 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Dec S53 reference | PAY-EMP003-2025-07 | PAY-EMP003-2025-07 |  | PASS |
-| Payslips!Dec M49 wages paid date | 46022 | 46022 | 0 | PASS |
+| Payslips!Dec M49 wages paid date | 43830 | 43830 | 0 | PASS |
 | Payslips!Jan F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Jan M51 gross pay | 3500 | 3500 | 0 | PASS |
 | Payslips!Jan N51 income tax | 530 | 530 | 0 | PASS |
@@ -925,7 +925,7 @@ Trade: IT consultancy and software development
 | Payslips!Jan R53 net pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Jan T53 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Jan S53 reference | PAY-EMP003-2025-08 | PAY-EMP003-2025-08 |  | PASS |
-| Payslips!Jan M49 wages paid date | 46053 | 46053 | 0 | PASS |
+| Payslips!Jan M49 wages paid date | 43861 | 43861 | 0 | PASS |
 | Payslips!Dec F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Dec F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Dec F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
@@ -1246,17 +1246,17 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,019 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 72,408.3 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 13,757.58 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,020 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 52,011.6 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 19 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 9,882.2 |
-| **Box 63: corporation tax** | 23,639.78 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 0 |
-| **Box 65: corporation tax net of marginal rate relief** | 23,639.78 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year | 2,019 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 72,408.3 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 13,757.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year | 2,020 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 52,011.6 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 9,882.2 |
+| **Box 430: corporation tax** | 23,639.78 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 0 |
+| **Box 440: corporation tax net of marginal rate relief** | 23,639.78 |
 
 ## Published P&L
 
@@ -1354,6 +1354,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Cash Account | 500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors | -2,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Vat | -1,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Corporation Tax | -4,500 |
@@ -1362,11 +1364,14 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -180,702 |
 | **Opening Balances Audit Check** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,315.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Trade Debtors | 7,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,215.43 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 1,025 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 480 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | -100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term | -45,000 |
@@ -1810,7 +1815,7 @@ Journal amounts include VAT at 20%.
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
 | K28 | **Profit Chargeable to CT** | 124419.897839506 | gl-cor:amount (ct600.box315) |
 | K35 | **Corporation Tax** | 23639.7805895061 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 23575.2744166666 | gl-cor:taxAmount (ct600.box515) |
+| K39 | Tax Outstanding | 23575.2744166666 | gl-cor:taxAmount (ct600.box600) |
 | E5 |  | 43709 |  |
 | H5 |  | 44074 |  |
 | I15 |  | 52500 |  |
@@ -1838,17 +1843,17 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C126 | Box 43: financial year | 2019 | gl-cor:period (ct600.box43) |
-| N126 | Box 44: amount of profit | 72408.3012016796 | gl-cor:amount (ct600.box44) |
-| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
-| AJ126 | Box 46: tax | 13757.5772283191 | gl-cor:taxAmount (ct600.box46) |
-| C128 | Box 53: financial year | 2020 | gl-cor:period (ct600.box53) |
-| N128 | Box 54: amount of profit | 52011.5966378262 | gl-cor:amount (ct600.box54) |
-| AA128 | Box 55: rate of tax | 19 | gl-cor:rate (ct600.box55) |
-| AJ128 | Box 56: tax | 9882.20336118698 | gl-cor:taxAmount (ct600.box56) |
-| AJ131 | **Box 63: corporation tax** | 23639.7805895061 | gl-cor:taxAmount (ct600.box63) |
-| Y133 | Box 64: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box64) |
-| Y135 | **Box 65: corporation tax net of marginal rate relief** | 23639.7805895061 | gl-cor:taxAmount (ct600.box65) |
+| C126 | Box 330: financial year | 2019 | gl-cor:period (ct600.box330) |
+| N126 | Box 335: amount of profit | 72408.3012016796 | gl-cor:amount (ct600.box335) |
+| AA126 | Box 340: rate of tax | 19 | gl-cor:rate (ct600.box340) |
+| AJ126 | Box 345: tax | 13757.5772283191 | gl-cor:taxAmount (ct600.box345) |
+| C128 | Box 380: financial year | 2020 | gl-cor:period (ct600.box380) |
+| N128 | Box 385: amount of profit | 52011.5966378262 | gl-cor:amount (ct600.box385) |
+| AA128 | Box 390: rate of tax | 19 | gl-cor:rate (ct600.box390) |
+| AJ128 | Box 395: tax | 9882.20336118698 | gl-cor:taxAmount (ct600.box395) |
+| AJ131 | **Box 430: corporation tax** | 23639.7805895061 | gl-cor:taxAmount (ct600.box430) |
+| Y133 | Box 435: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box435) |
+| Y135 | **Box 440: corporation tax net of marginal rate relief** | 23639.7805895061 | gl-cor:taxAmount (ct600.box440) |
 | B33 |  | 43709 |  |
 | M33 |  | 44074 |  |
 | W137 |  | 19 |  |
@@ -2021,6 +2026,8 @@ Journal amounts include VAT at 20%.
 | D24 | Opening: Credit Card Account | 0 | accounts.assets.1230 (opening) |
 | D25 | Opening: Cash Account | 500 | accounts.assets.1220 (opening) |
 | D28 | Opening: Trade Creditors | -2400 | accounts.liabilities.2100 (opening) |
+| D29 | Opening: Net Wages Creditor | 0 | openingBalance.net_wages_due |
+| D30 | Opening: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due |
 | D31 | Opening: Dividends Creditor | 0 | accounts.capital.3200 (opening) |
 | D33 | Opening: Creditor HMRC Vat | -1500 | accounts.liabilities.2200 (opening) |
 | D35 | Opening: Creditor HMRC Corporation Tax | -4500 | accounts.liabilities.2300 (opening) |
@@ -2029,11 +2036,14 @@ Journal amounts include VAT at 20%.
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -180702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
-| EJ22 | Final: Bank Current Account | 181315.43 | accounts.assets.1200 (final) |
+| EJ20 | Final: Trade Debtors | 7900 | accounts.assets.1300 (final) |
+| EJ22 | Final: Bank Current Account | 181215.43 | accounts.assets.1200 (final) |
 | EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
 | EJ24 | Final: Credit Card Account | 1025 | accounts.assets.1230 (final) |
 | EJ25 | Final: Cash Account | 480 | accounts.assets.1220 (final) |
-| EJ26 | Final: Intra Cash & Bank Transfers | -100 | gl-cor:amount (intraTransfers) |
+| EJ26 | Final: Intra Cash & Bank Transfers | 0 | gl-cor:amount (intraTransfers) |
+| EJ29 | Final: Net Wages Creditor | 0 | openingBalance.net_wages_due (final) |
+| EJ30 | Final: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due (final) |
 | EJ31 | Final: Dividends Creditor | 0 | accounts.capital.3200 (final) |
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
@@ -2877,7 +2887,7 @@ Journal amounts include VAT at 20%.
 | H3 |  | Oct |  |
 | H4 |  | 48 |  |
 | L7 |  | MONTHLY PAYROLL |  |
-| I9 |  | 45961 |  |
+| I9 |  | 43769 |  |
 | I10 |  | 2 |  |
 | M8 |  | 1 |  |
 | G14 |  | 3500 |  |
@@ -2888,7 +2898,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 1060 |  |
 | I16 |  | 400 |  |
 | M16 |  | 5540 |  |
-| M18 |  | 45961 |  |
+| M18 |  | 43769 |  |
 
 ### Payslips.xlsx!Admin
 
@@ -2995,7 +3005,8 @@ Journal amounts include VAT at 20%.
 | N1 |  | 800 |  |
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
-| M49 |  | 46022 |  |
+| M49 |  | 43830 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -3003,6 +3014,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-07 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -3010,6 +3022,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-07 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |
@@ -3057,7 +3070,8 @@ Journal amounts include VAT at 20%.
 | J15 |  | 0 |  |
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
-| M49 |  | 46053 |  |
+| M49 |  | 43861 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Alice Johnson |  |
 | M51 |  | 3500 |  |
 | N51 |  | 530 |  |
@@ -3065,6 +3079,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 2770 |  |
 | S51 |  | PAY-EMP001-2025-08 |  |
 | T51 |  | 382.5 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Bob Williams |  |
 | M52 |  | 2200 |  |
 | N52 |  | 270 |  |
@@ -3072,6 +3087,7 @@ Journal amounts include VAT at 20%.
 | R52 |  | 1834 |  |
 | S52 |  | PAY-EMP002-2025-08 |  |
 | T52 |  | 187.5 |  |
+| D53 |  | 1257L |  |
 | F53 |  | Carol Smith |  |
 | M53 |  | 1048 |  |
 | N53 |  | 0 |  |
@@ -3173,7 +3189,7 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| F2 |  | 46265 |  |
+| F2 |  | 44074 |  |
 | E4 |  | 15000 |  |
 
 ### Companysecretary.xlsx!Charges&Debentures
@@ -3294,8 +3310,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 183605.63 |  |
-| A2 |  | 181315.43 |  |
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
 
 ### Savingaccount.xlsx!Aug
 
