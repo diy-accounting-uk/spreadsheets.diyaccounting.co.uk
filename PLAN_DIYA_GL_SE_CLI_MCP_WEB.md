@@ -392,7 +392,6 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T37b | The add row renders whatever controls the journal's `add` descriptor names, the draft store reads them all, and a bank row's account select routes by its journal | — | Sonnet | `web/.../books/shell.js` |
 | T37c | `addEntry` routes on the descriptor's kind and builds the bank and payroll line shapes, `documentType` with them | T37a | Sonnet | `web/.../books/edits.js` |
 | T37d | The SE manifest's three descriptors: bank and cash on their own accounts with each workbook's receipt and payment code lists, payroll on the employee register | — | Sonnet | `web/.../books/products/se.js` |
-| T37e | The Ltd manifest's bank and payroll descriptors, and the payroll chart section no Ltd book declares | — | Sonnet | `web/.../books/products/ltd.js` |
 | T37f | The SE proof: the three add rows render their own controls, and a bank receipt, a cash payment and a payslip each land with their anchored figures | T37b, T37c, T37d | Sonnet | `web/browser-tests/books-se.browser.test.js`, `web/browser-tests/books-se-edits.browser.test.js` |
 | T37g | The Ltd proof: the bank add, and the transfer pair whose counter-leg keeps the warning and `TrialBalance!EJ91` where they are | T37b, T37c, T37e, T37f | Haiku | `web/browser-tests/books-ltd-edits.browser.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
@@ -506,6 +505,13 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
+- T37e, branch `claude/ltd-add-descriptors`, 2026-09-06: `products/ltd.js`'s bank and payroll
+  journals gain an `add` descriptor (direction and a code-letter select for bank, mirroring
+  `app/lib/ltd-layout.js`'s `bankLayout` until Ltd:T2 re-exports it; an employee picker and three
+  deduction fields for payroll), and the payroll journal gets the chart section no Ltd book
+  declares -- discovered from the wage account codes (5100, 5101) its own lines already carry,
+  never hardcoded, the way SE's T33 discovered SE's. `books-ltd-page.browser.test.js` proves the
+  payroll journal's account picker is no longer empty.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
