@@ -54,7 +54,7 @@ hub and Sales; each of the four bank books reads the hub; Fixedassets reads the 
 and Sales; Vatreturns reads the hub, Sales and Purchases. Twenty-two links in all. Payslips,
 Companysecretary, Salesinvoice and expensesform have no links.
 
-**The engine.** `app/products/ltd.js` (4,164 lines): `CELL_MAP` of 166 rows in twelve
+**The engine.** `app/products/ltd.js` (4,270 lines): `CELL_MAP` of 171 rows in twelve
 sections (Business Details, Opening Balance Sheet, Profit & Loss Account, Trial Balance,
 Corporation Tax working sheet, CT600 as filed, Published P&L, Published Balance Sheet, Fixed
 Asset Note, Directors' Report, Stock), `TAX_SHEET = "CorporationTax"`, `cellWrites(scenario,
@@ -73,7 +73,7 @@ RegisterofMembers|DirectorsInterests`, `Vatreturns.xlsx!Vatinterface|VATQtr1..5`
 registers, the ledgers, the asset register and the HP agreements for Ltd
 (`app/lib/xlsx-exporter.js` 2252 to 2391). `report.js` runs Ltd in both modes.
 
-**The fixtures.** `examples/precision-code-ltd/full/` (724 lines): March year end 2025-26,
+**The fixtures.** `examples/precision-code-ltd/full/` (735 lines): March year end 2025-26,
 VAT registered, three monthly-paid employees, one board resolution declaring 15,000 of
 dividends, three members, one registered charge, two HP agreements, three fixed assets, the
 opening balance sheet, stock at 3% of product A sales; `[expected] total_sales = 341283`.
@@ -437,83 +437,130 @@ each rebasing on the last.
 
 ### Landed
 
-- T19 filing data, `b36c11ca`, merged to `claude/diya-gl-products` 2026-09-04.
-- T16 CONTEXT corrections and CT600 Version 3 labels `695594de` (K39's tag corrected to box 600
-  on the batch branch), T3 headline declaration `9d22b67c` in the S5 wrapped shape with Ltd's
-  `taxSecond`, `assetsSecond` and `dividends` extensions, merged 2026-09-04; R2 (generate-ltd
-  with skip-commit) dispatched on the branch.
+Every row T1 to T19, plus the follow-on rows T20 to T28, is on `claude/diya-gl-wave-2`; the
+closing gate (LT-T18 on the board) and the human merge (LT-M1) are the only steps left, both
+tracked on `NEXT.md`'s board.
 
-- T5 eight Ltd rules behind a product hook `d4728805`, `7b3c0c42`, `820edc69`; T6a the four Company
-  edits `3b45d079`; merged 2026-09-04. T5 found five remainders, carried as **T20** (Sonnet,
-  after Taxi T8 in `book-checks.js`): `TXN-0155` in `examples/precision-code-ltd/lines.jsonl`
-  has no counter leg on 1200 for 2025-06-10 (add it to the master, run the extractor); the E37 and
-  D91 checks at `app/products/ltd.js:2303` sit behind `expected.opening_balance`, which
-  `diyaGlToScenario` never sets, so they never run from a book (both compare a cell to 0 and
-  need no `expected`); `book-duplicate-entries` counts a balanced journal's second leg as a
-  duplicate (six offenders on the full fixture, none on BST); `export.js`'s `writeBookChecksJson`
-  and the MCP `report` tool pass no `results`, so the dividend warning cannot see distributable
-  profits there; `app/lib/diya-gl-loader.js:550` reads `book.dividends[0]` only. T6a found that
-  raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
-  payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
-
-- T22 `d98a634c`, merged 2026-09-05: `runningCosts.label` and `tax.label` in `headlines.js`; Ltd
-  declares "Administrative expenses" and "Corporation tax"; BST byte-identical; the strip needed no
-  change.
-
-- T8 design `d1161d69`, 2026-09-04: the coding brief under T8 and the layout draft
-  `app/data/hmrc/form-layouts/ltd.json` on the batch branch. It found the CT600 sheet's capital
-  allowance boxes dead on every package: `AA177`, `AL177` and `AA179` read the working sheet's
-  column H, which is empty on rows 15 to 18, while the allowances sit in column I. **T21** (Sonnet,
-  with R6) points them at column I in the template and regenerates; until then the layout takes
-  boxes 690, 705 and 710 from `CorporationTax!I15`, `I16+I17` and `-I18`.
-
-- T4 design finished `d6c99a2d`, 2026-09-05: 257 of the 2,214 addressed cells emitted today; T4a
-  and T4b both Opus; the agreement test compares canonical values on addressed non-blank keys with
-  no per-cell allowance. T11's A7 corrupts `Sales.xlsx!<first>!O1`, since the hub caches no
-  `Apr!H1`.
-
-- **T23** (Haiku, after T20, before SE T7 and Taxi T13 hard-code ids): the Ltd rule ids `ltd-*`
-  become `book-ltd-*`, matching SE's `book-*` and Taxi's `book-taxi-*`, with the tests following.
-
-- T1 `ebeb2cca`, `893b415e`, `cdb18cbb`, merged 2026-09-05: `taxYearFileName(date, "ltd")` names the
-  1 April on or before the year end; a Ltd save takes `endDate`, `yearEndMonth` and
-  `targetStartYear` (`endYear - 1`) from the book's period and refuses a period that is not twelve
-  whole months; no `WRITER_PROFILE`, every field already had a home. BST, SE and Taxi saves
-  byte-identical. Three findings: `examples/ltd-latest` extracts to a book covering 2025-11-01 to
-  2026-10-31 (its postings, not its `Admin!F21`), so T11's S3 row builds on `ltd-2026` and a
-  2026-10-31 package; `payrollYearOf` (`app/lib/calculators/ltd.js:1037`) falls back to the year
-  end's calendar year on every book path, a year late for January to March year ends, carried as
-  **T24** (Sonnet); and the page calls `engine.taxYearFileName(date)` with no regime
-  (`bst-data.js:907`, `925`, `1077`), which S7's shell passes the product's regime.
-
+- T19 filing data, `b36c11ca`, merged 2026-09-04.
+- T16 CONTEXT corrections and CT600 Version 3 labels `695594de`; T3 headline declaration
+  `9d22b67c` in the S5 wrapped shape with Ltd's `taxSecond`, `assetsSecond` and `dividends`
+  extensions, merged 2026-09-04.
+- T5 eight Ltd rules behind a product hook `d4728805`, `7b3c0c42`, `820edc69`; T6a the four
+  Company edits `3b45d079`; merged 2026-09-04. T5 found five remainders, landed as T20 below.
+  T6a found that raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)`
+  because the bank payment is a separate line, so T7's payroll view pairs a payslip change
+  with its bank line.
+- T22 `d98a634c`, merged 2026-09-05: `runningCosts.label` and `tax.label` in `headlines.js`;
+  Ltd declares "Administrative expenses" and "Corporation tax"; BST byte-identical.
+- T8 design `d1161d69`, 2026-09-04: the coding brief and the layout draft
+  `app/data/hmrc/form-layouts/ltd.json`. Found the CT600 sheet's capital allowance boxes dead
+  on every package (`AA177`, `AL177`, `AA179` read the working sheet's empty column H instead
+  of I); T21 below fixes the template, landed separately from the page layout, which reads
+  `CorporationTax!I15`/`I16+I17`/`-I18` directly.
+- T4 design finished `d6c99a2d`, 2026-09-05: 257 of the 2,214 addressed cells emitted at the
+  time; T4a and T4b (below) carried the coding.
+- T1 `ebeb2cca`, `893b415e`, `cdb18cbb`, merged 2026-09-05: `taxYearFileName(date, "ltd")`
+  names the 1 April on or before the year end; a Ltd save takes `endDate`, `yearEndMonth` and
+  `targetStartYear` (`endYear - 1`) from the book's period and refuses a period that is not
+  twelve whole months. BST, SE and Taxi saves byte-identical. Found: `payrollYearOf` fell back
+  to the year end's calendar year on every book path, a year late for January to March year
+  ends, landed as T24 below; the page called `engine.taxYearFileName(date)` with no regime,
+  which S7's shell now passes.
 - T4a `a0c4de16`, `9933ed28`, `ec359b16`, `977358cf`, merged 2026-09-05: `app/lib/ltd-layout.js`,
   the `computeLtd` split, `calculateLtdCells` and `calculateLinkCells`; 2,130 of the 2,214
-  addressed cells emitted (the 84 remaining are blank inputs the fixture does not fill); R gained
-  exactly the five TrialBalance cells. T4b keeps `LINK_ORDER.ltd` (the nine link-bearing files,
-  verified) and the agreement halves. Follow-up in T4b: `app/lib/book-checks/ltd.js`'s bank layout
-  copy comes from `ltd-layout.js`.
+  addressed cells emitted; R gained exactly the five TrialBalance cells.
+- T4b `1506212c` to `d300f782`, merged 2026-09-06: `LINK_ORDER.ltd` (nine files) and
+  `packageLinkCaches` in `link-caches.js`; the saved half 2,105 keys and the committed half
+  2,079 keys agree with the calculator with no disagreement; `book-checks/ltd.js` reads the
+  bank layout from `ltd-layout.js`. Found `examples/ltd-latest` posting a year behind its
+  `Admin!B32` and the page's link layer reading the hub's caches only — both fixed by T11.
+- T24 `2c16fb69`, merged 2026-09-05: `payrollYearOf` derives the payroll year from the period
+  as the writer does; the Payslips calendar keys move to the package's values on every book
+  path.
+- T2 `fa7ddc2a`, `15c689c1`, `4376bf85`, `74c5009f`, merged 2026-09-05/06: `app/lib/anchors/ltd.js`
+  (thirteen workbooks, header anchors, the input-cell predicate), registered in
+  `books-interchange.js`; the extraction map records 724 of `examples/ltd-latest`'s 725 lines
+  (the stock movement's "cost of sales" leg shares its only cell with "Opening stock" and stays
+  unrecorded, by design). `bookFieldCells("ltd")` in `xlsx-exporter.js` carries the ledger and
+  register entries T2 needed; the sidecar option is `options.templates`.
+- T20 `3e37396c`, `4321f20c`, `418228d4`, `ffc3315a`, part of `cd1193a7`, merged 2026-09-05: E37
+  and D91 ungated; a balanced pair is not a duplicate; `results` reach `bookchecks.json` and the
+  MCP report; every declared dividend is summed; a BC bank line is the Ltd opening balance only
+  on the period's first day; `MnthP&L!B36` nets code X through the contra rows. TXN-0155's
+  counter leg came back out (it reaches the SE advanced subset as an opening balance and disagreed
+  with twelve SE checks); landed as T25 below.
+- T21 `de3faf70`, merged 2026-09-06: the CT600 sheet's `AA177`, `AL177`, `AA179` read the working
+  sheet's column I, not the empty column H.
+- T23 `e5211c8c`, merged 2026-09-06: the Ltd rule ids move from `ltd-*` to `book-ltd-*`, matching
+  SE's `book-*` and Taxi's `book-taxi-*`.
+- T25 `93476245`, `a4c7baa8`, `d12bdbbb`, merged 2026-09-06: Ltd transfer codes map to SE's; the
+  BC opening-balance gate holds under every year end's period shift; TXN-0155's counter leg
+  (TXN-0918) lands in the master fixture; the four VAT settlement twins and `vatBroughtForward`
+  carry their own entry numbers in `extract-scenarios.js`.
+- T26 `65a6ea59`, merged 2026-09-06: the Ltd payroll date checks shift through
+  `periodShiftMonths` as the writer does.
+- T27 `7afe04c0`, merged 2026-09-06: the Ltd payroll tab wrap; the round-trip and SE workbook
+  tests honour the derived shift and the declared straddling block.
+- T28 `33a02ff6`, `88f650f2`, merged 2026-09-06: the payroll-by-tab and board-minute date checks
+  derive their shift from the book's own `Admin!F21`, not the `packageYearEnd` argument a caller
+  can omit or deliberately mismatch.
+- T6b `9ebc6f02`, `95cf7fef`, merged 2026-09-06: the four settlement helpers (SE:T6) proved to
+  fire on a Company book.
+- T7 `f2abaca9` to `455cf6c1`, merged 2026-09-06: `books/products/ltd.js` (manifest) and
+  `ltd-ledger.js` (Bank, Ledgers, P&L, Stock, Fixed assets, Business details, Admin), `ltd.html`,
+  `ltd.css`; the bundle copies `ltd-*.toml`. Found: the opening balance sheet (`OpenAccounts`
+  E13..E34) is read-only — the calculator builds it from the book's own `OB-001` opening-journal
+  lines, never from `book.openingBalances` (the design text above is corrected); the Ledgers
+  view's missing `state` parameter (fixed same commit); `book.openingBalances` and several unused
+  manifest exports removed as dead code.
+- T9 `b0e6d9cf`, `0975730c`, `c7c582f7`, merged 2026-09-06: `render-unrepresentable/ltd.json`
+  (861 declared keys) and the render-coverage sweep over the three Ltd examples; also renders
+  real figures the first pass had declared instead (Schedule totals, both ledgers, the
+  Corporation Tax working sheet, the published accounts in full), and runs the PAYE date checks
+  and the board-minute dividend key through `report.js`.
+- T10 `65363fb1`, merged 2026-09-06: three Ltd example rows in `scripts/example-books.json`; the
+  bundle copies the fourteen Ltd template files; `books-ltd-deep-links.browser.test.js`.
+- T11 `9de130d5`, `1a7cd527`, `c415ef4e`, `7ff122df`, `45b157d5`, merged 2026-09-06: the Ltd
+  writer shifts years as well as months (fixes T4b's and T1's year-skew finding at the
+  generator); the drift layer reads every link-bearing workbook, not the hub alone (fixes T4b's
+  finding); `books-ltd-equivalence.browser.test.js` (A3, A4, A6, A7). A3 names two still-open
+  families rather than allowing them: `examples/ltd-latest`'s committed period sits a year ahead
+  of its postings until M1's `generate-ltd` refresh regenerates it, and its Vatreturns carries
+  straddling VAT periods no diya-gl book holds yet (the horizon below).
+- T12 `d0658fc6`, `4d3d9c10`, `314dab0a`, merged 2026-09-06: `books-ltd-formats.browser.test.js`
+  (E3, E4, E5, plus a breakability proof). Found: the closing-creditors panel was keyed to
+  `TrialBalance!EJ28`, a different figure from the listing total (fixed, second row now carries
+  the trial balance's own signed figure); `export.js`'s anchor guard checked
+  `Companysecretary.xlsx!Directors&Secretary!D2` against the literal text "Director", rejecting
+  any real book whose officer held another title (fixed to check the frozen header `D1`).
+- T13 `4034b055`, `6d261412`, `61b1a629`, `3d5a7014`, `9aca8ced`, `3a112108`, `3ffe4a6c`,
+  `b786f391`, `ecac898f`, merged 2026-09-06: `books-ltd-edits.browser.test.js` (E1) and
+  `books-ltd-warnings.browser.test.js` (E2, all sixteen ids, plus E37/D91 through an OB-001
+  line). Found and fixed: the browser never passed the book's year end to `checkCompliance`, so
+  the Admin year-end-seed check never ran there; neither `edits.js` nor `shell.js` passed
+  `results` to `runBookChecks`, so the dividend warning never saw distributable profits in the
+  browser; the Admin view doubled its own whole-percent and mileage rates; the Fixed assets view
+  printed the raw class enum instead of its label; TXN-0407 in the master fixture carried a
+  mismatched narrative.
+- T14 `0f5c7647`, `2b2a511f`, `560e9819`, merged 2026-09-06: `books-ltd-layouts.browser.test.js`,
+  four viewports under axe, the CT600 financial-year stacking, a keyboard-only run.
+- T15 `77112787`, merged 2026-09-06: the Ltd edits and `LTD_LINE_EDITS`/`LTD_BOOK_EDITS` in the
+  MCP edit map; `diya-gl-loader.js` no longer demands Class 2 of a company.
+- T17 `13cfff1e`, `474b928d`, merged 2026-09-06: the Ltd behaviour probe, checking the four
+  headline tiles and the year totals row against S2.
+- T18: each row above registered its own spec in `playwright.config.js` as it landed (no
+  separate append was needed); all fifteen Ltd browser specs are listed. The closing full-suite
+  gate is tracked on the board as LT-T18.
 
-- T4b `1506212c` to `d300f782`, merged into `claude/diya-gl-wave-2` 2026-09-06: `LINK_ORDER.ltd` (nine files) and `packageLinkCaches` in `link-caches.js`; the saved half 2,105 keys and the committed half 2,079 keys agree with the calculator with no disagreement; `book-checks/ltd.js` reads the bank layout from `ltd-layout.js`. Found: `examples/ltd-latest` line dates sit a year behind its `Admin!B32` (`Schedule!B67` to `B71` cache 46006 against the calculator's 46371); the page's drift layer reads sources from the hub only, carried on T11.
+### Verified in this audit (2026-09-06)
 
-- T8 `b94041ec`, merged into `claude/diya-gl-wave-2` at `af40e2dd` 2026-09-06: `form-layouts/ltd.json` (four blocks, 112 sheet cells), `products/ltd-forms.js`, the six form views. Settled against the XML: `CorporationTax!I18` is signed, so box 710 takes only its negative part and its positive part joins 705; `Payslips!Payment` reads are B/C/D/E/I rows 4 to 15 and `WagesInterface` is a hub sheet; accounts heading C's prior column is blank (`PubP&L!B16` is not a read). Found: `products/ltd.js` `formatByUnit` prints whole-percent rates through `fmtRate` (carried on T13); `examples/ltd-latest` `CT600!C126`/`C128` cache financial-year labels a year ahead of the engine (carried on T11).
-
-- T24 `2c16fb69`, merged 2026-09-05: `payrollYearOf` derives the payroll year from the period as
-  the writer does; the Payslips calendar keys move to the package's values on every book path.
-- For T2, from SE S2: the sidecar option is `options.templates`, not `templatePaths`; and
-  `bookFieldCells("ltd")` in `xlsx-exporter.js` carries only the entity and stock entries, so T2
-  builds Ltd's ledger and register entries there (add `app/lib/xlsx-exporter.js` to T2's files).
-
-- T20 `3e37396c`, `4321f20c`, `418228d4`, `ffc3315a` and part of `cd1193a7`, merged 2026-09-05: E37 and
-  D91 ungated; a balanced pair is not a duplicate; `results` reach `bookchecks.json` and the MCP
-  report; every declared dividend is summed; a BC bank line is the Ltd opening balance only on the
-  period's first day (`bankMonthTotals`), and `MnthP&L!B36` nets code X through the contra rows. The
-  counter leg for TXN-0155 came back out: coded BC it reaches the SE advanced subset as what SE's
-  Bank sheet reads as an opening balance, and twelve SE reconciliation checks disagreed with the
-  sheet by the leg. **T25** (Sonnet, wave 5) maps Ltd transfer codes to SE's in the sole-trader
-  adaptation first, then lands the leg; it also numbers the four VAT settlement twins and
-  `vatBroughtForward` (`extract-scenarios.js:637`, `:724`, `:746`), which reach `se-vat` and
-  `ltd-vat` unnumbered or with `TXN-0002` twice.
-- T23 and T6b are ready; no Ltd row starts until the operator lifts the hold.
+`npx vitest run --fileParallelism=false` over the thirteen non-LibreOffice Ltd unit test files
+(`ltd-workbook`, `ltd-anchors`, `ltd-headlines`, `ltd-link-caches`, `book-checks-ltd`,
+`diya-gl-edits-ltd`, `ltd-form-layouts`, `filing-data`, `export-file-ltd`, `mcp-ltd`,
+`ltd-admin-financial-years`, `ltd-expenses-form`, `ltd-period-shift`): 399 tests, all passing.
+`node scripts/build-books-bundle.mjs && npx playwright test --project=browser-tests` over the
+nine Ltd browser specs (`books-ltd-page`, `-deep-links`, `-render-coverage`, `-formats`,
+`-forms`, `-equivalence`, `-edits`, `-warnings`, `-layouts`): 73 tests, all passing.
 
 ### Verification ladder
 
@@ -1470,8 +1517,9 @@ built with the shell's `rk2(sheet, cell, section, row)`; multi-file keys are
   `SCHEDULE_ASSET_CLASSES`, and the HP block (`HPfinance!E2`, rows 8 and 10 I/J/K).
 - **Business details**: `OpenAccounts` E2, E3, E4, E5, E8, J3, J4, N6, O3, editable
   through the book's `entityInformation` fields per `ENTITY_CELLS.ltd`
-  (`xlsx-exporter.js` 1546), and the opening balance sheet E13..E34 editable through
-  `book.openingBalances`, with `E37` shown as the accuracy check.
+  (`xlsx-exporter.js` 1546); the opening balance sheet E13..E34 is read-only, since the
+  calculator builds it from the book's own `OB-001` opening-journal lines, never from
+  `book.openingBalances` (that field is not read), with `E37` shown as the accuracy check.
 - **Admin**: `Admin` P6..P13, G5..G8, G15..G19, N16/O16/N17/O17, M19, and the two
   financial-year rows K6/L6/N6 and K7/L7/N7, read-only, the second row shown when
   `CorporationTax!A34 > 0`.
@@ -1557,14 +1605,15 @@ Every cell below was read from `packages/GB Accounts Company 2026-03-31 (Mar26) 
 `Companysecretary.xlsx` on 2026-09-04, and cross-checked against `CELL_MAP`,
 `CT600_CELLS` and `standardReads()` in `app/products/ltd.js`.
 
-- The CT600 sheet's capital allowance boxes are dead. `AA177 = IF((CorporationTax!H15 +
+- The CT600 sheet's capital allowance boxes were dead: `AA177 = IF((CorporationTax!H15 +
   CorporationTax!H17) > 0, ...)`, `AL177 = IF(CorporationTax!H18 <> 0, ...)` and `AA179 =
-  IF(CorporationTax!H16 > 0, ...)` all read column H of the working sheet. Column H is
-  empty on rows 15 to 18; the allowances sit in column I. Those three cells print blank on
-  every package. The design brief's row "AA175/AL175 | 695/700 special rate pool" is wrong
-  twice over: `AA175` and `AL175` carry no formula and no value at all, and the sheet has
-  no special rate pool line. The layout takes boxes 690, 705 and 710 from
-  `CorporationTax!I15`, `I16 + I17` and `-I18`, and prints 695, 700 and 760 as present and
+  IF(CorporationTax!H16 > 0, ...)` all read column H of the working sheet, which is empty
+  on rows 15 to 18 (the allowances sit in column I), so the three cells printed blank on
+  every package; T21 landed the template fix, pointing them at column I. The design brief's
+  row "AA175/AL175 | 695/700 special rate pool" is wrong twice over: `AA175` and `AL175`
+  carry no formula and no value at all, and the sheet has no special rate pool line. The
+  page layout takes boxes 690, 705 and 710 from `CorporationTax!I15`, `I16 + I17` and
+  `-I18` directly, unaffected by the template fix, and prints 695, 700 and 760 as present and
   empty.
 - `CorporationTax!K5 = 'PubP&L'!F46`, the operating profit, not `F49`. The computation
   still opens on `F49` per the prescribed format, because `F49 = F46 + F48`, `F48 =
@@ -2151,16 +2200,8 @@ of each file.
 
 Tier: Sonnet.
 
-### Waves
+### What's left
 
-| Wave | Rows | Why concurrent |
-|---|---|---|
-| 0 (starts now, no SE row needed) | T16, T3, T5, T19's three data files | Ltd-owned files only; T16 and T3 touch `ltd.js` in different regions (CT600 labels, after `CELL_MAP`) and land in that order; T5 owns a new module; T19's test waits for T8 but its data does not |
-| 1 (after SE:S1, S2, S3 and SE:T1) | T1, T2 | T1 edits the writer profile, T2 the layout exports, different regions of `ltd.js`, landing T2 then T1 |
-| 2 (after SE:S4, S5) | T4 design wave, then its implementation | one agent; touches `calculators/ltd.js` and the reader export in `ltd.js` |
-| 3 (after SE:S7, S8, T6) | T7, T10, T6 | T7 owns the product files, T10 the examples and bundle rows, T6 the edits module |
-| 4 (after wave 3 and SE:S6) | T8 design wave, then T8; T15 | T8 owns the forms module; T15 owns two test files and appends to the edit map |
-| 5 (after T7, T8) | T9, T11, T12, T13, T14, T17 | each owns one spec file; T11's `r-sources.js` append lands first |
-| 6 | T18, then M1 | the config append after every spec exists; the human merge |
-
-Wave 0 starts before any SE row lands.
+T1 to T19 and their follow-on rows (T20 to T28) have all landed on `claude/diya-gl-wave-2`.
+What remains is the closing gate and the merge, tracked on `NEXT.md`'s board as LT-T18 and
+LT-M1.
