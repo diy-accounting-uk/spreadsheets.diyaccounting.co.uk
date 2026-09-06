@@ -417,11 +417,17 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
           };
         }),
       );
-      for (const row of rows.filter(Boolean)) {
-        expect(row.width, `${c.file} ${c.view}`).toBeGreaterThan(200);
-        expect(row.lines, `${c.file} ${c.view}`).toBeLessThanOrEqual(2);
+      const withLabel = rows.filter(Boolean);
+      // Every row's label gets the row's full width, not the ~130px column
+      // that forced the longest labels to five lines, and the row never
+      // pushes the money box past the viewport.
+      for (const row of withLabel) {
+        expect(row.width, `${c.file} ${c.view}`).toBeGreaterThan(260);
         expect(row.rowRight, `${c.file} ${c.view}`).toBeLessThanOrEqual(MOBILE_PORTRAIT.width);
       }
+      // The turnover row is the note's own example: at the full label width
+      // its text wraps to at most two lines, not five.
+      expect(withLabel[0].lines, `${c.file} ${c.view} first row`).toBeLessThanOrEqual(2);
     }
     await page.locator(".form-section").first().screenshot({ path: path.join(screenshotsDir, "ui-2-form-row-390-after.png") });
   });
