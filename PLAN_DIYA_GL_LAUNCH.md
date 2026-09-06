@@ -505,6 +505,6 @@ its phases 3 to 5 are absorbed by the page; its phase 6 is this plan's Filing ru
   (read 2026-09-03)
 - tech-insider.org, Tauri vs Electron sizes: https://tech-insider.org/tauri-vs-electron-2026/
   (read 2026-09-03)
-- This repository: `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`, `_developers/PLAN_DIYA_CLOUD.md`,
+- This repository: `_developers/archive/PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`, `_developers/PLAN_DIYA_CLOUD.md`,
   `_developers/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
   repository's `README.md` (HMRC recognition for VAT) and `AWS_COSTS.md` (Cognito cost).

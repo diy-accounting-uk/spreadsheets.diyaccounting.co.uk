@@ -24,7 +24,7 @@ the branch audit.
   `H2`, … Rows finished in the current session are `D1`, `D2`, … Rows the GitHub scan
   opens are `CQ-1`, `CQ-2`, … Ids never renumber.
 - `Item`: the task's name, short, from the plan where one exists.
-- `Source`: the plan file name (`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`), `operator` for an
+- `Source`: the plan file name (`PLAN_DIYA_GL_LAUNCH.md`), `operator` for an
   instruction given in chat that no plan yet carries, or `none` for a row `NEXT.md` holds
   on its own.
 - `Owner`: `human` for an activity only the operator can do (merge a PR, approve an AWS
