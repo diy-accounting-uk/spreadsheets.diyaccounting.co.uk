@@ -3638,7 +3638,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {
       const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
       if (sourceMonth === -1) continue;
-      const tab = SHORT_MONTHS[(sourceMonth + monthOffset) % 12];
+      const tab = SHORT_MONTHS[(((sourceMonth + monthOffset) % 12) + 12) % 12];
       payrollByTab[tab].push(...entries);
     }
 

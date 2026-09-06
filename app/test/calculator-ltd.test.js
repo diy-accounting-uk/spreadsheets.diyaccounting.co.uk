@@ -489,3 +489,21 @@ describe("Ltd payroll date checks on a year end nineteen months from the scenari
     expect(mar.pass).toBe(false);
   });
 });
+
+// periodShiftMonths counts years as well as months, so a package year end
+// that falls before the scenario's own period start (here 2025-05-31 against
+// the "full" fixture's 2025-04-01) returns a negative offset -- report.js
+// --data hits this whenever --year-end is given without a matching --offset.
+// The payroll block used to index SHORT_MONTHS with that negative offset
+// straight off a single JS "%", which stays negative and reads past the
+// array's start.
+describe("Ltd checkCompliance on a package year end before the scenario's own period", () => {
+  it("does not throw when the payroll month wrap goes negative", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+    const taxData = taxDataFor("ltd-2025");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    expect(() => ltd.checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, "2025-05-31")).not.toThrow();
+  });
+});

@@ -379,7 +379,12 @@ describe("scoreDataHalves", () => {
       lines: [{ block: "vat-straddling", products: ["se"], reason: "returned on a period outside the year" }],
     };
     const straddling = { ...LINE, "postingDate": "2025-02-20", "diya-gl:vatPeriodEnd": "2025-02-28" };
-    const { fixture, exported } = writePair([LINE, straddling], [LINE]);
+    // Both books declare the same period, so bookPeriodShiftMonths derives no
+    // shift from it -- neither side's own frame moves the straddling line's
+    // earlier date into the fallback that reads a period off the raw lines,
+    // which would otherwise carry LINE itself away from the export's LINE.
+    const period = "[documentInfo]\nperiodCoveredStart = 2025-04-01\n";
+    const { fixture, exported } = writePair([LINE, straddling], [LINE], period, period);
     const undeclared = scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory));
     expect(undeclared).toMatchObject({ fixtureLines: 2, linesLost: 1, linesUnrepresentable: 0 });
     expect(undeclared.fieldsDropped).toEqual(["diya-gl:vatPeriodEnd"]);
@@ -404,7 +409,19 @@ describe("scoreDataHalves", () => {
   });
 
   it("leaves a coarse and account line unmatched when neither book declares a period", () => {
-    const { fixture, exported } = writePair([LINE], [{ ...LINE, postingDate: "2025-06-01" }]);
+    // Neither book.toml declares a period, so bookPeriodShiftMonths falls
+    // back to the earliest line each side carries. A single line on each
+    // side would make that fallback tautological -- it would always read
+    // that line's own date as the period start and shift it onto the
+    // other side's, matching by construction whatever dates the test
+    // picked. An anchor line dated ahead of LINE, identical on both sides
+    // but never itself a coarse match (its amount differs), pins the
+    // fallback's period to a value the tested line's shift cannot satisfy.
+    const anchor = { ...LINE, postingDate: "2025-01-01", entryNumber: "ANCHOR" };
+    const { fixture, exported } = writePair(
+      [{ ...anchor, amount: 1 }, LINE],
+      [{ ...anchor, amount: 2 }, { ...LINE, postingDate: "2025-06-01" }],
+    );
     expect(scoreDataHalves(fixture, exported, unrepresentableScope("test", null)).coarseMatches).toBe(0);
   });
 
