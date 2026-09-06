@@ -145,6 +145,16 @@
     "Creditcardaccount.xlsx": "BD",
   };
 
+  // A payroll entry's employee comes off the book's own employee register,
+  // the same table renderPayroll's people card reads (ltd-forms.js
+  // payrollPeopleHtml) -- Ltd keeps no separate payroll snapshot section, so
+  // this reads the book straight off the shared snapshot's own "book" key.
+  function payrollEmployeeCodes(snapshot) {
+    return (snapshot.book.employees || []).map(function (employee) {
+      return { value: employee.employeeID, label: employee.name };
+    });
+  }
+
   function bankCodesFor(file, direction) {
     var transfers = BANK_TRANSFER_COLUMN_ORDER.filter(function (code) {
       return code !== BANK_TRANSFER_CODE_BY_FILE[file];
@@ -886,7 +896,7 @@
             kind: "bank",
             fields: [
               {
-                name: "direction",
+                id: "direction",
                 label: "Direction",
                 type: "select",
                 options: [
@@ -894,7 +904,7 @@
                   { value: "C", label: "Payment" },
                 ],
               },
-              { name: "code", label: "Code", type: "select" },
+              { id: "code", label: "Code", type: "select" },
             ],
             codes: function (snapshot, account, direction) {
               var bankAccount = BANK_ACCOUNTS.filter(function (a) {
@@ -910,11 +920,12 @@
           add: {
             kind: "payroll",
             fields: [
-              { name: "employee", label: "Employee", type: "employee" },
-              { name: "incomeTax", label: "Income tax", type: "number", default: 0 },
-              { name: "employeeNI", label: "Employee NI", type: "number", default: 0 },
-              { name: "employerNI", label: "Employer NI", type: "number", default: 0 },
+              { id: "employee", label: "Employee", type: "select" },
+              { id: "incomeTax", label: "Income tax", type: "number", default: 0 },
+              { id: "employeeNI", label: "Employee NI", type: "number", default: 0 },
+              { id: "employerNI", label: "Employer NI", type: "number", default: 0 },
             ],
+            codes: payrollEmployeeCodes,
           },
         },
       ],

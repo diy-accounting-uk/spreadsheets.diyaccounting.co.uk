@@ -36,8 +36,9 @@ import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
 import { productModule } from "../../app/lib/products.js";
 import { loadTaxDataForBook } from "../../app/lib/product-workbook.js";
-import { addSaleLine, addPurchaseLine } from "../../app/lib/diya-gl-edits.js";
+import { addSaleLine, addPurchaseLine, addBankLine } from "../../app/lib/diya-gl-edits.js";
 import { changePayrollLine } from "../../app/lib/diya-gl-edits-ltd.js";
+import { bankLayout, BANK_ACCOUNT_FILES } from "../../app/lib/ltd-layout.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const ROOT = process.cwd();
@@ -132,10 +133,20 @@ async function switchJournal(page, journalId) {
   await expect(page.locator(`table.entries-table[data-journal="${journalId}"]`)).toBeVisible();
 }
 
-async function addEntry(page, journal, { date, account, detail, amount }) {
+// Extra keys beyond date/account/detail/amount are the journal's own add
+// descriptor fields (direction, code, employee, incomeTax, employeeNI,
+// employerNI) -- filled in the order given, which matters for a bank row's
+// direction: it has to land before code, since the code select's own
+// options are rebuilt off the chosen account and direction.
+async function addEntry(page, journal, { date, account, detail, amount, ...descriptorFields }) {
   const row = page.locator(`.entry-add-row[data-add-journal="${journal}"]`);
   if (date) await row.locator('[data-add-field="date"]').fill(date);
   if (account) await row.locator('[data-add-field="account"]').selectOption(account);
+  for (const [field, value] of Object.entries(descriptorFields)) {
+    const control = row.locator(`[data-add-field="${field}"]`);
+    if ((await control.evaluate((el) => el.tagName)) === "SELECT") await control.selectOption(String(value));
+    else await control.fill(String(value));
+  }
   if (detail) await row.locator('[data-add-field="detail"]').fill(detail);
   await row.locator('[data-add-field="amount"]').fill(String(amount));
   await row.locator("[data-add-entry]").click();
@@ -197,6 +208,7 @@ const B9_SALES = "cell/Financialaccounts.xlsx!MnthP&L!B9";
 const B45_NET_PROFIT = "cell/Financialaccounts.xlsx!MnthP&L!B45";
 const B18_PAYE_WAGES = "cell/Financialaccounts.xlsx!MnthP&L!B18";
 const EJ22_CURRENT_ACCOUNT = "cell/Financialaccounts.xlsx!TrialBalance!EJ22";
+const EJ91_AUDIT_ACCURACY = "cell/Financialaccounts.xlsx!TrialBalance!EJ91";
 const E2_BUSINESS_NAME = "cell/Financialaccounts.xlsx!OpenAccounts!E2";
 
 // The save menu's diya-gl zip download, captured and unzipped -- the same
@@ -659,5 +671,161 @@ test.describe("DIYA-GL Ltd page — finding: the Admin view's whole-percent and 
     // The mileage rate is pence per mile, not a percent at all.
     expect(await cellText("O16")).toBe("45p");
     expect(await cellText("O17")).toBe("25p");
+  });
+});
+
+// ============================== the bank and payroll add rows ==============================
+// The bank and payroll journals each carry an add descriptor (products/ltd.js)
+// the shell renders as extra controls on top of the shared date/account/
+// detail/amount row -- a direction and a code letter for bank, an employee
+// picker and three deduction fields for payroll. bankLayout and
+// BANK_ACCOUNT_FILES (app/lib/ltd-layout.js) are the same tables the
+// manifest's own bankCodesFor mirrors, so the rendered code list is checked
+// against them rather than against a second copy of the manifest's own
+// numbers.
+
+test.describe("DIYA-GL Ltd page — the bank add row's direction and code controls", () => {
+  test("the code select's options are the chosen account's own codes for the chosen direction", async ({ page }) => {
+    await openFull(page);
+    await openAprilEntries(page);
+    await switchJournal(page, "bank");
+
+    const row = page.locator('.entry-add-row[data-add-journal="bank"]');
+    await row.locator('[data-add-field="account"]').selectOption("1210");
+    const layout = bankLayout(BANK_ACCOUNT_FILES["1210"]);
+
+    await row.locator('[data-add-field="direction"]').selectOption("D");
+    expect(await row.locator('[data-add-field="code"] option').allTextContents()).toEqual(layout.receiptCodes);
+
+    await row.locator('[data-add-field="direction"]').selectOption("C");
+    expect(await row.locator('[data-add-field="code"] option').allTextContents()).toEqual(layout.paymentCodes);
+  });
+});
+
+test.describe("DIYA-GL Ltd page — the payroll add row's employee and deduction controls", () => {
+  test("the employee select lists the book's own payroll register, and each deduction defaults to nil", async ({ page }) => {
+    await openFull(page);
+    await openAprilEntries(page);
+    await switchJournal(page, "payroll");
+
+    const { book } = loadDiyaGlData(path.resolve(ROOT, LTD_FULL_DIR));
+    const row = page.locator('.entry-add-row[data-add-journal="payroll"]');
+    expect(await row.locator('[data-add-field="employee"] option').allTextContents()).toEqual(
+      book.employees.map((employee) => employee.name),
+    );
+    for (const field of ["incomeTax", "employeeNI", "employerNI"]) {
+      await expect(row.locator(`[data-add-field="${field}"]`)).toHaveValue("0");
+    }
+  });
+});
+
+// ============================== the bank journal's Add button ==============================
+
+test.describe("DIYA-GL Ltd page — the bank journal's Add button posts through addBankLine", () => {
+  test("a receipt lands under the chosen account, agreeing with Node byte for byte", async ({ page }) => {
+    await openFull(page);
+    await openAprilEntries(page);
+    await switchJournal(page, "bank");
+
+    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+
+    await addEntry(page, "bank", {
+      date: "2025-04-18",
+      account: "1200",
+      direction: "D",
+      code: "DR",
+      detail: "Ad hoc receipt",
+      amount: 245.6,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a bank entry of £245.60");
+    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before + 1);
+
+    const row = page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]');
+    await expect(row.locator(".entry-account-name")).toHaveText("Current account");
+    await expect(row.locator(".entry-account-code")).toHaveText("1200");
+    await expect(row.locator(".entry-detail")).toContainText("Ad hoc receipt");
+    await expect(row.locator(".entry-amount-input")).toHaveValue("245.60");
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const line = {
+      "entryNumber": "NEW-0001",
+      "sourceJournalID": "bank",
+      "postingDate": "2025-04-18",
+      "accountMainID": "1200",
+      "debitCreditCode": "D",
+      "amount": 245.6,
+      "documentType": "bank-statement",
+      "detailComment": "Ad hoc receipt",
+      "diya-gl:bankCode": "DR",
+      "diya-gl:bankAccountID": "1200",
+    };
+    const nodeReport = applyNamedEdit(LTD_FULL_DIR, (book, lines) => addBankLine(book, lines, { line }), "ltd", await ltdTaxData());
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("undo removes the line the Add button just added", async ({ page }) => {
+    await openFull(page);
+    await openAprilEntries(page);
+    await switchJournal(page, "bank");
+
+    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+
+    await addEntry(page, "bank", {
+      date: "2025-04-19",
+      account: "1230",
+      direction: "C",
+      code: "CR",
+      detail: "Ad hoc payment",
+      amount: 60,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a bank entry of £60.00");
+    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before + 1);
+
+    await undo(page);
+    await expect(page.locator("#undo-btn")).toHaveClass(/hidden/);
+    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before);
+    await expect(page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]')).toHaveCount(0);
+  });
+});
+
+// ============================== the transfer pair ==============================
+// A transfer between two of the company's own bank accounts posts once on
+// each side: a receipt on the account money arrives in, coded with the
+// paying account's own transfer letter, and a payment on the account it
+// left, coded with the receiving account's own transfer letter. Matched this
+// way, book-ltd-transfer-has-counter-leg finds each leg's own counter-leg
+// and intraTransfers (calculators/ltd.js) nets the pair to nil, so the whole
+// book's own audit total is left exactly where it was.
+
+test.describe("DIYA-GL Ltd page — a transfer entered on both accounts", () => {
+  test("a receipt on Savings and its counter-leg payment on Current leave every check and the trial balance where they were", async ({
+    page,
+  }) => {
+    await openFull(page);
+    await openAprilEntries(page);
+    await switchJournal(page, "bank");
+
+    await addEntry(page, "bank", {
+      date: "2025-04-22",
+      account: "1210",
+      direction: "D",
+      code: "BB",
+      detail: "Transfer from Current account",
+      amount: 500,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a bank entry of £500.00");
+
+    await addEntry(page, "bank", {
+      date: "2025-04-22",
+      account: "1200",
+      direction: "C",
+      code: "BS",
+      detail: "Transfer to Savings account",
+      amount: 500,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a bank entry of £500.00");
+
+    await allChecksPass(page);
+    await expect.poll(() => reportValue(page, EJ91_AUDIT_ACCURACY)).toBeCloseTo(0, 2);
   });
 });

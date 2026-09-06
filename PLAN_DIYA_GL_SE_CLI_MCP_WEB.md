@@ -542,7 +542,20 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
   deduction fields for payroll), and the payroll journal gets the chart section no Ltd book
   declares -- discovered from the wage account codes (5100, 5101) its own lines already carry,
   never hardcoded, the way SE's T33 discovered SE's. `books-ltd-page.browser.test.js` proves the
-  payroll journal's account picker is no longer empty.
+  payroll journal's account picker is no longer empty. T37g corrects the two descriptors' own
+  field key from `name` to `id` and the employee field from `type: "employee"` to a real select,
+  the shape shell.js's add row actually reads.
+- T37g, 2026-09-06: the alignment fix above, plus a real bug the merge exposed: shell.js's
+  Add-button handler read every add row's fields but never set `entry.kind`, so a bank or payroll
+  add always fell through to the trade routing (`entry.kind = descriptor ? descriptor.kind :
+  undefined` fixes it beside the row's other fields). Proof on `ltd-scenario-full`
+  (`books-ltd-edits.browser.test.js`): the bank add row's code select tracks the chosen account and
+  direction against `bankLayout` (`app/lib/ltd-layout.js`), the payroll add row's employee select
+  lists the book's own three employees with the deduction fields defaulting to nil, a £245.60
+  receipt on the current account lands under it and agrees with Node's `addBankLine` byte for
+  byte, undo removes it, and a matched transfer pair (a receipt on Savings coded for Current's own
+  letter, a payment on Current coded for Savings') leaves every check green and
+  `TrialBalance!EJ91` at 0.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes

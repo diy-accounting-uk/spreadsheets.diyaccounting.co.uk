@@ -2307,6 +2307,7 @@
         entry.date = date;
         entry.account = account;
         entry.amount = amount;
+        entry.kind = descriptor && descriptor.kind;
         addDraft[journal] = null;
         commit(
           function () {
