@@ -915,7 +915,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
       // that banks nothing that month, and misdates one that banks late.
       const obVal = readCellValue(xml, "A1", sharedStrings);
       if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted && !hasCellFormula(xml, "A1")) {
-        lines.push({
+        const obLine = {
           "sourceJournalID": "bank",
           "postingDate": period.start,
           "accountMainID": accountID,
@@ -925,7 +925,12 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": nextEntryNumber("bank"),
-        });
+        };
+        lines.push(obLine);
+        if (extractionMap) {
+          const obRegion = { sheet: sheetName, sourceJournalID: "bank", columns: { amount: "A" } };
+          extractionMap.recordLine(obLine, obRegion, 1, lines.length - 1, file);
+        }
         obEmitted = true;
       }
 
@@ -1388,6 +1393,14 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
   return lines;
 }
 
+// mapping.cell is one cell per OA_JOURNAL_MAP entry, never shared between
+// two entries (see the map above), so each line it produces has a real row
+// on OpenAccounts to record against.
+function splitCellRef(cellRef) {
+  const match = /^([A-Z]+)(\d+)$/.exec(cellRef);
+  return { col: match[1], row: Number(match[2]) };
+}
+
 /**
  * Extract journal entries: the opening balances -- Ltd from the OpenAccounts
  * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows -- and,
@@ -1396,11 +1409,8 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
  * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the other two keep no journal
  * @param {{start: string, end: string}} period - the accounting period the package covers
- * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into for
- *   the SE Schedule rows only; the Ltd opening-balance and stock-movement
- *   journals have no source cell of their own to record (OpenAccounts posts
- *   a fixed cell to more than one account, and the stock movement is a
- *   derived figure, not a row read)
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each line is produced
  */
 export async function extractJournalEntries(set, product, period, extractionMap) {
   if (product === "se") return extractSeOpeningFixedAssets(set, period, extractionMap);
@@ -1425,7 +1435,7 @@ export async function extractJournalEntries(set, product, period, extractionMap)
     if (val === null || typeof val !== "number" || val === 0) continue;
 
     const flip = { D: "C", C: "D" };
-    lines.push({
+    const line = {
       sourceJournalID: "journal",
       postingDate: period.start,
       accountMainID: mapping.accountMainID,
@@ -1439,12 +1449,32 @@ export async function extractJournalEntries(set, product, period, extractionMap)
       debitCreditCode: val >= 0 ? mapping.dc : flip[mapping.dc],
       lineNumber: lineNum++,
       entryNumber: nextEntryNumber("journal"),
-    });
+    };
+    lines.push(line);
+    if (extractionMap) {
+      const { col, row } = splitCellRef(mapping.cell);
+      const region = { sheet: "OpenAccounts", sourceJournalID: "journal", columns: { amount: col } };
+      extractionMap.recordLine(line, region, row, lines.length - 1, "Financialaccounts.xlsx");
+    }
   }
 
-  for (const line of await stockMovementJournal(zip, xml, sharedStrings, period)) {
-    lines.push({ ...line, lineNumber: lineNum++, entryNumber: nextEntryNumber("journal") });
-  }
+  // The stock movement is one figure derived from two cells on two
+  // different sheets of the hub -- there is no single row that produced it
+  // the way an ordinary transaction row does. Its "stock" line gets a real,
+  // distinct address: the Stock sheet's own closing count, which nothing
+  // else here reads. Its "cost of sales" line has no cell of its own left
+  // to claim -- the movement's other input, OpenAccounts!E15, is already the
+  // real "Opening stock" line's own address above, and shadowing that with
+  // a second, unrelated line would make the earlier one unreachable by
+  // lineForCell -- so it stays unrecorded, the same as before this change.
+  const { col: closingCol, row: closingRow } = splitCellRef(STOCK_CELLS.ltd.closingValue);
+  const stockLineRegion = { sheet: STOCK_CELLS.ltd.sheet, sourceJournalID: "journal", columns: { amount: closingCol } };
+  const stockMovementLines = await stockMovementJournal(zip, xml, sharedStrings, period);
+  stockMovementLines.forEach((line, index) => {
+    const recorded = { ...line, lineNumber: lineNum++, entryNumber: nextEntryNumber("journal") };
+    lines.push(recorded);
+    if (extractionMap && index === 0) extractionMap.recordLine(recorded, stockLineRegion, closingRow, lines.length - 1, "Financialaccounts.xlsx");
+  });
 
   return lines;
 }
