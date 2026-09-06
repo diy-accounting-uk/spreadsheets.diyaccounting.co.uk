@@ -469,7 +469,6 @@
   function buildStock(ctx) {
     var stock = ctx.book.stock || {};
     return {
-      openingValue: num(stock.openingValue),
       materialsPercent: stock.materialsPercent === undefined ? null : num(stock.materialsPercent),
     };
   }
