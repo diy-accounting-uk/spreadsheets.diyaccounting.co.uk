@@ -144,6 +144,7 @@ export {
   addSaleLine,
   addPurchaseLine,
   addBankLine,
+  addPayrollLine,
   changeLineAmount,
   removeLine,
   changeLinePostingDate,
@@ -152,6 +153,10 @@ export {
   changeLineDetail,
   changeLineQuantity,
 } from "./diya-gl-edits.js";
+
+// The Ltd bank workbook's own analysis-column list, for a bank add row's
+// code-letter picker.
+export { bankLayout } from "./ltd-layout.js";
 
 // The book checks and warnings over D itself, and their fix-it helpers.
 export {
