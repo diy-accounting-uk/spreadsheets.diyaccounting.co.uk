@@ -38,6 +38,8 @@ export default defineConfig({
         "**/books-se-formats.browser.test.js",
         "**/books-se-edits.browser.test.js",
         "**/books-ltd-page.browser.test.js",
+        "**/books-ltd-edits.browser.test.js",
+        "**/books-ltd-warnings.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",
