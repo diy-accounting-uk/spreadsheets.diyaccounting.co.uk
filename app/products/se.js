@@ -2033,15 +2033,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
     // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already deducted,
     // carried negative) sits inside that range, so the sheet's total is the
     // computed tax and NI less what the contractors have already paid over.
     const cisSuffered = Object.values(expected.sales || {})
       .flat()
       .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
-    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered, 0.01);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -2180,8 +2180,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
       check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
       check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
-      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni);
+      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper, 0.01);
+      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni, 0.01);
     }
   }
 
