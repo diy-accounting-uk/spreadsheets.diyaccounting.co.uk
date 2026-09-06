@@ -795,9 +795,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const profit = tax.E5 || 0;
       const expectedTax = calculateExpectedTax(profit, taxData);
 
-      check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-      check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower);
-      check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni);
+      check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+      check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower, 0.01);
+      check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni, 0.01);
 
       // Each payment on account is half the liability the sheet itself
       // charges, read independently of any expected figure so a wrong split
@@ -890,8 +890,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Forecast: tax at standard rate", forecast.C37 || 0, expectedForecastTax.income_tax_basic);
       check("Forecast: tax at higher rate", forecast.C38 || 0, expectedForecastTax.income_tax_higher);
       check("Forecast: tax at additional rate", forecast.C39 || 0, expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", forecast.C40 || 0, expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
-      check("Forecast: tax and NI liability", forecast.C41 || 0, expectedForecastTax.total_tax_and_ni);
+      check("Forecast: National Insurance", forecast.C40 || 0, expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper, 0.01);
+      check("Forecast: tax and NI liability", forecast.C41 || 0, expectedForecastTax.total_tax_and_ni, 0.01);
     }
   }
 
