@@ -29,11 +29,6 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
   `constructor` and `prototype` segments, but the flagged site is a later recursive assignment
   (the property chain set while walking); apply the same segment check there or build the chain
   with `Object.create(null)` objects. Prove with the unit and shell specs; CodeQL re-scans on push.
-- **SE-T32**: `app/lib/book-checks.js` `REPOST_PREFERRED` names `BasicSoleTrader` and
-  `TaxiDriver` only; `settlementSuggestions`' repost helper for an SE purchase therefore falls to
-  the chart's first account. Add the `SelfEmployed` entry from SE's chart (the account the
-  purchase analysis would pick for a payment with no invoice; read `app/products/se.js`'s
-  purchase code map) and prove it in `app/test/settlement-helpers.test.js` on the SE advanced book.
 - **SE-T33**: the SE manifest's `cash` and `payroll` journals have no chart data, so the entries
   grid renders an empty chart; T7 assigned the fix to T14, which landed without it. Either
   `entriesGrid: false`/`chart: false` for those journals in `web/.../books/products/se.js` or a
@@ -51,8 +46,8 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 |---|---|---|---|---|---|---|
 | CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | in-flight | code complete in batch PR #67 (`f1ab329a`, `cdd1deb3`); CodeQL scans the batch under `codeql.yml` |
 | H3 | Merge batch PR #67 once every row in it is code complete and its checks are green | none | human | CQ-4, SE-T32, SE-T33, SE-T35, SE-T36, TX-T21, TX-T22 | blocked-to-start | draft until the last row merges into the batch |
-| SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
-| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
+| SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`ea79aed8`); 21 cases pass |
+| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`; T33 uncommitted, browser run pending |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`b7d2aea1`) |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`3e762a5a`) |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`471d3e99`); 3 cases pass |
