@@ -6,18 +6,19 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #62 (`claude/diya-gl-wave-2`, 54 rows) merged to main on 2026-09-06 at `d235d704`; the batch
-branch is deleted on both sides, no worktree exists under `../.worktrees/spreadsheets/`, and `main`
-is the only local branch. The four plans were audited against the tree the same day and record every
-row as delivered; the audits' remainders are the board's open rows. The operator's `generate-all.yml`
-run 34026795912 is regenerating the four packages on main (row M1). Sub-agents run no LibreOffice and
-prove JS calculations against the committed packages' extraction (`report.js --source-dir`). Every
-worktree lives at `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` while its row is in flight,
-and the board names it. The generate workflows cancel their own in-progress run on a push to their
-ref, so a session pushes nothing to a branch while a generate run is in progress on it.
-A freeze is in effect from 2026-09-06: no push to origin and no workflow dispatch until the operator
-lifts it; sessions work locally and propose fixes. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
-plan of record and carries its own open items.
+PR #63 and PR #64 merged to main on 2026-09-06; every product's packages, reports and
+reconciliation pages are regenerated on main from the merged writers (Ltd last, at `c97b2c81`), and
+prod deployed from that commit through deploy run 34038592549 with the judge on Nova passing all
+four products under the actions role. The `test` re-run 34038603329 on the same commit fails one
+browser case deterministically (row LT-T29, fix on `claude/ltd-a7-clean`). No worktree exists under
+`../.worktrees/spreadsheets/`, and `main` is the only local branch besides that one. Sub-agents run
+no LibreOffice and prove JS calculations against the committed packages' extraction
+(`report.js --source-dir`). Every worktree lives at `../.worktrees/spreadsheets/<row>` on
+`claude/wt-<row>` while its row is in flight, and the board names it. The generate workflows cancel
+their own in-progress run on a push to their ref, so a session pushes nothing to a branch while a
+generate run is in progress on it. A freeze is in effect from 2026-09-06: no push to origin and no
+workflow dispatch until the operator lifts it; sessions work locally and propose fixes.
+`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
 
 ## Freeze (operator, 2026-09-06, verbatim)
 
@@ -26,26 +27,18 @@ plan of record and carries its own open items.
 > is lifted.
 
 Acknowledged in session: no pushes to origin and no workflow dispatches until the operator lifts
-it; the operator's `generate-all.yml` run 34026795912 on main is watched read-only; any failure is
-diagnosed locally and the fix proposed, not landed. Local `main`'s docs-only commits (the plan
-audits, the board updates, the freeze note) push after the lift, rebased onto the run's package
-commits. Prod was already deployed from
-`d235d704` (the PR #62 merge). The memory `freeze-no-push-no-workflow` carries the same rule.
+it; each fix is built and verified locally and pushed only on the operator's word. The memory
+`freeze-no-push-no-workflow` carries the same rule.
 
 ## Context for the open rows
 
-- **M1** (operator): `generate-all.yml` run 34026795912 committed BST, Taxi and SE to main. Ltd's
-  reconcile passes but its unit step has failed twice on `ltd-workbook.test.js` pinning the old
-  October year end (run 34026795912) and then its Admin serial (run 34032585902); both pins are
-  derived on `claude/ops-green-deploy`. The commit jobs push with the default `GITHUB_TOKEN`, which
-  fires no workflow, so `deploy.yml` never follows a package push. The scheduled deploy run
-  34030850798 failed at its judge gate on SE's negative Total Tax + NI (SE-T34, same branch), with
-  every Sonnet call 403ing on `aws-marketplace:Subscribe` and escalating to Opus; the judge now
-  runs on Nova (J1, same branch); the actions role's inline policy now allows
-  `bedrock:InvokeModel` on `foundation-model/amazon.*` and the account's `inference-profile/*amazon*`
-  (`InvokeAmazonBedrock`, applied 2026-09-06; the policy lives in no repo). Prod serves `d235d704`'s packages until a deploy passes
-  the judge: after the branch merges, `generate-ltd` once more, then `gh workflow run
-  deploy.yml -f environment-name=prod`.
+- **LT-T29** (SE-T29's remainder, the Ltd twin of SE-T37): `books-ltd-equivalence.browser.test.js`'s
+  A7 true-upload case tolerated the period-skew marks the old `ltd-latest` carried and asserted
+  there were some; the regenerated package carries none, so the case now asserts an empty drift
+  set and the skew helpers are gone. Proved locally on the regenerated `ltd-latest` (three A7
+  cases). The commit jobs push with the default `GITHUB_TOKEN`, which fires no workflow, so a
+  package push never deploys on its own; prod deploys through `gh workflow run deploy.yml -f
+  environment-name=prod` or the 07:17 UTC schedule.
 - **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
   lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
   it starts with the public directory; CodeQL wants a sanitiser it recognises, so serve from an
@@ -64,10 +57,6 @@ commits. Prod was already deployed from
   grid renders an empty chart; T7 assigned the fix to T14, which landed without it. Either
   `entriesGrid: false`/`chart: false` for those journals in `web/.../books/products/se.js` or a
   chart from the journal's own categories; prove in `web/browser-tests/books-se.browser.test.js`.
-- **SE-T34**: `claude/se-cis-indicator` (local until pushed) makes `incomeTaxLine` state the CIS
-  the contractors deducted and the bottom line it leaves; proved in `judge-reconciliation.test.js`
-  on the committed brickwork-pro non-VAT report. The judge re-reads the indicators on the next
-  deploy run; no report regenerates.
 - **SE-T35**: `app/lib/product-workbook.js:40` `PRODUCT_BY_SCHEMA_NAME` is the inverse of
   `app/lib/xlsx-exporter.js` `SCHEMA_PRODUCT_NAMES`; keep one and derive the other, updating both
   callers, no alias.
@@ -90,13 +79,11 @@ commits. Prod was already deployed from
 | CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 on main's scan after PR #62 |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| SE-T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query; the scheduled deploy's judge gate fails SE on it | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `claude/se-cis-indicator`: fix built, awaiting the operator's push under the freeze |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | SE-T34 | in-flight | `generate-ltd` run 34032585902 after PR #63; deploy waits on the judge passing SE |
-| J1 | The reconciliation judge runs on Amazon's models through the Bedrock Converse API (Nova 2 Lite, escalating to Nova Pro) instead of Sonnet and Opus, whose marketplace agreement the account never established | operator | machine | — | in-flight | `claude/ops-green-deploy`: switch built and the role policy applied; awaiting the operator's push under the freeze |
+| LT-T29 | The Ltd A7 true-upload case expected the period-skew drift the old `ltd-latest` carried; the regenerated package carries none | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `claude/ltd-a7-clean`: fix built and proved locally, awaiting the operator's push under the freeze |
 
 ## Plans not tracked here
 
