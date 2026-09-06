@@ -29,10 +29,11 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
   `constructor` and `prototype` segments, but the flagged site is a later recursive assignment
   (the property chain set while walking); apply the same segment check there or build the chain
   with `Object.create(null)` objects. Prove with the unit and shell specs; CodeQL re-scans on push.
-- **SE-T33**: the SE manifest's `cash` and `payroll` journals have no chart data, so the entries
-  grid renders an empty chart; T7 assigned the fix to T14, which landed without it. Either
-  `entriesGrid: false`/`chart: false` for those journals in `web/.../books/products/se.js` or a
-  chart from the journal's own categories; prove in `web/browser-tests/books-se.browser.test.js`.
+- **SE-T37**: `web/.../books/edits.js:195` `addEntry` sends every journal but `sales` through
+  `addPurchaseLine`, which refuses bank, cash and payroll lines on the `sourceJournalID` guard in
+  `app/lib/diya-gl-edits.js`. The add row needs a direction and bank account for bank and cash
+  lines and payslip fields for payroll, then a per-journal edit call; the plan's T37 row names the
+  files. Design first: the add-row fields are a UI decision.
 - **SE-T35**: `app/lib/product-workbook.js:40` `PRODUCT_BY_SCHEMA_NAME` is the inverse of
   `app/lib/xlsx-exporter.js` `SCHEMA_PRODUCT_NAMES`; keep one and derive the other, updating both
   callers, no alias.
@@ -45,11 +46,12 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | in-flight | code complete in batch PR #67 (`f1ab329a`, `cdd1deb3`); CodeQL scans the batch under `codeql.yml` |
-| H3 | Merge batch PR #67 once every row in it is code complete and its checks are green | none | human | CQ-4, SE-T32, SE-T33, SE-T35, SE-T36, TX-T21, TX-T22 | blocked-to-start | draft until the last row merges into the batch |
+| H3 | Merge batch PR #67; every row in it is code complete | none | human | — | ready-to-start | checks running on `b0982b6b`; CodeQL on the branch reports zero results |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`ea79aed8`); 21 cases pass |
-| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`; T33 uncommitted, browser run pending |
+| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`17b39c58`); 13 cases pass |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`b7d2aea1`) |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`3e762a5a`) |
+| SE-T37 | The entries grid's Add button throws for bank, cash and payroll lines: `addEntry` routes every journal but sales through `addPurchaseLine` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | Opus design of the add-row fields, then Sonnet |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`471d3e99`); 3 cases pass |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`0870de04`); 18 cases pass |
 
