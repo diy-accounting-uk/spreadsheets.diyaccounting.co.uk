@@ -271,22 +271,6 @@ test.describe("DIYA-GL Taxi books page — the sheet agrees (A3)", () => {
 // only its numeric parse is skipped.
 const NARRATIVE_RENDER_KEYS = new Set(["cell/Wages Forecast!C19", "section/wages-forecast/months-of-actual-trade"]);
 
-// A render-coverage gap this file did not create and is not scoped to fix
-// (A5 is a separate file): taxi-views.js's COMPARISON_FIGURES filter
-// (products/taxi-views.js:36-45, FIGURES_WITHOUT_MILES) hides
-// PurchasesMar!A1/A2 on a book with no mileage claim -- both are still real
-// S2 keys (value 0), but app/data/render-unrepresentable/taxi.json does not
-// yet declare that absence. taxi-scenario-basic and taxi-scenario-kestrel
-// both claim no mileage, so their sweep is these four keys short of S2's
-// count; taxi-scenario-sp-sixty does claim mileage and renders them, so
-// this loosens its own floor by the same margin without masking anything.
-const VEHICLE_ABSENT_HIDDEN_KEYS = new Set([
-  "cell/PurchasesMar!A1",
-  "cell/PurchasesMar!A2",
-  "section/purchase-analysis/business-miles-for-the-year",
-  "section/purchase-analysis/mileage-claimed-for-the-year",
-]);
-
 test.describe("DIYA-GL Taxi books page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS_TAXI) {
     test(`${example.scenario}: every rendered figure matches S2`, async ({ page }) => {
@@ -319,7 +303,7 @@ test.describe("DIYA-GL Taxi books page — the screen agrees (A4)", () => {
         }
       }
 
-      const declaredInS2 = [...s2Map.keys()].filter((key) => key in DECLARED || VEHICLE_ABSENT_HIDDEN_KEYS.has(key));
+      const declaredInS2 = [...s2Map.keys()].filter((key) => key in DECLARED);
       const expectedMinimum = s2Map.size - declaredInS2.length;
       console.log(`A4 (${example.scenario}): ${compared} figures compared, S2 requires at least ${expectedMinimum}`);
 
