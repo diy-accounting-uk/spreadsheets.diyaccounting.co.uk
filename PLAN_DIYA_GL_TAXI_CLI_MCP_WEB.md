@@ -303,10 +303,14 @@ research file's box list:
 | `D94`, `D99`, `O94`, `O99` | 26 to 29 | 27 own use, 28 net business profit, 29 loss brought forward, 30 other income |
 | `D106`, `O106` | 30, 31 | 31 total taxable profits, 32 net business loss |
 
-Boxes 33 to 38 (losses, the Class 2 and Class 4 ticks, CIS) have no cells. The page
-renders the form with the 2026 numbers and labels, one figure per box, the sheet's own
-figures where the sheet has them (`data-r-key` on the thirteen `CELL_MAP` cells) and the
-expense boxes derived from the P&L keys the page already renders (box 13 carries
+Boxes 33 to 38 (losses, the Class 2 and Class 4 ticks, CIS) print present and empty: the
+sheet carries formulas or inputs for some (`D123` box 34, `O123` box 37) but the calculator
+emits none of them, so none is in `CELL_MAP` and none carries a key. Box 32 (`O106`) is the
+same shape: the sheet's cell has a formula but the calculator does not emit it, so it too
+prints present with no key. The page renders the form with the 2026 numbers and labels, one
+figure per box, the sheet's own figures where the sheet has them (`data-r-key` on the
+thirteen `CELL_MAP` cells) and the expense boxes derived from the P&L keys the page already
+renders (box 13 carries
 `cell/Profit & Loss Acc!B14`, and so on), so no new `CELL_MAP` rows are needed for the
 form. The expense boxes print at any turnover; the sheet's blanking below £30,000 was a
 permission the form grants at £90,000 and the reader loses nothing by seeing the items.
@@ -580,6 +584,45 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 - PR #60 fixes, merged 2026-09-05: `render-unrepresentable/taxi.json` and `bst.json` follow the
   bridge label renumber; `takeSourceCell` links a section row to its cell at the penny, so the
   sheet's `417.300000000001` no longer leaves an Excel-only row for the roundtrip scorecard.
+
+- TX-T25 `d532e544`, `83224d31`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `overtype-sidecar.test.js` and `books-interchange.test.js`'s Taxi "nothing typed over" checks
+  build their upload with `loadDiyaGlData` + `saveWorkbook` against the live template at test
+  time, instead of reading the committed `examples/taxi-latest`, so a template change with no
+  matching CI refresh no longer reads as a false-positive overtype. 32 and 57 tests pass.
+
+- TX-T16 `866fc933`, `68e9b9b5`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `books/taxi.html`, three Taxi rows in `scripts/example-books.json`, the Taxi template copied
+  into the bundle, the download page's `books-taxi-link`, and the behaviour probe. Files verified
+  present in the tree; the probe itself needs a running server and was not run.
+
+- TX-T17 `a1e908ec`, `744fc606`, `1e5340a6`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `books-taxi-{equivalence,formats,edits,layouts}.browser.test.js`, `r-sources.js` taking a
+  product. Found: A7's key set is `Profit & Loss Acc!D5`, not `SalesMay!E1` (nothing reads the
+  latter into R); A3 compares `examples/taxi-latest`'s own re-extraction against a fresh S2 run
+  over the live fixture rather than the committed package, carrying a `KNOWN_STALE_KEYS` list
+  (Admin's Class 2 cells, VitalTax and Wages Forecast rounding) for cells the two sides
+  legitimately disagree on. All four specs pass, 35 tests.
+
+- TX-T18 `6c962969`, `69430d3d`, `09960980`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `books-taxi-forms.browser.test.js` proves the SA103S render on both routes. Found the plan's
+  own box table wrong: box 10 (`O38`, box 9 pre-2026) carries no formula and prints present with
+  no key, same as boxes 32 (`O106`, a formula the calculator never emits) and 33 to 38 (some
+  sheet cells, `D123`/`O123`, some none, none emitted) — corrected above. Also found
+  `taxi-views.js`'s comparison panel hid the miles and allowance figures on a book with no
+  mileage claim, though both are real S2 keys; now printed on every book. 17 tests pass.
+
+- TX-T26 `58496f21`, `beed71f3`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `calculateExpectedTax` no longer rounds `total_tax_and_ni` to the pound or the Class 4 lines
+  to 10p — the Income Tax sheet's own total (BST/SE `E18`, Taxi `E17`) is a plain unrounded
+  `SUM()`, as the JS calculators already mirrored. `income-tax-total-precision.test.js` (5
+  tests) proves the total against BST, SE and Taxi fixtures to the penny.
+
+- TX-T27 `06fdbafa`, `404ffe3f`, merged into `claude/diya-gl-wave-2` (2026-09-06):
+  `checkForecastTaxAndNi` extracted into `app/lib/tax/income-tax.js` so SE's Profit Forecast and
+  Taxi's Wages Forecast share one penny-precise check, with the loss-year personal-allowance
+  floor the old Taxi check never applied. `forecast-tax-precision.test.js` (4 tests) proves it
+  against BST, SE and Taxi fixtures.
 
 ### Verification ladder
 
@@ -1997,8 +2040,7 @@ Acc!D5`, not `SalesMay!E1`.
 
 Tier: Fable. Precursors: T13 merged (the manifest, `snapshot.takings`, `changeLineDetail`,
 `changeLineQuantity`); SE:S7 merged with the five seam lines; `books/taxi.html` and the
-`taxi-scenario-basic` example row (T16). If T16 has not merged, add both exactly as T16's brief
-specifies and say so in the commit; T16 then finds them in place and adds the other two rows.
+`taxi-scenario-basic` example row (T16).
 Where this brief and the "### T14" design brief or "The takings view" disagree, this brief wins
 and the commit message says so.
 
@@ -3082,9 +3124,10 @@ Files. Creates `web/browser-tests/books-taxi-forms.browser.test.js`; appends one
 
 Design. Load `taxi-scenario-basic` (actual-cost route) and `taxi-scenario-sp-sixty` (mileage
 route); for each box in the plan's table read the rendered figure and its `data-r-key`; assert
-the key set equals the table's (boxes 9, 10, 11 to 14, 16 to 22, 23 to 26, 27 to 32 present;
-33 to 38 absent); on sp-sixty box 12 carries the claim (`cell/Profit & Loss Acc!B11`) and box 11
-is empty; on basic box 12 carries `B6 + B7 + B9`, box 15 carries `B8`, boxes 23 to 25 carry
+the key set equals the table's (boxes 9, 11 to 14, 16 to 22, 23 to 26, 27 to 31 keyed; boxes
+10, 32 to 38 present with no key); on sp-sixty box 12 carries the claim
+(`cell/Profit & Loss Acc!B11`) and box 11 is empty; on basic box 12 carries `B6 + B7 + B9`,
+box 15 carries `B8`, boxes 23 to 25 carry
 `SE Short!D80`, `D85`, `O80`; the margin beside boxes 11, 12 and 15 shows the sheet's own
 placement (`SE Short!D46`'s figure) on both routes; the computation's lines equal
 `calculateExpectedTax(profit, taxData)` computed in Node for the same book, Class 2 included
@@ -3102,8 +3145,9 @@ Purpose: the tax data carries what a Class 2 line needs and `calculateExpectedTa
 
 Files. Modifies `app/data/se-2025-2026.toml` and `app/data/se-2026-2027.toml`
 (`[national_insurance]` gains `class2_small_profits_threshold = 6845` and
-`class2_weekly_rate = 3.50`; `class2_rate` stays 0), `app/lib/tax/income-tax.js`
-(`calculateExpectedTax`), `app/lib/diya-gl-loader.js` (`extractTaxDataFromBook` maps
+`class2_weekly_rate = 3.50`; `class2_rate` joins them at 3.50, since the BST/SE/Taxi
+generators, calculators, checks and pages all read `class2_rate` for the Admin echo cell),
+`app/lib/tax/income-tax.js` (`calculateExpectedTax`), `app/lib/diya-gl-loader.js` (`extractTaxDataFromBook` maps
 `class2SmallProfitsThreshold` when a book carries it), `app/test/tax/income-tax.test.js`,
 `app/test/tax/national-insurance.test.js`. Must not touch the exporter's `taxTablesFromRateData`
 (the book side stays as it is), the earlier years' TOMLs, any template.
@@ -3129,8 +3173,9 @@ three SE-regime `generate-*` workflows on the branch with `skip-commit` (their A
 read the new rate).
 
 Acceptance: the five tests pass; `grep -c class2_small_profits_threshold app/data/se-*.toml`
-finds exactly the two files; no `packages/` change on this row (the rate lands in the Admin
-cell on the next regeneration, which rides T6).
+finds the two years this row touches (TX-T24 later adds the threshold to every earlier year's
+TOML too); no `packages/` change on this row (the rate lands in the Admin cell on the next
+regeneration, which rides T6).
 
 Tier: Sonnet.
 
