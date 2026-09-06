@@ -1694,7 +1694,11 @@ export function profitBridge(results) {
     { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
     { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
     { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
-    { label: "Add back the year's loss, carried forward rather than reducing tax below nil", cell: "SE Full!O179", value: num(seFull?.O179) },
+    {
+      label: "Add back the year's loss, carried forward rather than reducing tax below nil",
+      cell: "SE Full!O179",
+      value: num(seFull?.O179),
+    },
     { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
     { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
   ];

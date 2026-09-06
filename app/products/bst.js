@@ -383,7 +383,8 @@ export function cellLabels() {
 
 export function fmt(v, unit) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number")
+    return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 

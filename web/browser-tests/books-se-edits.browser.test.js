@@ -237,9 +237,7 @@ async function advancedTaxData() {
 }
 
 test.describe("DIYA-GL Self Employed page — E1: an edit moves the figure it should", () => {
-  test("a bank line's amount moves the bank book's March closing balance by the difference, engine checks stay green", async ({
-    page,
-  }) => {
+  test("a bank line's amount moves the bank book's March closing balance by the difference, engine checks stay green", async ({ page }) => {
     await openAdvanced(page);
 
     await openView(page, "bank");
@@ -329,7 +327,9 @@ test.describe("DIYA-GL Self Employed page — E1: an edit moves the figure it sh
     const delta = 300;
     await openMonthEntries(page, "2025-04");
     await switchJournal(page, "payroll");
-    const amountField = page.locator(`.entries-table[data-journal="payroll"] tr.entry-row[data-entry="${entryNumber}"] .entry-amount-input`);
+    const amountField = page.locator(
+      `.entries-table[data-journal="payroll"] tr.entry-row[data-entry="${entryNumber}"] .entry-amount-input`,
+    );
     const was = Number(await amountField.inputValue());
     const newAmount = was + delta;
     await amountField.fill(String(newAmount));
@@ -681,32 +681,32 @@ async function settleTestBook(page, businessName) {
   await openNewSeBook(page, businessName);
   await appendLines(page, [
     {
-      entryNumber: "BREAK-SETTLE-SALE",
-      sourceJournalID: "bank",
-      postingDate: "2025-07-20",
-      accountMainID: "1200",
-      debitCreditCode: "D",
-      amount: 480,
-      documentType: "bank-statement",
-      documentReference: "BNK-SETTLE-1",
-      detailComment: "Acme Builders",
-      taxCode: "OS",
-      taxRate: 0,
+      "entryNumber": "BREAK-SETTLE-SALE",
+      "sourceJournalID": "bank",
+      "postingDate": "2025-07-20",
+      "accountMainID": "1200",
+      "debitCreditCode": "D",
+      "amount": 480,
+      "documentType": "bank-statement",
+      "documentReference": "BNK-SETTLE-1",
+      "detailComment": "Acme Builders",
+      "taxCode": "OS",
+      "taxRate": 0,
       "diya-gl:bankCode": "DR",
       "diya-gl:bankAccountID": "1200",
     },
     {
-      entryNumber: "BREAK-SETTLE-PURCHASE",
-      sourceJournalID: "bank",
-      postingDate: "2025-07-21",
-      accountMainID: "1200",
-      debitCreditCode: "C",
-      amount: 320,
-      documentType: "bank-statement",
-      documentReference: "BNK-SETTLE-2",
-      detailComment: "Timber Merchants Ltd",
-      taxCode: "OS",
-      taxRate: 0,
+      "entryNumber": "BREAK-SETTLE-PURCHASE",
+      "sourceJournalID": "bank",
+      "postingDate": "2025-07-21",
+      "accountMainID": "1200",
+      "debitCreditCode": "C",
+      "amount": 320,
+      "documentType": "bank-statement",
+      "documentReference": "BNK-SETTLE-2",
+      "detailComment": "Timber Merchants Ltd",
+      "taxCode": "OS",
+      "taxRate": 0,
       "diya-gl:bankCode": "CR",
       "diya-gl:bankAccountID": "1200",
     },

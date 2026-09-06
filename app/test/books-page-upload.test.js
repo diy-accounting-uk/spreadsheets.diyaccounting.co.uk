@@ -165,7 +165,7 @@ describe("drift.js emits unique ids", () => {
 
     const classify = () => ({ stale: false, drift: true });
     const linkCells = {
-      Sheet1: {
+      "Sheet1": {
         A1: 105, // same as engine results for the hub cell
       },
       "Leaf.xlsx!Data": {

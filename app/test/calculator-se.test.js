@@ -307,7 +307,10 @@ describe("Self Employed engine: a loss-making book with no [expected] table", ()
     results["SE Short"].O71 += 500;
     const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
     expect(broken.sort()).toEqual(
-      ["SA103S: net loss = total expenses - turnover - other business income", "SA103F box 48 net loss: full return (O129) = short return (O71)"].sort(),
+      [
+        "SA103S: net loss = total expenses - turnover - other business income",
+        "SA103F box 48 net loss: full return (O129) = short return (O71)",
+      ].sort(),
     );
   });
 
