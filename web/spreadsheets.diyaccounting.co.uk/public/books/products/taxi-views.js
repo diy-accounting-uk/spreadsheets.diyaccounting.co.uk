@@ -40,9 +40,9 @@
     { name: "compared", label: "The figure the sheet compares", sheet: PL_SHEET, cell: "J1", field: "compared" },
     { name: "charged", label: "Charged to the accounts", sheet: PL_SHEET, cell: "B12", field: "charged" },
   ];
-  // A book with no mileage log has nothing to claim and nothing to compare,
-  // so the panel drops the two figures that would both read nil.
-  var FIGURES_WITHOUT_MILES = { running: 1, compared: 1, charged: 1 };
+  // A book with no mileage log still carries these cells; the sheet reads
+  // them as nil, and a nil claim is still a figure, so the panel prints
+  // all five on every book.
 
   var VEHICLE_ROUTE_CELL = "C1";
   var REGISTER_TOTAL_CELLS = { cost: "T1", wda: "J1", writtenDown: "K1" };
@@ -138,13 +138,9 @@
 
   function renderComparison(snapshot, helpers) {
     var vehicle = snapshot.vehicle;
-    var figures = COMPARISON_FIGURES.filter(function (figure) {
-      return vehicle.present || FIGURES_WITHOUT_MILES[figure.name];
-    })
-      .map(function (figure) {
-        return comparisonFigure(snapshot, helpers, figure);
-      })
-      .join("");
+    var figures = COMPARISON_FIGURES.map(function (figure) {
+      return comparisonFigure(snapshot, helpers, figure);
+    }).join("");
     var routeCell = vehicle.routeText
       ? '<p class="comparison-route-cell">the sheet says: <span' +
         keyed(snapshot, helpers, PL_SHEET, VEHICLE_ROUTE_CELL) +

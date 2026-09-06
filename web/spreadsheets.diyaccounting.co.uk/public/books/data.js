@@ -383,6 +383,16 @@
     return Object.assign(shared, ctx.manifest.snapshot(ctx));
   }
 
+  // The book's own period end, as the YYYY-MM-DD checkCompliance and
+  // buildReportDocument both take it -- read the same way at both call
+  // sites so a Company book's Admin sheet is measured against the year end
+  // its own documentInfo declares, not against whatever the caller happened
+  // to pass.
+  function yearEndOf(book) {
+    var periodEnd = book.documentInfo && book.documentInfo.periodCoveredEnd;
+    return periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
+  }
+
   // R, built the same call shape export.js's buildFileReportDocument builds
   // it with for the CLI: the same package name, engine name, results and
   // product module, the scenario merged with its own expected table, and
@@ -390,8 +400,7 @@
   // export of the same book write the same report.json bytes because both
   // pass through buildReportDocument with the same arguments.
   function buildReport(ctx, expectedScenario) {
-    var periodEnd = ctx.book.documentInfo && ctx.book.documentInfo.periodCoveredEnd;
-    var yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
+    var yearEnd = yearEndOf(ctx.book);
     return ctx.engine.buildReportDocument({
       packageName: ctx.manifest.id,
       engine: "js",
@@ -415,7 +424,7 @@
     var scenario = engine.diyaGlToScenario(book, lines, manifest.id);
     var expected = Object.assign({}, scenario, scenario.expected);
     var results = engine.calculateFromDiyaGl(book, lines, manifest.id, context.taxData, expected);
-    var checks = productMod.checkCompliance(Object.assign({}, results), expected, context.taxData, engine.calculateExpectedTax);
+    var checks = productMod.checkCompliance(Object.assign({}, results), expected, context.taxData, engine.calculateExpectedTax, yearEndOf(book));
     var links = context.linkLayer
       ? { layer: context.linkLayer, cells: context.linkCells, hubFile: context.hubFile, classify: engine.classifyLinkCell }
       : null;

@@ -334,7 +334,10 @@ jobs:
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
-          npm test
+          node app/bin/build-sitemaps.js
+          # This product's own and the shared unit tests; the other products' files read their own committed
+          # examples, which only their own refresh renews. The branch's test workflow runs every file.
+          npx vitest run --project unit-tests $(ls app/test/*.test.js web/unit-tests/*.test.js | grep -v -E "(^|/|-)(bst|se|taxi)(-|\.)")
       - name: Build the reconciliation page
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |

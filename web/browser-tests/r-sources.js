@@ -72,7 +72,37 @@ export const SCENARIOS_SE = [
   },
 ];
 
-const FIXTURE_BY_SCENARIO = new Map([...SCENARIOS, ...SCENARIOS_SE].map((s) => [s.scenario, s.fixture]));
+// The three Taxi Driver books the page's own buttons load, each paired with
+// its fixture (S1) and its report.js --data directory (S2). All three are
+// single-file, so bookDir and page match the shape SCENARIOS already uses.
+export const SCENARIOS_TAXI = [
+  {
+    scenario: "taxi-scenario-basic",
+    fixture: "app/test/fixtures/taxi-scenario-basic.toml",
+    bookDir: "examples/basic-taxi-driver/taxi",
+    button: /taxi-scenario-basic/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+  {
+    scenario: "taxi-scenario-sp-sixty",
+    fixture: "app/test/fixtures/taxi-scenario-sp-sixty.toml",
+    bookDir: "examples/sp-sixty-driving/taxi",
+    button: /taxi-scenario-sp-sixty/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+  {
+    scenario: "taxi-scenario-kestrel",
+    fixture: "app/test/fixtures/taxi-scenario-kestrel.toml",
+    bookDir: "examples/kestrel-executive-cars/taxi",
+    button: /taxi-scenario-kestrel/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+];
+
+const FIXTURE_BY_SCENARIO = new Map([...SCENARIOS, ...SCENARIOS_SE, ...SCENARIOS_TAXI].map((s) => [s.scenario, s.fixture]));
 
 /**
  * S1: a scenario fixture's own [expected] table -- the totals the fixture
@@ -157,75 +187,95 @@ export function s2ForPackage(bookDir, yearEnd, name, product = "bst") {
   return map;
 }
 
-const BST_SCENARIO_BASIC_REPORT = /^GB_Accounts_Basic_Sole_Trader_(\d{4})_(\d{2})_(\d{2})__.*_bst-scenario-basic\.md$/;
+// Per product: the saved package s3() reads, and the pattern its highest
+// committed reports/*.md carries its own year-end in. Each product's
+// generate-*.yml workflow refreshes its package for only the matrix's
+// highest year-end and commits that run's reports/*.md alongside it, so the
+// highest year-end named among a product's own basic-scenario reports is
+// the package's own -- read off the fixture rather than assumed.
+const S3_CONFIG = {
+  bst: {
+    sourceDir: "examples/bst-latest",
+    reportPattern: /^GB_Accounts_Basic_Sole_Trader_(\d{4})_(\d{2})_(\d{2})__.*_bst-scenario-basic\.md$/,
+  },
+  taxi: {
+    sourceDir: "examples/taxi-latest",
+    reportPattern: /^GB_Accounts_Taxi_Driver_(\d{4})_(\d{2})_(\d{2})__.*_taxi-scenario-basic\.md$/,
+  },
+};
 
-let s3Cache = null;
+const s3Cache = new Map();
 
 /**
- * The year-end examples/bst-latest was built for. generate-bst.yml only
- * refreshes examples/bst-latest for the matrix's highest year-end, and
- * commits that same run's reports/*.md alongside it, so the highest
- * year-end named among the committed bst-scenario-basic reports is
- * bst-latest's own -- read off the fixture rather than assumed.
+ * The year-end a product's <product>-latest package was built for, read off
+ * the highest year-end named among its committed basic-scenario reports.
+ * @param {string} product - a key of S3_CONFIG
  * @returns {string} YYYY-MM-DD
  */
-function latestBstYearEnd() {
+function latestYearEnd(product) {
+  const config = S3_CONFIG[product];
+  if (!config) throw new Error(`latestYearEnd: no S3 config for product "${product}"`);
   const reportsDir = path.resolve(ROOT, "reports");
   const yearEnds = fs
     .readdirSync(reportsDir)
-    .map((name) => BST_SCENARIO_BASIC_REPORT.exec(name))
+    .map((name) => config.reportPattern.exec(name))
     .filter(Boolean)
     .map((m) => `${m[1]}-${m[2]}-${m[3]}`)
     .sort();
   const latest = yearEnds.at(-1);
-  if (!latest) throw new Error("latestBstYearEnd: no reports/*_bst-scenario-basic.md found to read bst-latest's year-end from");
+  if (!latest) throw new Error(`latestYearEnd: no reports/*_${product}-scenario-basic.md found to read ${product}-latest's year-end from`);
   return latest;
 }
 
 /**
- * S3: report.json read from the cached values of examples/bst-latest, the
- * one Excel package the repository keeps a saved reference of. Reads the
- * workbook's own cached cells -- no LibreOffice, no scenario, so it carries
- * no check/ keys of its own. Exists for bst-scenario-basic only. --year-end
- * names the year-end the fixture was actually built for (latestBstYearEnd),
- * so the returned report.json carries it, ready for s2ForPackage to match.
+ * S3: report.json read from the cached values of a product's own <product>-
+ * latest package, the one Excel package the repository keeps a saved
+ * reference of. Reads the workbook's own cached cells -- no LibreOffice, no
+ * scenario, so it carries no check/ keys of its own. --year-end names the
+ * year-end the package was actually built for (latestYearEnd), so the
+ * returned report.json carries it, ready for s2ForPackage to match.
+ * @param {string} [product] - defaults to "bst"
  * @returns {Map<string, {value: string, unit: string}>}
  */
-export function s3() {
-  if (s3Cache) return s3Cache.map;
+export function s3(product = "bst") {
+  if (s3Cache.has(product)) return s3Cache.get(product).map;
+  const config = S3_CONFIG[product];
+  if (!config) throw new Error(`s3: no S3 config for product "${product}"`);
 
-  const outDir = path.resolve(ROOT, "target", "r-excel");
+  const outDir = path.resolve(ROOT, "target", `r-excel-${product}`);
   execFileSync(
     process.execPath,
     [
       "app/bin/report.js",
       "--package",
-      "bst",
+      product,
       "--source-dir",
-      "examples/bst-latest",
+      config.sourceDir,
       "--mode",
       "saved",
       "--year-end",
-      latestBstYearEnd(),
+      latestYearEnd(product),
       "--output-dir",
       outDir,
     ],
     { cwd: ROOT, stdio: "pipe" },
   );
-  s3Cache = readReport(outDir);
-  return s3Cache.map;
+  const result = readReport(outDir);
+  s3Cache.set(product, result);
+  return result.map;
 }
 
 /**
  * The year-end S3's report.json carries, for a caller (A3) that wants S2
  * built to match it. Reading it back off the document rather than calling
- * latestBstYearEnd() a second time keeps the two sides tied to whatever
+ * latestYearEnd() a second time keeps the two sides tied to whatever
  * year-end S3 actually reported under.
+ * @param {string} [product] - defaults to "bst"
  * @returns {string} YYYY-MM-DD
  */
-export function s3YearEnd() {
-  s3();
-  return s3Cache.yearEnd;
+export function s3YearEnd(product = "bst") {
+  s3(product);
+  return s3Cache.get(product).yearEnd;
 }
 
 /**
