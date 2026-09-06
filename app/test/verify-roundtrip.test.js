@@ -31,7 +31,6 @@ import {
   collapseDaySummedLines,
   flattenBook,
   unrepresentableScope,
-  periodFrameOffset,
   shiftPostingDate,
   shiftPostingDateByDays,
 } from "../bin/verify-roundtrip.js";
@@ -273,17 +272,6 @@ describe("flattenBook", () => {
   });
 });
 
-describe("periodFrameOffset", () => {
-  it("finds no offset when the year end already sits on the scenario's own period start", () => {
-    expect(periodFrameOffset(4, 3)).toBe(0);
-  });
-
-  it("finds the whole-month gap for a non-March year end", () => {
-    expect(periodFrameOffset(4, 5)).toBe(2);
-    expect(periodFrameOffset(4, 2)).toBe(11);
-  });
-});
-
 describe("shiftPostingDate", () => {
   it("moves a date forward by whole months", () => {
     expect(shiftPostingDate("2025-04-01", 2)).toBe("2025-06-01");
@@ -388,16 +376,31 @@ describe("scoreDataHalves", () => {
     expect(scoreDataHalves(fixture, exported).wholeLineMatches).toBe(1);
   });
 
-  it("matches a coarse and account line only once the fixture is shifted into the export's frame", () => {
+  it("leaves a coarse and account line unmatched when neither book declares a period", () => {
     const { fixture, exported } = writePair([LINE], [{ ...LINE, postingDate: "2025-06-01" }]);
-    const noScope = unrepresentableScope("test", null);
-    expect(scoreDataHalves(fixture, exported).coarseMatches).toBe(0);
-    const shifted = scoreDataHalves(fixture, exported, noScope, 2);
-    expect(shifted.coarseMatches).toBe(1);
-    expect(shifted.accountMatches).toBe(1);
-    // The wrong offset stays unmatched, so the shift is doing the work and
-    // not just widening the comparison generally.
-    expect(scoreDataHalves(fixture, exported, noScope, 1).coarseMatches).toBe(0);
+    expect(scoreDataHalves(fixture, exported, unrepresentableScope("test", null)).coarseMatches).toBe(0);
+  });
+
+  it("matches a coarse and account line once the two book.tomls place it in the same period", () => {
+    const { fixture, exported } = writePair(
+      [LINE],
+      [{ ...LINE, postingDate: "2025-06-01" }],
+      "[documentInfo]\nperiodCoveredStart = 2025-04-01\n",
+      "[documentInfo]\nperiodCoveredStart = 2025-06-01\n",
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("test", null));
+    expect(score.coarseMatches).toBe(1);
+    expect(score.accountMatches).toBe(1);
+  });
+
+  it("stays unmatched when the export's declared period is the wrong shift, so the derivation is doing the work", () => {
+    const { fixture, exported } = writePair(
+      [LINE],
+      [{ ...LINE, postingDate: "2025-06-01" }],
+      "[documentInfo]\nperiodCoveredStart = 2025-04-01\n",
+      "[documentInfo]\nperiodCoveredStart = 2025-05-01\n",
+    );
+    expect(scoreDataHalves(fixture, exported, unrepresentableScope("test", null)).coarseMatches).toBe(0);
   });
 
   it("compares book.toml field by field, naming what is missing", () => {
@@ -783,8 +786,8 @@ const PRODUCTS = [
     // rewriteVatinterfaceFormulas) that the March run never touches, since
     // March is the template's native tab order. generate.js also shifts
     // every posting date onto this package's own accounting period, so the
-    // exported dates sit a month or two from the fixture's; dateShiftMonths
-    // below puts the fixture through the identical shift before comparing.
+    // exported dates sit a month or two from the fixture's; scoreDataHalves
+    // derives that shift itself from the two book.tomls before comparing.
     name: "ltd",
     label: "ltd-may",
     data: "examples/precision-code-ltd/full",
@@ -793,19 +796,6 @@ const PRODUCTS = [
     wholeLineMatches: 722,
   },
 ];
-
-// generate.js only reorients Ltd's month tabs (app/products/ltd.js); the
-// other three products post the fixture's own dates unchanged whatever
-// year end they run at. periodFrameOffset needs the ltd fixture's own
-// declared period start, read from its book.toml rather than hand-typed, so
-// a change to that fixture keeps this offset correct.
-const LTD_PERIOD_START_MONTH =
-  new Date(
-    parseTOML(readFileSync(resolve(ROOT, "examples/precision-code-ltd/full/book.toml"), "utf8")).documentInfo.periodCoveredStart,
-  ).getUTCMonth() + 1;
-for (const product of PRODUCTS) {
-  if (product.name === "ltd") product.dateShiftMonths = periodFrameOffset(LTD_PERIOD_START_MONTH, Number(product.yearEnd.slice(5, 7)));
-}
 
 describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", () => {
   for (const product of PRODUCTS) {
@@ -868,12 +858,7 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       expect(excelDocument.values.some((entry) => entry.key.startsWith("check/"))).toBe(true);
 
       const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
-      const score = scoreDataHalves(
-        resolve(fixture, "data"),
-        exported,
-        unrepresentableScope(product.name, inventory),
-        product.dateShiftMonths ?? 0,
-      );
+      const score = scoreDataHalves(resolve(fixture, "data"), exported, unrepresentableScope(product.name, inventory));
 
       // Every line the fixture carries comes back.
       expect(score.exportedLines).toBeGreaterThanOrEqual(score.fixtureLines);

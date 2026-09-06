@@ -29,6 +29,7 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { parse as parseTOML } from "smol-toml";
 import { MONEY_DECIMALS, roundHalfUp, isDecimal, canonicalForUnit } from "../lib/canonical-report-value.js";
+import { shiftMonths, bookPeriodShiftMonths } from "../lib/period-shift.js";
 
 export { roundHalfUp, canonicalForUnit };
 
@@ -228,33 +229,14 @@ export function scoreReportDocumentsByKind(excelDocument, jsDocument) {
 // ── The period-frame shift ─────────────────────────────────────────────────
 
 // generate.js moves every posting date onto the package's own accounting
-// period (app/products/ltd.js, cellWrites/shiftMonths): forward by the
-// whole-month gap between the scenario's declared period start and the
-// package's, clamping a day the shifted month lacks to that month's own last
-// day. Reversing that on the export is lossy at a clamped date -- the exact
-// origin day cannot be recovered -- so this comparator puts the fixture
-// through the identical forward shift instead. Clamping then falls the same
-// way on both sides and the comparison after it is exact.
-function shiftMonths(date, monthOffset) {
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + monthOffset;
-  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(date.getUTCDate(), lastDayOfShiftedMonth)));
-}
-
-/**
- * The whole-month offset generate.js shifts every posting date by, from a
- * scenario's own declared period start month to a package's year-end month.
- * Mirrors the monthOffset arithmetic in app/products/ltd.js's cellWrites.
- * @param {number} periodStartMonth - 1-indexed month documentInfo.periodCoveredStart falls in
- * @param {number} yearEndMonth - 1-indexed month the package's own year end falls in
- * @returns {number} 0-11
- */
-export function periodFrameOffset(periodStartMonth, yearEndMonth) {
-  const targetStartMonth = yearEndMonth % 12;
-  const sourceStartMonth = periodStartMonth - 1;
-  return (targetStartMonth - sourceStartMonth + 12) % 12;
-}
+// period (app/lib/period-shift.js, periodShiftMonths/shiftMonths): forward by
+// the whole-month gap, years included, between the scenario's declared period
+// start and the package's, clamping a day the shifted month lacks to that
+// month's own last day. Reversing that on the export is lossy at a clamped
+// date -- the exact origin day cannot be recovered -- so this comparator puts
+// the fixture through the identical forward shift instead, using the gap
+// bookPeriodShiftMonths reads straight off the two book.tomls. Clamping then
+// falls the same way on both sides and the comparison after it is exact.
 
 /**
  * A YYYY-MM-DD posting date moved forward by a period-frame offset, in the
@@ -581,14 +563,18 @@ export function flattenBook(value, prefix = "") {
  *   (lineScopeBlock()) in this run, and a book path the export turns out to
  *   carry, are both stale or mistyped rather than silence, so either throws
  *   rather than quietly declaring nothing.
- * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
- *   to move the fixture's own postingDate forward by before comparing, for a
- *   package whose year end put the export's dates through the same shift.
- *   0 (the default) compares postingDate as the fixture wrote it.
  * @param {number} [dateShiftDays] - a day-based frame offset for a writer
  *   that translates dates by exact days (Taxi) rather than by month
- *   positions (Ltd). Applied instead of a month shift; the two never
- *   combine.
+ *   positions. Given, this is the shift applied; the month-based shift below
+ *   is only ever derived for a product that leaves this at 0.
+ *
+ * Every other product's month-based shift is never a flag: it is the gap,
+ * years included, between the period the fixture's own book.toml declares
+ * and the period the export's book.toml declares, read by
+ * bookPeriodShiftMonths (app/lib/period-shift.js) -- the same primitive
+ * app/products/*.js's cellWrites moves each posting date by, so a package
+ * generated for any year end scores against the fixture already shifted onto
+ * that same frame.
  *
  * linesLost, coarseMatches and accountMatches score against the fixture
  * lines after collapseDaySummedLines(fixtureLines, scope.product) folds
@@ -597,13 +583,16 @@ export function flattenBook(value, prefix = "") {
  * to be matched, not several. wholeLineMatches and the field-existence
  * checks stay on the raw fixture lines.
  */
-export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0, dateShiftDays = 0) {
+export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftDays = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
-  const shiftDate = dateShiftMonths
-    ? (d) => shiftPostingDate(d, dateShiftMonths)
-    : dateShiftDays
-      ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+  const fixtureBook = parseTOML(readFileSync(resolve(fixtureDir, "book.toml"), "utf8"));
+  const exportedBook = parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8"));
+  const monthShift = dateShiftDays ? 0 : bookPeriodShiftMonths(fixtureBook, rawFixtureLines, exportedBook, exportedLines);
+  const shiftDate = dateShiftDays
+    ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+    : monthShift
+      ? (d) => shiftPostingDate(d, monthShift)
       : null;
   const fixtureLines = shiftDate
     ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
@@ -628,8 +617,8 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   const fieldsDropped = missingFields.filter((field) => !unrepresentable.has(field));
   const fieldsUnrepresentable = missingFields.filter((field) => unrepresentable.has(field));
 
-  const fixtureFlat = flattenBook(parseTOML(readFileSync(resolve(fixtureDir, "book.toml"), "utf8")));
-  const exportedFlat = flattenBook(parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8")));
+  const fixtureFlat = flattenBook(fixtureBook);
+  const exportedFlat = flattenBook(exportedBook);
 
   const bookMissing = [];
   const bookDeclared = [];
@@ -756,17 +745,16 @@ function parseArgs(argv) {
   const budgetPath = getArg("--budget");
   const outPath = getArg("--out");
   const unrepresentablePath = getArg("--unrepresentable");
-  const dateShiftMonths = Number(getArg("--date-shift-months") ?? 0);
   const dateShiftDays = Number(getArg("--date-shift-days") ?? 0);
 
   if (!packageName || !excelDir || !jsDir) {
     console.error(
-      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>] [--date-shift-days <n>]",
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-days <n>]",
     );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftDays };
 }
 
 /**
@@ -792,9 +780,7 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays } = parseArgs(
-    process.argv,
-  );
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftDays } = parseArgs(process.argv);
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -806,9 +792,7 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData
-    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths, dateShiftDays)
-    : null;
+  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftDays) : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 
@@ -835,9 +819,9 @@ async function main() {
             // A fixture line the export does not bring back as at least the
             // same transaction (coarseUnmatched), or brings back as the same
             // transaction but posted to a different account (accountUnmatched).
-            // With --date-shift-months set, these score in the shifted frame,
-            // so a non-March year end is judged on the transactions
-            // themselves rather than on counts alone. Read against
+            // The derived month shift (bookPeriodShiftMonths) always applies,
+            // so a non-March or future-year package is judged on the
+            // transactions themselves rather than on counts alone. Read against
             // groupedFixtureLines, not the raw fixture count: a day-summed
             // journal (collapseDaySummedLines) already folded same-day,
             // same-account lines into the one the writer actually holds, so
