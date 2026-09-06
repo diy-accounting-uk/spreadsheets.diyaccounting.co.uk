@@ -163,6 +163,11 @@ with `git worktree remove` as part of the render. Origin stale branches are dele
 the session; otherwise the row lists them for the operator. The `antonycc` remote is the
 archived fork: its refs are never pushed to or deleted.
 
+Branch names follow `CLAUDE.md`: `claude/<ns>-<n>-<topic>` for one of a series,
+`claude/<ns>-<topic>` otherwise, the distinctive part right after `claude/`. A branch named
+the old way (a generic preamble such as `claude/wt-<row>`, or a series number at the end) gets
+a note in `Action`: rename before its next push.
+
 ## Write-back
 
 Replace the `## Board` table in `NEXT.md` with the rendered one minus the `D` rows
