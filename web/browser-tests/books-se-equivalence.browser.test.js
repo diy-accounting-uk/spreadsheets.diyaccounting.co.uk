@@ -677,13 +677,19 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
 
   test("a mark survives a re-render and an edit, and says which it is", async ({ page }) => {
     // SE Short box 25 reads the Schedule's other capital allowances across a
-    // link. Bending its own cached figure gives the case a drift of its own
-    // to render, rather than depending on whatever se-latest's own cached
-    // recalculation happens to disagree with the engine on today.
-    const bentHub = await workbookWithBentCell(HUB_FILE, "SE Short", "O80", 999999);
-    await uploadPackage(page, await seLatestZipBytes({ [HUB_FILE]: bentHub }), "se-latest-bent-o80.zip");
+    // link (its "as-read" figure comes from the link layer, not from O80's
+    // own cached cell), so bending the leaf's own R1 gives the case a drift
+    // of its own to render, rather than depending on whatever se-latest's
+    // own recalculation happens to disagree with the engine on today. The
+    // form renders the box under a compound r-key ("cell/... || section/..."),
+    // so the locator matches on it as a substring, the way every other
+    // form-row spec in this suite does.
+    const bentSchedule = await workbookWithBentCell("Fixedassets.xlsx", "Schedule", "R1", 999999);
+    await uploadPackage(page, await seLatestZipBytes({ "Fixedassets.xlsx": bentSchedule }), "se-latest-bent-schedule.zip");
 
-    const marked = page.locator('#view-root .form-row:has([data-r-key="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction');
+    const marked = page.locator(
+      '#view-root .form-row:has([data-r-key*="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction',
+    );
     await page.locator('.tab-btn[data-view="sa103s"]').click();
     await expect(marked).toHaveCount(1);
 
