@@ -111,6 +111,7 @@ export {
   resultsReader,
   linkCacheValues,
   linkAddressedCells,
+  packageLinkCaches,
   classifyLinkCell,
   LINK_ORDER,
   HUB_FILE,

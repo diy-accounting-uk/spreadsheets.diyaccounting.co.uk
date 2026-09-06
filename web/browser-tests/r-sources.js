@@ -20,6 +20,7 @@ import { calculateFromDiyaGl } from "../../app/lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
 import { productModule } from "../../app/lib/products.js";
+import { taxYearFileName } from "../../app/lib/tax-year.js";
 
 const ROOT = process.cwd();
 
@@ -102,7 +103,40 @@ export const SCENARIOS_TAXI = [
   },
 ];
 
-const FIXTURE_BY_SCENARIO = new Map([...SCENARIOS, ...SCENARIOS_SE, ...SCENARIOS_TAXI].map((s) => [s.scenario, s.fixture]));
+// The three Limited Company books, each paired with its fixture (S1) and its
+// report.js --data directory (S2). None is served as an example the page has
+// a button for yet, so all three reach the page as a diya-gl zip built from
+// the same directory, the way the SE BrickWork books do.
+export const SCENARIOS_LTD = [
+  {
+    scenario: "ltd-scenario-full",
+    fixture: "app/test/fixtures/ltd-scenario-full.toml",
+    bookDir: "examples/precision-code-ltd/full",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+  {
+    scenario: "ltd-brickwork-pro-vat",
+    fixture: "app/test/fixtures/ltd-brickwork-pro-vat.toml",
+    bookDir: "examples/brickwork-pro/ltd-vat",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+  {
+    scenario: "ltd-brickwork-pro-nonvat",
+    fixture: "app/test/fixtures/ltd-brickwork-pro-nonvat.toml",
+    bookDir: "examples/brickwork-pro/ltd-nonvat",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+];
+
+const FIXTURE_BY_SCENARIO = new Map(
+  [...SCENARIOS, ...SCENARIOS_SE, ...SCENARIOS_TAXI, ...SCENARIOS_LTD].map((s) => [s.scenario, s.fixture]),
+);
 
 /**
  * S1: a scenario fixture's own [expected] table -- the totals the fixture
@@ -156,14 +190,15 @@ const s2ForPackageCache = new Map();
 
 /**
  * S2, computed for a stated year-end rather than the book's own -- the tax
- * tables report.js's --years names, in the <regime>-<start>-<end> form
- * generate-bst.yml's own scorecard step derives from a year-end, plus
- * --year-end itself so the two sides' report.json name the same year. A
+ * tables report.js's --years names, from taxYearFileName, the same rule the
+ * writer and the book loader resolve a year end by, plus --year-end itself
+ * so the two sides' report.json name the same year. A
  * book's [tax] section carries only its own year's rates (extractTaxDataFromBook
  * reads it as-is), so reaching another year's Admin figures takes an
  * explicit --years override, not just a later --year-end.
  * @param {string} bookDir - a diya-gl data directory, e.g. SCENARIOS[].bookDir
- * @param {string} yearEnd - YYYY-MM-DD, the UK tax year-end convention (5 April)
+ * @param {string} yearEnd - YYYY-MM-DD, the year end the report is built for:
+ *   5 April for a self-employment regime, any month end for a company
  * @param {string} [name] - a short label for the output directory; derived
  *   from bookDir when omitted
  * @param {string} [product] - the package report.js computes the book under
@@ -175,8 +210,7 @@ export function s2ForPackage(bookDir, yearEnd, name, product = "bst") {
 
   const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
   const outDir = path.resolve(ROOT, "target", `r-${label}-${yearEnd}`);
-  const taxYearEnd = Number(yearEnd.slice(0, 4));
-  const years = `${productModule(product).PRODUCT.taxRegime}-${taxYearEnd - 1}-${taxYearEnd}`;
+  const years = taxYearFileName(new Date(`${yearEnd}T00:00:00Z`), productModule(product).PRODUCT.taxRegime);
   execFileSync(
     process.execPath,
     ["app/bin/report.js", "--package", product, "--data", bookDir, "--years", years, "--year-end", yearEnd, "--output-dir", outDir],
@@ -202,6 +236,13 @@ const S3_CONFIG = {
     sourceDir: "examples/taxi-latest",
     reportPattern: /^GB_Accounts_Taxi_Driver_(\d{4})_(\d{2})_(\d{2})__.*_taxi-scenario-basic\.md$/,
   },
+  // A company picks its own year end, so the Ltd matrix generates twelve a
+  // year and refreshes the package for the highest; the full scenario is the
+  // one every year end reports on.
+  ltd: {
+    sourceDir: "examples/ltd-latest",
+    reportPattern: /^GB_Accounts_Company_(\d{4})_(\d{2})_(\d{2})__.*_ltd-scenario-full\.md$/,
+  },
 };
 
 const s3Cache = new Map();
@@ -223,7 +264,7 @@ function latestYearEnd(product) {
     .map((m) => `${m[1]}-${m[2]}-${m[3]}`)
     .sort();
   const latest = yearEnds.at(-1);
-  if (!latest) throw new Error(`latestYearEnd: no reports/*_${product}-scenario-basic.md found to read ${product}-latest's year-end from`);
+  if (!latest) throw new Error(`latestYearEnd: no report matching ${config.reportPattern} to read ${product}-latest's year-end from`);
   return latest;
 }
 
