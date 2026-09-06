@@ -10,6 +10,7 @@ import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSeri
 import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
@@ -885,13 +886,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
 
       const forecastProfit = forecast.C34 || 0;
-      const expectedForecastTax = calculateExpectedTax(forecastProfit, taxData);
-      check("Forecast: personal allowance after taper", forecast.C35 || 0, expectedForecastTax.personal_allowance);
-      check("Forecast: tax at standard rate", forecast.C37 || 0, expectedForecastTax.income_tax_basic);
-      check("Forecast: tax at higher rate", forecast.C38 || 0, expectedForecastTax.income_tax_higher);
-      check("Forecast: tax at additional rate", forecast.C39 || 0, expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", forecast.C40 || 0, expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper, 0.01);
-      check("Forecast: tax and NI liability", forecast.C41 || 0, expectedForecastTax.total_tax_and_ni, 0.01);
+      checkForecastTaxAndNi(
+        check,
+        forecastProfit,
+        {
+          personalAllowance: forecast.C35 || 0,
+          standard: forecast.C37 || 0,
+          higher: forecast.C38 || 0,
+          additional: forecast.C39 || 0,
+          ni: forecast.C40 || 0,
+          total: forecast.C41 || 0,
+        },
+        taxData,
+        calculateExpectedTax,
+      );
     }
   }
 

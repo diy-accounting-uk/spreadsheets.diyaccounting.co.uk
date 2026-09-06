@@ -39,6 +39,7 @@ import {
   vatReturnCoverage,
 } from "../lib/report-generator.js";
 import { calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
+import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
@@ -2177,21 +2178,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(forecast.C34) + num(forecast.C37) - num(forecast.C38),
       );
 
-      const expectedForecastTax = calculateExpectedTax(num(forecast.C39), taxData);
-      // C40 = IF(C39<=0,0,MAX(0,Admin!N4-MAX(0,C39-Admin!N5)/2)): on a loss
-      // year there is no taxable profit to set an allowance against, so the
-      // sheet floors it at nil rather than showing the allowance unused.
-      // calculateExpectedTax has no such floor, so the comparison applies it.
-      check(
-        "Forecast: personal allowance after taper",
-        num(forecast.C40),
-        num(forecast.C39) <= 0 ? 0 : expectedForecastTax.personal_allowance,
+      checkForecastTaxAndNi(
+        check,
+        num(forecast.C39),
+        {
+          personalAllowance: num(forecast.C40),
+          standard: num(forecast.C42),
+          higher: num(forecast.C43),
+          additional: num(forecast.C44),
+          ni: num(forecast.C45),
+          total: num(forecast.C46),
+        },
+        taxData,
+        calculateExpectedTax,
       );
-      check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
-      check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
-      check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper, 0.01);
-      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni, 0.01);
     }
   }
 
