@@ -374,6 +374,198 @@ test.describe("DIYA-GL Self Employed page — E1: an edit moves the figure it sh
   });
 });
 
+// ============================== E1: a line added through the grid's own Add button ==============================
+// T37b renders the add row off the journal's own descriptor, T37c routes
+// addEntry on its kind, and T37d declares the three SE descriptors. This is
+// the proof that the three together actually land a line when a reader
+// drives the row itself, rather than through setLines.
+
+function addRow(page, journal) {
+  return page.locator(`.entries-table[data-journal="${journal}"] .entry-add-row`);
+}
+
+async function fillAddRow(page, journal, fields) {
+  const row = addRow(page, journal);
+  for (const [name, value] of Object.entries(fields)) {
+    const field = row.locator(`[data-add-field="${name}"]`);
+    const tagName = await field.evaluate((el) => el.tagName);
+    if (tagName === "SELECT") await field.selectOption(String(value));
+    else await field.fill(String(value));
+  }
+  return row;
+}
+
+async function clickAdd(page, journal) {
+  await addRow(page, journal).locator("[data-add-entry]").click();
+}
+
+async function newestLine(page) {
+  return page.evaluate(() => {
+    const lines = window.DIYA_BOOKS_SNAPSHOT.lines;
+    return lines[lines.length - 1];
+  });
+}
+
+test.describe("DIYA-GL Self Employed page — E1: a line added through the grid's own Add button", () => {
+  test("a bank receipt lands through the Add button, the new row carries the typed figures, and the checks stay green", async ({
+    page,
+  }) => {
+    await openAdvanced(page);
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "bank");
+    const before = await lineCount(page);
+
+    await fillAddRow(page, "bank", { date: "2025-04-15", account: "1200", direction: "D" });
+    await fillAddRow(page, "bank", { code: "DR", detail: "Recruit-a-Coder plc", amount: "120.00" });
+    await clickAdd(page, "bank");
+    await expect(page.locator("#toast")).toContainText("Added a bank entry of £120.00");
+
+    await expect.poll(() => lineCount(page)).toBe(before + 1);
+    const newRow = page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]');
+    await expect(newRow.locator(".entry-amount-input")).toHaveValue("120.00");
+    await expect(newRow.locator(".entry-account-select")).toHaveValue("1200");
+    await expect(newRow.locator(".entry-detail")).toHaveText("Recruit-a-Coder plc");
+
+    const line = await newestLine(page);
+    expect(line).toMatchObject({
+      "entryNumber": "NEW-0001",
+      "sourceJournalID": "bank",
+      "accountMainID": "1200",
+      "diya-gl:bankAccountID": "1200",
+      "debitCreditCode": "D",
+      "diya-gl:bankCode": "DR",
+      "amount": 120,
+    });
+
+    await allChecksPass(page);
+  });
+
+  test("a cash payment lands through the Add button, the cash journal's line count rises by one, and the checks stay green", async ({
+    page,
+  }) => {
+    await openAdvanced(page);
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "cash");
+    const before = await lineCount(page);
+    const cashLinesBefore = await page.locator('.entries-table[data-journal="cash"] tr.entry-row').count();
+
+    await fillAddRow(page, "cash", { date: "2025-04-18", direction: "C" });
+    await fillAddRow(page, "cash", { code: "CR", detail: "Petty cash float top-up", amount: "15.00" });
+    await clickAdd(page, "cash");
+    await expect(page.locator("#toast")).toContainText("Added a cash entry of £15.00");
+
+    await expect.poll(() => lineCount(page)).toBe(before + 1);
+    await expect(page.locator('.entries-table[data-journal="cash"] tr.entry-row')).toHaveCount(cashLinesBefore + 1);
+    const newRow = page.locator('.entries-table[data-journal="cash"] tr.entry-row[data-entry="NEW-0001"]');
+    await expect(newRow.locator(".entry-amount-input")).toHaveValue("15.00");
+    await expect(newRow.locator(".entry-account-select")).toHaveValue("1220");
+
+    const line = await newestLine(page);
+    expect(line).toMatchObject({
+      "entryNumber": "NEW-0001",
+      "sourceJournalID": "bank",
+      "accountMainID": "1220",
+      "diya-gl:bankAccountID": "1220",
+      "debitCreditCode": "C",
+      "diya-gl:bankCode": "CR",
+      "amount": 15,
+    });
+
+    await allChecksPass(page);
+  });
+
+  test("a payslip lands through the Add button, its net is gross minus tax minus employee NI, and the checks stay green", async ({
+    page,
+  }) => {
+    await openAdvanced(page);
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "payroll");
+    const before = await lineCount(page);
+
+    const gross = 1000;
+    const incomeTax = 150;
+    const employeeNI = 80;
+    const employerNI = 95;
+    await fillAddRow(page, "payroll", { date: "2025-04-25", account: "5101", employee: "EMP001" });
+    await fillAddRow(page, "payroll", {
+      incomeTax: String(incomeTax),
+      employeeNI: String(employeeNI),
+      employerNI: String(employerNI),
+      amount: String(gross),
+    });
+    await clickAdd(page, "payroll");
+    await expect(page.locator("#toast")).toContainText("Added a payroll entry of £1,000.00");
+
+    await expect.poll(() => lineCount(page)).toBe(before + 1);
+    const newRow = page.locator('.entries-table[data-journal="payroll"] tr.entry-row[data-entry="NEW-0001"]');
+    await expect(newRow.locator(".entry-amount-input")).toHaveValue(gross.toFixed(2));
+    await expect(newRow.locator(".entry-account-select")).toHaveValue("5101");
+    await expect(newRow.locator(".entry-detail")).toHaveText("Alice Johnson");
+
+    const line = await newestLine(page);
+    expect(line).toMatchObject({
+      "entryNumber": "NEW-0001",
+      "sourceJournalID": "payroll",
+      "accountMainID": "5101",
+      "diya-gl:employeeID": "EMP001",
+      "diya-gl:grossPay": gross,
+      "diya-gl:incomeTax": incomeTax,
+      "diya-gl:employeeNI": employeeNI,
+      "diya-gl:employerNI": employerNI,
+      "diya-gl:netPay": gross - incomeTax - employeeNI,
+      "amount": gross,
+    });
+
+    await allChecksPass(page);
+  });
+
+  test("undo removes the line an Add button just landed", async ({ page }) => {
+    await openAdvanced(page);
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "bank");
+    const before = await lineCount(page);
+
+    await fillAddRow(page, "bank", { date: "2025-04-16", account: "1200", direction: "D" });
+    await fillAddRow(page, "bank", { code: "DR", detail: "Undo proof receipt", amount: "75.00" });
+    await clickAdd(page, "bank");
+    await expect.poll(() => lineCount(page)).toBe(before + 1);
+
+    await undo(page);
+    await expect.poll(() => lineCount(page)).toBe(before);
+    await expect(page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]')).toHaveCount(0);
+  });
+
+  test("changing an existing bank line's account through the grid's select moves both accountMainID and diya-gl:bankAccountID", async ({
+    page,
+  }) => {
+    await openAdvanced(page);
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "bank");
+
+    const entryNumber = "TXN-0059"; // a receipt on 1200 in April.
+    const select = page.locator(`.entry-account-select[data-account-entry="${entryNumber}"]`);
+    await expect(select).toHaveValue("1200");
+
+    await select.selectOption("1220");
+    await expect(page.locator("#toast")).toContainText("Changed " + entryNumber + "'s account to 1220");
+
+    const line = await page.evaluate(
+      (entryNumber) => window.DIYA_BOOKS_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
+      entryNumber,
+    );
+    expect(line.accountMainID).toBe("1220");
+    expect(line["diya-gl:bankAccountID"]).toBe("1220");
+
+    await undo(page);
+    const restored = await page.evaluate(
+      (entryNumber) => window.DIYA_BOOKS_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
+      entryNumber,
+    );
+    expect(restored.accountMainID).toBe("1200");
+    expect(restored["diya-gl:bankAccountID"]).toBe("1200");
+  });
+});
+
 // ============================== E2: the ten Self Employed rules, each broken its own way ==============================
 // examples/brickwork-pro/se-nonvat is the book app/test/book-checks-se.test.js
 // crafts these same ten changes against; every mutation below is that same
@@ -776,9 +968,7 @@ test.describe("DIYA-GL Self Employed page — E2: each settlement helper's previ
     const id = "purchase-from-payment:BREAK-SETTLE-PURCHASE";
 
     await page.locator(`[data-settlement-preview="${id}"]`).click();
-    await expect(page.locator(".helper-changes li")).toContainText(
-      "purchase 5002 — Other Direct Cost of Sales — £320.00 on 2025-07-21",
-    );
+    await expect(page.locator(".helper-changes li")).toContainText("purchase 5002 — Other Direct Cost of Sales — £320.00 on 2025-07-21");
 
     const before = await lineCount(page);
     await page.locator(`[data-settlement-apply="${id}"]`).click();

@@ -229,4 +229,23 @@ test.describe("DIYA-GL books page — Ltd page boots on a real package (LT-T7)",
     const missing = Array.from(rKeys).filter((key) => !reportKeys.has(key) && !key.startsWith("headline/"));
     expect(missing, missing.join("\n")).toEqual([]);
   });
+
+  test("the payroll journal carries a real chart of accounts, not an empty one", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(ltdUrl(), { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /ltd-scenario-full/ }).click();
+    await waitForLoaded(page);
+
+    // April is the first month and entries start open (shell.js's
+    // yearState() defaults entriesOpen to true), so the journal switch is
+    // already on the page with no row or toggle click needed.
+    await page.locator('.journal-switch-btn[data-journal-switch="payroll"]').click();
+
+    const payrollTable = page.locator('table.entries-table[data-journal="payroll"]');
+    await expect(payrollTable).toBeVisible();
+    await expect(payrollTable.locator("tr.entry-row")).toHaveCount(3);
+    const payrollNames = await payrollTable.locator("tr.entry-row .entry-account-name").allTextContents();
+    expect(payrollNames.sort()).toEqual(["Directors wages (non-PAYE)", "Employee wages (non-PAYE)", "Employee wages (non-PAYE)"]);
+    await expect(payrollTable.locator(".entry-add-account option")).toHaveCount(2);
+  });
 });

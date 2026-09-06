@@ -132,6 +132,44 @@
     { id: "1220", file: "Cashaccount.xlsx", label: "Cash account" },
   ];
 
+  // Each bank workbook's own analysis code letters, split into a receipts
+  // block and a payments block the add row's direction control picks
+  // between. Mirrors app/lib/ltd-layout.js's bankLayout(fileName) until
+  // Ltd:T2 re-exports it for a browser reader -- this manifest already
+  // keeps its own copies of that layout's other tables.
+  var BANK_TRANSFER_COLUMN_ORDER = ["BB", "BS", "BD", "BC"];
+  var BANK_TRANSFER_CODE_BY_FILE = {
+    "Currentaccount.xlsx": "BB",
+    "Savingaccount.xlsx": "BS",
+    "Cashaccount.xlsx": "BC",
+    "Creditcardaccount.xlsx": "BD",
+  };
+
+  // A payroll entry's employee comes off the book's own employee register,
+  // the same table renderPayroll's people card reads (ltd-forms.js
+  // payrollPeopleHtml) -- Ltd keeps no separate payroll snapshot section, so
+  // this reads the book straight off the shared snapshot's own "book" key.
+  function payrollEmployeeCodes(snapshot) {
+    return (snapshot.book.employees || []).map(function (employee) {
+      return { value: employee.employeeID, label: employee.name };
+    });
+  }
+
+  function bankCodesFor(file, direction) {
+    var transfers = BANK_TRANSFER_COLUMN_ORDER.filter(function (code) {
+      return code !== BANK_TRANSFER_CODE_BY_FILE[file];
+    });
+    var cash = file === "Cashaccount.xlsx";
+    if (direction === "C") {
+      var payment = cash
+        ? ["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"]
+        : ["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"];
+      return transfers.concat(payment);
+    }
+    var receipt = cash ? ["DR", "K", "LDR", "LCR", "DL"] : ["DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"];
+    return transfers.concat(receipt);
+  }
+
   // The Trial Balance's own echo of each bank account's closing balance,
   // which the last month tab's own A2 also carries. Verified against
   // app/products/ltd.js's TRIAL_BALANCE_BANK_ECHO_CELLS.
@@ -539,6 +577,50 @@
     return { accounts: accounts, settlements: ctx.engine.settlementSuggestions({ book: ctx.book, lines: ctx.lines }) };
   }
 
+  function chartSection(accounts) {
+    var section = accounts || {};
+    return Object.keys(section)
+      .sort()
+      .map(function (code) {
+        var account = section[code];
+        return { code: code, description: account.accountMainDescription || "Account " + code };
+      });
+  }
+
+  // Neither journal keeps an [accounts] table of its own in book.toml, so
+  // the shared loader's chart -- one entry a journal id, straight off the
+  // book's own tables -- leaves the payroll journal's entries grid with
+  // nothing to offer the account picker. The wage accounts a payroll line
+  // can post to are the codes its own lines already carry, described by
+  // whichever purchases account the book declares under that code. This
+  // replaces the shared loader's chart entirely, so it rebuilds the sales,
+  // purchases and bank sections the same way that loader does.
+  function payrollChartSection(ctx) {
+    var purchases = (ctx.book.accounts || {}).purchases || {};
+    var codes = {};
+    ctx.lines.forEach(function (line) {
+      if (line.sourceJournalID === "payroll") codes[String(line.accountMainID)] = true;
+    });
+    return Object.keys(codes)
+      .sort()
+      .filter(function (code) {
+        return purchases[code];
+      })
+      .map(function (code) {
+        return { code: code, description: purchases[code].accountMainDescription || "Account " + code };
+      });
+  }
+
+  function journalChart(ctx) {
+    var accounts = ctx.book.accounts || {};
+    return {
+      sales: chartSection(accounts.sales),
+      purchases: chartSection(accounts.purchases),
+      bank: chartSection(accounts.bank),
+      payroll: payrollChartSection(ctx),
+    };
+  }
+
   function snapshot(ctx) {
     return {
       annual: buildAnnual(ctx),
@@ -546,6 +628,7 @@
       ledgers: buildLedgers(ctx),
       fixedAssets: buildFixedAssets(ctx),
       bank: buildBank(ctx),
+      chart: journalChart(ctx),
     };
   }
 
@@ -806,8 +889,45 @@
       journals: [
         { id: "sales", label: "Sales" },
         { id: "purchases", label: "Purchases" },
-        { id: "bank", label: "Bank" },
-        { id: "payroll", label: "Payroll" },
+        {
+          id: "bank",
+          label: "Bank",
+          add: {
+            kind: "bank",
+            fields: [
+              {
+                id: "direction",
+                label: "Direction",
+                type: "select",
+                options: [
+                  { value: "D", label: "Receipt" },
+                  { value: "C", label: "Payment" },
+                ],
+              },
+              { id: "code", label: "Code", type: "select" },
+            ],
+            codes: function (snapshot, account, direction) {
+              var bankAccount = BANK_ACCOUNTS.filter(function (a) {
+                return a.id === account;
+              })[0];
+              return bankAccount ? bankCodesFor(bankAccount.file, direction) : [];
+            },
+          },
+        },
+        {
+          id: "payroll",
+          label: "Payroll",
+          add: {
+            kind: "payroll",
+            fields: [
+              { id: "employee", label: "Employee", type: "select" },
+              { id: "incomeTax", label: "Income tax", type: "number", default: 0 },
+              { id: "employeeNI", label: "Employee NI", type: "number", default: 0 },
+              { id: "employerNI", label: "Employer NI", type: "number", default: 0 },
+            ],
+            codes: payrollEmployeeCodes,
+          },
+        },
       ],
       categories: categories,
       classify: classify,

@@ -591,6 +591,46 @@
     };
   }
 
+  // The add row's dynamic choices: a bank or cash entry's code letter comes
+  // off the account's own analysis columns (the snapshot chart T33 already
+  // builds, sourced from BANK_LAYOUTS in app/products/se.js), filtered to
+  // the side the entry's direction posts to.
+  var DIRECTION_ANALYSIS_SIDE = { D: "receiptCodes", C: "paymentCodes" };
+  function bankAddCodes(snapshot, account, direction) {
+    var found = ((snapshot.bank || {}).accounts || []).filter(function (a) {
+      return a.id === String(account);
+    })[0];
+    if (!found) return [];
+    return found.analysis[DIRECTION_ANALYSIS_SIDE[direction] || "receiptCodes"];
+  }
+
+  // A payroll entry's employee comes off the book's own employee register.
+  function payrollAddCodes(snapshot) {
+    return ((snapshot.payroll || {}).employees || []).map(function (employee) {
+      return { value: employee.employeeID, label: employee.name };
+    });
+  }
+
+  var BANK_ADD_FIELDS = [
+    {
+      id: "direction",
+      label: "Direction",
+      type: "select",
+      options: [
+        { value: "D", label: "Receipt" },
+        { value: "C", label: "Payment" },
+      ],
+    },
+    { id: "code", label: "Code", type: "select" },
+  ];
+
+  var PAYROLL_ADD_FIELDS = [
+    { id: "employee", label: "Employee", type: "select" },
+    { id: "incomeTax", label: "Income Tax", type: "number", default: 0 },
+    { id: "employeeNI", label: "Employee NI", type: "number", default: 0 },
+    { id: "employerNI", label: "Employer NI", type: "number", default: 0 },
+  ];
+
   function snapshot(ctx) {
     return {
       annual: buildAnnual(ctx),
@@ -1636,9 +1676,9 @@
       journals: [
         { id: "sales", label: "Sales" },
         { id: "purchases", label: "Purchases" },
-        { id: "bank", label: "Bank" },
-        { id: "cash", label: "Cash" },
-        { id: "payroll", label: "Payroll" },
+        { id: "bank", label: "Bank", add: { kind: "bank", fields: BANK_ADD_FIELDS, codes: bankAddCodes } },
+        { id: "cash", label: "Cash", add: { kind: "bank", fields: BANK_ADD_FIELDS, codes: bankAddCodes } },
+        { id: "payroll", label: "Payroll", add: { kind: "payroll", fields: PAYROLL_ADD_FIELDS, codes: payrollAddCodes } },
       ],
       categories: categories,
       classify: classify,

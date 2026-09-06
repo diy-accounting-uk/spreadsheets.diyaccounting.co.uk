@@ -1575,6 +1575,15 @@
     });
   }
 
+  // A manifest's own journal entry, for its optional add descriptor.
+  function journalById(id) {
+    var journals = active.months.journals;
+    for (var i = 0; i < journals.length; i++) {
+      if (journals[i].id === id) return journals[i];
+    }
+    return null;
+  }
+
   function renderMonthDetail(monthKey) {
     var row = SNAPSHOT.monthly[monthKey];
     var monthMeta = SNAPSHOT.months.filter(function (m) {
@@ -1758,6 +1767,8 @@
       display +
       '<select class="entry-account-select" data-account-entry="' +
       esc(r.entryNumber) +
+      '" data-account-journal="' +
+      esc(journal) +
       '" aria-label="Account for entry ' +
       esc(r.entryNumber) +
       '">' +
@@ -1833,8 +1844,15 @@
 
   function addEntryRow(journal, monthKey) {
     var draft = yearState().addDraft[journal] || {};
+    var descriptor = (journalById(journal) || {}).add || null;
+    var extraFields = (descriptor && descriptor.fields) || [];
     var accounts = (SNAPSHOT.chart && SNAPSHOT.chart[journal]) || [];
-    var options = accounts
+
+    function fieldLabel(label) {
+      return label + " for the new " + journal + " entry";
+    }
+
+    var accountOptions = accounts
       .map(function (account) {
         return (
           '<option value="' +
@@ -1847,6 +1865,66 @@
         );
       })
       .join("");
+
+    // A field's own static options where it names them (the direction's
+    // Receipt/Payment), otherwise the descriptor's own codes -- the code
+    // letter and the employee picker both come off the snapshot this way.
+    function optionsFor(field) {
+      if (field.options) return field.options;
+      if (!descriptor || !descriptor.codes) return [];
+      var account = draft.account || (accounts[0] && accounts[0].code);
+      var direction = draft.direction || "D";
+      return descriptor.codes(SNAPSHOT, account, direction) || [];
+    }
+
+    function extraFieldHtml(field) {
+      var label = fieldLabel(field.label);
+      if (field.type === "number") {
+        var value =
+          draft[field.id] === undefined || draft[field.id] === null || draft[field.id] === ""
+            ? field.default !== undefined
+              ? field.default
+              : ""
+            : draft[field.id];
+        return (
+          '<input class="entry-add-' +
+          field.id +
+          '" data-add-field="' +
+          field.id +
+          '" inputmode="decimal" placeholder="0.00" value="' +
+          esc(value) +
+          '" aria-label="' +
+          esc(label) +
+          '" />'
+        );
+      }
+      var fieldOptions = optionsFor(field)
+        .map(function (item) {
+          var opt = item && typeof item === "object" ? item : { value: item, label: item };
+          return (
+            '<option value="' +
+            esc(opt.value) +
+            '"' +
+            (draft[field.id] === opt.value ? " selected" : "") +
+            ">" +
+            esc(opt.label) +
+            "</option>"
+          );
+        })
+        .join("");
+      return (
+        '<select class="entry-add-' +
+        field.id +
+        '" data-add-field="' +
+        field.id +
+        '" aria-label="' +
+        esc(label) +
+        '">' +
+        fieldOptions +
+        "</select>"
+      );
+    }
+
     // One full-width cell rather than a row of the grid's own columns: the
     // form's controls are wider than the figures above them, and letting
     // them set the column widths would spread the ledger out.
@@ -1856,24 +1934,25 @@
       '"><td colspan="5"><div class="entry-add-form">' +
       '<input type="date" class="entry-add-date" data-add-field="date" value="' +
       esc(draft.date || monthKey + "-01") +
-      '" aria-label="Date for the new ' +
-      esc(journal) +
-      ' entry" />' +
-      '<select class="entry-add-account" data-add-field="account" aria-label="Account for the new ' +
-      esc(journal) +
-      ' entry">' +
-      options +
+      '" aria-label="' +
+      esc(fieldLabel("Date")) +
+      '" />' +
+      '<select class="entry-add-account" data-add-field="account" aria-label="' +
+      esc(fieldLabel("Account")) +
+      '">' +
+      accountOptions +
       "</select>" +
+      extraFields.map(extraFieldHtml).join("") +
       '<input class="entry-add-detail" data-add-field="detail" placeholder="Detail" value="' +
       esc(draft.detail || "") +
-      '" aria-label="Detail for the new ' +
-      esc(journal) +
-      ' entry" />' +
+      '" aria-label="' +
+      esc(fieldLabel("Detail")) +
+      '" />' +
       '<input class="entry-add-amount" data-add-field="amount" inputmode="decimal" placeholder="0.00" value="' +
       esc(draft.amount || "") +
-      '" aria-label="Amount for the new ' +
-      esc(journal) +
-      ' entry" />' +
+      '" aria-label="' +
+      esc(fieldLabel("Amount")) +
+      '" />' +
       '<button type="button" class="entry-add-btn" data-add-entry="' +
       esc(journal) +
       '" title="Add this ' +
@@ -2080,6 +2159,8 @@
 
     Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-account-entry]"), function (select) {
       var entryNumber = select.getAttribute("data-account-entry");
+      var journal = journalById(select.getAttribute("data-account-journal"));
+      var isBank = !!(journal && journal.add && journal.add.kind === "bank");
       var committed = select.value;
       select.addEventListener("change", function () {
         var newAccount = select.value;
@@ -2088,6 +2169,14 @@
         state.focusField = "account";
         commit(
           function () {
+            // A bank or cash row's account is the bank account itself, so
+            // accountMainID and diya-gl:bankAccountID have to move together
+            // -- changeAccount alone would leave the second behind.
+            if (isBank) {
+              return import("./engine/diya-gl-engine.js").then(function (engine) {
+                return engine.changeLineBankAccount(state.book, state.lines, { entryNumber: entryNumber, newBankAccountID: newAccount });
+              });
+            }
             return window.DiyaGlBooksEdits.changeAccount(state.book, state.lines, entryNumber, newAccount);
           },
           "change " + entryNumber + "'s account to " + newAccount,
@@ -2113,20 +2202,62 @@
     var addDraft = yearState().addDraft;
     Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".entry-add-row"), function (row) {
       var journal = row.getAttribute("data-add-journal");
+      var descriptor = (journalById(journal) || {}).add || null;
+      var extraFields = (descriptor && descriptor.fields) || [];
+      // A field whose options the descriptor computes rather than states
+      // outright -- the code letter, the employee -- needs those options
+      // rebuilt whenever the account or the direction changes underneath it.
+      var dynamicFields = extraFields.filter(function (field) {
+        return field.type !== "number" && !field.options;
+      });
+
       function fieldValue(name) {
         var field = row.querySelector('[data-add-field="' + name + '"]');
         return field ? field.value : "";
       }
+
+      // Every control the descriptor rendered, read back by the name it
+      // was rendered under -- the draft store generalises with the fields.
+      function readDraft() {
+        var values = {};
+        Array.prototype.forEach.call(row.querySelectorAll("[data-add-field]"), function (field) {
+          values[field.getAttribute("data-add-field")] = field.value;
+        });
+        return values;
+      }
+
+      function refreshDynamicOptions() {
+        if (!descriptor || !descriptor.codes || !dynamicFields.length) return;
+        var codes = descriptor.codes(SNAPSHOT, fieldValue("account"), fieldValue("direction")) || [];
+        dynamicFields.forEach(function (field) {
+          var select = row.querySelector('[data-add-field="' + field.id + '"]');
+          if (!select) return;
+          var current = select.value;
+          select.innerHTML = codes
+            .map(function (item) {
+              var opt = item && typeof item === "object" ? item : { value: item, label: item };
+              return (
+                '<option value="' +
+                esc(opt.value) +
+                '"' +
+                (String(opt.value) === current ? " selected" : "") +
+                ">" +
+                esc(opt.label) +
+                "</option>"
+              );
+            })
+            .join("");
+        });
+      }
+
       Array.prototype.forEach.call(row.querySelectorAll("[data-add-field]"), function (field) {
         field.addEventListener("input", function () {
-          addDraft[journal] = {
-            date: fieldValue("date"),
-            account: fieldValue("account"),
-            detail: fieldValue("detail"),
-            amount: fieldValue("amount"),
-          };
+          var name = field.getAttribute("data-add-field");
+          if (name === "account" || name === "direction") refreshDynamicOptions();
+          addDraft[journal] = readDraft();
         });
       });
+
       row.querySelector("[data-add-entry]").addEventListener("click", function () {
         var amount = parseAmount(fieldValue("amount"));
         var date = fieldValue("date");
@@ -2143,7 +2274,40 @@
           showToast("This book's chart carries no " + journal + " account to post to.");
           return;
         }
-        var entry = { journal: journal, date: date, account: account, detail: fieldValue("detail"), amount: amount };
+        if (
+          dynamicFields.some(function (field) {
+            return !fieldValue(field.id);
+          })
+        ) {
+          showToast("This book carries no option to post the new entry's " + dynamicFields[0].label.toLowerCase() + " to.");
+          return;
+        }
+        var invalidNumber = false;
+        var numbers = {};
+        extraFields.forEach(function (field) {
+          if (field.type !== "number") return;
+          var raw = fieldValue(field.id);
+          if (raw === "") {
+            numbers[field.id] = field.default !== undefined ? field.default : 0;
+            return;
+          }
+          var parsed = parseAmount(raw);
+          if (parsed === null) invalidNumber = true;
+          else numbers[field.id] = parsed;
+        });
+        if (invalidNumber) {
+          showToast("That is not an amount. The line is unchanged.");
+          return;
+        }
+        var entry = readDraft();
+        Object.keys(numbers).forEach(function (id) {
+          entry[id] = numbers[id];
+        });
+        entry.kind = descriptor ? descriptor.kind : undefined;
+        entry.journal = journal;
+        entry.date = date;
+        entry.account = account;
+        entry.amount = amount;
         addDraft[journal] = null;
         commit(
           function () {

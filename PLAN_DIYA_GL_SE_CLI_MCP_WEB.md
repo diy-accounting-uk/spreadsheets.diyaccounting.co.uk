@@ -392,7 +392,6 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T37b | The add row renders whatever controls the journal's `add` descriptor names, the draft store reads them all, and a bank row's account select routes by its journal | — | Sonnet | `web/.../books/shell.js` |
 | T37c | `addEntry` routes on the descriptor's kind and builds the bank and payroll line shapes, `documentType` with them | T37a | Sonnet | `web/.../books/edits.js` |
 | T37d | The SE manifest's three descriptors: bank and cash on their own accounts with each workbook's receipt and payment code lists, payroll on the employee register | — | Sonnet | `web/.../books/products/se.js` |
-| T37e | The Ltd manifest's bank and payroll descriptors, and the payroll chart section no Ltd book declares | — | Sonnet | `web/.../books/products/ltd.js` |
 | T37f | The SE proof: the three add rows render their own controls, and a bank receipt, a cash payment and a payslip each land with their anchored figures | T37b, T37c, T37d | Sonnet | `web/browser-tests/books-se.browser.test.js`, `web/browser-tests/books-se-edits.browser.test.js` |
 | T37g | The Ltd proof: the bank add, and the transfer pair whose counter-leg keeps the warning and `TrialBalance!EJ91` where they are | T37b, T37c, T37e, T37f | Haiku | `web/browser-tests/books-ltd-edits.browser.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
@@ -506,6 +505,64 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
+- T37b `744f73b9`: `shell.js`'s add row and account select generalise off the journal's own `add`
+  descriptor — `fields` (each `{id, label, type, options?, default?}`) render as a number input or
+  a select, a select with no static `options` gets its list from `descriptor.codes(snapshot,
+  account, direction)` and refreshes live when the account or direction changes; every control's
+  value is read back into the draft `addEntry` gets, keyed by field id (`direction`, `code`,
+  `employee`, `incomeTax`, `employeeNI`, `employerNI` per T37d's shape). A bank or cash row's
+  existing-line account select now carries its journal and routes through the engine's
+  `changeLineBankAccount` (a direct `import("./engine/diya-gl-engine.js")`, the pattern `runSave`
+  already used) rather than `changeAccount`. A journal with no `add` still renders the old four
+  fields untouched. `books-bst-edits.browser.test.js`, `books-se-edits.browser.test.js`,
+  `books-ltd-edits.browser.test.js` (54) and `books-se.browser.test.js` (13) all pass unchanged.
+- T37d `294f978f`: the SE manifest's three `add` descriptors — bank and cash both `kind: "bank"`
+  with a direction and code field, payroll `kind: "payroll"` with an employee field and three
+  deduction fields defaulting to nil. `codes` reads the code letters off the snapshot's own bank
+  account analysis (T33's chart) and the employees off `snapshot.payroll.employees`; nothing
+  hardcoded. The shell ignores `add` until T37b lands, so no render changed; all 13
+  `books-se.browser.test.js` cases still pass.
+- T37a `f46c7eba`: `addPayrollLine` added beside `addBankLine` in `diya-gl-edits.js`, guarding the
+  journal, the employee, a numeric gross and the account; `derivePayrollNetAndAmount` lifted out of
+  `changePayrollLine` and shared by both. Re-exported from `books-engine.js` alongside `bankLayout`,
+  and reaches the MCP edit map through `EDITS`.
+- T37c: `addEntry` in `books/edits.js` now switches on `entry.kind`: `"bank"` builds a bank line
+  (`debitCreditCode` from the direction field, `diya-gl:bankCode` from the code field,
+  `accountMainID` and `diya-gl:bankAccountID` both the account field, `documentType`
+  `bank-statement`) and calls `addBankLine`; `"payroll"` builds a payslip line (`accountMainID` the
+  wage account, `diya-gl:employeeID`/`grossPay`/`incomeTax`/`employeeNI`/`employerNI`, `documentType`
+  `payslip`, `detailComment` looked up off `book.employees` the way `changePayrollLine` does) and
+  calls `addPayrollLine`. A journal with no `add` descriptor carries no `kind`, so it falls through
+  to the sales/purchases routing unchanged. `books-se-edits.browser.test.js`,
+  `books-bst-edits.browser.test.js` and `books-warnings.browser.test.js` (51 cases) still pass; the
+  end-to-end proof through a rendered bank or payroll add row is T37f, once T37b lands.
+- T37e, branch `claude/ltd-add-descriptors`, 2026-09-06: `products/ltd.js`'s bank and payroll
+  journals gain an `add` descriptor (direction and a code-letter select for bank, mirroring
+  `app/lib/ltd-layout.js`'s `bankLayout` until Ltd:T2 re-exports it; an employee picker and three
+  deduction fields for payroll), and the payroll journal gets the chart section no Ltd book
+  declares -- discovered from the wage account codes (5100, 5101) its own lines already carry,
+  never hardcoded, the way SE's T33 discovered SE's. `books-ltd-page.browser.test.js` proves the
+  payroll journal's account picker is no longer empty.
+- T37f: the Add button's own click handler in `shell.js` never set `entry.kind`, so every bank, cash
+  and payroll add fell through to the trade routing and threw; fixed by reading `descriptor.kind`
+  onto the entry alongside `journal`/`date`/`account`/`amount`. `books-se.browser.test.js` proves the
+  bank, cash and payroll add rows each render their own controls (Bank.xlsx's seven receipt codes,
+  Cash.xlsx's four, three employees) and that the code select switches from receipt to payment
+  codes with the direction. `books-se-edits.browser.test.js` proves a £120.00 `DR` bank receipt, a
+  £15.00 `CR` cash payment and a £1,000.00 payslip (net gross less tax less employee NI) each land
+  through the Add button with the engine and book checks green, that undo removes an added line, and
+  that the bank grid's own account select moves `accountMainID` and `diya-gl:bankAccountID` together.
+  All 39 cases across both files pass.
+- T37g, 2026-09-06: aligns `products/ltd.js`'s bank and payroll add descriptors to the field shape
+  shell.js's add row reads (`id`, not `name`; a real select for the employee field, not
+  `type: "employee"`) -- T37f's `entry.kind` fix (shell.js) already covers Ltd's bank and payroll
+  adds once this alignment lands. Proof on `ltd-scenario-full` (`books-ltd-edits.browser.test.js`):
+  the bank add row's code select tracks the chosen account and direction against `bankLayout`
+  (`app/lib/ltd-layout.js`), the payroll add row's employee select lists the book's own three
+  employees with the deduction fields defaulting to nil, a £245.60 receipt on the current account
+  lands under it and agrees with Node's `addBankLine` byte for byte, undo removes it, and a matched
+  transfer pair (a receipt on Savings coded for Current's own letter, a payment on Current coded
+  for Savings') leaves every check green and `TrialBalance!EJ91` at 0.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
