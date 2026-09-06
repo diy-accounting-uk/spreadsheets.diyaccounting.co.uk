@@ -327,7 +327,7 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
     console.log(
       `A3: ${periodAhead} carry the package's own period, which sits a year ahead of its postings until generate-ltd.yml refreshes it`,
     );
-    console.log(`A3: ${straddling} carry the fixture's straddling VAT periods, which no diya-gl book holds`);
+    console.log(`A3: ${straddling} carry the fixture's straddling VAT periods, which the exported book does not hold`);
     console.log(`A3: ${onlyS2.length} keys in S2 only, ${onlyS3.length} keys in S3 only`);
 
     expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
