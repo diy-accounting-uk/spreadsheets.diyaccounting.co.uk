@@ -8,8 +8,12 @@
 // form come from the manifest and nothing else; rkFor derives the keys S2
 // prints from CELL_MAP alone; a manifest with a view nothing renders is
 // refused; a product with no manifest on the site is refused by name; the
-// headlines strip is fed the snapshot's own report; and the header's two
-// book-level controls are New and Save, with no link off the page.
+// headlines strip is fed the snapshot's own report; the header's two
+// book-level controls are New and Save, with no link off the page; and
+// five fixes shared across every product page -- a button's hover text
+// against its tint fill, a form row at a narrow width, the toast against
+// the mobile action bar, the entries grid's column count by journal, and
+// touch targets that reach 44px only at a coarse pointer.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -352,5 +356,146 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     await page.locator("#new-btn").click();
     await expect(page.locator(".continue-offer")).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, "ui-1-empty-state-after-new.png") });
+  });
+});
+
+test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-target fixes", () => {
+  function relativeLuminance([r, g, b]) {
+    const channel = (v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  }
+  function contrastRatio(a, b) {
+    const l1 = relativeLuminance(a) + 0.05;
+    const l2 = relativeLuminance(b) + 0.05;
+    return l1 > l2 ? l1 / l2 : l2 / l1;
+  }
+
+  test(".btn:hover keeps 4.5:1 text contrast against its tint fill, on every product page", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (const file of ["bst.html", "se.html", "ltd.html", "taxi.html"]) {
+      await page.goto(`${baseUrl}/books/${file}`, { waitUntil: "domcontentloaded" });
+      const btn = page.locator("#new-book-btn");
+      await expect(btn, file).toBeVisible();
+      await btn.hover();
+      const colors = await btn.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        const rgb = (text) => text.match(/[\d.]+/g).slice(0, 3).map(Number);
+        return { fg: rgb(cs.color), bg: rgb(cs.backgroundColor) };
+      });
+      expect(contrastRatio(colors.fg, colors.bg), `${file}: ${colors.fg.join(",")} on ${colors.bg.join(",")}`).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    }
+  });
+
+  test("a 390px form row wraps the label full width instead of squeezing it beside the money box, on SA103S, SA103F and CT600", async ({
+    page,
+  }) => {
+    await page.setViewportSize(MOBILE_PORTRAIT);
+    const cases = [
+      { file: "bst.html", example: "bst-scenario-basic", view: "sa103s" },
+      { file: "se.html", example: "se-scenario-advanced", view: "sa103f" },
+      { file: "ltd.html", example: "ltd-scenario-full", view: "ct600" },
+    ];
+    for (const c of cases) {
+      await page.goto(`${baseUrl}/books/${c.file}?example=${c.example}`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+      await page.locator(`.tab-btn[data-view="${c.view}"]`).click();
+      await expect(page.locator(".form-row").first()).toBeAttached();
+      const rows = await page.locator(".form-row").evaluateAll((rowEls) =>
+        rowEls.map((row) => {
+          const label = row.querySelector(".form-row-label");
+          if (!label) return null;
+          const lineHeight = parseFloat(getComputedStyle(label).lineHeight);
+          return {
+            width: label.getBoundingClientRect().width,
+            lines: Math.round(label.getBoundingClientRect().height / lineHeight),
+            rowRight: row.getBoundingClientRect().right,
+          };
+        }),
+      );
+      for (const row of rows.filter(Boolean)) {
+        expect(row.width, `${c.file} ${c.view}`).toBeGreaterThan(200);
+        expect(row.lines, `${c.file} ${c.view}`).toBeLessThanOrEqual(2);
+        expect(row.rowRight, `${c.file} ${c.view}`).toBeLessThanOrEqual(MOBILE_PORTRAIT.width);
+      }
+    }
+    await page.locator(".form-section").first().screenshot({ path: path.join(screenshotsDir, "ui-2-form-row-390-after.png") });
+  });
+
+  test("the toast sits above the mobile action bar, never over New or Save", async ({ page }) => {
+    await openLoadedBook(page);
+    await page.setViewportSize(MOBILE_PORTRAIT);
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+    await page.keyboard.press("Control+z"); // nothing to undo yet -- the toast fires synchronously
+    const toast = page.locator("#toast");
+    await expect(toast).toHaveClass(/is-visible/);
+    const [toastBox, actionBarBox] = await Promise.all([toast.boundingBox(), page.locator("#mobile-action-bar").boundingBox()]);
+    expect(toastBox.y + toastBox.height, "toast bottom edge clears the action bar's top").toBeLessThanOrEqual(actionBarBox.y);
+    await page.screenshot({ path: path.join(screenshotsDir, "ui-2-toast-action-bar-after.png") });
+  });
+
+  async function entriesColumnsGeometry(page, file, example) {
+    await page.goto(`${baseUrl}/books/${file}?example=${example}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    const toggle = page.locator("#entries-toggle");
+    if ((await toggle.count()) === 0) {
+      await page.locator(".year-table tbody tr.year-row").first().click();
+    }
+    await expect(toggle).toBeAttached();
+    if ((await toggle.innerText()).includes("Show entries")) {
+      await toggle.click();
+    }
+    return page.locator(".entries-columns").evaluate((el) => ({
+      children: el.children.length,
+      tracks: getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length,
+    }));
+  }
+
+  test("entries-columns sizes by journal count: one journal takes the row, two share it", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const se = await entriesColumnsGeometry(page, "se.html", "se-scenario-advanced");
+    expect(se.children, "SE shows one of its five journals at a time").toBe(1);
+    expect(se.tracks, "a single journal takes the whole row").toBe(1);
+
+    const bst = await entriesColumnsGeometry(page, "bst.html", "bst-scenario-basic");
+    expect(bst.children, "BST's two journals both show").toBe(2);
+    expect(bst.tracks, "two journals share the row").toBe(2);
+  });
+
+  test.describe("coarse pointer", () => {
+    test.use({ hasTouch: true });
+
+    test("under-44px controls reach 44px at a coarse pointer", async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`${baseUrl}/books/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+      const selectors = [
+        ".year-row",
+        ".all-categories-toggle",
+        ".checks-passing > details > summary",
+        ".headline-legend-item",
+        ".headline-table-toggle",
+        ".headline-through-year summary",
+      ];
+      for (const selector of selectors) {
+        const el = page.locator(selector).first();
+        await expect(el, selector).toBeAttached();
+        const height = await el.evaluate((node) => node.getBoundingClientRect().height);
+        expect(height, selector).toBeGreaterThanOrEqual(44);
+      }
+    });
+  });
+
+  test("a fine pointer keeps the smaller desktop sizes the coarse-pointer media query never touches", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${baseUrl}/books/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    const height = await page.locator(".year-row").first().evaluate((el) => el.getBoundingClientRect().height);
+    expect(height).toBeLessThan(44);
   });
 });
