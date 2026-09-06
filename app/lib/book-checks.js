@@ -87,6 +87,7 @@ function reachesAnAccount(chart, line) {
 const REPOST_PREFERRED = {
   BasicSoleTrader: { sales: "4000", purchases: "5002" },
   TaxiDriver: { sales: "4000", purchases: "6200" },
+  SelfEmployed: { sales: "4000", purchases: "5002" },
 };
 
 function repostAccount(ctx, journal) {

@@ -301,6 +301,41 @@ describe("making a purchase from a payment", () => {
   });
 });
 
+// ============================== the repost account follows the book's product ==============================
+
+describe("the purchase-from-payment repost account on the SE advanced book", () => {
+  function advancedBook() {
+    return loadDiyaGlData(resolve(REPO_ROOT, "examples", "precision-code-ltd", "advanced"));
+  }
+
+  it("prefers 5002 for a payment with no invoice behind it", () => {
+    const { book, lines } = advancedBook();
+    const withPayment = addBankLine(book, lines, {
+      line: unexplainedPayment({ entryNumber: "TEST-PAYMENT-SE-1", detailComment: "T32 Fixture Supplier", amount: 333.03 }),
+    });
+
+    const suggestion = settlementSuggestions({ book, lines: withPayment }).find(
+      (candidate) => candidate.id === "purchase-from-payment:TEST-PAYMENT-SE-1",
+    );
+
+    expect(suggestion.changes[0].becomes).toBe("5002 — " + book.accounts.purchases["5002"].accountMainDescription);
+  });
+
+  it("falls back to the chart's first account once 5002 is gone", () => {
+    const { book, lines } = advancedBook();
+    delete book.accounts.purchases["5002"];
+    const withPayment = addBankLine(book, lines, {
+      line: unexplainedPayment({ entryNumber: "TEST-PAYMENT-SE-2", detailComment: "T32 Fixture Supplier Two", amount: 244.02 }),
+    });
+
+    const suggestion = settlementSuggestions({ book, lines: withPayment }).find(
+      (candidate) => candidate.id === "purchase-from-payment:TEST-PAYMENT-SE-2",
+    );
+
+    expect(suggestion.changes[0].becomes.startsWith("5000")).toBe(true);
+  });
+});
+
 // ============================== an invoice that never reached the bank ==============================
 
 describe("recording the bank entry an invoice never got", () => {
