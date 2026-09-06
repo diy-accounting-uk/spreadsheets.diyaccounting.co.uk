@@ -135,6 +135,43 @@ const dateOnly = (value) => (value instanceof Date ? value.toISOString().slice(0
 
 const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) / 100;
 
+// The Company keeps four bank accounts, each with its own letter for a
+// transfer to or from it (ltd-layout.js's BANK_TRANSFER_CODES: BB/BS/BD/BC
+// for Current/Savings/CreditCard/Cash), and app/products/ltd.js writes any
+// "BC"-coded line straight to the account's own opening-balance cell,
+// whatever the date. SE keeps only two of those four accounts, and its own
+// template already spends "BC" the same way -- se.js's BANK_ACCOUNT_FILES
+// treats every "BC" line as an opening balance too -- so a genuine transfer
+// that happens to carry the Company's "BC" letter would land in SE as a
+// second opening balance instead of a statement line. Only a "BC" line
+// dated the period's first day is really an opening balance (see T20's
+// bankMonthTotals); every other line coded with one of the four transfer
+// letters is a real transfer, and reaches SE under SE's own letter for the
+// account it lands on instead: Bank.xlsx (1200) analyses a transfer under
+// "X", the same letter every other uncoded intra-company movement uses;
+// Cash.xlsx (1220) already analyses one under "BB", the letter the Company
+// gives it. Savings and CreditCard have no SE equivalent, so a transfer
+// naming either drops out with the rest of that account's lines once
+// filterAdvanced runs.
+const LTD_BANK_TRANSFER_CODES = new Set(["BB", "BS", "BD", "BC"]);
+const SE_BANK_TRANSFER_CODE = { "1200": "X", "1220": "BB" };
+
+function isLtdOpeningBankLine(line, periodStart) {
+  return line["diya-gl:bankCode"] === "BC" && line.postingDate === periodStart;
+}
+
+function mapLtdBankCodeForSe(line, periodStart) {
+  const code = line["diya-gl:bankCode"];
+  if (!LTD_BANK_TRANSFER_CODES.has(code) || isLtdOpeningBankLine(line, periodStart)) return line;
+  const seCode = SE_BANK_TRANSFER_CODE[line["diya-gl:bankAccountID"]];
+  return seCode ? { ...line, "diya-gl:bankCode": seCode } : line;
+}
+
+function mapLtdBankCodesForSe(lines, book) {
+  const periodStart = dateOnly(book.documentInfo.periodCoveredStart);
+  return lines.map((line) => (line.sourceJournalID === "bank" ? mapLtdBankCodeForSe(line, periodStart) : line));
+}
+
 // ============================================================================
 // Precision Code Ltd — an IT consultancy kept as a company, a self employed
 // trader and a basic sole trader
@@ -351,7 +388,7 @@ const bstDiya = writeSubset(
 // Extract SE (advanced)
 // ============================================================================
 
-const advLines = seDrawingsFromDividends(filterAdvanced(allLines));
+const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book)));
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
@@ -634,7 +671,7 @@ const TWIN_VAT_SETTLEMENTS = [
 
 const round2 = (value) => Math.round(value * 100) / 100;
 
-function twinBankLine(date, amount, comment, reference) {
+function twinBankLine(date, amount, comment, reference, entryNumber) {
   return {
     "sourceJournalID": "bank",
     "postingDate": date,
@@ -649,6 +686,7 @@ function twinBankLine(date, amount, comment, reference) {
     "diya-gl:bankCode": "RV",
     "debitCreditCode": "C",
     "diya-gl:bankAccountID": "1200",
+    "entryNumber": entryNumber,
   };
 }
 
@@ -737,6 +775,14 @@ function registeredTwin(lines, book) {
     return line;
   });
 
+  // vatBroughtForward and the four settlement bank lines below are new lines
+  // the twin invents, not lines the master already numbers -- each needs a
+  // number of its own, one past the highest the master hands out, or an
+  // edit naming one of them can never tell it apart from openingJournal[0]
+  // (vatBroughtForward otherwise inherits its entryNumber by spreading it)
+  // or from any other unnumbered bank line.
+  const twinEntryNumbers = nextEntryNumbers(lines, 1 + 1 + TWIN_VAT_SETTLEMENTS.length);
+
   const openingJournal = scaled.filter((line) => line.sourceJournalID === "journal");
   const vatBroughtForward = {
     ...openingJournal[0],
@@ -745,6 +791,7 @@ function registeredTwin(lines, book) {
     lineItemComment: "VAT outstanding at the year start",
     debitCreditCode: "C",
     lineNumber: openingJournal.length + 1,
+    entryNumber: twinEntryNumbers[0],
   };
   const withVatDue = [...openingJournal, vatBroughtForward];
   const sideTotal = (side) =>
@@ -766,6 +813,7 @@ function registeredTwin(lines, book) {
       settlement.amount,
       index === 0 ? "VAT outstanding at the year start" : "Quarterly VAT payment",
       `BNK-RV-${String(index + 1).padStart(3, "0")}`,
+      twinEntryNumbers[index + 1],
     ),
   );
 
@@ -803,6 +851,7 @@ function nextEntryNumbers(lines, count) {
 
 function soleTraderAdaptation(lines, book) {
   const staffOnly = withoutDirectorPayroll(lines, book);
+  const periodStart = dateOnly(book.documentInfo.periodCoveredStart);
   const netWagesByMonth = {};
   for (const line of staffOnly.filter((l) => l.sourceJournalID === "payroll")) {
     const month = line.postingDate.slice(0, 7);
@@ -818,8 +867,12 @@ function soleTraderAdaptation(lines, book) {
     }
     const code = line["diya-gl:bankCode"];
     if (code === "RT") continue;
-    if (code === "BC") {
+    if (isLtdOpeningBankLine(line, periodStart)) {
       adapted.push({ ...line, amount: SOLE_TRADER_OPENING_BANK, lineItemComment: "Bank account opening balance" });
+      continue;
+    }
+    if (LTD_BANK_TRANSFER_CODES.has(code)) {
+      adapted.push(mapLtdBankCodeForSe(line, periodStart));
       continue;
     }
     if (code === "RV" || code === "RC") {
