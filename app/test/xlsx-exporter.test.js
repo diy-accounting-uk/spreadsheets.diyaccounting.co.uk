@@ -471,6 +471,93 @@ describe("extractJournalEntries — the Ltd opening balance sheet's land and bui
   });
 });
 
+// ── recordLine coverage: every extracted line names the cell it came from ──
+//
+// Before this change, extractJournalEntries never called recordLine at all
+// -- its own docstring said the opening-balance lines "have no source cell
+// of their own to record", which was true of an earlier OA_JOURNAL_MAP shape
+// but not the current one, where every entry keys its own distinct cell --
+// and extractBankTransactions' own opening-balance ("BC") line skipped it
+// too. Reverting either of those two recordLine calls below reproduces the
+// old gap: lineForCell("Financialaccounts.xlsx", "OpenAccounts", "G13")
+// (or the bank account's own "A1") goes back to returning undefined, and
+// extractionMap.lines().length drops below the sum of what the extractors
+// return.
+describe("extractionMap records the opening-balance lines", () => {
+  it("resolves a Ltd opening-balance cell and the stock movement's own cell by lineForCell", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000, E15: 10000 }, Stock: { AB30: 6000 } },
+      "Currentaccount.xlsx": { Apr: { A1: 25000 } },
+    });
+    const extractionMap = bstExtractionMap("ltd");
+    const set = await workbookSetFromDirectory(dir);
+    const journalLines = await extractJournalEntries(set, "ltd", LTD_PERIOD, extractionMap);
+    const bankLines = await extractBankTransactions(set, "ltd", LTD_PERIOD, extractionMap);
+
+    // A recordLine record carries where a line came from (file, sheet, row,
+    // cells) and which entryNumber it produced -- not the line's own
+    // accounting fields -- so each lookup below is cross-checked against the
+    // actual returned line by that entryNumber.
+    const landAndBuildings = extractionMap.lineForCell("Financialaccounts.xlsx", "OpenAccounts", "G13");
+    expect(landAndBuildings).toMatchObject({ file: "Financialaccounts.xlsx", sheet: "OpenAccounts", cells: { amount: "G13" } });
+    expect(journalLines.find((line) => line.entryNumber === landAndBuildings.entryNumber)).toMatchObject({ accountMainID: "0000" });
+
+    const stockLine = extractionMap.lineForCell("Financialaccounts.xlsx", "Stock", "AB30");
+    expect(stockLine).toMatchObject({ file: "Financialaccounts.xlsx", sheet: "Stock", cells: { amount: "AB30" } });
+    expect(journalLines.find((line) => line.entryNumber === stockLine.entryNumber)).toMatchObject({ accountMainID: "1100" });
+
+    const bankOpening = extractionMap.lineForCell("Currentaccount.xlsx", "Apr", "A1");
+    expect(bankOpening).toMatchObject({ file: "Currentaccount.xlsx", sheet: "Apr", cells: { amount: "A1" } });
+    expect(bankLines.find((line) => line.entryNumber === bankOpening.entryNumber)).toMatchObject({ accountMainID: "1200" });
+
+    // Every line except the stock movement's own "cost of sales" leg is
+    // recorded -- that leg's only input cell (OpenAccounts!E15) is already
+    // the real "Opening stock" line's own address, so claiming it a second
+    // time would make that first line unreachable by lineForCell.
+    expect(extractionMap.lines().length).toBe(journalLines.length + bankLines.length - 1);
+  });
+});
+
+describe("extractionMap over the shipped examples records every recordable line, keyed file!sheet!cell and unique", () => {
+  it("Ltd: 723 of the 724 extracted lines (every line but the stock movement's cost-of-sales leg)", async () => {
+    const dir = resolve(ROOT, "examples", "ltd-latest");
+    const set = await workbookSetFromDirectory(dir);
+    const period = { start: "2025-11-01", end: "2026-10-31" };
+    const extractionMap = bstExtractionMap("ltd");
+
+    const journal = await extractMultiFileTransactions(set, "ltd", extractionMap);
+    const bank = await extractBankTransactions(set, "ltd", period, extractionMap);
+    const payroll = await extractPayrollTransactions(set, extractionMap);
+    const stock = await extractJournalEntries(set, "ltd", period, extractionMap);
+    const total = journal.length + bank.length + payroll.length + stock.length;
+
+    expect(total).toBe(724);
+    expect(extractionMap.lines().length).toBe(723);
+
+    // A record's own cells (e.g. a journal row's postingDate, amount and
+    // accountMainID columns) legitimately share a row, so the "unique" claim
+    // is about the whole package's set of cell addresses, not one row of
+    // fields against itself.
+    const keys = extractionMap.lines().flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    expect(keys.length).toBeGreaterThan(0);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("SE: the opening fixed-asset journal already records every line it returns", async () => {
+    const dir = resolve(ROOT, "examples", "se-latest");
+    const set = await workbookSetFromDirectory(dir);
+    const period = { start: "2025-04-01", end: "2026-03-31" };
+    const extractionMap = bstExtractionMap("se");
+
+    const lines = await extractJournalEntries(set, "se", period, extractionMap);
+    expect(lines.length).toBeGreaterThan(0);
+    expect(extractionMap.lines().length).toBe(lines.length);
+
+    const keys = extractionMap.lines().flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
 // ── The shipped example ────────────────────────────────────────────────────
 
 const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;

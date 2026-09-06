@@ -608,7 +608,8 @@
     });
     var missed = [];
     for (var row = vat.coverage.firstAccountingRow; row < vat.coverage.firstAccountingRow + 12; row++) {
-      if (typeof sheet[vat.coverage.endColumn + row] === "number" && !covered[row]) missed.push(excelDate(sheet[vat.coverage.endColumn + row]));
+      if (typeof sheet[vat.coverage.endColumn + row] === "number" && !covered[row])
+        missed.push(excelDate(sheet[vat.coverage.endColumn + row]));
     }
     if (missed.length > 0) {
       lines.push(
@@ -981,7 +982,11 @@
     return (
       '<div class="panel-card"><h3>Dividend vouchers</h3>' +
       helpers.kvRows([
-        { label: "Declared by the board", text: helpers.fmtMoney(numberOf(dividend.amount)), rKeyAttr: keyAttrForAll(snap, helpers, [declaredRef, plRef]) },
+        {
+          label: "Declared by the board",
+          text: helpers.fmtMoney(numberOf(dividend.amount)),
+          rKeyAttr: keyAttrForAll(snap, helpers, [declaredRef, plRef]),
+        },
         { label: "Board meeting", text: helpers.esc(isoDate(dividend.boardMeetingDate)) },
       ]) +
       '<p class="entries-note">Split by shareholding. No tax credit is shown: the dividend tax credit ended in April 2016.</p>' +

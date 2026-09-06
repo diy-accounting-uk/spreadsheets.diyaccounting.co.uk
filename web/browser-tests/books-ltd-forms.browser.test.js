@@ -168,13 +168,17 @@ test.describe("DIYA-GL books page — the six Ltd form views (LT-T8)", () => {
   test("the micro-entity profit and loss adds up, within the penny each figure is rounded to", async ({ page }) => {
     await openPackage(page);
     await openView(page, "accounts");
-    const figures = await page.locator("#view-root .form-render .form-section").nth(1).locator(".form-row").evaluateAll((rows) =>
-      rows.map((row) => ({
-        label: (row.querySelector(".form-row-label")?.textContent ?? "").trim(),
-        chip: row.querySelector(".box-chip")?.textContent ?? "",
-        text: (row.querySelector(".form-amount-box")?.textContent ?? "").trim(),
-      })),
-    );
+    const figures = await page
+      .locator("#view-root .form-render .form-section")
+      .nth(1)
+      .locator(".form-row")
+      .evaluateAll((rows) =>
+        rows.map((row) => ({
+          label: (row.querySelector(".form-row-label")?.textContent ?? "").trim(),
+          chip: row.querySelector(".box-chip")?.textContent ?? "",
+          text: (row.querySelector(".form-amount-box")?.textContent ?? "").trim(),
+        })),
+      );
     // The turnover row is a two-year group, so its own chip sits on the
     // caption and its rows read "This year" and "Last year".
     const captions = await page.locator("#view-root .form-render .form-section").nth(1).locator(".fy-caption").allTextContents();

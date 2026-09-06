@@ -67,11 +67,7 @@
               "heading": "profit-and-loss/-/D",
               "rule": {
                 "op": "sum",
-                "cells": [
-                  "Financialaccounts.xlsx!MnthP&L!B18",
-                  "Financialaccounts.xlsx!MnthP&L!B19",
-                  "Financialaccounts.xlsx!MnthP&L!B20"
-                ],
+                "cells": ["Financialaccounts.xlsx!MnthP&L!B18", "Financialaccounts.xlsx!MnthP&L!B19", "Financialaccounts.xlsx!MnthP&L!B20"],
                 "why": "the published account folds wages, directors' wages and employers' NI into one administrative expenses total, so the three staff lines come from the management sheet"
               }
             },

@@ -318,6 +318,10 @@ describe("the four multi-file extractors over examples/ltd-latest", () => {
     const stock = await extractJournalEntries(set, "ltd", PERIOD, extractionMap);
 
     expect(journal.length + bank.length + payroll.length + stock.length).toBe(724);
+    // 723 of the 724: every line but the stock movement's own "cost of
+    // sales" leg, whose only input cell is already the "Opening stock"
+    // line's own address (see xlsx-exporter.test.js's recordLine coverage).
+    expect(extractionMap.lines().length).toBe(723);
 
     const keys = [];
     for (const record of extractionMap.lines()) {

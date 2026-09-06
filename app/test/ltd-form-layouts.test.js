@@ -45,7 +45,9 @@ function headingsKeyed(ref) {
   const [statement, format, letter] = ref.split("/");
   return accounts.heading.filter(
     (heading) =>
-      heading.statement === statement && String(heading.format === undefined ? "-" : heading.format) === format && heading.letter === letter,
+      heading.statement === statement &&
+      String(heading.format === undefined ? "-" : heading.format) === format &&
+      heading.letter === letter,
   );
 }
 
@@ -263,7 +265,11 @@ describe("box numbers are unique within a form and rise through it", () => {
     );
   });
 
-  it("VAT", () => assertUniqueAscending(layout.forms.vat.boxes.map((box) => box.box), "VAT"));
+  it("VAT", () =>
+    assertUniqueAscending(
+      layout.forms.vat.boxes.map((box) => box.box),
+      "VAT",
+    ));
 
   it("the computation's CT600 cross-references are unique", () => {
     const boxes = allRows(layout.forms.computation)

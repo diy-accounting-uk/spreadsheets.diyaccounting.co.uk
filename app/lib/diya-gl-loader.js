@@ -665,7 +665,12 @@ export function extractTaxDataFromBook(book, product) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
-  if (ni.class2WeeklyRate === undefined) {
+  // Class 2 is the self-employed rate: a Company book's own tax-year file
+  // (app/data/ltd-*.toml) carries no [national_insurance] table at all, only
+  // [employer_ni] (see taxTablesFromRateData's own comment in
+  // xlsx-exporter.js), so a freshly extracted Ltd book never carries this
+  // field and the guard below would otherwise refuse every one of them.
+  if (product !== "ltd" && ni.class2WeeklyRate === undefined) {
     throw new Error("book.toml has no tax.nationalInsurance.class2WeeklyRate, so its Class 2 NI rate is unknown");
   }
   const ca = tax.capitalAllowances || {};

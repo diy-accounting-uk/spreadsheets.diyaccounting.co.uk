@@ -41,6 +41,19 @@ const BANK_TRANSFER_CODES = {
   "Creditcardaccount.xlsx": "BD",
 };
 
+// A "BC"-coded bank line is the account's opening balance only on the
+// period's first day, which the workbook takes in A1 rather than as a
+// statement line; a "BC"-coded line any other day is an ordinary transfer
+// to or from the Cash account, the same as any other code (see
+// BANK_TRANSFER_CODES). Shared by the writer (app/products/ltd.js) and the
+// calculation engine (app/lib/calculators/ltd.js) -- the two places that
+// read a "BC" line's own date to tell the two apart -- so the rule is one
+// predicate, not a copy that can drift from app/lib/book-checks/ltd.js's
+// own isOpeningBankBalance.
+export function isLtdOpeningBankLine(code, date, periodStart) {
+  return code === "BC" && date.getTime() === periodStart.getTime();
+}
+
 // The order the four transfer codes take across row 5 of every bank month
 // tab, which is not the order BANK_TRANSFER_CODES declares them in. A book
 // keeps this order with its own code dropped out.

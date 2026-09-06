@@ -33,7 +33,7 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../lib/ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -940,6 +940,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
   // Bank entries — one workbook per bank account, receipts and payments on
   // opposite sides of each month tab.
+  //
+  // The target period's first day, in the same shifted frame as every "d"
+  // below, so isLtdOpeningBankLine's date comparison is apples to apples.
+  // A caller that names no target year (cellWrites' own default when the
+  // product runs single-file, which Ltd never does) keeps the old, looser
+  // reading -- any "BC" line is an opening balance -- rather than gate on a
+  // period boundary it cannot place.
+  const periodStart = targetStartYear ? new Date(Date.UTC(targetStartYear, targetStartMonth, 1)) : null;
   const bankFileWrites = {};
   if (scenario.bank) {
     const receiptRows = {};
@@ -957,8 +965,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const sheet = bankFileWrites[fileName][tabName];
 
         // BC on a bank entry marks the account's opening balance, which the
-        // workbook takes in A1 rather than as a statement line.
-        if (tx.code === "BC") {
+        // workbook takes in A1 rather than as a statement line -- but only
+        // on the period's first day; a "BC" line any other day is an
+        // ordinary transfer to or from the Cash account, analysed like any
+        // other code below.
+        if (periodStart ? isLtdOpeningBankLine(tx.code, d, periodStart) : tx.code === "BC") {
           sheet.A1 = tx.amount;
           continue;
         }

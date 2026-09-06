@@ -151,6 +151,43 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
     expect(errors).toEqual([]);
   });
 
+  // June is the one month the fixture carries a subcontractor payment with
+  // CIS tax withheld on (see se-scenario-advanced.toml's PUR-CIS-001 line),
+  // so it is the month that proves all six figures against the fixture's
+  // own values rather than a run of zeroes.
+  test("the year view's month card carries the mileage-and-CIS strip, against the fixture's own June figures", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+    await page.locator('.year-row[data-month="2025-06"]').click();
+    const strip = page.locator(".month-detail-row .month-card-strip");
+    await expect(strip).toHaveCount(1);
+
+    const MONEY_KEYS = [
+      "cell/Purchases.xlsx!Jun!G2",
+      "cell/Purchases.xlsx!Jun!A2",
+      "cell/Sales.xlsx!Jun!W1",
+      "cell/Sales.xlsx!Jun!X1",
+      "cell/Purchases.xlsx!Jun!AD1",
+    ];
+    for (const key of MONEY_KEYS) {
+      const figure = strip.locator(`[data-r-key*="${key}"]`);
+      await expect(figure, key).toHaveCount(1);
+      expect(Math.abs(money(await figure.innerText()) - reportFigure(key)) < 0.005, key).toBe(true);
+    }
+
+    // C2 is business miles, a count rather than money: no pound sign, and
+    // June's running total is the fixture's own three months of mileage.
+    const milesKey = "cell/Purchases.xlsx!Jun!C2";
+    const miles = strip.locator(`[data-r-key*="${milesKey}"]`);
+    await expect(miles, milesKey).toHaveCount(1);
+    const milesText = (await miles.innerText()).trim();
+    expect(milesText).not.toMatch(/£/);
+    expect(Number(milesText.replace(/,/g, ""))).toBe(Math.round(reportFigure(milesKey)));
+
+    fs.mkdirSync(screenshotsDir, { recursive: true });
+    await strip.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(screenshotsDir, "se-t28-month-strip.png"), fullPage: false });
+  });
+
   test("the journal switch shows one of the five journals at a time", async ({ page }) => {
     await openExample(page, FEATURED_EXAMPLE);
     const journalIds = await page
