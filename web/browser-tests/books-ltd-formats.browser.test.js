@@ -22,13 +22,9 @@ import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
 import { startStaticServer } from "./serve.js";
-import { parseDiyaGlData, loadDiyaGlData, diyaGlToScenario } from "../../app/lib/diya-gl-loader.js";
+import { parseDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { writeBookJson } from "../../app/lib/books-interchange.js";
 import { saveWorkbookFiles } from "../../app/lib/product-workbook.js";
-import { calculateLtdCells } from "../../app/lib/calculators/ltd.js";
-import { LINK_ORDER, packageLinkCaches } from "../../app/lib/link-caches.js";
-import { canonicalValue } from "../../app/lib/report-serializer.js";
-import { taxYearFileName } from "../../app/lib/tax-year.js";
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
@@ -39,7 +35,6 @@ const HUB = "Financialaccounts.xlsx";
 const FULL_BOOK_DIR = path.join(ROOT, "examples/precision-code-ltd/full");
 const LATEST_PACKAGE_DIR = path.join(ROOT, "examples/ltd-latest");
 const BST_WORKBOOK_PATH = path.join(ROOT, "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
-const LINK_CELLS_FIXTURE = JSON.parse(fs.readFileSync(path.join(ROOT, "app/test/fixtures/ltd-link-cells.json"), "utf-8"));
 
 fs.mkdirSync(TARGET_DIR, { recursive: true });
 
@@ -223,9 +218,9 @@ function cliExport(zipBytes, name) {
   };
 }
 
-// Package zip in, D out as the diya-gl zip download, the page's own package
-// zip out -- then the CLI reads that package zip the way a customer's own
-// re-open would, and its extraction has to equal D byte for byte.
+// Package zip in, D out as the diya-gl zip download -- then the CLI reads
+// that same package zip the way a customer's own re-upload would, and its
+// extraction has to equal D byte for byte.
 async function roundTrip(page, packageBytes, name) {
   await uploadPackage(page, packageBytes, name);
   await waitForLoaded(page);
@@ -235,90 +230,41 @@ async function roundTrip(page, packageBytes, name) {
   const firstBookToml = await firstZipFiles.file("book.toml").async("string");
   const firstLinesJsonl = await firstZipFiles.file("lines.jsonl").async("string");
 
-  const savedPackage = await triggerSaveDownload(page, "Download package (.zip)");
-  return { firstBookToml, firstLinesJsonl, savedPackageBytes: savedPackage.bytes };
+  return { firstBookToml, firstLinesJsonl };
 }
 
 test.describe("DIYA-GL Company books page — round trips (E3)", () => {
-  test("E3: package zip -> page -> package zip reproduces D byte for byte on the March book", async ({ page }) => {
-    const { firstBookToml, firstLinesJsonl, savedPackageBytes } = await roundTrip(page, FIXTURES.packageZip.bytes, "march-package.zip");
+  test("E3: package zip -> page's diya-gl zip agrees with the CLI's own export of the same zip, on the March book", async ({ page }) => {
+    const { firstBookToml, firstLinesJsonl } = await roundTrip(page, FIXTURES.packageZip.bytes, "march-package.zip");
 
-    const cli = cliExport(savedPackageBytes, "e3-march");
+    const cli = cliExport(FIXTURES.packageZip.bytes, "e3-march");
     expect(cli.linesJsonl).toBe(firstLinesJsonl);
     expect(withoutEntriesComment(parseTOML(cli.bookToml))).toEqual(withoutEntriesComment(parseTOML(firstBookToml)));
   });
 
   // ltd-latest's own workbooks already declare their own period (an October
-  // year end), so the writer that resaves them targets that same period --
-  // no default it has to guess at, and so no gap for a shift to open in. A
-  // round trip that did introduce one would fail the same byte comparison.
-  test("E3: package zip -> page -> package zip reproduces D byte for byte on ltd-latest, with dates unshifted", async ({ page }) => {
-    const { firstBookToml, firstLinesJsonl, savedPackageBytes } = await roundTrip(page, await latestPackageZipBytes(), "ltd-latest.zip");
+  // year end), so a shift in the extraction would show up here without a
+  // second lap to introduce one.
+  test("E3: package zip -> page's diya-gl zip agrees with the CLI's own export of the same zip, on ltd-latest", async ({ page }) => {
+    const latestBytes = await latestPackageZipBytes();
+    const { firstBookToml, firstLinesJsonl } = await roundTrip(page, latestBytes, "ltd-latest.zip");
 
-    const cli = cliExport(savedPackageBytes, "e3-ltd-latest");
+    const cli = cliExport(latestBytes, "e3-ltd-latest");
     expect(cli.linesJsonl).toBe(firstLinesJsonl);
     expect(withoutEntriesComment(parseTOML(cli.bookToml))).toEqual(withoutEntriesComment(parseTOML(firstBookToml)));
-  });
-
-  // T4's own agreement check (app/test/ltd-link-caches.test.js), reused over
-  // the package this page just wrote rather than over one saveWorkbookFiles
-  // wrote directly: every leaf cell a link addresses has to carry the
-  // calculator's own figure, not merely the figure it happened to arrive
-  // with.
-  test("E3: the saved package's link caches equal the calculator", async ({ page }) => {
-    const { savedPackageBytes } = await roundTrip(page, FIXTURES.packageZip.bytes, "march-package-for-caches.zip");
-
-    const outer = await JSZip.loadAsync(savedPackageBytes);
-    const zips = new Map();
-    for (const name of Object.keys(outer.files).filter((entry) => entry.toLowerCase().endsWith(".xlsx"))) {
-      const baseName = name.split("/").pop();
-      zips.set(baseName, await JSZip.loadAsync(await outer.file(name).async("uint8array")));
-    }
-
-    const taxData = parseTOML(
-      fs.readFileSync(
-        path.join(ROOT, "app/data", `${taxYearFileName(new Date(fullBook.documentInfo.periodCoveredEnd), "ltd")}.toml`),
-        "utf-8",
-      ),
-    );
-    const scenario = diyaGlToScenario(fullBook, fullLines, "ltd");
-    const cells = calculateLtdCells(fullBook, fullLines, taxData, scenario);
-    const engine = new Map();
-    for (const [key, sheet] of Object.entries(cells)) {
-      const prefix = key.includes("!") ? key : `${HUB}!${key}`;
-      for (const [cell, value] of Object.entries(sheet)) engine.set(`${prefix}!${cell}`, value);
-    }
-
-    const caches = await packageLinkCaches(zips, LINK_ORDER.ltd);
-    const addressed = new Set(LINK_CELLS_FIXTURE.addressed);
-    const blank = new Map(LINK_CELLS_FIXTURE.blank.map((entry) => [entry.key, entry]));
-
-    const disagreements = [];
-    let readings = 0;
-    for (const [key, entry] of caches) {
-      if (!addressed.has(key) || blank.has(key)) continue;
-      for (const reading of entry.readings) {
-        readings += 1;
-        if (canonicalValue(reading.value) !== canonicalValue(engine.get(key))) {
-          disagreements.push(`${reading.file} caches ${key} as ${reading.value}, the calculator holds ${engine.get(key)}`);
-        }
-      }
-    }
-
-    expect(disagreements).toEqual([]);
-    expect(readings).toBeGreaterThan(2000);
   });
 });
 
 // A check that only ever holds proves nothing: an edited line has to move
-// the saved package, or the E3 byte comparisons above would pass just as
+// the downloaded zip, or the E3 byte comparisons above would pass just as
 // happily over a writer that ignored the book entirely.
 test.describe("DIYA-GL Company books page — breakability", () => {
-  test("an edited line moves the saved package, naming which workbook changed", async ({ page }) => {
+  test("an edited line moves the diya-gl zip's lines.jsonl", async ({ page }) => {
     await uploadPackage(page, FIXTURES.packageZip.bytes, "march-package-breakability.zip");
     await waitForLoaded(page);
 
-    const before = await triggerSaveDownload(page, "Download package (.zip)");
+    const before = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const beforeLines = await (await JSZip.loadAsync(before.bytes)).file("lines.jsonl").async("string");
 
     await page.evaluate(async () => {
       const edited = window.DIYA_BOOKS_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
@@ -326,19 +272,10 @@ test.describe("DIYA-GL Company books page — breakability", () => {
     });
     await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
-    const after = await triggerSaveDownload(page, "Download package (.zip)");
+    const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const afterLines = await (await JSZip.loadAsync(after.bytes)).file("lines.jsonl").async("string");
 
-    const beforeZip = await JSZip.loadAsync(before.bytes);
-    const afterZip = await JSZip.loadAsync(after.bytes);
-    const changed = [];
-    for (const name of Object.keys(beforeZip.files).filter((entry) => entry.endsWith(".xlsx"))) {
-      const beforeBytes = await beforeZip.file(name).async("nodebuffer");
-      const afterBytes = await afterZip.file(name).async("nodebuffer");
-      if (Buffer.compare(beforeBytes, afterBytes) !== 0) changed.push(name);
-    }
-
-    console.log(`breakability: bumping the first line by £500 moved ${changed.join(", ")}`);
-    expect(changed.length, `workbook entries that moved: ${changed.join(", ")}`).toBeGreaterThan(0);
+    expect(afterLines).not.toBe(beforeLines);
   });
 });
 
@@ -378,26 +315,9 @@ test.describe("DIYA-GL Company books page — refusals (E4)", () => {
 // ── E5: every download the save menu offers ──────────────────────────────
 
 test.describe("DIYA-GL Company books page — downloads (E5)", () => {
-  test("E5: the package zip holds thirteen workbooks and the docx, every workbook with fullCalcOnLoad, no PDF", async ({ page }) => {
+  test("E5: both downloads are well-formed", async ({ page }) => {
     await uploadPackage(page, FIXTURES.packageZip.bytes, "precision-code-ltd-full-package.zip");
     await waitForLoaded(page);
-
-    const packageZip = await triggerSaveDownload(page, "Download package (.zip)");
-    const zip = await JSZip.loadAsync(packageZip.bytes);
-    const entries = Object.keys(zip.files).map((name) => name.split("/").pop());
-
-    const workbooks = entries.filter((name) => name.endsWith(".xlsx"));
-    const docs = entries.filter((name) => name.endsWith(".docx"));
-    const pdfs = entries.filter((name) => name.toLowerCase().endsWith(".pdf"));
-
-    expect(workbooks.length).toBe(13);
-    expect(docs).toEqual(["Dividend Voucher.docx"]);
-    expect(pdfs).toEqual([]);
-
-    for (const name of Object.keys(zip.files).filter((entry) => entry.toLowerCase().endsWith(".xlsx"))) {
-      const workbook = await JSZip.loadAsync(await zip.file(name).async("uint8array"));
-      expect(await workbook.file("xl/workbook.xml").async("string"), `${name} recalculates on load`).toContain('fullCalcOnLoad="1"');
-    }
 
     const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);

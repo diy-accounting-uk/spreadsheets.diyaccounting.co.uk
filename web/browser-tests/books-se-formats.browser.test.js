@@ -8,9 +8,9 @@
 // them, and that every download the save menu offers is well-formed.
 //
 // The page reads a Self Employed book back from the nine workbooks
-// themselves, from a diya-gl zip or from a diya-gl JSON file. So E3 runs the
-// full lap -- package zip in, package zip out, and round again -- and E4
-// asserts each refusal by the message it actually prints.
+// themselves, from a diya-gl zip or from a diya-gl JSON file. So E3 ties a
+// package zip upload's diya-gl download to the CLI's own export of that
+// same zip, and E4 asserts each refusal by the message it actually prints.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -147,14 +147,6 @@ async function uploadPackage(page, bytes, name) {
   await waitForLoaded(page);
 }
 
-// R's figures alone. The lap's two books name different files they were
-// uploaded from, which the report carries as its scenario name, so the
-// comparison is over what the report measures rather than what it was
-// called.
-function reportValues(report) {
-  return report.values.map((entry) => `${entry.key}=${entry.unit ?? ""}:${entry.value}`);
-}
-
 function cliExport(zipBytes, name) {
   const zipPath = path.join(TARGET_DIR, `${name}.zip`);
   const outputDir = path.join(TARGET_DIR, name);
@@ -170,30 +162,18 @@ function cliExport(zipBytes, name) {
 }
 
 test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
-  // Package zip -> page -> package zip, twice. The nine workbooks carry no
-  // column for an entry number, a document type or a tax code, so a line
-  // that went in through the master book comes back out renumbered and
-  // without them: the lap settles from the first extraction on, not before
-  // it. What has to hold from there is that a second lap reads the same
-  // figures, writes the same nine workbooks, and reads back exactly what the
-  // CLI reads from the same zip.
-  test("package zip to page to package zip: the second lap holds the first's report and writes the same zip", async ({ page }) => {
-    await uploadPackage(page, await sePackageZipBytes(), "se-latest-package.zip");
-    const firstReport = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report);
-    const firstPackage = await triggerSaveDownload(page, "Download package (.zip)");
+  // The nine workbooks carry no column for an entry number, a document type
+  // or a tax code, so a line that went in through the master book comes back
+  // out renumbered and without them: what has to hold is that the page's own
+  // extraction of the uploaded package reads back exactly what the CLI reads
+  // from the same zip.
+  test("a package zip uploaded to the page: its diya-gl download agrees with the CLI's own export of that same zip", async ({ page }) => {
+    const packageBytes = await sePackageZipBytes();
+    await uploadPackage(page, packageBytes, "se-latest-package.zip");
+    const diyaGl = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
 
-    await uploadPackage(page, firstPackage.bytes, "se-page-package.zip");
-    const secondReport = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.report);
-    const secondPackage = await triggerSaveDownload(page, "Download package (.zip)");
-    const secondDiyaGl = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
-
-    expect(reportValues(secondReport)).toEqual(reportValues(firstReport));
-    expect(Buffer.compare(secondPackage.bytes, firstPackage.bytes)).toBe(0);
-    expect(secondPackage.download.suggestedFilename()).toBe(firstPackage.download.suggestedFilename());
-
-    // The CLI reads the page's package the same way the page just did.
-    const cli = cliExport(firstPackage.bytes, "e3-se-package-1");
-    const pageZip = await JSZip.loadAsync(secondDiyaGl.bytes);
+    const cli = cliExport(packageBytes, "e3-se-package");
+    const pageZip = await JSZip.loadAsync(diyaGl.bytes);
     expect(await pageZip.file("lines.jsonl").async("string")).toBe(cli.linesJsonl);
   });
 
@@ -272,24 +252,13 @@ test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
 // ── E5: every download the save menu offers ──────────────────────────────
 
 test.describe("DIYA-GL books page — Self Employed downloads (E5)", () => {
-  test("all three downloads are well-formed, and no single workbook is offered", async ({ page }) => {
+  test("both downloads are well-formed", async ({ page }) => {
     await openAdvancedExample(page);
 
     await page.click("#save-btn");
     const items = await page.getByRole("menuitem").allInnerTexts();
-    expect(items).toEqual(["Download package (.zip)", "Download books as diya-gl (.zip)", "Download books as JSON (.json)"]);
+    expect(items).toEqual(["Download books as diya-gl (.zip)", "Download books as JSON (.json)"]);
     await page.keyboard.press("Escape");
-
-    const packageZip = await triggerSaveDownload(page, "Download package (.zip)");
-    const zip = await JSZip.loadAsync(packageZip.bytes);
-    const workbooks = Object.keys(zip.files).filter((name) => name.endsWith(".xlsx"));
-    expect(workbooks.length).toBe(9);
-    const dirNames = new Set(workbooks.map((name) => path.dirname(name)));
-    expect(dirNames.size, "every workbook sits under one package directory").toBe(1);
-    for (const name of workbooks) {
-      const workbook = await JSZip.loadAsync(await zip.file(name).async("uint8array"));
-      expect(await workbook.file("xl/workbook.xml").async("string"), `${name} recalculates on load`).toContain('fullCalcOnLoad="1"');
-    }
 
     const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);

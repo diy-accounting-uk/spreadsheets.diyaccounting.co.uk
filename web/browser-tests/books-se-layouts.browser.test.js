@@ -286,13 +286,13 @@ test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {
     await expect.poll(() => lineCount(page)).toBe(before + 1);
     await expect(page.locator(`[data-settlement-preview="${settlementId}"]`)).toHaveCount(0);
 
-    // Save: the topbar's control opens the three-download menu.
+    // Save: the topbar's control opens the two-download menu.
     await tabTo(page, "#save-btn", { backward: true });
     focusRingSamples.push(await activeElementHasFocusRing(page));
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(3);
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(2);
     await page.keyboard.press("Escape");
 
     expect(focusRingSamples.length).toBe(7);
