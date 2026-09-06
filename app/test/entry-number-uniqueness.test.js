@@ -9,6 +9,7 @@
 // reproduces them exactly.
 
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -49,5 +50,30 @@ describe("extracted entry numbers", () => {
       const second = await linesOf(dir, product);
       expect(second.map((line) => line.entryNumber)).toEqual(first.map((line) => line.entryNumber));
     }, 120000);
+  }
+});
+
+// The VAT-registered twin scenarios invent lines of their own on top of the
+// BrickWork Pro master's own numbered transactions -- the VAT brought
+// forward journal and the four quarterly settlement bank lines -- so these
+// two diya-gl subsets are read straight off their own lines.jsonl rather
+// than through a workbook.
+const DIYA_GL_VAT_TWIN_SUBSETS = ["examples/brickwork-pro/se-vat", "examples/brickwork-pro/ltd-vat"];
+
+function readSubsetLines(dir) {
+  return readFileSync(resolve(ROOT, dir, "lines.jsonl"), "utf8")
+    .split("\n")
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line));
+}
+
+describe("entry numbers on the VAT-registered twin subsets", () => {
+  for (const dir of DIYA_GL_VAT_TWIN_SUBSETS) {
+    it(`gives every line of ${dir} its own number`, () => {
+      const lines = readSubsetLines(dir);
+      expect(lines.length).toBeGreaterThan(0);
+      expect(lines.every((line) => typeof line.entryNumber === "string" && line.entryNumber.length > 0)).toBe(true);
+      expect(repeated(lines), repeated(lines).join("\n")).toEqual([]);
+    });
   }
 });
