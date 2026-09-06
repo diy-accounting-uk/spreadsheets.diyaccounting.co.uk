@@ -72,6 +72,17 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
+// The calendar year the payroll year opens in, from the accounting period's
+// own year end alone -- the same fallback app/lib/calculators/ltd.js's
+// payrollYearOf() uses when taxData carries no financial_year: the year
+// before the year end's calendar year, unless the year end falls in January
+// to March, when the payroll year already opened the April before that year.
+function payrollYearFromAccountingYearEnd(yearEndDate) {
+  const targetStartYear = yearEndDate.getUTCFullYear() - 1;
+  const yearEndMonth = yearEndDate.getUTCMonth() + 1;
+  return yearEndMonth <= 3 ? targetStartYear : targetStartYear + 1;
+}
+
 // TrialBalance's own closing-balance echo of each bank workbook (verified
 // against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
 // EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
@@ -3561,10 +3572,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // so they are the payroll year's first day plus a fixed count of days --
   // measured here against the year the package's own tax data opens in, not
   // against the calendar the sheet built them from.
+  //
+  // A --data run's own extracted tax data carries no financial_year (it never
+  // reads a tax-year TOML), so this falls back to the accounting period's own
+  // year end the same way payrollYearOf() does in app/lib/calculators/ltd.js:
+  // the year before the year end's calendar year, unless the year end falls
+  // in January to March, when the payroll year already opened the April
+  // before that year.
   const paymentSchedule = results["Payslips.xlsx!Payment"];
   const payrollYearOpens = taxData?.financial_year?.start
     ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear())
-    : null;
+    : packageYearEnd
+      ? payrollYearStart(payrollYearFromAccountingYearEnd(new Date(packageYearEnd)))
+      : null;
   if (paymentSchedule && payrollYearOpens) {
     const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
