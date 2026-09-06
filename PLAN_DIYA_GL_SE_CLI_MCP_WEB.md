@@ -506,6 +506,12 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
+- T37d `8db14254`: the SE manifest's three `add` descriptors — bank and cash both `kind: "bank"`
+  with a direction and code field, payroll `kind: "payroll"` with an employee field and three
+  deduction fields defaulting to nil. `codes` reads the code letters off the snapshot's own bank
+  account analysis (T33's chart) and the employees off `snapshot.payroll.employees`; nothing
+  hardcoded. The shell ignores `add` until T37b lands, so no render changed; all 13
+  `books-se.browser.test.js` cases still pass.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes
