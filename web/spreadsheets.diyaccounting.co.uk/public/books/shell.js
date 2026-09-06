@@ -2303,11 +2303,11 @@
         Object.keys(numbers).forEach(function (id) {
           entry[id] = numbers[id];
         });
+        entry.kind = descriptor ? descriptor.kind : undefined;
         entry.journal = journal;
         entry.date = date;
         entry.account = account;
         entry.amount = amount;
-        entry.kind = descriptor && descriptor.kind;
         addDraft[journal] = null;
         commit(
           function () {
