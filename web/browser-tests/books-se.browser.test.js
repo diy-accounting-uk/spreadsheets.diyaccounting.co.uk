@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
+import { BANK_LAYOUTS } from "../../app/products/se.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -234,6 +235,47 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
     const payrollNames = await payrollTable.locator("tr.entry-row .entry-account-name").allTextContents();
     expect(payrollNames.sort()).toEqual(["Directors wages (non-PAYE)", "Employee wages (non-PAYE)", "Employee wages (non-PAYE)"]);
     await expect(payrollTable.locator(".entry-add-account option")).toHaveCount(2);
+  });
+
+  test("the bank, cash and payroll add rows render each journal's own descriptor controls", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+
+    await page.locator('[data-journal-switch="bank"]').click();
+    const bankAdd = page.locator('.entries-table[data-journal="bank"] .entry-add-row');
+    for (const field of ["date", "account", "direction", "code", "detail", "amount"]) {
+      await expect(bankAdd.locator(`[data-add-field="${field}"]`), field).toHaveCount(1);
+    }
+    // The account field defaults to the bank grid's first chart account
+    // (1200, Bank.xlsx) and the direction to Receipt, so the code select's
+    // initial options are Bank.xlsx's own receipt codes.
+    await expect(bankAdd.locator('[data-add-field="code"] option')).toHaveCount(BANK_LAYOUTS["Bank.xlsx"].receiptCodes.size);
+
+    await page.locator('[data-journal-switch="cash"]').click();
+    const cashAdd = page.locator('.entries-table[data-journal="cash"] .entry-add-row');
+    for (const field of ["date", "account", "direction", "code", "detail", "amount"]) {
+      await expect(cashAdd.locator(`[data-add-field="${field}"]`), field).toHaveCount(1);
+    }
+    await expect(cashAdd.locator('[data-add-field="code"] option')).toHaveCount(BANK_LAYOUTS["Cash.xlsx"].receiptCodes.size);
+
+    await page.locator('[data-journal-switch="payroll"]').click();
+    const payrollAdd = page.locator('.entries-table[data-journal="payroll"] .entry-add-row');
+    for (const field of ["date", "account", "employee", "incomeTax", "employeeNI", "employerNI", "detail", "amount"]) {
+      await expect(payrollAdd.locator(`[data-add-field="${field}"]`), field).toHaveCount(1);
+    }
+    // The book's own employee register carries three employees.
+    await expect(payrollAdd.locator('[data-add-field="employee"] option')).toHaveCount(3);
+  });
+
+  test("the bank add row's code options switch from receipt codes to payment codes when the direction changes", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+    await page.locator('[data-journal-switch="bank"]').click();
+    const bankAdd = page.locator('.entries-table[data-journal="bank"] .entry-add-row');
+
+    await expect(bankAdd.locator('[data-add-field="code"] option')).toHaveCount(BANK_LAYOUTS["Bank.xlsx"].receiptCodes.size);
+    await bankAdd.locator('[data-add-field="direction"]').selectOption("C");
+    await expect(bankAdd.locator('[data-add-field="code"] option')).toHaveCount(BANK_LAYOUTS["Bank.xlsx"].paymentCodes.size);
+    await bankAdd.locator('[data-add-field="direction"]').selectOption("D");
+    await expect(bankAdd.locator('[data-add-field="code"] option')).toHaveCount(BANK_LAYOUTS["Bank.xlsx"].receiptCodes.size);
   });
 
   test("the bank book's closing balance is the March tab's own cell", async ({ page }) => {
