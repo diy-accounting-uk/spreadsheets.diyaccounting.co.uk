@@ -47,6 +47,28 @@
     return '<div class="editable-field"><label>' + helpers.esc(label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>";
   }
 
+  // A fixed asset's own class enum, translated to the Schedule block's label
+  // through S.SCHEDULE_ASSET_CLASSES -- the same key
+  // diya-gl-loader.js's ASSET_CLASS_TO_CATEGORY maps a class onto for the
+  // calculator, kept here rather than reached for across the bundle
+  // boundary.
+  var ASSET_CLASS_KEY_BY_ENUM = {
+    landBuildings: "land",
+    plantMachinery: "plant",
+    fixturesFittings: "fixtures",
+    computerTechnology: "computer",
+    motorVehicles: "motor",
+  };
+
+  function assetClassLabel(rawClass) {
+    var key = ASSET_CLASS_KEY_BY_ENUM[rawClass];
+    var found = null;
+    S.SCHEDULE_ASSET_CLASSES.forEach(function (klass) {
+      if (klass.key === key) found = klass;
+    });
+    return (found && found.label) || rawClass || "";
+  }
+
   // ============================== the bank book ==============================
 
   function bankViewState(helpers) {
@@ -442,7 +464,7 @@
               "<tr><td>" +
               helpers.esc(asset.description) +
               "</td><td>" +
-              helpers.esc(asset.assetClass) +
+              helpers.esc(assetClassLabel(asset.assetClass)) +
               '</td><td class="num">' +
               helpers.fmtMoney(asset.cost) +
               '</td><td class="num">' +
