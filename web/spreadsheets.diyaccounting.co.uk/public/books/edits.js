@@ -6,10 +6,11 @@
 // The edit path, the undo stack and the fix-it helpers. Every change to the
 // book -- a hand edit in the entries grid, a delete, an added entry, or a
 // helper applying its whole plan -- goes through the named edits
-// app/lib/diya-gl-edits.js exports (addSaleLine, addPurchaseLine,
-// changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount,
-// changeLineDetail, changeLineQuantity), reached through the engine bundle. Nothing here reimplements an edit, so
-// the page, the CLI and the MCP server change a book the same way.
+// app/lib/diya-gl-edits.js exports (addSaleLine, addPurchaseLine, addBankLine,
+// addPayrollLine, changeLineAmount, removeLine, changeLinePostingDate,
+// changeLineAccount, changeLineDetail, changeLineQuantity), reached through
+// the engine bundle. Nothing here reimplements an edit, so the page, the CLI
+// and the MCP server change a book the same way.
 //
 // The book checks themselves -- which lines offend, why it matters, and how
 // to fix them -- live in app/lib/book-checks.js and are reached the same
@@ -174,15 +175,64 @@
     return "NEW-" + String(n).padStart(4, "0");
   }
 
+  // A payroll entry's detail is the employee's own name, not typed in --
+  // the Payslips sheets key a row by the name rather than the id, the same
+  // lookup changePayrollLine runs (diya-gl-edits-ltd.js).
+  function payrollDetail(book, employeeID) {
+    var employee = (book.employees || []).filter(function (e) {
+      return e.employeeID === employeeID;
+    })[0];
+    return employee ? employee.name : "";
+  }
+
+  function addBankEntry(api, book, lines, entry) {
+    var line = {
+      "entryNumber": nextEntryNumber(lines),
+      "sourceJournalID": "bank",
+      "postingDate": entry.date,
+      "accountMainID": String(entry.account),
+      "debitCreditCode": entry.direction,
+      "amount": entry.amount,
+      "documentType": "bank-statement",
+      "detailComment": entry.detail || "",
+      "diya-gl:bankCode": entry.code,
+      "diya-gl:bankAccountID": String(entry.account),
+    };
+    return api.addBankLine(book, lines, { line: line });
+  }
+
+  function addPayrollEntry(api, book, lines, entry) {
+    var line = {
+      "entryNumber": nextEntryNumber(lines),
+      "sourceJournalID": "payroll",
+      "postingDate": entry.date,
+      "accountMainID": String(entry.account),
+      "documentType": "payslip",
+      "detailComment": payrollDetail(book, entry.employee),
+      "diya-gl:employeeID": entry.employee,
+      "diya-gl:grossPay": entry.amount,
+      "diya-gl:incomeTax": Number(entry.incomeTax) || 0,
+      "diya-gl:employeeNI": Number(entry.employeeNI) || 0,
+      "diya-gl:employerNI": Number(entry.employerNI) || 0,
+    };
+    return api.addPayrollLine(book, lines, { line: line });
+  }
+
   /**
-   * A new entry typed into the open month. The line is built here and added
-   * by addSaleLine/addPurchaseLine, which refuse a line posted to the other
+   * A new entry typed into the open month. A journal whose grid declares no
+   * add descriptor keeps today's trade row, built here and added by
+   * addSaleLine/addPurchaseLine, which refuse a line posted to the other
    * journal -- so a sale can never arrive under the purchases name. A fare
    * arrives as a receipt with the day's miles; the shared add row passes
-   * neither, so its lines are invoices measuring nothing.
+   * neither, so its lines are invoices measuring nothing. A bank or cash
+   * grid's descriptor carries kind "bank" and a payroll grid's kind
+   * "payroll" -- entry.kind, set from that descriptor, routes to
+   * addBankLine or addPayrollLine instead.
    */
   async function addEntry(book, lines, entry) {
     var api = await engine();
+    if (entry.kind === "bank") return addBankEntry(api, book, lines, entry);
+    if (entry.kind === "payroll") return addPayrollEntry(api, book, lines, entry);
     var line = {
       entryNumber: nextEntryNumber(lines),
       sourceJournalID: entry.journal,
