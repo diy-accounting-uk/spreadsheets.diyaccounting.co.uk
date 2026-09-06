@@ -26,7 +26,7 @@ import {
   BookFieldError,
   SingleFileOnlyError,
 } from "../lib/product-workbook.js";
-import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad } from "../lib/generator.js";
+import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad, toExcelSerial } from "../lib/generator.js";
 import { applyCellWrites, buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { cellWrites } from "../products/ltd.js";
@@ -275,8 +275,7 @@ describe("the Company package for a year end that moves the month tabs", () => {
   });
 
   it("sets the one date cell the rest of the Admin sheet is computed from", async () => {
-    // Excel serial 46326 is 31 October 2026.
-    expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(46326);
+    expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(toExcelSerial(new Date(octoberYearEnd)));
   });
 });
 
