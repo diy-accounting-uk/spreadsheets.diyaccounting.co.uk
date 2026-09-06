@@ -38,11 +38,17 @@ function bstUrl(search) {
   return `${baseUrl}/books/bst.html${search || ""}`;
 }
 
+function seUrl(search) {
+  return `${baseUrl}/books/se.html${search || ""}`;
+}
+
 const EXAMPLES = [
   { key: "bst-scenario-basic", name: "Precision Code Trading" },
   { key: "bst-brickwork-pro-nonvat", name: "BrickWork Pro Trading" },
   { key: "bst-sp-sixty", name: "SP Sixty Driving" },
 ];
+
+const SE_EXAMPLE_KEYS = ["se-scenario-advanced", "se-brickwork-pro-nonvat", "se-brickwork-pro-vat"];
 
 test.describe("DIYA-GL books page — deep links load an example on arrival", () => {
   for (const example of EXAMPLES) {
@@ -147,5 +153,26 @@ test.describe("DIYA-GL books page — a deep link never touches the autosave rec
     const offer = page.locator(".continue-offer");
     await expect(offer).toBeVisible({ timeout: 10_000 });
     await expect(offer).toContainText(/sp-sixty/);
+  });
+});
+
+test.describe("DIYA-GL books page — SE deep links", () => {
+  test("?example=se-brickwork-pro-nonvat&view=bank lands on the bank view", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(seUrl("?example=se-brickwork-pro-nonvat&view=bank"), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator('.tab-btn[data-view="bank"]')).toHaveAttribute("aria-selected", "true", { timeout: 30_000 });
+    await expect(page.locator("h2")).toContainText("Bank book");
+  });
+
+  test("an unknown example id shows the empty state and names the three known SE ids", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(seUrl("?example=nope"), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator(".empty-state")).toBeVisible();
+    const message = page.locator("#empty-state-message");
+    const buttonKeys = await page.locator("[data-example]").evaluateAll((buttons) => buttons.map((b) => b.getAttribute("data-example")));
+    expect(buttonKeys).toEqual(SE_EXAMPLE_KEYS);
+    for (const key of SE_EXAMPLE_KEYS) await expect(message).toContainText(key);
   });
 });
