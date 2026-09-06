@@ -61,7 +61,7 @@ const FULL = loadLtd("examples/precision-code-ltd/full");
 // Read as they stand, not as they are hoped to be.
 
 describe("the Ltd example books", () => {
-  it("Precision Code Ltd runs sixteen rules: every check passes, and the cash top-up has no counter leg", () => {
+  it("Precision Code Ltd runs sixteen rules: every check passes but the shared VAT threshold", () => {
     const { results, summary } = runBookChecks(clone(FULL));
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
@@ -69,24 +69,23 @@ describe("the Ltd example books", () => {
       expect(resultFor(results, id).result, id).toBe("pass");
     }
     for (const id of LTD_IDS) {
-      const expected = id === "book-ltd-transfer-has-counter-leg" ? "warn" : "pass";
-      expect(resultFor(results, id).result, id).toBe(expected);
+      expect(resultFor(results, id).result, id).toBe("pass");
     }
 
-    // The book's one BB-coded transfer tops the cash float up from the
-    // current account, and the current account never gives the money up.
+    // The cash top-up's counter leg on the current account clears the one
+    // warning the transfer used to raise; the check has nothing left to
+    // report.
     const transfers = resultFor(results, "book-ltd-transfer-has-counter-leg");
-    expect(transfers.offenders).toEqual([
-      { entryNumber: "TXN-0155", postingDate: "2025-06-10", accountMainID: "1220", detail: "Cash top-up", amount: 100 },
-    ]);
+    expect(transfers.offenders).toEqual([]);
 
-    // The other two warnings are the shared rules reading a Company book:
+    // The one warning left is the shared rule reading a Company book:
     // turnover well over the VAT threshold on a book that says it is
-    // registered, and the opening, transfer and stock journals, whose two
-    // legs share a journal, date, amount and detail by construction.
+    // registered. The opening, transfer and stock journals -- whose two
+    // legs share a journal, date, amount and detail by construction --
+    // still read as no duplicate.
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
     expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
-    expect(summary).toEqual({ pass: 14, warn: 2, fail: 0 });
+    expect(summary).toEqual({ pass: 15, warn: 1, fail: 0 });
   });
 
   it("BrickWork Pro (Company, non-VAT): all sixteen rules pass", () => {
@@ -112,31 +111,12 @@ describe("the Ltd example books", () => {
 });
 
 // ============================== a Company book that starts clean ==============================
-// The full fixture with the cash top-up's counter leg entered on the
-// current account, so every Ltd rule starts passing and one crafted change
-// can be shown to flip one rule.
-
-const COUNTER_LEG = {
-  "entryNumber": "TXN-0155B",
-  "sourceJournalID": "bank",
-  "postingDate": "2025-06-10",
-  "accountMainID": "1200",
-  "debitCreditCode": "C",
-  "amount": 100.0,
-  "documentType": "bank-statement",
-  "documentReference": "BNK-0155B",
-  "detailComment": "Cash float withdrawal",
-  "lineItemComment": "Cash drawn for the cash float",
-  "taxCode": "OS",
-  "taxRate": 0.0,
-  "diya-gl:bankCode": "BC",
-  "diya-gl:bankAccountID": "1200",
-};
+// The master itself carries the cash top-up's counter leg (TXN-0918) on the
+// current account, so FULL already starts every Ltd rule passing and one
+// crafted change at a time can be shown to flip one rule.
 
 function baseline() {
-  const fixture = clone(FULL);
-  fixture.lines.push(clone(COUNTER_LEG));
-  return fixture;
+  return clone(FULL);
 }
 
 function lineIn(fixture, entryNumber) {
@@ -191,7 +171,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
 
   it("ltd-transfer-has-counter-leg: the transfer's other leg removed", () => {
     const fixture = baseline();
-    fixture.lines = fixture.lines.filter((l) => l.entryNumber !== "TXN-0155B");
+    fixture.lines = fixture.lines.filter((l) => l.entryNumber !== "TXN-0918");
     assertOnlyTheseRulesFlip(fixture, ["book-ltd-transfer-has-counter-leg"], "warn");
   });
 

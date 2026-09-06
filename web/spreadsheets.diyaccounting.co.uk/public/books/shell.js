@@ -1593,6 +1593,22 @@
         .join("") +
       "</div>";
 
+    // A manifest that carries figures the summary grid has no bucket for --
+    // cells no category column reads, no row derives -- lists them here
+    // instead: label, formatted value and the r-key attribute, one row a
+    // figure, blank ones left out by the manifest's own trim-aware test.
+    var stripRows = active.yearTable.monthCardRows ? active.yearTable.monthCardRows(SNAPSHOT, SNAPSHOT.months.indexOf(monthMeta), helpers) : null;
+    var stripHtml =
+      stripRows && stripRows.length
+        ? '<div class="month-card-strip">' +
+          stripRows
+            .map(function (r) {
+              return '<span class="figure-label">' + esc(r.label) + '</span><span class="figure-value"' + (r.rkAttr || "") + ">" + r.value + "</span>";
+            })
+            .join("") +
+          "</div>"
+        : "";
+
     var detailHtml = active.yearTable.monthDetail ? active.yearTable.monthDetail(monthKey, state, helpers) : "";
 
     var entries = SNAPSHOT.entries[monthKey];
@@ -1613,7 +1629,7 @@
       entriesHtml = '<p class="entries-note">' + esc(monthMeta.label) + " carries no entries in this book.</p>";
     }
 
-    return '<div class="month-detail">' + summary + detailHtml + entriesHtml + "</div>";
+    return '<div class="month-detail">' + summary + stripHtml + detailHtml + entriesHtml + "</div>";
   }
 
   // The entries grid: the month's own posted lines, editable in place. An
