@@ -14,8 +14,11 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WORKFLOWS_DIR = resolve(__dirname, "..", "..", ".github", "workflows");
 
+// A workflow whose jobs only call other workflows (generate-all.yml) carries
+// no steps of its own; the artifacts it produces are the called workflows'.
 const GENERATE_WORKFLOWS = readdirSync(WORKFLOWS_DIR)
   .filter((f) => /^generate-.*\.yml$/.test(f))
+  .filter((f) => /^\s+steps:/m.test(readFileSync(resolve(WORKFLOWS_DIR, f), "utf8")))
   .sort();
 
 // A workflow step is a "- uses:" line and the indented lines under it. The name
