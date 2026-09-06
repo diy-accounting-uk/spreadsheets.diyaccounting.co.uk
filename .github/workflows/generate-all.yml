@@ -1,0 +1,94 @@
+name: generate-all
+run-name: "generate-all from ${{ github.ref_name }}${{ inputs.skip-tests && ' skip-tests' || '' }}${{ inputs.skip-generation && ' skip-generation' || '' }}${{ inputs.skip-reconciliation && ' skip-reconciliation' || '' }}${{ inputs.skip-commit && ' skip-commit' || '' }}"
+concurrency:
+  group: all-packages-${{ github.ref }}
+  cancel-in-progress: true
+
+# Runs the four product generation workflows (bst, taxi, se, ltd) in sequence
+# from one dispatch. Sequential, not parallel: each product's reconcile job
+# runs the shared unit tests against every product's committed examples, and
+# each commit job pushes generated packages/reports/examples to this branch,
+# so a product must land its commit before the next product's test/reconcile
+# step reads the tree.
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: 'Skip tests'
+        type: boolean
+        default: false
+      skip-generation:
+        description: 'Skip generation'
+        type: boolean
+        default: false
+      skip-reconciliation:
+        description: 'Skip reconciliation'
+        type: boolean
+        default: false
+      skip-commit:
+        description: 'Skip commit'
+        type: boolean
+        default: false
+      reconcile-all:
+        description: 'Reconcile all packages (not just latest 24 months) (Ltd only)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+
+  generate-bst:
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/generate-bst.yml
+    with:
+      skip-tests: ${{ inputs.skip-tests }}
+      skip-generation: ${{ inputs.skip-generation }}
+      skip-reconciliation: ${{ inputs.skip-reconciliation }}
+      skip-commit: ${{ inputs.skip-commit }}
+    secrets: inherit
+
+  generate-taxi:
+    needs: [generate-bst]
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/generate-taxi.yml
+    with:
+      skip-tests: ${{ inputs.skip-tests }}
+      skip-generation: ${{ inputs.skip-generation }}
+      skip-reconciliation: ${{ inputs.skip-reconciliation }}
+      skip-commit: ${{ inputs.skip-commit }}
+    secrets: inherit
+
+  generate-se:
+    needs: [generate-taxi]
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/generate-se.yml
+    with:
+      skip-tests: ${{ inputs.skip-tests }}
+      skip-generation: ${{ inputs.skip-generation }}
+      skip-reconciliation: ${{ inputs.skip-reconciliation }}
+      skip-commit: ${{ inputs.skip-commit }}
+    secrets: inherit
+
+  generate-ltd:
+    needs: [generate-se]
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/generate-ltd.yml
+    with:
+      skip-tests: ${{ inputs.skip-tests }}
+      skip-generation: ${{ inputs.skip-generation }}
+      skip-reconciliation: ${{ inputs.skip-reconciliation }}
+      skip-commit: ${{ inputs.skip-commit }}
+      reconcile-all: ${{ inputs.reconcile-all }}
+    secrets: inherit

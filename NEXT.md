@@ -22,12 +22,11 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t19` on `claude/wt-bst-t19`; Sonnet |
+| PL-4 | `verify-roundtrip` aligns the fixture's frame to the export's through `app/lib/period-shift.js`, years included, derived from the two books' declared periods, so the BST, SE and Ltd scorecards pass once the writers shift years (the operator's generate-bst run failed EQ2 with 528 of 528 lines unmatched on date); Taxi's day shift stays | operator | machine | — | in-flight | `../.worktrees/spreadsheets/pl-4` on `claude/wt-pl-4`; Sonnet |
 | SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t20` on `claude/wt-se-t20`; Opus |
-| SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T12, SE-T13, SE-T17, SE-T19, SE-T20, SE-T21 | blocked-to-start | after the next batch |
-| BST-T20 | BST's `Total Tax + NI` check subtracts the CIS already deducted, as SE's does, proved on a CIS-bearing BST book (`brickwork-pro/bst-nonvat`) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t20` on `claude/wt-bst-t20`; Sonnet |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | every Ltd spec is already registered; the full browser run is the coordinator's gate before the PR leaves draft |
-| LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
+| SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T20, LT-T18 | blocked-to-start | PR #62, draft until the closing gates are green |
+| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T20 | blocked-to-start | the full unit and browser runs and one more four-product refresh, on the batch head |
+| LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
 ## Plans not tracked here
 

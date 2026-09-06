@@ -159,15 +159,18 @@ const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", 
 // A BST Sales tab, read off its own header rows: A the sale date, B the
 // customer, C the invoice reference, D the receipt record ("Receipt record
 // Cash, Bank deposit, Dr Cr Card", the settlement column settlementMethod()
-// below coarse-maps back to a diya-gl paymentMethod) and F the gross value,
-// with the writer's account carrier column beside them. Rows 4 down are the
-// tab's own entries.
+// below coarse-maps back to a diya-gl paymentMethod), F the gross value and
+// J the "Sub contractors only / CIS Tax Deducted" column (SalesMar!K1 =
+// J1 + SalesFeb!K1, a running year-to-date total Income Tax!E12 reads
+// negated), with the writer's account carrier column beside them. Rows 4
+// down are the tab's own entries.
 const BST_SALES_COLUMNS = {
   postingDate: "A",
   detailComment: "B",
   documentReference: "C",
   settlement: "D",
   amount: "F",
+  cisDeduction: "J",
   accountMainID: ACCOUNT_ID_COLUMN,
 };
 const BST_SALES_FIRST_ROW = 4;
@@ -308,6 +311,8 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
       if (reference) line.documentReference = reference;
       const settlement = settlementMethod(textAt(xml, `${column.settlement}${row}`, sharedStrings));
       if (settlement) line.paymentMethod = settlement;
+      const cisSuffered = numberAt(xml, `${column.cisDeduction}${row}`, sharedStrings);
+      if (cisSuffered) line["diya-gl:cisDeduction"] = cisSuffered;
       push(line, region, row);
     }
   }

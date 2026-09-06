@@ -58,7 +58,7 @@ function sumShares(slices) {
   return slices.reduce((total, slice) => total + slice.share, 0);
 }
 
-describe.each(BOOKS)("headlinesFromReport — $name", ({ dir, expectedFile }) => {
+describe.each(BOOKS)("headlinesFromReport — $name", ({ name, dir, expectedFile }) => {
   const { report, results } = buildReport(dir);
   const headlines = headlinesFromReport(report, bst.HEADLINES);
   const expected = expectedTotals(expectedFile);
@@ -110,10 +110,23 @@ describe.each(BOOKS)("headlinesFromReport — $name", ({ dir, expectedFile }) =>
     expect(sumShares(slices)).toBeCloseTo(1, 9);
   });
 
-  it("the turnover pie stays in pie mode for a profitable year", () => {
-    expect(headlines.pies.turnover.mode).toBe("pie");
-    expect(headlines.pies.turnover).not.toHaveProperty("reason");
-  });
+  // brickwork-pro/bst-nonvat's one profit-tax-year sale carries a CIS
+  // deduction (200) a contractor withheld at source; its profit sits under
+  // the personal allowance, so income tax and NI are nil and Income
+  // Tax!E18 (the tax slice) is the CIS alone, negative -- a genuine refund
+  // year, which turnoverPie() draws as a bar rather than split it into a
+  // dishonest positive slice.
+  if (name === "brickwork-pro/bst-nonvat") {
+    it("the turnover pie draws a bar for a CIS refund year", () => {
+      expect(headlines.pies.turnover.mode).toBe("bar");
+      expect(headlines.pies.turnover.reason).not.toMatch(/loss/);
+    });
+  } else {
+    it("the turnover pie stays in pie mode for a profitable year", () => {
+      expect(headlines.pies.turnover.mode).toBe("pie");
+      expect(headlines.pies.turnover).not.toHaveProperty("reason");
+    });
+  }
 
   it("the outgoings pie never exceeds six slices, folds the remainder into Other, and its shares sum to 1", () => {
     const { slices } = headlines.pies.outgoings;

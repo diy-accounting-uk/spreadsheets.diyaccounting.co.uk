@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
+import { s2 } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -258,6 +259,31 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await expect(taxSection).toContainText("Less: CIS deducted");
   });
 
+  test("the Income Tax view carries the profit bridge, and its computed tax profit equals the sheet's own cell", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+
+    const bridgeCard = page.locator(".panel-card", { hasText: "Accounting profit to tax profit bridge" });
+    await expect(bridgeCard).toBeVisible();
+    await expect(bridgeCard).toContainText("Net profit per the profit and loss account");
+    await expect(bridgeCard).toContainText("Less annual investment allowance (box 23)");
+    await expect(bridgeCard.locator("tr.total")).toContainText("Tax profit the bridge computes");
+
+    const report = s2("examples/precision-code-ltd/bst");
+    const computed = report.get("section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes");
+    const sheetCarries = report.get("section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries");
+    expect(computed.value).toBe(sheetCarries.value); // this fixture's bridge closes with no residue
+
+    const computedText = await bridgeCard
+      .locator('[data-r-key*="section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes"]')
+      .innerText();
+    const sheetCarriesText = await bridgeCard
+      .locator('[data-r-key*="section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries"]')
+      .innerText();
+    expect(computedText).toBe(sheetCarriesText);
+    expect(Number(computedText.replace(/[£,]/g, ""))).toBeCloseTo(Number(computed.value), 2);
+  });
+
   test("the P&L carries the tax lines the sheet prints below Taxable Profit", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await page.locator('.tab-btn[data-view="profit-loss"]').click();
@@ -350,6 +376,20 @@ test.describe("DIYA-GL books page — loaded views", () => {
     const provenance = page.locator(".rate-provenance");
     await expect(provenance).toContainText("tax year");
     await expect(provenance).not.toContainText("app/data");
+  });
+
+  test("the Admin view carries the NI Class 2 Small Profits Threshold, keyed to Admin!N17", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="admin"]').click();
+
+    const cell = page.locator('[data-r-key*="cell/Admin!N17"]');
+    await expect(cell).toHaveCount(1);
+    await expect(page.locator(".kv-table")).toContainText("NI Class 2 Small Profits Threshold");
+
+    const report = s2("examples/precision-code-ltd/bst");
+    const threshold = report.get("cell/Admin!N17");
+    const text = await cell.innerText();
+    expect(Number(text.replace(/[£,]/g, ""))).toBeCloseTo(Number(threshold.value), 2);
   });
 });
 
