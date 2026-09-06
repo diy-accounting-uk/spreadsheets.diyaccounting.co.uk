@@ -284,14 +284,6 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 5: Verify download links");
     console.log("=".repeat(60));
 
-    const directDownloadBtn = page.locator("#download-direct-btn");
-    await expect(directDownloadBtn).toBeVisible();
-    const directHref = await directDownloadBtn.getAttribute("href");
-    console.log(` Direct download href: ${directHref}`);
-    expect(directHref).toContain("/zips/");
-    expect(directHref).toMatch(/\.zip$/);
-    console.log(" Direct download link points to a zip file");
-
     const donateDownloadBtn = page.locator("#download-donate-btn");
     await expect(donateDownloadBtn).toBeVisible();
     const donateHref = await donateDownloadBtn.getAttribute("href");
@@ -299,6 +291,19 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     expect(donateHref).toContain("donate.html");
     expect(donateHref).toContain("filename=");
     console.log(" Donate download link passes filename to donate page");
+
+    // The direct download now lives behind donate.html's own bail-out, not a
+    // link on this page: follow the same door a reader would use.
+    const donatePage = await page.context().newPage();
+    await donatePage.goto(`${spreadsheetsBaseUrl}/${donateHref}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const skipDonateLink = donatePage.locator("#skip-donate-link");
+    await expect(skipDonateLink).toBeVisible();
+    const directHref = await skipDonateLink.getAttribute("href");
+    console.log(` Direct download href (via donate.html's bail-out): ${directHref}`);
+    expect(directHref).toContain("/zips/");
+    expect(directHref).toMatch(/\.zip$/);
+    console.log(" Donate page's bail-out link points to a zip file");
+    await donatePage.close();
 
     // ============================================================
     // STEP 6: Navigate with product parameter
@@ -347,14 +352,18 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     await page.waitForTimeout(500);
 
     // ============================================================
-    // STEP 2: Get the direct download link
+    // STEP 2: Follow donate.html's bail-out to the direct download link
     // ============================================================
     console.log("\n" + "=".repeat(60));
     console.log("STEP 2: Get download link and fetch zip");
     console.log("=".repeat(60));
 
-    const directDownloadBtn = page.locator("#download-direct-btn");
-    const zipHref = await directDownloadBtn.getAttribute("href");
+    const donateDownloadBtn = page.locator("#download-donate-btn");
+    const donateHref = await donateDownloadBtn.getAttribute("href");
+    await page.goto(`${spreadsheetsBaseUrl}/${donateHref}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const skipDonateLink = page.locator("#skip-donate-link");
+    await expect(skipDonateLink).toBeVisible();
+    const zipHref = await skipDonateLink.getAttribute("href");
     console.log(` Zip download path: ${zipHref}`);
     expect(zipHref).toContain("/zips/");
     expect(zipHref).toMatch(/\.zip$/);
