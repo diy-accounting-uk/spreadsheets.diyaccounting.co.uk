@@ -41,6 +41,7 @@ export default defineConfig({
         "**/books-ltd-page.browser.test.js",
         "**/books-ltd-forms.browser.test.js",
         "**/books-ltd-deep-links.browser.test.js",
+        "**/books-ltd-layouts.browser.test.js",
         "**/books-taxi-equivalence.browser.test.js",
         "**/books-taxi-formats.browser.test.js",
         "**/books-taxi-edits.browser.test.js",
