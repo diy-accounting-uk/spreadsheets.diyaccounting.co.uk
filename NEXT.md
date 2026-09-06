@@ -32,9 +32,9 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | SE-T37b | The add row renders the controls the journal's `add` descriptor names; the draft store reads them; a bank row's account select routes by journal | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`744f73b9`); 67 cases pass |
 | SE-T37c | `addEntry` routes on the descriptor's kind and builds the bank and payroll line shapes | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`239542a0`); 51 edit cases pass |
 | SE-T37d | The SE manifest's bank, cash and payroll `add` descriptors | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`294f978f`); 13 SE cases pass |
-| SE-T37e | The Ltd manifest's bank and payroll descriptors and its payroll chart section | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T37e, `claude/ltd-add-descriptors`, batch PR #68 |
+| SE-T37e | The Ltd manifest's bank and payroll descriptors and its payroll chart section | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`4804000c`); 15 Ltd cases pass |
 | SE-T37f | The SE proof: add rows render; a bank receipt, a cash payment and a payslip land with anchored figures | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T37f, `claude/se-add-proof`, batch PR #68 |
-| SE-T37g | The Ltd proof: the bank add and the transfer pair with its counter-leg | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T37b, SE-T37c, SE-T37e, SE-T37f | blocked-to-start | Haiku |
+| SE-T37g | The Ltd proof: the bank add and the transfer pair with its counter-leg | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T37f | in-flight | Sonnet (the Ltd descriptor needs aligning to the shell's field shape); worktree SE-T37g, `claude/ltd-add-proof` |
 | H4 | Merge the b2 batch PR once T37a to T37g are code complete and its checks are green | none | human | SE-T37g | blocked-to-start | draft PR #68 on `claude/b2-add-row` |
 
 ## Plans not tracked here
