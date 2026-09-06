@@ -36,6 +36,7 @@ import { extractBook, extractLines, bstExtractionMap, productIdOf, SCHEMA_PRODUC
 import { validateBstAnchors } from "./anchors/bst.js";
 import { validateTaxiAnchors, isTaxiInputCell } from "./anchors/taxi.js";
 import { SE_ANCHORS, isSeInputCell, seTemplatePaths } from "./anchors/se.js";
+import { validateLtdAnchors } from "./anchors/ltd.js";
 import { AnchorError, validateAnchors } from "./anchors/run.js";
 import { workbookSetFromWorkbook, workbookSetFromZipBytes, workbookBaseName, isWorkbookEntry } from "./workbook-set.js";
 import { buildSheetMap } from "./spreadsheet-runner.js";
@@ -327,6 +328,7 @@ async function readWorkbookSource(kind, bytes, name, deps) {
   if (!productMod) throw new ProductNotAvailableError(name, product, Object.keys(products));
 
   if (product === "se") await validateAnchors(set, SE_ANCHORS, PRODUCT_LABELS.se);
+  else if (product === "ltd") await validateLtdAnchors(set);
 
   const extractionMap = product === "bst" || product === "taxi" ? bstExtractionMap(product) : undefined;
   const lines = await extractLines(set, product, extractionMap);

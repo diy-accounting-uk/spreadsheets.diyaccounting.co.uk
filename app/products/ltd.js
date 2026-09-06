@@ -148,8 +148,8 @@ const payslipsMonthEntryCells = (monthIndex) => [
 // assets at the date of charging, D the holder, E the terms and F the date
 // of the board meeting that confirmed it. The sheet carries no formulas at
 // all, so every cell is an entry.
-const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
-const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
+export const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
+export const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
 
 // ── Register of members and the board minute (Companysecretary.xlsx) ───────
 // The register runs one member a row from row 3: A the full name, C the date
@@ -162,10 +162,10 @@ const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder:
 // the dividends creditor (EH31, negated) and into the profit distribution
 // (EH48) -- so one declaration both charges the year's profit and raises the
 // creditor the bank's DV payments settle.
-const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
+export const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+export const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
 const SHARE_NOMINAL_VALUE = 1;
-const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
+export const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
 // ── Register of directors and directors' interests (Companysecretary.xlsx) ─
 // Directors&Secretary carries one officer a row from row 2: A the full name,
@@ -181,10 +181,10 @@ const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 // single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
 // officer's own shareholding was registered -- the same "acquired" date
 // their row carries on RegisterofMembers, when they hold shares at all.
-const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
-const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
-const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
-const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
+export const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
+export const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
+export const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
+export const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
 
 // ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
 // The customer-facing invoice template has no external link into the rest of
@@ -204,14 +204,14 @@ const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" }
 // used to read a literal 0.2; it now reads 'Product Details'!$D$2, the same
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
-const SALESINVOICE_VAT_REG_CELL = "B11";
+export const SALESINVOICE_VAT_REG_CELL = "B11";
 // The same sheet's "Telephone" box, the entry cell beside its A8 label.
-const SALESINVOICE_TELEPHONE_CELL = "B8";
+export const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
-const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+export const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
-const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
-const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+export const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
 const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
 
@@ -223,14 +223,14 @@ const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantit
 // stock movement. Row 30 is the last month of the year.
 
 const STOCK_FINAL_CALCULATED_CELL = "D30";
-const STOCK_FINAL_COUNT_CELL = "AB30";
+export const STOCK_FINAL_COUNT_CELL = "AB30";
 const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
 
 // The share of a product's net sales value that is direct materials. The
 // sheet repeats H4 down its own product A column and reads the same cell for
 // every month, and the materials-bought column stays switched off while H4,
 // N4 and T4 are all zero.
-const STOCK_MATERIALS_PERCENT_CELL = "H4";
+export const STOCK_MATERIALS_PERCENT_CELL = "H4";
 
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
@@ -241,20 +241,20 @@ const STOCK_MATERIALS_PERCENT_CELL = "H4";
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
 
-const OPENING_BANK_COLUMNS = {
+export const OPENING_BANK_COLUMNS = {
   current_account: "G",
   savings_account: "H",
   credit_card: "I",
   cash: "J",
 };
 
-const OPENING_TAX_COLUMNS = {
+export const OPENING_TAX_COLUMNS = {
   paye_due: "G",
   vat_due: "H",
   cis_due: "I",
 };
 
-const OPENING_BALANCE_CELLS = {
+export const OPENING_BALANCE_CELLS = {
   stock: "E15",
   trade_debtors: "E16",
   trade_creditors: "E20",
@@ -288,7 +288,7 @@ const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"];
 // into the same class total. Scenario motor assets go to the vans rows,
 // which is what the fixture's van is, and which is the sub-block carrying
 // the van capital-allowance formulas.
-const SCHEDULE_ASSET_CLASSES = {
+export const SCHEDULE_ASSET_CLASSES = {
   land: { existingRows: [8, 9, 10], existingTotalRow: 11, newTotalRow: 64, noteColumn: "B", rateCell: "H7" },
   plant: { existingRows: [14, 15, 16, 17, 18, 19, 20, 21], existingTotalRow: 22, newTotalRow: 75, noteColumn: "C", rateCell: "H13" },
   fixtures: { existingRows: [25, 26, 27, 28, 29], existingTotalRow: 30, newTotalRow: 83, noteColumn: "D", rateCell: "H24" },
@@ -307,7 +307,7 @@ const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allo
 // scenario purchase carries a code letter and an amount, not an asset class,
 // so any single block is as faithful as another; the note's per-class rows
 // and its total both stay anchored to what was posted to Purchases.xlsx.
-const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
+export const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
 // The Sales, Purchases and Fixedassets analysis columns all hold figures net
@@ -346,11 +346,11 @@ const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
 
 // Straddling VAT period name to the Vatinterface row it feeds, and to the
 // pair of entry sheets it is entered on (S<period> and P<period>).
-const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
+export const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // Column each straddling entry sheet takes its data in. The sheets compute
 // VAT and net from the gross figure in the amount column.
-const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
+export const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
 
 // spreadsheet-runner writes a cell by rewriting its XML in place, and when
 // the target is an empty self-closing cell that rewrite also swallows every
