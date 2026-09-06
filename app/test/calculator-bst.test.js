@@ -200,6 +200,46 @@ describe("BST calculator checks are breakable", () => {
     expect(checkByName(checks, "Tax: sheet applies the basic rate to the lower band").pass).toBe(true);
     expect(checkByName(checks, "Total Sales").pass).toBe(true); // unrelated to the tax rate
   });
+
+  // The nine expense-detail boxes gate on Admin!F26, not a 30,000 literal, so
+  // raising the VAT threshold in the tax data above the fixture's own
+  // turnover has to blank them, exactly as it would on the shipped sheet.
+  it("a VAT threshold above turnover blanks the expense-detail boxes", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    const raisedThreshold = { ...taxData, vat: { ...taxData.vat, registration_threshold: merged.total_sales + 1 } };
+
+    const shown = calculateBstResults(book, lines, taxData, merged)["SE Short"];
+    const blanked = calculateBstResults(book, lines, raisedThreshold, merged)["SE Short"];
+
+    expect(shown.D46).toBeDefined();
+    expect(blanked.D46).toBeUndefined();
+    expect(blanked.D51).toBeUndefined();
+    expect(blanked.D55).toBeUndefined();
+    expect(blanked.D60).toBeUndefined();
+    expect(blanked.D64).toBeUndefined();
+  });
+
+  // The generator writes Admin!N17 straight from the tax data; comparing the
+  // sheet's own read against a DIFFERENT tax data's threshold — as if the
+  // generator had written the wrong figure — has to fail, not echo silently.
+  it("a mismatched Admin small profits threshold fails its own check and nothing else", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateBstResults(book, lines, taxData, merged);
+    const wrongTaxData = { ...taxData, national_insurance: { ...taxData.national_insurance, class2_small_profits_threshold: 1 } };
+
+    const before = checkCompliance(results, merged, taxData, calculateExpectedTax);
+    const after = checkCompliance(results, merged, wrongTaxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const brokenAfter = after.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = brokenAfter.filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Admin: NI Class 2 Small Profits Threshold = tax data"]);
+  });
 });
 
 // ── Units ──────────────────────────────────────────────────────────────

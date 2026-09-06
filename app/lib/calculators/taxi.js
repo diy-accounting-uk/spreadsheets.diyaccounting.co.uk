@@ -322,6 +322,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       N12: taxData.income_tax.higher_band_start,
       N13: taxData.income_tax.higher_band_end,
       L16: taxData.national_insurance.class2_weekly_rate,
+      N16: taxData.national_insurance.class2_small_profits_threshold,
       L20: taxData.national_insurance.class4_lower_rate,
       N20: taxData.national_insurance.class4_lower_limit,
       L23: taxData.national_insurance.class4_upper_rate,

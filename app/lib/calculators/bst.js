@@ -253,6 +253,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
       N13: taxData.income_tax.higher_band_start,
       N14: taxData.income_tax.higher_band_end,
       L17: taxData.national_insurance.class2_rate,
+      N17: taxData.national_insurance.class2_small_profits_threshold,
       L20: taxData.national_insurance.class4_lower_rate,
       N20: taxData.national_insurance.class4_lower_limit,
       L23: taxData.national_insurance.class4_upper_rate,
@@ -285,13 +286,13 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // SE Short (SA103S) — every formula cell the template defines (verified
   // against the template XML). D46, D51, D55, D60 and D64 are the form's own
   // detailed-expenses boxes, and the sheet only fills them once turnover
-  // reaches the £30,000 threshold below which HMRC accepts one combined
-  // total instead (Profit & Loss Acc!C4<30000 => " "); D71's net profit is
-  // computed from the turnover and total-expenses lines directly and never
-  // reads those boxes at all.
+  // reaches the VAT registration threshold below which HMRC accepts one
+  // combined total instead (Profit & Loss Acc!C4<Admin!F26 => " "); D71's net
+  // profit is computed from the turnover and total-expenses lines directly
+  // and never reads those boxes at all.
   const seShort = results["SE Short"];
   seShort.D38 = totalSales;
-  const showExpenseBoxes = totalSales >= 30000;
+  const showExpenseBoxes = totalSales >= results.Admin.F26;
   if (showExpenseBoxes) {
     seShort.D46 = Math.round(costOfSales) + directCosts; // Box: cost of goods bought
     seShort.D51 = motor + travel; // Box: car, van and travel expenses

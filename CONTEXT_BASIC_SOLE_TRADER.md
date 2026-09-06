@@ -287,6 +287,7 @@ All dates are stored as Excel serial numbers.
 | Cell | TOML Field | Example |
 |------|-----------|---------|
 | L17 | `national_insurance.class2_rate` | 0 |
+| N17 | `national_insurance.class2_small_profits_threshold` | 6845 |
 | L20 | `national_insurance.class4_lower_rate` | 0.06 |
 | N20 | `national_insurance.class4_lower_limit` | 12570 |
 | L23 | `national_insurance.class4_upper_rate` | 0.02 |
@@ -504,6 +505,8 @@ a tax or NI line) carries "—".
 | O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 29 |
 | O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 30 |
 | D106 | Net profit for tax calc | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 31, total taxable profits from this business |
+
+The nine expense-detail cells (D46, O46, D51, O51, D55, O55, D60, O60, D64) gate on `Admin!F26`, the VAT registration threshold, not a literal: below it the sheet leaves them blank and states one combined total instead, matching the calculator's own `showExpenseBoxes` gate. Boxes 36 and 37 are tick captions with no value cell of their own: box 36's caption is a live formula reading the tax year from `Admin!G2` and the Class 2 small profits threshold from `Admin!N17`; box 37 carries the Class 4 NICs exemption wording, and the old Class 4 deferment certificate box the 2026 form deleted is gone.
 
 ### Income Tax
 
