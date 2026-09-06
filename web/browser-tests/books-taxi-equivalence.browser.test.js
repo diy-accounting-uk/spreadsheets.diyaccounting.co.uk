@@ -452,7 +452,10 @@ test.describe("DIYA-GL Taxi books page — no drift on a true upload (A7)", () =
     const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
     expect(drift.slice().sort()).toEqual([...KNOWN_STALE_DRIFT_IDS, "Profit & Loss Acc!D5"].sort());
 
-    await page.locator('.year-row[data-month="2025-05"]').click();
+    // examples/taxi-latest's own period runs 2026-04-06 to 2027-04-05 (its
+    // own year-end, per S3's latestYearEnd), not the example fixtures' own
+    // 2025-26 year -- so its May is 2026-05.
+    await page.locator('.year-row[data-month="2026-05"]').click();
     await expect(page.locator('.month-summary-item .pencil-correction .computed-value[data-r-key*="Profit & Loss Acc!D5"]')).toHaveCount(1);
 
     // profit-loss carries the pre-existing Wages Forecast!C30 mark only --

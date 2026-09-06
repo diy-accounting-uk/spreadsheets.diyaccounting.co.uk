@@ -69,6 +69,11 @@ async function openWeek(page, weekStart) {
   if ((await row.getAttribute("aria-expanded")) !== "true") await row.click();
 }
 
+async function openEntries(page) {
+  const toggle = page.locator("#entries-toggle");
+  if ((await toggle.innerText()).includes("Show entries")) await toggle.click();
+}
+
 async function addFareViaUI(page, date, { amount, detail, miles }) {
   await page.locator(`[data-add-fare="${date}"]`).click();
   if (detail !== undefined) await page.locator('[data-draft-field="detail"]').fill(detail);
@@ -111,28 +116,56 @@ function bookCheck(page, id) {
 // and the year all move by the same amount, and nothing about the year's
 // edges complicates which week or quarter it falls in.
 
+// The day's own takings, and June's and the year's sales, read off the
+// snapshot's own takings/monthly/annual structures (taxi.js: groupTakings,
+// derive, buildAnnual) rather than the DOM -- a day with one fare renders
+// its amount in an input, a day with two renders it as plain text, and a
+// selector chasing both shapes is more fragile than reading the same
+// numbers the page itself renders from.
+async function dayTakings(page, date) {
+  return page.evaluate((date) => {
+    for (const month of Object.values(window.DIYA_BOOKS_SNAPSHOT.takings.months)) {
+      for (const week of month.weeks) {
+        const day = week.days.find((d) => d.date === date);
+        if (day) return day.takings;
+      }
+    }
+    return null;
+  }, date);
+}
+
+async function monthSales(page, monthKey) {
+  return page.evaluate((monthKey) => window.DIYA_BOOKS_SNAPSHOT.monthly[monthKey].sales, monthKey);
+}
+
+async function annualSales(page) {
+  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.annual.sales);
+}
+
 test.describe("DIYA-GL Taxi books page — E1: add a fare on a day that has one", () => {
   test("the day, June, Q1 and the year all move by the fare, and the browser agrees with Node", async ({ page }) => {
     await openBook(page, /taxi-scenario-basic/);
     await openMonth(page, "2025-06");
     await openWeek(page, "2025-06-09");
 
-    const dayRow = page.locator('tr.day-row[data-day="2025-06-11"]');
-    const dayBefore = await readMoney(page, 'tr.day-row[data-day="2025-06-11"] td.num');
-    const juneSalesBefore = await readMoney(page, '.year-row[data-month="2025-06"] td:nth-child(2)');
-    const yearSalesBefore = await readMoney(page, "tfoot.year-totals td:nth-child(2)");
+    const dayBefore = await dayTakings(page, "2025-06-11");
+    const juneSalesBefore = await monthSales(page, "2025-06");
+    const yearSalesBefore = await annualSales(page);
 
     await page.locator('.tab-btn[data-view="quarterly"]').click();
     const q1Before = await readMoney(page, '[data-r-key*="VitalTax!C5"]');
     await page.locator('.tab-btn[data-view="year"]').click();
+    await openMonth(page, "2025-06");
+    await openWeek(page, "2025-06-09");
 
     await addFareViaUI(page, "2025-06-11", { amount: 45, detail: "Airport run" });
     await expect(page.locator("#toast")).toContainText("Added a fare of £45.00");
 
-    await expect.poll(async () => readMoney(page, 'tr.day-row[data-day="2025-06-11"] td.num')).toBe(dayBefore + 45);
+    await expect.poll(() => dayTakings(page, "2025-06-11")).toBe(dayBefore + 45);
+    const dayRow = page.locator('tr.day-row[data-day="2025-06-11"]');
     expect(await dayRow.locator("td").nth(1).innerText()).toContain("Airport run");
-    expect(await readMoney(page, '.year-row[data-month="2025-06"] td:nth-child(2)')).toBe(juneSalesBefore + 45);
-    expect(await readMoney(page, "tfoot.year-totals td:nth-child(2)")).toBe(yearSalesBefore + 45);
+    expect(await monthSales(page, "2025-06")).toBe(juneSalesBefore + 45);
+    expect(await annualSales(page)).toBe(yearSalesBefore + 45);
 
     await page.locator('.tab-btn[data-view="quarterly"]').click();
     expect(await readMoney(page, '[data-r-key*="VitalTax!C5"]')).toBe(q1Before + 45);
@@ -187,7 +220,10 @@ test.describe("DIYA-GL Taxi books page — E1: add a fare on a day that has one"
     const dayLines = lines.filter((l) => l.sourceJournalID === "sales" && l.postingDate === "2025-06-11");
     expect(dayLines).toHaveLength(1);
     expect(dayLines[0].amount).toBeCloseTo(245, 2);
-    expect(dayLines[0].detailComment).toBe("Daily fares; Airport run");
+    // The loader sorts a day's lines by entryNumber before the writer joins
+    // their names; the browser's own added line takes "NEW-0001" (edits.js),
+    // which sorts ahead of the existing "TXN-0045" lexically.
+    expect(dayLines[0].detailComment).toBe("Airport run; Daily fares");
   });
 });
 
@@ -212,7 +248,10 @@ test.describe("DIYA-GL Taxi books page — E1: a fare dated outside the grid ref
     });
     await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
 
-    await expect(page.locator(".takings-offgrid")).toContainText("2024-04-01");
+    // The date sits in a <input type="date"> in this panel, so its value --
+    // not its text content -- carries the date.
+    await expect(page.locator(".takings-offgrid")).toContainText("Booked before the year started");
+    expect(await page.locator('.offgrid-row[data-entry="OFFGRID-0001"] input[type="date"]').inputValue()).toBe("2024-04-01");
     await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/fail/);
 
     await page.click("#save-btn");
@@ -230,8 +269,12 @@ test.describe("DIYA-GL Taxi books page — E1: a fare dated outside the grid ref
     await page.click("#save-btn");
     await xlsxItem.waitFor({ state: "visible" });
     const [download] = await Promise.all([page.waitForEvent("download"), xlsxItem.click()]);
-    expect(download.suggestedFilename()).toBe("taxi-excel.xlsx");
-    await expect(page.locator("#toast")).toContainText("Saved taxi-excel.xlsx");
+    // The output name follows the year-end naming convention
+    // (Financialaccountsyearto<ddmmyy>.xlsx, CONTEXT_TAXI.md), not the menu
+    // item's own label -- which always names the template file, taxi-excel.xlsx.
+    expect(download.suggestedFilename()).toMatch(/^Financialaccountsyearto\d{6}\.xlsx$/);
+    await expect(page.locator("#toast")).toContainText("Saved");
+    await expect(page.locator("#toast")).not.toContainText("Could not generate");
   });
 });
 
@@ -463,6 +506,8 @@ test.describe("DIYA-GL Taxi books page — E2: an out-of-chart account reposts t
     await check.locator("[data-helper-apply]").click();
     await expect(bookCheck(page, "book-accounts-in-chart")).toHaveClass(/pass/);
 
+    await openMonth(page, "2025-07");
+    await openEntries(page);
     const movedRow = page.locator('tr.entry-row[data-entry="E2-5002"] .entry-account-code');
     await expect(movedRow).toHaveText("6200");
   });

@@ -285,7 +285,10 @@ test.describe("DIYA-GL Taxi books page — the round trip is lossy by exactly th
     const twoFareDayAfter = after.filter((l) => l.sourceJournalID === "sales" && l.postingDate === TWO_FARE_DAY);
     expect(twoFareDayAfter, `${TWO_FARE_DAY} carries exactly one line after the round trip`).toHaveLength(1);
     expect(twoFareDayAfter[0].amount).toBeCloseTo(originalFareSum + 65, 2);
-    expect(twoFareDayAfter[0].detailComment).toBe("Daily fares; Airport run");
+    // The loader sorts a day's lines by entryNumber before the writer joins
+    // their names (app/lib/diya-gl-loader.js), and "E3-NEW-0" sorts ahead of
+    // "TXN-0045" lexically, so the added fare's name joins first.
+    expect(twoFareDayAfter[0].detailComment).toBe("Airport run; Daily fares");
 
     // Rule 2: the rental line is dated the week's last day, not the date it went in on.
     const rentalAfter = after.filter((l) => l.sourceJournalID === "sales" && l.accountMainID === "4000" && l.detailComment === "Rental due");
@@ -293,23 +296,51 @@ test.describe("DIYA-GL Taxi books page — the round trip is lossy by exactly th
     expect(rentalAfter[0].postingDate).toBe(WEEK_LAST_DAY);
     expect(rentalAfter[0].amount).toBeCloseTo(150, 2);
 
-    // Rule 3: likewise the "Any other income" grant.
-    const otherIncomeAfter = after.filter((l) => l.sourceJournalID === "sales" && l.accountMainID === "4001");
+    // Rule 3: likewise the "Any other income" grant -- matched on the exact
+    // caption text, since the fixture already carries an unrelated 4001 line
+    // of its own (a day-level "Start-up grant", not a caption row).
+    const otherIncomeAfter = after.filter(
+      (l) => l.sourceJournalID === "sales" && l.accountMainID === "4001" && l.detailComment === "Any other income",
+    );
     expect(otherIncomeAfter).toHaveLength(1);
     expect(otherIncomeAfter[0].postingDate).toBe(WEEK_LAST_DAY);
     expect(otherIncomeAfter[0].amount).toBeCloseTo(80, 2);
 
     // And by nothing else: every other line's own (journal, date, account,
     // amount, detail) tuple survives untouched -- entryNumber aside, since a
-    // full extraction renumbers every line, collapsed or not.
-    const touchedBefore = new Set([TWO_FARE_DAY, RENTAL_DATE, OTHER_INCOME_DATE].map((d) => d));
+    // full extraction renumbers every line, collapsed or not. The fixture
+    // already carries its own pre-existing two-fare day (2025-04-07,
+    // TXN-0002/TXN-0202: "Daily fares" and, by coincidence of a sensible
+    // name, another "Airport run"), which collapses under rule 1 exactly
+    // as this test's own added day does -- not a new effect, so it is
+    // excluded from "untouched" the same way, computed rather than named,
+    // so any other such day the fixture carries is caught the same way.
+    function dayKeyOf(l) {
+      return l.sourceJournalID === "sales" && (l.accountMainID === "4000" || l.accountMainID === "4001") ? l.postingDate : null;
+    }
+    const isCaption = (l) => l.detailComment === "Rental due" || l.detailComment === "Any other income";
+    const fareCountByDay = new Map();
+    for (const l of before) {
+      if (isCaption(l)) continue;
+      const key = dayKeyOf(l);
+      if (!key) continue;
+      fareCountByDay.set(key, (fareCountByDay.get(key) || 0) + 1);
+    }
+    const preexistingMultiFareDays = new Set([...fareCountByDay.entries()].filter(([, n]) => n > 1).map(([date]) => date));
+
+    // Every date either side of the transformation ever touches -- the two
+    // dates the three added lines went in on, the date their two moved
+    // lines land on, and any pre-existing multi-fare day. A sales line
+    // sharing one of these dates without itself transforming (the ordinary
+    // fare that happens to fall on OTHER_INCOME_DATE) is excluded from both
+    // sides alike, rather than asserted on here.
+    const excludedDates = new Set([TWO_FARE_DAY, RENTAL_DATE, OTHER_INCOME_DATE, WEEK_LAST_DAY, ...preexistingMultiFareDays]);
     const untouchedBeforeTuples = before
-      .concat(added)
-      .filter((l) => !(l.sourceJournalID === "sales" && touchedBefore.has(l.postingDate)))
+      .filter((l) => !(l.sourceJournalID === "sales" && excludedDates.has(l.postingDate)))
       .map(lineTuple)
       .sort();
     const untouchedAfterTuples = after
-      .filter((l) => !(l.sourceJournalID === "sales" && (l.postingDate === TWO_FARE_DAY || l.postingDate === WEEK_LAST_DAY)))
+      .filter((l) => !(l.sourceJournalID === "sales" && excludedDates.has(l.postingDate)))
       .map(lineTuple)
       .sort();
     expect(untouchedAfterTuples).toEqual(untouchedBeforeTuples);
