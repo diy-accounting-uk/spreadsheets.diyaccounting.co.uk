@@ -29,6 +29,9 @@
     mobileTab: "books",
     newBookFormOpen: false,
     savedBook: null, // { book, lines, source, savedAt }, once the autosave check resolves
+    // Set when a continued working book was already changed before this
+    // session picked it up; isEdited() adds what this session has done.
+    editedAtLoad: false,
     // The live book: D as the page currently holds it. Every edit replaces
     // state.lines with the array edits.js returned and recomputes the
     // whole book from it -- there is no incremental update.
@@ -263,6 +266,13 @@
   // the reader navigated it.
   function syncDeepLinkUrl() {
     if (!state.loaded || !SNAPSHOT.source || SNAPSHOT.source.kind !== "example") return;
+    // A changed book is no longer the example the link would fetch, so the
+    // address bar stops offering it. An undo back to the example brings it
+    // back.
+    if (isEdited()) {
+      clearDeepLinkUrl();
+      return;
+    }
     var params = new URLSearchParams();
     params.set("example", SNAPSHOT.source.label);
     params.set("view", state.view);
@@ -511,7 +521,7 @@
     renderTopbarTitle();
     renderSheetTabs();
     renderUndoControls();
-    renderNewControls();
+    renderBookActionControls();
     if (!state.loaded) {
       els.viewRoot.innerHTML = renderEmptyState();
       bindEmptyState();
@@ -557,10 +567,10 @@
     if (input) input.focus();
   }
 
-  // "New" only has somewhere to go once a book is loaded: on the empty state
-  // the reader is already at the screen it returns them to.
-  function renderNewControls() {
-    [els.newBtn, els.newBtnMobile].forEach(function (btn) {
+  // The pair a loaded book gets. On the chooser there is nothing to save and
+  // New is already where it would take the reader, so both stand down.
+  function renderBookActionControls() {
+    [els.newBtn, els.newBtnMobile, els.saveBtn, els.saveBtnMobile].forEach(function (btn) {
       if (btn) btn.classList.toggle("hidden", !state.loaded);
     });
   }
@@ -986,6 +996,7 @@
       function (sniffed, manifest) {
         return window.DiyaGlBooksLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind, manifest);
       },
+      { editedAtLoad: !!(saved.source && saved.source.edited) },
     ).then(function (snapshot) {
       if (snapshot) showToast("Continued where you left off.");
     });
@@ -1124,14 +1135,25 @@
     }
   }
 
+  // Whether the live book still matches the source it names. The undo stack
+  // holds this session's changes, so an undo back to an empty stack is back
+  // to the source; editedAtLoad carries the answer across a continue, where
+  // the stack starts empty however changed the book already is.
+  function isEdited() {
+    return state.editedAtLoad || window.DiyaGlBooksEdits.undo.depth() > 0;
+  }
+
   // The record autosave keeps and the continue offer restores: the live
-  // book and lines, where they came from, and which product's manifest
-  // they belong to.
+  // book and lines, where they came from and whether they still match it,
+  // and which product's manifest they belong to.
   function workingBookRecord() {
     return {
       book: state.book,
       lines: state.lines,
-      source: Object.assign({}, SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario }, { product: active.id }),
+      source: Object.assign({}, SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario }, {
+        product: active.id,
+        edited: isEdited(),
+      }),
       savedAt: new Date().toISOString(),
     };
   }
@@ -1179,14 +1201,17 @@
     if (!opts.skipAutosave) autosaveCurrentBook();
   }
 
+  // The edit trail is reset before the snapshot lands, because the autosave
+  // applySnapshot writes records whether the book is edited.
   function applyLoadedSnapshot(snapshot, opts) {
+    window.DiyaGlBooksEdits.undo.clear();
+    state.editedAtLoad = !!(opts && opts.editedAtLoad);
     applySnapshot(snapshot, opts);
     state.loaded = true;
     state.view = "year";
     state.openMonth = snapshot.months[0].key;
     state.openHelper = null;
     state.views = {};
-    window.DiyaGlBooksEdits.undo.clear();
     setPickerBusy(false);
     render();
     scrollViewToTop();
