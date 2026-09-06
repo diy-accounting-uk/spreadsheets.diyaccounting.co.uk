@@ -258,8 +258,8 @@ describe("every link-addressed cell in the thirteen templates is pinned", () => 
 const LATEST = resolve(ROOT, "examples", "ltd-latest");
 const FULL_BOOK = resolve(ROOT, "examples", "precision-code-ltd", "full");
 
-// The year end a package declares, which its Admin sheet holds as the serial
-// in B32 and every date on every sheet is measured from.
+// The year end a package declares: the serial its Admin sheet holds in B32,
+// which its whole date chain and its twelve tab names run back from.
 async function packageYearEnd(zips) {
   const hub = zips.get(HUB);
   const sheetMap = await buildSheetMap(hub);
@@ -300,7 +300,6 @@ async function packageUnderTest(dir) {
   const shift = tabShift(yearEnd.getUTCMonth() + 1);
   return {
     zips,
-    yearEnd,
     firstTab: monthTabOrder(yearEnd.getUTCMonth() + 1)[0],
     caches: await packageLinkCaches(zips, LINK_ORDER.ltd),
     engine: engineFor(yearEnd),
