@@ -339,34 +339,15 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
 
 // ── A4: the screen agrees ────────────────────────────────────────────────
 
-// Figures the page prints that R does not agree with, each open on another
-// row rather than on this one:
-//
-// - Every Admin rate cell holds whole percent and the page formats it as a
-//   fraction, so 19% prints as 1900% (formatByUnit's fmtRate in
-//   books/products/ltd.js).
-// - The bank view's own running balance and the ledger view's debtor and
-//   creditor totals carry a trial balance cell's key while printing a
-//   different figure: the bank month's closing line, and the ledger listing's
-//   own total rather than the trial balance's signed opening and closing.
+// One figure the page prints that R does not agree with, open on another row
+// rather than on this one: the ledger view's closing creditors row prints the
+// creditor listing's own total (1,710.00 on the full book) under the trial
+// balance's closing creditors key, which carries the signed balance
+// (-10,832.25). The opening row beside it agrees.
 //
 // A figure that starts agreeing fails here too, which is the point: the list
 // shrinks as they are fixed.
-const KNOWN_PAGE_DISAGREEMENTS = [
-  "cell/Financialaccounts.xlsx!Admin!G5",
-  "cell/Financialaccounts.xlsx!Admin!G6",
-  "cell/Financialaccounts.xlsx!Admin!G7",
-  "cell/Financialaccounts.xlsx!Admin!G8",
-  "cell/Financialaccounts.xlsx!Admin!M19",
-  "cell/Financialaccounts.xlsx!Admin!P6",
-  "cell/Financialaccounts.xlsx!Admin!P7",
-  "cell/Financialaccounts.xlsx!Admin!P8",
-  "cell/Financialaccounts.xlsx!TrialBalance!D28",
-  "cell/Financialaccounts.xlsx!TrialBalance!EJ22",
-  "cell/Financialaccounts.xlsx!TrialBalance!EJ28",
-  "section/trial-balance/final-bank-current-account",
-  "section/trial-balance/opening-trade-creditors",
-];
+const KNOWN_PAGE_DISAGREEMENTS = ["cell/Financialaccounts.xlsx!TrialBalance!EJ28"];
 
 test.describe("DIYA-GL Company books page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS_LTD) {
@@ -433,9 +414,7 @@ test.describe("DIYA-GL Company books page — the screen agrees (A4)", () => {
 
       const unexpected = mismatches.filter((line) => !KNOWN_PAGE_DISAGREEMENTS.some((key) => line.startsWith(`${key}:`)));
       const stillOpen = KNOWN_PAGE_DISAGREEMENTS.filter((key) => mismatches.some((line) => line.startsWith(`${key}:`)));
-      console.log(
-        `A4 (${example.scenario}): ${stillOpen.length} of the ${KNOWN_PAGE_DISAGREEMENTS.length} open page-side figures still disagree`,
-      );
+      console.log(`A4 (${example.scenario}): open page-side figures still disagreeing: ${stillOpen.join(", ") || "none"}`);
 
       expect(unexpected, `A4 mismatches:\n${unexpected.join("\n")}`).toEqual([]);
       expect(compared).toBeGreaterThan(0);
