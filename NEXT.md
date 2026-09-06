@@ -27,16 +27,19 @@ plan of record and carries its own open items.
 
 Acknowledged in session: no pushes to origin and no workflow dispatches until the operator lifts
 it; the operator's `generate-all.yml` run 34026795912 on main is watched read-only; any failure is
-diagnosed locally and the fix proposed, not landed. At the freeze, local `main` held eight
-docs-only commits ahead of origin (the four plan audits, the board updates, the freeze note); they
-push after the lift, rebased onto the run's package commits. Prod was already deployed from
+diagnosed locally and the fix proposed, not landed. Local `main`'s docs-only commits (the plan
+audits, the board updates, the freeze note) push after the lift, rebased onto the run's package
+commits. Prod was already deployed from
 `d235d704` (the PR #62 merge). The memory `freeze-no-push-no-workflow` carries the same rule.
 
 ## Context for the open rows
 
-- **M1** (operator): `generate-all.yml` run 34026795912 on main, dispatched at 10:12 UTC; BST was at
-  its latest year-end reconcile at the freeze. Each product's commit job pushes its packages,
-  reports and reconciliation pages to main and `deploy.yml` follows each push. If a product fails
+- **M1** (operator): `generate-all.yml` run 34026795912 on main, dispatched at 10:12 UTC. BST and
+  Taxi have committed their packages, reports and reconciliation pages to main (`1b371721`,
+  `bfe98da6`); SE and Ltd follow. The commit jobs push with the default `GITHUB_TOKEN`, which
+  fires no workflow, so `deploy.yml` does not follow those pushes: prod serves `d235d704`'s
+  packages until the operator dispatches `deploy.yml` (`-f environment-name=prod`) after the run,
+  or the 07:17 UTC schedule runs it. If a product fails
   at the reconcile job's "Unit tests against the fresh packages and example" step, the test names
   in the log say which product's file; the four generate workflows scope that step to the
   product's own and the shared unit tests (PL-2). If the reconciliation itself reports
@@ -93,7 +96,7 @@ push after the lift, rebased onto the run's package commits. Prod was already de
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | — | in-flight | `generate-all.yml` run 34026795912: BST at its latest reconcile; prod already deployed from `d235d704` |
+| M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | — | in-flight | run 34026795912: BST and Taxi on origin/main, SE testing; deploy needs a dispatch after |
 
 ## Plans not tracked here
 
