@@ -26,10 +26,9 @@ and revenue plan of record and carries its own open items.
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | TX-T27 | The Profit Forecast checks in `products/{se,taxi}.js` compare at the penny while the Forecast sheets round; match the sheets' own rounding (the branch's `se-profit-forecast-checks` fails five forecast checks on the uncorrupted book since TX-T26) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t27` on `claude/wt-tx-t27`; Sonnet |
-| SE-T30 | `checkCompliance` in `products/se.js` compares date-bearing expectations unshifted against a package whose postings the writer now shifts: the operator's generate-se run fails four checks on every year end but 2026-04-05 (866 of 870) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t30` on `claude/wt-se-t30`; Sonnet |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, draft until the closing gates are green |
 | LT-T26 | `checkCompliance` in `products/ltd.js` compares date-bearing expectations (the PAYE schedule and year-end seed checks) unshifted against a package whose postings the writer now shifts by years: the operator's generate-ltd run fails four checks on every year end but 2027-02-28 (1087 of 1091) | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t26` on `claude/wt-lt-t26`; Sonnet |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | TX-T27, SE-T30, LT-T26 | blocked-to-start | the full unit and browser runs and one more four-product refresh, on the batch head |
+| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | TX-T27, LT-T26 | blocked-to-start | the full unit and browser runs and one more four-product refresh, on the batch head |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
 ## Plans not tracked here
