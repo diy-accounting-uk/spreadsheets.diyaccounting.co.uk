@@ -352,8 +352,8 @@ function seIndicators(report, vatRegistered) {
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",
       fromLabel: "net profit",
-      to: "Taxable profit",
-      toLabel: "taxable profit",
+      to: "Net business profit",
+      toLabel: "net business profit",
     }),
     `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(forTax)}, which is the profit the income tax computation charges.`,
     sa103fLine(report),
