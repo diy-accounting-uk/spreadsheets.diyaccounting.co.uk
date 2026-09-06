@@ -23,11 +23,11 @@ and revenue plan of record and carries its own open items.
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after the BST package refresh carries `Admin!N17` |
-| SE-T13 | T13 SE UX pass at four viewports, axe, keyboard | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t13` on `claude/wt-se-t13`; Fable |
 | SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus; after the SE package refresh on the batch |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T12, SE-T13, SE-T17, SE-T19, SE-T20, SE-T21 | blocked-to-start | after the next batch |
+| UI-2 | The shared shell takes SE-T13's notes: `.btn:hover` contrast, form rows wrapping at 390px, the toast clear of the mobile action bar, `.entries-columns` sizing by count, the under-44px targets | operator | machine | — | in-flight | `../.worktrees/spreadsheets/ui-2` on `claude/wt-ui-2`; Sonnet |
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t17` on `claude/wt-tx-t17`; Sonnet |
-| TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
+| TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T17 | blocked-to-start | Sonnet, wave 10 |
 | LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t9` on `claude/wt-lt-t9`; Haiku |
 | LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift; the page's drift layer reads all nine link-bearing files, not the hub alone; `examples/ltd-latest` line dates and CT600 `C126`/`C128` sit a year off its Admin period, so S3's shift is settled against the generator | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | TX-T17 | blocked-to-start | Opus, wave 9 |
 | LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
