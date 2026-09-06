@@ -956,11 +956,11 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 20,545 |
+| **Net business profit (box 28)** | 20,545 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 0 |
 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold |
-| **Net profit for tax calc** | 20,545 |
+| **Net profit for tax calc (box 31)** | 20,545 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 300 |
 
@@ -1475,11 +1475,11 @@ Journal amounts include VAT at 20%.
 | O80 | Other capital allowances (box 25) | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 20545 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 20545 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | A33 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc** | 20545 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 20545 | gl-cor:amount (sa103s.profitForTax) |
 | D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
 | O124 | Deductions by contractors (box 38) | 300 | diya-gl:cisDeduction (sa103s) |
 

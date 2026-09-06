@@ -304,11 +304,11 @@ describe("buildIndicators for the Self Employed", () => {
 
   // 183,429.68 less 52,500.00 and 11,500.00 is 119,429.68. Naming only the 52,500.00 left an
   // 11,500.00 hole between two figures printed side by side, which is what a reviewer sees.
-  it("itemises every capital allowance box so the drop to the taxable profit is exact", () => {
+  it("itemises every capital allowance box so the drop to the net business profit is exact", () => {
     expect(text).toContain(
       "Self assessment: net profit 183,429.68, less 64,000.00 of capital allowances " +
         "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 11,500.00), " +
-        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,429.68.",
+        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a net business profit of 119,429.68.",
     );
   });
 

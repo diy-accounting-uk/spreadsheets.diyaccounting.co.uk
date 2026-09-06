@@ -932,11 +932,11 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 3,530 |
+| **Net business profit (box 28)** | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 0 |
 | Turnover note | Business income - if your annual turnover was below £90000 VAT threshold |
-| **Net profit for tax calc** | 3,530 |
+| **Net profit for tax calc (box 31)** | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 200 |
 
@@ -1442,11 +1442,11 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | O80 | Other capital allowances (box 25) | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 3530 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 3530 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | A33 | Turnover note | Business income - if your annual turnover was below £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc** | 3530 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 3530 | gl-cor:amount (sa103s.profitForTax) |
 | D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
 | O124 | Deductions by contractors (box 38) | 200 | diya-gl:cisDeduction (sa103s) |
 
