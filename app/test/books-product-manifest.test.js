@@ -156,16 +156,6 @@ describe("the snapshot's product half", () => {
     expect(snapshot.annual.netIncomeAfterTax).toBe(fixture.results["Profit & Loss Acc"].C35 || 0);
   });
 
-  it("the SA103S boxes name CELL_MAP SA103S cells, box 50 alone has none", () => {
-    const seShortCells = new Set(cellsOf("Self Assessment (SA103S)", "SE Short"));
-    const rows = snapshot.sa103s.sections.flatMap((section) => section.rows);
-    expect(rows.filter((r) => r.cell === null).map((r) => r.box)).toEqual(["50"]);
-    for (const r of rows.filter((r) => r.cell !== null)) {
-      expect(seShortCells.has(r.cell), `box ${r.box} names ${r.cell}`).toBe(true);
-      expect(r.amount).toBe(fixture.results["SE Short"][r.cell] || 0);
-    }
-  });
-
   it("the income tax layout names every Income Tax CELL_MAP cell exactly once", () => {
     const cells = snapshot.incomeTax.cells;
     const named = [

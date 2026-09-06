@@ -8,9 +8,11 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "bst",
@@ -50,8 +52,19 @@ function outstandingAmount(transaction) {
 
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
-export function cellWrites(scenario) {
+// A Basic Sole Trader year always opens 6 April and closes 5 April, the same
+// month-tab shape a Company keeps for a March year end -- so a scenario's
+// dates shift onto the package's period by whole years only, and the month a
+// date falls in, and the tab it lands on, never move. The interactive save
+// path (product-workbook.js) passes no target year at all -- the book's own
+// period is already the grid its dates belong on -- so a missing target
+// year leaves every date exactly where the scenario put it.
+const BST_YEAR_END_MONTH = 3;
+
+export function cellWrites(scenario, targetStartYear) {
   const writes = {};
+  const monthOffset = targetStartYear ? periodShiftMonths(scenario, targetStartYear, BST_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   // Business Details
   if (scenario.business || scenario.metadata) {
@@ -73,13 +86,19 @@ export function cellWrites(scenario) {
 
       let row = 4;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
         if (tx.payment) sheet[`D${row}`] = tx.payment;
         sheet[`F${row}`] = tx.amount;
         if (tx.other_income) sheet[`G${row}`] = tx.other_income;
+        // J is the sheet's own "Sub contractors only / CIS Tax Deducted"
+        // column (verified against the template: SalesMar!K1 = J1 +
+        // SalesFeb!K1, a running year-to-date total, and Income Tax!E12 =
+        // -SalesMar!$K$1). Leaving it unwritten is why a CIS-bearing sale
+        // reached the Income Tax sheet as if no tax had been suffered.
+        if (tx.cis_deduction) sheet[`J${row}`] = tx.cis_deduction;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -94,7 +113,7 @@ export function cellWrites(scenario) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -148,7 +167,7 @@ export function cellWrites(scenario) {
     const fa = writes["Fixed Assets"];
     let row = 67;
     for (const asset of assetAdditions) {
-      const d = parseDate(asset.date);
+      const d = shiftDate(parseDate(asset.date));
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`C${row}`] = asset.description;
       if (asset.reference) fa[`D${row}`] = asset.reference;
@@ -248,10 +267,10 @@ export const CELL_MAP = [
   ["SE Short", "O80",  "WDA + Capital Allowance claimed", "tax.capitalAllowances.wda (sa103s)",       "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O85",  "Balancing Charge",               "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D99",  "**Net business profit (box 28)**", "gl-cor:amount (sa103s.taxableProfit)",    "Self Assessment (SA103S)", 0, "money"],
   ["SE Short", "O94",  "Loss brought forward (box 29)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O99",  "Other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D106", "**Net profit for tax calc (box 31)**", "gl-cor:amount (sa103s.profitForTax)", "Self Assessment (SA103S)", 0, "money"],
   // ── Stock ──
   ["PurchasesStock", "D5",  "Opening Stock",  "stock.openingValue", "Stock", 0, "money"],
   ["PurchasesStock", "D7",  "Stock at Cost",  "stock.openingValue (carried)", "Stock", 0, "money"],
@@ -310,6 +329,7 @@ export const CELL_MAP = [
   ["Admin", "N13", "Higher Band Start",                   "tax.incomeTax.basicRateLimit (+1)",        "Admin (Generator Injected)", 0, "money"],
   ["Admin", "N14", "Higher Band End",                     "tax.incomeTax.additionalRateThreshold",    "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L17", "NI Class 2 Rate",                     "tax.nationalInsurance.class2WeeklyRate",   "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N17", "NI Class 2 Small Profits Threshold",   "tax.nationalInsurance.class2SmallProfitsThreshold", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",     "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",    "Admin (Generator Injected)", 0, "rate"],
@@ -362,10 +382,10 @@ export function standardReads() {
 
 export function reportSections(results) {
   const sectionMap = new Map();
-  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+  for (const [sheet, cell, label, , section, indent, unit] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unit), indent });
   }
   return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
 }
@@ -379,9 +399,10 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number")
+    return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
@@ -615,6 +636,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Higher Band Start = tax data", admin.N13, it.higher_band_start);
     check("Admin: Higher Band End = tax data", admin.N14, it.higher_band_end);
     check("Admin: NI Class 2 Rate = tax data", admin.L17, ni.class2_rate, 0.0001);
+    check("Admin: NI Class 2 Small Profits Threshold = tax data", admin.N17, ni.class2_small_profits_threshold);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
     check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
@@ -633,9 +655,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
+    // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already suffered
+    // on the trader's own sales, carried negative) sits inside that range, so
+    // the sheet's total is the computed tax and NI less what the trader's
+    // contractors have already deducted at source.
+    const cisSuffered = Object.values(expected.sales || {})
+      .flat()
+      .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered, 0.01);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -665,10 +694,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
     check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher + Additional", tax.E11, (tax.E8 || 0) + (tax.E9 || 0) + (tax.E10 || 0));
-    // E12 already holds the contractor deductions negated (=-SalesMar!$K$1)
-    // and the sheet's own total is SUM(E11:E17), so the deduction line is
-    // added, not subtracted. Every fixture so far carries nil CIS, which is
-    // why subtracting it here passed.
+    // E12 already holds the contractor deductions negated (=-SalesMar!$K$1),
+    // so reading it straight off the sheet and adding it reconstructs E18's
+    // own SUM(E11:E17) whether or not the year carried any CIS.
     check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E11 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
     // SA103S cross-check (6g)

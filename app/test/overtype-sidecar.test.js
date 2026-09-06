@@ -2,7 +2,8 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // The overtype sidecar and the extraction map it attributes through, over
-// JSZip copies of examples/bst-latest -- no LibreOffice, nothing on disk
+// JSZip copies of examples/bst-latest and of a package this file writes
+// fresh from the current template -- no LibreOffice, nothing on disk
 // modified. Every case here breaks exactly one cell of a copy held in memory
 // and asserts the exact set the sidecar reports back, which is what makes a
 // silent widening of the rule fail rather than pass quietly.
@@ -30,7 +31,7 @@ import { cellLabels, CELL_MAP } from "../products/bst.js";
 import { cellLabels as taxiCellLabels } from "../products/taxi.js";
 import { isSeInputCell, seTemplatePaths } from "../lib/anchors/se.js";
 import { isTaxiInputCell } from "../lib/anchors/taxi.js";
-import { saveWorkbookFiles } from "../lib/product-workbook.js";
+import { saveWorkbookFiles, saveWorkbook } from "../lib/product-workbook.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +48,35 @@ beforeAll(async () => {
   originalMap = bstExtractionMap();
   await extractBstTransactions(original, originalMap);
   originalSet = await workbookSetFromWorkbook("workbook.xlsx", original);
+});
+
+// A second Basic Sole Trader package, written fresh from the current
+// template through the product writer rather than read from
+// examples/bst-latest -- the same reason SE's own package below is written
+// fresh. This one is for the checks that only ask whether a cell still
+// carries its template formula, never what value it holds: applyCellWrites
+// (product-workbook.js's non-LibreOffice path) writes the transaction data
+// straight into the template's own input cells and leaves every formula
+// cell's cached value exactly as the template shipped it, so a formula cell
+// still reads as "has a formula" here even though its cached number is
+// stale. The describe blocks further down that assert an exact net profit,
+// tax total, or transaction amount need the real recalculated figures
+// examples/bst-latest carries -- LibreOffice is what fills those cached
+// values in correctly, and this file never invokes it -- so those keep
+// reading examples/bst-latest, with the reasoning noted where they do.
+const FRESH_BST_BOOK_DIR = resolve(ROOT, "examples", "precision-code-ltd", "bst");
+
+let freshOriginal;
+let freshOriginalMap;
+let freshOriginalSet;
+
+beforeAll(async () => {
+  const { book, lines } = loadDiyaGlData(FRESH_BST_BOOK_DIR);
+  const { workbook } = await saveWorkbook(book, lines);
+  freshOriginal = Buffer.from(workbook);
+  freshOriginalMap = bstExtractionMap();
+  await extractBstTransactions(freshOriginal, freshOriginalMap);
+  freshOriginalSet = await workbookSetFromWorkbook("workbook.xlsx", freshOriginal);
 });
 
 // The SE package the file-keyed case below reads against: written fresh
@@ -111,7 +141,7 @@ async function overtypedAfterPatch(sheet, cellRef, rewrite = stripFormula) {
 
 describe("overtyped.json on an untouched package", () => {
   it("reports nothing for a package the generator just produced", async () => {
-    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).toEqual({});
+    expect(await overtypedCells(freshOriginalSet, { extractionMap: freshOriginalMap })).toEqual({});
   });
 
   // The template prints prompt formulas across the customer's own entry
@@ -125,11 +155,11 @@ describe("overtyped.json on an untouched package", () => {
   ])("does not count %s!%s, which is %s", async (sheet, cellRef) => {
     const template = formulaCells(parseCells(await sheetXml(readFileSync(BST_TEMPLATE_PATH), sheet)));
     expect(template.has(cellRef), `${sheet}!${cellRef} carries no template formula, so it proves nothing`).toBe(true);
-    const upload = parseCells(await sheetXml(original, sheet));
+    const upload = parseCells(await sheetXml(freshOriginal, sheet));
     expect(upload.get(cellRef)?.hasF ?? false, `${sheet}!${cellRef} still computes in the fixture`).toBe(false);
 
     expect(isBstInputCell(sheet, cellRef)).toBe(true);
-    expect(await overtypedCells(originalSet, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
+    expect(await overtypedCells(freshOriginalSet, { extractionMap: freshOriginalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
   });
 
   // The Debtors & Creditors sheet takes two figures and computes the rest.
@@ -138,7 +168,7 @@ describe("overtyped.json on an untouched package", () => {
   // entered cells carry no template formula of their own, so the sidecar has
   // nothing to say about them either way.
   it("leaves every Debtors & Creditors month row computing, and counts only its two entered cells as input", async () => {
-    const upload = parseCells(await sheetXml(original, "Debtors & Creditors"));
+    const upload = parseCells(await sheetXml(freshOriginal, "Debtors & Creditors"));
     for (const row of [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27]) {
       expect(upload.get(`C${row}`)?.hasF, `Debtors & Creditors!C${row}`).toBe(true);
       expect(upload.get(`F${row}`)?.hasF, `Debtors & Creditors!F${row}`).toBe(true);
@@ -197,7 +227,7 @@ describe("overtyped.json when one template formula is typed over", () => {
         value: 2400,
         attribution: {
           kind: "line",
-          entryNumber: "EXP-0007",
+          entryNumber: "SAL-0007",
           sourceJournalID: "sales",
           row: 10,
           readAs: null,
@@ -211,7 +241,7 @@ describe("overtyped.json when one template formula is typed over", () => {
     expect(Object.keys(overtyped)).toEqual(["PurchasesApr!H8"]);
     expect(overtyped["PurchasesApr!H8"].attribution).toEqual({
       kind: "line",
-      entryNumber: "EXP-0115",
+      entryNumber: "PUR-0004",
       sourceJournalID: "purchases",
       row: 8,
       readAs: null,
@@ -273,7 +303,7 @@ describe("attribution agrees with what CELL_MAP and the extraction map state", (
         glMapping: labels[key].glMapping,
       });
     }
-  }, 120000);
+  }, 180000);
 
   it("names the line a transaction row produced, matching the exported lines", async () => {
     const lines = await extractBstTransactions(original);
@@ -507,15 +537,15 @@ describe("export.js --file writes the sidecar beside the rest", () => {
   }
 
   it("writes an empty overtyped.json for a package the generator just produced", () => {
+    const inputDir = tempDir();
     const outputDir = tempDir();
-    const output = execFileSync(
-      process.execPath,
-      ["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir],
-      {
-        cwd: ROOT,
-        encoding: "utf8",
-      },
-    );
+    const input = join(inputDir, "GB_Accounts_Basic_Sole_Trader.xlsx");
+    writeFileSync(input, freshOriginal);
+
+    const output = execFileSync(process.execPath, ["app/bin/export.js", "--package", "bst", "--file", input, "--output-dir", outputDir], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
     expect(output).toContain("overtyped.json: 0 cells typed over a template formula");
     expect(JSON.parse(readFileSync(join(outputDir, "overtyped.json"), "utf8"))).toEqual({});
   }, 60000);

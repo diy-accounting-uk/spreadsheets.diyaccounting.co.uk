@@ -28,6 +28,7 @@ import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { extractBookFromFile } from "../bin/export.js";
 import { cellWrites, writerSkips } from "../products/se.js";
+import { unrepresentableScope, lineScopeBlock } from "../bin/verify-roundtrip.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
@@ -399,10 +400,21 @@ describe("the package the writer saves", () => {
     const reimported = await extractBookFromFile(zipPath, { product: "se" });
 
     expect(reimported.product).toBe("se");
-    expect(reimported.lines.length, "no transaction line is dropped or duplicated").toBe(lines.length);
+
+    // The master data's VAT-straddling lines (diya-gl:vatPeriodEnd) go onto
+    // Vat.xlsx's out-of-year entry sheets, which the exporter never reads
+    // back -- roundtrip-unrepresentable.json's "lines" section declares that
+    // block unrepresentable for se, the same declaration scoreDataHalves
+    // reads. Every other line survives the round trip.
+    const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
+    const scope = unrepresentableScope("se", inventory);
+    const representableLines = lines.filter((line) => !scope.lineBlocks.has(lineScopeBlock(line)));
+    expect(reimported.lines.length, "no transaction line is dropped or duplicated, apart from the lines declared unrepresentable").toBe(
+      representableLines.length,
+    );
 
     const asPosted = (entries) => entries.map((line) => [line.sourceJournalID, line.postingDate, line.amount].join("|")).sort();
-    expect(asPosted(reimported.lines)).toEqual(asPosted(lines));
+    expect(asPosted(reimported.lines)).toEqual(asPosted(representableLines));
     const asDay = (value) => new Date(value).toISOString().slice(0, 10);
     expect(asDay(reimported.book.documentInfo.periodCoveredEnd)).toBe(asDay(book.documentInfo.periodCoveredEnd));
   }, 600000);

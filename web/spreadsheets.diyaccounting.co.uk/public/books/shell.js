@@ -29,6 +29,9 @@
     mobileTab: "books",
     newBookFormOpen: false,
     savedBook: null, // { book, lines, source, savedAt }, once the autosave check resolves
+    // Set when a continued working book was already changed before this
+    // session picked it up; isEdited() adds what this session has done.
+    editedAtLoad: false,
     // The live book: D as the page currently holds it. Every edit replaces
     // state.lines with the array edits.js returned and recomputes the
     // whole book from it -- there is no incremental update.
@@ -65,6 +68,8 @@
     els.themeToggle = document.getElementById("theme-toggle");
     els.saveBtn = document.getElementById("save-btn");
     els.saveBtnMobile = document.getElementById("save-btn-mobile");
+    els.newBtn = document.getElementById("new-btn");
+    els.newBtnMobile = document.getElementById("new-btn-mobile");
     els.undoBtn = document.getElementById("undo-btn");
     els.undoBtnMobile = document.getElementById("undo-btn-mobile");
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
@@ -261,6 +266,13 @@
   // the reader navigated it.
   function syncDeepLinkUrl() {
     if (!state.loaded || !SNAPSHOT.source || SNAPSHOT.source.kind !== "example") return;
+    // A changed book is no longer the example the link would fetch, so the
+    // address bar stops offering it. An undo back to the example brings it
+    // back.
+    if (isEdited()) {
+      clearDeepLinkUrl();
+      return;
+    }
     var params = new URLSearchParams();
     params.set("example", SNAPSHOT.source.label);
     params.set("view", state.view);
@@ -270,13 +282,33 @@
     if (next !== current) window.history.replaceState(null, "", next);
   }
 
+  // The reader has left the example the URL names, so the address bar stops
+  // claiming it. Any other parameter the reader arrived with is kept.
+  function clearDeepLinkUrl() {
+    var params = new URLSearchParams(window.location.search);
+    ["example", "view", "month"].forEach(function (key) {
+      params.delete(key);
+    });
+    var query = params.toString();
+    var next = window.location.pathname + (query ? "?" + query : "") + window.location.hash;
+    if (next !== window.location.pathname + window.location.search + window.location.hash) {
+      window.history.replaceState(null, "", next);
+    }
+  }
+
   // ============================== formatting ==============================
 
   var moneyFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
   var moneyWholeFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
+  /* The reconciliation compares a money figure pre-rounded at a working
+     precision to absorb float noise and then rounded half up to the penny
+     (canonical-report-value.js's canonicalForUnit, reexported off the engine
+     bundle), not the raw double Intl.NumberFormat would otherwise round on
+     its own: the two can disagree by a penny on a value sitting right on
+     the rounding boundary. */
   function fmtMoney(n) {
-    return moneyFmt.format(n);
+    return moneyFmt.format(Number(SNAPSHOT.context.engine.canonicalForUnit(String(n), "money")));
   }
   function fmtWhole(n) {
     return moneyWholeFmt.format(Math.round(n));
@@ -489,6 +521,7 @@
     renderTopbarTitle();
     renderSheetTabs();
     renderUndoControls();
+    renderBookActionControls();
     if (!state.loaded) {
       els.viewRoot.innerHTML = renderEmptyState();
       bindEmptyState();
@@ -532,6 +565,14 @@
     state.focusEntry = null;
     state.focusField = null;
     if (input) input.focus();
+  }
+
+  // The pair a loaded book gets. On the chooser there is nothing to save and
+  // New is already where it would take the reader, so both stand down.
+  function renderBookActionControls() {
+    [els.newBtn, els.newBtnMobile, els.saveBtn, els.saveBtnMobile].forEach(function (btn) {
+      if (btn) btn.classList.toggle("hidden", !state.loaded);
+    });
   }
 
   function renderUndoControls() {
@@ -725,7 +766,7 @@
   function renderEmptyState() {
     return (
       '<div class="empty-state">' +
-      "<h2>View your books in DIYA-GL</h2>" +
+      '<h2 tabindex="-1">View your books in DIYA-GL</h2>' +
       "<p>" +
       esc(active.emptyState.intro) +
       "</p>" +
@@ -955,6 +996,7 @@
       function (sniffed, manifest) {
         return window.DiyaGlBooksLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind, manifest);
       },
+      { editedAtLoad: !!(saved.source && saved.source.edited) },
     ).then(function (snapshot) {
       if (snapshot) showToast("Continued where you left off.");
     });
@@ -1048,8 +1090,8 @@
   // dragenter/dragleave pairs (every element under the pointer fires its
   // own), so the highlight only clears once the pointer has actually left
   // the page. A drop while a book is loaded is refused -- the toast's own
-  // control clears the page back to the empty state without touching the
-  // autosave record, exactly what Discard is for.
+  // control is New, which clears the page back to the empty state without
+  // touching the autosave record.
 
   var dragDepth = 0;
 
@@ -1073,7 +1115,7 @@
       var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
       if (!file) return;
       if (state.loaded) {
-        showToast("Close this book first", { label: "Close this book", onClick: closeCurrentBook });
+        showToast("Close this book first", { label: "Close this book", onClick: startNewBook });
         return;
       }
       if (isLegacyXlsName(file.name)) {
@@ -1093,14 +1135,25 @@
     }
   }
 
+  // Whether the live book still matches the source it names. The undo stack
+  // holds this session's changes, so an undo back to an empty stack is back
+  // to the source; editedAtLoad carries the answer across a continue, where
+  // the stack starts empty however changed the book already is.
+  function isEdited() {
+    return state.editedAtLoad || window.DiyaGlBooksEdits.undo.depth() > 0;
+  }
+
   // The record autosave keeps and the continue offer restores: the live
-  // book and lines, where they came from, and which product's manifest
-  // they belong to.
+  // book and lines, where they came from and whether they still match it,
+  // and which product's manifest they belong to.
   function workingBookRecord() {
     return {
       book: state.book,
       lines: state.lines,
-      source: Object.assign({}, SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario }, { product: active.id }),
+      source: Object.assign({}, SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario }, {
+        product: active.id,
+        edited: isEdited(),
+      }),
       savedAt: new Date().toISOString(),
     };
   }
@@ -1122,6 +1175,19 @@
     render();
   }
 
+  // "New": back to the screen that offers a file, a fresh book and the
+  // examples. The book being left is held in state.savedBook, so the
+  // continue offer on that screen restores it from memory whether or not
+  // the autosave store took a copy -- nothing to confirm before leaving.
+  function startNewBook() {
+    closeSaveMenu();
+    closeDrawer();
+    clearDeepLinkUrl();
+    closeCurrentBook();
+    var heading = document.querySelector(".empty-state h2");
+    if (heading) heading.focus();
+  }
+
   function applySnapshot(snapshot, opts) {
     opts = opts || {};
     SNAPSHOT = snapshot;
@@ -1135,14 +1201,17 @@
     if (!opts.skipAutosave) autosaveCurrentBook();
   }
 
+  // The edit trail is reset before the snapshot lands, because the autosave
+  // applySnapshot writes records whether the book is edited.
   function applyLoadedSnapshot(snapshot, opts) {
+    window.DiyaGlBooksEdits.undo.clear();
+    state.editedAtLoad = !!(opts && opts.editedAtLoad);
     applySnapshot(snapshot, opts);
     state.loaded = true;
     state.view = "year";
     state.openMonth = snapshot.months[0].key;
     state.openHelper = null;
     state.views = {};
-    window.DiyaGlBooksEdits.undo.clear();
     setPickerBusy(false);
     render();
     scrollViewToTop();
@@ -1255,6 +1324,11 @@
   function bookWithField(book, path, value) {
     var next = JSON.parse(JSON.stringify(book));
     var segments = path.split(".");
+    for (var s = 0; s < segments.length; s++) {
+      if (segments[s] === "__proto__" || segments[s] === "constructor" || segments[s] === "prototype") {
+        throw new Error("A book field path never names " + segments[s] + ": " + path);
+      }
+    }
     var target = next;
     for (var i = 0; i < segments.length - 1; i++) {
       if (!target[segments[i]]) target[segments[i]] = {};
@@ -1519,6 +1593,32 @@
         .join("") +
       "</div>";
 
+    // A manifest that carries figures the summary grid has no bucket for --
+    // cells no category column reads, no row derives -- lists them here
+    // instead: label, formatted value and the r-key attribute, one row a
+    // figure, blank ones left out by the manifest's own trim-aware test.
+    var stripRows = active.yearTable.monthCardRows
+      ? active.yearTable.monthCardRows(SNAPSHOT, SNAPSHOT.months.indexOf(monthMeta), helpers)
+      : null;
+    var stripHtml =
+      stripRows && stripRows.length
+        ? '<div class="month-card-strip">' +
+          stripRows
+            .map(function (r) {
+              return (
+                '<span class="figure-label">' +
+                esc(r.label) +
+                '</span><span class="figure-value"' +
+                (r.rkAttr || "") +
+                ">" +
+                r.value +
+                "</span>"
+              );
+            })
+            .join("") +
+          "</div>"
+        : "";
+
     var detailHtml = active.yearTable.monthDetail ? active.yearTable.monthDetail(monthKey, state, helpers) : "";
 
     var entries = SNAPSHOT.entries[monthKey];
@@ -1539,7 +1639,7 @@
       entriesHtml = '<p class="entries-note">' + esc(monthMeta.label) + " carries no entries in this book.</p>";
     }
 
-    return '<div class="month-detail">' + summary + detailHtml + entriesHtml + "</div>";
+    return '<div class="month-detail">' + summary + stripHtml + detailHtml + entriesHtml + "</div>";
   }
 
   // The entries grid: the month's own posted lines, editable in place. An
@@ -2503,6 +2603,8 @@
 
     els.saveBtn.addEventListener("click", handleSave);
     els.saveBtnMobile.addEventListener("click", handleSave);
+    els.newBtn.addEventListener("click", startNewBook);
+    els.newBtnMobile.addEventListener("click", startNewBook);
     els.undoBtn.addEventListener("click", undoLastEdit);
     els.undoBtnMobile.addEventListener("click", undoLastEdit);
 
@@ -2658,8 +2760,13 @@
   // match a CLI export's byte for byte.
   function buildBookChecksForZip(engine, book, lines) {
     var taxData = (SNAPSHOT.context && SNAPSHOT.context.taxData) || null;
-    var results = engine.runBookChecks({ book: book, lines: lines, taxData: taxData }).results;
-    return JSON.parse(engine.bookChecksJson(results));
+    // results: the calculated accounts, the same field edits.js's own
+    // bookChecks() passes so a product warning that reads R (Ltd's
+    // dividend-within-distributable-profits) sees the live book's own
+    // figures rather than always reporting "not known without the
+    // calculated accounts".
+    var checkResults = engine.runBookChecks({ book: book, lines: lines, taxData: taxData, results: SNAPSHOT.results }).results;
+    return JSON.parse(engine.bookChecksJson(checkResults));
   }
 
   function runSave(current, format) {

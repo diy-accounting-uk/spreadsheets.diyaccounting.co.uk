@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from "vitest";
 import JSZip from "jszip";
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -18,6 +18,7 @@ import {
   extractPayrollTransactions,
   extractBook,
   extractMultiFileTransactions,
+  extractLines,
   extractMetadata,
   normaliseLine,
   AdminSheetMissingError,
@@ -28,10 +29,11 @@ import { isTaxiInputCell } from "../lib/anchors/taxi.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
+import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { parse as parseTOML } from "smol-toml";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
-import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
+import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, splitStraddlingLines } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
 import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
 import { CELL_MAP as LTD_CELL_MAP } from "../products/ltd.js";
@@ -471,6 +473,97 @@ describe("extractJournalEntries — the Ltd opening balance sheet's land and bui
   });
 });
 
+// ── recordLine coverage: every extracted line names the cell it came from ──
+//
+// Before this change, extractJournalEntries never called recordLine at all
+// -- its own docstring said the opening-balance lines "have no source cell
+// of their own to record", which was true of an earlier OA_JOURNAL_MAP shape
+// but not the current one, where every entry keys its own distinct cell --
+// and extractBankTransactions' own opening-balance ("BC") line skipped it
+// too. Reverting either of those two recordLine calls below reproduces the
+// old gap: lineForCell("Financialaccounts.xlsx", "OpenAccounts", "G13")
+// (or the bank account's own "A1") goes back to returning undefined, and
+// extractionMap.lines().length drops below the sum of what the extractors
+// return.
+describe("extractionMap records the opening-balance lines", () => {
+  it("resolves a Ltd opening-balance cell and the stock movement's own cell by lineForCell", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000, E15: 10000 }, Stock: { AB30: 6000 } },
+      "Currentaccount.xlsx": { Apr: { A1: 25000 } },
+    });
+    const extractionMap = bstExtractionMap("ltd");
+    const set = await workbookSetFromDirectory(dir);
+    const journalLines = await extractJournalEntries(set, "ltd", LTD_PERIOD, extractionMap);
+    const bankLines = await extractBankTransactions(set, "ltd", LTD_PERIOD, extractionMap);
+
+    // A recordLine record carries where a line came from (file, sheet, row,
+    // cells) and which entryNumber it produced -- not the line's own
+    // accounting fields -- so each lookup below is cross-checked against the
+    // actual returned line by that entryNumber.
+    const landAndBuildings = extractionMap.lineForCell("Financialaccounts.xlsx", "OpenAccounts", "G13");
+    expect(landAndBuildings).toMatchObject({ file: "Financialaccounts.xlsx", sheet: "OpenAccounts", cells: { amount: "G13" } });
+    expect(journalLines.find((line) => line.entryNumber === landAndBuildings.entryNumber)).toMatchObject({ accountMainID: "0000" });
+
+    const stockLine = extractionMap.lineForCell("Financialaccounts.xlsx", "Stock", "AB30");
+    expect(stockLine).toMatchObject({ file: "Financialaccounts.xlsx", sheet: "Stock", cells: { amount: "AB30" } });
+    expect(journalLines.find((line) => line.entryNumber === stockLine.entryNumber)).toMatchObject({ accountMainID: "1100" });
+
+    const bankOpening = extractionMap.lineForCell("Currentaccount.xlsx", "Apr", "A1");
+    expect(bankOpening).toMatchObject({ file: "Currentaccount.xlsx", sheet: "Apr", cells: { amount: "A1" } });
+    expect(bankLines.find((line) => line.entryNumber === bankOpening.entryNumber)).toMatchObject({ accountMainID: "1200" });
+
+    // Every line except the stock movement's own "cost of sales" leg is
+    // recorded -- that leg's only input cell (OpenAccounts!E15) is already
+    // the real "Opening stock" line's own address, so claiming it a second
+    // time would make that first line unreachable by lineForCell.
+    expect(extractionMap.lines().length).toBe(journalLines.length + bankLines.length - 1);
+  });
+});
+
+describe("extractionMap over the shipped examples records every recordable line, keyed file!sheet!cell and unique", () => {
+  it("Ltd: 724 of the 725 extracted lines (every line but the stock movement's cost-of-sales leg)", async () => {
+    const dir = resolve(ROOT, "examples", "ltd-latest");
+    const set = await workbookSetFromDirectory(dir);
+    const period = { start: "2025-11-01", end: "2026-10-31" };
+    const extractionMap = bstExtractionMap("ltd");
+
+    const journal = await extractMultiFileTransactions(set, "ltd", extractionMap);
+    const bank = await extractBankTransactions(set, "ltd", period, extractionMap);
+    const payroll = await extractPayrollTransactions(set, extractionMap);
+    const stock = await extractJournalEntries(set, "ltd", period, extractionMap);
+    const total = journal.length + bank.length + payroll.length + stock.length;
+
+    expect(total).toBe(725);
+    expect(extractionMap.lines().length).toBe(724);
+
+    // A record's own cells (e.g. a journal row's postingDate, amount and
+    // accountMainID columns) legitimately share a row, so the "unique" claim
+    // is about the whole package's set of cell addresses, not one row of
+    // fields against itself.
+    const keys = extractionMap
+      .lines()
+      .flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    expect(keys.length).toBeGreaterThan(0);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("SE: the opening fixed-asset journal already records every line it returns", async () => {
+    const dir = resolve(ROOT, "examples", "se-latest");
+    const set = await workbookSetFromDirectory(dir);
+    const period = { start: "2025-04-01", end: "2026-03-31" };
+    const extractionMap = bstExtractionMap("se");
+
+    const lines = await extractJournalEntries(set, "se", period, extractionMap);
+    expect(lines.length).toBeGreaterThan(0);
+    expect(extractionMap.lines().length).toBe(lines.length);
+
+    const keys = extractionMap
+      .lines()
+      .flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
 // ── The shipped example ────────────────────────────────────────────────────
 
 const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;
@@ -642,7 +735,7 @@ describe("extractTaxiTransactions — the Purchases block", () => {
         accountMainID: "5100",
         amount: 52,
         detailComment: "Shell",
-        entryNumber: "EXP-0006",
+        entryNumber: "PUR-0001",
       },
     ]);
   });
@@ -1556,4 +1649,75 @@ describe("CIS both ways on the SE journals", () => {
       ["purchases", "2025-04-07", "JB Plastering", 300],
     ]);
   });
+});
+
+// LT-T25's cash top-up counter leg (TXN-0918 in the master) is a "BC"-coded
+// bank line dated after the period's first day -- a real transfer, not an
+// opening balance. cellWrites() used to take any "BC" line as an opening
+// balance regardless of date, so this line would land nowhere a
+// row-scanning reader looks: not the opening-balance check (which reads
+// only the first tab's own literal value, once) and not the payment rows
+// (the writer never reaches them for a "BC" line). The round trip through
+// the writer and the export is the proof that it does now, on both the
+// Company's own book and the SE subset the leg reaches remapped to "X".
+describe("the counter leg's round trip through the writer and the export", () => {
+  const COUNTER_LEG_FIELDS = [
+    "sourceJournalID",
+    "postingDate",
+    "accountMainID",
+    "amount",
+    "detailComment",
+    "lineItemComment",
+    "documentReference",
+    "diya-gl:bankCode",
+    "debitCreditCode",
+    "diya-gl:bankAccountID",
+  ];
+
+  function pick(line, fields) {
+    return Object.fromEntries(fields.map((field) => [field, line[field]]));
+  }
+
+  async function exportedLinesOf(dir, product) {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, dir));
+    const { files } = await saveWorkbookFiles(book, lines);
+    const stageDir = mkdtempSync(join(tmpdir(), "counter-leg-rt-"));
+    try {
+      for (const file of files) writeFileSync(join(stageDir, file.name), file.bytes);
+      const set = await workbookSetFromDirectory(stageDir);
+      return { originalLines: lines, exportedLines: await extractLines(set, product) };
+    } finally {
+      rmSync(stageDir, { recursive: true, force: true });
+    }
+  }
+
+  const findCounterLeg = (lines) =>
+    lines.find(
+      (line) =>
+        line.sourceJournalID === "bank" &&
+        line.accountMainID === "1200" &&
+        line.amount === 100 &&
+        String(line.postingDate).slice(0, 10) === "2025-06-10",
+    );
+
+  for (const [product, dir] of [
+    ["ltd", "examples/precision-code-ltd/full"],
+    ["se", "examples/precision-code-ltd/advanced"],
+  ]) {
+    it(`brings the ${product} package's counter leg back as the transfer it is, not dropped`, async () => {
+      const { originalLines, exportedLines } = await exportedLinesOf(dir, product);
+      // The straddling lines are returned on VAT periods either side of the
+      // year and reach the workbook's out-of-year entry sheets, which the
+      // export does not read, so the journals hold the rest.
+      const journalLines = splitStraddlingLines(originalLines).yearLines;
+      expect(exportedLines.length).toBe(journalLines.length);
+
+      const originalLeg = findCounterLeg(originalLines);
+      expect(originalLeg, "the master's own counter leg").toBeDefined();
+
+      const exportedLeg = findCounterLeg(exportedLines);
+      expect(exportedLeg, "the counter leg comes back as a statement line, not silently dropped").toBeDefined();
+      expect(pick(exportedLeg, COUNTER_LEG_FIELDS)).toEqual(pick(originalLeg, COUNTER_LEG_FIELDS));
+    }, 60000);
+  }
 });

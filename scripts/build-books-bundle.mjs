@@ -148,7 +148,11 @@ function copyRuntimeAssets() {
   const dataOut = resolve(ASSETS_DIR, "data");
   mkdirSync(dataOut, { recursive: true });
   const dataIn = resolve(ROOT, "app", "data");
-  const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name));
+  // se's own regime file names a two-year span (se-2026-2027.toml); Ltd's
+  // (LT-T7) names the single financial year its Admin sheet declares
+  // (ltd-2027.toml). bst and taxi both read se's files, so no pattern of
+  // their own is needed.
+  const yearFiles = readdirSync(dataIn).filter((name) => /^se-\d{4}-\d{4}\.toml$/.test(name) || /^ltd-\d{4}\.toml$/.test(name));
   for (const name of yearFiles) cpSync(resolve(dataIn, name), resolve(dataOut, name));
 
   // The form layouts, one per product, fetched by the books page at runtime
@@ -158,6 +162,12 @@ function copyRuntimeAssets() {
   // gives every other file under app/data. The whole directory copies, so a
   // product that adds a layout needs no line of its own here.
   cpSync(resolve(ROOT, "app", "data", "hmrc", "form-layouts"), resolve(dataOut, "hmrc", "form-layouts"), { recursive: true });
+
+  // The filing data the Ltd layout points at rather than restating: the CT600
+  // box list, HMRC's prescribed computation format and the FRS 105 formats.
+  // products/ltd-forms.js reads each row's label, format and sheet cell out
+  // of these, so the page and the CLI's reports quote one source.
+  cpSync(resolve(ROOT, "app", "data", "filing"), resolve(dataOut, "filing"), { recursive: true });
 
   const templatesOut = resolve(ASSETS_DIR, "templates");
   mkdirSync(resolve(templatesOut, "bst"), { recursive: true });
@@ -174,6 +184,21 @@ function copyRuntimeAssets() {
   const seFiles = ["meta.toml", ...seMeta.template.files];
   mkdirSync(resolve(templatesOut, "se"), { recursive: true });
   for (const name of seFiles) cpSync(resolve(seDir, name), resolve(templatesOut, "se", name));
+
+  // The Taxi Driver workbook: one xlsx named by its own meta rather than a
+  // files list.
+  mkdirSync(resolve(templatesOut, "taxi"), { recursive: true });
+  for (const name of ["meta.toml", "taxi-excel.xlsx"]) {
+    cpSync(resolve(ROOT, "app", "templates", "taxi", name), resolve(templatesOut, "taxi", name));
+  }
+
+  // The Limited Company set: the fourteen workbooks and docx the meta names,
+  // the same files-list convention as se.
+  const ltdDir = resolve(ROOT, "app", "templates", "ltd");
+  const ltdMeta = parseTOML(readFileSync(resolve(ltdDir, "meta.toml"), "utf8"));
+  const ltdFiles = ["meta.toml", ...ltdMeta.template.files];
+  mkdirSync(resolve(templatesOut, "ltd"), { recursive: true });
+  for (const name of ltdFiles) cpSync(resolve(ltdDir, name), resolve(templatesOut, "ltd", name));
 
   // Example books, copied under the path the resource loader names them by:
   // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
@@ -196,7 +221,7 @@ function copyRuntimeAssets() {
   mkdirSync(vendorOut, { recursive: true });
   cpSync(resolve(ROOT, "node_modules", "jszip", "dist", "jszip.min.js"), resolve(vendorOut, "jszip.min.js"));
 
-  return { yearFiles: yearFiles.length, seFiles: seFiles.length, examples: EXAMPLE_BOOKS.length };
+  return { yearFiles: yearFiles.length, seFiles: seFiles.length, ltdFiles: ltdFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
 const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
@@ -235,7 +260,7 @@ async function main() {
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
   console.log(
-    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, ${assets.examples} example book(s)`,
+    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.ltdFiles} Limited Company template files, ${assets.examples} example book(s)`,
   );
 }
 

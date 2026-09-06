@@ -42,7 +42,7 @@ Trade: IT consultancy and software development
 | P&L: Admin lines sum = Total | 149373.64999999994 | 149373.65 | +5.820766091346741e-11 | PASS |
 | VitalTax: annual product sales = P&L Products A+B+C | 335500 | 335500 | 0 | PASS |
 | VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 13470 | 13470 | 0 | PASS |
-| Motor Expenses | 6434 | 6434.25 | +0.25 | PASS |
+| Motor Expenses | 6434.25 | 6434.25 | 0 | PASS |
 | Legal & Professional | 6925 | 6925 | 0 | PASS |
 | Purchases: business miles pooled for the year | 1365 | 1365 | 0 | PASS |
 | Purchases: mileage claimed = those miles at the tax year's approved rates | 614.25 | 614.25 | 0 | PASS |
@@ -68,6 +68,7 @@ Trade: IT consultancy and software development
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 155770.3166666667 | 155770.316666667 | +2.9103830456733704e-10 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 183429.683333333 | 183429.683333333 | 0 | PASS |
+| SA103S: net loss = total expenses - turnover - other business income | 0 | 0 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 121513.016666666 | 121513.016666666 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
@@ -161,7 +162,7 @@ Trade: IT consultancy and software development
 | HP: second agreement capital and interest split sums to the monthly payment | 405 | 405 | 0 | PASS |
 | HP: long term creditors = the agreements' amounts financed | 20000 | 20000 | 0 | PASS |
 | P&L: HP interest and charges reach the finance line (B31) | 3900 | 3900 | 0 | PASS |
-| Bank.xlsx closing balance (Mar!A2) | 181315.43 | 181315.43 | 0 | PASS |
+| Bank.xlsx closing balance (Mar!A2) | 181215.43 | 181215.43 | 0 | PASS |
 | Cash.xlsx closing balance (Mar!A2) | 480 | 480 | 0 | PASS |
 | P&L apr col C5 = Sales.xlsx a-coded net | 25333.33 | 25333.3333333333 | +0.0033333332976326346 | PASS |
 | P&L apr col C6 = Sales.xlsx b-coded net | 1800 | 1800 | 0 | PASS |
@@ -784,8 +785,8 @@ Trade: IT consultancy and software development
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Weekly Rate = tax data | 3.5 | 3.5 | 0 | PASS |
-| Admin: NI Class 2 Small Profits Threshold = tax data | 6845 | 6845 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 3.65 | 3.65 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 7105 | 7105 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -888,14 +889,15 @@ Trade: IT consultancy and software development
 | Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 171,773.02 |
 | Add depreciation charged in the accounts | Profit & Loss Account!B34 | 13,740 |
 | Less grants, taxed as other business income below | Profit & Loss Account!B11 | -2,083.33 |
-| Less net loss for the year (box 22) | SE Short!O71 | 0 |
 | Less annual investment allowance (box 23) | SE Short!D80 | -52,500 |
 | Less small-balance allowance (box 24) | SE Short!D85 | 0 |
 | Less other capital allowances (box 25) | SE Short!O80 | -11,500 |
 | Add balancing charges (box 26) | SE Short!O85 | 0 |
 | Add goods and services for own use (box 27) | SE Short!D94 | 0 |
-| Add grants as other business income (box 30) | SE Short!O99 | 2,083.33 |
+| Less the full return's own box 62 adjustment | SE Full!D179 | 0 |
+| Add back the year's loss, carried forward rather than reducing tax below nil | SE Full!O179 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
+| Add grants as other business income (box 30) | SE Short!O99 | 2,083.33 |
 | **Tax profit the bridge computes** | | **121,513.02** |
 | Tax profit the sheet carries | Income Tax!E5 | 121,513.02 |
 | **Residue** | | **0** |
@@ -971,7 +973,7 @@ Journal amounts include VAT at 20%.
 |---|------:|
 | Profit from Self Employment | 121,513.02 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 1,813.49 |
-| Taxable Income | 119,699.52 |
+| Taxable Income | 119,699.53 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 32,799.81 |
@@ -999,7 +1001,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Less Capital Allowances | 64,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax | 121,685.02 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance | 1,727.49 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance | 119,957.52 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance | 119,957.53 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate | 7,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate | 32,903.01 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate | 0 |
@@ -1031,11 +1033,12 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 11,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 119,429.68 |
+| **Net business profit (box 28)** | 119,429.68 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 2,083.33 |
 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold |
-| **Net profit for tax calc** | 121,513.02 |
+| **Net profit for tax calc (box 31)** | 121,513.02 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss for tax calc | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 0 |
 
@@ -1131,8 +1134,8 @@ Journal amounts include VAT at 20%.
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Weekly Rate | 3.5 |
-| NI Class 2 Small Profits Threshold | 6,845 |
+| NI Class 2 Weekly Rate | 3.65 |
+| NI Class 2 Small Profits Threshold | 7,105 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -1550,11 +1553,12 @@ Journal amounts include VAT at 20%.
 | O80 | Other capital allowances (box 25) | 11500 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 119429.683333333 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 119429.683333333 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 30) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | A33 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc** | 121513.016666666 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 121513.016666666 | gl-cor:amount (sa103s.profitForTax) |
+| O106 | Net loss for tax calc | 0 | gl-cor:amount (sa103s.lossForTax) |
 | D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
 | O124 | Deductions by contractors (box 38) | 0 | diya-gl:cisDeduction (sa103s) |
 
@@ -1687,8 +1691,8 @@ Journal amounts include VAT at 20%.
 | M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N12 | Higher Band Start | 37701 |  |
 | N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L16 | NI Class 2 Weekly Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
-| N16 | NI Class 2 Small Profits Threshold | 6845 | tax.nationalInsurance.class2SmallProfitsThreshold |
+| L16 | NI Class 2 Weekly Rate | 3.65 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 7105 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
@@ -1716,8 +1720,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 183605.63 |  |
-| A2 |  | 181315.43 |  |
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
 
 ### Cash.xlsx!Mar
 

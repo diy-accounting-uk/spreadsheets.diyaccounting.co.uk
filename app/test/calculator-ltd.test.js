@@ -16,9 +16,12 @@ import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateLtdResults } from "../lib/calculators/ltd.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { calculatedResultsFor } from "../bin/export.js";
 import { runBookChecks } from "../lib/book-checks.js";
+import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { PAYSLIP_PRINT_PERIOD, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_CELLS, payslipsWagesPaidCell } from "../lib/payslips-layout.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -312,6 +315,37 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
   });
 });
 
+// ============================== the VAT periods either side of the year ==============================
+// The full book carries the master's own VAT-straddling lines, which belong
+// to return periods either side of the accounting year and reach
+// Vatreturns.xlsx's out-of-year entry sheets rather than any journal. The
+// five return forms read them through the interface table, so a book that
+// cannot carry them files a nil fifth quarter. The offset moves the lines
+// and the book's period together, so the period labels come out the same as
+// the scenario's whichever year the book is read in.
+
+describe("the straddling VAT periods reach the return forms from the book", () => {
+  it("files the same five VAT quarters from the book as from the scenario extracted from the same master", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const fromBook = calculateFromDiyaGl(book, lines, "ltd", taxData, diyaGlToScenario(book, lines, "ltd"));
+    const fromFixture = calculateFromDiyaGl(
+      book,
+      lines,
+      "ltd",
+      taxData,
+      loadScenario(resolve(APP_DIR, "test", "fixtures", "ltd-scenario-full.toml")),
+    );
+    for (let quarter = 1; quarter <= 5; quarter++) {
+      const sheet = `Vatreturns.xlsx!VATQtr${quarter}`;
+      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+    }
+    // The fifth quarter falls wholly outside the accounting year, so the
+    // straddling entries are the only thing that puts a figure on it.
+    expect(fromBook["Vatreturns.xlsx!VATQtr5"].G9).toBeGreaterThan(0);
+  });
+});
+
 // ============================== export.js's shared R for the book checks ==============================
 // export.js's writeBookChecksJson and the MCP server's report tool both
 // build R through calculatedResultsFor rather than calculateFromDiyaGl
@@ -333,10 +367,10 @@ describe("calculatedResultsFor matches the engine's own D-to-R loop", () => {
     const taxData = taxDataFor("ltd-2024");
     const results = calculatedResultsFor(book, lines, taxData);
     const withoutResults = runBookChecks({ book, lines, taxData }).results.find(
-      (r) => r.id === "ltd-dividend-within-distributable-profits",
+      (r) => r.id === "book-ltd-dividend-within-distributable-profits",
     );
     const withResults = runBookChecks({ book, lines, taxData, results }).results.find(
-      (r) => r.id === "ltd-dividend-within-distributable-profits",
+      (r) => r.id === "book-ltd-dividend-within-distributable-profits",
     );
     expect(withoutResults.label).toContain("not known without the calculated accounts");
     expect(withResults.label).toContain("retained profit brought forward plus profit after tax");
@@ -369,5 +403,178 @@ describe("the opening balance sheet's own audit checks run without an [opening_b
     expect(e37.pass).toBe(true);
     expect(d91).toBeDefined();
     expect(d91.pass).toBe(true);
+  });
+});
+
+// ============================== payroll dates on a year end more than a year from the scenario's own period ==============================
+//
+// cellWrites() places each scenario month's payroll by shifting its date
+// through periodShiftMonths(), which counts whole years as well as months.
+// checkCompliance() has to derive the same dates the same way to check them:
+// a year end within twelve months of the scenario's own period cannot tell a
+// month-only offset from a year-carrying one, since they agree there, so the
+// case worth locking down is a year end further out than that.
+
+const LTD_SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function fiscalTabsFromYearEndMonth(yearEndMonth) {
+  const start = yearEndMonth % 12;
+  return Array.from({ length: 12 }, (_, i) => LTD_SHORT_MONTHS[(start + i) % 12]);
+}
+
+// checkCompliance() reads dozens of sheets besides the payroll ones, several
+// ungated, so the base has to be a whole run's worth of results -- the JS
+// engine's own, at the fixture's native period -- with only the payroll
+// sheets and the period anchor overridden to what a package built for
+// 2027-10-31 would carry. Those overrides come from cellWrites() itself, the
+// writer LT-T11 already shifts correctly, not from checkCompliance -- so
+// this checks checkCompliance's date expectations against what the writer
+// actually puts in the cells, not against another restatement of the same
+// arithmetic. Every other sheet stays at the fixture's own native period,
+// which is fine: nothing here reads them.
+function ltdPayrollResultsAtYearEnd20271031() {
+  const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+  const taxData = taxDataFor("ltd-2024");
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const merged = { ...scenario, ...scenario.expected };
+  const baseResults = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+
+  const targetStartYear = 2026;
+  const yearEndMonth = 10;
+  const writes = ltd.cellWrites(merged, targetStartYear, yearEndMonth);
+  const payslips = writes["Payslips.xlsx"] || {};
+  const fiscalTabs = fiscalTabsFromYearEndMonth(yearEndMonth);
+  const printedMonthIndex = PAYSLIP_PRINT_PERIOD - 1;
+  const printedTab = fiscalTabs[printedMonthIndex];
+  const printedDate = payslips[printedTab]?.[payslipsWagesPaidCell(printedMonthIndex)];
+
+  const results = {
+    ...baseResults,
+    Admin: {
+      ...baseResults.Admin,
+      B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1),
+      F21: toExcelSerial(targetStartYear + 1, yearEndMonth + 1, 1) - 1,
+    },
+  };
+  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = {
+    ...results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`],
+    [PAYSLIP_PRINT_CELLS.periodEnd]: printedDate,
+    M18: printedDate,
+  };
+  for (const [tab, cells] of Object.entries(payslips)) {
+    if (tab === PAYSLIP_PRINT_SHEET) continue;
+    results[`Payslips.xlsx!${tab}`] = { ...results[`Payslips.xlsx!${tab}`], ...cells };
+  }
+  return { merged, results };
+}
+
+const LTD_PAYROLL_DATE_CHECK_NAMES = [
+  "Payslips print: the period ends the day the scenario paid that month's wages",
+  "Payslips print: the payment date is the day the scenario paid that month's wages",
+  "Payslips!Feb M49 wages paid date",
+  "Payslips!Mar M49 wages paid date",
+];
+
+describe("Ltd payroll date checks on a year end nineteen months from the scenario's own period", () => {
+  it("pass when checkCompliance shifts its date expectations the same way cellWrites shifts the cells", () => {
+    const { merged, results } = ltdPayrollResultsAtYearEnd20271031();
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax, "2027-10-31");
+    for (const name of LTD_PAYROLL_DATE_CHECK_NAMES) {
+      const check = checks.find((c) => c.name === name);
+      expect(check, `expected a check named "${name}"`).toBeDefined();
+      expect(check.pass, `${name}: expected ${check.expected}, got ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("still fails a schedule date the writer did not actually produce", () => {
+    const { merged, results } = ltdPayrollResultsAtYearEnd20271031();
+    const marchCell = payslipsWagesPaidCell(4);
+    results["Payslips.xlsx!Mar"][marchCell] += 365;
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax, "2027-10-31");
+    const mar = checks.find((c) => c.name === "Payslips!Mar M49 wages paid date");
+    expect(mar).toBeDefined();
+    expect(mar.pass).toBe(false);
+  });
+});
+
+// A June year end's month tabs run Jul through Jun, so the reference and
+// wages-paid-date checks land on Oct/Nov (fiscalTabs' positions 3/4 from a
+// July opening) rather than the March-year-end Jul/Aug. The payroll-by-tab
+// shift these checks read comes off the book's own Admin!F21 (LT-T28), not
+// off a packageYearEnd a caller may omit or get wrong, so they pass here
+// with no packageYearEnd argument at all -- payslips-calendar-year-end.test.js's
+// June-year-end package never carries one.
+function ltdPayrollResultsAtJuneYearEnd() {
+  const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+  const taxData = taxDataFor("ltd-2026");
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const merged = { ...scenario, ...scenario.expected };
+  const baseResults = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+
+  const targetStartYear = 2025;
+  const yearEndMonth = 6;
+  const writes = ltd.cellWrites(merged, targetStartYear, yearEndMonth);
+  const payslips = writes["Payslips.xlsx"] || {};
+
+  const results = {
+    ...baseResults,
+    Admin: {
+      ...baseResults.Admin,
+      B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1),
+      F21: toExcelSerial(targetStartYear + 1, yearEndMonth + 1, 1) - 1,
+    },
+  };
+  for (const [tab, cells] of Object.entries(payslips)) {
+    results[`Payslips.xlsx!${tab}`] = { ...results[`Payslips.xlsx!${tab}`], ...cells };
+  }
+  return { merged, results };
+}
+
+const LTD_JUNE_YEAR_END_PAYROLL_CHECK_NAMES = [
+  "Payslips!Oct S51 reference",
+  "Payslips!Oct S52 reference",
+  "Payslips!Oct S53 reference",
+  "Payslips!Oct M49 wages paid date",
+  "Payslips!Nov S51 reference",
+  "Payslips!Nov S52 reference",
+  "Payslips!Nov S53 reference",
+];
+
+describe("Ltd payroll reference and date checks on a June year end, without a packageYearEnd argument", () => {
+  it("pass when checkCompliance derives the payroll shift off the book's own Admin!F21", () => {
+    const { merged, results } = ltdPayrollResultsAtJuneYearEnd();
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax);
+    for (const name of LTD_JUNE_YEAR_END_PAYROLL_CHECK_NAMES) {
+      const check = checks.find((c) => c.name === name);
+      expect(check, `expected a check named "${name}"`).toBeDefined();
+      expect(check.pass, `${name}: expected ${check.expected}, got ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("still fails a reference the writer did not actually produce", () => {
+    const { merged, results } = ltdPayrollResultsAtJuneYearEnd();
+    results["Payslips.xlsx!Oct"].S51 = "PAY-EMP001-2025-04";
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax);
+    const oct = checks.find((c) => c.name === "Payslips!Oct S51 reference");
+    expect(oct).toBeDefined();
+    expect(oct.pass).toBe(false);
+  });
+});
+
+// periodShiftMonths counts years as well as months, so a package year end
+// that falls before the scenario's own period start (here 2025-05-31 against
+// the "full" fixture's 2025-04-01) returns a negative offset -- report.js
+// --data hits this whenever --year-end is given without a matching --offset.
+// The payroll block used to index SHORT_MONTHS with that negative offset
+// straight off a single JS "%", which stays negative and reads past the
+// array's start.
+describe("Ltd checkCompliance on a package year end before the scenario's own period", () => {
+  it("does not throw when the payroll month wrap goes negative", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+    const taxData = taxDataFor("ltd-2025");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+    expect(() => ltd.checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, "2025-05-31")).not.toThrow();
   });
 });

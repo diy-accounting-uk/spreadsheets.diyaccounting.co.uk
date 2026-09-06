@@ -82,6 +82,25 @@ function excelSerialToDate(serial) {
   return `${y}-${m}-${d}`;
 }
 
+// Every entry number is unique across a whole package. A multi-file product
+// runs four extractors -- sales and purchases, bank, payroll, journal -- and
+// each numbers only its own journal, so the prefix keeps the four apart
+// while the count runs in sheet order within each. A row therefore keeps its
+// number when a different journal gains or loses a row, and the same package
+// extracted twice numbers every line the same way.
+const JOURNAL_ENTRY_PREFIX = { sales: "SAL", purchases: "PUR", bank: "BNK", payroll: "PAY", journal: "JNL" };
+
+function entryNumbering() {
+  const counts = new Map();
+  return (sourceJournalID) => {
+    const prefix = JOURNAL_ENTRY_PREFIX[sourceJournalID];
+    if (!prefix) throw new Error(`No entry-number prefix for source journal ${sourceJournalID}`);
+    const next = (counts.get(prefix) ?? 0) + 1;
+    counts.set(prefix, next);
+    return `${prefix}-${String(next).padStart(4, "0")}`;
+  };
+}
+
 export const BST_SALES_SHEETS = [
   "SalesApr",
   "SalesMay",
@@ -140,15 +159,18 @@ const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", 
 // A BST Sales tab, read off its own header rows: A the sale date, B the
 // customer, C the invoice reference, D the receipt record ("Receipt record
 // Cash, Bank deposit, Dr Cr Card", the settlement column settlementMethod()
-// below coarse-maps back to a diya-gl paymentMethod) and F the gross value,
-// with the writer's account carrier column beside them. Rows 4 down are the
-// tab's own entries.
+// below coarse-maps back to a diya-gl paymentMethod), F the gross value and
+// J the "Sub contractors only / CIS Tax Deducted" column (SalesMar!K1 =
+// J1 + SalesFeb!K1, a running year-to-date total Income Tax!E12 reads
+// negated), with the writer's account carrier column beside them. Rows 4
+// down are the tab's own entries.
 const BST_SALES_COLUMNS = {
   postingDate: "A",
   detailComment: "B",
   documentReference: "C",
   settlement: "D",
   amount: "F",
+  cisDeduction: "J",
   accountMainID: ACCOUNT_ID_COLUMN,
 };
 const BST_SALES_FIRST_ROW = 4;
@@ -256,7 +278,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   const regionsFor = (journal) => BST_TRANSACTION_REGIONS.filter((region) => region.sourceJournalID === journal);
   const push = (line, region, row) => {
@@ -283,12 +305,14 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
         accountMainID: textAt(xml, `${column.accountMainID}${row}`, sharedStrings) || "4000",
         amount,
         detailComment: typeof customer === "string" ? customer : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("sales"),
       };
       const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       const settlement = settlementMethod(textAt(xml, `${column.settlement}${row}`, sharedStrings));
       if (settlement) line.paymentMethod = settlement;
+      const cisSuffered = numberAt(xml, `${column.cisDeduction}${row}`, sharedStrings);
+      if (cisSuffered) line["diya-gl:cisDeduction"] = cisSuffered;
       push(line, region, row);
     }
   }
@@ -333,7 +357,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
         accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, "5002"),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
       };
       if (claimsMileage) {
         line.documentType = "mileage-log";
@@ -446,7 +470,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
   const mileageRates = await adminMileageRates(sheetMap, zip, sharedStrings);
   const reversePurchase = buildReverseCodeMap(TAXI_PURCHASE_CODE_MAP);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let milesToDate = 0;
   const record = (line, sheetName, columns, row) => {
     if (extractionMap) extractionMap.recordLine(line, { sheet: sheetName, columns }, row, lines.length - 1);
@@ -485,7 +509,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
               // its miles towards the claim, so it posts at nil rather than not
               // at all.
               amount: takings ?? 0,
-              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+              entryNumber: nextEntryNumber("sales"),
             };
             if (names) line.detailComment = names;
             if (miles !== undefined) {
@@ -507,7 +531,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
               accountMainID: TAXI_SALES_ACCOUNT,
               amount: rental,
               detailComment: TAXI_RENTAL_CAPTION,
-              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+              entryNumber: nextEntryNumber("sales"),
             };
             lines.push(line);
             record(line, `Sales${month}`, TAXI_RENTAL_ROW_REGION, row);
@@ -522,7 +546,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
             accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
             amount: otherIncome,
             detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
-            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            entryNumber: nextEntryNumber("sales"),
           };
           lines.push(line);
           record(line, `Sales${month}`, isDay ? TAXI_DAY_ROW_OTHER_INCOME_REGION : TAXI_OTHER_INCOME_ROW_REGION, row);
@@ -556,7 +580,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
         postingDate: excelSerialToDate(dateVal),
         accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, TAXI_OTHER_EXPENSES_ACCOUNT),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
       };
       const supplier = textAt(xml, `${TAXI_PURCHASE_COLUMNS.supplier}${row}`, sharedStrings);
       if (supplier) line.detailComment = supplier;
@@ -671,7 +695,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   const salesMilesByMonth = new Map();
   let milesToDate = 0;
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   // Sales.xlsx: one sheet per month of the accounting period
   const salesZip = await set.zip("Sales.xlsx");
@@ -715,7 +739,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
         accountMainID: accountAt(xml, row, salesStrings, REVERSE_SALES, codeStr, "4000"),
         amount,
         detailComment: typeof customer === "string" ? customer : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("sales"),
         taxRate,
       };
       const reference = textAt(xml, `C${row}`, salesStrings);
@@ -791,7 +815,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
         accountMainID: accountAt(xml, row, purchasesStrings, reversePurchase, codeStr, "5002"),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
         taxRate,
       };
       if (claimsMileage) {
@@ -855,7 +879,7 @@ const BANK_FILES = {
 export async function extractBankTransactions(set, product, period, extractionMap) {
   const bankFiles = BANK_FILES[product] || BANK_FILES.se;
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   const RECEIPT_COLUMNS = {
     "postingDate": "A",
     "detailComment": "B",
@@ -896,7 +920,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
       // that banks nothing that month, and misdates one that banks late.
       const obVal = readCellValue(xml, "A1", sharedStrings);
       if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted && !hasCellFormula(xml, "A1")) {
-        lines.push({
+        const obLine = {
           "sourceJournalID": "bank",
           "postingDate": period.start,
           "accountMainID": accountID,
@@ -905,8 +929,13 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": "BC",
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-        });
+          "entryNumber": nextEntryNumber("bank"),
+        };
+        lines.push(obLine);
+        if (extractionMap) {
+          const obRegion = { sheet: sheetName, sourceJournalID: "bank", columns: { amount: "A" } };
+          extractionMap.recordLine(obLine, obRegion, 1, lines.length - 1, file);
+        }
         obEmitted = true;
       }
 
@@ -930,7 +959,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": codeStr,
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+          "entryNumber": nextEntryNumber("bank"),
         };
         const reference = textAt(xml, `${BANK_RECEIPT_REFERENCE_COLUMN}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
@@ -960,7 +989,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": codeStr,
           "debitCreditCode": "C",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+          "entryNumber": nextEntryNumber("bank"),
         };
         const reference = textAt(xml, `${payment.reference}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
@@ -996,7 +1025,7 @@ export async function extractPayrollTransactions(set, extractionMap) {
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   const columns = PAYSLIPS_ENTRY_COLUMNS;
   const payrollRegionColumns = {
@@ -1049,7 +1078,7 @@ export async function extractPayrollTransactions(set, extractionMap) {
         "diya-gl:employeeNI": typeof employeeNI === "number" ? employeeNI : 0,
         "diya-gl:employerNI": typeof employerNI === "number" ? employerNI : 0,
         "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
-        "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+        "entryNumber": nextEntryNumber("payroll"),
       };
       const reference = textAt(xml, `${columns.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
@@ -1322,7 +1351,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
   const { xml, sharedStrings } = sheet;
 
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let lineNum = 1;
   const costRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_COST_COLUMNS };
   const depreciationRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_DEPRECIATION_COLUMNS };
@@ -1348,7 +1377,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
         lineItemComment: typeof description === "string" && description ? description : "Opening fixed asset cost",
         debitCreditCode: "D",
         lineNumber: lineNum++,
-        entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("journal"),
       };
       lines.push(costLine);
       if (extractionMap) extractionMap.recordLine(costLine, costRegion, row, lines.length - 1, "Fixedassets.xlsx");
@@ -1359,7 +1388,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
           lineItemComment: "Accumulated depreciation",
           debitCreditCode: "C",
           lineNumber: lineNum++,
-          entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+          entryNumber: nextEntryNumber("journal"),
         };
         lines.push(depreciationLine);
         if (extractionMap) extractionMap.recordLine(depreciationLine, depreciationRegion, row, lines.length - 1, "Fixedassets.xlsx");
@@ -1367,6 +1396,14 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
     }
   }
   return lines;
+}
+
+// mapping.cell is one cell per OA_JOURNAL_MAP entry, never shared between
+// two entries (see the map above), so each line it produces has a real row
+// on OpenAccounts to record against.
+function splitCellRef(cellRef) {
+  const match = /^([A-Z]+)(\d+)$/.exec(cellRef);
+  return { col: match[1], row: Number(match[2]) };
 }
 
 /**
@@ -1377,11 +1414,8 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
  * @param {Object} set - the populated package's workbooks
  * @param {string} product - se or ltd; the other two keep no journal
  * @param {{start: string, end: string}} period - the accounting period the package covers
- * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into for
- *   the SE Schedule rows only; the Ltd opening-balance and stock-movement
- *   journals have no source cell of their own to record (OpenAccounts posts
- *   a fixed cell to more than one account, and the stock movement is a
- *   derived figure, not a row read)
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each line is produced
  */
 export async function extractJournalEntries(set, product, period, extractionMap) {
   if (product === "se") return extractSeOpeningFixedAssets(set, period, extractionMap);
@@ -1398,7 +1432,7 @@ export async function extractJournalEntries(set, product, period, extractionMap)
   const xml = await zip.file(oaPath).async("string");
 
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let lineNum = 1;
 
   for (const mapping of OA_JOURNAL_MAP) {
@@ -1406,7 +1440,7 @@ export async function extractJournalEntries(set, product, period, extractionMap)
     if (val === null || typeof val !== "number" || val === 0) continue;
 
     const flip = { D: "C", C: "D" };
-    lines.push({
+    const line = {
       sourceJournalID: "journal",
       postingDate: period.start,
       accountMainID: mapping.accountMainID,
@@ -1419,13 +1453,34 @@ export async function extractJournalEntries(set, product, period, extractionMap)
       taxRate: 0,
       debitCreditCode: val >= 0 ? mapping.dc : flip[mapping.dc],
       lineNumber: lineNum++,
-      entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-    });
+      entryNumber: nextEntryNumber("journal"),
+    };
+    lines.push(line);
+    if (extractionMap) {
+      const { col, row } = splitCellRef(mapping.cell);
+      const region = { sheet: "OpenAccounts", sourceJournalID: "journal", columns: { amount: col } };
+      extractionMap.recordLine(line, region, row, lines.length - 1, "Financialaccounts.xlsx");
+    }
   }
 
-  for (const line of await stockMovementJournal(zip, xml, sharedStrings, period)) {
-    lines.push({ ...line, lineNumber: lineNum++, entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}` });
-  }
+  // The stock movement is one figure derived from two cells on two
+  // different sheets of the hub -- there is no single row that produced it
+  // the way an ordinary transaction row does. Its "stock" line gets a real,
+  // distinct address: the Stock sheet's own closing count, which nothing
+  // else here reads. Its "cost of sales" line has no cell of its own left
+  // to claim -- the movement's other input, OpenAccounts!E15, is already the
+  // real "Opening stock" line's own address above, and shadowing that with
+  // a second, unrelated line would make the earlier one unreachable by
+  // lineForCell -- so it stays unrecorded, the same as before this change.
+  const { col: closingCol, row: closingRow } = splitCellRef(STOCK_CELLS.ltd.closingValue);
+  const stockLineRegion = { sheet: STOCK_CELLS.ltd.sheet, sourceJournalID: "journal", columns: { amount: closingCol } };
+  const stockMovementLines = await stockMovementJournal(zip, xml, sharedStrings, period);
+  stockMovementLines.forEach((line, index) => {
+    const recorded = { ...line, lineNumber: lineNum++, entryNumber: nextEntryNumber("journal") };
+    lines.push(recorded);
+    if (extractionMap && index === 0)
+      extractionMap.recordLine(recorded, stockLineRegion, closingRow, lines.length - 1, "Financialaccounts.xlsx");
+  });
 
   return lines;
 }
@@ -1937,9 +1992,8 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
 // also carries, and the arithmetic each one takes to get there. A field the
 // toml has no equivalent for stays absent rather than guessed:
 //
-// - tax.vat.reducedRate, tax.corporationTax.associatedCompanies and
-//   tax.nationalInsurance.class2SmallProfitsThreshold: no app/data/*.toml
-//   field carries these at all.
+// - tax.vat.reducedRate and tax.corporationTax.associatedCompanies: no
+//   app/data/*.toml field carries these at all.
 // - tax.capitalAllowances.annualInvestmentAllowance: the toml's own
 //   `annual_investment_allowance` is the *relief scale* HMRC allows (1.00 =
 //   100% relief up to the cap), not the schema's absolute cap in pounds --
@@ -1982,6 +2036,7 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   const ni = raw.national_insurance;
   if (ni) {
     set("nationalInsurance", "class2WeeklyRate", ni.class2_weekly_rate);
+    set("nationalInsurance", "class2SmallProfitsThreshold", ni.class2_small_profits_threshold);
     set("nationalInsurance", "class4MainRate", ni.class4_lower_rate);
     set("nationalInsurance", "class4UpperRate", ni.class4_upper_rate);
     set("nationalInsurance", "class4LowerProfits", ni.class4_lower_limit);
@@ -2035,23 +2090,32 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   return tax;
 }
 
+// One app/data/<year>.toml as text, or null where app/data has no such file.
+// This is the Node reader; a browser has no file system, so extractBook takes
+// a reader of its own and the books page hands one backed by the resource
+// loader it reads every other app/ file through.
+function rateDataFileText(fileName) {
+  const filePath = resolvePath(taxDataDir(), fileName);
+  return fileExists(filePath) ? readSchemaFile(filePath, "utf8") : null;
+}
+
 /**
  * The book's tax.* tables for a package, reconstructed from the same
  * app/data/<year>.toml the generator drew its rates from. Returns an empty
- * object where the package names no year, or names one app/data/ has no
+ * object where the package names no year, or names one the reader has no
  * file for.
  * @param {string} adminXml - the package's Admin sheet
  * @param {Object} adminSharedStrings
  * @param {string} product - bst, taxi, se or ltd
- * @returns {Object}
+ * @param {Function} [readRateData] - (fileName) => the file's text, or null where it has none
+ * @returns {Promise<Object>}
  */
-export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
+export async function taxTablesForPackage(adminXml, adminSharedStrings, product, readRateData = rateDataFileText) {
   const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
   if (!fileName) return {};
-  const filePath = resolvePath(taxDataDir(), fileName);
-  if (!fileExists(filePath)) return {};
-  const raw = parseTOML(readSchemaFile(filePath, "utf8"));
-  return taxTablesFromRateData(raw, { includeVat: Boolean(VAT_RATE_CELLS[product]) });
+  const text = await readRateData(fileName);
+  if (text === null) return {};
+  return taxTablesFromRateData(parseTOML(text), { includeVat: Boolean(VAT_RATE_CELLS[product]) });
 }
 
 function numberAt(xml, cellRef, sharedStrings) {
@@ -2347,9 +2411,13 @@ async function stockFrom(hubZip, product) {
  * @param {string} product - bst, taxi, se or ltd
  * @param {Array} lines - the transaction lines already exported, for the chart of accounts
  * @param {Array} cellMap - the product module's CELL_MAP, retained for callers; no longer consulted for tax
+ * @param {Object} [options]
+ * @param {Function} [options.readRateData] - (fileName) => the text of the app/data/<year>.toml the
+ *   package declares itself generated from, or null where the caller has no such file; Node reads
+ *   app/data itself, a browser hands its own reader
  * @returns {Object} a book that validates against the published v2 book schema
  */
-export async function extractBook(set, product, lines, cellMap) {
+export async function extractBook(set, product, lines, cellMap, options = {}) {
   const multiFile = product === "se" || product === "ltd";
   const hubZip = await openWorkbook(set, multiFile ? "Financialaccounts.xlsx" : singleWorkbookName(set));
   if (!hubZip) throw new Error("This package has no workbook to read a book from");
@@ -2397,7 +2465,7 @@ export async function extractBook(set, product, lines, cellMap) {
   }
 
   const adminSheet = await openSheet(hubZip, "Admin");
-  const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
+  const tax = adminSheet ? await taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product, options.readRateData) : {};
 
   const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {

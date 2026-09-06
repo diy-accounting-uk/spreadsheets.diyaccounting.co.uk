@@ -68,17 +68,55 @@ export function calculateExpectedTax(profit, taxData) {
   const class2Weekly = taxData.national_insurance.class2_weekly_rate;
   const class2Threshold = taxData.national_insurance.class2_small_profits_threshold;
 
+  // income_tax, ni_class4_lower, ni_class4_upper and total_tax_and_ni carry
+  // no rounding of their own, matching the Income Tax sheet: E11 (BST/SE) /
+  // E11 (Taxi) is SUM(E8:E10) and the total (E18 BST/SE, E17 Taxi) is
+  // SUM(E11:E17) with every intermediate row a plain formula -- the sheet
+  // never rounds this chain, so the JS mirror does not either.
   return {
-    income_tax: Math.round(totalIncomeTax),
+    income_tax: totalIncomeTax,
     personal_allowance: personalAllowance,
     income_tax_basic: basicRateTax,
     income_tax_higher: higherRateTax,
     income_tax_additional: additionalRateTax,
-    ni_class4_lower: Math.round(niLower * 10) / 10,
-    ni_class4_upper: Math.round(niUpper * 10) / 10,
-    total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),
+    ni_class4_lower: niLower,
+    ni_class4_upper: niUpper,
+    total_tax_and_ni: totalIncomeTax + niLower + niUpper,
     ni_class2_weekly: class2Weekly,
     ni_class2_threshold: class2Threshold,
     ni_class2: profit < class2Threshold ? round2(class2Weekly * 52) : 0,
   };
+}
+
+/**
+ * Runs the six checks the SE Profit Forecast and Taxi Wages Forecast sheets
+ * share: personal allowance after taper, tax at each of the three income
+ * tax rates, Class 4 National Insurance, and the total liability. Read
+ * against both templates' own formulas (Profit Forecast C40-C46, Wages
+ * Forecast C35-C41), neither carries a ROUND() anywhere in this chain --
+ * every intermediate cell is a plain arithmetic or IF formula over the
+ * Admin sheet's own rate cells, the same rates calculateExpectedTax takes.
+ * So every comparison here runs to the penny: a wider tolerance would only
+ * hide a genuine mismatch between the sheet's formula and this mirror.
+ *
+ * Both templates also floor the personal allowance at nil when the
+ * forecast has no taxable profit (C39/C34 <= 0), rather than showing the
+ * taper's full, unclamped allowance -- calculateExpectedTax has no such
+ * floor, so the comparison applies it here.
+ *
+ * @param {function} check - (name, actual, expected, tolerance) => void, the caller's own check()
+ * @param {number} forecastProfit - the sheet's own taxable profit cell (Profit Forecast C39 / Wages Forecast C34)
+ * @param {{personalAllowance: number, standard: number, higher: number, additional: number, ni: number, total: number}} cells
+ *   - the sheet's own personal allowance, tax-at-rate, NI and total cells
+ * @param {Object} taxData
+ * @param {function} calculateExpectedTax
+ */
+export function checkForecastTaxAndNi(check, forecastProfit, cells, taxData, calculateExpectedTax) {
+  const expected = calculateExpectedTax(forecastProfit, taxData);
+  check("Forecast: personal allowance after taper", cells.personalAllowance, forecastProfit <= 0 ? 0 : expected.personal_allowance, 0.01);
+  check("Forecast: tax at standard rate", cells.standard, expected.income_tax_basic, 0.01);
+  check("Forecast: tax at higher rate", cells.higher, expected.income_tax_higher, 0.01);
+  check("Forecast: tax at additional rate", cells.additional, expected.income_tax_additional, 0.01);
+  check("Forecast: National Insurance", cells.ni, expected.ni_class4_lower + expected.ni_class4_upper, 0.01);
+  check("Forecast: tax and NI liability", cells.total, expected.total_tax_and_ni, 0.01);
 }

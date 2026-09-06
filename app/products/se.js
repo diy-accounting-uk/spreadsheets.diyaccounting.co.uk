@@ -9,6 +9,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_DUE_DAY,
@@ -38,6 +39,8 @@ import {
   vatReturnCoverage,
 } from "../lib/report-generator.js";
 import { calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
+import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "se",
@@ -245,6 +248,12 @@ function skipped(kind, entry, why) {
 // one pass. targetStartYear is the year the package's tax year opens in,
 // which for a 5 April year end is the year before the one its directory
 // names.
+// A self-employment year always opens 6 April and closes 5 April, the same
+// month-tab shape a Company keeps for a March year end -- so a scenario's
+// dates shift onto the package's period by whole years only, and the month a
+// date falls in, and the tab it lands on, never move.
+const SE_YEAR_END_MONTH = 3;
+
 function composeWrites(scenario, targetStartYear) {
   const skips = [];
   const rate = vatRateFor(scenario);
@@ -252,6 +261,9 @@ function composeWrites(scenario, targetStartYear) {
   const purchasesWrites = {};
   const bankWrites = {};
   const cashWrites = {};
+
+  const monthOffset = targetStartYear ? periodShiftMonths(scenario, targetStartYear, SE_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   if (scenario.sales) {
     for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
@@ -261,7 +273,7 @@ function composeWrites(scenario, targetStartYear) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -300,7 +312,7 @@ function composeWrites(scenario, targetStartYear) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -383,7 +395,7 @@ function composeWrites(scenario, targetStartYear) {
         const rows = isReceipt ? receiptRows : paymentRows;
         if (!rows[rowKey]) rows[rowKey] = 6;
         const row = rows[rowKey]++;
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
@@ -501,7 +513,7 @@ function composeWrites(scenario, targetStartYear) {
       // month tab stays blank and the printed payslip prints no figures.
       if (e.startDate && payrollStart) {
         const joined = parseDate(e.startDate);
-        const onSheet = payslipsStartDate(joined, payrollOpened, joined, payrollStart);
+        const onSheet = payslipsStartDate(joined, payrollOpened, shiftDate(joined), payrollStart);
         emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
           onSheet.getUTCFullYear(),
           onSheet.getUTCMonth() + 1,
@@ -528,7 +540,7 @@ function composeWrites(scenario, targetStartYear) {
       const blockRow = monthlyPayrollBlockRow(MONTH_KEYS.indexOf(monthKey));
       // Write wages paid date from first entry
       if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
+        const d = shiftDate(parseDate(entries[0].date));
         sheet[`M${blockRow + 1}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       }
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
@@ -622,7 +634,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     faPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
-      const d = parseDate(tx.date);
+      const d = shiftDate(parseDate(tx.date));
       // Left-to-right column order (B, then C, then E) -- see the opening
       // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -652,7 +664,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     fsDisposals.slice(0, disposalRows.length).forEach((tx, i) => {
       const row = disposalRows[i];
-      const d = parseDate(tx.date);
+      const d = shiftDate(parseDate(tx.date));
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
@@ -667,7 +679,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     scenario.hp_agreements.slice(0, HP_AGREEMENT_ROWS.length).forEach((agreement, i) => {
       const row = HP_AGREEMENT_ROWS[i];
-      const d = parseDate(agreement.date);
+      const d = shiftDate(parseDate(agreement.date));
       hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       hp[`C${row}`] = agreement.finance_company;
       hp[`D${row}`] = agreement.reference;
@@ -704,7 +716,7 @@ function composeWrites(scenario, targetStartYear) {
       // write further right (AD, say) out of the count of rows already there.
       const amountColumnKey = new RegExp(`^${columns.amount}\\d+$`);
       const entryRow = Object.keys(sheet).filter((k) => amountColumnKey.test(k)).length + 5;
-      const d = parseDate(entry.date);
+      const d = shiftDate(parseDate(entry.date));
       sheet[`${columns.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${columns.name}${entryRow}`] = entry[nameField];
       if (entry.invoice) sheet[`${columns.invoice}${entryRow}`] = entry.invoice;
@@ -896,11 +908,12 @@ export const CELL_MAP = [
   ["SE Short", "O80",  "Other capital allowances (box 25)", "tax.capitalAllowances.wda (sa103s)",     "Self Assessment (SA103S)", 1],
   ["SE Short", "O85",  "Balancing charges (box 26)",     "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
+  ["SE Short", "D99",  "**Net business profit (box 28)**", "gl-cor:amount (sa103s.taxableProfit)",    "Self Assessment (SA103S)", 0],
   ["SE Short", "O94",  "Loss brought forward (box 29)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
   ["SE Short", "O99",  "Grants as other business income (box 30)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
-  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "D106", "**Net profit for tax calc (box 31)**", "gl-cor:amount (sa103s.profitForTax)", "Self Assessment (SA103S)", 0],
+  ["SE Short", "O106", "Net loss for tax calc",          "gl-cor:amount (sa103s.lossForTax)",         "Self Assessment (SA103S)", 1],
   ["SE Short", "D124", "Total loss to carry forward (box 35)", "gl-cor:amount (sa103s.lossCarriedForward)", "Self Assessment (SA103S)", 1],
   ["SE Short", "O124", "Deductions by contractors (box 38)", "diya-gl:cisDeduction (sa103s)",          "Self Assessment (SA103S)", 1],
   // ── SE Full (SA103F) ──
@@ -1392,7 +1405,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
   }
   for (const [section, captions] of Object.entries(SECTION_CAPTIONS)) {
     const rows = sectionMap.get(section);
@@ -1582,6 +1595,10 @@ export function unitFor(sheet, cell) {
   if (sheet.startsWith("Sales.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : "money";
   if (sheet === "Vat.xlsx!Vatinterface") return column === "B" || column === "C" ? "date" : column === "M" ? "rate" : "money";
   if (sheet.startsWith("Vat.xlsx!VATQtr")) return cell === "G5" || cell === "G7" ? "date" : "money";
+  // Payslips!Payment: B the tax month end, C the day the payment falls due,
+  // both an Excel day serial; D the National Insurance due, E the income
+  // tax and I the whole amount payable are money.
+  if (sheet === "Payslips.xlsx!Payment") return column === "B" || column === "C" ? "date" : "money";
   if (sheet === "Payslips.xlsx!Admin") {
     if (cell === "N1") return "text";
     if (column === "A") return "text";
@@ -1644,11 +1661,14 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit = "money") {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  // A nil that arrived by negation carries a sign bit and prints as "-0",
-  // which reads as a defect in a statement.
-  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") {
+    const canonical = Number(canonicalForUnit(v, unit));
+    // A nil that arrived by negation carries a sign bit and prints as "-0",
+    // which reads as a defect in a statement.
+    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
   return String(v);
 }
 
@@ -1663,22 +1683,39 @@ function fmt(v) {
 export function profitBridge(results) {
   const pl = results["Profit & Loss Account"];
   const seShort = results["SE Short"];
+  const seFull = results["SE Full"];
   const tax = results[TAX_SHEET];
   if (!pl || !seShort || !tax) return null;
 
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // A trading loss cannot turn the taxable profit negative -- there is no
+  // such thing as negative tax -- so the chain above floors this subtotal at
+  // nil and carries the loss forward through SE Full's own box 65 instead
+  // (verified against the template: 'SE Full'!O174 = IF((D129+D174-O169)>0,
+  // ...,IF((-O129+D174-O169)>0,...,0)) and O179 = IF(O174>0,0,...the same
+  // subtotal negated...), so O174 minus O179 restates the unfloored subtotal
+  // exactly, in both directions, without the bridge floor having to be
+  // rebuilt from the very rows it is meant to prove. Reading it off the
+  // sheet, rather than deriving it from the rows above, keeps the row-side
+  // figures free to diverge from it if one of them is wrong.
   const rows = [
     { label: "Profit before tax per the profit and loss account", cell: "Profit & Loss Account!B39", value: num(pl.B39) },
     { label: "Add depreciation charged in the accounts", cell: "Profit & Loss Account!B34", value: num(pl.B34) },
     { label: "Less grants, taxed as other business income below", cell: "Profit & Loss Account!B11", value: -num(pl.B11) },
-    { label: "Less net loss for the year (box 22)", cell: "SE Short!O71", value: -num(seShort.O71) },
     { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
     { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
     { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
     { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
     { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
+    {
+      label: "Add back the year's loss, carried forward rather than reducing tax below nil",
+      cell: "SE Full!O179",
+      value: num(seFull?.O179),
+    },
     { label: "Less loss brought forward (box 29)", cell: "SE Short!O94", value: -num(seShort.O94) },
+    { label: "Add grants as other business income (box 30)", cell: "SE Short!O99", value: num(seShort.O99) },
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
@@ -1837,13 +1874,22 @@ export function categoryNetting(results, scenario) {
 
 // ── Compliance checks ──────────────────────────────────────────────────────
 
-export function checkCompliance(results, expected, taxData, calculateExpectedTax) {
+export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
+
+  // The same whole-year shift cellWrites applies before writing a posting
+  // date onto the package. packageYearEnd is the YYYY-MM-DD the package's own
+  // directory name carries; its year, minus one, is the year the package's
+  // tax year opens in, the targetStartYear cellWrites derives from the
+  // package it is writing into.
+  const packageStartYear = packageYearEnd ? parseInt(packageYearEnd.slice(0, 4), 10) - 1 : null;
+  const monthOffset = packageStartYear ? periodShiftMonths(expected, packageStartYear, SE_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   // Some of the workbook's own cells hold wording rather than arithmetic.
   // The report shows both sides as text and the diff column stays empty.
@@ -2007,19 +2053,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
     // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already deducted,
     // carried negative) sits inside that range, so the sheet's total is the
     // computed tax and NI less what the contractors have already paid over.
     const cisSuffered = Object.values(expected.sales || {})
       .flat()
       .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
-    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered, 0.01);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
-    check("Tax: Personal allowance after taper", tax.E6 || 0, expectedTax.personal_allowance);
+    // E6 = IF(E5<=0,0,MAX(0,Admin!N$4-MAX(0,E5-Admin!N$5)/2)): a loss year
+    // has no taxable profit to set an allowance against, so the sheet floors
+    // this at nil rather than showing the allowance unused. calculateExpectedTax
+    // has no such floor, so the comparison applies it, the same as the
+    // Profit Forecast's own personal allowance check below.
+    check("Tax: Personal allowance after taper", tax.E6 || 0, profit <= 0 ? 0 : expectedTax.personal_allowance);
     check("Tax at additional rate", tax.E10 || 0, expectedTax.income_tax_additional);
 
     // The bands and rates the sheet actually applies, not the ones it is
@@ -2058,10 +2109,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(seShort.O64),
         num(pl.B17) + num(pl.B35) - plDepreciation,
       );
+      // D71 only ever carries a profit (verified against the template: D71 =
+      // IF((D38+O38-O64)>=0,D38+O38-O64,0)) -- a loss-making year floors it
+      // at nil and states the loss in O71 instead, so the identity has to be
+      // clamped the same way or a loss year fails it on the sheet's own
+      // design rather than on a defect.
       check(
         "SA103S: net profit = turnover + other business income - total expenses",
         num(seShort.D71),
-        num(seShort.D38) + num(seShort.O38) - num(seShort.O64),
+        Math.max(0, num(seShort.D38) + num(seShort.O38) - num(seShort.O64)),
+      );
+      // O71's mirror identity (verified against the template: O71 =
+      // IF((D38+O38-O64)<0,O64-D38-O38,0)), so a loss year still has a live
+      // check on the same figure rather than the clamp above passing on 0=0.
+      check(
+        "SA103S: net loss = total expenses - turnover - other business income",
+        num(seShort.O71),
+        Math.max(0, num(seShort.O64) - num(seShort.D38) - num(seShort.O38)),
       );
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
 
@@ -2123,13 +2187,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(forecast.C34) + num(forecast.C37) - num(forecast.C38),
       );
 
-      const expectedForecastTax = calculateExpectedTax(num(forecast.C39), taxData);
-      check("Forecast: personal allowance after taper", num(forecast.C40), expectedForecastTax.personal_allowance);
-      check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
-      check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
-      check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
-      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni);
+      checkForecastTaxAndNi(
+        check,
+        num(forecast.C39),
+        {
+          personalAllowance: num(forecast.C40),
+          standard: num(forecast.C42),
+          higher: num(forecast.C43),
+          additional: num(forecast.C44),
+          ni: num(forecast.C45),
+          total: num(forecast.C46),
+        },
+        taxData,
+        calculateExpectedTax,
+      );
     }
   }
 
@@ -2671,7 +2742,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       checkText("Payslips print: the block the page reads is a monthly payroll", String(printed.L7 ?? "").trim(), "MONTHLY PAYROLL");
       check(`Payslips print: the period printed is payroll month ${PAYSLIP_PRINT_PERIOD}`, num(printed.I10), PAYSLIP_PRINT_PERIOD, 0);
       if (printedEntries.length > 0) {
-        const paidOn = parseDate(printedEntries[0].date);
+        const paidOn = shiftDate(parseDate(printedEntries[0].date));
         check(
           "Payslips print: the period ends the day the scenario paid that month's wages",
           num(printed.I9),
@@ -2764,7 +2835,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         if (e.reference) checkText(`Payslips!${tab} S${row} reference`, month[`S${row}`], e.reference);
       });
       if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
+        const d = shiftDate(parseDate(entries[0].date));
         const dateCell = `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
         check(
           `Payslips!${tab} ${dateCell} wages paid date`,

@@ -132,10 +132,15 @@ async function collectRenderedKeys(page, runningKeys) {
       text: el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" ? el.value : el.textContent,
     }));
   });
+  const empty = [];
   for (const { raw, text } of found) {
-    expect(text && text.trim().length > 0, `data-r-key="${raw}" carries no text`).toBe(true);
+    if (!text || text.trim().length === 0) empty.push(raw);
     for (const key of raw.split(" || ")) runningKeys.add(key);
   }
+  // One assertion for the whole collection rather than one per element: the
+  // sweep visits every view of three books and a per-element expect costs a
+  // recorded step each, which is most of the run.
+  expect(empty, `data-r-key values carrying no text:\n${empty.join("\n")}`).toEqual([]);
 }
 
 async function openEveryMonth(page, runningKeys) {
@@ -162,6 +167,17 @@ async function openMonthsToggleIfPresent(page) {
   }
 }
 
+// The bank book shows one account at a time behind its own switch
+// (products/se.js renderBank), so the sweep picks each account in turn --
+// otherwise every cell of every account but the first reads as unrendered.
+async function openEveryAccount(page, runningKeys) {
+  const accountCount = await page.locator(".account-switch-btn").count();
+  for (let i = 0; i < accountCount; i++) {
+    await page.locator(".account-switch-btn").nth(i).click();
+    await collectRenderedKeys(page, runningKeys);
+  }
+}
+
 async function sweepPage(page, exampleButton, htmlFile, views) {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${baseUrl}/books/${htmlFile}`, { waitUntil: "domcontentloaded" });
@@ -175,6 +191,9 @@ async function sweepPage(page, exampleButton, htmlFile, views) {
     await collectRenderedKeys(page, runningKeys);
     if (view === "year") {
       await openEveryMonth(page, runningKeys);
+    }
+    if (view === "bank") {
+      await openEveryAccount(page, runningKeys);
     }
   }
   return runningKeys;

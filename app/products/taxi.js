@@ -10,6 +10,8 @@ import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSeri
 import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "taxi",
@@ -415,6 +417,7 @@ export const CELL_MAP = [
   ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.basicRateLimit (+1)",        "Admin (Generator Injected)", 0, "money"],
   ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.additionalRateThreshold",    "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L16", "NI Class 2 Weekly Rate",              "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N16", "NI Class 2 Small Profits Threshold",   "tax.nationalInsurance.class2SmallProfitsThreshold", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits","Admin (Generator Injected)", 0, "money"],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0, "rate"],
@@ -512,10 +515,10 @@ function monthlyProfitAndLossCells() {
 
 export function reportSections(results) {
   const sectionMap = new Map();
-  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+  for (const [sheet, cell, label, , section, indent, unit] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unit), indent });
   }
   return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
 }
@@ -536,9 +539,10 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number")
+    return Number(canonicalForUnit(v, unit)).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
@@ -772,6 +776,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
     check("Admin: Higher Band End = tax data", admin.N13, it.higher_band_end);
     check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
+    check("Admin: NI Class 2 Small Profits Threshold = tax data", admin.N16, ni.class2_small_profits_threshold);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
     check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
@@ -791,9 +796,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const profit = tax.E5 || 0;
       const expectedTax = calculateExpectedTax(profit, taxData);
 
-      check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
-      check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower);
-      check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni);
+      check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
+      check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower, 0.01);
+      check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni, 0.01);
 
       // Each payment on account is half the liability the sheet itself
       // charges, read independently of any expected figure so a wrong split
@@ -881,13 +886,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
 
       const forecastProfit = forecast.C34 || 0;
-      const expectedForecastTax = calculateExpectedTax(forecastProfit, taxData);
-      check("Forecast: personal allowance after taper", forecast.C35 || 0, expectedForecastTax.personal_allowance);
-      check("Forecast: tax at standard rate", forecast.C37 || 0, expectedForecastTax.income_tax_basic);
-      check("Forecast: tax at higher rate", forecast.C38 || 0, expectedForecastTax.income_tax_higher);
-      check("Forecast: tax at additional rate", forecast.C39 || 0, expectedForecastTax.income_tax_additional);
-      check("Forecast: National Insurance", forecast.C40 || 0, expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
-      check("Forecast: tax and NI liability", forecast.C41 || 0, expectedForecastTax.total_tax_and_ni);
+      checkForecastTaxAndNi(
+        check,
+        forecastProfit,
+        {
+          personalAllowance: forecast.C35 || 0,
+          standard: forecast.C37 || 0,
+          higher: forecast.C38 || 0,
+          additional: forecast.C39 || 0,
+          ni: forecast.C40 || 0,
+          total: forecast.C41 || 0,
+        },
+        taxData,
+        calculateExpectedTax,
+      );
     }
   }
 

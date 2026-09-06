@@ -5,8 +5,10 @@
 // to the scenario format that product modules' cellWrites() expect.
 
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, existsSync } from "fs";
+import { join, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { taxYearFileName } from "./tax-year.js";
 import {
   BST_PURCHASE_CODE_MAP,
   SE_PURCHASE_CODE_MAP,
@@ -27,6 +29,8 @@ import {
   buildOpeningBalance,
   computeGrossSales,
   computeSpreadsheetNetSales,
+  splitStraddlingLines,
+  deriveStraddlingEntries,
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
@@ -144,16 +148,21 @@ export function shiftDate(dateStr, offset) {
 }
 
 /**
- * Apply a date offset to all lines (shifts postingDate).
+ * Apply a date offset to all lines (shifts postingDate, and the VAT period
+ * end a straddling line names). The period a return covers is fixed against
+ * the posting it holds, so it travels with it; left where it was, a shifted
+ * line would name a period the book's own accounting year no longer sits
+ * beside.
  */
 export function applyOffset(lines, offsetStr) {
   if (!offsetStr) return lines;
   const offset = parseOffset(offsetStr);
   if (offset.years === 0 && offset.months === 0) return lines;
-  return lines.map((line) => ({
-    ...line,
-    postingDate: shiftDate(line.postingDate, offset),
-  }));
+  return lines.map((line) => {
+    const shifted = { ...line, postingDate: shiftDate(line.postingDate, offset) };
+    if (line["diya-gl:vatPeriodEnd"]) shifted["diya-gl:vatPeriodEnd"] = shiftDate(line["diya-gl:vatPeriodEnd"], offset);
+    return shifted;
+  });
 }
 
 /**
@@ -222,7 +231,12 @@ export function diyaGlToScenario(book, lines, product) {
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
   const purchaseCodeMap = product === "bst" ? resolveBstPurchaseCodeMap(book) : PURCHASE_CODE_MAPS[product];
-  let filteredLines = product === "bst" ? filterBstChart(lines, purchaseCodeMap) : filter(lines);
+  // A line carrying diya-gl:vatPeriodEnd belongs to a VAT return period
+  // either side of the accounting year. It reaches Vat.xlsx's own entry
+  // sheets and no journal, so the year's own figures are built from the rest
+  // (the same split extract-scenarios.js makes on the master).
+  const { yearLines, straddlingLines } = splitStraddlingLines(lines);
+  let filteredLines = product === "bst" ? filterBstChart(yearLines, purchaseCodeMap) : filter(yearLines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   // buildGrouped below writes each month's rows to the sheet in whatever
   // relative order filteredLines carries them in, so a Basic Sole Trader
@@ -395,9 +409,9 @@ export function diyaGlToScenario(book, lines, product) {
     }
   }
 
-  // The month the book's own accounting period starts in. cellWrites maps that
-  // period onto the target package's month tabs, so a book already exported
-  // from a package of the same year end is left where it is.
+  // The accounting period the book's own dates sit in. cellWrites maps that
+  // period onto the target package's own, so a book already exported from a
+  // package of the same year end is left where it is.
   const periodStart = book.documentInfo?.periodCoveredStart;
   if (!periodStart) throw new Error("book.toml has no documentInfo.periodCoveredStart, so its accounting period is unknown");
 
@@ -405,6 +419,7 @@ export function diyaGlToScenario(book, lines, product) {
     metadata,
     business,
     period_start_month: new Date(periodStart).getUTCMonth() + 1,
+    period_start_year: new Date(periodStart).getUTCFullYear(),
     sales: grouped.sales,
     purchases: grouped.purchases,
     expected,
@@ -539,6 +554,25 @@ export function diyaGlToScenario(book, lines, product) {
     }));
   }
 
+  // The VAT periods either side of the accounting year (Vat.xlsx's S/P entry
+  // sheet pairs, SE and Ltd). deriveStraddlingEntries reads the period label
+  // off each line's own diya-gl:vatPeriodEnd against the book's accounting
+  // period, which is what the scenario TOML states literally, so a book and
+  // the TOML extracted from the same master reach buildVatinterface and
+  // vatReturnBoxes with the same entries.
+  if (product === "se" || product === "ltd") {
+    const periodEnd = book.documentInfo?.periodCoveredEnd;
+    if (straddlingLines.length > 0 && !periodEnd) {
+      throw new Error("book.toml has no documentInfo.periodCoveredEnd, so a straddling VAT period cannot be placed either side of it");
+    }
+    const from = new Date(periodStart);
+    const to = new Date(periodEnd);
+    const sales = deriveStraddlingEntries(straddlingLines, "sales", "customer", from, to);
+    const purchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", from, to);
+    if (sales.length > 0) scenario.vat_straddling_sales = sales;
+    if (purchases.length > 0) scenario.vat_straddling_purchases = purchases;
+  }
+
   // The charges register, the register of members and the board's dividend
   // minute (Companysecretary.xlsx, Ltd only).
   if (product === "ltd" && book.charges?.length > 0) {
@@ -615,6 +649,42 @@ export function diyaGlToScenario(book, lines, product) {
 }
 
 /**
+ * The depreciation table for a book's own accounting period. book.toml
+ * carries no depreciation rates at all, so unlike the rest of
+ * extractTaxDataFromBook's fields this cannot be bridged from book.tax --
+ * it is read from the app/data/<year>.toml file the period falls in, the
+ * same file --years names and the page's loadTaxDataForBook resolves via
+ * taxYearFileName, so a --data extraction and a --years run agree.
+ *
+ * Resolves app/data's path from import.meta.url lazily, on the first call,
+ * rather than at module load: this module is bundled into the books page
+ * (books-engine.js re-exports diyaGlToScenario from it), where url and path
+ * are stubs that throw when called -- extractTaxDataFromBook itself is
+ * Node-only and never reached from the bundle, but a module-scope call
+ * would run for every importer, browser included.
+ * @param {Object} book - parsed book.toml
+ * @param {"se"|"ltd"} taxRegime
+ * @returns {Object} the tax-year file's [depreciation] table
+ */
+function depreciationForBook(book, taxRegime) {
+  const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
+  if (!periodCoveredEnd) {
+    throw new Error("book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table");
+  }
+  const taxYearName = taxYearFileName(new Date(periodCoveredEnd), taxRegime);
+  const taxDataDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");
+  const taxYearPath = resolve(taxDataDir, `${taxYearName}.toml`);
+  if (!existsSync(taxYearPath)) {
+    throw new Error(`no tax-year file covers ${periodCoveredEnd} (looked for ${taxYearName}.toml)`);
+  }
+  const taxYearData = parseTOML(readFileSync(taxYearPath, "utf8"));
+  if (!taxYearData.depreciation) {
+    throw new Error(`${taxYearName}.toml declares no [depreciation] table`);
+  }
+  return taxYearData.depreciation;
+}
+
+/**
  * Extract tax data from book.toml tax section into the format matching app/data/*.toml.
  * Bridges diya-gl field names (camelCase) to tax data field names (snake_case).
  * @param {Object} book - parsed book.toml
@@ -625,7 +695,12 @@ export function extractTaxDataFromBook(book, product) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
-  if (ni.class2WeeklyRate === undefined) {
+  // Class 2 is the self-employed rate: a Company book's own tax-year file
+  // (app/data/ltd-*.toml) carries no [national_insurance] table at all, only
+  // [employer_ni] (see taxTablesFromRateData's own comment in
+  // xlsx-exporter.js), so a freshly extracted Ltd book never carries this
+  // field and the guard below would otherwise refuse every one of them.
+  if (product !== "ltd" && ni.class2WeeklyRate === undefined) {
     throw new Error("book.toml has no tax.nationalInsurance.class2WeeklyRate, so its Class 2 NI rate is unknown");
   }
   const ca = tax.capitalAllowances || {};
@@ -686,15 +761,6 @@ export function extractTaxDataFromBook(book, product) {
       main_rate_limit: ct.mainRateThreshold || 250000,
       marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
     };
-    // Depreciation rates for Ltd asset classes. Not available from book.toml;
-    // use standard accounting rates. These match app/data/ltd-*.toml values.
-    baseTaxData.depreciation = {
-      land_and_property: 0.0,
-      plant_and_machinery: 0.1,
-      fixtures_and_fittings: 0.2,
-      computer_equipment: 0.33,
-      motor_vehicles: 0.25,
-    };
   } else {
     // SE/BST/Taxi use a single writing_down_allowance key
     baseTaxData.capital_allowances = {
@@ -702,6 +768,7 @@ export function extractTaxDataFromBook(book, product) {
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
   }
+  baseTaxData.depreciation = depreciationForBook(book, product === "ltd" ? "ltd" : "se");
 
   return baseTaxData;
 }

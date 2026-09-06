@@ -88,7 +88,7 @@ personalAllowanceTaperThreshold = 100000
 
 [tax.nationalInsurance]
 class2WeeklyRate = 3.5
-class2SmallProfitsThreshold = 6725
+class2SmallProfitsThreshold = 6845
 class4MainRate = 0.06
 class4UpperRate = 0.02
 class4LowerProfits = 12570

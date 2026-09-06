@@ -19,8 +19,8 @@ import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../../
 import { calculateFromDiyaGl } from "../../app/lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
-import * as bst from "../../app/products/bst.js";
 import { productModule } from "../../app/lib/products.js";
+import { taxYearFileName } from "../../app/lib/tax-year.js";
 
 const ROOT = process.cwd();
 
@@ -73,7 +73,70 @@ export const SCENARIOS_SE = [
   },
 ];
 
-const FIXTURE_BY_SCENARIO = new Map([...SCENARIOS, ...SCENARIOS_SE].map((s) => [s.scenario, s.fixture]));
+// The three Taxi Driver books the page's own buttons load, each paired with
+// its fixture (S1) and its report.js --data directory (S2). All three are
+// single-file, so bookDir and page match the shape SCENARIOS already uses.
+export const SCENARIOS_TAXI = [
+  {
+    scenario: "taxi-scenario-basic",
+    fixture: "app/test/fixtures/taxi-scenario-basic.toml",
+    bookDir: "examples/basic-taxi-driver/taxi",
+    button: /taxi-scenario-basic/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+  {
+    scenario: "taxi-scenario-sp-sixty",
+    fixture: "app/test/fixtures/taxi-scenario-sp-sixty.toml",
+    bookDir: "examples/sp-sixty-driving/taxi",
+    button: /taxi-scenario-sp-sixty/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+  {
+    scenario: "taxi-scenario-kestrel",
+    fixture: "app/test/fixtures/taxi-scenario-kestrel.toml",
+    bookDir: "examples/kestrel-executive-cars/taxi",
+    button: /taxi-scenario-kestrel/,
+    product: "taxi",
+    page: "books/taxi.html",
+  },
+];
+
+// The three Limited Company books, each paired with its fixture (S1) and its
+// report.js --data directory (S2). None is served as an example the page has
+// a button for yet, so all three reach the page as a diya-gl zip built from
+// the same directory, the way the SE BrickWork books do.
+export const SCENARIOS_LTD = [
+  {
+    scenario: "ltd-scenario-full",
+    fixture: "app/test/fixtures/ltd-scenario-full.toml",
+    bookDir: "examples/precision-code-ltd/full",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+  {
+    scenario: "ltd-brickwork-pro-vat",
+    fixture: "app/test/fixtures/ltd-brickwork-pro-vat.toml",
+    bookDir: "examples/brickwork-pro/ltd-vat",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+  {
+    scenario: "ltd-brickwork-pro-nonvat",
+    fixture: "app/test/fixtures/ltd-brickwork-pro-nonvat.toml",
+    bookDir: "examples/brickwork-pro/ltd-nonvat",
+    example: null,
+    product: "ltd",
+    page: "books/ltd.html",
+  },
+];
+
+const FIXTURE_BY_SCENARIO = new Map(
+  [...SCENARIOS, ...SCENARIOS_SE, ...SCENARIOS_TAXI, ...SCENARIOS_LTD].map((s) => [s.scenario, s.fixture]),
+);
 
 /**
  * S1: a scenario fixture's own [expected] table -- the totals the fixture
@@ -127,14 +190,15 @@ const s2ForPackageCache = new Map();
 
 /**
  * S2, computed for a stated year-end rather than the book's own -- the tax
- * tables report.js's --years names, in the <regime>-<start>-<end> form
- * generate-bst.yml's own scorecard step derives from a year-end, plus
- * --year-end itself so the two sides' report.json name the same year. A
+ * tables report.js's --years names, from taxYearFileName, the same rule the
+ * writer and the book loader resolve a year end by, plus --year-end itself
+ * so the two sides' report.json name the same year. A
  * book's [tax] section carries only its own year's rates (extractTaxDataFromBook
  * reads it as-is), so reaching another year's Admin figures takes an
  * explicit --years override, not just a later --year-end.
  * @param {string} bookDir - a diya-gl data directory, e.g. SCENARIOS[].bookDir
- * @param {string} yearEnd - YYYY-MM-DD, the UK tax year-end convention (5 April)
+ * @param {string} yearEnd - YYYY-MM-DD, the year end the report is built for:
+ *   5 April for a self-employment regime, any month end for a company
  * @param {string} [name] - a short label for the output directory; derived
  *   from bookDir when omitted
  * @param {string} [product] - the package report.js computes the book under
@@ -146,8 +210,7 @@ export function s2ForPackage(bookDir, yearEnd, name, product = "bst") {
 
   const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
   const outDir = path.resolve(ROOT, "target", `r-${label}-${yearEnd}`);
-  const taxYearEnd = Number(yearEnd.slice(0, 4));
-  const years = `${productModule(product).PRODUCT.taxRegime}-${taxYearEnd - 1}-${taxYearEnd}`;
+  const years = taxYearFileName(new Date(`${yearEnd}T00:00:00Z`), productModule(product).PRODUCT.taxRegime);
   execFileSync(
     process.execPath,
     ["app/bin/report.js", "--package", product, "--data", bookDir, "--years", years, "--year-end", yearEnd, "--output-dir", outDir],
@@ -158,75 +221,102 @@ export function s2ForPackage(bookDir, yearEnd, name, product = "bst") {
   return map;
 }
 
-const BST_SCENARIO_BASIC_REPORT = /^GB_Accounts_Basic_Sole_Trader_(\d{4})_(\d{2})_(\d{2})__.*_bst-scenario-basic\.md$/;
+// Per product: the saved package s3() reads, and the pattern its highest
+// committed reports/*.md carries its own year-end in. Each product's
+// generate-*.yml workflow refreshes its package for only the matrix's
+// highest year-end and commits that run's reports/*.md alongside it, so the
+// highest year-end named among a product's own basic-scenario reports is
+// the package's own -- read off the fixture rather than assumed.
+const S3_CONFIG = {
+  bst: {
+    sourceDir: "examples/bst-latest",
+    reportPattern: /^GB_Accounts_Basic_Sole_Trader_(\d{4})_(\d{2})_(\d{2})__.*_bst-scenario-basic\.md$/,
+  },
+  taxi: {
+    sourceDir: "examples/taxi-latest",
+    reportPattern: /^GB_Accounts_Taxi_Driver_(\d{4})_(\d{2})_(\d{2})__.*_taxi-scenario-basic\.md$/,
+  },
+  // A company picks its own year end, so the Ltd matrix generates twelve a
+  // year and refreshes the package for the highest; the full scenario is the
+  // one every year end reports on.
+  ltd: {
+    sourceDir: "examples/ltd-latest",
+    reportPattern: /^GB_Accounts_Company_(\d{4})_(\d{2})_(\d{2})__.*_ltd-scenario-full\.md$/,
+  },
+};
 
-let s3Cache = null;
+const s3Cache = new Map();
 
 /**
- * The year-end examples/bst-latest was built for. generate-bst.yml only
- * refreshes examples/bst-latest for the matrix's highest year-end, and
- * commits that same run's reports/*.md alongside it, so the highest
- * year-end named among the committed bst-scenario-basic reports is
- * bst-latest's own -- read off the fixture rather than assumed.
+ * The year-end a product's <product>-latest package was built for, read off
+ * the highest year-end named among its committed basic-scenario reports.
+ * @param {string} product - a key of S3_CONFIG
  * @returns {string} YYYY-MM-DD
  */
-function latestBstYearEnd() {
+function latestYearEnd(product) {
+  const config = S3_CONFIG[product];
+  if (!config) throw new Error(`latestYearEnd: no S3 config for product "${product}"`);
   const reportsDir = path.resolve(ROOT, "reports");
   const yearEnds = fs
     .readdirSync(reportsDir)
-    .map((name) => BST_SCENARIO_BASIC_REPORT.exec(name))
+    .map((name) => config.reportPattern.exec(name))
     .filter(Boolean)
     .map((m) => `${m[1]}-${m[2]}-${m[3]}`)
     .sort();
   const latest = yearEnds.at(-1);
-  if (!latest) throw new Error("latestBstYearEnd: no reports/*_bst-scenario-basic.md found to read bst-latest's year-end from");
+  if (!latest) throw new Error(`latestYearEnd: no report matching ${config.reportPattern} to read ${product}-latest's year-end from`);
   return latest;
 }
 
 /**
- * S3: report.json read from the cached values of examples/bst-latest, the
- * one Excel package the repository keeps a saved reference of. Reads the
- * workbook's own cached cells -- no LibreOffice, no scenario, so it carries
- * no check/ keys of its own. Exists for bst-scenario-basic only. --year-end
- * names the year-end the fixture was actually built for (latestBstYearEnd),
- * so the returned report.json carries it, ready for s2ForPackage to match.
+ * S3: report.json read from the cached values of a product's own <product>-
+ * latest package, the one Excel package the repository keeps a saved
+ * reference of. Reads the workbook's own cached cells -- no LibreOffice, no
+ * scenario, so it carries no check/ keys of its own. --year-end names the
+ * year-end the package was actually built for (latestYearEnd), so the
+ * returned report.json carries it, ready for s2ForPackage to match.
+ * @param {string} [product] - defaults to "bst"
  * @returns {Map<string, {value: string, unit: string}>}
  */
-export function s3() {
-  if (s3Cache) return s3Cache.map;
+export function s3(product = "bst") {
+  if (s3Cache.has(product)) return s3Cache.get(product).map;
+  const config = S3_CONFIG[product];
+  if (!config) throw new Error(`s3: no S3 config for product "${product}"`);
 
-  const outDir = path.resolve(ROOT, "target", "r-excel");
+  const outDir = path.resolve(ROOT, "target", `r-excel-${product}`);
   execFileSync(
     process.execPath,
     [
       "app/bin/report.js",
       "--package",
-      "bst",
+      product,
       "--source-dir",
-      "examples/bst-latest",
+      config.sourceDir,
       "--mode",
       "saved",
       "--year-end",
-      latestBstYearEnd(),
+      latestYearEnd(product),
       "--output-dir",
       outDir,
     ],
     { cwd: ROOT, stdio: "pipe" },
   );
-  s3Cache = readReport(outDir);
-  return s3Cache.map;
+  const result = readReport(outDir);
+  s3Cache.set(product, result);
+  return result.map;
 }
 
 /**
  * The year-end S3's report.json carries, for a caller (A3) that wants S2
  * built to match it. Reading it back off the document rather than calling
- * latestBstYearEnd() a second time keeps the two sides tied to whatever
+ * latestYearEnd() a second time keeps the two sides tied to whatever
  * year-end S3 actually reported under.
+ * @param {string} [product] - defaults to "bst"
  * @returns {string} YYYY-MM-DD
  */
-export function s3YearEnd() {
-  s3();
-  return s3Cache.yearEnd;
+export function s3YearEnd(product = "bst") {
+  s3(product);
+  return s3Cache.get(product).yearEnd;
 }
 
 /**
@@ -254,26 +344,36 @@ export function canonical(value, unit) {
  *   (book, lines) and returns the new lines array; typically one of
  *   diya-gl-edits.js's named edits, or book-checks.js's applyHelper wrapped
  *   to take (book, lines)
+ * @param {string} [product] - the package the edit is applied under; the
+ *   page's own buildReport (data.js) reads this off the loaded manifest's
+ *   own id, so a caller proving a Self Employed edit passes "se" here
+ * @param {Object} [taxData] - the year's rates, in the same shape
+ *   extractTaxDataFromBook and app/data/*.toml both carry; defaults to
+ *   extracting them off the book's own [tax] section (report.js's --data
+ *   route), the same imprecise reading s2 carries and s2ForPackage exists
+ *   to avoid -- a caller comparing against a loaded page, which always
+ *   reads the year file through loadTaxDataForBook, passes that here
  * @returns {{text: string, document: Object, book: Object, lines: Array}}
  */
-export function applyNamedEdit(bookDir, edit) {
+export function applyNamedEdit(bookDir, edit, product = "bst", taxData) {
   const resolvedBookDir = path.resolve(ROOT, bookDir);
   const { book, lines } = loadDiyaGlData(resolvedBookDir);
   const newLines = edit(book, lines);
+  const productMod = productModule(product);
 
-  const taxData = extractTaxDataFromBook(book, "bst");
-  const scenario = diyaGlToScenario(book, newLines, "bst");
-  const results = calculateFromDiyaGl(book, newLines, "bst", taxData, scenario);
+  const resolvedTaxData = taxData || extractTaxDataFromBook(book, product);
+  const scenario = diyaGlToScenario(book, newLines, product);
+  const results = calculateFromDiyaGl(book, newLines, product, resolvedTaxData, scenario);
   const mergedScenario = { ...scenario, ...scenario.expected };
   const periodEnd = book.documentInfo?.periodCoveredEnd;
   const yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
-  const checks = bst.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd);
+  const checks = productMod.checkCompliance({ ...results }, mergedScenario, resolvedTaxData, calculateExpectedTax, yearEnd);
 
   const document = buildReportDocument({
-    packageName: "bst",
+    packageName: product,
     engine: "js",
     results,
-    productMod: bst,
+    productMod,
     scenario: mergedScenario,
     checks,
     scenarioName: book.documentInfo?.entriesComment,

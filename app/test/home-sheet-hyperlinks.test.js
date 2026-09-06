@@ -107,13 +107,15 @@ function parseSheetNameFromTarget(target) {
     m = target.match(/^'([^']*)'!/);
   }
   if (!m) return null;
-  // Decode XML entities
+  // Decode XML entities (named entities before &amp;, so an encoded
+  // ampersand followed by an entity name, e.g. "&amp;lt;", is not
+  // mistaken for a second, already-escaped entity)
   const name = m[1]
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'");
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
   return name;
 }
 

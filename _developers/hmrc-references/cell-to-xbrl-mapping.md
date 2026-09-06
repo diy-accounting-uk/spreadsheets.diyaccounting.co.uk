@@ -190,21 +190,35 @@ Multi-file package (9 xlsx). The SE product maps to SA103S (Self Employment Shor
 
 | Sheet | Cell | DIY Label | diya-gl Property | SA103S Box | Description |
 |-------|------|-----------|-----------------|-----------|-------------|
-| SE Short | A7 | Business name | `entityInformation.organizationIdentifier` | Box 1 | Description of business |
-| SE Short | D8 | Accounting date | `documentInfo.periodCoveredEnd` | Box 2 | End of accounting period |
-| SE Short | D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | Box 10 | Business income / turnover |
+| SE Short | C8 | Business name | `entityInformation.organizationIdentifier` | Box 1 | Description of business |
+| SE Short | S17 | Accounting date | `documentInfo.periodCoveredEnd` | Box 2 | End of accounting period |
+| SE Short | D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | Box 9 | Business income / turnover |
+| SE Short | O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | Box 10 | Any other business income |
 | SE Short | D46 | Cost of sales | `gl-cor:amount (sa103s.costOfSales)` | Box 11 | Cost of goods for resale or goods used |
-| SE Short | D51 | Other direct costs | `gl-cor:amount (sa103s.otherDirect)` | Box 13 | Other direct costs |
-| SE Short | D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | Box 16 | Employee costs |
-| SE Short | D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | Box 17 | Premises costs |
-| SE Short | D64 | Other expenses | `gl-cor:amount (sa103s.otherExpenses)` | Box 24 | Other allowable business expenses |
-| SE Short | D71 | **Net profit/loss** | `gl-cor:amount (sa103s.netProfit)` | Box 27 | Net profit (loss) |
-| SE Short | D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | Box 29 | Total capital allowances |
-| SE Short | D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | Box 30 | Annual Investment Allowance |
-| SE Short | D94 | Other tax adjustments | `gl-cor:amount (sa103s.otherAdjust)` | Box 33 | Other tax adjustments |
-| SE Short | D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 35 | Net business profit for tax purposes |
-| SE Short | A32 | VAT threshold note | `gl-cor:detailComment (sa103s.notes)` | -- | Advisory text |
-| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 35 | Final figure for income tax calculation |
+| SE Short | D51 | Car, van and travel | `gl-cor:amount (sa103s.travel)` | Box 12 | Car, van and travel expenses |
+| SE Short | D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | Box 13 | Wages, salaries and other staff costs |
+| SE Short | D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | Box 14 | Rent, rates, power and insurance costs |
+| SE Short | D64 | Repairs and renewals | `gl-cor:amount (sa103s.repairs)` | Box 15 | Repairs and renewals of property and equipment |
+| SE Short | O46 | Accountancy, legal and professional | `gl-cor:amount (sa103s.legal)` | Box 16 | Accountancy, legal and other professional fees |
+| SE Short | O51 | Interest and bank charges | `gl-cor:amount (sa103s.interest)` | Box 17 | Interest and bank/credit card financial charges |
+| SE Short | O55 | Phone, stationery and office costs | `gl-cor:amount (sa103s.office)` | Box 18 | Phone, fax, stationery and other office costs |
+| SE Short | O60 | Other business expenses | `gl-cor:amount (sa103s.otherExpenses)` | Box 19 | Other allowable business expenses |
+| SE Short | O64 | **Total expenses** | `gl-cor:amount (sa103s.totalExpenses)` | Box 20 | Total allowable expenses |
+| SE Short | D71 | **Net profit/loss** | `gl-cor:amount (sa103s.netProfit)` | Box 21 | Net profit |
+| SE Short | O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | Box 22 | Or net loss |
+| SE Short | D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | Box 23 | Annual Investment Allowance |
+| SE Short | D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | Box 24 | Allowance of small balance of unrelieved expenditure |
+| SE Short | O80 | Other capital allowances | `tax.capitalAllowances.wda (sa103s)` | Box 25 | All other capital allowances |
+| SE Short | O85 | Balancing charges | `tax.capitalAllowances.balancingCharge (sa103s)` | Box 26 | Total balancing charges |
+| SE Short | D94 | Other tax adjustments | `gl-cor:amount (sa103s.otherAdjust)` | Box 27 | Goods and services for your own use |
+| SE Short | D99 | **Net business profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 28 | Net business profit for tax purposes |
+| SE Short | O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | Box 29 | Loss brought forward from earlier years set off against this year's profits |
+| SE Short | O99 | Grants as other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | Box 30 | Any other business income not included in turnover |
+| SE Short | A33 | Turnover note | `gl-cor:detailComment (sa103s.notes)` | -- | Advisory text |
+| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 31 | Total taxable profits or net business loss |
+| SE Short | O106 | Net loss for tax calc | `gl-cor:amount (sa103s.lossForTax)` | Box 32 | Or net business loss |
+| SE Short | D124 | Total loss to carry forward | `gl-cor:amount (sa103s.lossCarriedForward)` | Box 35 | Total loss to carry forward after all other set-offs |
+| SE Short | O124 | Deductions by contractors | `diya-gl:cisDeduction (sa103s)` | Box 38 | Deductions on the Construction Industry Scheme (CIS) statements |
 
 ---
 
@@ -299,9 +313,9 @@ Single-file workbook. Maps to SA103S like the SE product but with a simpler stru
 | SE Short | D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | Box 29 | Total capital allowances |
 | SE Short | D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | Box 30 | Annual Investment Allowance |
 | SE Short | D94 | Other tax adjustments | `gl-cor:amount (sa103s.otherAdjust)` | Box 33 | Other tax adjustments |
-| SE Short | D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 35 | Net business profit for tax |
+| SE Short | D99 | **Net business profit** | `gl-cor:amount (sa103s.taxableProfit)` | Box 28 | Net business profit for tax |
 | SE Short | A32 | VAT threshold note | `gl-cor:detailComment (sa103s.notes)` | -- | Advisory text |
-| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 35 | Final figure for tax calc |
+| SE Short | D106 | **Net profit for tax calc** | `gl-cor:amount (sa103s.profitForTax)` | Box 31 | Total taxable profits, final figure for tax calc |
 
 ### 3.6 Stock (PurchasesStock sheet)
 
@@ -446,32 +460,6 @@ Single-file workbook. Specialist sole trader product with mileage comparison (ac
 | Profit and loss account (reserves) | `ProfitAndLossAccount` |
 | Shareholders equity | `ShareholdersEquity` |
 | Depreciation | `DepreciationOfTangibleFixedAssets` |
-
-### SA103S Box Numbers (Self-Employment Short)
-
-| Box | Description | BST Cell | Taxi Cell | SE Cell |
-|-----|------------|----------|----------|---------|
-| 1 | Business name / description | Business Details!C5 | Business Details!C5 | Business Details!C5 |
-| 2 | Accounting period end date | SE Short!D8 | -- | SE Short!D8 |
-| 10 | Turnover | P&L Acc!C4 | P&L Acc!B5 | P&L Account!B9 |
-| 11 | Cost of goods | SE Short!D46 | -- | SE Short!D46 |
-| 13 | Other direct costs | SE Short!D51 | -- | SE Short!D51 |
-| 14 | Gross profit | P&L Acc!C9 | P&L Acc!B13 | P&L Account!B19 |
-| 16 | Employee costs | P&L Acc!C11 | P&L Acc!B14 | P&L Account!B21 |
-| 17 | Premises costs | P&L Acc!C12 | P&L Acc!B15 | P&L Account!B22 |
-| 18 | Repairs | P&L Acc!C13 | P&L Acc!B8 | P&L Account!B23 |
-| 19 | Motor / travel | P&L Acc!C15+C16 | P&L Acc!B10 or B12 | P&L Account!B25+B26 |
-| 20 | Admin / advertising | P&L Acc!C14+C17 | P&L Acc!B16+B17 | P&L Account!B24+B27 |
-| 21 | Legal & professional | P&L Acc!C18 | P&L Acc!B18 | P&L Account!B28 |
-| 22 | Bad debts | P&L Acc!C19 | -- | P&L Account!B29 |
-| 23 | Interest / finance | P&L Acc!C20 | P&L Acc!B19+B20 | -- |
-| 24 | Other expenses | P&L Acc!C21 | P&L Acc!B21 | P&L Account!B31 |
-| 25 | Total allowable expenses | P&L Acc!C22 | P&L Acc!B22 | P&L Account!B35 |
-| 27 | Net profit / loss | P&L Acc!C24 | P&L Acc!B23 | P&L Account!B39 |
-| 29 | Capital allowances | P&L Acc!C26 | P&L Acc!B11 | SE Short!D80 |
-| 30 | AIA / WDA | SE Short!D85 | -- | SE Short!D85 |
-| 33 | Other tax adjustments | SE Short!D94 | -- | SE Short!D94 |
-| 35 | Taxable profit | P&L Acc!C28 | P&L Acc!B24 | SE Short!D99 |
 
 ---
 

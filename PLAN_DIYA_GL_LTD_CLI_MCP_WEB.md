@@ -493,6 +493,10 @@ each rebasing on the last.
   verified) and the agreement halves. Follow-up in T4b: `app/lib/book-checks/ltd.js`'s bank layout
   copy comes from `ltd-layout.js`.
 
+- T4b `1506212c` to `d300f782`, merged into `claude/diya-gl-wave-2` 2026-09-06: `LINK_ORDER.ltd` (nine files) and `packageLinkCaches` in `link-caches.js`; the saved half 2,105 keys and the committed half 2,079 keys agree with the calculator with no disagreement; `book-checks/ltd.js` reads the bank layout from `ltd-layout.js`. Found: `examples/ltd-latest` line dates sit a year behind its `Admin!B32` (`Schedule!B67` to `B71` cache 46006 against the calculator's 46371); the page's drift layer reads sources from the hub only, carried on T11.
+
+- T8 `b94041ec`, merged into `claude/diya-gl-wave-2` at `af40e2dd` 2026-09-06: `form-layouts/ltd.json` (four blocks, 112 sheet cells), `products/ltd-forms.js`, the six form views. Settled against the XML: `CorporationTax!I18` is signed, so box 710 takes only its negative part and its positive part joins 705; `Payslips!Payment` reads are B/C/D/E/I rows 4 to 15 and `WagesInterface` is a hub sheet; accounts heading C's prior column is blank (`PubP&L!B16` is not a read). Found: `products/ltd.js` `formatByUnit` prints whole-percent rates through `fmtRate` (carried on T13); `examples/ltd-latest` `CT600!C126`/`C128` cache financial-year labels a year ahead of the engine (carried on T11).
+
 - T24 `2c16fb69`, merged 2026-09-05: `payrollYearOf` derives the payroll year from the period as
   the writer does; the Payslips calendar keys move to the package's values on every book path.
 - For T2, from SE S2: the sidecar option is `options.templates`, not `templatePaths`; and
@@ -1318,14 +1322,14 @@ at `book-checks.js` 125: `id`, `label`, `offenders(ctx)`, `consequence(ctx)`,
 
 | id | tier | offenders | helper |
 |---|---|---|---|
-| `ltd-bank-line-has-side` | fail | `sourceJournalID === "bank"` and `debitCreditCode` not `"D"` or `"C"` | none |
-| `ltd-bank-code-analysed` | fail | a bank line whose `diya-gl:bankCode` is not in `bankLayout(BANK_ACCOUNT_FILES[line["diya-gl:bankAccountID"]])` `.receiptCodes` (D) or `.paymentCodes` (C), or whose account is not one of 1200, 1210, 1220, 1230; `BC` lines are exempt (opening balance) | "recode to CR/DR" is not mechanical; none |
-| `ltd-transfer-has-counter-leg` | warn | a line coded BS, BD, BC or BB (transfers; `BC` only when not the opening balance) with no line of the same date and amount on the sibling account the code names (`BANK_TRANSFER_CODES`) | none |
-| `ltd-straddling-line-has-vat-period` | fail | a sales or purchases line dated outside `period` without `diya-gl:vatPeriodEnd`; a line with it is exempt from `book-dates-in-period` (this rule replaces that check's verdict for such lines, by filtering them out of its offenders through the product hook) | the existing "move into the period" helper |
-| `ltd-payroll-line-names-employee` | fail | `sourceJournalID === "payroll"` and neither `diya-gl:employeeID` matches a `book.employees[].employeeID` nor `detailComment` matches a name | none |
-| `ltd-dividend-within-distributable-profits` | warn | `sum(book.dividends[].amount)` above `results.OpenAccounts.E34 + results["PubP&L"].F51` (the warning takes `results` as its third argument) | none |
-| `ltd-cis-on-subcontractor-line` | warn | `diya-gl:cisDeduction` present on a purchases line whose `accountMainID` is not 5001 | none |
-| `ltd-fixed-asset-rows-fit-schedule` | fail | more `fa`-mapped purchases (`PURCHASE_CODE_MAPS.ltd`) than `SCHEDULE_NEW_ASSET_ROWS.length` (8); more `book.fixedAssets` of one class than that class's `existingRows`; more `fs`-mapped sales than assets; more than two `book.hpAgreements` | none |
+| `book-ltd-bank-line-has-side` | fail | `sourceJournalID === "bank"` and `debitCreditCode` not `"D"` or `"C"` | none |
+| `book-ltd-bank-code-analysed` | fail | a bank line whose `diya-gl:bankCode` is not in `bankLayout(BANK_ACCOUNT_FILES[line["diya-gl:bankAccountID"]])` `.receiptCodes` (D) or `.paymentCodes` (C), or whose account is not one of 1200, 1210, 1220, 1230; `BC` lines are exempt (opening balance) | "recode to CR/DR" is not mechanical; none |
+| `book-ltd-transfer-has-counter-leg` | warn | a line coded BS, BD, BC or BB (transfers; `BC` only when not the opening balance) with no line of the same date and amount on the sibling account the code names (`BANK_TRANSFER_CODES`) | none |
+| `book-ltd-straddling-line-has-vat-period` | fail | a sales or purchases line dated outside `period` without `diya-gl:vatPeriodEnd`; a line with it is exempt from `book-dates-in-period` (this rule replaces that check's verdict for such lines, by filtering them out of its offenders through the product hook) | the existing "move into the period" helper |
+| `book-ltd-payroll-line-names-employee` | fail | `sourceJournalID === "payroll"` and neither `diya-gl:employeeID` matches a `book.employees[].employeeID` nor `detailComment` matches a name | none |
+| `book-ltd-dividend-within-distributable-profits` | warn | `sum(book.dividends[].amount)` above `results.OpenAccounts.E34 + results["PubP&L"].F51` (the warning takes `results` as its third argument) | none |
+| `book-ltd-cis-on-subcontractor-line` | warn | `diya-gl:cisDeduction` present on a purchases line whose `accountMainID` is not 5001 | none |
+| `book-ltd-fixed-asset-rows-fit-schedule` | fail | more `fa`-mapped purchases (`PURCHASE_CODE_MAPS.ltd`) than `SCHEDULE_NEW_ASSET_ROWS.length` (8); more `book.fixedAssets` of one class than that class's `existingRows`; more `fs`-mapped sales than assets; more than two `book.hpAgreements` | none |
 
 The chart check: `book-accounts-in-chart` keeps its offenders to `sales` and `purchases`
 lines when the product is Ltd, because bank, payroll and journal lines post to bank,

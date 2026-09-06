@@ -69,7 +69,8 @@ Trade: IT consultancy and software development
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Rate = tax data | 3.5 | 3.5 | 0 | PASS |
+| Admin: NI Class 2 Rate = tax data | 3.65 | 3.65 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 7105 | 7105 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -192,7 +193,7 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 45,615.6 |
 | **Total Income Tax** | 88,131.6 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 3,524.76 |
 | **Total Tax + NI** | 93,918.36 |
@@ -215,10 +216,10 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 226,508 |
+| **Net business profit (box 28)** | 226,508 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30) | 0 |
-| **Net profit for tax calc** | 226,508 |
+| **Net profit for tax calc (box 31)** | 226,508 |
 
 ## Stock
 
@@ -293,7 +294,8 @@ Trade: IT consultancy and software development
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Rate | 3.5 |
+| NI Class 2 Rate | 3.65 |
+| NI Class 2 Small Profits Threshold | 7,105 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -398,10 +400,10 @@ Trade: IT consultancy and software development
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 226508 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 226508 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc** | 226508 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 226508 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
@@ -476,7 +478,8 @@ Trade: IT consultancy and software development
 | M12 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N13 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
 | N14 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L17 | NI Class 2 Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
+| L17 | NI Class 2 Rate | 3.65 | tax.nationalInsurance.class2WeeklyRate |
+| N17 | NI Class 2 Small Profits Threshold | 7105 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |

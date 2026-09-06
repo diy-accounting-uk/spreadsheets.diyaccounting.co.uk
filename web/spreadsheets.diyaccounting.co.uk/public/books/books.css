@@ -204,16 +204,6 @@ select:focus-visible,
   color: var(--ink-faint);
 }
 
-.app-back {
-  font-size: 0.8rem;
-  color: var(--rule);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.app-back:hover {
-  text-decoration: underline;
-}
-
 .app-title {
   flex: 1;
   min-width: 0;
@@ -255,14 +245,6 @@ select:focus-visible,
   .title-view {
     display: none;
   }
-  .app-back-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
 }
 
 .icon-btn {
@@ -301,7 +283,8 @@ select:focus-visible,
   }
 }
 
-.save-btn {
+.save-btn,
+.new-btn {
   border-color: var(--rule);
   color: var(--rule-dark);
 }
@@ -529,6 +512,7 @@ select:focus-visible,
 }
 .btn:hover {
   background: var(--tint);
+  color: var(--rule-dark);
 }
 .btn-primary {
   background: var(--rule);
@@ -639,6 +623,12 @@ select:focus-visible,
   color: var(--pencil);
   cursor: pointer;
 }
+/* The checkbox glyph is 13px; a finger needs the whole label at 44px. */
+@media (pointer: coarse) {
+  .all-categories-toggle {
+    min-height: 44px;
+  }
+}
 
 /* Columns behind the "All categories" toggle, and the Cost of Sales
    components it never reveals, stay in the table -- every data-r-key the
@@ -748,6 +738,13 @@ table.year-table {
 .year-row[aria-expanded="true"] .disclosure {
   transform: rotate(90deg);
 }
+/* A finger needs the full 44px row; a pointer does not. */
+@media (pointer: coarse) {
+  .year-row td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
 
 tfoot.year-totals tr {
   position: sticky;
@@ -825,6 +822,12 @@ tfoot.year-totals th {
   .entries-columns {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
+}
+/* A single journal takes the whole width rather than half of a pair --
+   sized by count, so a product with one journal never needs its own
+   override. */
+.entries-columns:has(> :only-child) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* Fixed layout, so a long account name or detail can never widen the grid
@@ -1207,6 +1210,11 @@ ul.checks-passing-list {
 }
 .checks-passing > details[open] > summary {
   margin-bottom: 0.5rem;
+}
+@media (pointer: coarse) {
+  .checks-passing > details > summary {
+    min-height: 44px;
+  }
 }
 .check-item {
   border: 1px solid var(--rule-faint);
@@ -1607,6 +1615,22 @@ table.kv-table tr.total td {
   margin-left: 0.4rem;
 }
 
+/* Narrow phones: the label column squeezed to ~130px beside the money box,
+   wrapping SA103F and VAT labels to five lines. Wrap the row instead so the
+   label gets the full row width and the amount box floats to the right. */
+@media (max-width: 479px) {
+  .form-row {
+    flex-wrap: wrap;
+  }
+  .form-row-label {
+    flex-basis: calc(100% - 2.4rem);
+  }
+  .form-amount-box,
+  .form-amount-wrap {
+    margin-left: auto;
+  }
+}
+
 /* ============================== Mobile chrome ============================== */
 
 .mobile-tabbar {
@@ -1650,6 +1674,9 @@ table.kv-table tr.total td {
   background: var(--paper-raised);
   border-top: 1px solid var(--rule-faint);
   z-index: 22;
+}
+.mobile-action-bar .action-bar-main {
+  flex: 1;
 }
 
 /* Mobile-portrait stacked month cards */
@@ -1907,6 +1934,11 @@ table.kv-table tr.total td {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+@media (max-width: 899px) and (orientation: portrait) {
+  #toast {
+    bottom: calc(var(--mobile-tabbar-h) + var(--mobile-action-bar-h) + 0.75rem);
+  }
+}
 
 /* headlines */
 /* books/headlines.js -- the "year at a glance" strip: four stat tiles, two
@@ -2151,6 +2183,13 @@ table.kv-table tr.total td {
 .headline-table-toggle:hover {
   background: var(--tint);
 }
+@media (pointer: coarse) {
+  .headline-table-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
 .headline-pie-table {
   width: 100%;
   border-collapse: collapse;
@@ -2215,6 +2254,11 @@ table.kv-table tr.total td {
   min-height: 36px;
   display: flex;
   align-items: center;
+}
+@media (pointer: coarse) {
+  .headline-through-year summary {
+    min-height: 44px;
+  }
 }
 .headline-through-year-body {
   margin-top: 0.5rem;

@@ -221,6 +221,7 @@ export function buildCellEdits(taxData, startYear) {
   numericEdits.N14 = it.higher_band_end;
 
   numericEdits.L17 = ni.class2_rate;
+  numericEdits.N17 = ni.class2_small_profits_threshold; // SE Short box 36 caption reads this
   numericEdits.L20 = ni.class4_lower_rate;
   numericEdits.N20 = ni.class4_lower_limit;
   numericEdits.L23 = ni.class4_upper_rate;
@@ -294,6 +295,7 @@ export function buildTaxiCellEdits(taxData, startYear) {
 
   // NI — L16 not L17 for Class 2
   numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
+  numericEdits.N16 = ni.class2_small_profits_threshold; // SE Short box 36 caption reads this
   numericEdits.L20 = ni.class4_lower_rate;
   numericEdits.N20 = ni.class4_lower_limit;
   numericEdits.L23 = ni.class4_upper_rate;

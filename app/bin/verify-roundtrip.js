@@ -28,49 +28,18 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { parse as parseTOML } from "smol-toml";
+import { MONEY_DECIMALS, roundHalfUp, isDecimal, canonicalForUnit } from "../lib/canonical-report-value.js";
+import { shiftMonths, bookPeriodShiftMonths } from "../lib/period-shift.js";
+
+export { roundHalfUp, canonicalForUnit };
 
 // ── Canonicalisation by unit ───────────────────────────────────────────────
-
-// Excel stores binary floating point and the xls roundtrip re-serialises it,
-// so both sides carry representation noise below a penny. Rounding removes
-// the noise and keeps every real penny. This is canonicalisation, not
-// tolerance: it applies to every money value, the filed boxes included.
-const MONEY_DECIMALS = 2;
-// A working precision a money value passes through before the penny round,
-// finer than any real penny difference but coarse enough to absorb the
-// representation noise a binary float or an xls roundtrip leaves below it.
-const WORKING_DECIMALS = 6;
-// A rate is stored as a fraction, and six places is finer than any rate the
-// tax data declares.
-const RATE_DECIMALS = 6;
-
-/**
- * Round a decimal string half away from zero to a fixed number of places, on
- * the digits themselves rather than through a binary float, so 0.005 at two
- * places is 0.01 and never 0.00.
- * @param {string} text - a decimal string, optionally signed
- * @param {number} decimals
- * @returns {string} the value with exactly `decimals` places
- */
-export function roundHalfUp(text, decimals) {
-  const match = /^([-+]?)(\d*)(?:\.(\d*))?$/.exec(String(text).trim());
-  if (!match) return String(text).trim();
-  const sign = match[1] === "-" ? "-" : "";
-  const whole = match[2] || "0";
-  const fraction = match[3] || "";
-
-  const kept = fraction.slice(0, decimals).padEnd(decimals, "0");
-  const nextDigit = fraction.charCodeAt(decimals) - 48;
-  let digits = BigInt(whole + kept);
-  if (nextDigit >= 5) digits += 1n;
-
-  const padded = digits.toString().padStart(decimals + 1, "0");
-  const wholePart = padded.slice(0, padded.length - decimals);
-  const fractionPart = decimals > 0 ? `.${padded.slice(padded.length - decimals)}` : "";
-  const rounded = `${wholePart}${fractionPart}`;
-  // A rounded nil is nil, never "-0.00".
-  return digits === 0n ? rounded : `${sign}${rounded}`;
-}
+//
+// The rounding rules themselves (a money value pre-rounded at a working
+// precision to absorb float noise, then to the penny; a rate to 6 dp) live
+// in canonical-report-value.js, shared with each product's fmt() and with
+// the books bundle so the page can format a figure at the same precision
+// this script reconciles it at.
 
 // A money string already rounded to the penny, as a whole number of pence.
 // Comparing a window in pence keeps the arithmetic exact: 100.01 minus
@@ -80,32 +49,6 @@ function pennies(text) {
   const [whole, fraction = ""] = String(text).replace("-", "").split(".");
   const magnitude = BigInt(whole + fraction.padEnd(MONEY_DECIMALS, "0").slice(0, MONEY_DECIMALS));
   return String(text).startsWith("-") ? -magnitude : magnitude;
-}
-
-function isDecimal(text) {
-  const trimmed = String(text ?? "").trim();
-  return /^[-+]?\d*(\.\d*)?$/.test(trimmed) && /\d/.test(trimmed);
-}
-
-/**
- * A report value in the form its unit is compared in. An unknown or absent
- * unit canonicalises to the trimmed string, so a value with no declared unit
- * is compared exactly and declaring a unit can only ever loosen a comparison,
- * never tighten one.
- * @param {string} value
- * @param {string} [unit] - money, rate, count, date, text, identifier or verdict
- * @returns {string}
- */
-export function canonicalForUnit(value, unit) {
-  const text = String(value ?? "").trim();
-  // A money value is rounded to a working precision first (finer than the
-  // penny but coarse enough to absorb binary-float noise below it), then to
-  // the penny. Rounding straight to the penny lets the noise itself decide
-  // which way a value on the boundary falls, and the two engines' noise
-  // differs, so the same underlying penny can round two different ways.
-  if (unit === "money" && isDecimal(text)) return roundHalfUp(roundHalfUp(text, WORKING_DECIMALS), MONEY_DECIMALS);
-  if (unit === "rate" && isDecimal(text)) return roundHalfUp(text, RATE_DECIMALS);
-  return text;
 }
 
 // ── The tolerance policy ───────────────────────────────────────────────────
@@ -286,33 +229,14 @@ export function scoreReportDocumentsByKind(excelDocument, jsDocument) {
 // ── The period-frame shift ─────────────────────────────────────────────────
 
 // generate.js moves every posting date onto the package's own accounting
-// period (app/products/ltd.js, cellWrites/shiftMonths): forward by the
-// whole-month gap between the scenario's declared period start and the
-// package's, clamping a day the shifted month lacks to that month's own last
-// day. Reversing that on the export is lossy at a clamped date -- the exact
-// origin day cannot be recovered -- so this comparator puts the fixture
-// through the identical forward shift instead. Clamping then falls the same
-// way on both sides and the comparison after it is exact.
-function shiftMonths(date, monthOffset) {
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + monthOffset;
-  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(date.getUTCDate(), lastDayOfShiftedMonth)));
-}
-
-/**
- * The whole-month offset generate.js shifts every posting date by, from a
- * scenario's own declared period start month to a package's year-end month.
- * Mirrors the monthOffset arithmetic in app/products/ltd.js's cellWrites.
- * @param {number} periodStartMonth - 1-indexed month documentInfo.periodCoveredStart falls in
- * @param {number} yearEndMonth - 1-indexed month the package's own year end falls in
- * @returns {number} 0-11
- */
-export function periodFrameOffset(periodStartMonth, yearEndMonth) {
-  const targetStartMonth = yearEndMonth % 12;
-  const sourceStartMonth = periodStartMonth - 1;
-  return (targetStartMonth - sourceStartMonth + 12) % 12;
-}
+// period (app/lib/period-shift.js, periodShiftMonths/shiftMonths): forward by
+// the whole-month gap, years included, between the scenario's declared period
+// start and the package's, clamping a day the shifted month lacks to that
+// month's own last day. Reversing that on the export is lossy at a clamped
+// date -- the exact origin day cannot be recovered -- so this comparator puts
+// the fixture through the identical forward shift instead, using the gap
+// bookPeriodShiftMonths reads straight off the two book.tomls. Clamping then
+// falls the same way on both sides and the comparison after it is exact.
 
 /**
  * A YYYY-MM-DD posting date moved forward by a period-frame offset, in the
@@ -463,9 +387,28 @@ function validateInventoryEntry(entry, index) {
   }
 }
 
+// A "lines" entry names a whole block of fixture lines the package holds
+// somewhere the export never opens, so they are counted apart from the lines
+// scored rather than read as losses. The block is a line's own scope key from
+// lineScopeBlock().
+function validateLineBlockEntry(entry, index) {
+  const where = `roundtrip-unrepresentable.json lines[${index}]${entry?.block ? ` ("${entry.block}")` : ""}`;
+  if (typeof entry?.block !== "string" || entry.block.length === 0) throw new Error(`${where} has no block name`);
+  if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
+    throw new Error(`${where} has a malformed "products" list`);
+  }
+  if (typeof entry.reason !== "string" || entry.reason.length === 0) throw new Error(`${where} has no reason`);
+}
+
 // A scope with no declarations, for a call site that has no inventory file
 // or is scoring a product the inventory names nothing for.
-const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map(), bookPaths: new Map() };
+const EMPTY_SCOPE = {
+  product: undefined,
+  productWide: new Set(),
+  byBlock: new Map(),
+  bookPaths: new Map(),
+  lineBlocks: new Set(),
+};
 
 // A book path pattern stands for every index of an array-of-tables entry, so
 // one declaration covers a register however many rows it has. flattenBook
@@ -547,6 +490,10 @@ export function unrepresentableScope(product, inventory) {
   const productWide = new Set();
   const byBlock = new Map();
   const bookPaths = bookFieldScope(product, inventory);
+  const lineBlocks = new Set();
+  const lineEntries = inventory?.lines ?? [];
+  lineEntries.forEach((entry, index) => validateLineBlockEntry(entry, index));
+  for (const entry of lineEntries) if (entry.products.includes(product)) lineBlocks.add(entry.block);
   const fields = inventory?.fields ?? [];
   fields.forEach((entry, index) => validateInventoryEntry(entry, index));
   for (const entry of fields) {
@@ -560,7 +507,7 @@ export function unrepresentableScope(product, inventory) {
       byBlock.get(scope.block).add(entry.field);
     }
   }
-  return { product, productWide, byBlock, bookPaths };
+  return { product, productWide, byBlock, bookPaths, lineBlocks };
 }
 
 // A line's scope key for the unrepresentable-field inventory: ordinarily its
@@ -574,7 +521,15 @@ export function unrepresentableScope(product, inventory) {
 // rest of the block.
 const BANK_OPENING_BALANCE_BLOCK = "bank-opening-balance";
 
-function lineScopeBlock(line) {
+// A line carrying diya-gl:vatPeriodEnd is returned on a VAT period either
+// side of the accounting year. It shares its sourceJournalID with the sales
+// or purchases rows around it but reaches none of their month tabs -- the VAT
+// workbook keeps a pair of entry sheets for each such period instead -- so it
+// gets a scope of its own too.
+const VAT_STRADDLING_BLOCK = "vat-straddling";
+
+export function lineScopeBlock(line) {
+  if (line["diya-gl:vatPeriodEnd"] !== undefined) return VAT_STRADDLING_BLOCK;
   if (line.sourceJournalID === "bank" && line.detailComment === "Opening balance") return BANK_OPENING_BALANCE_BLOCK;
   return line.sourceJournalID;
 }
@@ -639,14 +594,18 @@ export function flattenBook(value, prefix = "") {
  *   (lineScopeBlock()) in this run, and a book path the export turns out to
  *   carry, are both stale or mistyped rather than silence, so either throws
  *   rather than quietly declaring nothing.
- * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
- *   to move the fixture's own postingDate forward by before comparing, for a
- *   package whose year end put the export's dates through the same shift.
- *   0 (the default) compares postingDate as the fixture wrote it.
  * @param {number} [dateShiftDays] - a day-based frame offset for a writer
  *   that translates dates by exact days (Taxi) rather than by month
- *   positions (Ltd). Applied instead of a month shift; the two never
- *   combine.
+ *   positions. Given, this is the shift applied; the month-based shift below
+ *   is only ever derived for a product that leaves this at 0.
+ *
+ * Every other product's month-based shift is never a flag: it is the gap,
+ * years included, between the period the fixture's own book.toml declares
+ * and the period the export's book.toml declares, read by
+ * bookPeriodShiftMonths (app/lib/period-shift.js) -- the same primitive
+ * app/products/*.js's cellWrites moves each posting date by, so a package
+ * generated for any year end scores against the fixture already shifted onto
+ * that same frame.
  *
  * linesLost, coarseMatches and accountMatches score against the fixture
  * lines after collapseDaySummedLines(fixtureLines, scope.product) folds
@@ -654,18 +613,42 @@ export function flattenBook(value, prefix = "") {
  * lists for this product -- a day the writer sums into one cell is one line
  * to be matched, not several. wholeLineMatches and the field-existence
  * checks stay on the raw fixture lines.
+ *
+ * Every axis scores against the fixture lines left after the blocks the
+ * inventory's "lines" section declares are set aside and counted as
+ * linesUnrepresentable.
  */
-export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0, dateShiftDays = 0) {
+export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftDays = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
-  const shiftDate = dateShiftMonths
-    ? (d) => shiftPostingDate(d, dateShiftMonths)
-    : dateShiftDays
-      ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+  const fixtureBook = parseTOML(readFileSync(resolve(fixtureDir, "book.toml"), "utf8"));
+  const exportedBook = parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8"));
+  const monthShift = dateShiftDays ? 0 : bookPeriodShiftMonths(fixtureBook, rawFixtureLines, exportedBook, exportedLines);
+  const shiftDate = dateShiftDays
+    ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+    : monthShift
+      ? (d) => shiftPostingDate(d, monthShift)
       : null;
-  const fixtureLines = shiftDate
+  const shiftedFixtureLines = shiftDate
     ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
     : rawFixtureLines;
+
+  // The lines the inventory declares held outside the journals the export
+  // reads. They are counted and set aside before anything is scored, so a
+  // line the package keeps on a sheet the export never opens is neither a
+  // loss nor a match, and the fields only it carries are neither dropped nor
+  // compared.
+  const fixtureLines = shiftedFixtureLines.filter((line) => !scope.lineBlocks.has(lineScopeBlock(line)));
+  const linesUnrepresentable = shiftedFixtureLines.length - fixtureLines.length;
+  const declaredLineBlocks = new Set(shiftedFixtureLines.map((line) => lineScopeBlock(line)));
+  for (const block of scope.lineBlocks) {
+    if (!declaredLineBlocks.has(block)) {
+      throw new Error(
+        `roundtrip-unrepresentable.json declares the "${block}" line block unrepresentable for ${scope.product ?? "this product"}, ` +
+          `but no line in this run scopes to it -- the declaration matches nothing`,
+      );
+    }
+  }
 
   const observedBlocks = new Set(
     [...fixtureLines, ...exportedLines].map((line) => lineScopeBlock(line)).filter((block) => block !== undefined),
@@ -686,8 +669,8 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   const fieldsDropped = missingFields.filter((field) => !unrepresentable.has(field));
   const fieldsUnrepresentable = missingFields.filter((field) => unrepresentable.has(field));
 
-  const fixtureFlat = flattenBook(parseTOML(readFileSync(resolve(fixtureDir, "book.toml"), "utf8")));
-  const exportedFlat = flattenBook(parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8")));
+  const fixtureFlat = flattenBook(fixtureBook);
+  const exportedFlat = flattenBook(exportedBook);
 
   const bookMissing = [];
   const bookDeclared = [];
@@ -729,6 +712,7 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   return {
     fixtureLines: fixtureLines.length,
     exportedLines: exportedLines.length,
+    linesUnrepresentable,
     // The line count coarseUnmatched and accountUnmatched are read against
     // in main(): the day-summed count, not the raw fixture count, since a
     // merged day is one line to be matched, not two.
@@ -794,6 +778,9 @@ function formatScorecard(packageName, excelDir, jsDir, score, byKind, data) {
       `book.toml fields: equal ${data.book.equal}, differing ${data.book.differing}, missing ${data.book.missing}, ` +
         `declared absent ${data.book.declared}, extra ${data.book.extra}`,
     );
+    if (data.linesUnrepresentable > 0) {
+      lines.push(`Fixture lines the package holds outside the journals the export reads: ${data.linesUnrepresentable}`);
+    }
     if (data.fieldsDropped.length > 0) lines.push(`Fields the export drops: ${data.fieldsDropped.join(", ")}`);
     if (data.fieldsUnrepresentable.length > 0) lines.push(`Fields the encoding has no home for: ${data.fieldsUnrepresentable.join(", ")}`);
   }
@@ -814,17 +801,16 @@ function parseArgs(argv) {
   const budgetPath = getArg("--budget");
   const outPath = getArg("--out");
   const unrepresentablePath = getArg("--unrepresentable");
-  const dateShiftMonths = Number(getArg("--date-shift-months") ?? 0);
   const dateShiftDays = Number(getArg("--date-shift-days") ?? 0);
 
   if (!packageName || !excelDir || !jsDir) {
     console.error(
-      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>] [--date-shift-days <n>]",
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-days <n>]",
     );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftDays };
 }
 
 /**
@@ -850,9 +836,7 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays } = parseArgs(
-    process.argv,
-  );
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftDays } = parseArgs(process.argv);
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -864,9 +848,7 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData
-    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths, dateShiftDays)
-    : null;
+  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftDays) : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 
@@ -893,9 +875,9 @@ async function main() {
             // A fixture line the export does not bring back as at least the
             // same transaction (coarseUnmatched), or brings back as the same
             // transaction but posted to a different account (accountUnmatched).
-            // With --date-shift-months set, these score in the shifted frame,
-            // so a non-March year end is judged on the transactions
-            // themselves rather than on counts alone. Read against
+            // The derived month shift (bookPeriodShiftMonths) always applies,
+            // so a non-March or future-year package is judged on the
+            // transactions themselves rather than on counts alone. Read against
             // groupedFixtureLines, not the raw fixture count: a day-summed
             // journal (collapseDaySummedLines) already folded same-day,
             // same-account lines into the one the writer actually holds, so

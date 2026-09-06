@@ -24,7 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -61,8 +61,8 @@ const VAT_RATE = 0.2;
 // order row 5 of each month tab tests them. Column AK of a Purchases month
 // tab is the CIS certificates column, which the writer fills from a
 // sub-contractor purchase rather than from a code letter.
-const SALES_ANALYSIS_COLUMNS = { a: "O", b: "P", c: "Q", d: "R", g: "S", o: "T", fs: "U" };
-const PURCHASE_ANALYSIS_COLUMNS = {
+export const SALES_ANALYSIS_COLUMNS = { a: "O", b: "P", c: "Q", d: "R", g: "S", o: "T", fs: "U" };
+export const PURCHASE_ANALYSIS_COLUMNS = {
   s: "O",
   c: "P",
   o: "Q",
@@ -405,7 +405,7 @@ function bankMonthTotals(scenario, tabs, periodStart) {
       const fileName = BANK_ACCOUNT_FILES[transaction.account || "1200"];
       if (!fileName) continue;
       const file = files[fileName];
-      if (transaction.code === "BC" && parseDate(transaction.date).getTime() === periodStart.getTime()) {
+      if (isLtdOpeningBankLine(transaction.code, parseDate(transaction.date), periodStart)) {
         file.opening = transaction.amount;
         continue;
       }

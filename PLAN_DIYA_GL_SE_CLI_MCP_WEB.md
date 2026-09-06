@@ -407,6 +407,8 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T11 | SE equivalence, formats and round trips: A1–A9, E3–E5 | T7, T8, S4, T3, T14 | Opus | `web/browser-tests/books-se-equivalence.browser.test.js`, `books-se-formats.browser.test.js` (new), `web/browser-tests/r-sources.js` (SE scenarios, `s3Se`), `playwright.config.js` |
 | T12 | SE edit and warning proofs in the browser: E1, E2 over the rules in T5 and the helpers in T6 | T5, T6, T7, T11 | Sonnet | `web/browser-tests/books-se-edits.browser.test.js` (new), `playwright.config.js` |
 | T13 | UX pass at four viewports with the frontend-design skill's questions; axe gate; keyboard run | T7, T8, T12 | Fable | `web/.../books/products/se.js`, `books/se.css`, `web/browser-tests/books-se-layouts.browser.test.js` (new), `playwright.config.js` |
+| T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
+| T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
 | T15 | The SA103 box-to-API mapping as data, keyed by tax year, each entry naming the SE sheet cell or its reason; HMRC's CSV copied beside it with its source; a Node test that every `SE Full` and `SE Short` `CELL_MAP` box has an entry | — | Sonnet | `app/data/hmrc/sa103-mtd-mapping.json` (new), `app/data/hmrc/sa103f_mapping_v3.csv` (new), `app/data/hmrc/SOURCE.md` (new), `app/test/sa103-mtd-mapping.test.js` (new) |
 | T16 | The `SE Short` sheet prints the 2026 SA103S box numbers and gates the nine expense cells and the `A33` note on `Admin!F26` in place of the 30,000 and 67,000 literals; the calculator's threshold follows; `CELL_MAP` gains `D124` and `O124` and its SE Short labels renumber; the CONTEXT doc's SA103S table follows; regenerated and reconciled | T4 | Opus | `app/templates/se/Financialaccounts.xlsx`, `app/lib/calculators/se.js` (the threshold, `A33`, `D124`, `O124`), `app/products/se.js` (SE Short labels, two `CELL_MAP` rows, `profitBridge` labels), `CONTEXT_SELF_EMPLOYED.md`, `app/test/se-full-return-checks.test.js`, `app/test/calculator-se.test.js`, `packages/GB Accounts Self Employed */` (regenerated) |
@@ -629,7 +631,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   never got the interface disclosure T7's manifest spec names; `Bank.xlsx!Mar!A1`,
   `Cash.xlsx!Mar!A1` and every `VATQtr!G5` are rendered without a key. Board row SE-T21.
 
-- T12 `d09bf253`, `9d11a6dd` on `claude/wt-se-t12`, not yet merged (2026-09-05): `books-se-edits.browser.test.js`
+- T12 `d09bf253`, `9d11a6dd`, merged into `claude/diya-gl-wave-2` at `965827c6` (2026-09-05): `books-se-edits.browser.test.js`
   (17: E1 bank amount, payroll gross through the page's `setLines` seam, undo byte for byte; E2 the
   ten T5 rules on the BrickWork non-VAT book, one `fixme`; the four settlement helpers),
   `applyNamedEdit` taking product and tax data, one `playwright.config.js` line. Full browser 213
@@ -638,7 +640,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   refuses the edit); `edits.js:128` `changeAmount` moves no payroll gross because
   `diya-gl-loader.js:466` reads `diya-gl:grossPay` first; `checkCompliance` shows four spurious
   mismatches on a book with no `[expected]` table that nets to a loss (board rows SE-T26, SE-T27).
-- SE-T17 six commits to `d39a96f2` on `claude/wt-se-t17`, not yet merged: the loader derives every
+- SE-T17 six commits to `d39a96f2`, merged into `claude/diya-gl-wave-2` at `f606c926` (2026-09-06): the loader derives every
   product's depreciation table from the book's tax year (new `app/lib/tax-year.js`), throwing when
   no file covers the period; `extract-scenarios.js` keeps `total_motor_net` pence (the advanced
   fixture 6434 to 6434.25); `fmtMoney` runs through `canonicalForUnit` (new
@@ -646,7 +648,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   green. Its corrected A4 shows one red: `products/{se,bst,taxi,ltd}.js` `fmt()` formats section
   values on the raw double (`se.js:1650`, `bst.js:382`, `taxi.js:539`, `ltd.js:2125`), board row
   SE-T23, the precursor of merging this.
-- SE-T19 `87a0e211`, `07c558fb` on `claude/wt-se-t19`, not yet merged: `data.js` sniffs every upload
+- SE-T19 `87a0e211`, `07c558fb`, merged into `claude/diya-gl-wave-2` at `8a80d84c` (2026-09-06): `data.js` sniffs every upload
   through the engine's `sniffProduct` over one workbook set; a lone package part raises
   `PackagePartError` by name; the three products' `upload` hooks take the set; `extractBook` takes
   a `readRateData` reader so the browser rebuilds `book.tax` (`taxTablesForPackage` async);

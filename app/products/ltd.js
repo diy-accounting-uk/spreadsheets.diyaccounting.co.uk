@@ -10,6 +10,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, registerOfficers } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_DUE_DAY,
@@ -33,7 +34,7 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS } from "../lib/ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -43,6 +44,7 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -69,6 +71,17 @@ function getMonthTabNames(yearEndMonth) {
     tabs.push(SHORT_MONTHS[(yearEndMonth + i) % 12]);
   }
   return tabs;
+}
+
+// The calendar year the payroll year opens in, from the accounting period's
+// own year end alone -- the same fallback app/lib/calculators/ltd.js's
+// payrollYearOf() uses when taxData carries no financial_year: the year
+// before the year end's calendar year, unless the year end falls in January
+// to March, when the payroll year already opened the April before that year.
+function payrollYearFromAccountingYearEnd(yearEndDate) {
+  const targetStartYear = yearEndDate.getUTCFullYear() - 1;
+  const yearEndMonth = yearEndDate.getUTCMonth() + 1;
+  return yearEndMonth <= 3 ? targetStartYear : targetStartYear + 1;
 }
 
 // TrialBalance's own closing-balance echo of each bank workbook (verified
@@ -147,8 +160,8 @@ const payslipsMonthEntryCells = (monthIndex) => [
 // assets at the date of charging, D the holder, E the terms and F the date
 // of the board meeting that confirmed it. The sheet carries no formulas at
 // all, so every cell is an entry.
-const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
-const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
+export const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
+export const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
 
 // ── Register of members and the board minute (Companysecretary.xlsx) ───────
 // The register runs one member a row from row 3: A the full name, C the date
@@ -161,10 +174,10 @@ const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder:
 // the dividends creditor (EH31, negated) and into the profit distribution
 // (EH48) -- so one declaration both charges the year's profit and raises the
 // creditor the bank's DV payments settle.
-const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
+export const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+export const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
 const SHARE_NOMINAL_VALUE = 1;
-const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
+export const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
 // ── Register of directors and directors' interests (Companysecretary.xlsx) ─
 // Directors&Secretary carries one officer a row from row 2: A the full name,
@@ -180,10 +193,10 @@ const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 // single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
 // officer's own shareholding was registered -- the same "acquired" date
 // their row carries on RegisterofMembers, when they hold shares at all.
-const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
-const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
-const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
-const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
+export const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
+export const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
+export const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
+export const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
 
 // ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
 // The customer-facing invoice template has no external link into the rest of
@@ -203,14 +216,20 @@ const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" }
 // used to read a literal 0.2; it now reads 'Product Details'!$D$2, the same
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
-const SALESINVOICE_VAT_REG_CELL = "B11";
+export const SALESINVOICE_VAT_REG_CELL = "B11";
 // The same sheet's "Telephone" box, the entry cell beside its A8 label.
-const SALESINVOICE_TELEPHONE_CELL = "B8";
+export const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
-const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+export const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
-const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
-const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+export const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = {
+  activate: "A",
+  invoiceNumber: "B",
+  carriage: "E",
+  productCode1: "F",
+  quantity1: "G",
+};
 const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
 
@@ -222,14 +241,14 @@ const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantit
 // stock movement. Row 30 is the last month of the year.
 
 const STOCK_FINAL_CALCULATED_CELL = "D30";
-const STOCK_FINAL_COUNT_CELL = "AB30";
+export const STOCK_FINAL_COUNT_CELL = "AB30";
 const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
 
 // The share of a product's net sales value that is direct materials. The
 // sheet repeats H4 down its own product A column and reads the same cell for
 // every month, and the materials-bought column stays switched off while H4,
 // N4 and T4 are all zero.
-const STOCK_MATERIALS_PERCENT_CELL = "H4";
+export const STOCK_MATERIALS_PERCENT_CELL = "H4";
 
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
@@ -240,20 +259,20 @@ const STOCK_MATERIALS_PERCENT_CELL = "H4";
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
 
-const OPENING_BANK_COLUMNS = {
+export const OPENING_BANK_COLUMNS = {
   current_account: "G",
   savings_account: "H",
   credit_card: "I",
   cash: "J",
 };
 
-const OPENING_TAX_COLUMNS = {
+export const OPENING_TAX_COLUMNS = {
   paye_due: "G",
   vat_due: "H",
   cis_due: "I",
 };
 
-const OPENING_BALANCE_CELLS = {
+export const OPENING_BALANCE_CELLS = {
   stock: "E15",
   trade_debtors: "E16",
   trade_creditors: "E20",
@@ -287,7 +306,7 @@ const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"];
 // into the same class total. Scenario motor assets go to the vans rows,
 // which is what the fixture's van is, and which is the sub-block carrying
 // the van capital-allowance formulas.
-const SCHEDULE_ASSET_CLASSES = {
+export const SCHEDULE_ASSET_CLASSES = {
   land: { existingRows: [8, 9, 10], existingTotalRow: 11, newTotalRow: 64, noteColumn: "B", rateCell: "H7" },
   plant: { existingRows: [14, 15, 16, 17, 18, 19, 20, 21], existingTotalRow: 22, newTotalRow: 75, noteColumn: "C", rateCell: "H13" },
   fixtures: { existingRows: [25, 26, 27, 28, 29], existingTotalRow: 30, newTotalRow: 83, noteColumn: "D", rateCell: "H24" },
@@ -306,7 +325,7 @@ const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allo
 // scenario purchase carries a code letter and an amount, not an asset class,
 // so any single block is as faithful as another; the note's per-class rows
 // and its total both stay anchored to what was posted to Purchases.xlsx.
-const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
+export const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
 // The Sales, Purchases and Fixedassets analysis columns all hold figures net
@@ -345,11 +364,11 @@ const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
 
 // Straddling VAT period name to the Vatinterface row it feeds, and to the
 // pair of entry sheets it is entered on (S<period> and P<period>).
-const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
+export const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // Column each straddling entry sheet takes its data in. The sheets compute
 // VAT and net from the gross figure in the amount column.
-const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
+export const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
 
 // spreadsheet-runner writes a cell by rewriting its XML in place, and when
 // the target is an empty self-closing cell that rewrite also swallows every
@@ -427,17 +446,6 @@ function writeOpeningBalance(sheet, openingBalance) {
   if (taxPosted) sheet.E26 = taxTotal;
 }
 
-// Move a date forward by whole months. A day the shifted month does not have
-// clamps to that month's end, so each of the period's twelve months lands on
-// its own tab: a 31st shifted into a 30-day month stays in that month rather
-// than rolling into the next one and doubling up with the month after it.
-function shiftMonths(d, monthOffset) {
-  const year = d.getUTCFullYear();
-  const month = d.getUTCMonth() + monthOffset;
-  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month, Math.min(d.getUTCDate(), lastDayOfShiftedMonth)));
-}
-
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -446,17 +454,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const yem = yearEndMonth || 3;
 
   // Dates belong to the accounting period their own scenario covers, and get
-  // shifted by the whole-month gap between that period and the target's, so
-  // the twelve months land on the twelve month tabs in order. A scenario
-  // already in the target's period has a zero gap and is written as it stands,
-  // which is what makes exporting a package and generating from the export
-  // reproduce the same cells. A scenario that does not name its period start
-  // is in the April-March frame its apr..mar month keys describe.
+  // shifted onto the package's own period, so the twelve months land on the
+  // twelve month tabs in order and in the years the package's accounts are
+  // drawn up for. A scenario that does not name its period start is in the
+  // April-March frame its apr..mar month keys describe.
   const rate = vatRateFor(scenario);
 
-  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
-  const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
+  const monthOffset = periodShiftMonths(scenario, targetStartYear, yem);
 
   const shiftDate = (d) => shiftMonths(d, monthOffset);
 
@@ -939,6 +944,15 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
   // Bank entries — one workbook per bank account, receipts and payments on
   // opposite sides of each month tab.
+  //
+  // The period's first day, in the same shifted frame as every "d" below:
+  // the earliest of the scenario's own bank dates, shifted the same way "d"
+  // is. An opening balance is the one bank line dated it, and the workbook
+  // takes that as the account's A1 figure rather than as a statement line;
+  // read a day out, the opening reads as a transfer and every transfer as an
+  // opening.
+  const bankDates = Object.values(scenario.bank || {}).flatMap((transactions) => transactions.map((tx) => shiftDate(parseDate(tx.date))));
+  const periodStart = bankDates.length > 0 ? bankDates.reduce((earliest, date) => (date < earliest ? date : earliest)) : null;
   const bankFileWrites = {};
   if (scenario.bank) {
     const receiptRows = {};
@@ -956,8 +970,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const sheet = bankFileWrites[fileName][tabName];
 
         // BC on a bank entry marks the account's opening balance, which the
-        // workbook takes in A1 rather than as a statement line.
-        if (tx.code === "BC") {
+        // workbook takes in A1 rather than as a statement line -- but only
+        // on the period's first day; a "BC" line any other day is an
+        // ordinary transfer to or from the Cash account, analysed like any
+        // other code below.
+        if (isLtdOpeningBankLine(tx.code, d, periodStart)) {
           sheet.A1 = tx.amount;
           continue;
         }
@@ -1860,7 +1877,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
   const vat = vatSection(results);
@@ -2127,11 +2144,14 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit = "money") {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  // A nil that arrived by negation carries a sign bit and prints as "-0",
-  // which reads as a defect in a statement.
-  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") {
+    const canonical = Number(canonicalForUnit(v, unit));
+    // A nil that arrived by negation carries a sign bit and prints as "-0",
+    // which reads as a defect in a statement.
+    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
   return String(v);
 }
 
@@ -3015,8 +3035,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // scenario's dates shift by the gap between its own accounting period
     // and the package's, so the year end on the Admin sheet is what says how
     // far this book moved the meeting.
-    const yearEndMonth = dateFromSerial(num(results.Admin.F21)).getUTCMonth() + 1;
-    const monthOffset = ((yearEndMonth % 12) - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const packageYearEnd = dateFromSerial(num(results.Admin.F21));
+    const monthOffset = periodShiftMonths(expected, packageYearEnd.getUTCFullYear() - 1, packageYearEnd.getUTCMonth() + 1);
     const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
     check(
       "Board minute: meeting date = the scenario's board meeting",
@@ -3539,10 +3559,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // so they are the payroll year's first day plus a fixed count of days --
   // measured here against the year the package's own tax data opens in, not
   // against the calendar the sheet built them from.
+  //
+  // A --data run's own extracted tax data carries no financial_year (it never
+  // reads a tax-year TOML), so this falls back to the accounting period's own
+  // year end the same way payrollYearOf() does in app/lib/calculators/ltd.js:
+  // the year before the year end's calendar year, unless the year end falls
+  // in January to March, when the payroll year already opened the April
+  // before that year.
   const paymentSchedule = results["Payslips.xlsx!Payment"];
   const payrollYearOpens = taxData?.financial_year?.start
     ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear())
-    : null;
+    : packageYearEnd
+      ? payrollYearStart(payrollYearFromAccountingYearEnd(new Date(packageYearEnd)))
+      : null;
   if (paymentSchedule && payrollYearOpens) {
     const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
@@ -3595,17 +3624,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   if (expected.payroll) {
-    // Same date-shift math cellWrites() uses to place each scenario month's
-    // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
-    // = 3) shifts by the offset from April to this package's first fiscal
-    // month, landing on the same tab fiscalTabs already names by index.
-    const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    // The same date-shift math cellWrites() uses to place each scenario
+    // month's payroll on a Payslips.xlsx tab: monthKey's calendar month
+    // (e.g. "apr" = 3) shifts by periodShiftMonths' offset, landing on the
+    // same tab fiscalTabs already names by index. periodShiftMonths counts
+    // years as well as months, so a year end more than twelve months out
+    // from the scenario's own period shifts a full year further than a
+    // month-only offset would -- the same gap cellWrites moves every
+    // posting date by. The year end comes off the book's own Admin sheet,
+    // the same as the board minute date shift above, rather than off
+    // packageYearEnd: that argument names the year end the check should
+    // measure the seed against, which is not always the year end the book
+    // in hand was actually built for.
+    const bookYearEnd = results.Admin?.F21 ? dateFromSerial(num(results.Admin.F21)) : null;
+    const monthOffset = bookYearEnd ? periodShiftMonths(expected, bookYearEnd.getUTCFullYear() - 1, bookYearEnd.getUTCMonth() + 1) : 0;
     const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {
       const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
       if (sourceMonth === -1) continue;
-      const tab = SHORT_MONTHS[(sourceMonth + monthOffset) % 12];
+      const tab = SHORT_MONTHS[(((sourceMonth + monthOffset) % 12) + 12) % 12];
       payrollByTab[tab].push(...entries);
     }
 

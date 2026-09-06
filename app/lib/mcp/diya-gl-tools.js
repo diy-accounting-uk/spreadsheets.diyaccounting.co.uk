@@ -44,8 +44,13 @@ import {
   changeLineDetail,
   changeLineQuantity,
 } from "../diya-gl-edits.js";
+import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 
+// Every edit fn takes (book, lines, params); a line edit returns a new
+// lines array and a book edit (Ltd's own dividend, members and charges
+// registers) returns a new book instead -- BOOK_EDIT_NAMES is how
+// editLines() below tells which one it is holding.
 const EDITS = {
   addSaleLine,
   addPurchaseLine,
@@ -57,7 +62,10 @@ const EDITS = {
   changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
+  ...LTD_LINE_EDITS,
+  ...LTD_BOOK_EDITS,
 };
+const BOOK_EDIT_NAMES = new Set(Object.keys(LTD_BOOK_EDITS));
 
 /**
  * A fresh, empty session: no book loaded.
@@ -168,11 +176,13 @@ async function report(session, params = {}) {
 }
 
 /**
- * edit_lines: a named edit from diya-gl-edits.js plus its params in, the
- * edited lines and the new R out, alongside the figures that moved between
- * the report just before the edit and the report just after it. The
- * session's lines become the edited lines, so a second edit_lines call
- * builds on this one.
+ * edit_lines: a named edit from diya-gl-edits.js or diya-gl-edits-ltd.js
+ * plus its params in, the new R out, alongside the figures that moved
+ * between the report just before the edit and the report just after it. A
+ * line edit returns the edited lines and becomes the session's new lines; a
+ * book edit (Ltd's setDividend, setMembers, setCharges) returns the edited
+ * book instead and becomes the session's new book. Either way a second
+ * edit_lines call builds on this one.
  */
 function editLines(session, { edit, params, book: explicitBook, lines: explicitLines } = {}) {
   if (!edit) throw new Error("edit_lines requires an edit name");
@@ -184,6 +194,20 @@ function editLines(session, { edit, params, book: explicitBook, lines: explicitL
   if (!book || !lines) requireLoaded(session);
 
   const before = reportFor(book, lines);
+
+  if (BOOK_EDIT_NAMES.has(edit)) {
+    const editedBook = fn(book, lines, params ?? {});
+    const after = reportFor(editedBook, lines);
+    if (!explicitBook) session.book = editedBook;
+    return {
+      book: editedBook,
+      lines,
+      linesJsonl: canonicalLinesJsonl(lines),
+      report: after,
+      movedFigures: diffFigures(before, after),
+    };
+  }
+
   const editedLines = fn(book, lines, params ?? {});
   const after = reportFor(book, editedLines);
 

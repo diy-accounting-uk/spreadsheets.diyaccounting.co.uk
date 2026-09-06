@@ -434,7 +434,7 @@ corrections (the Debtors & Creditors fiction and the settlement column) are in t
 messages on those branches and in the As-built notes at the end of this document. The
 Playwright suite stands at 63 tests across five books specs.
 
-BST-T17 `9a7c3e8a`, `2f0af482`, `240b7ad5` on `claude/wt-bst-t17`, not yet merged (2026-09-05):
+BST-T17 `9a7c3e8a`, `2f0af482`, `240b7ad5`, merged into `claude/diya-gl-wave-2` at `ac3d3eff` (2026-09-05):
 `form-layouts/bst.json` (34 boxes: 18 cells, 5 derived, 11 present and empty),
 `products/bst-forms.js` fetching it on first render, `SA103S_BOXES` gone, A9 in
 `books-equivalence`, the CONTEXT SA103S tables rewritten from the sheet, the `D106` wording. 26 BST

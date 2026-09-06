@@ -442,6 +442,28 @@ describe("Taxi calculator checks are breakable", () => {
     });
     expect(newlyBroken).toEqual(["P&L: the route follows the comparison"]);
   });
+
+  // The generator writes Admin!N16 straight from the tax data; comparing the
+  // sheet's own read against a DIFFERENT tax data's threshold — as if the
+  // generator had written the wrong figure — has to fail, not echo silently.
+  it("a mismatched Admin small profits threshold fails its own check and nothing else", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const results = calculateTaxiResults(book, lines, taxData, anchor);
+    const wrongTaxData = { ...taxData, national_insurance: { ...taxData.national_insurance, class2_small_profits_threshold: 1 } };
+
+    const before = checkCompliance(results, anchor, taxData, calculateExpectedTax);
+    const after = checkCompliance(results, anchor, wrongTaxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Admin: NI Class 2 Small Profits Threshold = tax data"]);
+  });
 });
 
 // ── Units ──────────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import {
   CATEGORY_NETTING_TITLE,
   COMPLIANCE_CHECKS_TITLE,
   PROFIT_BRIDGE_TITLE,
+  reportAmount,
 } from "../lib/report-generator.js";
 
 const mockProductMod = {
@@ -309,5 +310,33 @@ describe("vatCycleRows", () => {
 
   it("says nothing at all when no return form names a period the interface carries", () => {
     expect(vatCycleRows(periods, [{ name: "Q1", end: null }])).toEqual([]);
+  });
+});
+
+// A money line prints through the one rounding canonicalForUnit applies, half
+// away from zero on the decimal digits. Rounding a binary float instead sends
+// a half penny down, so the printed figure and the compared one part company
+// on exactly the values a reader would check by hand.
+describe("reportAmount", () => {
+  it("takes a half penny up, where rounding the binary float takes it down", () => {
+    expect((1.005).toFixed(2)).toBe("1.00");
+    expect(reportAmount(1.005)).toBe("1.01");
+  });
+
+  it("takes a half penny away from zero on the negative side too", () => {
+    expect(reportAmount(-1.005)).toBe("-1.01");
+  });
+
+  it("prints a nil without a sign", () => {
+    expect(reportAmount(-0)).toBe("0");
+    expect(reportAmount(-0.0000001)).toBe("0");
+  });
+
+  it("prints a residue to the places asked for rather than to the penny", () => {
+    expect(reportAmount(0.00125, 4)).toBe("0.0013");
+  });
+
+  it("has no figure to print for a value that is not a number", () => {
+    expect(reportAmount(undefined)).toBe("—");
   });
 });

@@ -75,10 +75,27 @@ const SE_SHORT_CAPTIONS = {
   C104: "if box 28 + box 30 minus box 29 is positive",
   N104: "minus (box 21 + box 26 + box 27) is positive)",
   A109: "If you have made a loss for tax purposes (box 32), read page SESN 7 of the notes and fill in boxes 33 to 35 as appropriate.",
+  N111: "If your total profits for 2025-26 are less than £6,845 and you",
+  N112: "choose to pay Class 2 NICs voluntarily, put 'X' in the box",
+  N116: "If you are exempt from paying Class 4 NICs, put 'X' in the",
+  N117: "box - read page SESN 10 of the notes",
 };
+
+// The nine expense-detail cells, gated on the VAT threshold rather than a
+// figure of its own.
+const SE_SHORT_GATED_CELLS = ["D46", "O46", "D51", "O51", "D55", "O55", "D60", "O60", "D64"];
+
+function formulaAt(xml, cellRef) {
+  const cell = xml.match(new RegExp(`<c\\s+r="${cellRef}"(?=[\\s/>])[^>]*>.*?</c>`, "s"));
+  if (!cell) throw new Error(`SE Short!${cellRef} not found`);
+  const formula = cell[0].match(/<f[^>]*>(.*?)<\/f>/s);
+  if (!formula) throw new Error(`SE Short!${cellRef} carries no formula`);
+  return formula[1].replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&");
+}
 
 describe("the shipped BST template's SE Short sheet", () => {
   let xml;
+  let adminXml;
   let sharedStrings;
 
   beforeAll(async () => {
@@ -86,6 +103,7 @@ describe("the shipped BST template's SE Short sheet", () => {
     const sheetMap = await buildSheetMap(zip);
     sharedStrings = await loadSharedStrings(zip);
     xml = await zip.file(sheetMap.get("SE Short")).async("string");
+    adminXml = await zip.file(sheetMap.get("Admin")).async("string");
   });
 
   it("prints the 2026 SA103S box numbers", () => {
@@ -101,9 +119,27 @@ describe("the shipped BST template's SE Short sheet", () => {
     expect(printed).toEqual(expected);
   });
 
+  it("gates the expense-detail boxes on Admin!F26", () => {
+    for (const cell of SE_SHORT_GATED_CELLS) {
+      expect(formulaAt(xml, cell), `SE Short!${cell}`).toContain("Admin!F26");
+    }
+    expect(xml).not.toContain("30000");
+  });
+
   it("prints captions that name the boxes beside them", () => {
     for (const [cell, caption] of Object.entries(SE_SHORT_CAPTIONS)) {
       expect(readCellValue(xml, cell, sharedStrings), `SE Short!${cell}`).toBe(caption);
     }
+  });
+
+  it("box 36's caption reads the Class 2 small profits threshold live from Admin", () => {
+    const formula = formulaAt(xml, "N111");
+    expect(formula).toContain("Admin!G2");
+    expect(formula).toContain("Admin!N17");
+    expect(readCellValue(adminXml, "N17", sharedStrings), "Admin!N17").toBe(6845);
+  });
+
+  it("drops the deleted Class 4 deferment certificate box", () => {
+    expect(xml).not.toContain("deferment certificate");
   });
 });

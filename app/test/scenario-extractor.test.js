@@ -266,7 +266,7 @@ describe("buildGrouped", () => {
     expect(bank["1200"].jun[0].direction).toBe("out");
   });
 
-  it("rejects a bank line with no debit/credit code", () => {
+  it("leaves a bank line with no debit/credit code out of the grouped bank book, without throwing", () => {
     const lines = [
       {
         "sourceJournalID": "bank",
@@ -277,7 +277,8 @@ describe("buildGrouped", () => {
         "amount": 200,
       },
     ];
-    expect(() => buildGrouped(lines, BST_PURCHASE_CODE_MAP)).toThrow(/debitCreditCode/);
+    const { bank } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    expect(bank["1200"]).toBeUndefined();
   });
 });
 

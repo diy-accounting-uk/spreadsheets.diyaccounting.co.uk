@@ -415,6 +415,7 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 | T16 | Example books and deep links: the three Taxi fixtures served under `books/assets/examples/`, `books/taxi.html`, the download page's panel, the behaviour probe | SE:S8, T7 | Sonnet | `scripts/example-books.json` (three Taxi rows; `books/examples.js` is generated from it by SE:S8), `scripts/build-books-bundle.mjs` (the Taxi template assets), `web/.../books/taxi.html` (new), `web/.../public/download.html`, `behaviour-tests/spreadsheets.behaviour.test.js` |
 | T17 | The equivalence suite, round trips, warning proofs, layouts and axe for Taxi; `r-sources.js` takes a product | T11, T14, T15, T16 | Sonnet | `web/browser-tests/books-taxi-{equivalence,formats,edits,layouts}.browser.test.js` (new), `web/browser-tests/r-sources.js`, `playwright.config.js` |
 | T18 | The form-box proof: every 2026 box the page prints carries the right key, the mileage and actual-cost routes place the vehicle figures as specified, and the margin carries the sheet's figure where the two differ | T15, T17 | Sonnet | `web/browser-tests/books-taxi-forms.browser.test.js` (new), `playwright.config.js` |
+| T26 | `calculateExpectedTax` rounds `total_tax_and_ni` to the pound while the sheet's calculator and `Income Tax!E17` do not; one rounding, decided against the sheet, the browser forms comparing the total directly | T18 | Sonnet | `app/products/taxi.js` or `app/lib/tax/*` (whichever holds the rounding), `web/browser-tests/books-taxi-forms.browser.test.js` |
 | T19 | Tax data: `class2_small_profits_threshold` (6,845) and the 3.50 weekly rate in `se-2025-2026.toml` and `se-2026-2027.toml`; `calculateExpectedTax` returns the Class 2 line; the computation view prints it (T15) | — | Sonnet | `app/data/se-2025-2026.toml`, `app/data/se-2026-2027.toml`, `app/lib/tax/income-tax.js`, `app/lib/diya-gl-loader.js` (one field), `app/test/tax/income-tax.test.js`, `app/test/tax/national-insurance.test.js` |
 | H1 | Merge each verified row's commit into the batch branch; regenerate on main after T6 | human | — | — |
 
@@ -567,7 +568,7 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   hardcodes a box scheme matching no form, the BST CONTEXT's SA103S tables point D71 and D99 at the
   wrong boxes, and the `D106` comments call it net business profit (board row BST-T17).
 
-- TX-T24 `05d3ae64`, `e173b3fa`, `8aa340f0` on `claude/wt-taxi-t24`, not yet merged (2026-09-05): both
+- TX-T24 `05d3ae64`, `e173b3fa`, `8aa340f0`, merged into `claude/diya-gl-wave-2` (2026-09-06): both
   templates' nine expense cells and `A41` gate on `Admin!F26`; box 36's caption reads the year from
   `Admin!G2` and the threshold from a new Admin cell (`N17` BST, `N16` Taxi) the generators write
   from `class2_small_profits_threshold`; box 37 takes the Class 4 exemption text; `calculators/bst.js`

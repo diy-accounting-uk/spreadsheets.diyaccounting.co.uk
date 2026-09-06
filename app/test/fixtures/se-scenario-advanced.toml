@@ -4523,6 +4523,16 @@ description = "Aggregate supplier payments"
 reference = "BNK-CR-MISC-003"
 
 [[bank.jun]]
+date = 2025-06-10
+account = "1200"
+source = "Cash top-up"
+code = "X"
+direction = "out"
+amount = 100
+description = "Transfer to cash float"
+reference = "BNK-BC-001"
+
+[[bank.jun]]
 date = 2025-06-19
 account = "1200"
 source = "HMRC"
@@ -6346,5 +6356,5 @@ amount = 480
 [expected]
 total_sales = 339200
 total_mileage = 1365
-total_motor_net = 6434
+total_motor_net = 6434.25
 total_legal_net = 6925

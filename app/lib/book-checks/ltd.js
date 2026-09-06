@@ -15,51 +15,16 @@
 
 import { changeLinePostingDate } from "../diya-gl-edits.js";
 import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../scenario-extractor.js";
+import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, bankLayout } from "../ltd-layout.js";
 
-// The bank workbook each bank account is kept in, and the transfer letter
-// each workbook stands for -- Currentaccount is BB, so a BB-coded line on
-// any other workbook is a transfer to or from the current account.
-const BANK_ACCOUNT_FILES = {
-  1200: "Currentaccount.xlsx",
-  1210: "Savingaccount.xlsx",
-  1220: "Cashaccount.xlsx",
-  1230: "Creditcardaccount.xlsx",
-};
-
-const BANK_TRANSFER_CODES = {
-  "Currentaccount.xlsx": "BB",
-  "Savingaccount.xlsx": "BS",
-  "Cashaccount.xlsx": "BC",
-  "Creditcardaccount.xlsx": "BD",
-};
-
+// The bank account each transfer letter names: Currentaccount is BB, so a
+// BB-coded line on any other workbook is a transfer to or from the current
+// account.
 const TRANSFER_SIBLING_ACCOUNTS = Object.fromEntries(
   Object.entries(BANK_ACCOUNT_FILES).map(function (entry) {
     return [BANK_TRANSFER_CODES[entry[1]], String(entry[0])];
   }),
 );
-
-// The code letters each workbook's month tabs carry an analysis column
-// for, receipts and payments apart. Cashaccount analyses four fewer
-// receipt codes than the three statement books, and no payment X. These
-// are the lists bankLayout() lays the columns out from in
-// app/lib/ltd-layout.js; cellWrites() refuses to write a code outside them,
-// which is the failure this check catches before the writer runs.
-function analysedCodes(fileName) {
-  const transfers = Object.values(BANK_TRANSFER_CODES).filter(function (code) {
-    return code !== BANK_TRANSFER_CODES[fileName];
-  });
-  if (fileName === "Cashaccount.xlsx") {
-    return {
-      receipts: transfers.concat(["DR", "K", "LDR", "LCR", "DL"]),
-      payments: transfers.concat(["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"]),
-    };
-  }
-  return {
-    receipts: transfers.concat(["DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"]),
-    payments: transfers.concat(["CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"]),
-  };
-}
 
 // The Fixed Assets Schedule's rows for assets already owned, one block per
 // class, keyed by the class name a book declares (app/products/ltd.js
@@ -173,7 +138,7 @@ function scheduleOffender(entryNumber, postingDate, detailComment, amount) {
 
 export const LTD_CHECK_SPECS = [
   {
-    id: "ltd-bank-line-has-side",
+    id: "book-ltd-bank-line-has-side",
     label: "Every bank entry is a receipt or a payment",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -187,7 +152,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-bank-code-analysed",
+    id: "book-ltd-bank-code-analysed",
     label: "Every bank entry is coded to a column its workbook analyses",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -196,8 +161,8 @@ export const LTD_CHECK_SPECS = [
         const fileName = bankFileOf(line);
         if (!fileName) return true;
         if (line.debitCreditCode !== "D" && line.debitCreditCode !== "C") return false;
-        const codes = analysedCodes(fileName);
-        const analysed = line.debitCreditCode === "D" ? codes.receipts : codes.payments;
+        const layout = bankLayout(fileName);
+        const analysed = line.debitCreditCode === "D" ? layout.receiptCodes : layout.paymentCodes;
         return !analysed.includes(line["diya-gl:bankCode"]);
       });
     },
@@ -208,7 +173,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-straddling-line-has-vat-period",
+    id: "book-ltd-straddling-line-has-vat-period",
     label: "Every sale and purchase outside the period names the VAT period it belongs to",
     offenders: function (ctx) {
       return ctx.lines.filter(function (line) {
@@ -251,7 +216,7 @@ export const LTD_CHECK_SPECS = [
     },
   },
   {
-    id: "ltd-payroll-line-names-employee",
+    id: "book-ltd-payroll-line-names-employee",
     label: "Every payroll entry names someone on the payroll",
     offenders: function (ctx) {
       const ids = employeeIDs(ctx.book);
@@ -269,7 +234,7 @@ export const LTD_CHECK_SPECS = [
     apply: null,
   },
   {
-    id: "ltd-fixed-asset-rows-fit-schedule",
+    id: "book-ltd-fixed-asset-rows-fit-schedule",
     label: "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
     offenders: function (ctx) {
       const assets = (ctx.book && ctx.book.fixedAssets) || [];
@@ -334,7 +299,7 @@ function transferCounterLegWarning(ctx) {
     .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
-    id: "ltd-transfer-has-counter-leg",
+    id: "book-ltd-transfer-has-counter-leg",
     tier: "warning",
     label: "Every transfer between the company's own accounts appears on both of them",
     result: warn ? "warn" : "pass",
@@ -355,7 +320,7 @@ function dividendsWarning(ctx, taxData, results) {
   const publishedPl = (results && results["PubP&L"]) || null;
   if (!openAccounts || !publishedPl) {
     return {
-      id: "ltd-dividend-within-distributable-profits",
+      id: "book-ltd-dividend-within-distributable-profits",
       tier: "warning",
       label:
         "Dividends declared are " +
@@ -371,7 +336,7 @@ function dividendsWarning(ctx, taxData, results) {
   const available = (openAccounts.E34 || 0) + (publishedPl.F51 || 0);
   const warn = declared > available;
   return {
-    id: "ltd-dividend-within-distributable-profits",
+    id: "book-ltd-dividend-within-distributable-profits",
     tier: "warning",
     label:
       "Dividends declared are " +
@@ -400,7 +365,7 @@ function cisAccountWarning(ctx) {
     .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
-    id: "ltd-cis-on-subcontractor-line",
+    id: "book-ltd-cis-on-subcontractor-line",
     tier: "warning",
     label: "Every CIS deduction sits on a sub-contractor purchase",
     result: warn ? "warn" : "pass",
@@ -431,7 +396,7 @@ export const LTD_SHARED_OFFENDERS = {
     });
   },
   // A line carrying a VAT period end is a straddling entry, dated outside
-  // the year on purpose. ltd-straddling-line-has-vat-period is the rule
+  // the year on purpose. book-ltd-straddling-line-has-vat-period is the rule
   // that judges it.
   "book-dates-in-period": function (ctx, offenders) {
     return offenders.filter(function (line) {

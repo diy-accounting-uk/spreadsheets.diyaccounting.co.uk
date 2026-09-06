@@ -1,0 +1,192 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2026 DIY Accounting Ltd */
+
+/* books/ltd.css -- the Limited Company page's sheet: the shared books
+   sheet, plus the rules the views only this product has need. */
+
+@import url("books.css");
+
+/* The Year view's journal switch (shell.js renders it for every multi-file
+   product) and the Bank view's account switch: one row of buttons, the
+   chosen one filled in. */
+.journal-switch,
+.account-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
+
+.journal-switch-btn,
+.account-switch-btn {
+  border: 1px solid var(--rule-faint);
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.75rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.journal-switch-btn:hover,
+.account-switch-btn:hover {
+  border-color: var(--rule);
+}
+
+.journal-switch-btn[aria-pressed="true"],
+.account-switch-btn[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* The P&L's twelve month columns and the fixed assets view's hire purchase
+   table are both wider than the view, so each scrolls inside its own box
+   rather than pushing the page sideways. */
+.ltd-months-scroll {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.ltd-months-scroll table {
+  min-width: 100%;
+}
+
+.ltd-months-table th:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* One settlement a row: what is missing, then the preview and the two
+   controls that apply or drop it. */
+.settlement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settlement {
+  border-top: 1px solid var(--rule-faint);
+  padding: 0.6rem 0;
+}
+
+.settlement:first-child {
+  border-top: none;
+}
+
+.settlement p {
+  margin: 0 0 0.4rem;
+}
+
+.settlement-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+/* ============================== the form views ============================== */
+/* A .form-row holds one amount box, because the drift walker fills the first
+   margin it finds in a row. So the financial-year rows, and the accounts'
+   two-year rows, render as a captioned group of single-box rows: each figure
+   keeps a margin of its own, and the group lays them side by side at the form
+   width and stacks them at mobile portrait. */
+
+.fy-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0 1rem;
+  border-left: 2px solid var(--rule-faint);
+  padding-left: 0.75rem;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.fy-caption {
+  grid-column: 1 / -1;
+  margin: 0 0 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--hint);
+}
+
+.fy-group .form-row-margin {
+  width: auto;
+  min-width: 2rem;
+}
+
+/* A box holding a year, a rate, a date or a name keeps the amount box's
+   classes -- so the drift mark still lands in the row's margin -- and drops
+   the pound sign the shared box prefixes every figure with. */
+.form-box-plain {
+  padding-left: 0.5rem;
+  text-align: left;
+}
+
+.form-box-plain::before {
+  content: none;
+}
+
+.form-row-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--hint);
+}
+
+.form-statement {
+  margin: 0 0 0.5rem;
+  font-size: 0.86rem;
+}
+
+.vat-coverage {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.86rem;
+}
+
+.vat-coverage li {
+  margin-bottom: 0.3rem;
+}
+
+/* ============================== payroll and company ============================== */
+
+.ltd-payroll-scroll {
+  overflow-x: auto;
+}
+
+.ltd-payroll-scroll table {
+  min-width: 100%;
+}
+
+.dividend-voucher {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.dividend-voucher h4 {
+  margin: 0;
+}
+
+.voucher-meta {
+  margin: 0.1rem 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--hint);
+}
+
+.voucher-signature {
+  margin: 0.5rem 0 0;
+  border-top: 1px solid var(--rule-faint);
+  padding-top: 0.4rem;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 899px) and (orientation: portrait) {
+  .fy-group {
+    grid-template-columns: 1fr;
+  }
+
+  .fy-caption {
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+}

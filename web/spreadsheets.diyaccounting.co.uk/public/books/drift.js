@@ -53,20 +53,28 @@
    * read once off the uploaded hub. Text cells carry no meaningful drift in
    * the pencil-correction sense, so only the manifest's units are read, and
    * the sections it excludes are skipped.
+   *
+   * The unit comes from the product module's own cellLabels(), which is
+   * where the report reads it from too: a product declares it as a column of
+   * CELL_MAP or as a function of the sheet the cell sits on, and this side
+   * needs the answer, not the shape it was written in.
+   *
    * @param {Array} cellMap - the product's CELL_MAP rows
+   * @param {Object} labels - the product module's cellLabels(), keyed sheet!cell
    * @param {Object} set - a workbook set: hasSheet(file, sheet), readCell(file, sheet, cell)
    * @param {string} hubFile - the workbook the CELL_MAP names cells on
    * @param {Object} manifest - the product manifest, for drift.units and drift.excludedSections
    */
-  async function captureAsReadLayer(cellMap, set, hubFile, manifest) {
+  async function captureAsReadLayer(cellMap, labels, set, hubFile, manifest) {
     var captured = [];
     for (var i = 0; i < cellMap.length; i++) {
       var entry = cellMap[i];
       var sheet = entry[0],
         cell = entry[1],
         label = entry[2],
-        section = entry[4],
-        unit = entry[6];
+        section = entry[4];
+      var declared = labels[sheet + "!" + cell];
+      var unit = declared ? declared.unit : undefined;
       if (!manifest.drift.units[unit]) continue;
       if (manifest.drift.excludedSections[section]) continue;
       if (!(await set.hasSheet(hubFile, sheet))) continue;
@@ -78,33 +86,48 @@
   }
 
   /**
-   * The link layer: every leaf cell the hub caches, with the hub's cached
-   * value and the leaf's own. A leaf the set does not hold, or a cell it has
-   * no value for, yields no entry: an absent cell cannot be judged.
+   * The link layer: every leaf cell a workbook in the package caches, with
+   * that reader's cached value and the leaf's own. A package has more than
+   * one reader -- the Company hub and Vatreturns both cache a Sales tab's
+   * totals -- so a cell one of them left behind is never hidden by a fresh
+   * copy in another: each reading is its own entry, named on the reader's own
+   * cells. A leaf the set does not hold, or a cell it has no value for,
+   * yields no entry: an absent cell cannot be judged.
    * @param {Object} set - a workbook set with zip(file) as well as readCell
    * @param {string} hubFile
    * @param {Object} engine - the diya-gl engine bundle
+   * @param {string} product - the manifest's product id, for LINK_ORDER
    */
-  async function captureLinkLayer(set, hubFile, engine) {
-    var hubZip = await set.zip(hubFile);
-    var cache = await engine.linkCacheValues(hubZip);
-    var addressed = await engine.linkAddressedCells(hubZip);
+  async function captureLinkLayer(set, hubFile, engine, product) {
+    var order = (engine.LINK_ORDER[product] || [hubFile]).filter(function (file) {
+      return set.has(file);
+    });
+    var zips = new Map();
+    for (var f = 0; f < order.length; f++) zips.set(order[f], await set.zip(order[f]));
+
+    var cached = [];
+    (await engine.packageLinkCaches(zips, order)).forEach(function (entry, key) {
+      for (var r = 0; r < entry.readings.length; r++) {
+        cached.push({
+          file: entry.targetFile,
+          sheet: entry.sheet,
+          cell: entry.cell,
+          key: key,
+          reader: entry.readings[r].file,
+          cachedValue: entry.readings[r].value,
+          sources: entry.readings[r].sources,
+        });
+      }
+    });
+
     var layer = [];
-    for (var i = 0; i < addressed.length; i++) {
-      var link = addressed[i];
-      var key = link.targetFile + "!" + link.sheet + "!" + link.cell;
-      if (!cache.has(key) || !set.has(link.targetFile)) continue;
-      var leafValue = await set.readCell(link.targetFile, link.sheet, link.cell);
+    for (var i = 0; i < cached.length; i++) {
+      var link = cached[i];
+      if (!set.has(link.file)) continue;
+      var leafValue = await set.readCell(link.file, link.sheet, link.cell);
       if (leafValue === undefined || leafValue === null) continue;
-      layer.push({
-        file: link.targetFile,
-        sheet: link.sheet,
-        cell: link.cell,
-        key: key,
-        hubCache: cache.get(key),
-        leafValue: leafValue,
-        sources: link.sources,
-      });
+      link.leafValue = leafValue;
+      layer.push(link);
     }
     return layer;
   }
@@ -126,15 +149,15 @@
 
   /**
    * Every captured cell compared to what the engine now computes, plus, for a
-   * multi-file package, the stale and drifted link cells marked on the hub
-   * cells that read them.
+   * multi-file package, the stale and drifted link cells marked on the cells
+   * that read them, in whichever workbook reads them.
    *
    * Each entry is { id, label, computed, asRead, note, recalculated, state,
    * file, sheet, cell, leaf }. id is the report cell key without its "cell/"
-   * prefix, which is what applyDriftMarks matches against data-r-key. A hub
-   * cell whose cache predates the leaf is marked stale and loses its own
-   * drift entry: its figure is downstream of that cache, so it cannot be
-   * judged drifted. Link entries are computed from the uploaded bytes and
+   * prefix, which is what applyDriftMarks matches against data-r-key. A cell
+   * whose own workbook cached the leaf before the leaf changed is marked
+   * stale and loses its drift entry: its figure is downstream of that cache,
+   * so it cannot be judged drifted. Link entries are computed from the uploaded bytes and
    * are never relabelled recalculated: staleness is a property of the file
    * the customer uploaded, not of the book they are editing.
    * @param {Array} asReadLayer - from captureAsReadLayer
@@ -148,34 +171,36 @@
     var prefix = links && links.hubFile ? links.hubFile + "!" : "";
     var drift = [];
     var staleIds = {};
+    var linkedIds = {};
 
     if (links) {
       for (var i = 0; i < links.layer.length; i++) {
         var entry = links.layer[i];
         var engineValue = engineValueFor(links, entry);
         if (typeof engineValue !== "number") continue;
-        var verdict = links.classify({ hubCache: entry.hubCache, leafValue: entry.leafValue, engineValue: engineValue });
+        var verdict = links.classify({ hubCache: entry.cachedValue, leafValue: entry.leafValue, engineValue: engineValue });
         if (!verdict.stale && !verdict.drift) continue;
         for (var s = 0; s < entry.sources.length; s++) {
           var source = entry.sources[s];
           var at = source.lastIndexOf("!");
           if (at === -1) continue;
-          var hubSheet = source.slice(0, at),
-            hubCell = source.slice(at + 1);
+          var readerSheet = source.slice(0, at),
+            readerCell = source.slice(at + 1);
           var common = {
-            id: prefix + source,
-            label: labelFor(asReadLayer, hubSheet, hubCell),
+            id: entry.reader + "!" + source,
+            label: labelFor(asReadLayer, readerSheet, readerCell),
             recalculated: false,
-            file: links.hubFile,
-            sheet: hubSheet,
-            cell: hubCell,
+            file: entry.reader,
+            sheet: readerSheet,
+            cell: readerCell,
             leaf: entry.key,
           };
           if (verdict.stale) {
             staleIds[common.id] = true;
-            drift.push(Object.assign({ computed: engineValue, asRead: entry.hubCache, note: STALE_NOTE, state: "stale" }, common));
+            drift.push(Object.assign({ computed: engineValue, asRead: entry.cachedValue, note: STALE_NOTE, state: "stale" }, common));
           }
           if (verdict.drift) {
+            linkedIds[common.id] = true;
             drift.push(Object.assign({ computed: engineValue, asRead: entry.leafValue, note: entry.key, state: "drift" }, common));
           }
         }
@@ -185,7 +210,7 @@
     for (var j = 0; j < asReadLayer.length; j++) {
       var read = asReadLayer[j];
       var id = prefix + read.sheet + "!" + read.cell;
-      if (staleIds[id]) continue;
+      if (staleIds[id] || linkedIds[id]) continue;
       var computedRaw = results[read.sheet] && results[read.sheet][read.cell];
       if (typeof computedRaw !== "number") continue;
       var computed = canonicalise(computedRaw, read.unit);

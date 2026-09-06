@@ -22,12 +22,13 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
-import { loadScenario } from "../lib/scenario-loader.js";
+import { loadScenario, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
-import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor } from "../products/se.js";
+import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor, unitFor, cellWrites } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { payslipsWagesPaidCell, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_PERIOD, PAYSLIP_PRINT_CELLS } from "../lib/payslips-layout.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -41,9 +42,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 869 },
-  { name: "se-brickwork-pro-vat", checkCount: 803 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 792 },
+  { name: "se-scenario-advanced", checkCount: 870 },
+  { name: "se-brickwork-pro-vat", checkCount: 804 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 793 },
 ];
 
 function loadFixture(name) {
@@ -93,6 +94,82 @@ describe("Self Employed engine: every compliance check the Excel reconciliation 
       });
     });
   }
+});
+
+// se.js's cellWrites shifts every posting date onto the package's own tax
+// year (period-shift.js) before it ever reaches a cell; checkCompliance has
+// to derive its own expectation the same way, from the packageYearEnd it is
+// given, or a package generated for a year other than the scenario's own
+// fails these checks by exactly the gap between the two years. cellWrites
+// writes literal date serials for the cells these checks read (no formula
+// sits between the write and the read), so its own output stands in for the
+// LibreOffice-recalculated package without opening one.
+describe("Self Employed engine: payslip dates against a package generated years past the scenario's own", () => {
+  const PACKAGE_YEAR_END = "2028-04-05";
+  const TARGET_START_YEAR = parseInt(PACKAGE_YEAR_END.slice(0, 4), 10) - 1; // 2027, two years past the fixture's own 2025-04 opening
+  const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
+  const expected = { ...scenario, ...scenario.expected };
+  const DATE_CHECK_PATTERN = /wages paid date$|paid that month's wages$/;
+
+  // The month tab order se.js's own MONTH_KEYS keeps (not exported): the
+  // package's twelve calendar months from the tax year's April opening.
+  const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+
+  // The engine's own-year results give every sheet checkCompliance reads
+  // besides Payslips.xlsx; those are overlaid, cell by cell, with the
+  // literal values cellWrites would put on the package it generates for
+  // TARGET_START_YEAR, so only the payroll dates this test cares about move.
+  // The printed page's I9/M18 are INDIRECT formulas onto the joined month
+  // tab's own wages-paid cell (se.js's own comment on the check), so a real
+  // recalculated package carries the shift there too even though cellWrites
+  // never writes I9/M18 directly -- this reproduces that join by hand.
+  function shiftedPayslipsResults() {
+    const base = calculateSeResults({}, [], TAX_DATA, scenario);
+    const writes = cellWrites(scenario, TARGET_START_YEAR);
+    const results = { ...base };
+    for (const [sheet, cells] of Object.entries(writes["Payslips.xlsx"])) {
+      const key = `Payslips.xlsx!${sheet}`;
+      results[key] = { ...(base[key] || {}), ...cells };
+    }
+    const printedTab = MONTH_SHEETS[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]];
+    const wagesPaidOn = results[`Payslips.xlsx!${printedTab}`][payslipsWagesPaidCell(PAYSLIP_PRINT_PERIOD - 1)];
+    const printSheetKey = `Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`;
+    results[printSheetKey] = { ...results[printSheetKey], [PAYSLIP_PRINT_CELLS.periodEnd]: wagesPaidOn, M18: wagesPaidOn };
+    return results;
+  }
+
+  it("raises exactly the four date checks the writer's shift touches", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(dateChecks.length).toBe(4);
+  });
+
+  it("passes every one of them, matching the package the writer would have produced", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(failures(dateChecks).map(describeFailure)).toEqual([]);
+  });
+
+  it("still fails when a written wages-paid date is bent by a day", () => {
+    const results = shiftedPayslipsResults();
+    const julDateCell = payslipsWagesPaidCell(3); // MONTH_KEYS index 3 = jul
+    results["Payslips.xlsx!Jul"][julDateCell] += 1;
+    const checks = checkCompliance(results, expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const bent = checks.find((check) => check.name === `Payslips!Jul ${julDateCell} wages paid date`);
+    expect(bent).toBeDefined();
+    expect(bent.pass).toBe(false);
+  });
+
+  // se-profit-forecast-checks.test.js built a package this way -- cellWrites
+  // given a targetStartYear years past the scenario's own -- while its call
+  // to checkCompliance carried no packageYearEnd at all, leaving these date
+  // checks comparing the writer's shifted package against an unshifted
+  // expectation. Proves the omission is what broke it, on the engine alone.
+  it("fails those same date checks when checkCompliance is not told the package's own year end", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(failures(dateChecks).map(describeFailure)).not.toEqual([]);
+  });
 });
 
 describe("Self Employed engine: the return boxes against the statutory computation", () => {
@@ -257,6 +334,87 @@ describe("Self Employed engine: the checks are breakable", () => {
   }
 });
 
+// se-loss-no-expected carries no [expected] table and nets to a loss on
+// every trading month: SE Short's D71 (net profit) and the SE Full/Income
+// Tax chain it feeds all floor at nil the way the template's own IF()
+// formulas do, and only O71 (net loss) and the SE Full loss boxes carry a
+// live figure. Before the SE-T27 fix, checkCompliance raised four mismatches
+// on this book that were artefacts of the check arithmetic, not the sheet:
+// D71's identity check and the SA103F box 47 counterpart it feeds compared
+// an unclamped turnover-less-expenses figure against D71's own clamped
+// value; the box 65/box 106 counterpart compared against SE Short!O106,
+// which was never in CELL_MAP so it always read as 0; the profit bridge
+// subtracted SE Short!O71 on top of Profit & Loss Account!B39 already
+// carrying that same loss, double-counting it; and the Forecast personal
+// allowance check compared the sheet's own IF(C39<=0,0,...) floor against
+// calculateExpectedTax's unfloored figure.
+//
+// A fifth, related bug surfaced once the engine's own Income Tax!E6 was
+// floored to match the template's IF(E5<=0,0,...): the JS engine had never
+// applied that floor, always handing back the unfloored personal allowance,
+// and checkCompliance's own "Tax: Personal allowance after taper" check
+// compared against that same unfloored figure -- two wrongs that agreed with
+// each other on every loss-making book, so the check could not fail no
+// matter which side was wrong. Flooring the engine's E6 alone (without
+// flooring the check) turned that silent agreement into a false failure on
+// this very fixture; flooring both is what makes the check test anything.
+describe("Self Employed engine: a loss-making book with no [expected] table", () => {
+  it("reports no compliance mismatches", () => {
+    const { scenario, expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    expect(pl.B39).toBeLessThan(0);
+    expect(scenario.expected).toBeUndefined();
+
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map(describeFailure)).toEqual([]);
+  });
+
+  it("still reports a real mismatch when the book carries an [expected] table", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    const wrongExpected = { ...expected, total_sales: pl.B9 + 12345 };
+
+    const broken = failures(checkCompliance(results, wrongExpected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Total Sales"]);
+  });
+
+  it("fails on the net loss identity and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Short"].O71 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      [
+        "SA103S: net loss = total expenses - turnover - other business income",
+        "SA103F box 48 net loss: full return (O129) = short return (O71)",
+      ].sort(),
+    );
+  });
+
+  it("fails on the profit bridge and the box 63 deduction total when SE Full's box 62 is corrupted", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Full"].D179 = 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      [
+        "Accounting profit to tax profit bridge closes to zero",
+        "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
+      ].sort(),
+    );
+  });
+
+  it("fails on the Income Tax personal allowance and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["Income Tax"].E6 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Tax: Personal allowance after taper"]);
+  });
+});
+
 describe("Self Employed engine: the read scope", () => {
   it("computes a value for every cell the reconciliation reads", () => {
     const { results } = loadFixture("se-scenario-advanced");
@@ -343,6 +501,22 @@ describe("Self Employed engine: the read scope", () => {
     }
     expect(undeclared).toEqual([]);
   });
+
+  // Payslips!Payment's B and C columns hold the tax month's end and due
+  // dates as Excel day serials, one row per month (WAGES_MONTH_ROWS, 4 to
+  // 15); D, E and I are the amounts the schedule pays. A serial carrying the
+  // money unit compares to the penny like any other amount instead of the
+  // day it names, which a reconciliation comparing R against a rendered
+  // page can never satisfy for a date.
+  it("gives Payslips.xlsx!Payment its date columns and money columns their own unit", () => {
+    for (let row = 4; row <= 15; row++) {
+      expect(unitFor("Payslips.xlsx!Payment", `B${row}`)).toBe("date");
+      expect(unitFor("Payslips.xlsx!Payment", `C${row}`)).toBe("date");
+      expect(unitFor("Payslips.xlsx!Payment", `D${row}`)).toBe("money");
+      expect(unitFor("Payslips.xlsx!Payment", `E${row}`)).toBe("money");
+      expect(unitFor("Payslips.xlsx!Payment", `I${row}`)).toBe("money");
+    }
+  });
 });
 
 // The leaf cells a sibling workbook's link addresses, each anchored to the
@@ -379,6 +553,25 @@ describe("Self Employed engine: the leaf cells a link addresses", () => {
     expect(april.length).toBeGreaterThan(0);
     expect(cells["Payslips.xlsx!Apr"].M1).toBe(april.reduce((sum, entry) => sum + entry.grossPay, 0));
   });
+
+  // The Company's cash top-up moves money from the current account to the
+  // cash float mid-year, coded "X" once it reaches SE rather than the "BC"
+  // the Company gives its own opening balances -- bankBook() (calculators/
+  // se.js) takes any "BC"-coded line as a fresh opening balance on whatever
+  // tab it lands on, replacing the running balance carried forward from the
+  // month before, so a transfer carrying that letter would reset June's
+  // opening to the transfer's own amount instead of adding it to the year's
+  // receipts and payments.
+  it("keeps Bank.xlsx's opening balance in Apr!A1, and carries the balance into June instead of re-opening it at the transfer's own amount", () => {
+    const opening = scenario.bank.apr.find((tx) => (tx.account || "1200") === "1200" && tx.code === "BC");
+    expect(opening).toBeDefined();
+    expect(cells["Bank.xlsx!Apr"].A1).toBe(opening.amount);
+
+    const transfer = scenario.bank.jun.find((tx) => (tx.account || "1200") === "1200" && tx.code === "X" && tx.direction === "out");
+    expect(transfer).toBeDefined();
+    expect(cells["Bank.xlsx!Jun"].A1).toBe(cells["Bank.xlsx!May"].A2);
+    expect(cells["Bank.xlsx!Jun"].A1).not.toBe(transfer.amount);
+  });
 });
 
 describe("Self Employed engine: from the diya-gl book", () => {
@@ -388,5 +581,24 @@ describe("Self Employed engine: from the diya-gl book", () => {
     const results = calculateFromDiyaGl(book, lines, "se", TAX_DATA, scenario);
     const checks = checkCompliance(results, { ...scenario, ...scenario.expected }, TAX_DATA, calculateExpectedTax);
     expect(failures(checks).map(describeFailure)).toEqual([]);
+  });
+
+  // The book carries the master's own VAT-straddling lines, which belong to
+  // return periods either side of the accounting year and reach Vat.xlsx's
+  // out-of-year entry sheets rather than any journal. The five return forms
+  // read them through the interface table, so a book that cannot carry them
+  // files a nil fifth quarter. Comparing box for box against the scenario
+  // extracted from the same master anchors the figures outside the book.
+  it("files the same five VAT quarters from the book as from the scenario extracted from the same master", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_DIR, "examples", "precision-code-ltd", "advanced"));
+    const fromBook = calculateFromDiyaGl(book, lines, "se", TAX_DATA, diyaGlToScenario(book, lines, "se"));
+    const fromFixture = calculateFromDiyaGl(book, lines, "se", TAX_DATA, loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml")));
+    for (let quarter = 1; quarter <= 5; quarter++) {
+      const sheet = `Vat.xlsx!VATQtr${quarter}`;
+      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+    }
+    // The fifth quarter falls wholly outside the accounting year, so the
+    // straddling entries are the only thing that puts a figure on it.
+    expect(fromBook["Vat.xlsx!VATQtr5"].G9).toBeGreaterThan(0);
   });
 });

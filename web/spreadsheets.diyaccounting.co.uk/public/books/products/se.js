@@ -145,8 +145,14 @@
   // stock values are written into.
   var STOCK_CELLS = { opening: "AB6", closing: "AB30" };
 
-  // The schedule's totals row, in the order a fixed asset note reads.
-  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "I1", "Q1", "K1"];
+  // The schedule's totals row, in the order a fixed asset note reads: cost
+  // first, then the depreciation that takes it to net book value, then the
+  // capital allowances the return claims, then the year's disposals.
+  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "X1", "Y1", "Z1"];
+  // The schedule against the journals: what the register lists, what the
+  // sales and purchase journals carry, and the difference between them.
+  var FA_RECONCILIATION_SHEET = "Fixedassets.xlsx!FAreconciliation";
+  var FA_RECONCILIATION_CELLS = ["E11", "E13", "E15", "K11", "K13", "K15"];
   // One hire purchase agreement a row, at the two rows the writer fills.
   var HP_ROWS = [8, 10];
   var HP_COLUMNS = { monthlyPayment: "I", capital: "J", interest: "K" };
@@ -571,7 +577,9 @@
     var sheetResults = snap.results[sheet];
     if (!sheetResults) return "";
     var value = sheetResults[cell];
-    if (value === undefined || value === null || value === "") return "";
+    // A sheet blank arrives as a space, which R drops the same as an absent
+    // cell, so it earns no key either.
+    if (value === undefined || value === null || String(value).trim() === "") return "";
     return helpers.rkFor(sheet, cell) || helpers.rk(helpers.cellKey(qualified(sheet), cell));
   }
 
@@ -587,7 +595,7 @@
   }
 
   function formatByUnit(value, unit, helpers) {
-    if (value === undefined || value === null || value === "") return "—";
+    if (value === undefined || value === null || String(value).trim() === "") return "—";
     if (unit === "text") return helpers.esc(String(value));
     if (typeof value !== "number") return helpers.esc(String(value));
     if (unit === "rate") return helpers.fmtRate(value);
@@ -610,6 +618,14 @@
       };
     });
     return helpers.kvRows(rows);
+  }
+
+  // A table wider than the view scrolls inside its own box rather than
+  // pushing the page sideways. The box is a keyboard stop that carries the
+  // table's name, so a reader tabbing through can scroll it with the arrow
+  // keys and hears what it holds.
+  function scrollBox(helpers, label, html) {
+    return '<div class="se-table-scroll" role="region" aria-label="' + helpers.esc(label) + '" tabindex="0">' + html + "</div>";
   }
 
   // ============================== the views ==============================
@@ -679,12 +695,10 @@
         return "<tr><th>" + helpers.esc(row.label) + "</th>" + cells + "</tr>";
       })
       .join("");
-    return (
-      '<div class="se-months-scroll"><table class="register-table se-months-table"><thead>' +
-      head +
-      "</thead><tbody>" +
-      body +
-      "</tbody></table></div>"
+    return scrollBox(
+      helpers,
+      "Profit and loss by month",
+      '<table class="register-table se-months-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>",
     );
   }
 
@@ -865,6 +879,14 @@
       };
     });
 
+    var reconciliationRows = FA_RECONCILIATION_CELLS.map(function (cell) {
+      return {
+        label: labelFor(productMod, FA_RECONCILIATION_SHEET, cell, FA_RECONCILIATION_SHEET + "!" + cell),
+        value: cellValue(snap.results, FA_RECONCILIATION_SHEET, cell),
+        rKeyAttr: cellRk(snap, helpers, FA_RECONCILIATION_SHEET, cell),
+      };
+    });
+
     var agreements = assets.agreements.length
       ? assets.agreements
           .map(function (agreement) {
@@ -901,9 +923,14 @@
     return (
       "<h2>Fixed assets</h2>" +
       '<div class="panel-card"><h3>Brought into the year</h3>' +
-      '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th></tr></thead><tbody>' +
-      broughtForward +
-      "</tbody></table></div>" +
+      scrollBox(
+        helpers,
+        "Assets brought into the year",
+        '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th></tr></thead><tbody>' +
+          broughtForward +
+          "</tbody></table>",
+      ) +
+      "</div>" +
       '<div class="panel-card"><h3>Bought during the year</h3>' +
       '<table class="register-table"><thead><tr><th>Date</th><th>Asset</th><th>Cost</th></tr></thead><tbody>' +
       additions +
@@ -911,14 +938,22 @@
       '<div class="panel-card"><h3>The schedule\'s own totals</h3>' +
       helpers.kvRows(scheduleRows) +
       "</div>" +
-      '<div class="panel-card"><h3>Hire purchase</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
-      agreements +
-      '</tbody><tfoot><tr class="total"><th colspan="2">Long-term creditor</th><td class="num"' +
-      cellRk(snap, helpers, HP_SHEET, HP_TOTAL_CELL) +
-      ">" +
-      helpers.fmtMoney(cellValue(snap.results, HP_SHEET, HP_TOTAL_CELL)) +
-      '</td><td colspan="4"></td></tr></tfoot></table></div></div>'
+      '<div class="panel-card"><h3>The schedule against the journals</h3>' +
+      helpers.kvRows(reconciliationRows) +
+      "</div>" +
+      '<div class="panel-card"><h3>Hire purchase</h3>' +
+      scrollBox(
+        helpers,
+        "Hire purchase agreements",
+        '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
+          agreements +
+          '</tbody><tfoot><tr class="total"><th colspan="2">Long-term creditor</th><td class="num"' +
+          cellRk(snap, helpers, HP_SHEET, HP_TOTAL_CELL) +
+          ">" +
+          helpers.fmtMoney(cellValue(snap.results, HP_SHEET, HP_TOTAL_CELL)) +
+          '</td><td colspan="4"></td></tr></tfoot></table>',
+      ) +
+      "</div>"
     );
   }
 
@@ -947,8 +982,10 @@
             '" aria-pressed="' +
             (candidate.id === account.id ? "true" : "false") +
             '">' +
-            helpers.esc(candidate.label + " — " + candidate.id) +
-            "</button>"
+            helpers.esc(candidate.label) +
+            ' <span class="account-switch-code">' +
+            helpers.esc(candidate.id) +
+            "</span></button>"
           );
         })
         .join("") +
@@ -969,26 +1006,27 @@
     return monthKey;
   }
 
-  // The month tabs' own opening and closing balances. Only the last month's
-  // closing is a figure the report carries -- A2 on the March tab, the one
-  // cell the read scope takes off each bank workbook.
+  // The month tabs' own opening and closing balances. Each month's opening is
+  // A1 on its own tab and its closing A2, so every cell the read scope takes
+  // off a bank workbook carries its key.
   function renderBalances(snap, helpers, account) {
     var months = account.months;
     var rows = months
-      .map(function (month, index) {
-        var closingRk =
-          index === months.length - 1 ? cellRk(snap, helpers, account.file + "!" + monthLabelOf(snap, month.month), "A2") : "";
+      .map(function (month) {
+        var tab = account.file + "!" + monthLabelOf(snap, month.month);
         return (
           "<tr><th>" +
           helpers.esc(monthLabelOf(snap, month.month)) +
-          '</th><td class="num">' +
+          '</th><td class="num"' +
+          cellRk(snap, helpers, tab, "A1") +
+          ">" +
           helpers.fmtMoney(month.opening) +
           '</td><td class="num">' +
           helpers.fmtMoney(month.receipts) +
           '</td><td class="num">' +
           helpers.fmtMoney(month.payments) +
           '</td><td class="num"' +
-          closingRk +
+          cellRk(snap, helpers, tab, "A2") +
           ">" +
           helpers.fmtMoney(month.closing) +
           "</td></tr>"
@@ -999,9 +1037,14 @@
       '<div class="panel-card"><h3>' +
       helpers.esc(account.label + " balances, month by month") +
       "</h3>" +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Opening</th><th>Receipts</th><th>Payments</th><th>Closing</th></tr></thead><tbody>' +
-      rows +
-      "</tbody></table></div>"
+      scrollBox(
+        helpers,
+        account.label + " balances",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Opening</th><th>Receipts</th><th>Payments</th><th>Closing</th></tr></thead><tbody>' +
+          rows +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
   }
 
@@ -1036,11 +1079,9 @@
       return (
         '<div class="panel-card"><h3>' +
         title +
-        '</h3><div class="se-months-scroll"><table class="register-table"><thead>' +
-        head +
-        "</thead><tbody>" +
-        body +
-        "</tbody></table></div></div>"
+        "</h3>" +
+        scrollBox(helpers, title, '<table class="register-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>") +
+        "</div>"
       );
     }
     return (
@@ -1088,9 +1129,9 @@
             '">Cancel</button></div>'
           : '<button type="button" class="btn" data-settlement-preview="' + helpers.esc(settlement.id) + '">Preview</button>';
         return (
-          '<li class="settlement"><p><strong>' +
+          '<li class="settlement"><p class="settlement-title">' +
           helpers.esc(settlement.title) +
-          "</strong> — " +
+          '</p><p class="settlement-meta">' +
           helpers.esc(settlement.entryNumber) +
           " · " +
           helpers.esc(change.counterparty) +
@@ -1187,10 +1228,15 @@
     return (
       "<h2>Payroll</h2>" +
       renderEmployees(snap, helpers) +
-      '<div class="panel-card"><h3>Every payslip</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div></div>" +
+      '<div class="panel-card"><h3>Every payslip</h3>' +
+      scrollBox(
+        helpers,
+        "Every payslip",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Employee</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th><th>Net</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>" +
       renderWagesInterface(snap, helpers) +
       renderPayeSchedule(snap, helpers)
     );
@@ -1250,9 +1296,14 @@
       .join("");
     return (
       '<div class="panel-card"><h3>Month totals</h3>' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div>"
+      scrollBox(
+        helpers,
+        "Payroll month totals",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Gross</th><th>PAYE</th><th>Employee NI</th><th>Employer NI</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
   }
 
@@ -1287,11 +1338,121 @@
       })
       .join("");
     return (
-      '<div class="panel-card"><h3>PAYE remittance schedule</h3><div class="se-months-scroll">' +
-      '<table class="register-table"><thead><tr><th>Month</th><th>Tax month end</th><th>Due</th><th>National Insurance</th><th>Income Tax</th><th>Total payable</th></tr></thead><tbody>' +
-      body +
-      "</tbody></table></div></div>"
+      '<div class="panel-card"><h3>PAYE remittance schedule</h3>' +
+      scrollBox(
+        helpers,
+        "PAYE remittance schedule",
+        '<table class="register-table"><thead><tr><th>Month</th><th>Tax month end</th><th>Due</th><th>National Insurance</th><th>Income Tax</th><th>Total payable</th></tr></thead><tbody>' +
+          body +
+          "</tbody></table>",
+      ) +
+      "</div>"
     );
+  }
+
+  // ============================== the month-card mileage-and-CIS strip ==============================
+
+  // Six figures on the two journals' own month tabs that no category column,
+  // P&L row or VAT box carries through to a rendered view (verified against
+  // the template): Purchases C2 pools the month's own mileage-log column
+  // with the Sales month's D1 into a running total of business miles;
+  // Purchases G2 bands that total at the Admin approved rates into the
+  // month's own mileage claim, and A2 carries the claim on to the next
+  // month (C2 = <prior>!C2 + D1 + [1]<month>!$D$1; G2 the IF() band; A2 =
+  // G2 + <prior>!A2, first month A2 = G2). Sales W1 is a month's own CIS
+  // suffered on its sales (SUM(W5:W300)) and X1 carries it to the next
+  // month (X1 = W1 + <prior>!X1, first month X1 = W1). Purchases AD1 is the
+  // month's own CIS certificates total, the tax withheld on subcontractor
+  // payments (SUM(AD5:AD300)).
+  var MONTH_CARD_ROWS = [
+    { label: "Business miles to date", sheet: "Purchases.xlsx", cell: "C2" },
+    { label: "Mileage claim this month", sheet: "Purchases.xlsx", cell: "G2" },
+    { label: "Mileage claim to date", sheet: "Purchases.xlsx", cell: "A2" },
+    { label: "CIS suffered", sheet: "Sales.xlsx", cell: "W1" },
+    { label: "CIS suffered to date", sheet: "Sales.xlsx", cell: "X1" },
+    { label: "CIS deducted", sheet: "Purchases.xlsx", cell: "AD1" },
+  ];
+
+  // The shell's month-card hook: one row a figure, its label, the value
+  // formatted in the cell's own unit (miles a plain count, everything else
+  // money) and the r-key a blank cell carries none of, the same trim-aware
+  // test cellRk uses everywhere else in this manifest.
+  function monthCardRows(snap, monthIndex, helpers) {
+    var month = snap.months[monthIndex];
+    if (!month) return [];
+    var productMod = snap.context.productMod;
+    return MONTH_CARD_ROWS.map(function (row) {
+      var sheet = row.sheet + "!" + month.label;
+      var sheetResults = snap.results[sheet];
+      var value = sheetResults ? sheetResults[row.cell] : undefined;
+      return {
+        label: row.label,
+        value: formatByUnit(value, unitOf(productMod, sheet, row.cell), helpers),
+        rkAttr: cellRk(snap, helpers, sheet, row.cell),
+      };
+    });
+  }
+
+  // ============================== the VAT interface ==============================
+
+  // The hub table the five return forms read: one row per VAT period in date
+  // order, the two periods before the accounting year and the three after it
+  // included. D, F, H and J are the period's own sales and purchases, net and
+  // VAT; E, G, I and K sum each period with the two before it, which is the
+  // figure the return's box picks up. The first two rows close no quarter, so
+  // the sheet leaves their quarter columns empty.
+  var VATINTERFACE_SHEET = "Vat.xlsx!Vatinterface";
+  var VATINTERFACE_FIRST_ROW = 4;
+  var VATINTERFACE_LAST_ROW = 20;
+  var VATINTERFACE_COLUMNS = [
+    ["B", "Period ending"],
+    ["C", "Final date for VAT payment"],
+    ["D", "Month sales"],
+    ["E", "Quarter sales net of VAT"],
+    ["F", "Month VAT output"],
+    ["G", "Quarter VAT due, sales"],
+    ["H", "Month purchases"],
+    ["I", "Quarter purchases net of VAT"],
+    ["J", "Month VAT input"],
+    ["K", "Quarter VAT reclaimed, purchases"],
+    ["M", "Flat rate"],
+  ];
+
+  function renderVatInterface(snap, helpers) {
+    var productMod = snap.context.productMod;
+    var sheetResults = snap.results[VATINTERFACE_SHEET];
+    if (!sheetResults) return "";
+    var head = VATINTERFACE_COLUMNS.map(function (column) {
+      return "<th>" + helpers.esc(column[1]) + "</th>";
+    }).join("");
+    var body = "";
+    for (var row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+      body += "<tr>" + vatInterfaceRow(snap, helpers, productMod, row) + "</tr>";
+    }
+    return (
+      '<details class="vat-interface"><summary>The interface table behind these five returns</summary>' +
+      '<p class="view-lede">Read-only. Each return looks its boxes up against the row whose period it names.</p>' +
+      scrollBox(
+        helpers,
+        "VAT interface table",
+        '<table class="register-table"><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table>",
+      ) +
+      "</details>"
+    );
+  }
+
+  function vatInterfaceRow(snap, helpers, productMod, row) {
+    var sheetResults = snap.results[VATINTERFACE_SHEET];
+    return VATINTERFACE_COLUMNS.map(function (column) {
+      var cell = column[0] + row;
+      return (
+        '<td class="num"' +
+        cellRk(snap, helpers, VATINTERFACE_SHEET, cell) +
+        ">" +
+        formatByUnit(sheetResults[cell], unitOf(productMod, VATINTERFACE_SHEET, cell), helpers) +
+        "</td>"
+      );
+    }).join("");
   }
 
   // ============================== book details ==============================
@@ -1332,6 +1493,24 @@
   }
 
   // ============================== new book and upload ==============================
+
+  // The nine workbooks read back as one book, through the same extractBook
+  // the CLI's --file mode runs: a Self Employed book carries the ledgers,
+  // the employees, the fixed asset register, the HP agreements and the
+  // year's rate tables, all of them off workbooks CELL_MAP names no cell on.
+  // The rate tables come from the app/data file the package's own Admin
+  // sheet declares, which a browser reads through the resource loader rather
+  // than off disk. The upload says where it came from, as every other
+  // upload does.
+  async function bookFromWorkbook(set, lines, ctx) {
+    var book = await ctx.engine.extractBook(set, PRODUCT_ID, lines, ctx.productMod.CELL_MAP, {
+      readRateData: function (fileName) {
+        return ctx.resources.readText("data/" + fileName);
+      },
+    });
+    book.documentInfo.entriesComment = "Uploaded from " + ctx.fileName;
+    return book;
+  }
 
   function buildNewBook(values, ctx) {
     var name = values.businessName;
@@ -1403,9 +1582,9 @@
       {
         id: "vat",
         label: "VAT return",
-        sheets: "VATQtr1–5",
+        sheets: "VATQtr1–5, Vatinterface",
         render: function (snap, state, helpers) {
-          return global.DiyaGlSeForms.renderVat(snap, state, helpers);
+          return global.DiyaGlSeForms.renderVat(snap, state, helpers) + renderVatInterface(snap, helpers);
         },
       },
       {
@@ -1434,6 +1613,7 @@
       alwaysHidden: [POSTED_TOTAL_KEY],
       composite: [],
       monthlyCell: monthlyCell,
+      monthCardRows: monthCardRows,
       summary: [
         ["Sales Turnover", "sales", true],
         ["Gross Profit", "grossProfit"],
@@ -1465,11 +1645,13 @@
       },
     },
     upload: {
-      validate: function () {
-        throw new Error(
-          "A Self Employed package is nine workbooks. This page reads one back from a diya-gl zip or a diya-gl JSON file; reading the workbooks themselves is not on this page yet.",
-        );
+      validate: function (engine, set) {
+        return engine.validateAnchors(set, engine.SE_ANCHORS, "Self Employed");
       },
+      extract: function (engine, set) {
+        return engine.extractLines(set, PRODUCT_ID);
+      },
+      bookFromWorkbook: bookFromWorkbook,
     },
     bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
     drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: { "Admin (Generator Injected)": 1 } },

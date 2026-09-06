@@ -6,7 +6,7 @@
 // read returns, so app/products/bst.js's reportSections() and
 // checkCompliance() work unchanged on either source.
 
-import { BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, CIS_DEDUCTION_FIELD, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
 import { resolveBstPurchaseCodeMap } from "../diya-gl-loader.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -154,10 +154,11 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const taxableProfit = netProfit - capitalAllowances;
 
   // SE Short (SA103S), computed ahead of the Income Tax sheet because that
-  // sheet's own profit input reads this form's box 28 (verified against the
-  // template: Income Tax!E5 = 'SE Short'!D106). O38, D94 and O94 are each a
-  // manual entry on Business Details the diya-gl pipeline never sets, so
-  // they and the loss/carry-forward boxes they feed are nil in every fixture.
+  // sheet's own profit input reads this form's box 31, total taxable profits
+  // (verified against the template: Income Tax!E5 = 'SE Short'!D106). O38,
+  // D94 and O94 are each a manual entry on Business Details the diya-gl
+  // pipeline never sets, so they and the loss/carry-forward boxes they feed
+  // are nil in every fixture.
   const otherBusinessIncomeBox10 = 0;
   const seShortNetProfitRaw = totalSales + otherBusinessIncomeBox10 - (Math.round(costOfSales) + directCosts + totalExpenses);
   const seShortNetProfit = Math.max(0, Math.round(seShortNetProfitRaw * 100) / 100);
@@ -177,7 +178,11 @@ export function calculateBstResults(book, lines, taxData, scenario) {
     seShortD106,
     taxData.income_tax,
   );
-  const cisDeducted = 0;
+  // The sheet's own CIS Tax Deducted column, run to its year-to-date total
+  // (verified against the template: SalesMar!K1 = J1 + SalesFeb!K1, and
+  // Income Tax!E12 = -SalesMar!$K$1) -- the CIS the trader's own contractors
+  // have already deducted at source, which reduces the tax and NI still owed.
+  const cisDeducted = salesLines.reduce((total, line) => total + (line[CIS_DEDUCTION_FIELD] || 0), 0);
   const { lowerBand: niLower, upperBand: niUpper } = calculateNIClass4(seShortD106, taxData.national_insurance);
   const totalTaxAndNI = totalIncomeTax - cisDeducted + niLower + niUpper;
   const niClass4Combined = niLower + niUpper;
@@ -252,6 +257,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
       N13: taxData.income_tax.higher_band_start,
       N14: taxData.income_tax.higher_band_end,
       L17: taxData.national_insurance.class2_rate,
+      N17: taxData.national_insurance.class2_small_profits_threshold,
       L20: taxData.national_insurance.class4_lower_rate,
       N20: taxData.national_insurance.class4_lower_limit,
       L23: taxData.national_insurance.class4_upper_rate,
@@ -284,13 +290,13 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // SE Short (SA103S) — every formula cell the template defines (verified
   // against the template XML). D46, D51, D55, D60 and D64 are the form's own
   // detailed-expenses boxes, and the sheet only fills them once turnover
-  // reaches the £30,000 threshold below which HMRC accepts one combined
-  // total instead (Profit & Loss Acc!C4<30000 => " "); D71's net profit is
-  // computed from the turnover and total-expenses lines directly and never
-  // reads those boxes at all.
+  // reaches the VAT registration threshold below which HMRC accepts one
+  // combined total instead (Profit & Loss Acc!C4<Admin!F26 => " "); D71's net
+  // profit is computed from the turnover and total-expenses lines directly
+  // and never reads those boxes at all.
   const seShort = results["SE Short"];
   seShort.D38 = totalSales;
-  const showExpenseBoxes = totalSales >= 30000;
+  const showExpenseBoxes = totalSales >= results.Admin.F26;
   if (showExpenseBoxes) {
     seShort.D46 = Math.round(costOfSales) + directCosts; // Box: cost of goods bought
     seShort.D51 = motor + travel; // Box: car, van and travel expenses
@@ -307,7 +313,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   seShort.O80 = Math.round(seShortCA.o80 * 100) / 100;
   seShort.D85 = Math.round(seShortCA.d85 * 100) / 100;
   seShort.O85 = Math.round(seShortCA.o85 * 100) / 100;
-  seShort.D94 = 0; // Business Details' own "other business income" cell, unset in every fixture
+  seShort.D94 = 0; // Business Details' own "goods and services for own use" cell (box 27), unset in every fixture
   seShort.D99 = seShortD99;
   seShort.O94 = 0; // Loss brought forward — Business Details' own carry-forward cell, unset in every fixture
   seShort.O99 = otherIncomeReceived;

@@ -79,7 +79,7 @@ describeCalc("Reconciliation: bst-scenario-basic against 2025-26", () => {
   });
 
   it("total tax + NI check passes", () => {
-    const totalCheck = checks.find((c) => c.name === "Total Tax + NI");
+    const totalCheck = checks.find((c) => c.name === "Total Tax + NI, less the CIS already deducted");
     expect(totalCheck).toBeDefined();
     expect(totalCheck.pass).toBe(true);
   });
