@@ -20,6 +20,8 @@ import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { calculatedResultsFor } from "../bin/export.js";
 import { runBookChecks } from "../lib/book-checks.js";
+import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { PAYSLIP_PRINT_PERIOD, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_CELLS, payslipsWagesPaidCell } from "../lib/payslips-layout.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -401,5 +403,89 @@ describe("the opening balance sheet's own audit checks run without an [opening_b
     expect(e37.pass).toBe(true);
     expect(d91).toBeDefined();
     expect(d91.pass).toBe(true);
+  });
+});
+
+// ============================== payroll dates on a year end more than a year from the scenario's own period ==============================
+//
+// cellWrites() places each scenario month's payroll by shifting its date
+// through periodShiftMonths(), which counts whole years as well as months.
+// checkCompliance() has to derive the same dates the same way to check them:
+// a year end within twelve months of the scenario's own period cannot tell a
+// month-only offset from a year-carrying one, since they agree there, so the
+// case worth locking down is a year end further out than that.
+
+const LTD_SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function fiscalTabsFromYearEndMonth(yearEndMonth) {
+  const start = yearEndMonth % 12;
+  return Array.from({ length: 12 }, (_, i) => LTD_SHORT_MONTHS[(start + i) % 12]);
+}
+
+// checkCompliance() reads dozens of sheets besides the payroll ones, several
+// ungated, so the base has to be a whole run's worth of results -- the JS
+// engine's own, at the fixture's native period -- with only the payroll
+// sheets and the period anchor overridden to what a package built for
+// 2027-10-31 would carry. Those overrides come from cellWrites() itself, the
+// writer LT-T11 already shifts correctly, not from checkCompliance -- so
+// this checks checkCompliance's date expectations against what the writer
+// actually puts in the cells, not against another restatement of the same
+// arithmetic. Every other sheet stays at the fixture's own native period,
+// which is fine: nothing here reads them.
+function ltdPayrollResultsAtYearEnd20271031() {
+  const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+  const taxData = taxDataFor("ltd-2024");
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const merged = { ...scenario, ...scenario.expected };
+  const baseResults = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+
+  const targetStartYear = 2026;
+  const yearEndMonth = 10;
+  const writes = ltd.cellWrites(merged, targetStartYear, yearEndMonth);
+  const payslips = writes["Payslips.xlsx"] || {};
+  const fiscalTabs = fiscalTabsFromYearEndMonth(yearEndMonth);
+  const printedMonthIndex = PAYSLIP_PRINT_PERIOD - 1;
+  const printedTab = fiscalTabs[printedMonthIndex];
+  const printedDate = payslips[printedTab]?.[payslipsWagesPaidCell(printedMonthIndex)];
+
+  const results = { ...baseResults, Admin: { ...baseResults.Admin, B9: toExcelSerial(targetStartYear, yearEndMonth + 1, 1) } };
+  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = {
+    ...results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`],
+    [PAYSLIP_PRINT_CELLS.periodEnd]: printedDate,
+    M18: printedDate,
+  };
+  for (const [tab, cells] of Object.entries(payslips)) {
+    if (tab === PAYSLIP_PRINT_SHEET) continue;
+    results[`Payslips.xlsx!${tab}`] = { ...results[`Payslips.xlsx!${tab}`], ...cells };
+  }
+  return { merged, results };
+}
+
+const LTD_PAYROLL_DATE_CHECK_NAMES = [
+  "Payslips print: the period ends the day the scenario paid that month's wages",
+  "Payslips print: the payment date is the day the scenario paid that month's wages",
+  "Payslips!Feb M49 wages paid date",
+  "Payslips!Mar M49 wages paid date",
+];
+
+describe("Ltd payroll date checks on a year end nineteen months from the scenario's own period", () => {
+  it("pass when checkCompliance shifts its date expectations the same way cellWrites shifts the cells", () => {
+    const { merged, results } = ltdPayrollResultsAtYearEnd20271031();
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax, "2027-10-31");
+    for (const name of LTD_PAYROLL_DATE_CHECK_NAMES) {
+      const check = checks.find((c) => c.name === name);
+      expect(check, `expected a check named "${name}"`).toBeDefined();
+      expect(check.pass, `${name}: expected ${check.expected}, got ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("still fails a schedule date the writer did not actually produce", () => {
+    const { merged, results } = ltdPayrollResultsAtYearEnd20271031();
+    const marchCell = payslipsWagesPaidCell(4);
+    results["Payslips.xlsx!Mar"][marchCell] += 365;
+    const checks = ltd.checkCompliance(results, merged, null, calculateExpectedTax, "2027-10-31");
+    const mar = checks.find((c) => c.name === "Payslips!Mar M49 wages paid date");
+    expect(mar).toBeDefined();
+    expect(mar.pass).toBe(false);
   });
 });

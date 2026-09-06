@@ -3618,12 +3618,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   if (expected.payroll) {
-    // Same date-shift math cellWrites() uses to place each scenario month's
-    // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
-    // = 3) shifts by the offset from April to this package's first fiscal
-    // month, landing on the same tab fiscalTabs already names by index.
-    const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    // The same date-shift math cellWrites() uses to place each scenario
+    // month's payroll on a Payslips.xlsx tab: monthKey's calendar month
+    // (e.g. "apr" = 3) shifts by periodShiftMonths' offset, landing on the
+    // same tab fiscalTabs already names by index. periodShiftMonths counts
+    // years as well as months, so a year end more than twelve months out
+    // from the scenario's own period shifts a full year further than a
+    // month-only offset would -- the same gap cellWrites moves every
+    // posting date by.
+    const [pkgYear, pkgMonth] = packageYearEnd ? packageYearEnd.split("-").map(Number) : [null, null];
+    const monthOffset = pkgYear ? periodShiftMonths(expected, pkgYear - 1, pkgMonth) : 0;
     const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {
       const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
