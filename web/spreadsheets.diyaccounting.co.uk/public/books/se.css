@@ -55,6 +55,12 @@
   margin-left: 0.3rem;
 }
 
+/* Five journals show one at a time, so the entries grid holds one table
+   and that table takes the whole width rather than half of a pair. */
+.entries-columns {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 /* On a phone the month opens inside its card, and the journal switch runs
    edge to edge of that card so its rule reads as the card's own tab row. */
 @media (max-width: 899px) and (orientation: portrait) {
