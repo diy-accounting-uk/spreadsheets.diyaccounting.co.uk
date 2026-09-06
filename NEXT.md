@@ -10,9 +10,9 @@ Batch `claude/diya-gl-wave-2` (from main `4d0241d9`) works the board top to bott
 worktrees first, then each product's block. Every worktree lives at
 `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` with a `node_modules` symlink; the
 coordinator merges each landed commit into the batch branch, runs the row's non-LibreOffice tests,
-and pushes; `NEXT.md` tracking commits ride on the batch branch. The four `generate-*` refreshes run on
-`claude/diya-gl-wave-2-refresh` (cut from the batch head, so the batch's own pushes cannot cancel
-them) and merge back; all four have landed once; the operator's own rerun on the batch failed on the writers' date
+and pushes; `NEXT.md` tracking commits ride on the batch branch. The four `generate-*` refreshes ran once on a refresh branch, since merged and deleted; the
+operator reruns them on the batch itself (`generate-all.yml`), so no session pushes to the batch
+while they run; the operator's own rerun on the batch failed on the writers' date
 shift (the scorecard, fixed by PL-4, and the date-bearing compliance checks, SE-T30 and LT-T26).
 Closing order once those land: the formatter over the batch's touched files, the full unit and
 browser runs (LT-T18), the four generate runs on the batch (`generate-all.yml`), test.yml green,
@@ -25,7 +25,7 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
+| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local gates green at `23276a43`; CI test.yml running at `85f6b5da` |
 | SE-H1 | Merge the batch to main; the four `generate-*` on the branch first; the refresh on main | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, draft until the CI gate is green |
 | LT-M1 | Merge the batch PR; generate-ltd on the branch; the refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
