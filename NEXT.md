@@ -15,7 +15,9 @@ prove JS calculations against the committed packages' extraction (`report.js --s
 worktree lives at `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` while its row is in flight,
 and the board names it. The generate workflows cancel their own in-progress run on a push to their
 ref, so a session pushes nothing to a branch while a generate run is in progress on it.
-`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
+A freeze is in effect from 2026-09-06: no push to origin and no workflow dispatch until the operator
+lifts it; sessions work locally and propose fixes. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
+plan of record and carries its own open items.
 
 ## Board
 
