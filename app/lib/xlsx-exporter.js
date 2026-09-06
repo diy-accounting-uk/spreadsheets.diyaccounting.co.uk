@@ -82,6 +82,25 @@ function excelSerialToDate(serial) {
   return `${y}-${m}-${d}`;
 }
 
+// Every entry number is unique across a whole package. A multi-file product
+// runs four extractors -- sales and purchases, bank, payroll, journal -- and
+// each numbers only its own journal, so the prefix keeps the four apart
+// while the count runs in sheet order within each. A row therefore keeps its
+// number when a different journal gains or loses a row, and the same package
+// extracted twice numbers every line the same way.
+const JOURNAL_ENTRY_PREFIX = { sales: "SAL", purchases: "PUR", bank: "BNK", payroll: "PAY", journal: "JNL" };
+
+function entryNumbering() {
+  const counts = new Map();
+  return (sourceJournalID) => {
+    const prefix = JOURNAL_ENTRY_PREFIX[sourceJournalID];
+    if (!prefix) throw new Error(`No entry-number prefix for source journal ${sourceJournalID}`);
+    const next = (counts.get(prefix) ?? 0) + 1;
+    counts.set(prefix, next);
+    return `${prefix}-${String(next).padStart(4, "0")}`;
+  };
+}
+
 export const BST_SALES_SHEETS = [
   "SalesApr",
   "SalesMay",
@@ -256,7 +275,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   const regionsFor = (journal) => BST_TRANSACTION_REGIONS.filter((region) => region.sourceJournalID === journal);
   const push = (line, region, row) => {
@@ -283,7 +302,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
         accountMainID: textAt(xml, `${column.accountMainID}${row}`, sharedStrings) || "4000",
         amount,
         detailComment: typeof customer === "string" ? customer : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("sales"),
       };
       const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
@@ -333,7 +352,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
         accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, "5002"),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
       };
       if (claimsMileage) {
         line.documentType = "mileage-log";
@@ -446,7 +465,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
   const mileageRates = await adminMileageRates(sheetMap, zip, sharedStrings);
   const reversePurchase = buildReverseCodeMap(TAXI_PURCHASE_CODE_MAP);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let milesToDate = 0;
   const record = (line, sheetName, columns, row) => {
     if (extractionMap) extractionMap.recordLine(line, { sheet: sheetName, columns }, row, lines.length - 1);
@@ -485,7 +504,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
               // its miles towards the claim, so it posts at nil rather than not
               // at all.
               amount: takings ?? 0,
-              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+              entryNumber: nextEntryNumber("sales"),
             };
             if (names) line.detailComment = names;
             if (miles !== undefined) {
@@ -507,7 +526,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
               accountMainID: TAXI_SALES_ACCOUNT,
               amount: rental,
               detailComment: TAXI_RENTAL_CAPTION,
-              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+              entryNumber: nextEntryNumber("sales"),
             };
             lines.push(line);
             record(line, `Sales${month}`, TAXI_RENTAL_ROW_REGION, row);
@@ -522,7 +541,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
             accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
             amount: otherIncome,
             detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
-            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            entryNumber: nextEntryNumber("sales"),
           };
           lines.push(line);
           record(line, `Sales${month}`, isDay ? TAXI_DAY_ROW_OTHER_INCOME_REGION : TAXI_OTHER_INCOME_ROW_REGION, row);
@@ -556,7 +575,7 @@ export async function extractTaxiTransactions(xlsxBuffer, extractionMap) {
         postingDate: excelSerialToDate(dateVal),
         accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, TAXI_OTHER_EXPENSES_ACCOUNT),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
       };
       const supplier = textAt(xml, `${TAXI_PURCHASE_COLUMNS.supplier}${row}`, sharedStrings);
       if (supplier) line.detailComment = supplier;
@@ -671,7 +690,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   const salesMilesByMonth = new Map();
   let milesToDate = 0;
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   // Sales.xlsx: one sheet per month of the accounting period
   const salesZip = await set.zip("Sales.xlsx");
@@ -715,7 +734,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
         accountMainID: accountAt(xml, row, salesStrings, REVERSE_SALES, codeStr, "4000"),
         amount,
         detailComment: typeof customer === "string" ? customer : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("sales"),
         taxRate,
       };
       const reference = textAt(xml, `C${row}`, salesStrings);
@@ -791,7 +810,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
         accountMainID: accountAt(xml, row, purchasesStrings, reversePurchase, codeStr, "5002"),
         amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
-        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("purchases"),
         taxRate,
       };
       if (claimsMileage) {
@@ -855,7 +874,7 @@ const BANK_FILES = {
 export async function extractBankTransactions(set, product, period, extractionMap) {
   const bankFiles = BANK_FILES[product] || BANK_FILES.se;
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   const RECEIPT_COLUMNS = {
     "postingDate": "A",
     "detailComment": "B",
@@ -905,7 +924,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": "BC",
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+          "entryNumber": nextEntryNumber("bank"),
         });
         obEmitted = true;
       }
@@ -930,7 +949,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": codeStr,
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+          "entryNumber": nextEntryNumber("bank"),
         };
         const reference = textAt(xml, `${BANK_RECEIPT_REFERENCE_COLUMN}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
@@ -960,7 +979,7 @@ export async function extractBankTransactions(set, product, period, extractionMa
           "diya-gl:bankCode": codeStr,
           "debitCreditCode": "C",
           "diya-gl:bankAccountID": accountID,
-          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+          "entryNumber": nextEntryNumber("bank"),
         };
         const reference = textAt(xml, `${payment.reference}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
@@ -996,7 +1015,7 @@ export async function extractPayrollTransactions(set, extractionMap) {
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
 
   const columns = PAYSLIPS_ENTRY_COLUMNS;
   const payrollRegionColumns = {
@@ -1049,7 +1068,7 @@ export async function extractPayrollTransactions(set, extractionMap) {
         "diya-gl:employeeNI": typeof employeeNI === "number" ? employeeNI : 0,
         "diya-gl:employerNI": typeof employerNI === "number" ? employerNI : 0,
         "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
-        "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+        "entryNumber": nextEntryNumber("payroll"),
       };
       const reference = textAt(xml, `${columns.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
@@ -1322,7 +1341,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
   const { xml, sharedStrings } = sheet;
 
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let lineNum = 1;
   const costRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_COST_COLUMNS };
   const depreciationRegion = { sheet: "Schedule", sourceJournalID: "journal", columns: SE_SCHEDULE_DEPRECIATION_COLUMNS };
@@ -1348,7 +1367,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
         lineItemComment: typeof description === "string" && description ? description : "Opening fixed asset cost",
         debitCreditCode: "D",
         lineNumber: lineNum++,
-        entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+        entryNumber: nextEntryNumber("journal"),
       };
       lines.push(costLine);
       if (extractionMap) extractionMap.recordLine(costLine, costRegion, row, lines.length - 1, "Fixedassets.xlsx");
@@ -1359,7 +1378,7 @@ async function extractSeOpeningFixedAssets(set, period, extractionMap) {
           lineItemComment: "Accumulated depreciation",
           debitCreditCode: "C",
           lineNumber: lineNum++,
-          entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+          entryNumber: nextEntryNumber("journal"),
         };
         lines.push(depreciationLine);
         if (extractionMap) extractionMap.recordLine(depreciationLine, depreciationRegion, row, lines.length - 1, "Fixedassets.xlsx");
@@ -1398,7 +1417,7 @@ export async function extractJournalEntries(set, product, period, extractionMap)
   const xml = await zip.file(oaPath).async("string");
 
   const lines = [];
-  let entryNum = 1;
+  const nextEntryNumber = entryNumbering();
   let lineNum = 1;
 
   for (const mapping of OA_JOURNAL_MAP) {
@@ -1419,12 +1438,12 @@ export async function extractJournalEntries(set, product, period, extractionMap)
       taxRate: 0,
       debitCreditCode: val >= 0 ? mapping.dc : flip[mapping.dc],
       lineNumber: lineNum++,
-      entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+      entryNumber: nextEntryNumber("journal"),
     });
   }
 
   for (const line of await stockMovementJournal(zip, xml, sharedStrings, period)) {
-    lines.push({ ...line, lineNumber: lineNum++, entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}` });
+    lines.push({ ...line, lineNumber: lineNum++, entryNumber: nextEntryNumber("journal") });
   }
 
   return lines;

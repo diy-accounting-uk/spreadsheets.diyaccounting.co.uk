@@ -830,3 +830,82 @@ test.describe("DIYA-GL Self Employed page — E2: each settlement helper's previ
     await expect(page.locator(`[data-settlement-preview="${id}"]`)).toHaveCount(1);
   });
 });
+
+// ============================== E3: the uploaded nine-workbook package ==============================
+// The book above arrives as diya-gl, already numbered. A package arrives as
+// nine workbooks the page extracts itself, and the extractor numbers each
+// journal apart, so a bank row and a payroll row can each be changed on its
+// own rather than sharing a number and rendering as a figure.
+
+const SE_PACKAGE_DIR = path.join(ROOT, "examples/se-latest");
+
+async function sePackageZipBytes() {
+  const zip = new JSZip();
+  for (const name of fs.readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+    zip.file(name, fs.readFileSync(path.join(SE_PACKAGE_DIR, name)));
+  }
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+async function uploadSePackage(page) {
+  await page.setViewportSize(DESKTOP_LANDSCAPE);
+  await page.goto(`${baseUrl}/books/se.html`, { waitUntil: "domcontentloaded" });
+  await dropFile(page, await sePackageZipBytes(), "se-latest-package.zip");
+  await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 60_000 });
+}
+
+function amountsByEntryNumber(page) {
+  return page.evaluate(() => Object.fromEntries(window.DIYA_BOOKS_SNAPSHOT.lines.map((line) => [line.entryNumber, line.amount])));
+}
+
+// The first month whose grid offers an editable amount in both journals.
+async function monthOfferingBoth(page, journals) {
+  const months = await page.locator(".year-row").count();
+  for (let i = 0; i < months; i++) {
+    const monthKey = await page.locator(".year-row").nth(i).getAttribute("data-month");
+    await openMonthEntries(page, monthKey);
+    const entries = {};
+    for (const journal of journals) {
+      await switchJournal(page, journal);
+      const input = page.locator(`table.entries-table[data-journal="${journal}"] .entry-amount-input`).first();
+      if (await input.count()) entries[journal] = await input.getAttribute("data-amount-entry");
+    }
+    if (journals.every((journal) => entries[journal])) return { monthKey, entries };
+  }
+  throw new Error(`no month offers an editable amount in all of ${journals.join(", ")}`);
+}
+
+async function editAmountBy(page, monthKey, journal, entryNumber, delta) {
+  await openMonthEntries(page, monthKey);
+  await switchJournal(page, journal);
+  const field = page.locator(`table.entries-table[data-journal="${journal}"] [data-amount-entry="${entryNumber}"]`);
+  const was = Number(await field.inputValue());
+  await field.fill(String(was + delta));
+  await field.press("Enter");
+  await expect(page.locator("#toast")).toContainText("Changed " + entryNumber);
+}
+
+test.describe("DIYA-GL Self Employed page — E3: an uploaded package's lines are edited one at a time", () => {
+  test("a payroll edit and a bank edit each land on their own line", async ({ page }) => {
+    await uploadSePackage(page);
+
+    const numbers = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.map((line) => line.entryNumber));
+    const counts = new Map();
+    for (const number of numbers) counts.set(number, (counts.get(number) || 0) + 1);
+    const shared = [...counts].filter(([, count]) => count > 1).map(([number]) => number);
+    expect(shared, `entry numbers on more than one line: ${shared.join(", ")}`).toEqual([]);
+
+    const before = await amountsByEntryNumber(page);
+    const { monthKey, entries } = await monthOfferingBoth(page, ["bank", "payroll"]);
+    expect(entries.bank).not.toBe(entries.payroll);
+
+    await editAmountBy(page, monthKey, "bank", entries.bank, 250);
+    await editAmountBy(page, monthKey, "payroll", entries.payroll, 100);
+
+    const after = await amountsByEntryNumber(page);
+    const moved = Object.keys(after).filter((entryNumber) => after[entryNumber] !== before[entryNumber]);
+    expect(moved.sort()).toEqual([entries.bank, entries.payroll].sort());
+    expect(after[entries.bank]).toBe(before[entries.bank] + 250);
+    expect(after[entries.payroll]).toBe(before[entries.payroll] + 100);
+  });
+});

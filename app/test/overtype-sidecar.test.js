@@ -227,7 +227,7 @@ describe("overtyped.json when one template formula is typed over", () => {
         value: 2400,
         attribution: {
           kind: "line",
-          entryNumber: "EXP-0007",
+          entryNumber: "SAL-0007",
           sourceJournalID: "sales",
           row: 10,
           readAs: null,
@@ -241,7 +241,7 @@ describe("overtyped.json when one template formula is typed over", () => {
     expect(Object.keys(overtyped)).toEqual(["PurchasesApr!H8"]);
     expect(overtyped["PurchasesApr!H8"].attribution).toEqual({
       kind: "line",
-      entryNumber: "EXP-0115",
+      entryNumber: "PUR-0004",
       sourceJournalID: "purchases",
       row: 8,
       readAs: null,
