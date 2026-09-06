@@ -30,6 +30,14 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
   `constructor` and `prototype` segments, but the flagged site is a later recursive assignment
   (the property chain set while walking); apply the same segment check there or build the chain
   with `Object.create(null)` objects. Prove with the unit and shell specs; CodeQL re-scans on push.
+- **CQ-5** (operator): CodeQL is GitHub's default setup here, which analyses every push to main and
+  every PR with no path filter, so a docs-only commit spends a full scan. Default setup cannot take
+  a path filter; the way to get one is an advanced setup: `.github/workflows/codeql.yml` whose
+  `on:` block copies `test.yml`'s (the same `push` branches and `paths`, the `pull_request` branches,
+  the schedule and `workflow_dispatch`, plus the workflow's own file in `paths`), running
+  `github/codeql-action/init` and `analyze` for the languages default setup covers today (`actions`,
+  `java-kotlin`, `javascript-typescript`). GitHub rejects an advanced CodeQL analysis while default
+  setup is enabled, so H2 goes first; the existing alerts (CQ-4) carry over to the new analysis.
 - **SE-T32**: `app/lib/book-checks.js` `REPOST_PREFERRED` names `BasicSoleTrader` and
   `TaxiDriver` only; `settlementSuggestions`' repost helper for an SE purchase therefore falls to
   the chart's first account. Add the `SelfEmployed` entry from SE's chart (the account the
@@ -59,6 +67,8 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 on main's scan after PR #62 |
+| CQ-5 | CodeQL runs on every push, docs-only included; move it from GitHub's default setup to a workflow with `test.yml`'s trigger criteria (the same branch and path filters, schedule and PR trigger) | operator | machine | H2 | blocked-to-start | Haiku; GitHub refuses an advanced CodeQL workflow while default setup is on |
+| H2 | Disable CodeQL default setup in the repository's Code security settings, so the CQ-5 workflow can run | operator | human | — | ready-to-start | Settings, Code security, Code scanning, CodeQL analysis |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
