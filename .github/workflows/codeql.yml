@@ -1,0 +1,60 @@
+name: codeql
+run-name: "codeql from ${{ github.ref_name }}"
+
+on:
+  schedule:
+    - cron: '47 1,2,6 * * *'
+  push:
+    branches:
+      - '**'
+      - '!gh_pages'
+    paths:
+      - 'app/**'
+      - 'infra/**'
+      - 'behaviour-tests/**'
+      - 'web/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '**/cdk.json'
+      - 'LICENSE'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pom.xml'
+      - '.github/workflows/**'
+      - '.prettierignore'
+      - '.prettierrc'
+      - 'eslint.config.js'
+      - 'playwright.config.js'
+      - 'vitest.config.js'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - java-kotlin
+          - javascript-typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
