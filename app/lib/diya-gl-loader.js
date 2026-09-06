@@ -29,6 +29,8 @@ import {
   buildOpeningBalance,
   computeGrossSales,
   computeSpreadsheetNetSales,
+  splitStraddlingLines,
+  deriveStraddlingEntries,
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
@@ -146,16 +148,21 @@ export function shiftDate(dateStr, offset) {
 }
 
 /**
- * Apply a date offset to all lines (shifts postingDate).
+ * Apply a date offset to all lines (shifts postingDate, and the VAT period
+ * end a straddling line names). The period a return covers is fixed against
+ * the posting it holds, so it travels with it; left where it was, a shifted
+ * line would name a period the book's own accounting year no longer sits
+ * beside.
  */
 export function applyOffset(lines, offsetStr) {
   if (!offsetStr) return lines;
   const offset = parseOffset(offsetStr);
   if (offset.years === 0 && offset.months === 0) return lines;
-  return lines.map((line) => ({
-    ...line,
-    postingDate: shiftDate(line.postingDate, offset),
-  }));
+  return lines.map((line) => {
+    const shifted = { ...line, postingDate: shiftDate(line.postingDate, offset) };
+    if (line["diya-gl:vatPeriodEnd"]) shifted["diya-gl:vatPeriodEnd"] = shiftDate(line["diya-gl:vatPeriodEnd"], offset);
+    return shifted;
+  });
 }
 
 /**
@@ -224,7 +231,12 @@ export function diyaGlToScenario(book, lines, product) {
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
   const purchaseCodeMap = product === "bst" ? resolveBstPurchaseCodeMap(book) : PURCHASE_CODE_MAPS[product];
-  let filteredLines = product === "bst" ? filterBstChart(lines, purchaseCodeMap) : filter(lines);
+  // A line carrying diya-gl:vatPeriodEnd belongs to a VAT return period
+  // either side of the accounting year. It reaches Vat.xlsx's own entry
+  // sheets and no journal, so the year's own figures are built from the rest
+  // (the same split extract-scenarios.js makes on the master).
+  const { yearLines, straddlingLines } = splitStraddlingLines(lines);
+  let filteredLines = product === "bst" ? filterBstChart(yearLines, purchaseCodeMap) : filter(yearLines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   // buildGrouped below writes each month's rows to the sheet in whatever
   // relative order filteredLines carries them in, so a Basic Sole Trader
@@ -540,6 +552,25 @@ export function diyaGlToScenario(book, lines, product) {
       months: agreement.termMonths,
       supplier: agreement.supplier,
     }));
+  }
+
+  // The VAT periods either side of the accounting year (Vat.xlsx's S/P entry
+  // sheet pairs, SE and Ltd). deriveStraddlingEntries reads the period label
+  // off each line's own diya-gl:vatPeriodEnd against the book's accounting
+  // period, which is what the scenario TOML states literally, so a book and
+  // the TOML extracted from the same master reach buildVatinterface and
+  // vatReturnBoxes with the same entries.
+  if (product === "se" || product === "ltd") {
+    const periodEnd = book.documentInfo?.periodCoveredEnd;
+    if (straddlingLines.length > 0 && !periodEnd) {
+      throw new Error("book.toml has no documentInfo.periodCoveredEnd, so a straddling VAT period cannot be placed either side of it");
+    }
+    const from = new Date(periodStart);
+    const to = new Date(periodEnd);
+    const sales = deriveStraddlingEntries(straddlingLines, "sales", "customer", from, to);
+    const purchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", from, to);
+    if (sales.length > 0) scenario.vat_straddling_sales = sales;
+    if (purchases.length > 0) scenario.vat_straddling_purchases = purchases;
   }
 
   // The charges register, the register of members and the board's dividend

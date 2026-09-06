@@ -505,4 +505,23 @@ describe("Self Employed engine: from the diya-gl book", () => {
     const checks = checkCompliance(results, { ...scenario, ...scenario.expected }, TAX_DATA, calculateExpectedTax);
     expect(failures(checks).map(describeFailure)).toEqual([]);
   });
+
+  // The book carries the master's own VAT-straddling lines, which belong to
+  // return periods either side of the accounting year and reach Vat.xlsx's
+  // out-of-year entry sheets rather than any journal. The five return forms
+  // read them through the interface table, so a book that cannot carry them
+  // files a nil fifth quarter. Comparing box for box against the scenario
+  // extracted from the same master anchors the figures outside the book.
+  it("files the same five VAT quarters from the book as from the scenario extracted from the same master", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_DIR, "examples", "precision-code-ltd", "advanced"));
+    const fromBook = calculateFromDiyaGl(book, lines, "se", TAX_DATA, diyaGlToScenario(book, lines, "se"));
+    const fromFixture = calculateFromDiyaGl(book, lines, "se", TAX_DATA, loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml")));
+    for (let quarter = 1; quarter <= 5; quarter++) {
+      const sheet = `Vat.xlsx!VATQtr${quarter}`;
+      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+    }
+    // The fifth quarter falls wholly outside the accounting year, so the
+    // straddling entries are the only thing that puts a figure on it.
+    expect(fromBook["Vat.xlsx!VATQtr5"].G9).toBeGreaterThan(0);
+  });
 });

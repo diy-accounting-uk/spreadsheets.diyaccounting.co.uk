@@ -265,6 +265,16 @@ const { periodCoveredStart, periodCoveredEnd } = book.documentInfo;
 const straddlingSales = deriveStraddlingEntries(straddlingLines, "sales", "customer", periodCoveredStart, periodCoveredEnd);
 const straddlingPurchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", periodCoveredStart, periodCoveredEnd);
 
+// A subset book keeps those same lines beside the accounting year's own, so
+// a book read from lines carries the VAT return the scenario TOML above
+// states. diyaGlToScenario splits them straight back out, exactly as this
+// file does, and derives the same entries from them, so the year's figures
+// never see them. A subset whose business is not registered for VAT files no
+// return at all, so a line dated by a VAT period has nothing there to reach.
+function withStraddling(lines, { vatRegistered }) {
+  return vatRegistered ? [...lines, ...straddlingLines] : lines;
+}
+
 // The hire purchase agreements the master book declares, in the scenario's
 // own field names. Each one finances one purchase; the HPfinance sheet works
 // the monthly payment and the capital and interest split out for itself.
@@ -381,7 +391,7 @@ const bstDiya = writeSubset(
     accountFilter: bstAccountFilter,
     tables: bstV2,
   },
-  bstLines,
+  withStraddling(bstLines, { vatRegistered: false }),
 );
 
 // ============================================================================
@@ -473,7 +483,7 @@ const advDiya = writeSubset(
     employees: book.employees,
     tables: advV2,
   },
-  advLines,
+  withStraddling(advLines, { vatRegistered: true }),
 );
 
 // ============================================================================
@@ -606,7 +616,7 @@ const fullDiya = writeSubset(
     employees: book.employees,
     tables: fullV2,
   },
-  fullLines,
+  withStraddling(fullLines, { vatRegistered: true }),
 );
 
 // ============================================================================

@@ -29,8 +29,40 @@ describe("loadDiyaGlData", () => {
     // The land & buildings opening asset's two OB- journal lines (the asset
     // and its offsetting retained earnings entry) add to the 723 lines the
     // rest of the book carries, one more again for the cash top-up's
-    // counter leg on the current account.
-    expect(lines.length).toBe(725);
+    // counter leg on the current account, and ten more for the VAT-straddling
+    // entries the periods either side of the year are returned on.
+    expect(lines.length).toBe(735);
+  });
+});
+
+// The master states ten lines carrying diya-gl:vatPeriodEnd -- sales and
+// purchases in the VAT periods either side of the accounting year. They reach
+// Vat.xlsx's out-of-year entry sheets and no journal at all, so the subset
+// books keep them and the loader hands them to the scenario's own straddling
+// tables while every year figure is built from the rest.
+describe("diyaGlToScenario — the VAT periods either side of the year", () => {
+  it("splits the straddling lines out of the advanced book into the scenario's own tables", () => {
+    const { book, lines } = loadDiyaGlData(ADV_DATA);
+    const scenario = diyaGlToScenario(book, lines, "se");
+    expect(scenario.vat_straddling_sales.map((entry) => entry.period)).toEqual(["02Y1", "03Y1", "04Y2", "05Y2", "06Y2"]);
+    expect(scenario.vat_straddling_purchases.map((entry) => entry.period)).toEqual(["02Y1", "03Y1", "04Y2", "05Y2", "06Y2"]);
+    expect(scenario.vat_straddling_sales.map((entry) => entry.amount)).toEqual([4800, 2400, 3600, 1800, 1200]);
+  });
+
+  it("keeps them off the year's own journals", () => {
+    const { book, lines } = loadDiyaGlData(ADV_DATA);
+    const scenario = diyaGlToScenario(book, lines, "se");
+    const invoiced = Object.values(scenario.sales)
+      .flat()
+      .map((tx) => tx.invoice);
+    for (const entry of scenario.vat_straddling_sales) expect(invoiced).not.toContain(entry.invoice);
+  });
+
+  it("leaves a book with no straddling line carrying no straddling table", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "brickwork-pro", "se-vat"));
+    const scenario = diyaGlToScenario(book, lines, "se");
+    expect(scenario.vat_straddling_sales).toBeUndefined();
+    expect(scenario.vat_straddling_purchases).toBeUndefined();
   });
 });
 

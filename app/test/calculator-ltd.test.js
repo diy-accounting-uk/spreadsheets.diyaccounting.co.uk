@@ -16,6 +16,7 @@ import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateLtdResults } from "../lib/calculators/ltd.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { calculatedResultsFor } from "../bin/export.js";
 import { runBookChecks } from "../lib/book-checks.js";
@@ -309,6 +310,37 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
         results["Fixedassets.xlsx!Schedule"].E1 += 250;
       }),
     ).toEqual(["Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals"]);
+  });
+});
+
+// ============================== the VAT periods either side of the year ==============================
+// The full book carries the master's own VAT-straddling lines, which belong
+// to return periods either side of the accounting year and reach
+// Vatreturns.xlsx's out-of-year entry sheets rather than any journal. The
+// five return forms read them through the interface table, so a book that
+// cannot carry them files a nil fifth quarter. The offset moves the lines
+// and the book's period together, so the period labels come out the same as
+// the scenario's whichever year the book is read in.
+
+describe("the straddling VAT periods reach the return forms from the book", () => {
+  it("files the same five VAT quarters from the book as from the scenario extracted from the same master", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"), "-P1Y");
+    const taxData = taxDataFor("ltd-2024");
+    const fromBook = calculateFromDiyaGl(book, lines, "ltd", taxData, diyaGlToScenario(book, lines, "ltd"));
+    const fromFixture = calculateFromDiyaGl(
+      book,
+      lines,
+      "ltd",
+      taxData,
+      loadScenario(resolve(APP_DIR, "test", "fixtures", "ltd-scenario-full.toml")),
+    );
+    for (let quarter = 1; quarter <= 5; quarter++) {
+      const sheet = `Vatreturns.xlsx!VATQtr${quarter}`;
+      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+    }
+    // The fifth quarter falls wholly outside the accounting year, so the
+    // straddling entries are the only thing that puts a figure on it.
+    expect(fromBook["Vatreturns.xlsx!VATQtr5"].G9).toBeGreaterThan(0);
   });
 });
 
