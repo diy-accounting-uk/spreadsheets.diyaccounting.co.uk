@@ -387,7 +387,6 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T13 | UX pass at four viewports with the frontend-design skill's questions; axe gate; keyboard run | T7, T8, T12 | Fable | `web/.../books/products/se.js`, `books/se.css`, `web/browser-tests/books-se-layouts.browser.test.js` (new), `playwright.config.js` |
 | T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
 | T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
-| T33 | The cash and payroll journals render an empty chart in the entries grid | — | Sonnet | `web/.../books/products/se.js`, `web/browser-tests/books-se.browser.test.js` |
 | T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | — | Sonnet | `app/lib/report-indicators.js`, `app/test/judge-reconciliation.test.js` |
 | T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | — | Haiku | `app/lib/product-workbook.js`, `app/lib/xlsx-exporter.js` |
 | T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | — | Haiku | `app/bin/generate.js`, `app/test/generate.test.js` |
@@ -712,6 +711,18 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   `SE_PURCHASE_CODE_MAP` both call "Other"), so `settlementSuggestions`' purchase-from-payment
   reposts an SE book to its own miscellaneous account rather than the chart's first one; proved on
   `examples/precision-code-ltd/advanced`, both with `5002` declared and with it dropped.
+- T33, branch `claude/se-repost-chart`, 2026-09-06: neither journal keeps an `[accounts]` table of
+  its own in `book.toml`, so the shared loader's chart -- one entry a journal id -- left the cash
+  and payroll journals' entries grid with nothing to offer the account picker (an empty `<select>`
+  on the add row, and the "outside chart" label on every existing row's own). `se.js`'s `snapshot`
+  now builds its own chart, giving cash the second bank account (`1220`, the code its lines already
+  post to) and payroll the two wage accounts (`5100`, `5101`) its lines already carry; proved on the
+  advanced book, whose April carries two cash lines and three payroll lines across both wage codes.
+  A second, deeper defect surfaced and left unfixed as out of scope: the entries grid's generic
+  "Add" button (`edits.js`'s `addEntry`) routes every journal but `sales` through `addPurchaseLine`,
+  which throws for `bank`, `cash` and `payroll` (`sourceJournalID` mismatch); this pre-dates T33,
+  affects the `bank` journal too, and needs new UI fields (direction, bank account, or payslip
+  fields) beyond a chart fix, so it is not folded in here.
 
 ### Verification ladder
 

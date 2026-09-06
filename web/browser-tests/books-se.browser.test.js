@@ -102,6 +102,20 @@ function aprilBankLineCount() {
     ).length;
 }
 
+function aprilLinesOn(journal) {
+  return fs
+    .readFileSync(path.join(process.cwd(), BOOK_DIR, "lines.jsonl"), "utf-8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter((line) => line.postingDate.startsWith(OPEN_MONTH))
+    .filter(
+      journal === "cash"
+        ? (line) => line.sourceJournalID === "bank" && String(line["diya-gl:bankAccountID"]) === "1220"
+        : (line) => line.sourceJournalID === journal,
+    );
+}
+
 test.describe("DIYA-GL books — the Self Employed page", () => {
   test("every Self Employed example loads with no uncaught error and nothing the policy blocks", async ({ page }) => {
     expect(SE_EXAMPLES.length).toBeGreaterThan(0);
@@ -201,6 +215,25 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
     await expect(page.locator('.entries-table[data-journal="bank"]')).toBeVisible();
     await expect(page.locator(".entries-table")).toHaveCount(1);
     await expect(page.locator('.entries-table[data-journal="bank"] tr.entry-row')).toHaveCount(aprilBankLineCount());
+  });
+
+  test("the cash and payroll journals carry a real chart of accounts, not an empty one", async ({ page }) => {
+    await openExample(page, FEATURED_EXAMPLE);
+
+    await page.locator('[data-journal-switch="cash"]').click();
+    const cashTable = page.locator('.entries-table[data-journal="cash"]');
+    await expect(cashTable).toBeVisible();
+    await expect(cashTable.locator("tr.entry-row")).toHaveCount(aprilLinesOn("cash").length);
+    await expect(cashTable.locator("tr.entry-row .entry-account-name").first()).toHaveText("Cash account");
+    await expect(cashTable.locator(".entry-add-account option")).toHaveCount(1);
+
+    await page.locator('[data-journal-switch="payroll"]').click();
+    const payrollTable = page.locator('.entries-table[data-journal="payroll"]');
+    await expect(payrollTable).toBeVisible();
+    await expect(payrollTable.locator("tr.entry-row")).toHaveCount(aprilLinesOn("payroll").length);
+    const payrollNames = await payrollTable.locator("tr.entry-row .entry-account-name").allTextContents();
+    expect(payrollNames.sort()).toEqual(["Directors wages (non-PAYE)", "Employee wages (non-PAYE)", "Employee wages (non-PAYE)"]);
+    await expect(payrollTable.locator(".entry-add-account option")).toHaveCount(2);
   });
 
   test("the bank book's closing balance is the March tab's own cell", async ({ page }) => {
