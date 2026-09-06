@@ -79,30 +79,6 @@ async function openFull(page) {
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 }
 
-// The full fixture's one BB-coded transfer (a cash top-up from the current
-// account) carries no counter-leg by construction
-// (book-checks-ltd.test.js's own "the cash top-up has no counter leg"), so
-// book-ltd-transfer-has-counter-leg starts warning. Every other rule's own
-// breaking test wants a clean slate, so each opens on this same corrected
-// baseline first -- entering the counter leg the fixture is missing -- the
-// same COUNTER_LEG the Node suite adds.
-const COUNTER_LEG = {
-  "entryNumber": "TXN-0155B",
-  "sourceJournalID": "bank",
-  "postingDate": "2025-06-10",
-  "accountMainID": "1200",
-  "debitCreditCode": "C",
-  "amount": 100.0,
-  "documentType": "bank-statement",
-  "documentReference": "BNK-0155B",
-  "detailComment": "Cash float withdrawal",
-  "lineItemComment": "Cash drawn for the cash float",
-  "taxCode": "OS",
-  "taxRate": 0.0,
-  "diya-gl:bankCode": "BC",
-  "diya-gl:bankAccountID": "1200",
-};
-
 async function appendLines(page, newLines) {
   await page.evaluate(async (newLines) => {
     const snapshot = window.DIYA_BOOKS_SNAPSHOT;
@@ -142,9 +118,12 @@ async function patchLine(page, entryNumber, patch, label) {
   );
 }
 
+// The master fixture carries the cash top-up's own counter leg (TXN-0918)
+// already (book-checks-ltd.test.js's own "the master itself carries the
+// cash top-up's counter leg"), so the raw fixture is every rule's own clean
+// baseline -- nothing to enter first.
 async function openBaseline(page) {
   await openFull(page);
-  await appendLines(page, [COUNTER_LEG]);
 }
 
 // ── Reading the book-checks panel ───────────────────────────────────────────
@@ -290,7 +269,7 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
     await openBaseline(page);
     const before = await bookCheckStates(page);
 
-    await removeLineByEntryNumber(page, "TXN-0155B");
+    await removeLineByEntryNumber(page, "TXN-0918");
 
     const after = await bookCheckStates(page);
     expect(flippedIds(before, after)).toEqual(["book-ltd-transfer-has-counter-leg"]);
@@ -477,9 +456,8 @@ test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through 
     expect(bookAfter).toEqual(bookBefore);
 
     // The downloaded bookchecks.json agrees with the panel on every one of
-    // the sixteen ids -- including the full fixture's own two pre-existing
-    // warnings (book-ltd-transfer-has-counter-leg's unpaired cash top-up,
-    // book-vat-threshold's turnover), neither of which this edit touches.
+    // the sixteen ids -- including the full fixture's own one pre-existing
+    // warning (book-vat-threshold's turnover), which this edit never touches.
     const bookChecksJson = await downloadBookChecksJson(page);
     for (const id of ALL_IDS) {
       expect(bookChecksJson.find((r) => r.id === id).result, id).toBe(bookAfter[id]);
