@@ -163,6 +163,29 @@ describe("the Company package for the year end the templates carry", () => {
       expect(workbookXml, `${file.name} does not ask the spreadsheet app to recalculate`).toContain('fullCalcOnLoad="1"');
     }
   }, 600000);
+
+  // TXN-0918, the cash top-up's counter leg, is coded "BC" -- Cashaccount's
+  // own transfer letter -- and dated 2025-06-10, not the period's first day
+  // (2025-04-01). cellWrites() must read that date to tell it apart from a
+  // real opening balance: written as one, it would reset June's A1 to 100
+  // instead of carrying May's closing forward, the same account also
+  // losing the payment row a real bank statement would show for it.
+  it("keeps the cash top-up's counter leg a June transfer, not a second opening balance", async () => {
+    const currentAccount = workbookNamed(saved.files, "Currentaccount.xlsx");
+
+    const mayClosing = await cellValue(currentAccount, "May", "A2");
+    const juneOpening = await cellValue(currentAccount, "Jun", "A1");
+    expect(juneOpening).toBe(mayClosing);
+    expect(juneOpening).not.toBe(100);
+
+    const { xml, sharedStrings } = await sheetXml(currentAccount, "Jun");
+    let transferRow = null;
+    for (let row = 6; row <= 300 && transferRow === null; row++) {
+      if (readCellValue(xml, `W${row}`, sharedStrings) === "BC") transferRow = row;
+    }
+    expect(transferRow, "no June payment row is coded BC").not.toBeNull();
+    expect(readCellValue(xml, `X${transferRow}`, sharedStrings)).toBe(100);
+  }, 600000);
 });
 
 describe("the Company package for a year end that moves the month tabs", () => {
