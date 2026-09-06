@@ -9,9 +9,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 PR #63, #64 and #65 merged to main on 2026-09-06; every product's packages, reports and
 reconciliation pages are regenerated on main from the merged writers, prod deployed from the Ltd
 package commit `c97b2c81` through deploy run 34038592549 with the judge on Nova passing all four
-products under the actions role, and `test` is green on main at `39f27536`. The three PR branches
-are deleted at origin; `main` is the only branch locally and at origin, and no worktree exists
-under `../.worktrees/spreadsheets/`. Sub-agents run no LibreOffice and prove JS calculations
+products under the actions role, and `test` is green on main at `39f27536`. Batch `claude/b1-board` (worktree `batch`) collects the board rows below as each verifies; its
+draft PR opens with the first merge. CQ-5 is PR #66 on `claude/ops-codeql` (worktree CQ-5). Sub-agents run no LibreOffice and prove JS calculations
 against the committed packages' extraction (`report.js --source-dir`). Every worktree lives at
 `../.worktrees/spreadsheets/<row>` on a branch named `claude/<ns>-<topic>` (`CLAUDE.md`'s
 convention, the distinctive part right after `claude/`) while its row is in flight, and the board
@@ -66,15 +65,15 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 open on main's scan |
-| CQ-5 | CodeQL runs on every push, docs-only included; move it from GitHub's default setup to a workflow with `test.yml`'s trigger criteria (the same branch and path filters, schedule and PR trigger) | operator | machine | — | in-flight | PR #66 on `claude/ops-codeql`; worktree CQ-5; CodeQL run pending |
-| H1 | Merge PR #66 once its codeql run uploads three analyses and the alerts page shows 12, 19, 20 under them | none | human | CQ-5 | blocked-to-start | waits on the PR run |
-| SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
-| SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
-| TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
+| CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | in-flight | Sonnet; worktree CQ-4, `claude/cq-4-alerts`, batch `claude/b1-board` |
+| CQ-5 | CodeQL runs on every push, docs-only included; move it from GitHub's default setup to a workflow with `test.yml`'s trigger criteria (the same branch and path filters, schedule and PR trigger) | operator | machine | — | in-flight | PR #66 code complete; codeql runs green, three analyses uploaded |
+| H1 | Merge PR #66 once its codeql run uploads three analyses and the alerts page shows 12, 19, 20 under them | none | human | — | ready-to-start | PR #66's codeql runs are green |
+| SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
+| SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree SE-T32-33, `claude/se-repost-chart`, batch `claude/b1-board` |
+| SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Haiku; worktree SE-T35-36, `claude/se-one-map`, batch `claude/b1-board` |
+| SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Haiku; worktree SE-T35-36, `claude/se-one-map`, batch `claude/b1-board` |
+| TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree TX-T21, `claude/tx-takings-spec`, batch `claude/b1-board` |
+| TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree TX-T22, `claude/tx-views-spec`, batch `claude/b1-board` |
 
 ## Plans not tracked here
 
