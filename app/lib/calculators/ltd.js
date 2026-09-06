@@ -61,8 +61,8 @@ const VAT_RATE = 0.2;
 // order row 5 of each month tab tests them. Column AK of a Purchases month
 // tab is the CIS certificates column, which the writer fills from a
 // sub-contractor purchase rather than from a code letter.
-const SALES_ANALYSIS_COLUMNS = { a: "O", b: "P", c: "Q", d: "R", g: "S", o: "T", fs: "U" };
-const PURCHASE_ANALYSIS_COLUMNS = {
+export const SALES_ANALYSIS_COLUMNS = { a: "O", b: "P", c: "Q", d: "R", g: "S", o: "T", fs: "U" };
+export const PURCHASE_ANALYSIS_COLUMNS = {
   s: "O",
   c: "P",
   o: "Q",

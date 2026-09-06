@@ -11,6 +11,20 @@
 // reaches the filesystem through spreadsheet-runner.js and xlsx-exporter.js.
 // Nothing here touches the filesystem.
 
+// The twelve month tab names in the order a package prints them, starting
+// from the month after year end (yearEndMonth 1-indexed, Jan=1). A March
+// year end (3) gives Apr..Mar, the template's own order; an October year end
+// (10) gives Nov..Oct, the order examples/ltd-latest and every non-March
+// packages/ directory ships tabs in. app/lib/generator.js's own
+// getMonthTabSequence computes the same sequence for the writer that renames
+// the tabs; this copy serves readers (the anchor table) that never touch a
+// file on disk.
+const MONTH_TAB_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function monthTabOrder(yearEndMonth) {
+  return Array.from({ length: 12 }, (_, i) => MONTH_TAB_NAMES[(yearEndMonth + i) % 12]);
+}
+
 const BANK_ACCOUNT_FILES = {
   1200: "Currentaccount.xlsx",
   1210: "Savingaccount.xlsx",
