@@ -530,6 +530,25 @@ async function seLatestZipBytes(overrides) {
   return zip.generateAsync({ type: "nodebuffer" });
 }
 
+// A copy of one workbook with a cell's own cached value bent: the leaf then
+// holds a figure its formula no longer produces, which is what a customer
+// leaves behind by editing a cell and never recalculating.
+async function workbookWithBentCell(fileName, sheetName, cellRef, newValue) {
+  const zip = await JSZip.loadAsync(fs.readFileSync(path.join(SE_PACKAGE_DIR, fileName)));
+  const workbookXml = await zip.file("xl/workbook.xml").async("string");
+  const relsXml = await zip.file("xl/_rels/workbook.xml.rels").async("string");
+  const tag = [...workbookXml.matchAll(/<sheet\b([^>]*)\/>/g)].find((m) => m[1].includes(`name="${sheetName}"`));
+  expect(tag, `${fileName} has a sheet named ${sheetName}`).toBeTruthy();
+  const rid = /r:id="([^"]+)"/.exec(tag[1])[1];
+  const target = new RegExp(`Id="${rid}"[^>]*Target="([^"]+)"`).exec(relsXml)[1];
+  const sheetPath = `xl/${target.replace(/^\.?\//, "")}`;
+  const xml = await zip.file(sheetPath).async("string");
+  const cell = new RegExp(`(<c\\s+r="${cellRef}"[^>]*>)([\\s\\S]*?)(</c>)`).exec(xml);
+  expect(cell, `${fileName}!${sheetName}!${cellRef} carries a cached value`).not.toBeNull();
+  zip.file(sheetPath, xml.replace(cell[0], cell[1] + cell[2].replace(/<v>[\s\S]*?<\/v>/, `<v>${newValue}</v>`) + cell[3]));
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
 // A copy of the hub with one cached link value bent, the same way A8 bends
 // one in the package the page saved: the hub then quotes a figure the leaf
 // itself no longer holds, which is what a customer leaves behind by saving a
@@ -657,10 +676,13 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
   });
 
   test("a mark survives a re-render and an edit, and says which it is", async ({ page }) => {
-    await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
-
     // SE Short box 25 reads the Schedule's other capital allowances across a
-    // link, so it carries a mark in the form row's margin.
+    // link. Bending its own cached figure gives the case a drift of its own
+    // to render, rather than depending on whatever se-latest's own cached
+    // recalculation happens to disagree with the engine on today.
+    const bentHub = await workbookWithBentCell(HUB_FILE, "SE Short", "O80", 999999);
+    await uploadPackage(page, await seLatestZipBytes({ [HUB_FILE]: bentHub }), "se-latest-bent-o80.zip");
+
     const marked = page.locator('#view-root .form-row:has([data-r-key="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction');
     await page.locator('.tab-btn[data-view="sa103s"]').click();
     await expect(marked).toHaveCount(1);
