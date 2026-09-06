@@ -34,19 +34,19 @@ commits. Prod was already deployed from
 
 ## Context for the open rows
 
-- **M1** (operator): `generate-all.yml` run 34026795912 on main, dispatched at 10:12 UTC. BST and
-  Taxi have committed their packages, reports and reconciliation pages to main (`1b371721`,
-  `bfe98da6`); SE and Ltd follow. The commit jobs push with the default `GITHUB_TOKEN`, which
-  fires no workflow, so `deploy.yml` does not follow those pushes: prod serves `d235d704`'s
-  packages until the operator dispatches `deploy.yml` (`-f environment-name=prod`) after the run,
-  or the 07:17 UTC schedule runs it. If a product fails
-  at the reconcile job's "Unit tests against the fresh packages and example" step, the test names
-  in the log say which product's file; the four generate workflows scope that step to the
-  product's own and the shared unit tests (PL-2). If the reconciliation itself reports
-  ANOMALYDETECTED, the failing checks are only in the report file the job writes, not in the log:
-  reproduce with `node app/bin/report.js --package <p> --data <book> --years <year file>
-  --year-end <date> --output-dir <scratch>` (no LibreOffice) and read the compliance section, or
-  run one targeted `npm run reconciliation -- --package <p> --scenario <s> --year-end <date>`.
+- **M1** (operator): `generate-all.yml` run 34026795912 committed BST, Taxi and SE to main; Ltd's
+  reconcile passed but its unit step failed on the pinned October year end, fixed in PR #63, and
+  the operator dispatched `generate-ltd` again as run 34032585902. The commit jobs push with the
+  default `GITHUB_TOKEN`, which fires no workflow, so `deploy.yml` never follows a package push.
+  The scheduled deploy run 34030850798 then failed at its judge gate: the SE verdict fails on the
+  brickwork-pro non-VAT book's negative Total Tax + NI (SE-T34), and every product's Sonnet call
+  403s and escalates to Opus (H1). Prod serves `d235d704`'s packages until a deploy passes the
+  judge: after SE-T34 lands, `gh workflow run deploy.yml -f environment-name=prod`. If a generate
+  product fails at the reconcile job's "Unit tests against the fresh packages and example" step,
+  the test names in the log say which product's file. If the reconciliation itself reports
+  ANOMALYDETECTED, the failing checks are only in the report file the job writes: reproduce with
+  `node app/bin/report.js --package <p> --data <book> --years <year file> --year-end <date>
+  --output-dir <scratch>` (no LibreOffice) and read the compliance section.
 - **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
   lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
   it starts with the public directory; CodeQL wants a sanitiser it recognises, so serve from an
@@ -65,25 +65,16 @@ commits. Prod was already deployed from
   grid renders an empty chart; T7 assigned the fix to T14, which landed without it. Either
   `entriesGrid: false`/`chart: false` for those journals in `web/.../books/products/se.js` or a
   chart from the journal's own categories; prove in `web/browser-tests/books-se.browser.test.js`.
-- **SE-T34**: `app/lib/report-indicators.js` `seIndicators` has no CIS-suffered line, so the judge
-  reads a negative "Total Tax + NI, less the CIS already deducted" as an unexplained query on a
-  CIS-heavy SE book (brickwork-pro). Add the indicator sentence from `SE Short!O124`'s figure and
-  assert it in `app/test/judge-reconciliation.test.js` the way the net-business-profit line is.
+- **SE-T34**: `claude/se-cis-indicator` (local until pushed) makes `incomeTaxLine` state the CIS
+  the contractors deducted and the bottom line it leaves; proved in `judge-reconciliation.test.js`
+  on the committed brickwork-pro non-VAT report. The judge re-reads the indicators on the next
+  deploy run; no report regenerates.
 - **SE-T35**: `app/lib/product-workbook.js:40` `PRODUCT_BY_SCHEMA_NAME` is the inverse of
   `app/lib/xlsx-exporter.js` `SCHEMA_PRODUCT_NAMES`; keep one and derive the other, updating both
   callers, no alias.
 - **SE-T36**: `app/bin/generate.js:348` runs `main().catch(...)` at module scope; guard it with the
   `import.meta.url` versus `process.argv[1]` check the other bins use, so tests can import its
   functions; prove by importing it in `app/test/generate.test.js`.
-- **SE-T37** (SE-T29's remainder): the scheduled `test.yml` run 34030029314 on `2d809143` failed three
-  browser cases and `generate-all.yml` run 34026795912 failed Ltd's unit-test step, all because the
-  regenerated `*-latest` examples now carry the dates of the year they were generated for.
-  `claude/se-shifted-dates` (local only until the freeze lifts) makes `calculateSeCells` land the
-  wages-paid dates through the writer's `periodShiftMonths` (proved in `calculator-se.test.js`),
-  finds the April row by month in `books-bst-edits`, gives A7's mark proof its own bent leaf and
-  asserts the true upload is clean, and reads the Ltd October year end off `ltd-latest`'s export.
-  After the merge: the Ltd generate run again (its reconcile passed; only the unit step failed),
-  then `deploy.yml` for prod.
 - **TX-T21**: T14's brief (Taxi plan, "Takings view") names `books-taxi-takings.browser.test.js`
   with cases T17 did not absorb: undo after a fare edit, the mobile-portrait week and day cards,
   and `changeLineDetail` committed through the page DOM. TX-T17's four specs cover the rest; build
@@ -100,13 +91,13 @@ commits. Prod was already deployed from
 | CQ-4 | CodeQL still flags `web/unit-tests/smoke.test.js` lines 32 and 40 (path injection: the resolve-and-prefix guard is not one it recognises; read the request path from an allowlist) and `books/shell.js:1337` (a property chain assigned without a prototype guard) | none | machine | — | ready-to-start | Sonnet; alerts 12, 19, 20 on main's scan after PR #62 |
 | SE-T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | SE-T33 | The cash and payroll journals render an empty chart in the entries grid | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| SE-T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
+| SE-T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query; the scheduled deploy's judge gate fails SE on it | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `claude/se-cis-indicator`: fix built, awaiting the operator's push under the freeze |
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| SE-T37 | The regenerated `bst-latest`, `se-latest` and `ltd-latest` sit in the year they were generated for; three browser specs and one unit spec still pinned the master books' dates (the BST edits April row, the SE payslip dates the calculator emitted unshifted, the SE A7 true upload expecting incidental drift, the Ltd October package's year end) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `claude/se-shifted-dates`: fix built, awaiting the operator's push under the freeze |
-| M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | — | in-flight | run 34026795912: BST and Taxi on origin/main, SE testing; deploy needs a dispatch after |
+| M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | SE-T34 | in-flight | `generate-ltd` run 34032585902 after PR #63; deploy waits on the judge passing SE |
+| H1 | Accept the Bedrock model agreement for `anthropic.claude-sonnet-5` in the spreadsheets account, us-east-1 (or let the actions role subscribe): every judge call to Sonnet returns 403 on `aws-marketplace:Subscribe` and escalates straight to Opus | none | human | — | ready-to-start | seen on every product in deploy run 34030850798 and the generate runs |
 
 ## Plans not tracked here
 

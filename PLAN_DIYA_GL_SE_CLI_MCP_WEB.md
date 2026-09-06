@@ -698,6 +698,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   date-bearing payslip checks (period-end `I9`, payment-date `M18`, the Jul/Aug wages-paid dates)
   hold for any package year end, not only the fixture's own. A no-LibreOffice case in
   `calculator-se.test.js` proves it against the writer's actual shifted cells.
+- SE-T34, branch `claude/se-cis-indicator`, 2026-09-06: `incomeTaxLine` reads the computation's
+  "Less: CIS Deducted" row and, where it carries a figure, states tax and NI before it, the
+  deduction as SA103S box 38, and the bottom line it leaves, naming a negative one a repayment;
+  proved on the committed brickwork-pro non-VAT report and its absence on the advanced one.
 - SE-T31 `0af2d958`, `db11a3b6`, merged 2026-09-06: `se-profit-forecast-checks.test.js` (LibreOffice-
   bound) passes `checkCompliance` the `sePackageYearEnd(taxData)` its own shifted 2023-24-rates
   package implies, so the corruption cases in that rate year assert against the one check they mean

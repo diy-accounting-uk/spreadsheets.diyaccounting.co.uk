@@ -335,6 +335,17 @@ describe("buildIndicators for the Self Employed", () => {
     expect(small).toContain("charged on a profit of 3,530.00; a personal allowance of 12,570.00 leaves taxable income of 0.00");
     expect(small).toContain("income tax 0.00");
   });
+
+  it("explains a bottom line below zero by the CIS the contractors already deducted", () => {
+    const cis = indicatorText("se", "seNonVat", { vatRegistered: false });
+    expect(cis).toContain("income tax and National Insurance together 0.00; contractors already deducted 200.00 under CIS (SA103S box 38)");
+    expect(cis).toContain("which comes off to leave -200.00, a repayment due rather than a charge.");
+  });
+
+  it("leaves the CIS clause out of a book with nothing deducted", () => {
+    expect(text).toContain("income tax and National Insurance together 44,026.67.");
+    expect(text).not.toContain("under CIS");
+  });
 });
 
 describe("buildIndicators for the Basic Sole Trader", () => {
