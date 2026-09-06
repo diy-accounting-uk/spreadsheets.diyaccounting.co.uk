@@ -16,25 +16,17 @@
       "2024-25": {
         "quarterly": "period-summary",
         "annual": "annual-submission",
-        "fieldsAdded": [
-          "adjustments.transitionProfitAmount",
-          "adjustments.transitionProfitAccelerationAmount"
-        ]
+        "fieldsAdded": ["adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"]
       },
       "2025-26": {
         "quarterly": "cumulative-period-summary",
         "annual": "annual-submission",
-        "fieldsGone": [
-          "allowances.zeroEmissionsGoodsVehicleAllowance",
-          "allowances.electricChargePointAllowance"
-        ]
+        "fieldsGone": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"]
       },
       "2026-27": {
         "quarterly": "cumulative-period-summary",
         "annual": "annual-submission",
-        "fieldsGone": [
-          "adjustments.overlapReliefUsed"
-        ],
+        "fieldsGone": ["adjustments.overlapReliefUsed"],
         "fieldsAdded": [
           {
             "field": "adjustments.adjustmentToProfitsForClass4",

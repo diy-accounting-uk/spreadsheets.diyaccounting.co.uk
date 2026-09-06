@@ -94,10 +94,10 @@
   "devDependencies": {
     "@axe-core/cli": "^4.13.0",
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "1.62.1",
-    "aws-cdk": "^2.1139.0",
+    "@playwright/test": "1.63.0",
+    "aws-cdk": "^2.1140.0",
     "esbuild": "^0.28.2",
-    "eslint": "^10.9.1",
+    "eslint": "^10.10.0",
     "eslint-plugin-security": "^4.0.1",
     "globals": "^17.12.0",
     "http-server": "^14.1.1",
@@ -110,11 +110,11 @@
     "retire": "^5.7.0",
     "smol-toml": "^1.8.0",
     "structured-data-testing-tool": "^4.5.0",
-    "vitest": "^4.1.11",
+    "vitest": "^5.0.0",
     "wait-on": "^9.1.0"
   },
   "dependencies": {
-    "@anthropic-ai/bedrock-sdk": "^0.33.3",
+    "@anthropic-ai/bedrock-sdk": "^0.33.4",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "stripe": "^22.6.1"
