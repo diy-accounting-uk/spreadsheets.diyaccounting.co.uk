@@ -132,6 +132,14 @@
       "reason": "VAT is one book-wide rate, entered as a percentage on the first Sales month tab, so no row carries a rate of its own. SE and Ltd restate that book rate on every line; the single-file templates have no rate cell at all."
     }
   ],
+  "linesComment": "One entry per kind of line the package holds somewhere the export never opens. \"block\" is a line's own scope key from verify-roundtrip.js's lineScopeBlock(), \"products\" names the products it reaches. The lines an entry names are counted apart from the ones scored, so a line the sheets keep outside the journals is read as neither a loss nor a match, and the fields only it carries are neither dropped nor compared. An entry that matches no line in a run throws, the same way a field declaration does.",
+  "lines": [
+    {
+      "block": "vat-straddling",
+      "products": ["se", "ltd"],
+      "reason": "A line carrying diya-gl:vatPeriodEnd is returned on a VAT period either side of the accounting year. The VAT workbook keeps a sales and a purchases entry sheet for each such period, holding a date, a name, a reference and an amount with no account, journal or tax code beside them, and the export reads the twelve month tabs and the opening journal rather than those sheets."
+    }
+  ],
   "bookFieldsComment": "One entry per book.toml path a product's package cannot hold. The path is the dotted form flattenBook() writes, with empty brackets standing for every index of an array of tables (debtors[].invoice covers debtors[0] through debtors[n]) and \"*\" standing for a whole segment a table keys on something else (accounts.sales.*.diya-gl:column covers every sales account). \"products\" names every product the absence applies to; an entry that matches nothing a run left out throws, so a declaration cannot outlive the absence it describes.",
   "bookFields": [
     {

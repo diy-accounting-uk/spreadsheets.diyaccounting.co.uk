@@ -19,6 +19,7 @@ import { changeLinePostingDate, changeLineAccount, changeLineAmount, addSaleLine
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
 import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
 import { SE_PRODUCT_RULES } from "./book-checks/se.js";
+import { isStraddlingLine } from "./scenario-extractor.js";
 
 // ============================== shared helpers ==============================
 
@@ -316,9 +317,12 @@ function runChecks(ctx) {
 // a save. Each rule looks at the same ctx the checks use, plus taxData for
 // the year's VAT registration threshold.
 
+// Turnover for the year the book covers. A straddling line is returned on a
+// VAT period either side of that year, so its sale belongs to a different
+// year's turnover and not to this one.
 function salesTotal(lines) {
   let total = 0;
-  for (const line of lines) if (line.sourceJournalID === "sales") total += line.amount;
+  for (const line of lines) if (line.sourceJournalID === "sales" && !isStraddlingLine(line)) total += line.amount;
   return total;
 }
 
@@ -649,9 +653,13 @@ function bankEntries(lines, bankCode, side) {
   });
 }
 
+// The invoices a journal holds for the year the bank journal covers. A
+// straddling invoice is returned on a VAT period outside that year and is
+// banked in a book this one does not hold, so it neither needs a settlement
+// of its own nor takes up a bank line another invoice is waiting for.
 function journalEntries(lines, journal) {
   return lines.filter(function (line) {
-    return line.sourceJournalID === journal;
+    return line.sourceJournalID === journal && !isStraddlingLine(line);
   });
 }
 

@@ -4,6 +4,8 @@
 // report-generator.js — Shared report formatting for reconciliation and standalone report commands.
 // Extracted from app/bin/reconcile.js.
 
+import { canonicalForUnit, roundHalfUp, MONEY_DECIMALS } from "./canonical-report-value.js";
+
 // The bridge walks the accounting profit to the profit the tax computation
 // charges, one named adjustment at a time, and states what is left over. A
 // product supplies the rows through profitBridge(results); the title, the
@@ -12,15 +14,30 @@
 export const PROFIT_BRIDGE_TITLE = "Accounting profit to tax profit bridge";
 export const PROFIT_BRIDGE_CHECK = "Accounting profit to tax profit bridge closes to zero";
 
+// A number written out in decimal digits, whatever its magnitude. String()
+// gives exponent form below 1e-6, which carries no decimal point for
+// roundHalfUp to round on, so float noise would print with its sign still on
+// it. Twenty places is far finer than any place a report prints to, so the
+// rounding that follows is the only one that moves a printed digit.
+function plainDecimal(value) {
+  return Number.isFinite(value) && Math.abs(value) < 1e21 ? value.toFixed(20) : String(value);
+}
+
 // Lines print to the penny. The residue asks for more places than that, so a
-// difference under a penny is shown rather than rounded into a nil. A negated
-// nil line, and a residue that is float noise, both land on -0, which prints
-// as "-0" and reads as a defect.
-function reportAmount(value, fractionDigits = 2) {
+// difference under a penny is shown rather than rounded into a nil.
+//
+// One rounding, half away from zero, on the decimal digits themselves: a
+// money line through canonicalForUnit, so a figure prints as the same value
+// verify-roundtrip compares it as. toFixed rounds a binary float, which sends
+// a half penny the wrong way (1.005 to 1.00), and toLocaleString would then
+// round the result a second time. roundHalfUp gives a nil no sign, so a
+// negated nil line and a residue that is float noise print as "0" rather than
+// the "-0" that reads as a defect.
+export function reportAmount(value, fractionDigits = MONEY_DECIMALS) {
   if (typeof value !== "number") return "—";
-  const rounded = Number(value.toFixed(fractionDigits));
-  const amount = rounded === 0 ? 0 : rounded;
-  return amount.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
+  const text = plainDecimal(value);
+  const rounded = fractionDigits === MONEY_DECIMALS ? canonicalForUnit(text, "money") : roundHalfUp(text, fractionDigits);
+  return Number(rounded).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
 }
 
 export function profitBridgeLines(bridge) {

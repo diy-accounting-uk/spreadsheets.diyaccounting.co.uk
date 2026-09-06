@@ -387,9 +387,28 @@ function validateInventoryEntry(entry, index) {
   }
 }
 
+// A "lines" entry names a whole block of fixture lines the package holds
+// somewhere the export never opens, so they are counted apart from the lines
+// scored rather than read as losses. The block is a line's own scope key from
+// lineScopeBlock().
+function validateLineBlockEntry(entry, index) {
+  const where = `roundtrip-unrepresentable.json lines[${index}]${entry?.block ? ` ("${entry.block}")` : ""}`;
+  if (typeof entry?.block !== "string" || entry.block.length === 0) throw new Error(`${where} has no block name`);
+  if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
+    throw new Error(`${where} has a malformed "products" list`);
+  }
+  if (typeof entry.reason !== "string" || entry.reason.length === 0) throw new Error(`${where} has no reason`);
+}
+
 // A scope with no declarations, for a call site that has no inventory file
 // or is scoring a product the inventory names nothing for.
-const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map(), bookPaths: new Map() };
+const EMPTY_SCOPE = {
+  product: undefined,
+  productWide: new Set(),
+  byBlock: new Map(),
+  bookPaths: new Map(),
+  lineBlocks: new Set(),
+};
 
 // A book path pattern stands for every index of an array-of-tables entry, so
 // one declaration covers a register however many rows it has. flattenBook
@@ -471,6 +490,10 @@ export function unrepresentableScope(product, inventory) {
   const productWide = new Set();
   const byBlock = new Map();
   const bookPaths = bookFieldScope(product, inventory);
+  const lineBlocks = new Set();
+  const lineEntries = inventory?.lines ?? [];
+  lineEntries.forEach((entry, index) => validateLineBlockEntry(entry, index));
+  for (const entry of lineEntries) if (entry.products.includes(product)) lineBlocks.add(entry.block);
   const fields = inventory?.fields ?? [];
   fields.forEach((entry, index) => validateInventoryEntry(entry, index));
   for (const entry of fields) {
@@ -484,7 +507,7 @@ export function unrepresentableScope(product, inventory) {
       byBlock.get(scope.block).add(entry.field);
     }
   }
-  return { product, productWide, byBlock, bookPaths };
+  return { product, productWide, byBlock, bookPaths, lineBlocks };
 }
 
 // A line's scope key for the unrepresentable-field inventory: ordinarily its
@@ -498,7 +521,15 @@ export function unrepresentableScope(product, inventory) {
 // rest of the block.
 const BANK_OPENING_BALANCE_BLOCK = "bank-opening-balance";
 
+// A line carrying diya-gl:vatPeriodEnd is returned on a VAT period either
+// side of the accounting year. It shares its sourceJournalID with the sales
+// or purchases rows around it but reaches none of their month tabs -- the VAT
+// workbook keeps a pair of entry sheets for each such period instead -- so it
+// gets a scope of its own too.
+const VAT_STRADDLING_BLOCK = "vat-straddling";
+
 function lineScopeBlock(line) {
+  if (line["diya-gl:vatPeriodEnd"] !== undefined) return VAT_STRADDLING_BLOCK;
   if (line.sourceJournalID === "bank" && line.detailComment === "Opening balance") return BANK_OPENING_BALANCE_BLOCK;
   return line.sourceJournalID;
 }
@@ -582,6 +613,10 @@ export function flattenBook(value, prefix = "") {
  * lists for this product -- a day the writer sums into one cell is one line
  * to be matched, not several. wholeLineMatches and the field-existence
  * checks stay on the raw fixture lines.
+ *
+ * Every axis scores against the fixture lines left after the blocks the
+ * inventory's "lines" section declares are set aside and counted as
+ * linesUnrepresentable.
  */
 export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftDays = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
@@ -594,9 +629,26 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
     : monthShift
       ? (d) => shiftPostingDate(d, monthShift)
       : null;
-  const fixtureLines = shiftDate
+  const shiftedFixtureLines = shiftDate
     ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
     : rawFixtureLines;
+
+  // The lines the inventory declares held outside the journals the export
+  // reads. They are counted and set aside before anything is scored, so a
+  // line the package keeps on a sheet the export never opens is neither a
+  // loss nor a match, and the fields only it carries are neither dropped nor
+  // compared.
+  const fixtureLines = shiftedFixtureLines.filter((line) => !scope.lineBlocks.has(lineScopeBlock(line)));
+  const linesUnrepresentable = shiftedFixtureLines.length - fixtureLines.length;
+  const declaredLineBlocks = new Set(shiftedFixtureLines.map((line) => lineScopeBlock(line)));
+  for (const block of scope.lineBlocks) {
+    if (!declaredLineBlocks.has(block)) {
+      throw new Error(
+        `roundtrip-unrepresentable.json declares the "${block}" line block unrepresentable for ${scope.product ?? "this product"}, ` +
+          `but no line in this run scopes to it -- the declaration matches nothing`,
+      );
+    }
+  }
 
   const observedBlocks = new Set(
     [...fixtureLines, ...exportedLines].map((line) => lineScopeBlock(line)).filter((block) => block !== undefined),
@@ -660,6 +712,7 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   return {
     fixtureLines: fixtureLines.length,
     exportedLines: exportedLines.length,
+    linesUnrepresentable,
     // The line count coarseUnmatched and accountUnmatched are read against
     // in main(): the day-summed count, not the raw fixture count, since a
     // merged day is one line to be matched, not two.
@@ -725,6 +778,9 @@ function formatScorecard(packageName, excelDir, jsDir, score, byKind, data) {
       `book.toml fields: equal ${data.book.equal}, differing ${data.book.differing}, missing ${data.book.missing}, ` +
         `declared absent ${data.book.declared}, extra ${data.book.extra}`,
     );
+    if (data.linesUnrepresentable > 0) {
+      lines.push(`Fixture lines the package holds outside the journals the export reads: ${data.linesUnrepresentable}`);
+    }
     if (data.fieldsDropped.length > 0) lines.push(`Fields the export drops: ${data.fieldsDropped.join(", ")}`);
     if (data.fieldsUnrepresentable.length > 0) lines.push(`Fields the encoding has no home for: ${data.fieldsUnrepresentable.join(", ")}`);
   }

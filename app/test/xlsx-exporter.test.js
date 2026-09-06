@@ -33,7 +33,7 @@ import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { parse as parseTOML } from "smol-toml";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
-import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
+import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, splitStraddlingLines } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
 import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
 import { CELL_MAP as LTD_CELL_MAP } from "../products/ltd.js";
@@ -1702,7 +1702,11 @@ describe("the counter leg's round trip through the writer and the export", () =>
   ]) {
     it(`brings the ${product} package's counter leg back as the transfer it is, not dropped`, async () => {
       const { originalLines, exportedLines } = await exportedLinesOf(dir, product);
-      expect(exportedLines.length).toBe(originalLines.length);
+      // The straddling lines are returned on VAT periods either side of the
+      // year and reach the workbook's out-of-year entry sheets, which the
+      // export does not read, so the journals hold the rest.
+      const journalLines = splitStraddlingLines(originalLines).yearLines;
+      expect(exportedLines.length).toBe(journalLines.length);
 
       const originalLeg = findCounterLeg(originalLines);
       expect(originalLeg, "the master's own counter leg").toBeDefined();
