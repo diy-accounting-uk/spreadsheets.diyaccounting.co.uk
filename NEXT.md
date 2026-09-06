@@ -25,12 +25,11 @@ and revenue plan of record and carries its own open items.
 | BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after the BST package refresh carries `Admin!N17` |
 | SE-T20 | Straddling VAT entries reach the diya-gl books: the extractor keeps `vatPeriodEnd` lines, the loader splits them back out; `reportAmount` rounds in two steps; the generate-se scorecard comment says what the code does | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus; after the SE package refresh on the batch |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T12, SE-T13, SE-T17, SE-T19, SE-T20, SE-T21 | blocked-to-start | after the next batch |
-| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t9` on `claude/wt-lt-t9`; Haiku |
 | BST-T20 | BST's `Total Tax + NI` check subtracts the CIS already deducted, as SE's does, proved on a CIS-bearing BST book (`brickwork-pro/bst-nonvat`) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/bst-t20` on `claude/wt-bst-t20`; Sonnet |
 | LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift; the page's drift layer reads all nine link-bearing files, not the hub alone; `examples/ltd-latest` line dates and CT600 `C126`/`C128` sit a year off its Admin period, so S3's shift is settled against the generator | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t11` on `claude/wt-lt-t11`; Opus |
 | LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
 | LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12 | blocked-to-start | Haiku, wave 11 |
+| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11, LT-T12 | blocked-to-start | Haiku, wave 11 |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
 
 ## Plans not tracked here

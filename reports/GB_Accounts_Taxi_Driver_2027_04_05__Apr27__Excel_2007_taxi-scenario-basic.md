@@ -51,7 +51,8 @@ Trade: Owner-driver private hire and taxi services
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Weekly Rate = tax data | 3.5 | 3.5 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 3.65 | 3.65 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 7105 | 7105 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -335,7 +336,8 @@ Trade: Owner-driver private hire and taxi services
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Weekly Rate | 3.5 |
+| NI Class 2 Weekly Rate | 3.65 |
+| NI Class 2 Small Profits Threshold | 7,105 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -545,7 +547,8 @@ Trade: Owner-driver private hire and taxi services
 | M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N12 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
 | N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L16 | NI Class 2 Weekly Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
+| L16 | NI Class 2 Weekly Rate | 3.65 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 7105 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |

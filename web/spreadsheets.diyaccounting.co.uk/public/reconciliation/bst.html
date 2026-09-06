@@ -77,17 +77,16 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> bst-scenario-basic (Precision Code - basic sole trader)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 91 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 92 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators match the headline: no VAT boxes for an unregistered trader, turnover and profit on scale, capital allowances tie to the 39,000.00 capitalised, tax charged on the 226,508.00 taxable profit and the bridge residue is zero. Only minor points worth a glance.</p>
+          <p>Indicators match the headline: no VAT anywhere, turnover and profit on scale, capital spend excluded from P&amp;L and claimed as allowances, bridge residue nil and tax charged on the taxable profit. Only note is the tapered nil personal allowance.</p>
           <ul>
-            <li><strong>personal allowance 0.00</strong> (Income tax indicator): Consistent with tapering at £226,508 income, but worth a glance that it is a deliberate taper rather than a missing allowance [note]</li>
-            <li><strong>debtors 420,700.00 vs sales 409,900.00</strong> (Debtors and creditors indicator): Whole year unsettled by design per the sheet's stated behaviour; opening balance explains the excess over sales [note]</li>
+            <li><strong>Personal allowance 0.00</strong> (Income tax indicator): Consistent with taper at 226,508.00 income, but worth a glance that the taper is intended rather than a missing allowance. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-05. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-06. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -168,7 +167,8 @@
 <tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Higher Band End = tax data</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
-<tr><td>Admin: NI Class 2 Rate = tax data</td><td>3.5</td><td>3.5</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Rate = tax data</td><td>3.65</td><td>3.65</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Small Profits Threshold = tax data</td><td>7105</td><td>7105</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
@@ -1110,7 +1110,8 @@
 <tr><td>Basic Band End</td><td class="num">37,700</td></tr>
 <tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
 <tr><td>Higher Band End</td><td class="num">125,140</td></tr>
-<tr><td>NI Class 2 Rate</td><td class="num">3.5</td></tr>
+<tr><td>NI Class 2 Rate</td><td class="num">3.65</td></tr>
+<tr><td>NI Class 2 Small Profits Threshold</td><td class="num">7,105</td></tr>
 <tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
 <tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
 <tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
@@ -1217,10 +1218,10 @@
 <tr><td>O80</td><td>WDA + Capital Allowance claimed</td><td>0</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
 <tr><td>O85</td><td>Balancing Charge</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
 <tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
-<tr><td>D99</td><td><strong>Taxable profit</strong></td><td>226508</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
+<tr><td>D99</td><td><strong>Net business profit (box 28)</strong></td><td>226508</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
 <tr><td>O94</td><td>Loss brought forward (box 29)</td><td>0</td><td>gl-cor:amount (sa103s.lossBroughtForward)</td></tr>
 <tr><td>O99</td><td>Other business income (box 30)</td><td>0</td><td>gl-cor:amount (sa103s.otherBusinessIncome)</td></tr>
-<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>226508</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>D106</td><td><strong>Net profit for tax calc (box 31)</strong></td><td>226508</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
 </tbody>
 </table></div>
 <h5>PurchasesStock</h5>
@@ -1300,7 +1301,8 @@
 <tr><td>M12</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
 <tr><td>N13</td><td>Higher Band Start</td><td>37701</td><td>tax.incomeTax.basicRateLimit (+1)</td></tr>
 <tr><td>N14</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
-<tr><td>L17</td><td>NI Class 2 Rate</td><td>3.5</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>L17</td><td>NI Class 2 Rate</td><td>3.65</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
+<tr><td>N17</td><td>NI Class 2 Small Profits Threshold</td><td>7105</td><td>tax.nationalInsurance.class2SmallProfitsThreshold</td></tr>
 <tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
@@ -1334,7 +1336,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies</td><td class="num">0.45</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate</td><td class="num">45,615.6</td></tr>
 <tr><td><strong>Total Income Tax</strong></td><td class="num">88,131.6</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">-0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">2,262</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">3,524.76</td></tr>
 <tr><td><strong>Total Tax + NI</strong></td><td class="num">93,918.36</td></tr>
@@ -1358,10 +1360,10 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
-<tr><td><strong>Taxable profit</strong></td><td class="num">226,508</td></tr>
+<tr><td><strong>Net business profit (box 28)</strong></td><td class="num">226,508</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30)</td><td class="num">0</td></tr>
-<tr><td><strong>Net profit for tax calc</strong></td><td class="num">226,508</td></tr>
+<tr><td><strong>Net profit for tax calc (box 31)</strong></td><td class="num">226,508</td></tr>
 </tbody>
 </table></div>
       </section>

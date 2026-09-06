@@ -521,7 +521,7 @@ describe("extractionMap records the opening-balance lines", () => {
 });
 
 describe("extractionMap over the shipped examples records every recordable line, keyed file!sheet!cell and unique", () => {
-  it("Ltd: 723 of the 724 extracted lines (every line but the stock movement's cost-of-sales leg)", async () => {
+  it("Ltd: 724 of the 725 extracted lines (every line but the stock movement's cost-of-sales leg)", async () => {
     const dir = resolve(ROOT, "examples", "ltd-latest");
     const set = await workbookSetFromDirectory(dir);
     const period = { start: "2025-11-01", end: "2026-10-31" };
@@ -533,8 +533,8 @@ describe("extractionMap over the shipped examples records every recordable line,
     const stock = await extractJournalEntries(set, "ltd", period, extractionMap);
     const total = journal.length + bank.length + payroll.length + stock.length;
 
-    expect(total).toBe(724);
-    expect(extractionMap.lines().length).toBe(723);
+    expect(total).toBe(725);
+    expect(extractionMap.lines().length).toBe(724);
 
     // A record's own cells (e.g. a journal row's postingDate, amount and
     // accountMainID columns) legitimately share a row, so the "unique" claim
