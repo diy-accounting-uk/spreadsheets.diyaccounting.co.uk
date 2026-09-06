@@ -44,10 +44,6 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 - **SE-T36**: `app/bin/generate.js:348` runs `main().catch(...)` at module scope; guard it with the
   `import.meta.url` versus `process.argv[1]` check the other bins use, so tests can import its
   functions; prove by importing it in `app/test/generate.test.js`.
-- **TX-T22**: T15's note says the view-level proofs land as `books-taxi-views.browser.test.js`
-  once `taxi.html` exists; TX-T18 landed only the forms spec. Cases: the comparison panel (all five
-  vehicle figures on every book after TX-T18), the vehicle register, the quarterly and forecast
-  summaries, and drift survival across a re-render at the DOM level.
 
 ## Board
 
@@ -60,7 +56,7 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | SE-T35 | `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` duplicates the inverse of `xlsx-exporter.js`'s `SCHEMA_PRODUCT_NAMES`; one map | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`b7d2aea1`) |
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`3e762a5a`) |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`471d3e99`); 3 cases pass |
-| TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; worktree TX-T22, `claude/tx-views-spec`, batch `claude/b1-board` |
+| TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #67 (`0870de04`); 18 cases pass |
 
 ## Plans not tracked here
 
