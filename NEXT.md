@@ -25,10 +25,9 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-T31 | The SE forecast checks fail on an uncorrupted recalculated book in `se-profit-forecast-checks` (five checks, the taxable-profit expectation unshifted against the writer's shift, CI run 34019340192) | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/se-t31` on `claude/wt-se-t31`; Sonnet |
 | SE-H1 | Merge the next batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T27 | `products/ltd.js:3642` indexes the tab list with a negative month offset for a year end before the scenario's period (`report.js --years ltd-2025` throws); `verify-roundtrip.test.js` fails three cases after PL-4 and SE-T20; `se-workbook.test.js` counts the ten straddling lines the save cannot write (697 against 707) | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t27` on `claude/wt-lt-t27`; Sonnet |
 | LT-T18 | blocked-to-start | PR #62, draft until the closing gates are green |
-| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-T31, LT-T27 | in-flight | the formatter is applied; the full unit and browser runs are running on the batch head |
+| LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T27 | in-flight | the formatter is applied; the full unit and browser runs are running on the batch head |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
 ## Plans not tracked here
