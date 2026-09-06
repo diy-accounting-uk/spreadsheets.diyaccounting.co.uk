@@ -81,6 +81,12 @@ export function cellWrites(scenario) {
         if (tx.payment) sheet[`D${row}`] = tx.payment;
         sheet[`F${row}`] = tx.amount;
         if (tx.other_income) sheet[`G${row}`] = tx.other_income;
+        // J is the sheet's own "Sub contractors only / CIS Tax Deducted"
+        // column (verified against the template: SalesMar!K1 = J1 +
+        // SalesFeb!K1, a running year-to-date total, and Income Tax!E12 =
+        // -SalesMar!$K$1). Leaving it unwritten is why a CIS-bearing sale
+        // reached the Income Tax sheet as if no tax had been suffered.
+        if (tx.cis_deduction) sheet[`J${row}`] = tx.cis_deduction;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -639,7 +645,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
-    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni, 0.01);
+    // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already suffered
+    // on the trader's own sales, carried negative) sits inside that range, so
+    // the sheet's total is the computed tax and NI less what the trader's
+    // contractors have already deducted at source.
+    const cisSuffered = Object.values(expected.sales || {})
+      .flat()
+      .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered, 0.01);
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -669,10 +682,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
     check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher + Additional", tax.E11, (tax.E8 || 0) + (tax.E9 || 0) + (tax.E10 || 0));
-    // E12 already holds the contractor deductions negated (=-SalesMar!$K$1)
-    // and the sheet's own total is SUM(E11:E17), so the deduction line is
-    // added, not subtracted. Every fixture so far carries nil CIS, which is
-    // why subtracting it here passed.
+    // E12 already holds the contractor deductions negated (=-SalesMar!$K$1),
+    // so reading it straight off the sheet and adding it reconstructs E18's
+    // own SUM(E11:E17) whether or not the year carried any CIS.
     check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E11 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
     // SA103S cross-check (6g)
