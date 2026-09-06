@@ -420,7 +420,10 @@ describe("scoreDataHalves", () => {
     const anchor = { ...LINE, postingDate: "2025-01-01", entryNumber: "ANCHOR" };
     const { fixture, exported } = writePair(
       [{ ...anchor, amount: 1 }, LINE],
-      [{ ...anchor, amount: 2 }, { ...LINE, postingDate: "2025-06-01" }],
+      [
+        { ...anchor, amount: 2 },
+        { ...LINE, postingDate: "2025-06-01" },
+      ],
     );
     expect(scoreDataHalves(fixture, exported, unrepresentableScope("test", null)).coarseMatches).toBe(0);
   });
