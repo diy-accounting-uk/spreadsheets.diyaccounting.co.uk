@@ -35,7 +35,7 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 | SE-T37e | The Ltd manifest's bank and payroll descriptors and its payroll chart section | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`4804000c`); 15 Ltd cases pass |
 | SE-T37f | The SE proof: add rows render; a bank receipt, a cash payment and a payslip land with anchored figures | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`2d4a116d`); 39 SE cases pass |
 | SE-T37g | The Ltd proof: the bank add and the transfer pair with its counter-leg | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | code complete in batch PR #68 (`e634c03a`); 20 Ltd cases pass |
-| H4 | Merge batch PR #68; T37a to T37g are code complete | none | human | — | ready-to-start | checks running on `4f1aa6fb` |
+| H4 | Merge batch PR #68; T37a to T37g are code complete | none | human | — | ready-to-start | checks green on `4f1aa6fb` |
 
 ## Plans not tracked here
 
