@@ -333,10 +333,10 @@ describe("calculatedResultsFor matches the engine's own D-to-R loop", () => {
     const taxData = taxDataFor("ltd-2024");
     const results = calculatedResultsFor(book, lines, taxData);
     const withoutResults = runBookChecks({ book, lines, taxData }).results.find(
-      (r) => r.id === "ltd-dividend-within-distributable-profits",
+      (r) => r.id === "book-ltd-dividend-within-distributable-profits",
     );
     const withResults = runBookChecks({ book, lines, taxData, results }).results.find(
-      (r) => r.id === "ltd-dividend-within-distributable-profits",
+      (r) => r.id === "book-ltd-dividend-within-distributable-profits",
     );
     expect(withoutResults.label).toContain("not known without the calculated accounts");
     expect(withResults.label).toContain("retained profit brought forward plus profit after tax");

@@ -28,14 +28,14 @@ const SHARED_IDS = [
   "book-empty-month",
 ];
 const LTD_IDS = [
-  "ltd-bank-line-has-side",
-  "ltd-bank-code-analysed",
-  "ltd-straddling-line-has-vat-period",
-  "ltd-payroll-line-names-employee",
-  "ltd-fixed-asset-rows-fit-schedule",
-  "ltd-transfer-has-counter-leg",
-  "ltd-dividend-within-distributable-profits",
-  "ltd-cis-on-subcontractor-line",
+  "book-ltd-bank-line-has-side",
+  "book-ltd-bank-code-analysed",
+  "book-ltd-straddling-line-has-vat-period",
+  "book-ltd-payroll-line-names-employee",
+  "book-ltd-fixed-asset-rows-fit-schedule",
+  "book-ltd-transfer-has-counter-leg",
+  "book-ltd-dividend-within-distributable-profits",
+  "book-ltd-cis-on-subcontractor-line",
 ];
 const ALL_IDS = SHARED_IDS.concat(LTD_IDS);
 
@@ -69,13 +69,13 @@ describe("the Ltd example books", () => {
       expect(resultFor(results, id).result, id).toBe("pass");
     }
     for (const id of LTD_IDS) {
-      const expected = id === "ltd-transfer-has-counter-leg" ? "warn" : "pass";
+      const expected = id === "book-ltd-transfer-has-counter-leg" ? "warn" : "pass";
       expect(resultFor(results, id).result, id).toBe(expected);
     }
 
     // The book's one BB-coded transfer tops the cash float up from the
     // current account, and the current account never gives the money up.
-    const transfers = resultFor(results, "ltd-transfer-has-counter-leg");
+    const transfers = resultFor(results, "book-ltd-transfer-has-counter-leg");
     expect(transfers.offenders).toEqual([
       { entryNumber: "TXN-0155", postingDate: "2025-06-10", accountMainID: "1220", detail: "Cash top-up", amount: 100 },
     ]);
@@ -168,7 +168,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
   it("ltd-bank-line-has-side: a bank entry with no debit or credit code", () => {
     const fixture = baseline();
     delete lineIn(fixture, "TXN-0026").debitCreditCode;
-    assertOnlyTheseRulesFlip(fixture, ["ltd-bank-line-has-side"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-bank-line-has-side"], "fail");
   });
 
   it("ltd-bank-code-analysed: a cash receipt coded RV, which only the statement books analyse", () => {
@@ -178,7 +178,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
     line["diya-gl:bankAccountID"] = "1220";
     line["diya-gl:bankCode"] = "RV";
     line.debitCreditCode = "D";
-    assertOnlyTheseRulesFlip(fixture, ["ltd-bank-code-analysed"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-bank-code-analysed"], "fail");
   });
 
   it("ltd-bank-code-analysed: a bank entry on an account with no workbook", () => {
@@ -186,19 +186,19 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
     const line = lineIn(fixture, "TXN-0026");
     line.accountMainID = "1240";
     line["diya-gl:bankAccountID"] = "1240";
-    assertOnlyTheseRulesFlip(fixture, ["ltd-bank-code-analysed"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-bank-code-analysed"], "fail");
   });
 
   it("ltd-transfer-has-counter-leg: the transfer's other leg removed", () => {
     const fixture = baseline();
     fixture.lines = fixture.lines.filter((l) => l.entryNumber !== "TXN-0155B");
-    assertOnlyTheseRulesFlip(fixture, ["ltd-transfer-has-counter-leg"], "warn");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-transfer-has-counter-leg"], "warn");
   });
 
   it("ltd-straddling-line-has-vat-period: a purchase after the year end with no VAT period", () => {
     const fixture = baseline();
     lineIn(fixture, "TXN-0164").postingDate = "2026-04-15";
-    assertOnlyTheseRulesFlip(fixture, ["ltd-straddling-line-has-vat-period", "book-dates-in-period"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-straddling-line-has-vat-period", "book-dates-in-period"], "fail");
   });
 
   it("ltd-payroll-line-names-employee: a payslip for someone the book never employed", () => {
@@ -206,20 +206,20 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
     const line = lineIn(fixture, "TXN-0074");
     line["diya-gl:employeeID"] = "EMP999";
     line.detailComment = "Nobody";
-    assertOnlyTheseRulesFlip(fixture, ["ltd-payroll-line-names-employee"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-payroll-line-names-employee"], "fail");
   });
 
   it("ltd-dividend-within-distributable-profits: a dividend far above the year's profits", () => {
     const fixture = baseline();
     fixture.book.dividends[0].amount = 10000000;
-    assertOnlyTheseRulesFlip(fixture, ["ltd-dividend-within-distributable-profits"], "warn");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-dividend-within-distributable-profits"], "warn");
   });
 
   it("ltd-cis-on-subcontractor-line: a CIS deduction on a materials purchase", () => {
     const fixture = baseline();
     const materials = fixture.lines.find((l) => l.sourceJournalID === "purchases" && l.accountMainID === "5000");
     materials["diya-gl:cisDeduction"] = 100.0;
-    assertOnlyTheseRulesFlip(fixture, ["ltd-cis-on-subcontractor-line"], "warn");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-cis-on-subcontractor-line"], "warn");
   });
 
   it("ltd-fixed-asset-rows-fit-schedule: nine assets bought in a year with eight new-asset rows", () => {
@@ -237,7 +237,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
         taxRate: 0.2,
       });
     }
-    assertOnlyTheseRulesFlip(fixture, ["ltd-fixed-asset-rows-fit-schedule"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-fixed-asset-rows-fit-schedule"], "fail");
   });
 
   it("ltd-fixed-asset-rows-fit-schedule: a sixth motor vehicle in a block of five rows", () => {
@@ -251,7 +251,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
         accumulatedDepreciation: 1000.0,
       });
     }
-    assertOnlyTheseRulesFlip(fixture, ["ltd-fixed-asset-rows-fit-schedule"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-fixed-asset-rows-fit-schedule"], "fail");
   });
 
   it("ltd-fixed-asset-rows-fit-schedule: more disposals than there are asset rows to attach them to", () => {
@@ -268,7 +268,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
         taxRate: 0.2,
       });
     }
-    assertOnlyTheseRulesFlip(fixture, ["ltd-fixed-asset-rows-fit-schedule"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-fixed-asset-rows-fit-schedule"], "fail");
   });
 
   it("ltd-fixed-asset-rows-fit-schedule: a third hire purchase agreement in two rows", () => {
@@ -283,7 +283,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
       termMonths: 20,
       startDate: "2025-11-01",
     });
-    assertOnlyTheseRulesFlip(fixture, ["ltd-fixed-asset-rows-fit-schedule"], "fail");
+    assertOnlyTheseRulesFlip(fixture, ["book-ltd-fixed-asset-rows-fit-schedule"], "fail");
   });
 });
 
@@ -296,7 +296,7 @@ describe("the shared checks a Company book reads differently", () => {
     line.postingDate = "2026-04-15";
     line["diya-gl:vatPeriodEnd"] = "2026-05-31";
     const { results } = runBookChecks(fixture);
-    expect(resultFor(results, "ltd-straddling-line-has-vat-period").result).toBe("pass");
+    expect(resultFor(results, "book-ltd-straddling-line-has-vat-period").result).toBe("pass");
     expect(resultFor(results, "book-dates-in-period").result).toBe("pass");
   });
 
@@ -318,21 +318,21 @@ describe("the shared checks a Company book reads differently", () => {
   it("the straddling rule offers the shared move-into-the-period helper", () => {
     const fixture = baseline();
     lineIn(fixture, "TXN-0164").postingDate = "2026-04-15";
-    const preview = previewHelper(fixture, "ltd-straddling-line-has-vat-period");
+    const preview = previewHelper(fixture, "book-ltd-straddling-line-has-vat-period");
     expect(preview.title).toBe("Move these entries into the period");
     expect(preview.changes).toEqual([{ entryNumber: "TXN-0164", was: "2026-04-15", becomes: "2026-03-31", amount: 5000, what: "date" }]);
 
-    const applied = applyHelper(fixture, "ltd-straddling-line-has-vat-period");
+    const applied = applyHelper(fixture, "book-ltd-straddling-line-has-vat-period");
     const after = runBookChecks({ ...fixture, lines: applied });
-    expect(resultFor(after.results, "ltd-straddling-line-has-vat-period").result).toBe("pass");
+    expect(resultFor(after.results, "book-ltd-straddling-line-has-vat-period").result).toBe("pass");
   });
 
   it("a rule with no helper offers none", () => {
     const fixture = baseline();
     delete lineIn(fixture, "TXN-0026").debitCreditCode;
-    expect(resultFor(runBookChecks(fixture).results, "ltd-bank-line-has-side").helper).toBeUndefined();
-    expect(previewHelper(fixture, "ltd-bank-line-has-side")).toBeNull();
-    expect(() => applyHelper(fixture, "ltd-bank-line-has-side")).toThrow('No helper called "ltd-bank-line-has-side"');
+    expect(resultFor(runBookChecks(fixture).results, "book-ltd-bank-line-has-side").helper).toBeUndefined();
+    expect(previewHelper(fixture, "book-ltd-bank-line-has-side")).toBeNull();
+    expect(() => applyHelper(fixture, "book-ltd-bank-line-has-side")).toThrow('No helper called "book-ltd-bank-line-has-side"');
   });
 });
 
@@ -347,7 +347,7 @@ describe("the bank code rule and the writer agree", () => {
     line["diya-gl:bankCode"] = "RV";
     line.debitCreditCode = "D";
 
-    expect(resultFor(runBookChecks(fixture).results, "ltd-bank-code-analysed").result).toBe("fail");
+    expect(resultFor(runBookChecks(fixture).results, "book-ltd-bank-code-analysed").result).toBe("fail");
 
     const scenario = diyaGlToScenario(fixture.book, fixture.lines, "ltd");
     expect(() => ltdProduct.cellWrites(scenario, 2025, 3)).toThrow("Cashaccount.xlsx analyses no receipt under code RV");
