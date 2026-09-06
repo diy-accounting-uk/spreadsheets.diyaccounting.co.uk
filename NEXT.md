@@ -6,39 +6,19 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #63 and PR #64 merged to main on 2026-09-06; every product's packages, reports and
-reconciliation pages are regenerated on main from the merged writers (Ltd last, at `c97b2c81`), and
-prod deployed from that commit through deploy run 34038592549 with the judge on Nova passing all
-four products under the actions role. The `test` re-run 34038603329 on the same commit fails one
-browser case deterministically (row LT-T29, fix on `claude/ltd-a7-clean`). No worktree exists under
-`../.worktrees/spreadsheets/`, and `main` is the only local branch besides that one. Sub-agents run
-no LibreOffice and prove JS calculations against the committed packages' extraction
-(`report.js --source-dir`). Every worktree lives at `../.worktrees/spreadsheets/<row>` on
-`claude/wt-<row>` while its row is in flight, and the board names it. The generate workflows cancel
-their own in-progress run on a push to their ref, so a session pushes nothing to a branch while a
-generate run is in progress on it. A freeze is in effect from 2026-09-06: no push to origin and no
-workflow dispatch until the operator lifts it; sessions work locally and propose fixes.
+PR #63, #64 and #65 merged to main on 2026-09-06; every product's packages, reports and
+reconciliation pages are regenerated on main from the merged writers, prod deployed from the Ltd
+package commit `c97b2c81` through deploy run 34038592549 with the judge on Nova passing all four
+products under the actions role, and `test` is green on main at `39f27536`. No worktree exists under
+`../.worktrees/spreadsheets/`, and `main` is the only local branch. Sub-agents run no LibreOffice
+and prove JS calculations against the committed packages' extraction (`report.js --source-dir`).
+Every worktree lives at `../.worktrees/spreadsheets/<row>` on `claude/wt-<row>` while its row is in
+flight, and the board names it. The generate workflows cancel their own in-progress run on a push
+to their ref, so a session pushes nothing to a branch while a generate run is in progress on it.
 `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
-
-## Freeze (operator, 2026-09-06, verbatim)
-
-> We need to freeze now. Do not push to origin or run a github workflow until the freeze is
-> lifted. You may work locally if you see a job fail but propose the fixes to me until the freeze
-> is lifted.
-
-Acknowledged in session: no pushes to origin and no workflow dispatches until the operator lifts
-it; each fix is built and verified locally and pushed only on the operator's word. The memory
-`freeze-no-push-no-workflow` carries the same rule.
 
 ## Context for the open rows
 
-- **LT-T29** (SE-T29's remainder, the Ltd twin of SE-T37): `books-ltd-equivalence.browser.test.js`'s
-  A7 true-upload case tolerated the period-skew marks the old `ltd-latest` carried and asserted
-  there were some; the regenerated package carries none, so the case now asserts an empty drift
-  set and the skew helpers are gone. Proved locally on the regenerated `ltd-latest` (three A7
-  cases). The commit jobs push with the default `GITHUB_TOKEN`, which fires no workflow, so a
-  package push never deploys on its own; prod deploys through `gh workflow run deploy.yml -f
-  environment-name=prod` or the 07:17 UTC schedule.
 - **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
   lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
   it starts with the public directory; CodeQL wants a sanitiser it recognises, so serve from an
@@ -83,7 +63,6 @@ it; each fix is built and verified locally and pushed only on the operator's wor
 | SE-T36 | `app/bin/generate.js` calls `main()` on import with no CLI guard, so nothing can import it safely | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Haiku |
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| LT-T29 | The Ltd A7 true-upload case expected the period-skew drift the old `ltd-latest` carried; the regenerated package carries none | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `claude/ltd-a7-clean`: fix built and proved locally, awaiting the operator's push under the freeze |
 
 ## Plans not tracked here
 
@@ -96,4 +75,6 @@ it; each fix is built and verified locally and pushed only on the operator's wor
   deliberate, reviewed commit on a branch, never a scheduled/bot pattern. Cuts of the
   finished catalogue land in the archive repository through the `archive-packages` skill;
   untracking `packages/` here remains an open question (the deploy and catalogue-sweep
-  readers need another source first).
+  readers need another source first). A generate workflow's commit job pushes with the default
+  `GITHUB_TOKEN`, which fires no workflow, so a package commit deploys only through
+  `gh workflow run deploy.yml -f environment-name=prod` or the 07:17 UTC schedule.
