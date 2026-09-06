@@ -506,6 +506,17 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
 
 ### Landed
 
+- T37b `744f73b9`: `shell.js`'s add row and account select generalise off the journal's own `add`
+  descriptor — `fields` (each `{id, label, type, options?, default?}`) render as a number input or
+  a select, a select with no static `options` gets its list from `descriptor.codes(snapshot,
+  account, direction)` and refreshes live when the account or direction changes; every control's
+  value is read back into the draft `addEntry` gets, keyed by field id (`direction`, `code`,
+  `employee`, `incomeTax`, `employeeNI`, `employerNI` per T37d's shape). A bank or cash row's
+  existing-line account select now carries its journal and routes through the engine's
+  `changeLineBankAccount` (a direct `import("./engine/diya-gl-engine.js")`, the pattern `runSave`
+  already used) rather than `changeAccount`. A journal with no `add` still renders the old four
+  fields untouched. `books-bst-edits.browser.test.js`, `books-se-edits.browser.test.js`,
+  `books-ltd-edits.browser.test.js` (54) and `books-se.browser.test.js` (13) all pass unchanged.
 - T37d `294f978f`: the SE manifest's three `add` descriptors — bank and cash both `kind: "bank"`
   with a direction and code field, payroll `kind: "payroll"` with an employee field and three
   deduction fields defaulting to nil. `codes` reads the code letters off the snapshot's own bank
