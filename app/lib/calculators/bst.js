@@ -6,7 +6,7 @@
 // read returns, so app/products/bst.js's reportSections() and
 // checkCompliance() work unchanged on either source.
 
-import { BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, CIS_DEDUCTION_FIELD, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
 import { resolveBstPurchaseCodeMap } from "../diya-gl-loader.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -178,7 +178,11 @@ export function calculateBstResults(book, lines, taxData, scenario) {
     seShortD106,
     taxData.income_tax,
   );
-  const cisDeducted = 0;
+  // The sheet's own CIS Tax Deducted column, run to its year-to-date total
+  // (verified against the template: SalesMar!K1 = J1 + SalesFeb!K1, and
+  // Income Tax!E12 = -SalesMar!$K$1) -- the CIS the trader's own contractors
+  // have already deducted at source, which reduces the tax and NI still owed.
+  const cisDeducted = salesLines.reduce((total, line) => total + (line[CIS_DEDUCTION_FIELD] || 0), 0);
   const { lowerBand: niLower, upperBand: niUpper } = calculateNIClass4(seShortD106, taxData.national_insurance);
   const totalTaxAndNI = totalIncomeTax - cisDeducted + niLower + niUpper;
   const niClass4Combined = niLower + niUpper;

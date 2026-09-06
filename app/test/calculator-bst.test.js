@@ -242,6 +242,62 @@ describe("BST calculator checks are breakable", () => {
   });
 });
 
+// ── CIS suffered on sales reaches the Income Tax total ──────────────────
+
+describe("BST calculator — CIS suffered on sales reaches the Income Tax total", () => {
+  const dir = FIXTURES.find((f) => f.name === "brickwork-pro/bst-nonvat").dir;
+
+  // brickwork-pro/bst-nonvat carries one sales line (TXN-0166, May, account
+  // 4000) with a diya-gl:cisDeduction of 200 -- a contractor withheld 200 of
+  // tax at source from an invoice this trader raised. The Income Tax sheet's
+  // own E18 = SUM(E11:E17) nets that off (E12 = -SalesMar!$K$1), so the
+  // check comparing E18 to the externally-computed tax and NI has to net it
+  // off the same way, not compare against the gross figure.
+  it("the fixture carries a non-zero CIS deduction on a sale", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const cisSuffered = Object.values(scenario.sales || {})
+      .flat()
+      .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+    expect(cisSuffered).toBe(200);
+  });
+
+  it("Total Tax + NI, less the CIS already deducted, passes with the fixture's non-zero CIS", () => {
+    const { checks } = runFixture(dir);
+    expect(checkByName(checks, "Total Tax + NI, less the CIS already deducted").pass).toBe(true);
+  });
+
+  // Before this check subtracted CIS, it compared tax.E18 straight against
+  // expectedTax.total_tax_and_ni -- the gross figure, with no CIS netted off
+  // either side. The calculator's own cisDeducted was hardcoded to 0 at the
+  // same time, so tax.E18 carried no CIS either, and the two sides matched
+  // by coincidence: a book that suffered real CIS reported the same total
+  // tax and NI as one that suffered none. Corrupting the fixture's CIS --
+  // leaving the anchor scenario the check reads its expected CIS from
+  // untouched -- proves the check now actually depends on the figure it
+  // claims to check, and moves only this one check. The nudge is a whole
+  // pound: the check carries its own 0.01 tolerance for floating-point
+  // rounding, so a single penny sits on that boundary rather than past it.
+  it("corrupting the sale's CIS deduction fails only the CIS-netted check", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const anchor = { ...scenario, ...scenario.expected };
+    const before = checkCompliance(calculateBstResults(book, lines, taxData, anchor), anchor, taxData, calculateExpectedTax);
+
+    const mutatedLines = [...lines];
+    const idx = mutatedLines.findIndex((l) => l.sourceJournalID === "sales" && l["diya-gl:cisDeduction"]);
+    expect(idx).toBeGreaterThanOrEqual(0);
+    mutatedLines[idx] = { ...mutatedLines[idx], "diya-gl:cisDeduction": mutatedLines[idx]["diya-gl:cisDeduction"] + 1 };
+    const after = checkCompliance(calculateBstResults(book, mutatedLines, taxData, anchor), anchor, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const brokenAfter = after.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = brokenAfter.filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Total Tax + NI, less the CIS already deducted"]);
+  });
+});
+
 // ── Units ──────────────────────────────────────────────────────────────
 
 describe("BST cellLabels()", () => {
