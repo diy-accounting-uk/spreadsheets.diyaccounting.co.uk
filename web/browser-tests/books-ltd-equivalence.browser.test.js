@@ -523,51 +523,10 @@ async function workbookWithBentCache(readerFile, targetFile, sheetName, cellRef)
   return reader.generateAsync({ type: "nodebuffer" });
 }
 
-// The package's own Admin date chain runs a year ahead of the postings it
-// carries, the period shift this row fixed in the generator. Every workbook
-// that caches one of those dates -- the four bank books' month headers, the
-// VAT interface's period ends -- and the two CT600 financial-year labels
-// carry a mark for it on a plain upload, until generate-ltd.yml regenerates
-// the package. A mark in this family reads exactly a year ahead of the
-// engine, so a figure wrong by anything else still shows up.
-function lastDayOfMonth(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
-}
-
-function aYearAheadOfTheEngine(entry) {
-  const asRead = Number(entry.asRead);
-  const computed = Number(entry.computed);
-  if (!Number.isFinite(asRead) || !Number.isFinite(computed)) return false;
-  if (asRead - computed === 1 && computed > 1900 && computed < 2100) return true;
-
-  // A month end stays a month end a year on, so 28 February becomes the 29th
-  // in a leap year -- the same clamping the writer shifts a date by.
-  const from = excelSerialAsDate(computed);
-  const shifted = new Date(from.getTime());
-  shifted.setUTCFullYear(shifted.getUTCFullYear() + 1);
-  if (from.getUTCDate() === lastDayOfMonth(from)) shifted.setUTCDate(lastDayOfMonth(shifted));
-  return Math.round((shifted.getTime() - EXCEL_EPOCH_MS) / MS_PER_DAY) === asRead;
-}
-
-function isPeriodSkewMark(entry) {
-  const onTheAdminDateChain = entry.leaf !== null && entry.leaf.startsWith(`${HUB_FILE}!Admin!`);
-  const onACt600FinancialYear = entry.leaf === null && /^Financialaccounts\.xlsx!CT600!C12[68]$/.test(entry.id);
-  return (onTheAdminDateChain || onACt600FinancialYear) && aYearAheadOfTheEngine(entry);
-}
-
-function marksBeyondThePeriodSkew(drift) {
-  return drift.filter((entry) => !isPeriodSkewMark(entry)).map((entry) => `${entry.state} ${entry.id} <- ${entry.leaf}`);
-}
-
 test.describe("DIYA-GL Company books page — a true package upload (A7)", () => {
   test("a fresh ltd-latest upload carries no drift and no stale cache of its own", async ({ page }) => {
     await uploadPackage(page, await ltdLatestZipBytes(), "ltd-latest.zip");
-
-    const drift = await driftFromPage(page);
-    console.log(`A7: ${drift.length} marks, every one the package's period a year ahead of its own postings`);
-    expect(marksBeyondThePeriodSkew(drift)).toEqual([]);
-    expect(drift.filter((entry) => entry.state === "stale")).toEqual([]);
-    expect(drift.length).toBeGreaterThan(0);
+    expect((await driftFromPage(page)).map((entry) => `${entry.state} ${entry.id} <- ${entry.leaf}`)).toEqual([]);
   });
 
   test("a corrupted leaf cell shows exactly that cell's drift", async ({ page }) => {
