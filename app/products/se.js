@@ -9,6 +9,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_DUE_DAY,
@@ -246,6 +247,12 @@ function skipped(kind, entry, why) {
 // one pass. targetStartYear is the year the package's tax year opens in,
 // which for a 5 April year end is the year before the one its directory
 // names.
+// A self-employment year always opens 6 April and closes 5 April, the same
+// month-tab shape a Company keeps for a March year end -- so a scenario's
+// dates shift onto the package's period by whole years only, and the month a
+// date falls in, and the tab it lands on, never move.
+const SE_YEAR_END_MONTH = 3;
+
 function composeWrites(scenario, targetStartYear) {
   const skips = [];
   const rate = vatRateFor(scenario);
@@ -253,6 +260,9 @@ function composeWrites(scenario, targetStartYear) {
   const purchasesWrites = {};
   const bankWrites = {};
   const cashWrites = {};
+
+  const monthOffset = targetStartYear ? periodShiftMonths(scenario, targetStartYear, SE_YEAR_END_MONTH) : 0;
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
   if (scenario.sales) {
     for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
@@ -262,7 +272,7 @@ function composeWrites(scenario, targetStartYear) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -301,7 +311,7 @@ function composeWrites(scenario, targetStartYear) {
 
       let row = 5;
       for (const tx of transactions) {
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
@@ -384,7 +394,7 @@ function composeWrites(scenario, targetStartYear) {
         const rows = isReceipt ? receiptRows : paymentRows;
         if (!rows[rowKey]) rows[rowKey] = 6;
         const row = rows[rowKey]++;
-        const d = parseDate(tx.date);
+        const d = shiftDate(parseDate(tx.date));
         const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
@@ -502,7 +512,7 @@ function composeWrites(scenario, targetStartYear) {
       // month tab stays blank and the printed payslip prints no figures.
       if (e.startDate && payrollStart) {
         const joined = parseDate(e.startDate);
-        const onSheet = payslipsStartDate(joined, payrollOpened, joined, payrollStart);
+        const onSheet = payslipsStartDate(joined, payrollOpened, shiftDate(joined), payrollStart);
         emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
           onSheet.getUTCFullYear(),
           onSheet.getUTCMonth() + 1,
@@ -529,7 +539,7 @@ function composeWrites(scenario, targetStartYear) {
       const blockRow = monthlyPayrollBlockRow(MONTH_KEYS.indexOf(monthKey));
       // Write wages paid date from first entry
       if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
+        const d = shiftDate(parseDate(entries[0].date));
         sheet[`M${blockRow + 1}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       }
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
@@ -623,7 +633,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     faPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
-      const d = parseDate(tx.date);
+      const d = shiftDate(parseDate(tx.date));
       // Left-to-right column order (B, then C, then E) -- see the opening
       // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -653,7 +663,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     fsDisposals.slice(0, disposalRows.length).forEach((tx, i) => {
       const row = disposalRows[i];
-      const d = parseDate(tx.date);
+      const d = shiftDate(parseDate(tx.date));
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
@@ -668,7 +678,7 @@ function composeWrites(scenario, targetStartYear) {
     }
     scenario.hp_agreements.slice(0, HP_AGREEMENT_ROWS.length).forEach((agreement, i) => {
       const row = HP_AGREEMENT_ROWS[i];
-      const d = parseDate(agreement.date);
+      const d = shiftDate(parseDate(agreement.date));
       hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       hp[`C${row}`] = agreement.finance_company;
       hp[`D${row}`] = agreement.reference;
@@ -705,7 +715,7 @@ function composeWrites(scenario, targetStartYear) {
       // write further right (AD, say) out of the count of rows already there.
       const amountColumnKey = new RegExp(`^${columns.amount}\\d+$`);
       const entryRow = Object.keys(sheet).filter((k) => amountColumnKey.test(k)).length + 5;
-      const d = parseDate(entry.date);
+      const d = shiftDate(parseDate(entry.date));
       sheet[`${columns.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${columns.name}${entryRow}`] = entry[nameField];
       if (entry.invoice) sheet[`${columns.invoice}${entryRow}`] = entry.invoice;
