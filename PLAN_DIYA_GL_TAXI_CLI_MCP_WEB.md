@@ -633,6 +633,16 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   missing miles — the existing `carriesMiles` rule working as designed, not a defect. 3 tests
   pass; no source change needed.
 
+- TX-T22 `0870de04`, merged into `claude/tx-views-spec` (2026-09-06):
+  `books-taxi-views.browser.test.js`, the view-level proofs T15's log entry said T18 would land
+  and T18 landed only the SA103S form spec instead: the comparison panel's five figures on
+  every book (basic, sp-sixty, kestrel), the vehicle register (each book's own vehicle, the
+  totals keyed to PurchasesMar T1 and Fixed Assets J1/K1), the quarterly summary's Year column
+  against VitalTax's own annual cells, the forecast's months-traded count and its two total
+  rows, and a corrupted Fixed Assets!J1 keeping its pencil correction across three view-switch
+  render cycles. 18 tests pass. Needed `node scripts/build-books-bundle.mjs` run once in a
+  fresh worktree before the spec's own server can serve the page.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
