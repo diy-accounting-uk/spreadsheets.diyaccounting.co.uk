@@ -269,17 +269,32 @@ function selfAssessmentLine(report, split, { from, fromLabel, to, toLabel }) {
 
 // The personal allowance is what separates a nil charge on a small profit from a nil charge
 // that has lost the profit, so the line carries both ends of the computation.
+// A Self Employed computation nets off the CIS the trader's contractors already
+// deducted (SA103S box 38), so its bottom line can sit below the tax and NI it
+// charges, or below zero on a small profit. The line says so where the row
+// carries a figure; the other products have no such row.
 function incomeTaxLine(report, section) {
   const charged = requireValue(report, section, "Profit from Self Employment");
   const allowance = value(report, section, "Less: Personal Allowance");
   const taxableIncome = value(report, section, "Taxable Income");
   const tax = requireValue(report, section, "Total Income Tax");
   const total = value(report, section, "Total Tax + NI");
-  return [
+  const cisDeducted = value(report, section, "Less: CIS Deducted");
+  const parts = [
     `Income tax: charged on a profit of ${amount(charged)};`,
     `a personal allowance of ${amount(allowance)} leaves taxable income of ${amount(taxableIncome)};`,
-    `income tax ${amount(tax)}, income tax and National Insurance together ${amount(total)}.`,
-  ].join(" ");
+  ];
+  if (cisDeducted === null || cisDeducted === 0 || total === null) {
+    parts.push(`income tax ${amount(tax)}, income tax and National Insurance together ${amount(total)}.`);
+  } else {
+    const beforeCis = total - cisDeducted;
+    parts.push(
+      `income tax ${amount(tax)}, income tax and National Insurance together ${amount(beforeCis)};`,
+      `contractors already deducted ${amount(-cisDeducted)} under CIS (SA103S box 38), which comes off to leave ${amount(total)}` +
+        (total < 0 ? ", a repayment due rather than a charge." : " to pay."),
+    );
+  }
+  return parts.join(" ");
 }
 
 function ltdIndicators(report, vatRegistered) {
