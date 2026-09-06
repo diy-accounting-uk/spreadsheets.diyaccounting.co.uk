@@ -19,7 +19,6 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| PL-1 | The four `generate-*` workflows run the post-generation unit suite after the reconcile job refreshes `examples/<product>-latest`, so a template change no longer fails the run on the stale example it is about to replace | operator | machine | — | in-flight | `../.worktrees/spreadsheets/pl-1` on `claude/wt-pl-1`; Sonnet |
 | BST-T19 | The BST page renders the profit bridge (nine `section/accounting-profit-to-tax-profit-bridge/` keys declared today) and an `Admin!N17` row | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; after the BST package refresh carries `Admin!N17` |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t7` on `claude/wt-lt-t7`; Sonnet |
 | TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
