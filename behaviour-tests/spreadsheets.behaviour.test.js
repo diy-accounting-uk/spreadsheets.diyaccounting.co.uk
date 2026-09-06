@@ -992,4 +992,74 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("TEST COMPLETE - DIYA-GL books page verified");
     console.log("=".repeat(60));
   });
+
+  test("DIYA-GL books page loads the taxi-scenario-basic example under production's security headers", async ({ page }) => {
+    const consoleErrors = [];
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+
+    // ============================================================
+    // STEP 1: Open the books page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 1: Open the Taxi books page");
+    console.log("=".repeat(60));
+
+    const booksUrl = `${spreadsheetsBaseUrl}/books/taxi.html`;
+    console.log(` Navigating to: ${booksUrl}`);
+    await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-20-books-taxi-empty.png` });
+
+    // ============================================================
+    // STEP 2: Load the taxi-scenario-basic example
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 2: Load the taxi-scenario-basic example");
+    console.log("=".repeat(60));
+
+    await page.locator('[data-example="taxi-scenario-basic"]').click();
+    console.log(" Clicked the taxi-scenario-basic example button");
+
+    // ============================================================
+    // STEP 3: Wait for the year totals row and read the year total
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 3: Wait for the year totals row");
+    console.log("=".repeat(60));
+
+    const yearTotals = page.locator("tfoot.year-totals");
+    await expect(yearTotals).toContainText("£36,045.00", { timeout: 30000 });
+    console.log(" Year totals row carries the expected year total");
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-21-books-taxi-loaded.png` });
+
+    // ============================================================
+    // STEP 4: The four headline tiles are present
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 4: Check the four headline tiles");
+    console.log("=".repeat(60));
+
+    await expect(page.locator(".headline-tiles [data-r-key^='headline/']")).toHaveCount(4);
+    console.log(" The four headline tiles are present");
+
+    // ============================================================
+    // STEP 5: No console error, no CSP violation shown on the page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 5: Check for console errors and CSP violations");
+    console.log("=".repeat(60));
+
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("Content Security Policy");
+    console.log(" Page text carries no Content Security Policy violation");
+
+    expect(consoleErrors, `no console error, saw: ${consoleErrors.join(" | ")}`).toEqual([]);
+    console.log(" No console errors were raised while loading the example");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL Taxi books page verified");
+    console.log("=".repeat(60));
+  });
 });

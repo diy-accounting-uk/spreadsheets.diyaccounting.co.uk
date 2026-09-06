@@ -32,5 +32,39 @@
       "dir": "brickwork-pro",
       "product": "se-vat"
     }
+  ],
+  "taxi": [
+    { "key": "taxi-scenario-basic", "name": "Basic Taxi Driver", "note": "actual-cost route", "dir": "basic-taxi-driver", "product": "taxi" },
+    { "key": "taxi-scenario-sp-sixty", "name": "SP Sixty Driving", "note": "mileage route", "dir": "sp-sixty-driving", "product": "taxi" },
+    {
+      "key": "taxi-scenario-kestrel",
+      "name": "Kestrel Executive Cars",
+      "note": "executive fares",
+      "dir": "kestrel-executive-cars",
+      "product": "taxi"
+    }
+  ],
+  "ltd": [
+    {
+      "key": "ltd-scenario-full",
+      "name": "Precision Code Ltd",
+      "note": "thirteen workbooks, VAT, payroll, dividends",
+      "dir": "precision-code-ltd",
+      "product": "full"
+    },
+    {
+      "key": "ltd-brickwork-pro-vat",
+      "name": "BrickWork Pro Ltd",
+      "note": "CIS sub-contractors, VAT",
+      "dir": "brickwork-pro",
+      "product": "ltd-vat"
+    },
+    {
+      "key": "ltd-brickwork-pro-nonvat",
+      "name": "BrickWork Pro Ltd",
+      "note": "not VAT registered",
+      "dir": "brickwork-pro",
+      "product": "ltd-nonvat"
+    }
   ]
 }
