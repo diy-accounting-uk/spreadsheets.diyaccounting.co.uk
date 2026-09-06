@@ -2734,8 +2734,13 @@
   // match a CLI export's byte for byte.
   function buildBookChecksForZip(engine, book, lines) {
     var taxData = (SNAPSHOT.context && SNAPSHOT.context.taxData) || null;
-    var results = engine.runBookChecks({ book: book, lines: lines, taxData: taxData }).results;
-    return JSON.parse(engine.bookChecksJson(results));
+    // results: the calculated accounts, the same field edits.js's own
+    // bookChecks() passes so a product warning that reads R (Ltd's
+    // dividend-within-distributable-profits) sees the live book's own
+    // figures rather than always reporting "not known without the
+    // calculated accounts".
+    var checkResults = engine.runBookChecks({ book: book, lines: lines, taxData: taxData, results: SNAPSHOT.results }).results;
+    return JSON.parse(engine.bookChecksJson(checkResults));
   }
 
   function runSave(current, format) {
