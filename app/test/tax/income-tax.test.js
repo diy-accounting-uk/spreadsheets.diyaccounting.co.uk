@@ -135,10 +135,13 @@ describe("calculateExpectedTax", () => {
     expect(result.income_tax_basic).toBeCloseTo(7540, 2);
     expect(result.income_tax_higher).toBeCloseTo(34976, 2);
     expect(result.income_tax_additional).toBeCloseTo(45615.6, 2);
-    expect(result.income_tax).toBe(88132);
+    // income_tax and total_tax_and_ni carry no rounding of their own now,
+    // matching the Income Tax sheet's SUM formulas (E11 and E18/E17): the
+    // raw sum, not the pound- or 10p-rounded figure the sheet never computes.
+    expect(result.income_tax).toBeCloseTo(88131.6, 2);
     expect(result.ni_class4_lower).toBe(2262);
-    expect(result.ni_class4_upper).toBe(3524.8);
-    expect(result.total_tax_and_ni).toBe(93918);
+    expect(result.ni_class4_upper).toBeCloseTo(3524.76, 2);
+    expect(result.total_tax_and_ni).toBeCloseTo(93918.36, 2);
   });
 
   it("returns zeros for profit below all thresholds", () => {

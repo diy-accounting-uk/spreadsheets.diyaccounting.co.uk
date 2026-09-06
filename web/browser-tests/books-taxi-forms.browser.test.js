@@ -283,15 +283,6 @@ test.describe("DIYA-GL Taxi books page — the SA103S form (T18), route-specific
 
 // ── The tax computation ─────────────────────────────────────────────────
 //
-// calculateExpectedTax's own total_tax_and_ni field rounds the sum to the
-// nearest pound (Math.round); the sheet's own E17 (calculators/taxi.js)
-// never rounds that sum -- it is income tax plus Class 4 lower plus Class 4
-// upper, added as they stand. income_tax and ni_class4_lower/upper agree
-// exactly with E11, E14 and E15 (neither side rounds them further), so the
-// total is checked as their sum rather than through the pre-rounded field,
-// which would disagree by up to a pound whenever the raw sum lands on a
-// half.
-
 function computationLine(page, line) {
   return page.locator(`#view-root .form-row[data-line="${line}"] .form-amount-box`);
 }
@@ -318,8 +309,7 @@ for (const example of [basicExample(), spSixtyExample()]) {
       expect(canonical(parseFigure(class4UpperText).value, "money")).toBe(canonical(expected.ni_class4_upper, "money"));
 
       const totalText = await computationLine(page, "E17").textContent();
-      const expectedTotal = expected.income_tax + expected.ni_class4_lower + expected.ni_class4_upper;
-      expect(canonical(parseFigure(totalText).value, "money")).toBe(canonical(expectedTotal, "money"));
+      expect(canonical(parseFigure(totalText).value, "money")).toBe(canonical(expected.total_tax_and_ni, "money"));
 
       // Both example books sit above the small profits threshold, so Class
       // 2 is nil on each -- the threshold and the weekly rate themselves

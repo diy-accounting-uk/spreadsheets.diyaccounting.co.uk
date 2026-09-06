@@ -68,15 +68,20 @@ export function calculateExpectedTax(profit, taxData) {
   const class2Weekly = taxData.national_insurance.class2_weekly_rate;
   const class2Threshold = taxData.national_insurance.class2_small_profits_threshold;
 
+  // income_tax, ni_class4_lower, ni_class4_upper and total_tax_and_ni carry
+  // no rounding of their own, matching the Income Tax sheet: E11 (BST/SE) /
+  // E11 (Taxi) is SUM(E8:E10) and the total (E18 BST/SE, E17 Taxi) is
+  // SUM(E11:E17) with every intermediate row a plain formula -- the sheet
+  // never rounds this chain, so the JS mirror does not either.
   return {
-    income_tax: Math.round(totalIncomeTax),
+    income_tax: totalIncomeTax,
     personal_allowance: personalAllowance,
     income_tax_basic: basicRateTax,
     income_tax_higher: higherRateTax,
     income_tax_additional: additionalRateTax,
-    ni_class4_lower: Math.round(niLower * 10) / 10,
-    ni_class4_upper: Math.round(niUpper * 10) / 10,
-    total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),
+    ni_class4_lower: niLower,
+    ni_class4_upper: niUpper,
+    total_tax_and_ni: totalIncomeTax + niLower + niUpper,
     ni_class2_weekly: class2Weekly,
     ni_class2_threshold: class2Threshold,
     ni_class2: profit < class2Threshold ? round2(class2Weekly * 52) : 0,
