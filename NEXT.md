@@ -29,15 +29,14 @@ and revenue plan of record and carries its own open items.
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/tx-t17` on `claude/wt-tx-t17`; Sonnet |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
 | LT-T25 | Ltd T25 the cash top-up's counter leg; the writer's `BC` gate holds under every year end's period shift; the SE and Ltd round trips bring the leg back | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t25` on `claude/wt-lt-t25`; Sonnet; generate-bst on the refresh branch showed both |
-| LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t8` on `claude/wt-lt-t8`; Opus |
-| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Haiku, wave 9 |
-| LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift; the page's drift layer reads all nine link-bearing files, not the hub alone | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8, TX-T17 | blocked-to-start | Opus, wave 9 |
+| LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t9` on `claude/wt-lt-t9`; Haiku |
+| LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift; the page's drift layer reads all nine link-bearing files, not the hub alone; `examples/ltd-latest` line dates and CT600 `C126`/`C128` sit a year off its Admin period, so S3's shift is settled against the generator | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | TX-T17 | blocked-to-start | Opus, wave 9 |
 | LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
 | LT-T13 | Ltd T13 edits and warnings suites | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t13` on `claude/wt-lt-t13`; Sonnet; plus LT-T7's findings: entity fields reach the calculator, unmatched settlements, class labels |
-| LT-T14 | Ltd T14 layouts and axe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Sonnet, wave 9 |
+| LT-T14 | Ltd T14 layouts and axe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t14` on `claude/wt-lt-t14`; Sonnet |
 | LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T11 | blocked-to-start | Sonnet, wave 10 |
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, TX-T18 | blocked-to-start | Haiku, wave 11 |
-| LT-T21 | Ltd T21 the CT600 sheet's capital allowance boxes read the working sheet's empty column H; point AA177, AL177 and AA179 at column I in the template and regenerate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8 | blocked-to-start | Sonnet, with R6; a template change, one reviewed binary commit |
+| LT-T21 | Ltd T21 the CT600 sheet's capital allowance boxes read the working sheet's empty column H; point AA177, AL177 and AA179 at column I in the template and regenerate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t21` on `claude/wt-lt-t21`; Sonnet; a template change, one reviewed binary commit |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
 
 ## Plans not tracked here

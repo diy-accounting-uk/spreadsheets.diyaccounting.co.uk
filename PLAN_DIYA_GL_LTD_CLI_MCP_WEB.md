@@ -495,6 +495,8 @@ each rebasing on the last.
 
 - T4b `1506212c` to `d300f782`, merged into `claude/diya-gl-wave-2` 2026-09-06: `LINK_ORDER.ltd` (nine files) and `packageLinkCaches` in `link-caches.js`; the saved half 2,105 keys and the committed half 2,079 keys agree with the calculator with no disagreement; `book-checks/ltd.js` reads the bank layout from `ltd-layout.js`. Found: `examples/ltd-latest` line dates sit a year behind its `Admin!B32` (`Schedule!B67` to `B71` cache 46006 against the calculator's 46371); the page's drift layer reads sources from the hub only, carried on T11.
 
+- T8 `b94041ec`, merged into `claude/diya-gl-wave-2` at `af40e2dd` 2026-09-06: `form-layouts/ltd.json` (four blocks, 112 sheet cells), `products/ltd-forms.js`, the six form views. Settled against the XML: `CorporationTax!I18` is signed, so box 710 takes only its negative part and its positive part joins 705; `Payslips!Payment` reads are B/C/D/E/I rows 4 to 15 and `WagesInterface` is a hub sheet; accounts heading C's prior column is blank (`PubP&L!B16` is not a read). Found: `products/ltd.js` `formatByUnit` prints whole-percent rates through `fmtRate` (carried on T13); `examples/ltd-latest` `CT600!C126`/`C128` cache financial-year labels a year ahead of the engine (carried on T11).
+
 - T24 `2c16fb69`, merged 2026-09-05: `payrollYearOf` derives the payroll year from the period as
   the writer does; the Payslips calendar keys move to the package's values on every book path.
 - For T2, from SE S2: the sidecar option is `options.templates`, not `templatePaths`; and

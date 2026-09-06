@@ -154,6 +154,12 @@ test.describe("DIYA-GL books page — Ltd page boots on a real package (LT-T7)",
       "fixed-assets",
       "business-details",
       "admin",
+      "accounts",
+      "corporation-tax",
+      "ct600",
+      "vat-returns",
+      "payroll",
+      "company",
     ]);
     for (const viewId of viewIds) {
       expect(rootHtmlByView[viewId].length, `${viewId} view root is non-empty`).toBeGreaterThan(0);
