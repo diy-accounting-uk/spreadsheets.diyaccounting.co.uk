@@ -244,8 +244,22 @@ test.describe("DIYA-GL Taxi books page — the round trip is lossy by exactly th
     const originalFareSum = twoFareDayBefore.reduce((sum, l) => sum + l.amount, 0);
 
     const added = [
-      { sourceJournalID: "sales", postingDate: TWO_FARE_DAY, accountMainID: "4000", amount: 65, documentType: "receipt", detailComment: "Airport run" },
-      { sourceJournalID: "sales", postingDate: RENTAL_DATE, accountMainID: "4000", amount: 150, documentType: "invoice", detailComment: "Rental due" },
+      {
+        sourceJournalID: "sales",
+        postingDate: TWO_FARE_DAY,
+        accountMainID: "4000",
+        amount: 65,
+        documentType: "receipt",
+        detailComment: "Airport run",
+      },
+      {
+        sourceJournalID: "sales",
+        postingDate: RENTAL_DATE,
+        accountMainID: "4000",
+        amount: 150,
+        documentType: "invoice",
+        detailComment: "Rental due",
+      },
       {
         sourceJournalID: "sales",
         postingDate: OTHER_INCOME_DATE,
@@ -291,7 +305,9 @@ test.describe("DIYA-GL Taxi books page — the round trip is lossy by exactly th
     expect(twoFareDayAfter[0].detailComment).toBe("Airport run; Daily fares");
 
     // Rule 2: the rental line is dated the week's last day, not the date it went in on.
-    const rentalAfter = after.filter((l) => l.sourceJournalID === "sales" && l.accountMainID === "4000" && l.detailComment === "Rental due");
+    const rentalAfter = after.filter(
+      (l) => l.sourceJournalID === "sales" && l.accountMainID === "4000" && l.detailComment === "Rental due",
+    );
     expect(rentalAfter).toHaveLength(1);
     expect(rentalAfter[0].postingDate).toBe(WEEK_LAST_DAY);
     expect(rentalAfter[0].amount).toBeCloseTo(150, 2);

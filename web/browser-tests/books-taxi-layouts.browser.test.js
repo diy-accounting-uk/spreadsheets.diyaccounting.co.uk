@@ -140,10 +140,7 @@ test.describe("DIYA-GL Taxi books page — keyboard-only traversal (E6)", () => 
     await expect(weekRow).toHaveAttribute("aria-expanded", "true");
 
     // Stop 4: 11 June's "Add a fare" control.
-    const dayTotalBefore = await page
-      .locator('tr.day-row[data-day="2025-06-11"] td.num')
-      .first()
-      .innerText();
+    const dayTotalBefore = await page.locator('tr.day-row[data-day="2025-06-11"] td.num').first().innerText();
     await tabTo(page, '[data-add-fare="2025-06-11"]');
     focusRingSamples.push(await activeElementHasFocusRing(page));
     await page.keyboard.press("Enter");
@@ -154,9 +151,7 @@ test.describe("DIYA-GL Taxi books page — keyboard-only traversal (E6)", () => 
     await page.keyboard.type("45");
     await page.keyboard.press("Enter");
     await expect(page.locator("#toast")).toContainText("Added a fare of £45.00");
-    await expect
-      .poll(async () => page.locator('tr.day-row[data-day="2025-06-11"] td.num').first().innerText())
-      .not.toBe(dayTotalBefore);
+    await expect.poll(async () => page.locator('tr.day-row[data-day="2025-06-11"] td.num').first().innerText()).not.toBe(dayTotalBefore);
 
     // Stop 6: the save control opens its menu. The draft commit restored
     // focus inside the day grid, later in the document than the topbar, so

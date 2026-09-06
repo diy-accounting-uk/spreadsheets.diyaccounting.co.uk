@@ -41,7 +41,11 @@ function taxiFixture(exampleDir) {
   const scenario = diyaGlToScenario(book, lines, "taxi");
   const merged = { ...scenario, ...scenario.expected };
   const results = calculateTaxiResults(book, lines, taxData, merged);
-  return { totalCell: "Draft Tax calculation!E17", profit: results["Draft Tax calculation"].E5, total: results["Draft Tax calculation"].E17 };
+  return {
+    totalCell: "Draft Tax calculation!E17",
+    profit: results["Draft Tax calculation"].E5,
+    total: results["Draft Tax calculation"].E17,
+  };
 }
 
 function seFixture() {

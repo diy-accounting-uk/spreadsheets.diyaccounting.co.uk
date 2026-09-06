@@ -669,9 +669,7 @@ export function diyaGlToScenario(book, lines, product) {
 function depreciationForBook(book, taxRegime) {
   const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
   if (!periodCoveredEnd) {
-    throw new Error(
-      "book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table",
-    );
+    throw new Error("book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table");
   }
   const taxYearName = taxYearFileName(new Date(periodCoveredEnd), taxRegime);
   const taxDataDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");

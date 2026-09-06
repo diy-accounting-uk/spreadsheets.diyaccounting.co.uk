@@ -573,9 +573,7 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
     const bentSchedule = await workbookWithBentCell("Fixedassets.xlsx", "Schedule", "R1", 999999);
     await uploadPackage(page, await seLatestZipBytes({ "Fixedassets.xlsx": bentSchedule }), "se-latest-bent-schedule.zip");
 
-    const marked = page.locator(
-      '#view-root .form-row:has([data-r-key*="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction',
-    );
+    const marked = page.locator('#view-root .form-row:has([data-r-key*="cell/Financialaccounts.xlsx!SE Short!O80"]) .pencil-correction');
     await page.locator('.tab-btn[data-view="sa103s"]').click();
     await expect(marked).toHaveCount(1);
 

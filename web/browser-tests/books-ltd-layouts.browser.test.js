@@ -156,9 +156,7 @@ async function activeElementAttr(page, attr) {
 }
 
 test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () => {
-  test("load, edit a payroll figure, switch to the Bank view, apply a helper, and open the save menu, keyboard only", async ({
-    page,
-  }) => {
+  test("load, edit a payroll figure, switch to the Bank view, apply a helper, and open the save menu, keyboard only", async ({ page }) => {
     // Real Tab presses, not shortcuts: with fifteen views and the headline
     // strip's pie-chart legend on every one (both add tab stops absent from
     // BST's own four-view page), this run is genuinely several hundred key

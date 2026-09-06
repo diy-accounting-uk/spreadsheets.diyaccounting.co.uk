@@ -34,7 +34,13 @@
     }
   ],
   "taxi": [
-    { "key": "taxi-scenario-basic", "name": "Basic Taxi Driver", "note": "actual-cost route", "dir": "basic-taxi-driver", "product": "taxi" },
+    {
+      "key": "taxi-scenario-basic",
+      "name": "Basic Taxi Driver",
+      "note": "actual-cost route",
+      "dir": "basic-taxi-driver",
+      "product": "taxi"
+    },
     { "key": "taxi-scenario-sp-sixty", "name": "SP Sixty Driving", "note": "mileage route", "dir": "sp-sixty-driving", "product": "taxi" },
     {
       "key": "taxi-scenario-kestrel",

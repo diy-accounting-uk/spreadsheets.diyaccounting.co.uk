@@ -44,7 +44,9 @@
   // figure that must still carry one (every calculated cell the plan names)
   // builds its own input markup instead.
   function readOnlyFieldWithKey(helpers, label, text, rKeyAttr) {
-    return '<div class="editable-field"><label>' + helpers.esc(label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>";
+    return (
+      '<div class="editable-field"><label>' + helpers.esc(label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>"
+    );
   }
 
   // A fixed asset's own class enum, translated to the Schedule block's label
@@ -712,7 +714,15 @@
         var value = cellValue(snap.results, row.sheet, row.cell);
         var text = formatByUnit(value, unitOf(productMod, row.sheet, row.cell), helpers);
         var rKeyAttr = cellRk(snap, helpers, row.sheet, row.cell);
-        return '<div class="editable-field"><label>' + helpers.esc(row.label) + '</label><input value="' + text + '" readonly' + rKeyAttr + " /></div>";
+        return (
+          '<div class="editable-field"><label>' +
+          helpers.esc(row.label) +
+          '</label><input value="' +
+          text +
+          '" readonly' +
+          rKeyAttr +
+          " /></div>"
+        );
       })
       .join("");
 

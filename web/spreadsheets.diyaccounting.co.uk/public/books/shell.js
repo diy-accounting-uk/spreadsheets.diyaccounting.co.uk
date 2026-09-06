@@ -1597,13 +1597,23 @@
     // cells no category column reads, no row derives -- lists them here
     // instead: label, formatted value and the r-key attribute, one row a
     // figure, blank ones left out by the manifest's own trim-aware test.
-    var stripRows = active.yearTable.monthCardRows ? active.yearTable.monthCardRows(SNAPSHOT, SNAPSHOT.months.indexOf(monthMeta), helpers) : null;
+    var stripRows = active.yearTable.monthCardRows
+      ? active.yearTable.monthCardRows(SNAPSHOT, SNAPSHOT.months.indexOf(monthMeta), helpers)
+      : null;
     var stripHtml =
       stripRows && stripRows.length
         ? '<div class="month-card-strip">' +
           stripRows
             .map(function (r) {
-              return '<span class="figure-label">' + esc(r.label) + '</span><span class="figure-value"' + (r.rkAttr || "") + ">" + r.value + "</span>";
+              return (
+                '<span class="figure-label">' +
+                esc(r.label) +
+                '</span><span class="figure-value"' +
+                (r.rkAttr || "") +
+                ">" +
+                r.value +
+                "</span>"
+              );
             })
             .join("") +
           "</div>"

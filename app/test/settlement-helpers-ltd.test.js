@@ -248,13 +248,13 @@ describe("receipt-for-sale: the sale to FreshField Ltd that never reached the ba
     const added = settled[settled.length - 1];
 
     expect(added).toMatchObject({
-      entryNumber: "SET-0001",
-      sourceJournalID: "bank",
-      debitCreditCode: "D",
+      "entryNumber": "SET-0001",
+      "sourceJournalID": "bank",
+      "debitCreditCode": "D",
       "diya-gl:bankCode": "DR",
       "diya-gl:bankAccountID": "1200",
-      accountMainID: "1200",
-      amount: suggestion.changes[0].amount,
+      "accountMainID": "1200",
+      "amount": suggestion.changes[0].amount,
     });
   });
 
@@ -306,13 +306,13 @@ describe("payment-for-purchase: the purchase from GitHub that never reached the 
     const added = settled[settled.length - 1];
 
     expect(added).toMatchObject({
-      entryNumber: "SET-0001",
-      sourceJournalID: "bank",
-      debitCreditCode: "C",
+      "entryNumber": "SET-0001",
+      "sourceJournalID": "bank",
+      "debitCreditCode": "C",
       "diya-gl:bankCode": "CR",
       "diya-gl:bankAccountID": "1200",
-      accountMainID: "1200",
-      amount: suggestion.changes[0].amount,
+      "accountMainID": "1200",
+      "amount": suggestion.changes[0].amount,
     });
   });
 

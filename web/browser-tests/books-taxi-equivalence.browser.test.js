@@ -230,10 +230,14 @@ test.describe("DIYA-GL Taxi books page — the sheet agrees (A3)", () => {
     const s3Map = s3("taxi");
 
     const extractedOutDir = path.join(TARGET_DIR, "r-excel-extracted");
-    execFileSync(process.execPath, ["app/bin/export.js", "--package", "taxi", "--file", FRESH_PACKAGE_PATH, "--output-dir", extractedOutDir], {
-      cwd: ROOT,
-      stdio: "pipe",
-    });
+    execFileSync(
+      process.execPath,
+      ["app/bin/export.js", "--package", "taxi", "--file", FRESH_PACKAGE_PATH, "--output-dir", extractedOutDir],
+      {
+        cwd: ROOT,
+        stdio: "pipe",
+      },
+    );
     const extractedMap = readReportMap(extractedOutDir);
 
     const onlyExtracted = [...extractedMap.keys()].filter((key) => !s3Map.has(key));
@@ -256,9 +260,15 @@ test.describe("DIYA-GL Taxi books page — the sheet agrees (A3)", () => {
     console.log(`A3: ${compared} keys compared between the saved package (year-end ${s3YearEnd("taxi")}) and a fresh recompute of it`);
     console.log(`A3: ${KNOWN_STALE_KEYS.size} keys excluded as known-stale pending the next generate-taxi.yml refresh`);
 
-    expect(onlyExtractedNotCheckOrStale, `keys only in a fresh recompute (not check/, not known-stale):\n${onlyExtractedNotCheckOrStale.join("\n")}`).toEqual([]);
+    expect(
+      onlyExtractedNotCheckOrStale,
+      `keys only in a fresh recompute (not check/, not known-stale):\n${onlyExtractedNotCheckOrStale.join("\n")}`,
+    ).toEqual([]);
     expect(onlyS3NotStale, `keys only in the saved package (not known-stale):\n${onlyS3NotStale.join("\n")}`).toEqual([]);
-    expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: saved=${m.excelValue} recomputed=${m.jsValue}`).join("\n")}`).toEqual([]);
+    expect(
+      mismatches,
+      `mismatches:\n${mismatches.map((m) => `${m.key}: saved=${m.excelValue} recomputed=${m.jsValue}`).join("\n")}`,
+    ).toEqual([]);
     expect(compared).toBeGreaterThan(0);
   });
 });
@@ -286,7 +296,13 @@ test.describe("DIYA-GL Taxi books page — the screen agrees (A4)", () => {
 
         if (key.startsWith("check/")) {
           const classNames = String(className).split(/\s+/);
-          const renderedVerdict = classNames.includes("fail") ? "fail" : classNames.includes("warn") ? "warn" : classNames.includes("pass") ? "pass" : null;
+          const renderedVerdict = classNames.includes("fail")
+            ? "fail"
+            : classNames.includes("warn")
+              ? "warn"
+              : classNames.includes("pass")
+                ? "pass"
+                : null;
           if (renderedVerdict !== s2Entry.value) {
             mismatches.push(`${key}: rendered verdict "${renderedVerdict}" (class "${className}"), S2 says "${s2Entry.value}"`);
           }

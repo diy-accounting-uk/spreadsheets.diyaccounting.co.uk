@@ -154,7 +154,7 @@ const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) 
 // naming either drops out with the rest of that account's lines once
 // filterAdvanced runs.
 const LTD_BANK_TRANSFER_CODES = new Set(["BB", "BS", "BD", "BC"]);
-const SE_BANK_TRANSFER_CODE = { "1200": "X", "1220": "BB" };
+const SE_BANK_TRANSFER_CODE = { 1200: "X", 1220: "BB" };
 
 function isLtdOpeningBankLine(line, periodStart) {
   return line["diya-gl:bankCode"] === "BC" && line.postingDate === periodStart;

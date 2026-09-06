@@ -249,7 +249,7 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
     await patchLine(
       page,
       "TXN-0026",
-      { accountMainID: "1220", "diya-gl:bankAccountID": "1220", "diya-gl:bankCode": "RV", debitCreditCode: "D" },
+      { "accountMainID": "1220", "diya-gl:bankAccountID": "1220", "diya-gl:bankCode": "RV", "debitCreditCode": "D" },
       "test: recode TXN-0026 to RV on Cash",
     );
 
@@ -322,7 +322,12 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
     await openBaseline(page);
     const before = await bookCheckStates(page);
 
-    await patchLine(page, "TXN-0074", { "diya-gl:employeeID": "EMP999", detailComment: "Nobody" }, "test: reassign TXN-0074 to an unknown employee");
+    await patchLine(
+      page,
+      "TXN-0074",
+      { "diya-gl:employeeID": "EMP999", "detailComment": "Nobody" },
+      "test: reassign TXN-0074 to an unknown employee",
+    );
 
     const after = await bookCheckStates(page);
     expect(flippedIds(before, after)).toEqual(["book-ltd-payroll-line-names-employee"]);

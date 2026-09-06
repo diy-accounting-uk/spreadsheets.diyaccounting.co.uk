@@ -424,7 +424,13 @@
     var scenario = engine.diyaGlToScenario(book, lines, manifest.id);
     var expected = Object.assign({}, scenario, scenario.expected);
     var results = engine.calculateFromDiyaGl(book, lines, manifest.id, context.taxData, expected);
-    var checks = productMod.checkCompliance(Object.assign({}, results), expected, context.taxData, engine.calculateExpectedTax, yearEndOf(book));
+    var checks = productMod.checkCompliance(
+      Object.assign({}, results),
+      expected,
+      context.taxData,
+      engine.calculateExpectedTax,
+      yearEndOf(book),
+    );
     var links = context.linkLayer
       ? { layer: context.linkLayer, cells: context.linkCells, hubFile: context.hubFile, classify: engine.classifyLinkCell }
       : null;

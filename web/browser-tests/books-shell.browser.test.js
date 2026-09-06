@@ -382,12 +382,14 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
       await btn.hover();
       const colors = await btn.evaluate((el) => {
         const cs = getComputedStyle(el);
-        const rgb = (text) => text.match(/[\d.]+/g).slice(0, 3).map(Number);
+        const rgb = (text) =>
+          text
+            .match(/[\d.]+/g)
+            .slice(0, 3)
+            .map(Number);
         return { fg: rgb(cs.color), bg: rgb(cs.backgroundColor) };
       });
-      expect(contrastRatio(colors.fg, colors.bg), `${file}: ${colors.fg.join(",")} on ${colors.bg.join(",")}`).toBeGreaterThanOrEqual(
-        4.5,
-      );
+      expect(contrastRatio(colors.fg, colors.bg), `${file}: ${colors.fg.join(",")} on ${colors.bg.join(",")}`).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -429,7 +431,10 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
       // its text wraps to at most two lines, not five.
       expect(withLabel[0].lines, `${c.file} ${c.view} first row`).toBeLessThanOrEqual(2);
     }
-    await page.locator(".form-section").first().screenshot({ path: path.join(screenshotsDir, "ui-2-form-row-390-after.png") });
+    await page
+      .locator(".form-section")
+      .first()
+      .screenshot({ path: path.join(screenshotsDir, "ui-2-form-row-390-after.png") });
   });
 
   test("the toast sits above the mobile action bar, never over New or Save", async ({ page }) => {
@@ -501,7 +506,10 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${baseUrl}/books/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
-    const height = await page.locator(".year-row").first().evaluate((el) => el.getBoundingClientRect().height);
+    const height = await page
+      .locator(".year-row")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height);
     expect(height).toBeLessThan(44);
   });
 });

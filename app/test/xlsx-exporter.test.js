@@ -540,7 +540,9 @@ describe("extractionMap over the shipped examples records every recordable line,
     // accountMainID columns) legitimately share a row, so the "unique" claim
     // is about the whole package's set of cell addresses, not one row of
     // fields against itself.
-    const keys = extractionMap.lines().flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    const keys = extractionMap
+      .lines()
+      .flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
     expect(keys.length).toBeGreaterThan(0);
     expect(new Set(keys).size).toBe(keys.length);
   });
@@ -555,7 +557,9 @@ describe("extractionMap over the shipped examples records every recordable line,
     expect(lines.length).toBeGreaterThan(0);
     expect(extractionMap.lines().length).toBe(lines.length);
 
-    const keys = extractionMap.lines().flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
+    const keys = extractionMap
+      .lines()
+      .flatMap((record) => Object.values(record.cells).map((cell) => `${record.file}!${record.sheet}!${cell}`));
     expect(new Set(keys).size).toBe(keys.length);
   });
 });

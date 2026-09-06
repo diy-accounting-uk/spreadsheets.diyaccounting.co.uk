@@ -118,7 +118,20 @@ export function ltdAnchors(yearEndMonth) {
 
   return {
     "Financialaccounts.xlsx": {
-      sheets: ["OpenAccounts", "TrialBalance", "MnthP&L", "PubP&L", "PubBalSht", "PubNotes", "Report", "CorporationTax", "CT600", "WagesInterface", "Stock", "Admin"],
+      sheets: [
+        "OpenAccounts",
+        "TrialBalance",
+        "MnthP&L",
+        "PubP&L",
+        "PubBalSht",
+        "PubNotes",
+        "Report",
+        "CorporationTax",
+        "CT600",
+        "WagesInterface",
+        "Stock",
+        "Admin",
+      ],
       headers: [
         { sheet: "Admin", cell: "D5", label: "Annual Investment Allowance" },
         { sheet: "MnthP&L", cell: "A11", label: "Purchases" },
@@ -188,7 +201,24 @@ export function ltdAnchors(yearEndMonth) {
       ],
     },
     "Vatreturns.xlsx": {
-      sheets: ["VATQtr1", "VATQtr2", "VATQtr3", "VATQtr4", "VATQtr5", "Vatinterface", "S02Y1", "S03Y1", "S04Y2", "S05Y2", "S06Y2", "P02Y1", "P03Y1", "P04Y2", "P05Y2", "P06Y2"],
+      sheets: [
+        "VATQtr1",
+        "VATQtr2",
+        "VATQtr3",
+        "VATQtr4",
+        "VATQtr5",
+        "Vatinterface",
+        "S02Y1",
+        "S03Y1",
+        "S04Y2",
+        "S05Y2",
+        "S06Y2",
+        "P02Y1",
+        "P03Y1",
+        "P04Y2",
+        "P05Y2",
+        "P06Y2",
+      ],
       headers: [
         { sheet: "VATQtr1", cell: "E5", label: "VAT Period ends" },
         { sheet: "VATQtr1", cell: "B9", label: "VAT due on sales" },
@@ -228,7 +258,20 @@ export function ltdAnchors(yearEndMonth) {
       ],
     },
     "expensesform.xlsx": {
-      sheets: ["Month 01", "Month 02", "Month 03", "Month 04", "Month 05", "Month 06", "Month 07", "Month 08", "Month 09", "Month 10", "Month 11", "Month 12"],
+      sheets: [
+        "Month 01",
+        "Month 02",
+        "Month 03",
+        "Month 04",
+        "Month 05",
+        "Month 06",
+        "Month 07",
+        "Month 08",
+        "Month 09",
+        "Month 10",
+        "Month 11",
+        "Month 12",
+      ],
       headers: [{ sheet: "Month 01", cell: "A1", label: "EXPENSES CLAIM FORM" }],
     },
   };
@@ -309,7 +352,7 @@ export async function ltdYearEndMonth(set) {
   const xml = await zip.file(sheetMap.get("Admin")).async("string");
   const match = cellElement(xml, "F21");
   const serial = match && Number((match[2] || "").match(/<v>([^<]*)<\/v>/)?.[1]);
-  if (!serial) throw new Error('Financialaccounts.xlsx!Admin!F21 carries no year-end date to read the package\'s month tabs from');
+  if (!serial) throw new Error("Financialaccounts.xlsx!Admin!F21 carries no year-end date to read the package's month tabs from");
   const yearEndDate = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
   return yearEndDate.getUTCMonth() + 1;
 }
@@ -520,7 +563,8 @@ function isOpenAccountsInputCell(cellRef) {
   if (cellRef === "E13" || cellRef === "E18" || cellRef === "E26") return true;
   const ref = parseCellRef(cellRef);
   if (!ref) return false;
-  if (ref.row === 13) return Object.values(OPENING_FIXED_ASSET_COLUMNS).some((cols) => cols.cost === ref.col || cols.depreciation === ref.col);
+  if (ref.row === 13)
+    return Object.values(OPENING_FIXED_ASSET_COLUMNS).some((cols) => cols.cost === ref.col || cols.depreciation === ref.col);
   if (ref.row === 18) return Object.values(OPENING_BANK_COLUMNS).includes(ref.col);
   if (ref.row === 26) return Object.values(OPENING_TAX_COLUMNS).includes(ref.col);
   return false;

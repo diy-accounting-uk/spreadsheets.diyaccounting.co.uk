@@ -77,7 +77,8 @@ async function readBoxes(page) {
       const cellKey = raw.split(" || ").find((key) => key.startsWith("cell/")) ?? "";
       const parts = Array.from(row.querySelectorAll(".box-part")).map((part) => ({
         text: part.textContent ?? "",
-        key: (part.querySelector("[data-r-key]")?.getAttribute("data-r-key") ?? "").split(" || ").find((key) => key.startsWith("cell/")) ?? "",
+        key:
+          (part.querySelector("[data-r-key]")?.getAttribute("data-r-key") ?? "").split(" || ").find((key) => key.startsWith("cell/")) ?? "",
       }));
       return {
         box,

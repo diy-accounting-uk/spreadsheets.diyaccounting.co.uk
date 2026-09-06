@@ -113,12 +113,7 @@ export function calculateExpectedTax(profit, taxData) {
  */
 export function checkForecastTaxAndNi(check, forecastProfit, cells, taxData, calculateExpectedTax) {
   const expected = calculateExpectedTax(forecastProfit, taxData);
-  check(
-    "Forecast: personal allowance after taper",
-    cells.personalAllowance,
-    forecastProfit <= 0 ? 0 : expected.personal_allowance,
-    0.01,
-  );
+  check("Forecast: personal allowance after taper", cells.personalAllowance, forecastProfit <= 0 ? 0 : expected.personal_allowance, 0.01);
   check("Forecast: tax at standard rate", cells.standard, expected.income_tax_basic, 0.01);
   check("Forecast: tax at higher rate", cells.higher, expected.income_tax_higher, 0.01);
   check("Forecast: tax at additional rate", cells.additional, expected.income_tax_additional, 0.01);

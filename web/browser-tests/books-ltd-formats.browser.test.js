@@ -276,7 +276,10 @@ test.describe("DIYA-GL Company books page — round trips (E3)", () => {
     }
 
     const taxData = parseTOML(
-      fs.readFileSync(path.join(ROOT, "app/data", `${taxYearFileName(new Date(fullBook.documentInfo.periodCoveredEnd), "ltd")}.toml`), "utf-8"),
+      fs.readFileSync(
+        path.join(ROOT, "app/data", `${taxYearFileName(new Date(fullBook.documentInfo.periodCoveredEnd), "ltd")}.toml`),
+        "utf-8",
+      ),
     );
     const scenario = diyaGlToScenario(fullBook, fullLines, "ltd");
     const cells = calculateLtdCells(fullBook, fullLines, taxData, scenario);
@@ -352,7 +355,9 @@ test.describe("DIYA-GL Company books page — refusals (E4)", () => {
 
     const message = page.locator("#empty-state-message");
     await expect(message).toHaveClass(/upload-error/);
-    await expect(message).toHaveText('"Financialaccounts.xlsx" is the hub workbook of a multi-file Company package; upload the package zip.');
+    await expect(message).toHaveText(
+      '"Financialaccounts.xlsx" is the hub workbook of a multi-file Company package; upload the package zip.',
+    );
     await expect(page.locator(".year-table-scroll, .month-cards")).toHaveCount(0);
   });
 

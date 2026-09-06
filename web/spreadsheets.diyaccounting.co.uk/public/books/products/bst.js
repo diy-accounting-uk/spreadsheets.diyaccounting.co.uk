@@ -588,10 +588,7 @@
     rows.push({
       label: "Tax profit the sheet carries",
       value: bridge.sheetProfit,
-      rKeyAttr: helpers.rk(
-        bridgeCellKey(snap, helpers, bridge.sheetCell),
-        helpers.sectionKey(sectionSlug, "tax-profit-the-sheet-carries"),
-      ),
+      rKeyAttr: helpers.rk(bridgeCellKey(snap, helpers, bridge.sheetCell), helpers.sectionKey(sectionSlug, "tax-profit-the-sheet-carries")),
     });
     rows.push({
       label: "Residue",

@@ -1478,7 +1478,8 @@ export async function extractJournalEntries(set, product, period, extractionMap)
   stockMovementLines.forEach((line, index) => {
     const recorded = { ...line, lineNumber: lineNum++, entryNumber: nextEntryNumber("journal") };
     lines.push(recorded);
-    if (extractionMap && index === 0) extractionMap.recordLine(recorded, stockLineRegion, closingRow, lines.length - 1, "Financialaccounts.xlsx");
+    if (extractionMap && index === 0)
+      extractionMap.recordLine(recorded, stockLineRegion, closingRow, lines.length - 1, "Financialaccounts.xlsx");
   });
 
   return lines;

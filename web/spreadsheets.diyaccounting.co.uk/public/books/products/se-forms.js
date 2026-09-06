@@ -43,11 +43,7 @@
       // empty state itself, wiping whatever ephemeral message (an unknown
       // deep-link example, an upload error) it was showing at the moment
       // the fetch resolved.
-      if (
-        global.DiyaGlBooksPage &&
-        global.DiyaGlBooksPage.helpers &&
-        global.document.body.classList.contains("is-loaded")
-      ) {
+      if (global.DiyaGlBooksPage && global.DiyaGlBooksPage.helpers && global.document.body.classList.contains("is-loaded")) {
         global.DiyaGlBooksPage.helpers.render();
       }
     })

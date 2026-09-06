@@ -223,7 +223,13 @@ const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 export const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
 export const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
-export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = {
+  activate: "A",
+  invoiceNumber: "B",
+  carriage: "E",
+  productCode1: "F",
+  quantity1: "G",
+};
 const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
 
