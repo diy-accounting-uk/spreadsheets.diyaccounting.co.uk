@@ -522,7 +522,10 @@
       renderForm(snap, helpers, layout.forms.accounts) +
       '<p class="view-lede">A micro-entity files neither of the two below. The sheet produces both, so they render here for checking.</p>' +
       sectionCardFromCellMap(snap, helpers, "Directors' Report", "Directors' report") +
-      sectionCardFromCellMap(snap, helpers, "Fixed Asset Note", "Notes to the accounts")
+      sectionCardFromCellMap(snap, helpers, "Fixed Asset Note", "Notes to the accounts") +
+      '<p class="view-lede">The FRS 105 form above files the aggregate lines only; the published balance sheet and P&L behind them, in full, render here for checking.</p>' +
+      sectionCardFromCellMap(snap, helpers, "Published Balance Sheet", "Published balance sheet, in full") +
+      sectionCardFromCellMap(snap, helpers, "Published P&L", "Published P&L, in full")
     );
   }
 
@@ -530,7 +533,12 @@
 
   function renderComputation(snap, state, helpers) {
     if (!layout) return loadingPanel("Corporation tax computation");
-    return "<h2>Corporation tax</h2>" + renderForm(snap, helpers, layout.forms.computation);
+    return (
+      "<h2>Corporation tax</h2>" +
+      renderForm(snap, helpers, layout.forms.computation) +
+      '<p class="view-lede">The HMRC computation above restates the working sheet in the prescribed format; the working sheet itself, in its own order, renders here for checking.</p>' +
+      sectionCardFromCellMap(snap, helpers, "Corporation Tax working sheet", "Working sheet")
+    );
   }
 
   function renderCt600(snap, state, helpers) {

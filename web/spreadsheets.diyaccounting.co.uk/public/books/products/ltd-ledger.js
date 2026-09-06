@@ -233,6 +233,26 @@
 
   // ============================== ledgers ==============================
 
+  // Every CELL_MAP row of one report section, as a label/value/key panel --
+  // the Ledgers view's own copy of the same small builder ltd-forms.js uses
+  // for Directors' Report and Fixed Asset Note. The Trial Balance carries
+  // several opening and closing balances (bank, creditors, share capital,
+  // stock, HMRC) that the debtors/creditors panels below do not name; this
+  // is where the rest of them render, both directions covered at once.
+  function sectionCardFromCellMap(snap, helpers, sectionName, title) {
+    var productMod = snap.context.productMod;
+    var rows = productMod.CELL_MAP.filter(function (entry) {
+      return entry[4] === sectionName;
+    }).map(function (entry) {
+      return {
+        label: labelFor(productMod, entry[0], entry[1], entry[0] + "!" + entry[1]),
+        text: formatByUnit(cellValue(snap.results, entry[0], entry[1]), unitOf(productMod, entry[0], entry[1]), helpers),
+        rKeyAttr: cellRk(snap, helpers, entry[0], entry[1]),
+      };
+    });
+    return '<div class="panel-card"><h3>' + helpers.esc(title) + "</h3>" + helpers.kvRows(rows) + "</div>";
+  }
+
   function renderLedgers(snap, state, helpers) {
     function total(rows) {
       return rows.reduce(function (sum, entry) {
@@ -277,7 +297,8 @@
       side("Debtors carried forward", ledgers.debtors.closing, tb.debtors.closing) +
       side("Creditors brought forward", ledgers.creditors.opening, tb.creditors.opening) +
       side("Creditors carried forward", ledgers.creditors.closing, tb.creditors.closing) +
-      "</div>"
+      "</div>" +
+      sectionCardFromCellMap(snap, helpers, "Trial Balance", "Trial balance, brought and carried forward")
     );
   }
 
@@ -471,7 +492,13 @@
           .join("")
       : '<tr><td colspan="3">This book bought no assets during the year.</td></tr>';
 
-    var scheduleRows = S.SCHEDULE_TOTAL_CELLS.map(function (cell) {
+    // Row 1's own grand totals beyond SCHEDULE_TOTAL_CELLS: written down
+    // value carried forward on the existing-assets side (G), accumulated
+    // depreciation carried forward on the current-year side (J), and the
+    // disposals columns (V sale proceeds, W cost, X depreciation).
+    var EXTRA_SCHEDULE_TOTAL_CELLS = ["G1", "J1", "V1", "W1", "X1"];
+
+    var scheduleRows = S.SCHEDULE_TOTAL_CELLS.concat(EXTRA_SCHEDULE_TOTAL_CELLS).map(function (cell) {
       return {
         label: labelFor(productMod, S.SCHEDULE_SHEET, cell, S.SCHEDULE_SHEET + "!" + cell),
         value: cellValue(snap.results, S.SCHEDULE_SHEET, cell),
@@ -479,21 +506,52 @@
       };
     });
 
+    // The depreciation rate sits on each class's own label row, a few rows
+    // above its existingTotalRow; the schedule carries no row of its own
+    // that names both, so the pairing is made here.
+    var SCHEDULE_CLASS_RATE_ROW = { land: 7, plant: 13, fixtures: 24, computer: 32, motor: 43 };
+    // Assets of the same class bought during the year total on a second
+    // block further down the schedule, at these rows.
+    var SCHEDULE_CLASS_NEW_TOTAL_ROW = { land: 64, plant: 75, fixtures: 83, computer: 94, motor: 108 };
+
+    function scheduleFigureCell(cell, unit) {
+      return (
+        '<td class="num"' +
+        cellRk(snap, helpers, S.SCHEDULE_SHEET, cell) +
+        ">" +
+        formatByUnit(cellValue(snap.results, S.SCHEDULE_SHEET, cell), unit || "money", helpers) +
+        "</td>"
+      );
+    }
+
     var classRows = S.SCHEDULE_ASSET_CLASSES.map(function (klass) {
-      var costCell = "E" + klass.existingTotalRow;
-      var depCell = "F" + klass.existingTotalRow;
+      var row = klass.existingTotalRow;
       return (
         "<tr><th>" +
         helpers.esc(klass.label) +
-        '</th><td class="num"' +
-        cellRk(snap, helpers, S.SCHEDULE_SHEET, costCell) +
-        ">" +
-        helpers.fmtMoney(cellValue(snap.results, S.SCHEDULE_SHEET, costCell)) +
-        '</td><td class="num"' +
-        cellRk(snap, helpers, S.SCHEDULE_SHEET, depCell) +
-        ">" +
-        helpers.fmtMoney(cellValue(snap.results, S.SCHEDULE_SHEET, depCell)) +
-        "</td></tr>"
+        "</th>" +
+        scheduleFigureCell("E" + row) +
+        scheduleFigureCell("F" + row) +
+        scheduleFigureCell("H" + SCHEDULE_CLASS_RATE_ROW[klass.key], "rate") +
+        scheduleFigureCell("I" + row) +
+        scheduleFigureCell("W" + row) +
+        scheduleFigureCell("X" + row) +
+        "</tr>"
+      );
+    }).join("");
+
+    var newClassRows = S.SCHEDULE_ASSET_CLASSES.map(function (klass) {
+      var row = SCHEDULE_CLASS_NEW_TOTAL_ROW[klass.key];
+      return (
+        "<tr><th>" +
+        helpers.esc(klass.label) +
+        "</th>" +
+        scheduleFigureCell("E" + row) +
+        scheduleFigureCell("F" + row) +
+        scheduleFigureCell("I" + row) +
+        scheduleFigureCell("W" + row) +
+        scheduleFigureCell("X" + row) +
+        "</tr>"
       );
     }).join("");
 
@@ -543,10 +601,14 @@
       '<div class="panel-card"><h3>The schedule\'s own totals</h3>' +
       helpers.kvRows(scheduleRows) +
       "</div>" +
-      '<div class="panel-card"><h3>Class totals, existing assets</h3>' +
-      '<table class="register-table"><thead><tr><th>Class</th><th>Cost</th><th>Depreciation</th></tr></thead><tbody>' +
+      '<div class="panel-card"><h3>Class totals, existing assets</h3><div class="ltd-months-scroll">' +
+      '<table class="register-table"><thead><tr><th>Class</th><th>Cost</th><th>Depreciation</th><th>Rate</th><th>Charge this year</th><th>Disposals: cost</th><th>Disposals: depreciation</th></tr></thead><tbody>' +
       classRows +
-      "</tbody></table></div>" +
+      "</tbody></table></div></div>" +
+      '<div class="panel-card"><h3>Class totals, assets bought this year</h3><div class="ltd-months-scroll">' +
+      '<table class="register-table"><thead><tr><th>Class</th><th>Cost</th><th>Depreciation</th><th>Charge this year</th><th>Disposals: cost</th><th>Disposals: depreciation</th></tr></thead><tbody>' +
+      newClassRows +
+      "</tbody></table></div></div>" +
       '<div class="panel-card"><h3>Hire purchase</h3><div class="ltd-months-scroll">' +
       '<table class="register-table"><thead><tr><th>Agreement</th><th>Finance company</th><th>Financed</th><th>Months</th><th>Monthly</th><th>Capital</th><th>Interest</th></tr></thead><tbody>' +
       agreements +
