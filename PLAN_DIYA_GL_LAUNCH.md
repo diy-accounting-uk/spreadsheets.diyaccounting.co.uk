@@ -447,7 +447,8 @@ concurrent edits, and any second price.
 
 ## Open items
 
-Tracked here, not on the board in `NEXT.md`, at the operator's request.
+Phases 0 to 3's work is on `NEXT.md`'s board as the `LP` rows (operator, 2026-09-07). X1 and H6
+stay here.
 
 - **X1 — draft `PLAN_DIYA_GL_RUST.md`.** The port's design wave first: the type model, the
   float and half-up rounding contract that reproduces the JS serializer byte-for-byte, the
