@@ -598,7 +598,7 @@ Version 3 numbering (gov.uk, "Company Tax Return (CT600) 2015 Version 3", refres
 | AJ145 | 475 net liability and 510 tax chargeable, both equal to 440 since boxes 445 to 505 are nil |
 | AJ154, AJ159 | 515 income tax deducted, 525 self-assessment of tax payable (528 equals it) |
 | AJ163, AJ166, AJ169 | 595 tax already paid (an input), 600 outstanding, 605 overpaid |
-| AA177/AL177, AA179 | 705/710 main pool allowances and balancing charges; the "cars outside general pool" line joins 705 (Version 3 has no separate cars box) |
+| AA177/AL177, AA179 | schedule boxes 107/108, 109 (general pool allowances and balancing charge, cars outside the pool); read the working sheet's column H, always empty, so these printed blank until T21 pointed them at column I; a different figure from Version 3's 690/705/710, which the rendered page reads straight from `CorporationTax` |
 | AA175/AL175 | 695/700 special rate pool (long-life assets) |
 | AL194 | 760 machinery and plant on which first-year allowance is claimed; the AIA claimed on `Schedule` feeds 690 |
 | B274 | 975 declaration name; 980 date and 985 status are entered on the page |

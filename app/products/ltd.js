@@ -941,13 +941,20 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Bank entries — one workbook per bank account, receipts and payments on
   // opposite sides of each month tab.
   //
-  // The target period's first day, in the same shifted frame as every "d"
-  // below, so isLtdOpeningBankLine's date comparison is apples to apples.
-  // A caller that names no target year (cellWrites' own default when the
-  // product runs single-file, which Ltd never does) keeps the old, looser
-  // reading -- any "BC" line is an opening balance -- rather than gate on a
-  // period boundary it cannot place.
-  const periodStart = targetStartYear ? new Date(Date.UTC(targetStartYear, targetStartMonth, 1)) : null;
+  // The period's first day, in the same shifted frame as every "d" below:
+  // the earliest of the scenario's own bank dates, shifted the same way
+  // "d" is, rather than reconstructed from targetStartYear and yearEndMonth.
+  // shiftDate keeps a date's own year and lets the month overflow, so a
+  // month shift that does not cross a year boundary (a March year end,
+  // whose target frame already starts in April) agrees with targetStartYear
+  // by coincidence, but one that does (a May year end shifts an April
+  // opening two months into the same calendar year, not into
+  // targetStartYear's, which generate.js names one year further back) does
+  // not -- the true opening then misses periodStart and reads as a
+  // transfer, while every genuine transfer misses it too and reads as an
+  // opening instead.
+  const bankDates = Object.values(scenario.bank || {}).flatMap((transactions) => transactions.map((tx) => shiftDate(parseDate(tx.date))));
+  const periodStart = bankDates.length > 0 ? bankDates.reduce((earliest, date) => (date < earliest ? date : earliest)) : null;
   const bankFileWrites = {};
   if (scenario.bank) {
     const receiptRows = {};
@@ -969,7 +976,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         // on the period's first day; a "BC" line any other day is an
         // ordinary transfer to or from the Cash account, analysed like any
         // other code below.
-        if (periodStart ? isLtdOpeningBankLine(tx.code, d, periodStart) : tx.code === "BC") {
+        if (isLtdOpeningBankLine(tx.code, d, periodStart)) {
           sheet.A1 = tx.amount;
           continue;
         }
