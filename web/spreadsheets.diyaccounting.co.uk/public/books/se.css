@@ -7,48 +7,87 @@
 @import url("books.css");
 
 /* The journal switch above the entries grid, and the bank book's own
-   account switch: one row of buttons, the chosen one filled in. */
+   account switch: a second tab row, one line that scrolls on a phone
+   rather than wrapping, the chosen one underlined the way the sheet tabs
+   mark the open view. */
 .journal-switch,
 .account-switch {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.1rem;
+  overflow-x: auto;
   margin: 0.75rem 0;
+  border-bottom: 1px solid var(--rule-faint);
+  scrollbar-width: thin;
 }
 
 .journal-switch-btn,
 .account-switch-btn {
-  border: 1px solid var(--rule-faint);
-  background: var(--paper-raised);
-  color: var(--ink);
-  border-radius: var(--radius);
-  padding: 0.3rem 0.75rem;
-  font: inherit;
+  flex: none;
+  appearance: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--pencil);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .journal-switch-btn:hover,
 .account-switch-btn:hover {
-  border-color: var(--rule);
+  color: var(--ink);
 }
 
 .journal-switch-btn[aria-pressed="true"],
 .account-switch-btn[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+  color: var(--ink);
+  border-bottom-color: var(--rule);
 }
 
-/* The statement's twelve month columns and the bank book's analysis
-   columns are both wider than the view, so each scrolls inside its own
-   box rather than pushing the page sideways. */
-.se-months-scroll {
+.account-switch-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-left: 0.3rem;
+}
+
+/* Five journals show one at a time, so the entries grid holds one table
+   and that table takes the whole width rather than half of a pair. */
+.entries-columns {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* On a phone the month opens inside its card, and the journal switch runs
+   edge to edge of that card so its rule reads as the card's own tab row. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .month-card .journal-switch {
+    margin-left: -0.85rem;
+    margin-right: -0.85rem;
+    padding: 0 0.85rem;
+  }
+}
+
+/* A table wider than the view -- the statement's twelve month columns,
+   the bank book's balances and analysis columns, the payroll tables --
+   scrolls inside its own box rather than pushing the page sideways. The
+   cells stay on one line so the box scrolls instead of squeezing a name
+   onto two. */
+.se-table-scroll {
   overflow-x: auto;
   margin-top: 0.75rem;
 }
 
-.se-months-scroll table {
+.se-table-scroll table {
   min-width: 100%;
+}
+
+.se-table-scroll .register-table th,
+.se-table-scroll .register-table td {
+  white-space: nowrap;
 }
 
 .se-months-table th:first-child {
@@ -77,6 +116,15 @@
   margin: 0 0 0.4rem;
 }
 
+.settlement-title {
+  font-weight: 700;
+}
+
+.settlement-meta {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
 .settlement-actions {
   display: flex;
   gap: 0.5rem;
@@ -90,13 +138,16 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.2rem 0.6rem;
+  max-width: 26rem;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--rule-faint);
   font-size: 0.8rem;
+  text-align: left;
 }
 
 .month-card-strip .figure-label {
+  font-family: var(--font-ui);
   color: var(--ink-faint);
 }
 
@@ -117,6 +168,8 @@
 }
 
 .vat-interface > summary {
+  min-height: 44px;
+  padding: 0.7rem 0;
   cursor: pointer;
   font-weight: 600;
 }
