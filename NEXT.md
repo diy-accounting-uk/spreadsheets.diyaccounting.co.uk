@@ -41,14 +41,10 @@ commits. Prod was already deployed from
   fires no workflow, so `deploy.yml` never follows a package push. The scheduled deploy run
   34030850798 failed at its judge gate on SE's negative Total Tax + NI (SE-T34, same branch), with
   every Sonnet call 403ing on `aws-marketplace:Subscribe` and escalating to Opus; the judge now
-  runs on Nova (J1, same branch), which needs the role policy H1 before CI can call it:
-  `aws --profile spreadsheets iam put-role-policy --role-name spreadsheets-github-actions-role
-  --policy-name InvokeAmazonBedrock --policy-document file://invoke-amazon-bedrock.json` (the
-  document allows `bedrock:InvokeModel` and `InvokeModelWithResponseStream` on
-  `arn:aws:bedrock:*::foundation-model/amazon.*` and
-  `arn:aws:bedrock:*:064390746177:inference-profile/*amazon*`), then `delete-role-policy
-  --policy-name InvokeAnthropicBedrock`. Prod serves `d235d704`'s packages until a deploy passes
-  the judge: after the branch merges and H1 lands, `generate-ltd` once more, then `gh workflow run
+  runs on Nova (J1, same branch); the actions role's inline policy now allows
+  `bedrock:InvokeModel` on `foundation-model/amazon.*` and the account's `inference-profile/*amazon*`
+  (`InvokeAmazonBedrock`, applied 2026-09-06; the policy lives in no repo). Prod serves `d235d704`'s packages until a deploy passes
+  the judge: after the branch merges, `generate-ltd` once more, then `gh workflow run
   deploy.yml -f environment-name=prod`.
 - **CQ-4** (CodeQL 12, 19, 20 on main's scan after the merge): `web/unit-tests/smoke.test.js`
   lines 32 and 40 still trip js/path-injection although CQ-2 resolved the request path and checked
@@ -100,8 +96,7 @@ commits. Prod was already deployed from
 | TX-T21 | `books-taxi-takings.browser.test.js`: the takings-view cases T17 did not absorb (undo, the mobile-portrait week and day cards, `changeLineDetail` through the page) | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | TX-T22 | `books-taxi-views.browser.test.js`: the comparison panel, vehicle register, quarterly and forecast summaries and the drift-survival case at the DOM level | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | M1 | The four `generate-*` on main with commit (`generate-all.yml`), then `deploy.yml`, so the committed packages, reports and reconciliation pages match the merged writers | operator | human | SE-T34 | in-flight | `generate-ltd` run 34032585902 after PR #63; deploy waits on the judge passing SE |
-| H1 | Replace the actions role's inline `InvokeAnthropicBedrock` policy with one that allows `bedrock:InvokeModel` on `foundation-model/amazon.*` and the account's `inference-profile/*amazon*`; the policy lives in no repo | operator | human | — | ready-to-start | command in the M1 context; the judge's Nova calls 403 in CI until it lands |
-| J1 | The reconciliation judge runs on Amazon's models through the Bedrock Converse API (Nova 2 Lite, escalating to Nova Pro) instead of Sonnet and Opus, whose marketplace agreement the account never established | operator | machine | — | in-flight | `claude/ops-green-deploy`: switch built, awaiting the operator's push under the freeze |
+| J1 | The reconciliation judge runs on Amazon's models through the Bedrock Converse API (Nova 2 Lite, escalating to Nova Pro) instead of Sonnet and Opus, whose marketplace agreement the account never established | operator | machine | — | in-flight | `claude/ops-green-deploy`: switch built and the role policy applied; awaiting the operator's push under the freeze |
 
 ## Plans not tracked here
 
