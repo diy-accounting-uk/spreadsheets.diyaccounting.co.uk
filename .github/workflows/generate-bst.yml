@@ -138,7 +138,6 @@ jobs:
           pip install --quiet weasyprint
       - run: rm -rf packages
       - run: npm run generate -- --package bst
-      - run: npm test
       - name: Compute reconciliation matrix
         id: matrix
         run: |
@@ -270,6 +269,13 @@ jobs:
             cp "$POPULATED" examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx
             echo "Copied $POPULATED to examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx"
           fi
+      # Runs here, not in the generate job: this is the first point where both the
+      # fresh packages/ (downloaded above) and the fresh examples/bst-latest (just
+      # copied above) are in place together, so the unit tests that read the
+      # committed example compare it against the template that produced it.
+      - name: Unit tests against the fresh packages and example
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        run: npm test
       - name: Build the reconciliation page
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
