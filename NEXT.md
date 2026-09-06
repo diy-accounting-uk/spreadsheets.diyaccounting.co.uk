@@ -25,7 +25,8 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
+| LT-T28 | `payslips-calendar-year-end` (the Ltd June year end, four cases) and `ltd-reconciliation-checks` (one case) fail with six and nine extra checks on the uncorrupted recalculated book at the batch head (CI run 34021994379) | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | `../.worktrees/spreadsheets/lt-t28` on `claude/wt-lt-t28`; Sonnet |
+| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T28 | blocked-to-start | local unit and browser gates green at `23276a43`; CI test.yml on the head is the last gate |
 | SE-H1 | Merge the batch to main; the four `generate-*` on the branch first; the refresh on main | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, draft until the CI gate is green |
 | LT-M1 | Merge the batch PR; generate-ltd on the branch; the refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
 
