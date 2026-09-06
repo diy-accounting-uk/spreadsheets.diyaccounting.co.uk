@@ -218,11 +218,9 @@ describe("the pure refresh agrees with the sibling workbooks and settles in one 
     expect(secondPass, "a second refresh found something to rewrite").toEqual([]);
   }, 120000);
 
-  // The order is derived from the files until Ltd's own row declares it.
   it("over examples/ltd-latest", async () => {
     const zips = await workbookZips(resolve(ROOT, "examples", "ltd-latest"));
-    const order = [...zips.keys()].filter((name) => zips.get(name).file("xl/externalLinks/externalLink1.xml")).sort();
-    const { cells, compared, disagreements, secondPass } = await refreshAgainstSiblings(zips, order);
+    const { cells, compared, disagreements, secondPass } = await refreshAgainstSiblings(zips, LINK_ORDER.ltd);
     expect(disagreements).toEqual([]);
     expect(cells).toBeGreaterThanOrEqual(LTD_FIXTURE.addressed.length - LTD_FIXTURE.blank.length);
     expect(compared).toBeGreaterThanOrEqual(LTD_FIXTURE.addressed.length - LTD_FIXTURE.blank.length);

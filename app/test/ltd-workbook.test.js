@@ -30,6 +30,8 @@ import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad } from "..
 import { applyCellWrites, buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { cellWrites } from "../products/ltd.js";
+import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "../lib/link-caches.js";
+import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
@@ -55,11 +57,19 @@ afterAll(() => {
 // the year's rates into the sheets that carry them, the year-end sequence,
 // the scenario's cells, and the recalculate-on-open flag every workbook gets.
 // A difference here means the writer and the CLI have drifted apart.
+//
+// The writer (product-workbook.js's composeFiles) also refreshes every
+// link-bearing file's external link caches from the calculator once every
+// file is composed, so the two paths are mirrored here to the same point:
+// generate.js does not refresh (CI recalculates through LibreOffice instead),
+// so composing "the generate path" and then applying that same refresh is
+// what makes the two comparable byte for byte.
 async function packageTheGeneratePathComposes(book, lines, taxYearName, yearEndMonth) {
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates/ltd/meta.toml"), "utf8"));
   const taxData = parseTOML(readFileSync(resolve(APP_DIR, `data/${taxYearName}.toml`), "utf8"));
   const endDate = new Date(book.documentInfo.periodCoveredEnd);
-  const writes = cellWrites(diyaGlToScenario(book, lines, "ltd"), endDate.getUTCFullYear() - 1, yearEndMonth);
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  const writes = cellWrites(scenario, endDate.getUTCFullYear() - 1, yearEndMonth);
 
   const files = [];
   for (const templateFile of productMeta.template.files) {
@@ -74,6 +84,12 @@ async function packageTheGeneratePathComposes(book, lines, taxYearName, yearEndM
       buffer = await setFullCalcOnLoad(buffer);
     }
     files.push({ name: templateFile, bytes: buffer });
+  }
+
+  const reader = resultsReader(calculateLinkCells(book, lines, "ltd", taxData, scenario));
+  for (const name of LINK_ORDER.ltd) {
+    const file = files.find((entry) => entry.name === name);
+    file.bytes = (await refreshWorkbookLinkCaches(file.bytes, reader)).bytes;
   }
   return files;
 }
