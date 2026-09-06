@@ -388,6 +388,7 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
 | T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
 | T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | — | Sonnet | `app/lib/report-indicators.js`, `app/test/judge-reconciliation.test.js` |
+| T37 | The entries grid's Add button routes every journal but sales through `addPurchaseLine` (`web/.../books/edits.js:195`), which throws for bank, cash and payroll lines; the add row needs a direction and bank account for bank and cash lines and payslip fields for payroll, then a per-journal edit call | T33 | Opus | `web/.../books/edits.js`, `web/.../books/shell.js` (the add row), `app/lib/diya-gl-edits.js`, `web/browser-tests/books-se.browser.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
 | T15 | The SA103 box-to-API mapping as data, keyed by tax year, each entry naming the SE sheet cell or its reason; HMRC's CSV copied beside it with its source; a Node test that every `SE Full` and `SE Short` `CELL_MAP` box has an entry | — | Sonnet | `app/data/hmrc/sa103-mtd-mapping.json` (new), `app/data/hmrc/sa103f_mapping_v3.csv` (new), `app/data/hmrc/SOURCE.md` (new), `app/test/sa103-mtd-mapping.test.js` (new) |
 | T16 | The `SE Short` sheet prints the 2026 SA103S box numbers and gates the nine expense cells and the `A33` note on `Admin!F26` in place of the 30,000 and 67,000 literals; the calculator's threshold follows; `CELL_MAP` gains `D124` and `O124` and its SE Short labels renumber; the CONTEXT doc's SA103S table follows; regenerated and reconciled | T4 | Opus | `app/templates/se/Financialaccounts.xlsx`, `app/lib/calculators/se.js` (the threshold, `A33`, `D124`, `O124`), `app/products/se.js` (SE Short labels, two `CELL_MAP` rows, `profitBridge` labels), `CONTEXT_SELF_EMPLOYED.md`, `app/test/se-full-return-checks.test.js`, `app/test/calculator-se.test.js`, `packages/GB Accounts Self Employed */` (regenerated) |
@@ -718,11 +719,7 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   now builds its own chart, giving cash the second bank account (`1220`, the code its lines already
   post to) and payroll the two wage accounts (`5100`, `5101`) its lines already carry; proved on the
   advanced book, whose April carries two cash lines and three payroll lines across both wage codes.
-  A second, deeper defect surfaced and left unfixed as out of scope: the entries grid's generic
-  "Add" button (`edits.js`'s `addEntry`) routes every journal but `sales` through `addPurchaseLine`,
-  which throws for `bank`, `cash` and `payroll` (`sourceJournalID` mismatch); this pre-dates T33,
-  affects the `bank` journal too, and needs new UI fields (direction, bank account, or payslip
-  fields) beyond a chart fix, so it is not folded in here.
+  The entries grid's Add button routing for the bank, cash and payroll journals is T37.
 
 ### Verification ladder
 
