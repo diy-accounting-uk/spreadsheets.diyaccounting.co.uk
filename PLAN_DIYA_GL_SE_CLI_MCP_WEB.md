@@ -387,7 +387,6 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T13 | UX pass at four viewports with the frontend-design skill's questions; axe gate; keyboard run | T7, T8, T12 | Fable | `web/.../books/products/se.js`, `books/se.css`, `web/browser-tests/books-se-layouts.browser.test.js` (new), `playwright.config.js` |
 | T28 | The year view carries a mileage-and-CIS strip: Purchases `C2`, `G2`, `A2` and Sales `W1`, `X1`, Purchases `AD1` per month, the 72 cells `render-unrepresentable/se.json` still declares after T21 | T21 | Sonnet | `web/.../books/shell.js` (the month card), `books/products/se.js`, `app/data/render-unrepresentable/se.json`, `web/browser-tests/books-render-coverage.browser.test.js` |
 | T29 | The SE writer shifts posting dates into the package's period as the Ltd writer does (`products/se.js:266` writes them unshifted, so `se-latest` stamped 2027-04-05 carries 2025/26 dates and the A3 stale pair never clears); the A7 re-render case makes its own drift | T17 | Sonnet | `app/products/se.js` (the date write), `app/test/se-period-frame.test.js`, `web/browser-tests/books-se-equivalence.browser.test.js` |
-| T32 | `REPOST_PREFERRED` in `app/lib/book-checks.js` has no `SelfEmployed` entry, so an SE purchase settlement reposts to the chart's first account rather than a sane default | — | Sonnet | `app/lib/book-checks.js`, `app/test/settlement-helpers.test.js` |
 | T33 | The cash and payroll journals render an empty chart in the entries grid | — | Sonnet | `web/.../books/products/se.js`, `web/browser-tests/books-se.browser.test.js` |
 | T34 | The reconciliation judge has no indicator for CIS suffered, so a negative Total Tax + NI on a CIS-heavy SE book reads as an unexplained query | — | Sonnet | `app/lib/report-indicators.js`, `app/test/judge-reconciliation.test.js` |
 | T14 | CLI and MCP on SE: `export.js --file --package se`, `extract_book` on a package zip, `save_workbook` returning the package; byte identity with Node's `savePackageZip` (the page's half is T11's A8) | S6, T2 | Sonnet | `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
@@ -708,6 +707,11 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
   to break rather than inheriting four pre-existing failures; a fast JS-only case in
   `calculator-se.test.js` proves the omitted-`packageYearEnd` pattern is what breaks a shifted
   package.
+- T32, branch `claude/se-repost-chart`, 2026-09-06: `REPOST_PREFERRED` in `book-checks.js` gains a
+  `SelfEmployed` entry (sales `4000`, purchases `5002`, the code SE's own chart and
+  `SE_PURCHASE_CODE_MAP` both call "Other"), so `settlementSuggestions`' purchase-from-payment
+  reposts an SE book to its own miscellaneous account rather than the chart's first one; proved on
+  `examples/precision-code-ltd/advanced`, both with `5002` declared and with it dropped.
 
 ### Verification ladder
 
