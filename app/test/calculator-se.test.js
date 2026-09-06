@@ -22,12 +22,13 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
-import { loadScenario } from "../lib/scenario-loader.js";
+import { loadScenario, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateSeCells, calculateSeResults } from "../lib/calculators/se.js";
-import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor, unitFor } from "../products/se.js";
+import { checkCompliance, cellLabels, standardReads, multiFileOptions, vatRateFor, unitFor, cellWrites } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { payslipsWagesPaidCell, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_PERIOD, PAYSLIP_PRINT_CELLS } from "../lib/payslips-layout.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -93,6 +94,71 @@ describe("Self Employed engine: every compliance check the Excel reconciliation 
       });
     });
   }
+});
+
+// se.js's cellWrites shifts every posting date onto the package's own tax
+// year (period-shift.js) before it ever reaches a cell; checkCompliance has
+// to derive its own expectation the same way, from the packageYearEnd it is
+// given, or a package generated for a year other than the scenario's own
+// fails these checks by exactly the gap between the two years. cellWrites
+// writes literal date serials for the cells these checks read (no formula
+// sits between the write and the read), so its own output stands in for the
+// LibreOffice-recalculated package without opening one.
+describe("Self Employed engine: payslip dates against a package generated years past the scenario's own", () => {
+  const PACKAGE_YEAR_END = "2028-04-05";
+  const TARGET_START_YEAR = parseInt(PACKAGE_YEAR_END.slice(0, 4), 10) - 1; // 2027, two years past the fixture's own 2025-04 opening
+  const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
+  const expected = { ...scenario, ...scenario.expected };
+  const DATE_CHECK_PATTERN = /wages paid date$|paid that month's wages$/;
+
+  // The month tab order se.js's own MONTH_KEYS keeps (not exported): the
+  // package's twelve calendar months from the tax year's April opening.
+  const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+
+  // The engine's own-year results give every sheet checkCompliance reads
+  // besides Payslips.xlsx; those are overlaid, cell by cell, with the
+  // literal values cellWrites would put on the package it generates for
+  // TARGET_START_YEAR, so only the payroll dates this test cares about move.
+  // The printed page's I9/M18 are INDIRECT formulas onto the joined month
+  // tab's own wages-paid cell (se.js's own comment on the check), so a real
+  // recalculated package carries the shift there too even though cellWrites
+  // never writes I9/M18 directly -- this reproduces that join by hand.
+  function shiftedPayslipsResults() {
+    const base = calculateSeResults({}, [], TAX_DATA, scenario);
+    const writes = cellWrites(scenario, TARGET_START_YEAR);
+    const results = { ...base };
+    for (const [sheet, cells] of Object.entries(writes["Payslips.xlsx"])) {
+      const key = `Payslips.xlsx!${sheet}`;
+      results[key] = { ...(base[key] || {}), ...cells };
+    }
+    const printedTab = MONTH_SHEETS[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]];
+    const wagesPaidOn = results[`Payslips.xlsx!${printedTab}`][payslipsWagesPaidCell(PAYSLIP_PRINT_PERIOD - 1)];
+    const printSheetKey = `Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`;
+    results[printSheetKey] = { ...results[printSheetKey], [PAYSLIP_PRINT_CELLS.periodEnd]: wagesPaidOn, M18: wagesPaidOn };
+    return results;
+  }
+
+  it("raises exactly the four date checks the writer's shift touches", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(dateChecks.length).toBe(4);
+  });
+
+  it("passes every one of them, matching the package the writer would have produced", () => {
+    const checks = checkCompliance(shiftedPayslipsResults(), expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const dateChecks = checks.filter((check) => DATE_CHECK_PATTERN.test(check.name));
+    expect(failures(dateChecks).map(describeFailure)).toEqual([]);
+  });
+
+  it("still fails when a written wages-paid date is bent by a day", () => {
+    const results = shiftedPayslipsResults();
+    const julDateCell = payslipsWagesPaidCell(3); // MONTH_KEYS index 3 = jul
+    results["Payslips.xlsx!Jul"][julDateCell] += 1;
+    const checks = checkCompliance(results, expected, TAX_DATA, calculateExpectedTax, PACKAGE_YEAR_END);
+    const bent = checks.find((check) => check.name === `Payslips!Jul ${julDateCell} wages paid date`);
+    expect(bent).toBeDefined();
+    expect(bent.pass).toBe(false);
+  });
 });
 
 describe("Self Employed engine: the return boxes against the statutory computation", () => {
