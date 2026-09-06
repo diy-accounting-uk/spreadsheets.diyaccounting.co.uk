@@ -528,7 +528,7 @@ const BANK_OPENING_BALANCE_BLOCK = "bank-opening-balance";
 // gets a scope of its own too.
 const VAT_STRADDLING_BLOCK = "vat-straddling";
 
-function lineScopeBlock(line) {
+export function lineScopeBlock(line) {
   if (line["diya-gl:vatPeriodEnd"] !== undefined) return VAT_STRADDLING_BLOCK;
   if (line.sourceJournalID === "bank" && line.detailComment === "Opening balance") return BANK_OPENING_BALANCE_BLOCK;
   return line.sourceJournalID;
