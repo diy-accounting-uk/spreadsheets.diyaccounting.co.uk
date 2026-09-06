@@ -14,9 +14,10 @@ and pushes; `NEXT.md` tracking commits ride on the batch branch. The four `gener
 operator reruns them on the batch itself (`generate-all.yml`), so no session pushes to the batch
 while they run; the operator's own rerun on the batch failed on the writers' date
 shift (the scorecard, fixed by PL-4, and the date-bearing compliance checks, SE-T30 and LT-T26).
-Closing order once those land: the formatter over the batch's touched files, the full unit and
-browser runs (LT-T18), the four generate runs on the batch (`generate-all.yml`), test.yml green,
-then the PR leaves draft. Sub-agents run no LibreOffice and
+The closing gate passed: the formatter, the full unit run (8,125 tests) and browser run (387) at
+`23276a43`, and CI's test workflow at `85f6b5da`. What remains is the operator's: the four generate
+runs on the batch, then the merge. A session pushes nothing to the batch while a generate run is
+in progress, since each workflow cancels its own in-progress run on a push to its ref. Sub-agents run no LibreOffice and
 prove JS calculations against the committed packages' extraction (`report.js --source-dir`). The
 wave schedule is in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. `PLAN_DIYA_GL_LAUNCH.md` is the launch
 and revenue plan of record and carries its own open items.
@@ -25,9 +26,8 @@ and revenue plan of record and carries its own open items.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LT-T18 | Ltd T18 the closing gate: the full unit and browser runs and CI's test workflow green on the batch head | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | local gates green at `23276a43`; CI test.yml running at `85f6b5da` |
-| SE-H1 | Merge the batch to main; the four `generate-*` on the branch first; the refresh on main | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, draft until the CI gate is green |
-| LT-M1 | Merge the batch PR; generate-ltd on the branch; the refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T18 | blocked-to-start | PR #62, the same merge as SE-H1 |
+| SE-H1 | Rerun the four `generate-*` on the batch (`generate-all.yml`, skip-tests) and merge PR #62 to main; then the refresh on main | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | — | ready-to-start | CI test.yml green at `85f6b5da`; the last generate runs were at `f2c0fdc7`, before the fixes |
+| LT-M1 | Merge the batch PR; generate-ltd on the branch; the refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | — | ready-to-start | PR #62, the same merge as SE-H1 |
 
 ## Plans not tracked here
 
