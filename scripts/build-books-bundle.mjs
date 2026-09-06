@@ -186,6 +186,14 @@ function copyRuntimeAssets() {
     cpSync(resolve(ROOT, "app", "templates", "taxi", name), resolve(templatesOut, "taxi", name));
   }
 
+  // The Limited Company set: the fourteen workbooks and docx the meta names,
+  // the same files-list convention as se.
+  const ltdDir = resolve(ROOT, "app", "templates", "ltd");
+  const ltdMeta = parseTOML(readFileSync(resolve(ltdDir, "meta.toml"), "utf8"));
+  const ltdFiles = ["meta.toml", ...ltdMeta.template.files];
+  mkdirSync(resolve(templatesOut, "ltd"), { recursive: true });
+  for (const name of ltdFiles) cpSync(resolve(ltdDir, name), resolve(templatesOut, "ltd", name));
+
   // Example books, copied under the path the resource loader names them by:
   // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
   // one; an example the page offers is added to this list.
@@ -207,7 +215,7 @@ function copyRuntimeAssets() {
   mkdirSync(vendorOut, { recursive: true });
   cpSync(resolve(ROOT, "node_modules", "jszip", "dist", "jszip.min.js"), resolve(vendorOut, "jszip.min.js"));
 
-  return { yearFiles: yearFiles.length, seFiles: seFiles.length, examples: EXAMPLE_BOOKS.length };
+  return { yearFiles: yearFiles.length, seFiles: seFiles.length, ltdFiles: ltdFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
 const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
@@ -246,7 +254,7 @@ async function main() {
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
   console.log(
-    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.examples} example book(s)`,
+    `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.ltdFiles} Limited Company template files, ${assets.examples} example book(s)`,
   );
 }
 
