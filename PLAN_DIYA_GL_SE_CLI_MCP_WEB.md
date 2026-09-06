@@ -537,6 +537,16 @@ payment on 1200 leaves `book-ltd-transfer-has-counter-leg` at pass and `TrialBal
   to the sales/purchases routing unchanged. `books-se-edits.browser.test.js`,
   `books-bst-edits.browser.test.js` and `books-warnings.browser.test.js` (51 cases) still pass; the
   end-to-end proof through a rendered bank or payroll add row is T37f, once T37b lands.
+- T37f: the Add button's own click handler in `shell.js` never set `entry.kind`, so every bank, cash
+  and payroll add fell through to the trade routing and threw; fixed by reading `descriptor.kind`
+  onto the entry alongside `journal`/`date`/`account`/`amount`. `books-se.browser.test.js` proves the
+  bank, cash and payroll add rows each render their own controls (Bank.xlsx's seven receipt codes,
+  Cash.xlsx's four, three employees) and that the code select switches from receipt to payment
+  codes with the direction. `books-se-edits.browser.test.js` proves a £120.00 `DR` bank receipt, a
+  £15.00 `CR` cash payment and a £1,000.00 payslip (net gross less tax less employee NI) each land
+  through the Add button with the engine and book checks green, that undo removes an added line, and
+  that the bank grid's own account select moves `accountMainID` and `diya-gl:bankAccountID` together.
+  All 39 cases across both files pass.
 - T35 `b7d2aea1`: `product-workbook.js`'s `PRODUCT_BY_SCHEMA_NAME` now derives from `SCHEMA_PRODUCT_NAMES` via `Object.fromEntries`; removed the static duplicate map and comment. One forward map kept in `xlsx-exporter.js`, inverse built at import in `product-workbook.js`.
 - T36 `3e762a5a`: `app/bin/generate.js` exports `main` as a named function and guards the module-scope `main().catch()` call with an `import.meta.url` check so tests can import it safely without executing main. Test added to `generate.test.js` that imports and asserts `main` is a function.
 - T8 `cf470090`, `0edbd494`, `d3576e3a`, merged 2026-09-05: `form-layouts/se.json` (112 cells; boxes

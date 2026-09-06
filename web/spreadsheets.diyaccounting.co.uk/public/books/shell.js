@@ -2303,6 +2303,7 @@
         Object.keys(numbers).forEach(function (id) {
           entry[id] = numbers[id];
         });
+        entry.kind = descriptor ? descriptor.kind : undefined;
         entry.journal = journal;
         entry.date = date;
         entry.account = account;
