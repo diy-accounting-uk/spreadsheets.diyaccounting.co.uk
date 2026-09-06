@@ -28,8 +28,9 @@ describe("loadDiyaGlData", () => {
     expect(book.entityInformation.organizationIdentifier).toBe("Precision Code Ltd");
     // The land & buildings opening asset's two OB- journal lines (the asset
     // and its offsetting retained earnings entry) add to the 723 lines the
-    // rest of the book carries.
-    expect(lines.length).toBe(724);
+    // rest of the book carries, one more again for the cash top-up's
+    // counter leg on the current account.
+    expect(lines.length).toBe(725);
   });
 });
 

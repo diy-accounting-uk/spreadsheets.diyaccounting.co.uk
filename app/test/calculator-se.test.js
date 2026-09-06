@@ -476,6 +476,25 @@ describe("Self Employed engine: the leaf cells a link addresses", () => {
     expect(april.length).toBeGreaterThan(0);
     expect(cells["Payslips.xlsx!Apr"].M1).toBe(april.reduce((sum, entry) => sum + entry.grossPay, 0));
   });
+
+  // The Company's cash top-up moves money from the current account to the
+  // cash float mid-year, coded "X" once it reaches SE rather than the "BC"
+  // the Company gives its own opening balances -- bankBook() (calculators/
+  // se.js) takes any "BC"-coded line as a fresh opening balance on whatever
+  // tab it lands on, replacing the running balance carried forward from the
+  // month before, so a transfer carrying that letter would reset June's
+  // opening to the transfer's own amount instead of adding it to the year's
+  // receipts and payments.
+  it("keeps Bank.xlsx's opening balance in Apr!A1, and carries the balance into June instead of re-opening it at the transfer's own amount", () => {
+    const opening = scenario.bank.apr.find((tx) => (tx.account || "1200") === "1200" && tx.code === "BC");
+    expect(opening).toBeDefined();
+    expect(cells["Bank.xlsx!Apr"].A1).toBe(opening.amount);
+
+    const transfer = scenario.bank.jun.find((tx) => (tx.account || "1200") === "1200" && tx.code === "X" && tx.direction === "out");
+    expect(transfer).toBeDefined();
+    expect(cells["Bank.xlsx!Jun"].A1).toBe(cells["Bank.xlsx!May"].A2);
+    expect(cells["Bank.xlsx!Jun"].A1).not.toBe(transfer.amount);
+  });
 });
 
 describe("Self Employed engine: from the diya-gl book", () => {
