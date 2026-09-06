@@ -987,3 +987,10 @@ describe("generate.js --output-dir", () => {
     ).toThrow();
   });
 });
+
+describe("generate.js module export", () => {
+  it("exports main as a named function that can be imported without running it", async () => {
+    const { main } = await import("../bin/generate.js");
+    expect(typeof main).toBe("function");
+  });
+});
