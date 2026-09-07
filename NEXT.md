@@ -64,7 +64,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-15, LP-16 | ready-to-start | PRs #149 and #150 are ready; then the books client joins `toggle-cognito-native-auth.js` for the ci case  |
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
-| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-2, LP-5, LP-6, LP-7, LP-8, LP-9 | ready-to-start | every wave 1 row is on the batch; checks running |
+| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-2, LP-5, LP-6, LP-7, LP-8, LP-9 | ready-to-start | every check green on `e12b40ce`; ready for review; merging deploys prod |
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
 ## Plans not tracked here
 
