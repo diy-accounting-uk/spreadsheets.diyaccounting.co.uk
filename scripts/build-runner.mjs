@@ -135,6 +135,38 @@ function extractTags(html) {
   return { scripts, styles };
 }
 
+// Removes one occurrence of a tag's exact matched text from html, plus the
+// run of whitespace immediately following it -- so a removed tag's own
+// line, and the blank line it would otherwise leave behind, both go too.
+// Finds the tag by a literal search, never a regex built from its content.
+function removeTagAndTrailingWhitespace(html, tagText) {
+  const start = html.indexOf(tagText);
+  if (start === -1) return html;
+  let end = start + tagText.length;
+  while (end < html.length && /\s/.test(html[end])) end++;
+  return html.slice(0, start) + html.slice(end);
+}
+
+// Guards the tag-by-tag removal in buildRunner(): scans the body for any
+// remaining <script ...> that still carries a src attribute, character by
+// character rather than by regex, so a page whose markup no longer matches
+// extractTags()'s pattern fails loudly here instead of shipping a runner
+// that still tries to fetch a script over the network.
+function assertNoScriptSrcRemains(bodyHtml) {
+  let from = 0;
+  for (;;) {
+    const start = bodyHtml.indexOf("<script", from);
+    if (start === -1) return;
+    const end = bodyHtml.indexOf(">", start);
+    if (end === -1) return;
+    const tag = bodyHtml.slice(start, end + 1);
+    if (tag.includes("src=")) {
+      throw new Error(`build-runner.mjs: a <script> tag with a src attribute survived tag removal: ${tag}`);
+    }
+    from = end + 1;
+  }
+}
+
 function base64ToUint8ArraySnippet() {
   // Runs in the browser, not here -- decodes one of RESOURCES' base64
   // entries back to bytes for resources.readBinary().
@@ -353,7 +385,10 @@ function buildRunner(product) {
     .join("\n");
 
   let bodyHtml = pageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/)[0];
-  bodyHtml = bodyHtml.replace(/<script\b[^>]*\bsrc="[^"]+"[^>]*>\s*<\/script>\s*/g, "");
+  for (const script of scripts) {
+    bodyHtml = removeTagAndTrailingWhitespace(bodyHtml, script.whole);
+  }
+  assertNoScriptSrcRemains(bodyHtml);
   bodyHtml = rewriteSiteLinks(bodyHtml, product);
   bodyHtml = bodyHtml.replace(
     "</body>",
