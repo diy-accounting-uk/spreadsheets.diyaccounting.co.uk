@@ -1998,6 +1998,106 @@ table.kv-table tr.total td {
   }
 }
 
+/* ============================== Account panel ============================== */
+
+/* books/cloud.js's sign-in and "save to my account" panel: a card anchored
+   under the topbar on the right at 900px and up, over the same surface the
+   donation prompt and the inspector drawer already use. */
+.account-panel {
+  position: fixed;
+  top: calc(var(--topbar-h) + var(--tabstrip-h) + 0.75rem);
+  right: 1rem;
+  z-index: 60;
+  width: min(360px, calc(100vw - 2rem));
+  max-height: calc(100vh - var(--topbar-h) - 2rem);
+  overflow-y: auto;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 0.85rem 1rem;
+}
+.account-panel-head {
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+}
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--rule-faint);
+}
+.account-row:first-of-type {
+  border-top: none;
+}
+.account-row-meta {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 0.2rem;
+}
+.account-row-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.account-row-actions .btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+}
+.account-versions {
+  margin-top: 0.4rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--rule-faint);
+}
+.account-entitlement {
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--rule-faint);
+  font-size: 0.82rem;
+}
+.account-conflict {
+  font-size: 0.85rem;
+}
+.account-conflict .account-row {
+  border-top: 1px solid var(--rule-faint);
+}
+.account-empty {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+.account-error {
+  color: var(--correction);
+}
+#account-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 55;
+}
+@media (max-width: 899px) and (orientation: portrait) {
+  .account-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    max-height: 70vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  #account-backdrop {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  .account-row {
+    flex-direction: column;
+  }
+  .account-row-actions .btn {
+    min-height: 36px;
+  }
+}
+
 /* headlines */
 /* books/headlines.js -- the "year at a glance" strip: four stat tiles, two
    pies and the collapsible "through the year" charts. One hue, the site's

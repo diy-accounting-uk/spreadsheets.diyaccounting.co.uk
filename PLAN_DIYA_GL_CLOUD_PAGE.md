@@ -377,7 +377,7 @@ control off the page until step 9 fills the client ids.
 | 3 | ✓ The CSP hosts | `infra/main/resources/security-headers.json` | `npm run test:browser` still green; the four hosts are in `connect-src` |
 | 4 | ✓ PKCE, the redirect and the exchange | `cloud.js`, `web/unit-tests/books-cloud-pkce.test.js` | the PKCE unit cases pass |
 | 5 | ✓ The shell hooks and the topbar button | `public/books/shell.js` (H-1 to H-4), the four `*.html`, `public/books/books.css` | `npm run test:browser` green — the existing save, donation and measurement specs still pass with `runSave` split. Deviation: no `books.css` change was needed yet -- `#account-btn` reuses the existing `.icon-btn`/`.btn-label` rules and stays `hidden` until step 6/7 add the panel styling. |
-| 6 | The panel: sign in, list, open, sign out | `cloud.js`, `books.css` | the browser spec's sign-in, list, open and sign-out cases pass |
+| 6 | ✓ The panel: sign in, list, open, sign out | `cloud.js`, `books.css` | the browser spec's sign-in, list, open and sign-out cases pass. Deviation: landed in the same commit as step 7 -- the panel render/state machine and the save/conflict/entitlement flow share `renderPanel()`/`panelState` closely enough that splitting them after the fact risked more than it saved. |
 | 7 | Save, conflict, entitlement | `cloud.js`, `books.css`, `web/browser-tests/books-cloud.browser.test.js` complete | every case in section 8's table passes |
 | 8 | The runner exclusion | `scripts/build-runner.mjs` | `books-runner.browser.test.js` green; the built runner carries no `cloud` script |
 | 9 | The client ids | `public/books/cloud-config.js` | **waits on H9.** Both ids read from SSM; a manual sign-in on ci works |
