@@ -15,11 +15,20 @@
 // reads the exact same generated values.
 
 import { PROVENANCE_DATA } from "./provenance-data.js";
-import { productIdOf } from "./xlsx-exporter.js";
+
+// The same schema-name-to-product-id mapping xlsx-exporter.js's
+// productIdOf() carries, kept as a small map of its own rather than an
+// import: report-serializer.js and books-interchange.js both reach this
+// module from one side of a cycle through xlsx-exporter.js (which itself
+// imports scenario-extractor.js), and a static import back into
+// xlsx-exporter.js from here closes that cycle -- a genuine circular ESM
+// import that throws "Cannot access ... before initialization" at load
+// time, not merely a lint concern.
+const PRODUCT_ID_BY_SCHEMA_NAME = { BasicSoleTrader: "bst", TaxiDriver: "taxi", SelfEmployed: "se", Company: "ltd" };
 
 function productOf(book) {
   const schemaName = book?.entityInformation?.["diya-gl:product"];
-  return schemaName === undefined ? undefined : productIdOf(schemaName);
+  return schemaName === undefined ? undefined : PRODUCT_ID_BY_SCHEMA_NAME[schemaName];
 }
 
 /**
