@@ -249,9 +249,6 @@ jobs:
       - name: Build books engine bundle
         run: npm run build:books-bundle
 
-      - name: Build offline runners
-        run: npm run build:runners
-
       - uses: actions/setup-java@v6
         with:
           distribution: 'corretto'
@@ -263,6 +260,9 @@ jobs:
 
       - name: Build packages (zips + catalogue)
         run: npm run build:packages
+
+      - name: Build offline runners
+        run: npm run build:runners
 
       - name: Deploy SpreadsheetsStack (CDK)
         run: |
