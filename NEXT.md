@@ -57,7 +57,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
-| H13 | Merge PR #70 (`claude/b4-launch`, wave 2 batch) once its checks are green | none | human | LP-3, LP-17 | blocked-to-start | PR #70 draft; its test and ci deploy runs in progress  |
+| H13 | Merge PR #70 (`claude/b4-launch`, wave 2 batch) once its checks are green | none | human | LP-3, LP-17 | ready-to-start | every check green on `235811a4`; ready for review; merging deploys prod |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the Rust port plan and the operator's
