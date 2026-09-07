@@ -71,10 +71,13 @@ const PRODUCTS = {
 };
 
 // Loaded only for the shell's own head, never fetched or executed offline:
-// a service worker has no origin to register against, and the analytics
-// and consent-banner scripts exist to talk to Google's servers, which a
-// file opened from disk cannot reach and should not try to.
-const SKIP_SCRIPT_SRC = new Set(["../lib/analytics.js", "../lib/consent-banner.js", "pwa.js"]);
+// a service worker has no origin to register against, the analytics and
+// consent-banner scripts exist to talk to Google's servers, and the cloud
+// sign-in pair needs a real origin for its OAuth redirect and Submit's API
+// -- none of which a file opened from disk has. cloud.js's own isEnabled()
+// guard (C5) would already keep the feature off on file://, but the runner
+// carries neither script at all rather than relying on that guard alone.
+const SKIP_SCRIPT_SRC = new Set(["../lib/analytics.js", "../lib/consent-banner.js", "pwa.js", "cloud-config.js", "cloud.js"]);
 
 const MIME_BY_EXT = {
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

@@ -28,6 +28,7 @@ export default defineConfig({
         "**/books-runner.browser.test.js",
         "**/books-save.browser.test.js",
         "**/books-donation.browser.test.js",
+        "**/books-cloud.browser.test.js",
         "**/books-measurement.browser.test.js",
         "**/books-empty-state.browser.test.js",
         "**/books-deep-links.browser.test.js",
