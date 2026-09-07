@@ -512,12 +512,7 @@ ${table(["Entry", "What it holds"], zip.entries.map(zipRow))}
       "Can this tool read this file",
       "written today",
     ],
-    [
-      "engine version",
-      "the package version, and the commit it was built from",
-      "Which code produced these figures",
-      "written today",
-    ],
+    ["engine version", "the package version, and the commit it was built from", "Which code produced these figures", "written today"],
     ["tax-data version", "a hash over the year's rate files", "Which rates were applied", "written today"],
     ["template version", "a hash over the product's workbook templates", "Which workbook this reproduces", "written today"],
     [
