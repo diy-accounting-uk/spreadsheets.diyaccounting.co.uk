@@ -105,6 +105,7 @@
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
 
     bindGlobalControls();
+    if (window.DiyaGlBooksCloud) window.DiyaGlBooksCloud.mount();
 
     var productId = document.body.dataset.product;
     var manifest = window.DiyaGlProducts && window.DiyaGlProducts[productId];
@@ -2882,10 +2883,14 @@
   }
 
   function saveMenuItems() {
-    return [
+    var items = [
       { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
       { label: "Download books as JSON (.json)", format: "json" },
     ];
+    if (window.DiyaGlBooksCloud && window.DiyaGlBooksCloud.isEnabled()) {
+      items.push({ label: "Save to my account", format: "cloud" });
+    }
+    return items;
   }
 
   function openSaveMenu(anchorEl, current) {
@@ -2911,7 +2916,11 @@
       item.textContent = opt.label;
       item.addEventListener("click", function () {
         closeSaveMenu();
-        runSave(current, opt.format);
+        if (opt.format === "cloud") {
+          window.DiyaGlBooksCloud.saveCurrentBook();
+        } else {
+          runSave(current, opt.format);
+        }
       });
       menu.appendChild(item);
     });
@@ -2971,10 +2980,12 @@
     return JSON.parse(engine.bookChecksJson(checkResults));
   }
 
-  function runSave(current, format) {
-    showToast("Generating " + saveFormatLabel(format) + "...");
-    Promise.all([import("./save.js"), format === "diya-gl-zip" ? import("./engine/diya-gl-engine.js") : Promise.resolve(null)])
-      .then(function (modules) {
+  // The artifact alone, with no download side effect -- window.DiyaGlBooksPage's
+  // buildArtifact() calls this so cloud.js can put the same bytes a download
+  // would write into a PUT body instead.
+  function buildSaveArtifactFor(current, format) {
+    return Promise.all([import("./save.js"), format === "diya-gl-zip" ? import("./engine/diya-gl-engine.js") : Promise.resolve(null)]).then(
+      function (modules) {
         var saveModule = modules[0];
         var engine = modules[1];
         var extras;
@@ -2984,11 +2995,20 @@
           extras = { report: SNAPSHOT.report };
         }
         return saveModule.buildSaveArtifact(current.book, current.lines, format, extras).then(function (artifact) {
-          saveModule.downloadArtifact(artifact);
-          sendBookSavedEvent(active.id, format);
-          showToast("Saved " + artifact.filename + ".");
-          showDonationPrompt("save", "Saved. If DIYA-GL saves you time, please consider a donation.");
+          return { saveModule: saveModule, artifact: artifact };
         });
+      },
+    );
+  }
+
+  function runSave(current, format) {
+    showToast("Generating " + saveFormatLabel(format) + "...");
+    buildSaveArtifactFor(current, format)
+      .then(function (built) {
+        built.saveModule.downloadArtifact(built.artifact);
+        sendBookSavedEvent(active.id, format);
+        showToast("Saved " + built.artifact.filename + ".");
+        showDonationPrompt("save", "Saved. If DIYA-GL saves you time, please consider a donation.");
       })
       .catch(function (error) {
         showToast("Could not generate the download: " + (error && error.message ? error.message : error));
@@ -3151,6 +3171,27 @@
     bindBookFields: bindBookFields,
   });
 
+  // cloud.js's own narrow window into the page: the same artifact bytes a
+  // download would write, with no download side effect; the live book and
+  // lines; loading a file the same way the picker and drop zone do; which
+  // product is mounted; whether this session has changed the book; and the
+  // one guarded sender every other GA4 event on this page already goes
+  // through.
+  function buildArtifact(format) {
+    var current = currentBookAndLines();
+    if (!current)
+      return Promise.reject(
+        new Error("Save generates the workbook client-side once a workbook's book and lines are loaded into the page."),
+      );
+    return buildSaveArtifactFor(current, format).then(function (built) {
+      return built.artifact;
+    });
+  }
+
+  function productId() {
+    return active ? active.id : null;
+  }
+
   // What the page answers to from outside itself. setLines is the way a
   // caller that is not the entries grid changes the book; undo is the same
   // stack the topbar button and Ctrl+Z pop; mount and loadManifest are how
@@ -3161,6 +3202,12 @@
     mount: mount,
     loadManifest: loadManifest,
     helpers: helpers,
+    buildArtifact: buildArtifact,
+    currentBook: currentBookAndLines,
+    loadFile: loadFromAnySource,
+    productId: productId,
+    isEdited: isEdited,
+    trackEvent: trackEvent,
     get manifest() {
       return active;
     },
