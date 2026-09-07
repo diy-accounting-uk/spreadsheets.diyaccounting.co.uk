@@ -50,6 +50,7 @@
     "lint:workflows": "./scripts/validate-workflows.sh",
     "test": "node app/bin/build-sitemaps.js ; npx vitest --run --project unit-tests",
     "test:unit": "node app/bin/build-sitemaps.js ; npx vitest --run --project unit-tests",
+    "test:fast": "SKIP_LIBREOFFICE=1 npm test",
     "test:bst-only": "npx vitest --run app/test/bst-precision-code.test.js",
     "test:se-only": "npx vitest --run app/test/se-precision-code.test.js",
     "test:ltd-only": "npx vitest --run app/test/ltd-precision-code.test.js",
