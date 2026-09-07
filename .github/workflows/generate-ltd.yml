@@ -436,6 +436,18 @@ jobs:
         with:
           name: ltd-reconciliation-page
           path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Stamp the provenance data with this reconciled commit
+        run: node scripts/build-provenance-data.mjs --reconciled-commit "$GITHUB_SHA"
+      - name: Build the diya-gl spec page
+        run: npm run build:diya-gl-spec
       - name: Commit and push
         id: push
         continue-on-error: true
@@ -451,7 +463,8 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*ltd-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+          git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
+            app/lib/provenance-data.js web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
