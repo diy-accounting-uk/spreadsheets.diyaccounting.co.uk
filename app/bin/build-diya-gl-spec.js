@@ -453,8 +453,9 @@ function buildPage() {
         ${boxesWithField} of the ${boxes.rows.length} boxes have one.
       </p>
       <p>
-        Limited Company books file a CT600 and micro-entity accounts rather than SA103S. Those figures and their boxes are on the
-        <a href="reconciliation/ltd.html">Limited Company scorecard</a>.
+        Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
+        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own books page, and
+        the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
       </p>
 ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "MTD API field"], boxes.rows.map(boxRow))}`);
 
