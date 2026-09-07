@@ -316,7 +316,7 @@ workbook layer is a second step of the same size once the core is proven, with t
 template surgery as its one real risk. Four to six coordinator days in all, kept in step
 with each tax year by the same oracle. The earlier estimate that it would consume the
 year's engineering budget was wrong; the measured throughput says days. Its plan of record
-is `PLAN_DIYA_GL_RUST.md`, not yet drafted (open item X1).
+is `PLAN_DIYA_GL_RUST.md`, not yet drafted (LP-12).
 
 **The launch itself.** A Show HN post and an AccountingWEB piece with the same three facts:
 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and
@@ -394,12 +394,12 @@ community, the thing they check first. It costs a build step and a page.
 
 | Phase | Builds | Prerequisite | Gate to the next phase | Effort |
 | --- | --- | --- | --- | --- |
-| 0. Provenance | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
-| 1. The free face | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
-| 2. Tech launch | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
-| 3. Cloud, 99p a month | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; one Stripe Payment Link at 99p a month; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
+| 0. Provenance (LP-1 to LP-4, H7) | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
+| 1. The free face (LP-5 to LP-9) | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
+| 2. Tech launch (LP-10 to LP-14, H8) | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
+| 3. Cloud, 99p a month (LP-15 to LP-18, H9, H10) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; one Stripe Payment Link at 99p a month; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
 | 4. The other products | SE, Taxi and Ltd on the page and in the package | none: landed 2026-09-04 to 2026-09-06 (PRs #60 to #68), ahead of phase 3 | done: each product reconciles in CI and loads on the page; the plans are archived | three days for the three, under the coordinator model |
-| 5. Filing | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
+| 5. Filing (LP-19, LP-20) | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
 Phases 0, 1, 2, 3 and 5 have not started (2026-09-06). What to leave: Tauri (until the HTML
 runner's users ask for an app), white-label (until Filing exists), a merge story for
@@ -445,18 +445,114 @@ concurrent edits, and any second price.
    Fable 5.1 as coordinator.
 7. **VAT position.** Not VAT registered; the price stands as written.
 
-## Open items
+## Task list
 
-Phases 0 to 3's work is on `NEXT.md`'s board as the `LP` rows (operator, 2026-09-07). X1 and H6
-stay here.
+Ids are shared with `NEXT.md`'s board: a row appears there while it is open, with the same id,
+and its brief lives here. Phase numbers are section 7's. LP-12 to LP-14 and LP-19, LP-20 stay
+here until their phase opens.
 
-- **X1 — draft `PLAN_DIYA_GL_RUST.md`.** The port's design wave first: the type model, the
-  float and half-up rounding contract that reproduces the JS serializer byte-for-byte, the
-  module map, the oracle harness that diffs `report.json` and `bookchecks.json` against the
-  JS over the three books, and the CI parity job; then the code waves and the closing
-  ladder, sized from section 5b's estimate. Fable 5.1 coordinates; Sonnet and Opus workers.
-- **H6 — the operator's research** into Rust porting references, skills and MCP servers for
-  the port's builder. X1 does not wait on it.
+| # | Item | Phase | Precursors | Tier, agent | Files |
+|---|---|---|---|---|---|
+| LP-1 | The five provenance stamps in `book.toml` and `report.json` | 0 | — | Sonnet, the stamps agent | `app/lib/books-interchange.js`, `app/lib/report-serializer.js`, `scripts/build-books-bundle.mjs`, `app/test` |
+| LP-2 | The reconciled-releases page over the reconciliation scorecards | 0 | LP-1 | Sonnet, the releases-page agent | `app/bin/build-reconciliation-pages.js`, `public/reconciliation/releases.html` |
+| LP-3 | The npm package `@diy-accounting-uk/diya-gl` with `recalc`, `read-workbook`, `write-workbook` and the MCP server | 0 | LP-1, H7 | Sonnet, the package agent | `diya-gl/package.json` (new), `app/bin/*.js`, `.github/workflows/publish-diya-gl.yml` (new) |
+| LP-4 | The parity gate: the packed CLI reproduces the committed `report.json` and `bookchecks.json` byte for byte | 0 | LP-3 | Sonnet, the parity agent | `.github/workflows/test.yml` |
+| LP-5 | The single-file HTML runner per product | 1 | LP-1 | Sonnet, the runner agent | `scripts/build-runner.mjs` (new), `.github/workflows/deploy.yml`, `public/download.html` |
+| LP-6 | The PWA: manifest, service worker, offline books pages | 1 | — | Sonnet, the pwa agent | `public/books/manifest.webmanifest` (new), `public/books/sw.js` (new), the four books pages, the response-headers policy |
+| LP-7 | Two donation prompts on the books pages | 1 | — | Sonnet, the prompts agent | `public/books/shell.js`, `public/books/books.css`, `web/browser-tests/books-donation.browser.test.js` (new) |
+| LP-8 | The format spec page: the declared subset with its mappings and evidence | 1 | — | Opus, the spec-page agent | `public/diya-gl.html` (new), `app/bin/build-sitemaps.js` |
+| LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a prompt shown and followed | 1 | G1 | Sonnet, the analytics agent | `public/lib/analytics.js`, `public/lib/ecommerce-events.js`, `public/books/shell.js`, `web/unit-tests` |
+| LP-10 | The Show HN post and the AccountingWEB piece | 2 | LP-3, LP-8 | operator | — |
+| LP-11 | The Docker image on GHCR and the Homebrew formula | 2 | LP-3, H8 | Haiku, the distribution agent | `Dockerfile` (new), `.github/workflows/publish-diya-gl.yml`, the tap's `Formula/diya-gl.rb` |
+| LP-12 | Draft `PLAN_DIYA_GL_RUST.md`: the port's design wave | 2 | — | Fable, coordinating | `PLAN_DIYA_GL_RUST.md` (new) |
+| LP-13 | The operator's research into Rust porting references, skills and MCP servers for the port's builder | 2 | — | operator | — |
+| LP-14 | The Rust port: the core, then the workbook layer, with the CI parity job | 2 | LP-12 | per the Rust plan | per the Rust plan |
+| LP-15 | Submit repo: a second app client on the shared Cognito pool with Google federation and the spreadsheets callback | 3 | — | Sonnet, the app-client agent | `../submit.diyaccounting.co.uk/infra/.../IdentityStack.java` |
+| LP-16 | Submit repo: the storage API in submit-prod (bucket, four routes, authoriser, metadata sidecar) | 3 | — | Opus design, then Sonnet, the storage-api agent | `../submit.diyaccounting.co.uk/infra/.../ApiStack.java`, a new storage stack, its Lambdas |
+| LP-17 | Sign-in and "save to my account" on the books pages | 3 | LP-15, LP-16, H9 | Opus design, then Sonnet, the cloud-page agent | `public/books/shell.js`, `public/books/cloud.js` (new), the CSP |
+| LP-18 | Billing: the subscribe button, Submit's billing webhook, the entitlement check, the portal link | 3 | LP-16, H10 | Sonnet, the billing agent | `../submit.diyaccounting.co.uk/.../BillingWebhookStack.java`, LP-16's put route, the books pages |
+| LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
+| LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
+| H7 | Add the `NPM_TOKEN` repository secret for the `diy-accounting-uk` npm org | 0 | — | operator | GitHub settings |
+| H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
+| H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
+| H10 | Create the 99p a month Stripe Payment Link and enable the customer portal | 3 | — | operator | Stripe dashboard |
+
+### Briefs
+
+- **LP-1**: `book.toml` is written by `app/lib/books-interchange.js` and `report.json` by
+  `app/lib/report-serializer.js`; the format version is already `diya-gl-books` 1 in the JSON
+  envelope. Add `engineVersion` (package version and commit, injected at build by
+  `scripts/build-books-bundle.mjs` and read from `package.json` in Node), `taxDataHash` (a hash
+  over `app/data/*.toml`), `templateHash` per product (over `app/templates/<product>/*.xlsx`, with
+  the scorecard figure from `reports/`), and `reconciledCommit` (the commit whose CI
+  reconciliations passed, from the generate workflow). Byte identity across CLI, MCP and browser
+  must hold, so the stamps are part of the canonical form: prove in `app/test` and in
+  `books-equivalence` that all three surfaces write the same stamps.
+- **LP-2**: `app/bin/build-reconciliation-pages.js` writes `public/reconciliation/<product>.html`
+  from `reports/*.md`; add a `releases.html` beside them listing each tagged release with its five
+  stamps and links to the scorecards, built in the same step and covered by the SEO unit test.
+- **LP-3**: this repo's `package.json` is private; the publishable package is a second
+  `package.json` (a `diya-gl/` directory or an npm workspace) whose `bin` map wraps
+  `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
+  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
+  is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
+  `diya-gl-v*` with `NPM_TOKEN` (H7) and provenance attestation. Prove with `npm pack` and a
+  smoke run of each bin in CI.
+- **LP-4**: a `test.yml` job (or the publish workflow's gate) runs the packed CLI over
+  `examples/<product>-latest` for all four products and diffs the output against the committed
+  `report.json` and `bookchecks.json`; any byte difference fails.
+- **LP-5**: a `scripts/build-runner.mjs` that inlines the engine bundle, the two schemas under
+  `public/schema/`, the tax TOMLs and the product's `app/templates/<product>/*.xlsx` (base64)
+  into one `diya-gl-<product>.html`, stamped with LP-1's values, written to `target/runners/` and
+  uploaded by `deploy.yml` beside the zips; `download.html` gains the link. Prove by opening the
+  file from disk in Playwright and loading an example book.
+- **LP-6**: `public/books/manifest.webmanifest`, `public/books/sw.js` caching the shell, engine,
+  schemas, CSS and `examples.js`, the link and registration tags in the four books pages, and
+  the response-headers policy (the CSP the BST plan's T2 centralised; find its source by grepping
+  for `Content-Security-Policy` in `infra/` and `scripts/`) allowing the worker. Prove with a
+  Playwright case that loads a page, goes offline and loads it again.
+- **LP-7**: in `books/shell.js`, a prompt after the save toast and one when the year view first
+  renders figures, each shown once per browser (`localStorage`), dismissable, linking the
+  `buy.stripe.com` links `donate.html` already carries; styling in `books/books.css`; one browser
+  spec `books-donation.browser.test.js`.
+- **LP-8**: a `public/diya-gl.html` (the spec page) generated or hand-written: the field table
+  from the two schemas' descriptions (both cite XBRL GL 2015), the SA103S box table from
+  `app/data/hmrc/sa103-mtd-mapping.json`, the check catalogue from `app/lib/book-checks.js` and
+  the engine checks, the zip layout, the version, and links to the reconciliation pages; added to
+  `app/bin/build-sitemaps.js` and the SEO test. Opus because the declared-subset wording is a
+  judgment the launch plan's section 1 constrains.
+- **LP-9**: `public/lib/analytics.js` and `ecommerce-events.js` carry the GA4 senders; add events
+  from `books/shell.js` (book loaded with its product and source kind, save with its format,
+  prompt shown and prompt followed) and from `download.html` for the runner; unit-test the event
+  builders under `web/unit-tests/`. G1 fixes the purchase event's value first, so this row waits
+  on it and shares its builder.
+- **LP-11**: a root `Dockerfile` (`node:alpine`, `npm i -g @diy-accounting-uk/diya-gl`,
+  entrypoint `diya-gl`) built and pushed to GHCR by `publish-diya-gl.yml`; a
+  `Formula/diya-gl.rb` in the tap repo (H8) pointing at the npm tarball.
+- **LP-15**: in the Submit repo's `IdentityStack.java`, a second `UserPoolClient` on the shared
+  pool with the Google identity provider, callback `https://spreadsheets.diyaccounting.co.uk/books/`
+  (and the ci host), sign-out URL the same, PKCE, no secret; the client id as a stack output and
+  an SSM parameter the spreadsheets deploy can read; its Java test; lands by Submit PR (H9).
+- **LP-16**: design wave first (Opus): the S3 key layout `users/<sub>/books/<bookId>/<version>.zip`
+  with `metadata.json` per book (`_developers/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
+  four Lambda handlers, the API Gateway routes under the existing `ApiStack` with the pool's
+  authoriser, the ETag-based optimistic concurrency, and the entitlement hook LP-18 fills. Then
+  Sonnet builds it with unit tests per handler and a behaviour probe against submit-ci.
+- **LP-17**: design wave (Opus) for the page's cloud state: hosted-UI redirect with PKCE, the
+  token in `sessionStorage`, a "My books" panel listing versions, put on save and get on open,
+  a conflict card when the ETag mismatches. Then Sonnet in `books/shell.js` and a new
+  `books/cloud.js`, the CSP `connect-src` for the API host, a browser spec with the API stubbed
+  through Playwright routes, and a behaviour case against ci once LP-16 is deployed.
+- **LP-18**: the Submit repo's `BillingWebhookStack` already receives Stripe events; record the
+  99p subscription against the Cognito subject carried as `client_reference_id`, expose the
+  entitlement to LP-16's put route, and add the subscribe button and the portal link to the
+  books pages' account panel. H10 supplies the link.
+- **LP-12**: the port's design wave first: the type model, the float and half-up rounding
+  contract that reproduces the JS serializer byte for byte, the module map, the oracle harness
+  that diffs `report.json` and `bookchecks.json` against the JS over the fixtures, and the CI
+  parity job; then the code waves and the closing ladder, sized from section 5b's estimate.
+  Fable coordinates; Sonnet and Opus workers. Does not wait on LP-13.
 
 ## Where this changes the DIYA Cloud plan
 

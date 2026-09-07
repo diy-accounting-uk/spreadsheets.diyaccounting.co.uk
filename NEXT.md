@@ -20,8 +20,9 @@ to their ref, so a session pushes nothing to a branch while a generate run is in
 
 ## Context for the open rows
 
-The fifteen `LP` rows are the launch plan's phases 0 to 3 (`PLAN_DIYA_GL_LAUNCH.md`, section 7);
-X1 and H6 stay in the plan. They pack into four workstreams by area of change, each a batch
+The `LP` and `H7` to `H10` rows are `PLAN_DIYA_GL_LAUNCH.md`'s task list, same ids; each row's
+brief lives there under "Briefs". LP-12 to LP-14 (the Rust port) and LP-19, LP-20 (Filing) stay
+in the plan until their phase opens. They pack into four workstreams by area of change, each a batch
 branch `claude/b<n>-<topic>` with one worktree per row:
 
 - **Workstream A, the engine and the package** (LP-1 to LP-4): `app/lib` and `app/bin`,
@@ -38,74 +39,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
   pages. Two design waves on Opus (LP-16, LP-17), then Sonnet. Every AWS change goes through a
   Submit PR and its deploy workflow (H9), never a console write.
 
-- **LP-1**: `book.toml` is written by `app/lib/books-interchange.js` and `report.json` by
-  `app/lib/report-serializer.js`; the format version is already `diya-gl-books` 1 in the JSON
-  envelope. Add `engineVersion` (package version and commit, injected at build by
-  `scripts/build-books-bundle.mjs` and read from `package.json` in Node), `taxDataHash` (a hash
-  over `app/data/*.toml`), `templateHash` per product (over `app/templates/<product>/*.xlsx`, with
-  the scorecard figure from `reports/`), and `reconciledCommit` (the commit whose CI
-  reconciliations passed, from the generate workflow). Byte identity across CLI, MCP and browser
-  must hold, so the stamps are part of the canonical form: prove in `app/test` and in
-  `books-equivalence` that all three surfaces write the same stamps.
-- **LP-2**: `app/bin/build-reconciliation-pages.js` writes `public/reconciliation/<product>.html`
-  from `reports/*.md`; add a `releases.html` beside them listing each tagged release with its five
-  stamps and links to the scorecards, built in the same step and covered by the SEO unit test.
-- **LP-3**: this repo's `package.json` is private; the publishable package is a second
-  `package.json` (a `diya-gl/` directory or an npm workspace) whose `bin` map wraps
-  `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
-  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
-  is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
-  `diya-gl-v*` with `NPM_TOKEN` (H7) and provenance attestation. Prove with `npm pack` and a
-  smoke run of each bin in CI.
-- **LP-4**: a `test.yml` job (or the publish workflow's gate) runs the packed CLI over
-  `examples/<product>-latest` for all four products and diffs the output against the committed
-  `report.json` and `bookchecks.json`; any byte difference fails.
-- **LP-5**: a `scripts/build-runner.mjs` that inlines the engine bundle, the two schemas under
-  `public/schema/`, the tax TOMLs and the product's `app/templates/<product>/*.xlsx` (base64)
-  into one `diya-gl-<product>.html`, stamped with LP-1's values, written to `target/runners/` and
-  uploaded by `deploy.yml` beside the zips; `download.html` gains the link. Prove by opening the
-  file from disk in Playwright and loading an example book.
-- **LP-6**: `public/books/manifest.webmanifest`, `public/books/sw.js` caching the shell, engine,
-  schemas, CSS and `examples.js`, the link and registration tags in the four books pages, and
-  the response-headers policy (the CSP the BST plan's T2 centralised; find its source by grepping
-  for `Content-Security-Policy` in `infra/` and `scripts/`) allowing the worker. Prove with a
-  Playwright case that loads a page, goes offline and loads it again.
-- **LP-7**: in `books/shell.js`, a prompt after the save toast and one when the year view first
-  renders figures, each shown once per browser (`localStorage`), dismissable, linking the
-  `buy.stripe.com` links `donate.html` already carries; styling in `books/books.css`; one browser
-  spec `books-donation.browser.test.js`.
-- **LP-8**: a `public/diya-gl.html` (the spec page) generated or hand-written: the field table
-  from the two schemas' descriptions (both cite XBRL GL 2015), the SA103S box table from
-  `app/data/hmrc/sa103-mtd-mapping.json`, the check catalogue from `app/lib/book-checks.js` and
-  the engine checks, the zip layout, the version, and links to the reconciliation pages; added to
-  `app/bin/build-sitemaps.js` and the SEO test. Opus because the declared-subset wording is a
-  judgment the launch plan's section 1 constrains.
-- **LP-9**: `public/lib/analytics.js` and `ecommerce-events.js` carry the GA4 senders; add events
-  from `books/shell.js` (book loaded with its product and source kind, save with its format,
-  prompt shown and prompt followed) and from `download.html` for the runner; unit-test the event
-  builders under `web/unit-tests/`. G1 fixes the purchase event's value first, so this row waits
-  on it and shares its builder.
-- **LP-11**: a root `Dockerfile` (`node:alpine`, `npm i -g @diy-accounting-uk/diya-gl`,
-  entrypoint `diya-gl`) built and pushed to GHCR by `publish-diya-gl.yml`; a
-  `Formula/diya-gl.rb` in the tap repo (H8) pointing at the npm tarball.
-- **LP-15**: in the Submit repo's `IdentityStack.java`, a second `UserPoolClient` on the shared
-  pool with the Google identity provider, callback `https://spreadsheets.diyaccounting.co.uk/books/`
-  (and the ci host), sign-out URL the same, PKCE, no secret; the client id as a stack output and
-  an SSM parameter the spreadsheets deploy can read; its Java test; lands by Submit PR (H9).
-- **LP-16**: design wave first (Opus): the S3 key layout `users/<sub>/books/<bookId>/<version>.zip`
-  with `metadata.json` per book (`_developers/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
-  four Lambda handlers, the API Gateway routes under the existing `ApiStack` with the pool's
-  authoriser, the ETag-based optimistic concurrency, and the entitlement hook LP-18 fills. Then
-  Sonnet builds it with unit tests per handler and a behaviour probe against submit-ci.
-- **LP-17**: design wave (Opus) for the page's cloud state: hosted-UI redirect with PKCE, the
-  token in `sessionStorage`, a "My books" panel listing versions, put on save and get on open,
-  a conflict card when the ETag mismatches. Then Sonnet in `books/shell.js` and a new
-  `books/cloud.js`, the CSP `connect-src` for the API host, a browser spec with the API stubbed
-  through Playwright routes, and a behaviour case against ci once LP-16 is deployed.
-- **LP-18**: the Submit repo's `BillingWebhookStack` already receives Stripe events; record the
-  99p subscription against the Cognito subject carried as `client_reference_id`, expose the
-  entitlement to LP-16's put route, and add the subscribe button and the portal link to the
-  books pages' account panel. H10 supplies the link.
 
 ## Board
 
