@@ -147,6 +147,9 @@ test.describe("DIYA-GL books page — signed out", () => {
   test("a disabled config hides the account button and keeps a two-item save menu, with no console error", async ({ page }) => {
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(String(error)));
+    await page.addInitScript(() => {
+      window.DIYA_GL_CLOUD_TEST_CLIENT_ID = null;
+    });
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
     await expect(page.locator("#account-btn")).toBeHidden();
