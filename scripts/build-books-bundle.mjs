@@ -22,8 +22,9 @@
 //   node scripts/build-books-bundle.mjs
 
 import { build } from "esbuild";
+import { createHash } from "crypto";
 import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
-import { dirname, resolve } from "path";
+import { dirname, resolve, relative, sep } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
@@ -35,6 +36,10 @@ const ENGINE_DIR = resolve(BOOKS_DIR, "engine");
 const ASSETS_DIR = resolve(BOOKS_DIR, "assets");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const BUNDLE_FILE = resolve(ENGINE_DIR, "diya-gl-engine.js");
+
+// The four books pages' own script and stylesheet tags, read off the pages
+// themselves rather than restated here by hand -- see buildPrecacheManifest().
+const PAGES = ["bst.html", "se.html", "taxi.html", "ltd.html"];
 
 // Node's own modules, which a browser has none of. Each name a pipeline module
 // imports gets a stub that throws with the call that reached it, so a code path
@@ -224,6 +229,110 @@ function copyRuntimeAssets() {
   return { yearFiles: yearFiles.length, seFiles: seFiles.length, ltdFiles: ltdFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
+// ── PWA precache manifest and build stamp ───────────────────────────────────
+//
+// sw.js needs two things it cannot know on its own: which URLs to precache,
+// and a cache name that changes whenever any of them does. Both are worked
+// out here, after the bundle and the copied assets exist, and written to the
+// generated books/build-stamp.js that sw.js loads with importScripts() --
+// keeping sw.js itself a small, static, hand-read file while the list of
+// what to cache stays derived from what the pages actually load.
+
+function cssImports(cssPath) {
+  const text = readFileSync(cssPath, "utf8");
+  return [...text.matchAll(/@import\s+url\(["']?([^"')]+)["']?\)/g)].map((m) => m[1]);
+}
+
+function pageReferences(htmlPath) {
+  const text = readFileSync(htmlPath, "utf8");
+  const scripts = [...text.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]);
+  const styles = [...text.matchAll(/<link[^>]*\srel="stylesheet"[^>]*\shref="([^"]+)"/g)].map((m) => m[1]);
+  return { scripts, styles };
+}
+
+function walk(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = resolve(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walk(full));
+    else out.push(full);
+  }
+  return out;
+}
+
+function toBooksPath(absPath) {
+  return relative(BOOKS_DIR, absPath).split(sep).join("/");
+}
+
+// Every URL a books page needs to render itself, and one of its example
+// books, entirely offline: the page and every script or stylesheet it
+// names (following a stylesheet's own @import), the engine bundle and
+// resource loader (reached only through dynamic import(), so no page's own
+// tags find them), and everything the resource loader can be asked to
+// read -- the tax year and filing data, the HMRC form layouts, and every
+// example book a page's example buttons list. The last two are discovered
+// from the copied assets tree rather than restated, so a product that adds
+// a year file or an example needs no line here. The workbook templates
+// (app/templates/*, several MB) are not included -- nothing on the example
+// load path reads them; only "New book" and an xlsx/zip save do, and
+// neither is part of what this cache promises.
+function buildPrecacheManifest() {
+  const relPaths = new Set();
+
+  for (const page of PAGES) {
+    relPaths.add(page);
+    const { scripts, styles } = pageReferences(resolve(BOOKS_DIR, page));
+    for (const src of [...scripts, ...styles]) {
+      if (/^https?:|^\//.test(src)) continue; // vendor/CDN or site-absolute, not a books/ file
+      relPaths.add(src);
+      if (src.endsWith(".css")) {
+        for (const imported of cssImports(resolve(BOOKS_DIR, src))) relPaths.add(imported);
+      }
+    }
+  }
+
+  relPaths.add("engine/diya-gl-engine.js");
+  relPaths.add("bundle-resources.js");
+
+  for (const absPath of walk(resolve(ASSETS_DIR, "data"))) relPaths.add(toBooksPath(absPath));
+  for (const absPath of walk(resolve(ASSETS_DIR, "examples"))) relPaths.add(toBooksPath(absPath));
+
+  const urls = [...relPaths].sort().map((p) => `/books/${p}`);
+  urls.push("/schema/diya-gl-book-v2.schema.json", "/schema/diya-gl-lines-v2.schema.json");
+  urls.push("/books/manifest.webmanifest", "/books/icon.svg");
+  return urls;
+}
+
+function urlToPath(url) {
+  if (url.startsWith("/schema/")) return resolve(SCHEMA_DIR, url.slice("/schema/".length));
+  return resolve(BOOKS_DIR, url.slice("/books/".length));
+}
+
+// A hash of every precached URL's own bytes, so the cache name changes
+// exactly when something a page would fetch changes -- not on every build,
+// and never a stale copy of the previous version's files.
+function writeBuildStamp() {
+  const urls = buildPrecacheManifest();
+  const hash = createHash("sha256");
+  for (const url of urls) {
+    hash.update(url);
+    hash.update(readFileSync(urlToPath(url)));
+  }
+  const stamp = hash.digest("hex").slice(0, 12);
+  const source = [
+    "// Generated by scripts/build-books-bundle.mjs -- do not edit by hand.",
+    "//",
+    "// sw.js reads this with importScripts() for the cache name to use and the",
+    "// list of URLs to precache, so both are derived from what the four books",
+    "// pages actually load rather than a second, hand-kept copy of the list.",
+    `self.DIYA_GL_BUILD_STAMP = ${JSON.stringify(stamp)};`,
+    `self.DIYA_GL_PRECACHE_URLS = ${JSON.stringify(urls, null, 2)};`,
+    "",
+  ].join("\n");
+  writeFileSync(resolve(BOOKS_DIR, "build-stamp.js"), source);
+  return { stamp, count: urls.length };
+}
+
 const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
 const LINES_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json";
 
@@ -255,6 +364,7 @@ async function main() {
 
   generateExamplesJs();
   const assets = copyRuntimeAssets();
+  const buildStamp = writeBuildStamp();
   const bytes = statSync(BUNDLE_FILE).size;
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
@@ -262,6 +372,7 @@ async function main() {
   console.log(
     `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.ltdFiles} Limited Company template files, ${assets.examples} example book(s)`,
   );
+  console.log(`  pwa: cache ${buildStamp.stamp}, ${buildStamp.count} URLs precached`);
 }
 
 await main();

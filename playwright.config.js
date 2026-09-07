@@ -24,6 +24,7 @@ export default defineConfig({
         "**/books-warnings.browser.test.js",
         "**/books-row-editing.browser.test.js",
         "**/books-bundle-gate.browser.test.js",
+        "**/books-pwa.browser.test.js",
         "**/books-save.browser.test.js",
         "**/books-empty-state.browser.test.js",
         "**/books-deep-links.browser.test.js",
