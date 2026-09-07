@@ -21,6 +21,36 @@
   var SNAPSHOT = null;
   var active = null;
 
+  // The same GA4 sender every other page on the site uses. gtag comes from
+  // ../lib/analytics.js, which the four books pages load beside consent-
+  // banner.js like the rest of the site; that script sits outside the
+  // service worker's own /books/ scope, so offline it simply never loads --
+  // this stays a silent no-op rather than a thrown error either way.
+  function trackEvent(eventName, params) {
+    if (typeof gtag === "function") gtag("event", eventName, params);
+  }
+
+  // books-events.js publishes these builders on window; each call is
+  // guarded so a book still loads, saves and prompts even if that script
+  // has not run for some reason.
+  function sendBookLoadedEvent(product, rawSourceKind) {
+    if (typeof window.buildBookLoadedEvent !== "function") return;
+    var event = window.buildBookLoadedEvent(product, rawSourceKind);
+    trackEvent(event.name, event.params);
+  }
+
+  function sendBookSavedEvent(product, format) {
+    if (typeof window.buildBookSavedEvent !== "function") return;
+    var event = window.buildBookSavedEvent(product, format);
+    trackEvent(event.name, event.params);
+  }
+
+  function sendDonationPromptEvent(prompt, action) {
+    if (typeof window.buildDonationPromptEvent !== "function") return;
+    var event = window.buildDonationPromptEvent(prompt, action);
+    trackEvent(event.name, event.params);
+  }
+
   var state = {
     loaded: false,
     view: "home",
@@ -983,6 +1013,7 @@
     }).then(function (snapshot) {
       if (!snapshot) return;
       state.newBookFormOpen = false;
+      sendBookLoadedEvent(manifest.id, "new");
       showToast("Started a new book for " + label + ".");
     });
   }
@@ -1067,7 +1098,10 @@
       },
       opts,
     ).then(function (snapshot) {
-      if (snapshot) showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (example)");
+      if (snapshot) {
+        sendBookLoadedEvent(manifest.id, "example");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (example)");
+      }
       return snapshot;
     });
   }
@@ -1076,10 +1110,17 @@
   // this. Format and product are sniffed by content inside the loader,
   // never by the name this File carries.
   function loadFromAnySource(file) {
+    var loadedProductId = null;
+    var loadedSourceKind = null;
     return loadThrough("Reading " + file.name + "…", window.DiyaGlBooksLoader.sniff(file), function (sniffed, manifest) {
+      loadedProductId = manifest.id;
+      loadedSourceKind = sniffed.kind;
       return window.DiyaGlBooksLoader.loadSniffed(sniffed, manifest);
     }).then(function (snapshot) {
-      if (snapshot) showToast("Loaded " + file.name);
+      if (snapshot) {
+        sendBookLoadedEvent(loadedProductId, loadedSourceKind);
+        showToast("Loaded " + file.name);
+      }
       return snapshot;
     });
   }
@@ -2944,6 +2985,7 @@
         }
         return saveModule.buildSaveArtifact(current.book, current.lines, format, extras).then(function (artifact) {
           saveModule.downloadArtifact(artifact);
+          sendBookSavedEvent(active.id, format);
           showToast("Saved " + artifact.filename + ".");
           showDonationPrompt("save", "Saved. If DIYA-GL saves you time, please consider a donation.");
         });
@@ -2994,9 +3036,10 @@
   // Two nudges, never more than once a browser ever sees them: one the first
   // time the year view shows real figures, one after a save completes. Same
   // Stripe link donate.html's own £10 button carries, plus a link to that
-  // page for another amount or PayPal. Neither prompt gates on consent --
-  // it is not analytics, and books pages carry no GA4 of their own -- and
-  // neither steals focus: it is a corner card, appended and left alone.
+  // page for another amount or PayPal. Showing the prompt itself does not
+  // gate on consent -- it is not analytics -- though it also sends the same
+  // donation_prompt GA4 event every other page's trackEvent call sends.
+  // Neither steals focus: it is a corner card, appended and left alone.
   var DONATE_STRIPE_LINK = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200";
   var DONATE_PAGE_LINK = "../donate.html";
 
@@ -3019,6 +3062,7 @@
   function showDonationPrompt(id, message) {
     if (donationPromptSeen(id)) return;
     markDonationPromptSeen(id);
+    sendDonationPromptEvent(id, "shown");
 
     var card = document.createElement("div");
     card.className = "donation-prompt";
@@ -3048,6 +3092,9 @@
     donateLink.target = "_blank";
     donateLink.rel = "noopener";
     donateLink.textContent = "Donate £10";
+    donateLink.addEventListener("click", function () {
+      sendDonationPromptEvent(id, "followed");
+    });
     actions.appendChild(donateLink);
 
     var otherLink = document.createElement("a");

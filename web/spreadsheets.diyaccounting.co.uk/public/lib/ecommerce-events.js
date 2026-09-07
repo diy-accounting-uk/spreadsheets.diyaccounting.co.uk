@@ -26,6 +26,18 @@ if (typeof window !== "undefined") {
   window.buildPurchaseEvent = buildPurchaseEvent;
 }
 
+// Builds the GA4 payload for a runner download -- the single-file HTML
+// runner a reader can fetch without going through the donate flow, so the
+// download and donation events reach GA4 in the shape a downloads-to-
+// donations ratio can read straight off the export.
+function buildRunnerDownloadEvent(product) {
+  return { name: "runner_download", params: { product: product } };
+}
+
+if (typeof window !== "undefined") {
+  window.buildRunnerDownloadEvent = buildRunnerDownloadEvent;
+}
+
 // GA4 ecommerce: view_item_list on the product catalogue page (index.html).
 // Guarded on the product grid so this file can also be loaded on other pages
 // for its builder functions without firing a duplicate event there.
