@@ -295,7 +295,7 @@ const ZIP_ENTRY_NOTES = {
   "book.toml": "The business, the period, the chart of accounts and the registers. Always written.",
   "lines.jsonl": "One transaction per line, in canonical order. Always written.",
   "report.json": "Every figure the engine computed from the two files above, keyed by its cell reference. Always written.",
-  "bookchecks.json": "The result of every check and warning below, sorted by id. Written when the writer has run them.",
+  "bookchecks.json": "The result of every check and warning in the catalogue above, sorted by id. Written when the writer has run them.",
   "overtyped.json": "Any cell a person typed over in the workbook, so the next generation keeps it. Written when there is one.",
 };
 
