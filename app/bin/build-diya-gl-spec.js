@@ -321,6 +321,7 @@ function reconciliationScorecards() {
   return readdirSync(RECONCILIATION_DIR)
     .filter((file) => file.endsWith(".json"))
     .map((file) => JSON.parse(readFileSync(resolve(RECONCILIATION_DIR, file), "utf8")))
+    .filter((card) => PRODUCT_ORDER.includes(card.product))
     .sort((a, b) => PRODUCT_ORDER.indexOf(a.product) - PRODUCT_ORDER.indexOf(b.product));
 }
 
