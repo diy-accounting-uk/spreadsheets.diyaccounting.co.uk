@@ -30,7 +30,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
   on G1. Sonnet, except the spec page on Opus.
 - **Workstream C, distribution** (LP-10, LP-11): after the package. Haiku for the mechanical
   half; the launch posts are the operator's.
-- **Workstream D, the cloud** (LP-15 to LP-18, LP-21): the Submit repo's CDK and Lambdas
+- **Workstream D, the cloud** (LP-15 to LP-18): the Submit repo's CDK and Lambdas
   (`../submit.diyaccounting.co.uk/infra/main/java/co/uk/diyaccounting/submit/stacks/`,
   `IdentityStack.java`, `ApiStack.java`, `BillingWebhookStack.java`) plus this repo's DIYA-GL
   pages. Two design waves on Opus (LP-16, LP-17), then Sonnet. Every AWS change goes through a
@@ -41,16 +41,15 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-21 | The `diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the bundle agent; a Submit PR, then the sync on a "go" |
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Haiku, the distribution agent; the tap repo exists, the publish workflow is on main |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H16 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after H16 |
-| LP-18 | Billing: the subscribe button calls Submit's checkout route for the `diya-gl` bundle; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-21 | blocked-to-start | Sonnet, the billing agent; both repos |
+| LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-books` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
 | H16 | In the Submit repo, add the DIYA-GL app client to `scripts/toggle-cognito-native-auth.js` so the ci behaviour case can sign in | none | human | — | ready-to-start | Submit's NEXT.md B50; the Submit session has the ask by inbox |
 
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
-  and the operator's research). Its phase rows are not yet on the board.
+  and the operator's research); Submit's `NEXT.md` carries B54 (the `resident-books` bundle, LP-21 there) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
 
 ## Discipline
 

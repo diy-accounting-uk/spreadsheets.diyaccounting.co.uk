@@ -274,7 +274,7 @@ Errors arrive as `{message, code}`. Every one of them leaves the local book exac
 ## 6. Billing through Submit's checkout route
 
 The panel calls one function, `startSubscription()`: `POST {apiBase}/billing/checkout` with the id
-token for the `diya-gl` bundle, read `{url}` from the response, `location.assign(url)`. Submit's
+token for the `resident-books` bundle, read `{url}` from the response, `location.assign(url)`. Submit's
 server sets `metadata.hashedSub`, which is what `getUserBundles` reads. Cost on this side: the four
 lines in that function. Cost on Submit's side: the checkout route must accept the DIYA-GL audience.
 
