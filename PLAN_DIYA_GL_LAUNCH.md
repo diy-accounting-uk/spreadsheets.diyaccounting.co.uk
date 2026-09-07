@@ -527,9 +527,26 @@ here until their phase opens.
   prompt shown and prompt followed) and from `download.html` for the runner; unit-test the event
   builders under `web/unit-tests/`. G1 fixes the purchase event's value first, so this row waits
   on it and shares its builder.
-- **LP-11**: a root `Dockerfile` (`node:alpine`, `npm i -g @diy-accounting-uk/diya-gl`,
-  entrypoint `diya-gl`) built and pushed to GHCR by `publish-diya-gl.yml`; a
-  `Formula/diya-gl.rb` in the tap repo (H8) pointing at the npm tarball.
+- **LP-11**, two halves that share no file.
+  - The image (this repo, on top of LP-22's branch): `diya-gl/Dockerfile`, `FROM node:24-alpine`,
+    installs the tarball `smoke.sh` packed (`target/diya-gl-smoke/<name>.tgz`, passed as a build
+    context file) with `npm install -g`, `ENTRYPOINT ["diya-gl"]`, `CMD ["--help"]`, OCI labels
+    for source, version and the AGPL-3.0-only licence. `publish-diya-gl.yml` builds it after the
+    npm publish, runs `docker run --rm <image> recalc --help` as its smoke, logs in to
+    `ghcr.io` with `GITHUB_TOKEN` (`packages: write`, on the called workflow and on `deploy.yml`'s
+    caller job) and pushes `ghcr.io/diy-accounting-uk/diya-gl:<version>` and `:latest`. The
+    README gets the `docker run` line.
+  - The tap (`diy-accounting-uk/homebrew-tap`, its own clone, no cross-repo token):
+    `Formula/diya-gl.rb` in Homebrew's node shape (`url` the registry tarball
+    `https://registry.npmjs.org/@diy-accounting-uk/diya-gl/-/diya-gl-<v>.tgz`, `sha256`,
+    `license "AGPL-3.0-only"`, `depends_on "node"`, `std_npm_args`, `bin.install_symlink`, a
+    `test` that runs `diya-gl` and expects the usage line); `scripts/update-formula.sh` reads the
+    latest version from the registry, downloads the tarball, computes the sha256 and rewrites
+    the formula, exiting 0 with a message while the package is not on npm yet;
+    `.github/workflows/update-formula.yml` runs it hourly and on dispatch and commits with the
+    tap's own `GITHUB_TOKEN` when the formula changed, then `brew install --build-from-source`
+    and `brew test` on the runner as the gate. `brew install diy-accounting-uk/tap/diya-gl` in
+    the README. The formula first lands on the tap's schedule after 1.0.0 publishes.
 - **LP-15**: in the Submit repo's `IdentityStack.java`, a second `UserPoolClient` on the shared
   pool with the Google identity provider, callback `https://spreadsheets.diyaccounting.co.uk/books/`
   (and the ci host), sign-out URL the same, PKCE, no secret; the client id as a stack output and

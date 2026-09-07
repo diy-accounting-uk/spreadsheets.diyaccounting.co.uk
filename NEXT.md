@@ -7,7 +7,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the DIYA-GL
-pages' cloud sign-in is live against Submit's storage API. No worktree is open. Sub-agents run no
+pages' cloud sign-in is live against Submit's storage API. Wave 5 is in flight: the image agent in `../.worktrees/spreadsheets/lp-11-docker`
+(`claude/lp-11-docker`, on top of PR #76's branch) and the tap agent in
+`../.worktrees/homebrew-tap` (a clone of `diy-accounting-uk/homebrew-tap`). Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
 any DIYA-GL browser spec, and a rebuild after merging engine changes. The generate workflows cancel
@@ -42,7 +44,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | PR #76 open; 1.0.0 publishes on the first prod deploy after the merge |
-| LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Haiku, the distribution agent; the tap repo exists, the publish workflow is on main |
+| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | two Sonnet agents: `lp-11-docker` worktree, `homebrew-tap` clone; PR on #76's branch |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-books` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
 
