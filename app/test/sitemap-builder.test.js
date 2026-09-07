@@ -21,19 +21,20 @@ describe("escapeXml", () => {
 describe("buildSitemapXml", () => {
   it("includes main pages with no products or articles", () => {
     const { xml, urlCount } = buildSitemapXml([], []);
-    expect(urlCount).toBe(4);
+    expect(urlCount).toBe(5);
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
     expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/");
     expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/download.html");
     expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/donate.html");
     expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/knowledge-base.html");
+    expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/diya-gl.html");
     expect(xml).toContain("</urlset>");
   });
 
   it("adds product download URLs", () => {
     const products = [{ id: "BasicSoleTrader" }, { id: "SelfEmployed" }];
     const { xml, urlCount } = buildSitemapXml(products, []);
-    expect(urlCount).toBe(6);
+    expect(urlCount).toBe(7);
     expect(xml).toContain("download.html?product=BasicSoleTrader");
     expect(xml).toContain("download.html?product=SelfEmployed");
   });
@@ -41,7 +42,7 @@ describe("buildSitemapXml", () => {
   it("adds article URLs", () => {
     const articles = [{ id: "tax-guide" }, { id: "vat-explained" }];
     const { xml, urlCount } = buildSitemapXml([], articles);
-    expect(urlCount).toBe(6);
+    expect(urlCount).toBe(7);
     expect(xml).toContain("articles/tax-guide.md");
     expect(xml).toContain("articles/vat-explained.md");
   });

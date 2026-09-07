@@ -88,6 +88,9 @@ jobs:
       - name: Build spreadsheets redirects
         run: npm run build:redirects
 
+      - name: Build the diya-gl spec page
+        run: npm run build:diya-gl-spec
+
       - name: Build sitemaps
         run: npm run build:sitemaps
 
@@ -406,6 +409,9 @@ jobs:
 
       - name: Build packages (zips + catalogue)
         run: npm run build:packages -- --years 2
+
+      - name: Build the diya-gl spec page
+        run: npm run build:diya-gl-spec
 
       - name: Build sitemaps
         run: npm run build:sitemaps

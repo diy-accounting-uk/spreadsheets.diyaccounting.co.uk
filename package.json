@@ -25,6 +25,7 @@
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",
     "update-tax-data": "scripts/update-tax-data.sh",
     "build:packages": "node app/bin/build-packages.js",
+    "build:diya-gl-spec": "node app/bin/build-diya-gl-spec.js",
     "build:sitemaps": "node app/bin/build-sitemaps.js",
     "build:reconciliation-pages": "node app/bin/build-reconciliation-pages.js",
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",

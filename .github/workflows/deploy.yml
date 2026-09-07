@@ -237,6 +237,9 @@ jobs:
       - name: Build spreadsheets redirects
         run: npm run build:redirects
 
+      - name: Build the diya-gl spec page
+        run: npm run build:diya-gl-spec
+
       - name: Build sitemaps
         run: npm run build:sitemaps
 
