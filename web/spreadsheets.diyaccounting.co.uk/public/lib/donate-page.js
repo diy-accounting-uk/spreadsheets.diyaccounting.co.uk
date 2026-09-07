@@ -60,11 +60,19 @@ if (downloadUrl) {
   });
 }
 
-// GA4 ecommerce: begin_checkout when user clicks any Stripe donate link
+// Fixed-price Stripe links carry a known amount before the redirect; a "custom"
+// link lets the buyer set the amount on Stripe's own page, so it isn't known here.
 document.querySelectorAll(".stripe-donate-link").forEach(function (link) {
   link.addEventListener("click", function () {
     const amount = this.getAttribute("data-amount");
     const value = amount === "custom" ? 0 : parseFloat(amount);
+    if (amount === "custom") {
+      sessionStorage.removeItem("donateAmount");
+      sessionStorage.removeItem("donateCurrency");
+    } else {
+      sessionStorage.setItem("donateAmount", String(value));
+      sessionStorage.setItem("donateCurrency", "GBP");
+    }
     trackEvent("begin_checkout", {
       currency: "GBP",
       value: value,
@@ -81,8 +89,12 @@ document.querySelectorAll(".stripe-donate-link").forEach(function (link) {
   });
 });
 
-// GA4 ecommerce: begin_checkout when user submits the PayPal donate form
+// GA4 ecommerce: begin_checkout when user submits the PayPal donate form.
+// PayPal's donate button has no fixed amount - the buyer sets it on PayPal's
+// own page, so it isn't known here.
 document.getElementById("paypal-donate-form").addEventListener("submit", function () {
+  sessionStorage.removeItem("donateAmount");
+  sessionStorage.removeItem("donateCurrency");
   trackEvent("begin_checkout", {
     currency: "GBP",
     value: 0,
