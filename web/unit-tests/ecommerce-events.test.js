@@ -14,10 +14,7 @@ let buildPurchaseEvent;
 let buildRunnerDownloadEvent;
 
 beforeAll(() => {
-  const src = readFileSync(
-    resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/lib/ecommerce-events.js"),
-    "utf8",
-  );
+  const src = readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/lib/ecommerce-events.js"), "utf8");
   const sandbox = { window: {} };
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);

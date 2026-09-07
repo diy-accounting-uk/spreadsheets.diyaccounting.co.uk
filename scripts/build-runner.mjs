@@ -278,7 +278,10 @@ function buildResourceMap(product) {
     resources.set(`${BASE_HREF}assets/data/${name}`, resourceEntry(resolve(dataDir, name)));
   }
 
-  resources.set(`${BASE_HREF}assets/data/hmrc/form-layouts/${product}.json`, resourceEntry(resolve(dataDir, "hmrc", "form-layouts", `${product}.json`)));
+  resources.set(
+    `${BASE_HREF}assets/data/hmrc/form-layouts/${product}.json`,
+    resourceEntry(resolve(dataDir, "hmrc", "form-layouts", `${product}.json`)),
+  );
 
   if (product === "ltd") {
     for (const path of walkFiles(resolve(dataDir, "filing"))) {

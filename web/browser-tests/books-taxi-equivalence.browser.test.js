@@ -36,9 +36,7 @@ fs.mkdirSync(TARGET_DIR, { recursive: true });
 // examples/basic-taxi-driver/taxi/book.toml, carrying no stamps of its own
 // -- a save always stamps the book fresh, so what the page's own download
 // should equal is that same book run through the CLI's writer.
-const BASIC_STAMPED_BOOK_TOML = canonicalBookToml(
-  stampBook(loadDiyaGlData(path.join(ROOT, "examples", "basic-taxi-driver", "taxi")).book),
-);
+const BASIC_STAMPED_BOOK_TOML = canonicalBookToml(stampBook(loadDiyaGlData(path.join(ROOT, "examples", "basic-taxi-driver", "taxi")).book));
 
 let closeServer;
 let baseUrl;

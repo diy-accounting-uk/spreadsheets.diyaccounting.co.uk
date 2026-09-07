@@ -275,7 +275,9 @@ describe("the Company package for a year end that moves the month tabs", () => {
   });
 
   it("sets the one date cell the rest of the Admin sheet is computed from", async () => {
-    expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(toExcelSerial(new Date(octoberYearEnd)));
+    expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(
+      toExcelSerial(new Date(octoberYearEnd)),
+    );
   });
 });
 
