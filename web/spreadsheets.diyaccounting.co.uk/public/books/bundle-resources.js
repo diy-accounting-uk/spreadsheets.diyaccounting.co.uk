@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// bundle-resources.js — the resource loader the books page hands the engine.
+// bundle-resources.js — the resource loader the DIYA-GL page hands the engine.
 //
 // Same interface as nodeResourceLoader in app/lib/app-resources.js, backed by
 // fetch. The engine names its files under two roots and this maps each one to

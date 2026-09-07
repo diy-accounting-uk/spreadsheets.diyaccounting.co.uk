@@ -3,7 +3,7 @@
 
 // books/cloud-config.js
 //
-// The two environments the books pages' cloud sign-in can talk to, chosen by
+// The two environments the DIYA-GL pages' cloud sign-in can talk to, chosen by
 // location.hostname the same way the rest of the site tells ci from prod.
 // The client id is a public OAuth identifier (no secret rides with it), so
 // it is committed here rather than injected at deploy time: each value is

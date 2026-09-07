@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// books/sw.js -- the books pages' service worker, scoped to /books/.
+// books/sw.js -- the DIYA-GL pages' service worker, scoped to /books/.
 //
 // Precaches the shell scripts and stylesheets, the engine bundle, the two
 // published schemas, and the tax year, form-layout and example-book data
-// every page's example buttons need, so the four books pages -- and one
+// every page's example buttons need, so the four DIYA-GL pages -- and one
 // example book on each -- keep working with no network at all. The exact
 // list and the cache name both come from build-stamp.js
 // (scripts/build-books-bundle.mjs writes it, so this file never needs

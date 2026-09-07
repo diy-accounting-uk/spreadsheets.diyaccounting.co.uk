@@ -3,7 +3,7 @@
 
 // books/shell.js
 //
-// The books page shell: state, the empty state, the file picker and drop
+// The DIYA-GL page shell: state, the empty state, the file picker and drop
 // zone, deep links, autosave, undo, the inspector, the save menu, the toast,
 // the mobile bars, the drift walker and the two shared views (home and the
 // month-in-a-year table). Which views a page carries, how its month rows
@@ -22,7 +22,7 @@
   var active = null;
 
   // The same GA4 sender every other page on the site uses. gtag comes from
-  // ../lib/analytics.js, which the four books pages load beside consent-
+  // ../lib/analytics.js, which the four DIYA-GL pages load beside consent-
   // banner.js like the rest of the site; that script sits outside the
   // service worker's own /books/ scope, so offline it simply never loads --
   // this stays a silent no-op rather than a thrown error either way.

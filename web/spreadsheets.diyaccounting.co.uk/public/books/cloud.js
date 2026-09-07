@@ -3,8 +3,8 @@
 
 // books/cloud.js
 //
-// Sign-in and "save to my account" for the books pages: a book stays a
-// browser-only file until a reader chooses to put it in their DIYA account,
+// Sign-in and "save to my account" for the DIYA-GL pages: a book stays a
+// browser-only file until a reader chooses to put it in their DIYA-GL account,
 // held by Submit's Cognito pool and the four /api/v1/books routes. This
 // script never merges with a conflicting account copy and never overwrites
 // one without asking -- a clash always shows a card with the choice.
@@ -441,7 +441,7 @@
     panelEl.id = "account-panel";
     panelEl.className = "account-panel hidden";
     panelEl.setAttribute("role", "dialog");
-    panelEl.setAttribute("aria-label", "Your DIYA account");
+    panelEl.setAttribute("aria-label", "Your DIYA-GL account");
     panelEl.addEventListener("click", handlePanelClick);
     document.body.appendChild(panelEl);
 
@@ -621,7 +621,7 @@
 
   function renderSignedOut() {
     return (
-      '<p class="account-panel-head">Save your books to your DIYA account and open them on any device.</p>' +
+      '<p class="account-panel-head">Save your books to your DIYA-GL account and open them on any device.</p>' +
       '<button type="button" class="btn btn-primary" data-action="sign-in">Sign in</button>'
     );
   }
