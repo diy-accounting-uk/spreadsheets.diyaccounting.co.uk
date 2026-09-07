@@ -53,7 +53,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LP-6 | The PWA: a web manifest and a service worker caching the books pages, engine, schemas and examples for offline use, installable from the live page | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
 | LP-7 | Two donation prompts on the books pages, each once and dismissable: after a successful save and when a year's figures first appear, pointing at the Stripe links | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11  |
 | LP-8 | The format spec page: the declared subset, every field's XBRL GL 2015 element, every computed figure's SA103S box, the check catalogue, the zip layout, the version, and the reconciliation evidence | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; regenerate after LP-1; waits on H11 |
-| LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a donation prompt shown and followed; the downloads-to-donations ratio readable from the export | PLAN_DIYA_GL_LAUNCH.md | machine | G1 | in-flight | Sonnet, the measurement agent; `claude/lp-9-measure` off the batch, worktree lp-9  |
+| LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a donation prompt shown and followed; the downloads-to-donations ratio readable from the export | PLAN_DIYA_GL_LAUNCH.md | machine | G1 | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
 | LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | none | human | LP-3, LP-8 | blocked-to-start | the operator writes and posts |
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3, H8 | blocked-to-start | Haiku, the distribution agent; workstream C |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository for the formula | none | human | — | ready-to-start | an empty public repo; the formula lands by PR |
@@ -64,7 +64,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-15, LP-16 | blocked-to-start | PR #149 is ready; the LP-16 PR follows  |
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
-| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-6, LP-7, LP-8 | blocked-to-start | draft until every wave 1 row is merged into it |
+| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-6, LP-7, LP-8, LP-9 | blocked-to-start | draft until every wave 1 row is merged into it |
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
 ## Plans not tracked here
 
