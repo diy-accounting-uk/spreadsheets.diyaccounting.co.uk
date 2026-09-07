@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The diya-gl format - DIY Accounting Spreadsheets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta property="og:title" content="The diya-gl format - DIY Accounting Spreadsheets" />
+    <meta property="og:description" content="The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence." />
+    <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" />
+    <meta property="og:site_name" content="DIY Accounting" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" />
+    <link rel="stylesheet" href="spreadsheets.css" />
+    <style>
+      .spec-scroll { overflow-x: auto; }
+      .spec-table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
+      .spec-table th, .spec-table td { border: 1px solid #ddd; padding: 0.35em 0.6em; text-align: left; vertical-align: top; }
+      .spec-table th { background: #f5f5f5; font-weight: 600; }
+      .spec-table code { white-space: nowrap; }
+      .spec-toc { margin: 1em 0 2em; padding: 0.8em 1em; background: #f7f7f7; border-radius: 4px; }
+      .spec-toc ol { margin: 0; padding-left: 1.4em; }
+    </style>
+    <script src="lib/analytics.js"></script>
+    <script src="lib/consent-banner.js"></script>
+  </head>
+  <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="index.html">Products</a>
+      <a href="download.html">Download</a>
+      <a href="knowledge-base.html">Knowledge Base</a>
+      <a href="community.html">Community</a>
+      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="donate.html">Donate</a>
+    </nav>
+
+    <header>
+      <h1>DIY Accounting Spreadsheets</h1>
+      <p class="subtitle">Excel bookkeeping and accounting software for UK small businesses</p>
+    </header>
+
+    <main id="mainContent">
+      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Products</a></nav>
+
+      <h2 class="kb-page-title">The diya-gl format</h2>
+      <p class="kb-page-description">A year of accounts in two text files, and the mapping, the checks and the evidence behind them.</p>
+
+      <nav class="spec-toc" aria-label="On this page">
+        <ol>
+          <li><a href="#what-it-is">What diya-gl is</a></li>
+          <li><a href="#declared-subset">The declared subset</a></li>
+          <li><a href="#sa103s">Computed figures and their SA103S boxes</a></li>
+          <li><a href="#checks">The check catalogue</a></li>
+          <li><a href="#zip">The zip layout</a></li>
+          <li><a href="#versioning">Versioning and provenance</a></li>
+          <li><a href="#evidence">Reconciliation evidence</a></li>
+          <li><a href="#tools">Getting the tools</a></li>
+        </ol>
+      </nav>
+
+      <h3 id="what-it-is">What diya-gl is</h3>
+      <p>
+        diya-gl is the file format behind DIY Accounting's books pages, its command line tools and the spreadsheets it generates. A whole
+        year of a small business's accounts is two text files in a zip. <code>book.toml</code> says who the business is, what period the
+        books cover and what the chart of accounts holds. <code>lines.jsonl</code> holds one transaction per line. A sole trader's year
+        runs to about 15 KB.
+      </p>
+      <p>
+        It is for people who want to own their accounting data outright. You can read it in a text editor, keep it in git and see what
+        changed, and recalculate it in a browser or on a command line without Excel and without a server. This page is the specification:
+        the fields, the figures they compute, the checks they have to pass, the zip they travel in, and the evidence that the figures agree
+        with the spreadsheets we have shipped for twenty years.
+      </p>
+
+      <h3 id="declared-subset">The declared subset</h3>
+      <p>
+        Every field name in the two schemas is taken from the XBRL Global Ledger Taxonomy Framework 2015, the XBRL Standards Board's
+        recommendation of 25 March 2015. The tables below name the element each field comes from.
+      </p>
+      <p>
+        That is a lineage and a published mapping, and this page claims nothing past what the tables show. XBRL GL runs no conformance
+        programme and issues no certificate for a data format. A diya-gl file is TOML and JSON Lines; it is not an XBRL instance document,
+        and no XBRL processor reads it.
+      </p>
+      <p>
+        The format names 48 elements, from four of the framework's modules: <code>gl-cor</code> (core),
+        <code>gl-bus</code> (business), <code>gl-muc</code> (multicurrency) and <code>gl-taf</code> (tax audit file). No other element of
+        the framework is named in either schema. The framework's nested tuples are flattened: an entry header and its detail are one line,
+        and <code>gl-cor:account</code> becomes the pair <code>accountMainID</code> and <code>accountMainDescription</code>. Where a UK
+        small business needs something the framework has no element for, the schema declares a diya-gl extension: a
+        <code>diya-gl:</code> prefix on a field, or a whole table marked as one. There are 129 extension fields, and the tables
+        below mark every one.
+      </p>
+      <p>
+        The schemas themselves are published beside this page:
+        <a href="schema/diya-gl-book-v2.schema.json">diya-gl-book-v2.schema.json</a> and
+        <a href="schema/diya-gl-lines-v2.schema.json">diya-gl-lines-v2.schema.json</a>, both JSON Schema draft 2020-12. A longer commentary
+        on the mapping is in <a href="schema/diya-gl-docs.md">diya-gl-docs.md</a>.
+      </p>
+
+      <h4 id="document-info">Document info</h4>
+      <p>The two tables at the head of book.toml: what period the file covers, and whose business it is.</p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Field</th><th>Type</th><th>XBRL GL 2015 element</th><th>Meaning</th><th>Required</th></tr></thead>
+            <tbody>
+            <tr><td><code>documentInfo</code></td><td>table</td><td><code>gl-cor:documentInfo</code></td><td>Metadata about this set of books</td><td>required</td></tr>
+            <tr><td><code>documentInfo.entriesType</code></td><td>string, one of 12</td><td><code>gl-cor:entriesType</code></td><td>What kind of data this book contains. Enumeration from GL 2015 specification.</td><td>required</td></tr>
+            <tr><td><code>documentInfo.language</code></td><td>string</td><td><code>gl-cor:language</code></td><td>ISO 639-1 language code</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.creationDate</code></td><td>string</td><td><code>gl-cor:creationDate</code></td><td>When this book file was created (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.periodCoveredStart</code></td><td>string</td><td><code>gl-cor:periodCoveredStart</code></td><td>First day of the accounting period (ISO 8601)</td><td>required</td></tr>
+            <tr><td><code>documentInfo.periodCoveredEnd</code></td><td>string</td><td><code>gl-cor:periodCoveredEnd</code></td><td>Last day of the accounting period (ISO 8601)</td><td>required</td></tr>
+            <tr><td><code>documentInfo.defaultCurrency</code></td><td>string</td><td><code>gl-cor:defaultCurrency</code></td><td>ISO 4217 currency code</td><td>required</td></tr>
+            <tr><td><code>documentInfo.entriesComment</code></td><td>string</td><td><code>gl-cor:entriesComment</code></td><td>Free text note about this book</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:vatStaggerGroup</code></td><td>integer, one of 3</td><td><em>diya-gl extension</em></td><td>Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:payrollYearStart</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart.</td><td>optional</td></tr>
+            <tr><td><code>entityInformation</code></td><td>table</td><td><code>gl-cor:entityInformation + gl-bus:organizationInformation</code></td><td>Who this book belongs to</td><td>required</td></tr>
+            <tr><td><code>entityInformation.organizationIdentifier</code></td><td>string</td><td><code>gl-bus:organizationIdentifier</code></td><td>Trading name or legal entity name</td><td>required</td></tr>
+            <tr><td><code>entityInformation.organizationDescription</code></td><td>string</td><td><code>gl-bus:organizationDescription</code></td><td>Nature of the business</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.organizationAddressLine</code></td><td>string</td><td><code>gl-bus:organizationAddressLine</code></td><td>Registered or trading address, first line</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.organizationTown</code></td><td>string</td><td><code>gl-bus:organizationTown</code></td><td>Registered or trading address town/city</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.organizationPostcode</code></td><td>string</td><td><code>gl-bus:organizationPostcode</code></td><td>Registered or trading address postcode</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.organizationTelephone</code></td><td>string</td><td><code>gl-bus:organizationTelephone</code></td><td>Contact telephone number</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.taxRegistrationNumber</code></td><td>string</td><td><code>gl-taf:taxRegistrationNumber</code></td><td>HMRC Unique Taxpayer Reference (UTR)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.taxAuthorityIdentifier</code></td><td>string</td><td><code>gl-taf:taxAuthorityIdentifier</code></td><td>Tax authority identifier</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:product</code></td><td>string, one of 7</td><td><em>diya-gl extension</em></td><td>DIY Accounting product identifier. Determines which schema subset is active.</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:vatRegistered</code></td><td>boolean</td><td><em>diya-gl extension</em></td><td>Whether the business is VAT registered</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:basisOfAccounting</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>Accounting basis. Cash for sole traders, accrual for companies.</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:nino</code></td><td>string</td><td><em>diya-gl extension</em></td><td>National Insurance Number (format: AB123456C)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:vatNumber</code></td><td>string</td><td><em>diya-gl extension</em></td><td>VAT registration number (9 digits)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:companyNumber</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Companies House number (8 digits, Company Accounts only)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:cisRegistered</code></td><td>boolean</td><td><em>diya-gl extension</em></td><td>Whether the business is registered under the Construction Industry Scheme (CIS)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:companiesHouseName</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The first director's name as filed at Companies House, for the directors' report and CT600 (Company Accounts only).</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:mileageBasis</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>Whether the Taxi Driver return claims actual vehicle costs or the HMRC mileage allowance. Where absent, the calculator compares both and claims the higher, matching the shipped workbook's own comparison.</td><td>optional</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h4 id="accounts">Accounts and registers</h4>
+      <p>The chart of accounts, the registers a year-end needs (assets, hire purchase, members, charges) and the tax rates the period was calculated at. The rate tables hold HMRC's published figures for the year; the framework has no element for a rate table, so those rows name none.</p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Field</th><th>Type</th><th>XBRL GL 2015 element</th><th>Meaning</th><th>Required</th></tr></thead>
+            <tbody>
+            <tr><td><code>directors</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Company directors and their shareholdings (Company Accounts only). Used to populate Companysecretary.xlsx sheets.</td><td>optional</td></tr>
+            <tr><td><code>directors[].name</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Director's full name</td><td>required</td></tr>
+            <tr><td><code>directors[].role</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Role title (e.g. Managing Director, Company Secretary, Non-Executive Director)</td><td>required</td></tr>
+            <tr><td><code>directors[].shares</code></td><td>integer</td><td><em>diya-gl extension</em></td><td>Number of shares held</td><td>optional</td></tr>
+            <tr><td><code>directors[].appointed</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Date of appointment (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>directors[].resigned</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Date of resignation if applicable (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>employees</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Employees on payroll. Used to populate Payslips.xlsx. Includes directors paid via PAYE.</td><td>optional</td></tr>
+            <tr><td><code>employees[].employeeID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Unique employee identifier (matches diya-gl:employeeID in lines)</td><td>required</td></tr>
+            <tr><td><code>employees[].name</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Employee's full name</td><td>required</td></tr>
+            <tr><td><code>employees[].role</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Job title</td><td>optional</td></tr>
+            <tr><td><code>employees[].grossPay</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Gross pay per period (monthly or weekly amount)</td><td>required</td></tr>
+            <tr><td><code>employees[].payFrequency</code></td><td>string, one of 4</td><td><em>diya-gl extension</em></td><td>Pay frequency</td><td>required</td></tr>
+            <tr><td><code>employees[].taxCode</code></td><td>string</td><td><em>diya-gl extension</em></td><td>HMRC tax code (e.g. 1257L)</td><td>required</td></tr>
+            <tr><td><code>employees[].niCategory</code></td><td>string</td><td><em>diya-gl extension</em></td><td>NI category letter (A=standard, C=over state pension age, H=apprentice under 25, M=under 21)</td><td>optional</td></tr>
+            <tr><td><code>employees[].startDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Employment start date (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>employees[].isDirector</code></td><td>boolean</td><td><em>diya-gl extension</em></td><td>Whether this employee is also a company director</td><td>optional</td></tr>
+            <tr><td><code>accounts</code></td><td>table</td><td><code>gl-cor:account</code></td><td>Chart of accounts. Maps to gl-cor:account tuples. Organised by journal for spreadsheet column mapping.</td><td>required</td></tr>
+            <tr><td><code>accounts.sales</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Sales/income account codes. Keys are gl-cor:accountMainID values.</td><td>required</td></tr>
+            <tr><td><code>accounts.purchases</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Purchase/expense account codes. Keys are gl-cor:accountMainID values.</td><td>required</td></tr>
+            <tr><td><code>accounts.bank</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Bank/cash account codes (Company Accounts). Keys are gl-cor:accountMainID values.</td><td>optional</td></tr>
+            <tr><td><code>accounts.capital</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Capital/equity account codes (Company Accounts). Keys are gl-cor:accountMainID values.</td><td>optional</td></tr>
+            <tr><td><code>accounts.assets</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Fixed/current asset account codes (Company Accounts). Keys are gl-cor:accountMainID values.</td><td>optional</td></tr>
+            <tr><td><code>accounts.liabilities</code></td><td>table</td><td><code>gl-cor:accountMainID</code></td><td>Liability account codes (Company Accounts). Keys are gl-cor:accountMainID values.</td><td>optional</td></tr>
+            <tr><td><code>openingBalances</code></td><td>table</td><td><em>diya-gl extension</em></td><td>The trial balance brought forward, reverse-engineered today from an opening journal by buildOpeningBalance(); this table lets a book state it directly. Every figure is positive; the balance sheet applies its own sign.</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost</code></td><td>table</td><td><em>diya-gl extension</em></td><td>An amount per fixed asset class.</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost.landBuildings</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost.plantMachinery</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost.fixturesFittings</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost.computerTechnology</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetCost.motorVehicles</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation</code></td><td>table</td><td><em>diya-gl extension</em></td><td>An amount per fixed asset class.</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation.landBuildings</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation.plantMachinery</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation.fixturesFittings</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation.computerTechnology</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.fixedAssetDepreciation.motorVehicles</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.stock</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.tradeDebtors</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.tradeCreditors</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.longTermDebtors</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.bankAccounts</code></td><td>table</td><td><em>diya-gl extension</em></td><td>Opening balance per bank account, keyed by the account code declared in accounts.bank.</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.payeDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.vatDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.cisDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.netWagesDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.wageDeductionsDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.corporationTaxDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.dividendsDue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.directorsLoan</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.longTermCreditors</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.shareCapital</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.retainedEarnings</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>openingBalances.capitalReserves</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>stock</code></td><td>table</td><td><em>diya-gl extension</em></td><td>Opening and closing stock, and the physical count taken at each. materialsPercent is the share of net sales that is direct materials; the Stock sheet's bought and sold columns stay at zero without it.</td><td>optional</td></tr>
+            <tr><td><code>stock.openingValue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>stock.closingValue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>stock.openingCount</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>stock.closingCount</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>stock.materialsPercent</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>debtors</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Named trade debtors at the opening or closing balance sheet date.</td><td>optional</td></tr>
+            <tr><td><code>debtors[].counterparty</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>debtors[].invoice</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>debtors[].amount</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>debtors[].timing</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>creditors</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Named trade creditors at the opening or closing balance sheet date.</td><td>optional</td></tr>
+            <tr><td><code>creditors[].counterparty</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>creditors[].invoice</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>creditors[].amount</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>creditors[].timing</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>fixedAssets</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates. class is optional: the Basic Sole Trader and Taxi Driver Fixed Assets sheets carry a flat list with no asset-class blocks, unlike the Self Employed and Company Schedule.</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].assetID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Identifier matched by diya-gl:assetID on the lines that buy or dispose of this asset.</td><td>required</td></tr>
+            <tr><td><code>fixedAssets[].class</code></td><td>string, one of 5</td><td><em>diya-gl extension</em></td><td>The Schedule block this asset belongs to (Self Employed and Company only).</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].description</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].cost</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>fixedAssets[].accumulatedDepreciation</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].taxWrittenDownValue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Written down value carried forward on the capital allowances computation, brought forward for an asset already held at the opening balance sheet date.</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].acquiredDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].depreciationRate</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].disposedDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].disposalProceeds</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>hpAgreements</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Hire purchase agreements financing an asset over a fixed term. The HPfinance sheet works out its own monthly payment, capital and interest split from these fields.</td><td>optional</td></tr>
+            <tr><td><code>hpAgreements[].agreementID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Identifier matched by diya-gl:hpAgreement on the purchase line the agreement finances.</td><td>required</td></tr>
+            <tr><td><code>hpAgreements[].description</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>hpAgreements[].financeCompany</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>hpAgreements[].supplier</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>hpAgreements[].amountFinanced</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>hpAgreements[].adminCharges</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>hpAgreements[].totalInterest</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>hpAgreements[].termMonths</code></td><td>integer</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>hpAgreements[].startDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>dividends</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Dividends the board declared (Company Accounts only). The directors' report and the trial balance both read the declaration; the bank pays it in one or more instalments.</td><td>optional</td></tr>
+            <tr><td><code>dividends[].declaredDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>dividends[].boardMeetingDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>dividends[].amount</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>members</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>The register of members (Company Accounts only). A member is not always a director; directors[] holds the officers.</td><td>optional</td></tr>
+            <tr><td><code>members[].memberID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Identifier matched by diya-gl:memberID on the dividend payment lines this member receives.</td><td>required</td></tr>
+            <tr><td><code>members[].name</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>members[].shares</code></td><td>integer</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>members[].nominalValue</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Nominal value per share. The shipped register currently prices every holding at a single nominal value set for the whole company, so a per-member figure here is not yet read.</td><td>optional</td></tr>
+            <tr><td><code>members[].acquiredDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>charges</code></td><td>array of tables</td><td><em>diya-gl extension</em></td><td>Charges and debentures registered over the company's assets (Company Accounts only). Each secures a creditor falling due after more than one year.</td><td>optional</td></tr>
+            <tr><td><code>charges[].chargeDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>charges[].description</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The charged asset, as it reads on the register (e.g. 'Motor vehicles, being the company's delivery van').</td><td>optional</td></tr>
+            <tr><td><code>charges[].valuation</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
+            <tr><td><code>charges[].holder</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>charges[].terms</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>charges[].boardMeetingDate</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax</code></td><td>table</td><td>&mdash;</td><td>Tax rates and thresholds. Values from HMRC published rates for the period. Used by validate and generate commands. Derived from gl-taf tax concepts.</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax</code></td><td>table</td><td>&mdash;</td><td>HMRC income tax rates and thresholds (England/Wales/NI)</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.personalAllowance</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.personalAllowanceTaperThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.basicRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.basicRateLimit</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.higherRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.higherRateThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.additionalRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.incomeTax.additionalRateThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance</code></td><td>table</td><td>&mdash;</td><td>HMRC National Insurance rates (self-employed Class 2 + 4, employed Class 1)</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class2WeeklyRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class2SmallProfitsThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class4MainRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class4UpperRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class4LowerProfits</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class4UpperProfits</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployeeMainRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployeeUpperRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployeePrimaryThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployeeUpperEarningsLimit</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployerRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.class1EmployerSecondaryThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.nationalInsurance.employmentAllowance</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat</code></td><td>table</td><td>&mdash;</td><td>HMRC VAT rates and thresholds</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.standardRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.reducedRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.registrationThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.flatRateScheme</code></td><td>boolean</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.flatRatePercentage</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.staggerGroup</code></td><td>integer, one of 3</td><td>&mdash;</td><td>Which of HMRC's three VAT stagger groups this business's quarters fall on.</td><td>optional</td></tr>
+            <tr><td><code>tax.vat.firstPeriodEnd</code></td><td>string</td><td>&mdash;</td><td>The end date of the first VAT return period the book's data covers, so the return cycle is data rather than inferred from the sheet's own dates.</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax</code></td><td>table</td><td>&mdash;</td><td>HMRC Corporation Tax rates (Company Accounts only)</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax.smallProfitsRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax.smallProfitsLimit</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax.mainRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax.mainRateThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.corporationTax.associatedCompanies</code></td><td>integer</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.capitalAllowances</code></td><td>table</td><td>&mdash;</td><td>HMRC capital allowance rates</td><td>optional</td></tr>
+            <tr><td><code>tax.capitalAllowances.annualInvestmentAllowance</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.capitalAllowances.mainRateWDA</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.capitalAllowances.specialRateWDA</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.capitalAllowances.firstYearAllowanceRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.mileage</code></td><td>table</td><td>&mdash;</td><td>HMRC approved mileage rates (Taxi Driver / Self Employed)</td><td>optional</td></tr>
+            <tr><td><code>tax.mileage.carFirst10000</code></td><td>number</td><td>&mdash;</td><td>Rate per mile, first 10,000 miles</td><td>optional</td></tr>
+            <tr><td><code>tax.mileage.carOver10000</code></td><td>number</td><td>&mdash;</td><td>Rate per mile, above 10,000 miles</td><td>optional</td></tr>
+            <tr><td><code>tax.mileage.motorcycle</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.mileage.bicycle</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.dividends</code></td><td>table</td><td>&mdash;</td><td>Dividend tax rates (Company Accounts — director extraction)</td><td>optional</td></tr>
+            <tr><td><code>tax.dividends.allowance</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.dividends.basicRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.dividends.higherRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.dividends.additionalRate</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            </tbody>
+          </table>
+        </div>
+      <h5>One account</h5>
+      <p>Each four-digit account code in a section holds one of these.</p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Field</th><th>Type</th><th>XBRL GL 2015 element</th><th>Meaning</th><th>Required</th></tr></thead>
+            <tbody>
+            <tr><td><code>accountMainDescription</code></td><td>string</td><td><code>gl-cor:accountMainDescription</code></td><td>Human-readable account name</td><td>required</td></tr>
+            <tr><td><code>accountType</code></td><td>string, one of 9</td><td><code>gl-bus:accountType</code></td><td>GL account type enumeration</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:column</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Excel column letter(s) for this account in the workbook</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:sa103sBox</code></td><td>string</td><td><em>diya-gl extension</em></td><td>SA103S box reference this account maps to (e.g. 'box10')</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:ct600Box</code></td><td>string</td><td><em>diya-gl extension</em></td><td>CT600 box reference (Company Accounts only)</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:vatBox</code></td><td>integer</td><td><em>diya-gl extension</em></td><td>VAT return box number (1-9) this account contributes to</td><td>optional</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h4 id="lines">Transaction lines</h4>
+      <p>One JSON object per line of lines.jsonl. Four fields are required on every line, and a journal line must also say which side it posts.</p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Field</th><th>Type</th><th>XBRL GL 2015 element</th><th>Meaning</th><th>Required</th></tr></thead>
+            <tbody>
+            <tr><td><code>entryNumber</code></td><td>string</td><td><code>gl-cor:entryNumber</code></td><td>Unique transaction identifier within this book</td><td>optional</td></tr>
+            <tr><td><code>lineNumber</code></td><td>integer</td><td><code>gl-cor:lineNumber</code></td><td>Line within a multi-line journal entry (Company Accounts only)</td><td>optional</td></tr>
+            <tr><td><code>sourceJournalID</code></td><td>string, one of 6</td><td><code>gl-cor:sourceJournalID</code></td><td>Which journal/daybook this belongs to</td><td>required</td></tr>
+            <tr><td><code>enteredDate</code></td><td>string</td><td><code>gl-cor:enteredDate</code></td><td>Date keyed (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>enteredBy</code></td><td>string</td><td><code>gl-cor:enteredBy</code></td><td>User or system that entered the transaction</td><td>optional</td></tr>
+            <tr><td><code>postingDate</code></td><td>string</td><td><code>gl-cor:postingDate</code></td><td>Tax-relevant date (ISO 8601)</td><td>required</td></tr>
+            <tr><td><code>accountMainID</code></td><td>string</td><td><code>gl-cor:accountMainID</code></td><td>Nominal code from the chart of accounts in book.toml. Must name an account the book declares; enforced by the validator, not this schema.</td><td>required</td></tr>
+            <tr><td><code>accountMainDescription</code></td><td>string</td><td><code>gl-cor:accountMainDescription</code></td><td>Human-readable account name</td><td>optional</td></tr>
+            <tr><td><code>accountSubID</code></td><td>string</td><td><code>gl-cor:accountSubID</code></td><td>Sub-account or department code</td><td>optional</td></tr>
+            <tr><td><code>accountSubDescription</code></td><td>string</td><td><code>gl-cor:accountSubDescription</code></td><td>Sub-account description</td><td>optional</td></tr>
+            <tr><td><code>debitCreditCode</code></td><td>string, one of 2</td><td><code>gl-cor:debitCreditCode</code></td><td>D=Debit, C=Credit. Required on journal lines, because a journal line's sign is otherwise ambiguous.</td><td>optional</td></tr>
+            <tr><td><code>amount</code></td><td>number</td><td><code>gl-cor:amount</code></td><td>Always positive, penny precision</td><td>required</td></tr>
+            <tr><td><code>amountCurrency</code></td><td>string</td><td><code>gl-muc:amountCurrency</code></td><td>ISO 4217 currency code</td><td>optional</td></tr>
+            <tr><td><code>documentType</code></td><td>string, one of 8</td><td><code>gl-cor:documentType</code></td><td>Type of source document</td><td>optional</td></tr>
+            <tr><td><code>documentReference</code></td><td>string</td><td><code>gl-cor:documentReference</code></td><td>Invoice/receipt number</td><td>optional</td></tr>
+            <tr><td><code>documentNumber</code></td><td>string</td><td><code>gl-cor:documentNumber</code></td><td>Internal document number</td><td>optional</td></tr>
+            <tr><td><code>documentDate</code></td><td>string</td><td><code>gl-cor:documentDate</code></td><td>Date on source document (ISO 8601)</td><td>optional</td></tr>
+            <tr><td><code>detailComment</code></td><td>string</td><td><code>gl-cor:detailComment</code></td><td>Customer/supplier name or narrative</td><td>optional</td></tr>
+            <tr><td><code>lineItemComment</code></td><td>string</td><td><code>gl-cor:detailComment</code></td><td>Description of goods/services</td><td>optional</td></tr>
+            <tr><td><code>postingStatus</code></td><td>string, one of 3</td><td><code>gl-cor:postingStatus</code></td><td>Entry status</td><td>optional</td></tr>
+            <tr><td><code>taxCode</code></td><td>string, one of 7</td><td><code>gl-taf</code></td><td>UK VAT code: S=Standard, R=Reduced, Z=Zero, E=Exempt, OS=Outside Scope, RC=Reverse Charge, NA=Not Applicable</td><td>optional</td></tr>
+            <tr><td><code>taxAmount</code></td><td>number</td><td><code>gl-cor:taxAmount</code></td><td>VAT amount, always positive</td><td>optional</td></tr>
+            <tr><td><code>taxRate</code></td><td>number</td><td><code>gl-taf:taxRate</code></td><td>VAT rate as decimal (0.20 = 20%)</td><td>optional</td></tr>
+            <tr><td><code>taxPointDate</code></td><td>string</td><td><code>gl-taf:taxPointDate</code></td><td>VAT tax point if different from postingDate</td><td>optional</td></tr>
+            <tr><td><code>taxDescription</code></td><td>string</td><td><code>gl-cor:taxDescription</code></td><td>Human-readable tax description</td><td>optional</td></tr>
+            <tr><td><code>paymentMethod</code></td><td>string, one of 9</td><td><code>gl-bus:paymentMethod</code></td><td>How payment was made/received</td><td>optional</td></tr>
+            <tr><td><code>measurableQuantity</code></td><td>number</td><td><code>gl-bus:measurableQuantity</code></td><td>Non-monetary quantity (miles, hours, units)</td><td>optional</td></tr>
+            <tr><td><code>measurableUnitOfMeasure</code></td><td>string, one of 6</td><td><code>gl-bus:measurableUnitOfMeasure</code></td><td>Unit for measurableQuantity</td><td>optional</td></tr>
+            <tr><td><code>measurableDescription</code></td><td>string</td><td><code>gl-bus:measurableQualifier</code></td><td>What is being measured</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:bankCode</code></td><td>string, one of 19</td><td><em>diya-gl extension</em></td><td>Bank receipt/payment code, matching the analysis columns of the bank account workbooks. Transfers between accounts carry the letter of the account on the other side: BB=current, BS=savings, BC=cash, BD=credit card. Receipt only: K=interest received. Payment only: W=net wages, B=bank charges, J=interest paid, DV=dividend, RP=HMRC PAYE, RT=HMRC corporation tax. Either side: DR=trade debtor, CR=trade creditor, LDR=long term debtor, LCR=long term creditor, RV=HMRC VAT, RC=HMRC CIS, DL=directors loan, X=bank contra item. BC on a bank line with no other account on the other side is the workbook's own opening balance.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:bankAccountID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Bank account code from book.toml accounts.bank (e.g. 1200=current, 1210=savings). Identifies which bank workbook this transaction belongs to.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:employeeID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Employee identifier matching employees[] in book.toml. Used for payroll lines (sourceJournalID=payroll).</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:grossPay</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Gross pay for this payroll period. Payroll lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:incomeTax</code></td><td>number</td><td><em>diya-gl extension</em></td><td>PAYE income tax deducted. Payroll lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:employeeNI</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Employee National Insurance deducted. Payroll lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:employerNI</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Employer National Insurance contribution. Payroll lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:netPay</code></td><td>number</td><td><em>diya-gl extension</em></td><td>Net pay (gross - tax - employee NI). Payroll lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:cisDeduction</code></td><td>number</td><td><em>diya-gl extension</em></td><td>CIS deduction amount withheld from sub-contractor payment. Purchases lines with CIS sub-contractors only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:hpAgreement</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Reference of the hire purchase agreement that finances this purchase, matching an id on book.toml hpAgreements[]. A purchase carrying one reaches the books as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:cisRate</code></td><td>number</td><td><em>diya-gl extension</em></td><td>CIS deduction rate (0.20=20% standard, 0.30=30% higher, 0=gross payment). CIS lines only.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:vatPeriodEnd</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The VAT return period this line is declared on, when that period falls outside the accounting year the book covers. This is what makes a straddling entry representable: the line's postingDate sits in one accounting year, but its VAT is due on the return ending vatPeriodEnd.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:assetID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The book.toml fixedAssets[] id this line moves: a capital purchase that registers the asset, or a disposal (an 'fs'-coded sale) that removes it.</td><td>optional</td></tr>
+            <tr><td><code>diya-gl:memberID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The book.toml members[] id a dividend payment line settles.</td><td>optional</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h3 id="sa103s">Computed figures and their SA103S boxes</h3>
+      <p>
+        The three sole trader products fill the short self-employment pages, SA103S. The table gives every box on the 2026 form.
+        <em>figure</em> means the product computes the box. <em>derived</em> means the page works it out from the profit and loss account.
+        <em>blank</em> means the format carries nothing for that box, so it prints empty. Box numbers follow the 2026 form; nothing
+        here is the HMRC document itself.
+      </p>
+      <p>
+        The last column is HMRC's own field name for the box in the Making Tax Digital Self Employment Business API, from HMRC's published
+        SA103 mapping (<a href="https://github.com/hmrc/income-tax-mtd-changelog/blob/main/mapping/mapping-csv-files.md">sa103f_mapping_v3.csv</a>, read 2026-09-04).
+        15 of the 34 boxes have one.
+      </p>
+      <p>
+        Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
+        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own books page, and
+        the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
+      </p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Box</th><th>Label</th><th>Basic Sole Trader</th><th>Taxi Driver</th><th>Self Employed</th><th>MTD API field</th></tr></thead>
+            <tbody>
+            <tr><td><code>9</code></td><td>Your turnover, the takings, fees, sales or money earned by your business</td><td>figure</td><td>figure</td><td>figure</td><td><code>periodIncome.turnover</code></td></tr>
+            <tr><td><code>10</code></td><td>Any other business income not included in box 9</td><td>figure</td><td>figure</td><td>figure</td><td><code>periodIncome.other</code></td></tr>
+            <tr><td><code>10.1</code></td><td>Trading income allowance</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>11</code></td><td>Costs of goods bought for resale or goods used</td><td>figure</td><td>derived</td><td>figure</td><td><code>periodExpenses.costOfGoods</code></td></tr>
+            <tr><td><code>12</code></td><td>Car, van and travel expenses, after private use proportion</td><td>figure</td><td>derived</td><td>figure</td><td><code>periodExpenses.carVanTravelExpenses</code></td></tr>
+            <tr><td><code>13</code></td><td>Wages, salaries and other staff costs</td><td>figure</td><td>derived</td><td>figure</td><td><code>periodExpenses.wagesAndStaffCosts</code></td></tr>
+            <tr><td><code>14</code></td><td>Rent, rates, power and insurance costs</td><td>figure</td><td>derived</td><td>figure</td><td><code>periodExpenses.premisesRunningCosts</code></td></tr>
+            <tr><td><code>15</code></td><td>Repairs and maintenance of property and equipment</td><td>figure</td><td>derived</td><td>figure</td><td><code>periodExpenses.maintenanceCosts</code></td></tr>
+            <tr><td><code>16</code></td><td>Accountancy, legal and other professional fees</td><td>derived</td><td>derived</td><td>figure</td><td><code>periodExpenses.professionalFees</code></td></tr>
+            <tr><td><code>17</code></td><td>Interest and bank and credit card financial charges</td><td>derived</td><td>derived</td><td>figure</td><td><code>periodExpenses.interestOnBankOtherLoans</code></td></tr>
+            <tr><td><code>18</code></td><td>Phone, fax, stationery and other office costs</td><td>derived</td><td>derived</td><td>figure</td><td><code>periodExpenses.adminCosts</code></td></tr>
+            <tr><td><code>19</code></td><td>Other allowable business expenses</td><td>derived</td><td>derived</td><td>figure</td><td><code>periodExpenses.otherExpenses</code></td></tr>
+            <tr><td><code>20</code></td><td>Total allowable expenses</td><td>derived</td><td>derived</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>21</code></td><td>Net profit, if your business income is more than your expenses</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>22</code></td><td>Or, net loss, if your expenses exceed your business income</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>23</code></td><td>Annual Investment Allowance</td><td>figure</td><td>figure</td><td>figure</td><td><code>allowances.annualInvestmentAllowance</code></td></tr>
+            <tr><td><code>24</code></td><td>Allowance for small balance of unrelieved expenditure</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>24.1</code></td><td>Zero-emission car allowance</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>25</code></td><td>Other capital allowances</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>25.1</code></td><td>The Structures and Buildings Allowance</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>25.2</code></td><td>Freeport and Investment Zones Structures and Buildings Allowance</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>26</code></td><td>Total balancing charges, for example where you have disposed of items for more than their tax value</td><td>figure</td><td>figure</td><td>figure</td><td><code>adjustments.balancingChargeOther | adjustments.balancingChargeBpra</code></td></tr>
+            <tr><td><code>27</code></td><td>Goods and/or services for your own use</td><td>figure</td><td>figure</td><td>figure</td><td><code>adjustments.goodsAndServicesOwnUse</code></td></tr>
+            <tr><td><code>28</code></td><td>Net business profit for tax purposes</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>29</code></td><td>Loss brought forward from earlier years set off against this year's profits</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>30</code></td><td>Any other business income not included in box 9 or box 10</td><td>figure</td><td>figure</td><td>figure</td><td><code>adjustments.outstandingBusinessIncome</code></td></tr>
+            <tr><td><code>31</code></td><td>Total taxable profits from this business</td><td>figure</td><td>figure</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>32</code></td><td>Net business loss for tax purposes</td><td>blank</td><td>blank</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>33</code></td><td>Loss from this tax year set off against other income for 2025-26</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>34</code></td><td>Loss to be carried back to previous years and set off against income (or capital gains)</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>35</code></td><td>Total loss to carry forward after all other set-offs, including unused losses brought forward</td><td>blank</td><td>blank</td><td>figure</td><td>&mdash;</td></tr>
+            <tr><td><code>36</code></td><td>Voluntary Class 2 NICs</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>37</code></td><td>Exempt from Class 4 NICs</td><td>blank</td><td>blank</td><td>blank</td><td>&mdash;</td></tr>
+            <tr><td><code>38</code></td><td>Total CIS deductions taken from your payments by contractors</td><td>blank</td><td>blank</td><td>figure</td><td>&mdash;</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h3 id="checks">The check catalogue</h3>
+      <p>
+        A book is read in three stages. The two JSON Schemas validate <code>book.toml</code> and every line of <code>lines.jsonl</code>. The
+        validator then refuses a file whose lines reach an account the book does not declare, or name a hire purchase agreement, an asset or
+        a member the registers do not hold. Last, the 27 book checks below run over the data itself.
+      </p>
+      <p>
+        A <strong>check</strong> passes or fails, and a failure names the entries that caused it; 13 of the rules are checks. A
+        <strong>warning</strong> passes or warns and never blocks a save; 14 of them are warnings. Which rules a book runs
+        depends on the product it declares. Every result is written to <code>bookchecks.json</code> in the zip.
+      </p>
+      <p>
+        Beside these, the engine runs its reconciliation checks: one for every figure the workbook and the engine both compute, compared to
+        the penny. Those depend on the books in hand rather than on the format, and every one of them is published on the scorecards below.
+      </p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Id</th><th>What it reads</th><th>Severity</th><th>Products</th></tr></thead>
+            <tbody>
+            <tr><td><code>book-accounts-in-chart</code></td><td>Every entry reaches an account the book's chart of accounts declares.</td><td>check</td><td>all</td></tr>
+            <tr><td><code>book-amounts-whole-pence</code></td><td>Every amount is a whole number of pence.</td><td>check</td><td>all</td></tr>
+            <tr><td><code>book-dates-in-period</code></td><td>Every entry is dated inside the accounting period the book declares.</td><td>check</td><td>all</td></tr>
+            <tr><td><code>book-duplicate-entries</code></td><td>No two entries share the same journal, date, amount and detail without being each other's two sides.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-empty-detail</code></td><td>Every entry names who or what it was with.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-empty-month</code></td><td>Every month between the first and last entry has at least one entry.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-negative-amount</code></td><td>Every sale and purchase amount is zero or more.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-vat-threshold</code></td><td>Turnover for the year against the VAT registration threshold for that year.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-bank-account-has-workbook</code></td><td>Every bank entry is on an account the package keeps a workbook for.</td><td>check</td><td>Self Employed</td></tr>
+            <tr><td><code>book-bank-code-analysed</code></td><td>Every bank entry is coded to a column its workbook analyses.</td><td>check</td><td>Self Employed</td></tr>
+            <tr><td><code>book-bank-line-has-side</code></td><td>Every bank entry says whether it is a receipt or a payment.</td><td>check</td><td>Self Employed</td></tr>
+            <tr><td><code>book-fixed-asset-rows-fit</code></td><td>Every asset, disposal and hire purchase agreement has a row on the fixed asset schedule.</td><td>check</td><td>Self Employed</td></tr>
+            <tr><td><code>book-ltd-bank-code-analysed</code></td><td>Every bank entry is coded to a column its workbook analyses.</td><td>check</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-bank-line-has-side</code></td><td>Every bank entry says whether it is a receipt or a payment.</td><td>check</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-fixed-asset-rows-fit-schedule</code></td><td>Every asset, disposal and hire purchase agreement has a row on the fixed asset schedule.</td><td>check</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-payroll-line-names-employee</code></td><td>Every payroll entry names someone on the payroll.</td><td>check</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-straddling-line-has-vat-period</code></td><td>Every sale and purchase dated outside the period names the VAT return period it belongs to.</td><td>check</td><td>Limited Company</td></tr>
+            <tr><td><code>book-payslip-names-employee</code></td><td>Every payslip names someone the book employs.</td><td>check</td><td>Self Employed</td></tr>
+            <tr><td><code>book-bank-overdrawn</code></td><td>The bank book closes every month at zero or more.</td><td>warning</td><td>Self Employed</td></tr>
+            <tr><td><code>book-cash-never-overdrawn</code></td><td>The cash book closes every month at zero or more.</td><td>warning</td><td>Self Employed</td></tr>
+            <tr><td><code>book-employee-paid-every-month</code></td><td>Every employee is paid in each month between their first and last payslip.</td><td>warning</td><td>Self Employed</td></tr>
+            <tr><td><code>book-ltd-cis-on-subcontractor-line</code></td><td>Every CIS deduction sits on a sub-contractor purchase.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-dividend-within-distributable-profits</code></td><td>Dividends declared against the retained profits available to pay them.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-transfer-has-counter-leg</code></td><td>Every transfer between the company's own accounts appears on both of them.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-taxi-fare-miles</code></td><td>Every fare day that carries miles elsewhere carries its own.</td><td>warning</td><td>Taxi Driver</td></tr>
+            <tr><td><code>book-taxi-miles-band</code></td><td>Business miles stay inside the higher-rate mileage band.</td><td>warning</td><td>Taxi Driver</td></tr>
+            <tr><td><code>book-taxi-vehicle-register</code></td><td>Every vehicle bought is on the fixed asset register.</td><td>warning</td><td>Taxi Driver</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h3 id="zip">The zip layout</h3>
+      <p>The zip has no directories. Its entries are:</p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Entry</th><th>What it holds</th></tr></thead>
+            <tbody>
+            <tr><td><code>book.toml</code></td><td>The business, the period, the chart of accounts and the registers. Always written.</td></tr>
+            <tr><td><code>lines.jsonl</code></td><td>One transaction per line, in canonical order. Always written.</td></tr>
+            <tr><td><code>report.json</code></td><td>Every figure the engine computed from the two files above, keyed by its cell reference. Always written.</td></tr>
+            <tr><td><code>bookchecks.json</code></td><td>The result of every check and warning in the catalogue above, sorted by id. Written when the writer has run them.</td></tr>
+            <tr><td><code>overtyped.json</code></td><td>Any cell a person typed over in the workbook, so the next generation keeps it. Written when there is one.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      <p>
+        Two writes of the same book produce the same bytes, on any machine and in any of the three surfaces (the browser page, the command
+        line tool and the MCP server). The rules that make that hold:
+      </p>
+      <ul>
+        <li>Lines sort by posting date, then source journal, account, entry number, line number, document reference and amount.</li>
+        <li>Fields within a line follow the order the lines schema declares them in, and a field with no value is left out.</li>
+        <li><code>book.toml</code> follows the book schema's table and key order, and every array of tables sorts by its own id field.</li>
+        <li>Money carries exactly two decimal places and a rate exactly four, trailing zeroes included.</li>
+        <li>Dates are ISO 8601, <code>YYYY-MM-DD</code>, with no time.</li>
+        <li>Every zip entry is stamped 1 January 1980, so the timestamp never varies between two writes.</li>
+      </ul>
+      <p>
+        The same book and lines also travel as one JSON file, with a
+        <code>{ "format": "diya-gl-books", "version": 1, "product": ..., "book": ..., "lines": [...] }</code>
+        envelope, and as that JSON zipped. The books pages read all three, plus a workbook and a package zip.
+      </p>
+
+      <h3 id="versioning">Versioning and provenance</h3>
+      <p>
+        The format is <code>diya-gl-books</code> version 1. The two schemas are at v2, and the version is
+        part of each schema's <code>$id</code> URL. A v1 existed but nothing outside this repository ever read it, so v2 replaced it in place.
+      </p>
+      <p>
+        Five stamps sit in the book's document info and at the head of <code>report.json</code>. They answer the question a file raises
+        years later. Recalculate a 2026 book in 2030 and it either reproduces its <code>report.json</code> byte for byte, or names the
+        stamp that differs.
+      </p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Stamp</th><th>Value</th><th>What it answers</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr><td>format version</td><td><code>diya-gl-books</code> 1</td><td>Can this tool read this file</td><td>written today</td></tr>
+            <tr><td>engine version</td><td>the package version, and the commit it was built from</td><td>Which code produced these figures</td><td>with the next engine release</td></tr>
+            <tr><td>tax-data version</td><td>a hash over the year's rate files</td><td>Which rates were applied</td><td>with the next engine release</td></tr>
+            <tr><td>template version</td><td>a hash over the product's workbook templates</td><td>Which workbook this reproduces</td><td>with the next engine release</td></tr>
+            <tr><td>reconciled commit</td><td>the commit whose reconciliation run passed</td><td>The proof this release rests on</td><td>with the next engine release</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      <h3 id="evidence">Reconciliation evidence</h3>
+      <p>
+        Every figure this format computes is checked against the same figure in the spreadsheet. For each product, CI generates the
+        package from a set of books, recalculates the workbook in LibreOffice, computes the same figures from the diya-gl data alone, and
+        compares the two to the penny. Each scorecard carries the whole run: its status, the checks, the input transactions, screenshots
+        of the recalculated sheets, the accounting statements and the tax review.
+      </p>
+        <div class="spec-scroll">
+          <table class="spec-table">
+            <thead><tr><th>Product</th><th>Featured scenario</th></tr></thead>
+            <tbody>
+            <tr><td><a href="reconciliation/bst.html">Basic Sole Trader</a></td><td>bst-scenario-basic</td></tr>
+            <tr><td><a href="reconciliation/taxi.html">Taxi Driver</a></td><td>taxi-scenario-basic</td></tr>
+            <tr><td><a href="reconciliation/se.html">Self Employed</a></td><td>se-scenario-advanced</td></tr>
+            <tr><td><a href="reconciliation/ltd.html">Limited Company</a></td><td>ltd-scenario-full</td></tr>
+            </tbody>
+          </table>
+        </div>
+      <p><a href="reconciliation/index.html">All reconciliation reports</a></p>
+
+      <h3 id="tools">Getting the tools</h3>
+      <p>
+        The books pages read and write the format in your browser. Nothing you load leaves the machine.
+      </p>
+      <ul>
+        <li><a href="books/bst.html">Basic Sole Trader books</a></li>
+        <li><a href="books/taxi.html">Taxi Driver books</a></li>
+        <li><a href="books/se.html">Self Employed books</a></li>
+        <li><a href="books/ltd.html">Limited Company books</a></li>
+      </ul>
+      <p>
+        The same engine runs on the command line and as an MCP server, published as the npm package
+        <code>@diy-accounting-uk/diya-gl</code>. It is not on npm yet; this page will carry the install line when it is.
+      </p>
+      <p>
+        The spreadsheets themselves stay free to download on a donation basis. <a href="download.html">Download a package</a>, or
+        <a href="donate.html">chip in</a> if the tools earn it.
+      </p>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
+          <a href="knowledge-base.html">knowledge base</a>
+          <a href="reconciliation/index.html">reconciliation</a>
+          <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
+          <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
+          <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
