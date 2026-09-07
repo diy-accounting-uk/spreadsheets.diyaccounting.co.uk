@@ -71,6 +71,30 @@
           "type": "string",
           "format": "date",
           "description": "diya-gl: extension — The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart."
+        },
+        "diya-gl:formatVersion": {
+          "type": "string",
+          "description": "diya-gl: extension — The diya-gl-books format name and version this file is written as, e.g. \"diya-gl-books/1\"."
+        },
+        "diya-gl:engineVersion": {
+          "type": "string",
+          "description": "diya-gl: extension — The npm package version and commit of the engine that wrote this file, e.g. \"1.0.0+3f2a1b9c4d7e\"."
+        },
+        "diya-gl:taxDataHash": {
+          "type": "string",
+          "description": "diya-gl: extension — A hash over every app/data/*.toml tax-year file, naming which rates this file's figures were calculated from."
+        },
+        "diya-gl:templateHash": {
+          "type": "string",
+          "description": "diya-gl: extension — A hash over this product's own Excel template files, naming which workbook this file reproduces."
+        },
+        "diya-gl:templateScorecard": {
+          "type": "string",
+          "description": "diya-gl: extension — The published reconciliation check counts for this product's template, e.g. \"132 passed, 0 warnings, 0 failed\"."
+        },
+        "diya-gl:reconciledCommit": {
+          "type": "string",
+          "description": "diya-gl: extension — The commit whose CI reconciliation run last passed for this product, the proof this file's figures rest on."
         }
       }
     },

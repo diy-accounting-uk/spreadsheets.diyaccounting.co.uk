@@ -13,13 +13,18 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { s1, s2, s2ForPackage, s3, s3YearEnd, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
+import { provenanceStamps, provenanceHeader } from "../../app/lib/provenance.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const ROOT = process.cwd();
+const publicDir = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
 const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/bst.json"), "utf-8"));
 const FRESH_PACKAGE_PATH = path.join(process.cwd(), "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
+const TARGET_DIR = path.join(ROOT, "target", "books-equivalence");
+fs.mkdirSync(TARGET_DIR, { recursive: true });
 
 let closeServer;
 let baseUrl;
@@ -434,5 +439,52 @@ test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () 
     });
 
     expect(problems, problems.join("\n")).toEqual([]);
+  });
+});
+
+// ── The five provenance stamps: the browser bundle, the CLI and the plain
+// values in app/lib/provenance.js agree ──────────────────────────────────
+
+async function triggerSaveDownload(page, menuItemName) {
+  await page.click("#save-btn");
+  const item = page.getByRole("menuitem", { name: menuItemName, exact: true });
+  await item.waitFor({ state: "visible" });
+  const [download] = await Promise.all([page.waitForEvent("download"), item.click()]);
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  return Buffer.concat(chunks);
+}
+
+test.describe("DIYA-GL books page — the browser bundle stamps the same as the CLI", () => {
+  test("the diya-gl zip's book.toml and report.json carry Node's own provenance stamps", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    const bytes = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const zip = await JSZip.loadAsync(bytes);
+    const bookToml = await zip.file("book.toml").async("string");
+    const reportDocument = JSON.parse(await zip.file("report.json").async("string"));
+
+    const stamps = provenanceStamps("bst");
+    for (const [key, value] of Object.entries(stamps)) {
+      expect(bookToml, key).toContain(`${JSON.stringify(key)} = ${JSON.stringify(value)}`);
+    }
+    expect(reportDocument.provenance).toEqual(provenanceHeader("bst"));
+
+    // The CLI, over the same fixture the page just loaded, run as its own
+    // process rather than imported -- the stamps it writes come from the
+    // same generated data the page's bundle carries, not from re-running
+    // this test's own Node process against itself.
+    const outputDir = path.join(TARGET_DIR, "provenance-cli");
+    execFileSync(
+      process.execPath,
+      ["app/bin/report.js", "--package", "bst", "--data", "examples/precision-code-ltd/bst", "--output-dir", outputDir],
+      { cwd: ROOT, stdio: "pipe" },
+    );
+    const cliReport = JSON.parse(fs.readFileSync(path.join(outputDir, "report.json"), "utf-8"));
+    expect(cliReport.provenance).toEqual(reportDocument.provenance);
   });
 });

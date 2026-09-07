@@ -29,6 +29,7 @@ import {
   ProductNotAvailableError,
 } from "../lib/books-interchange.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
+import { provenanceStamps, provenanceHeader } from "../lib/provenance.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import { validateBstAnchors } from "../lib/anchors/bst.js";
@@ -119,8 +120,21 @@ function bookDeclaring(schemaName) {
   };
 }
 
+// The five "diya-gl:" provenance lines a write stamps into documentInfo,
+// stripped before a round trip is checked against the raw extraction: the
+// values name the build that wrote them, not a fact the source itself
+// carries, so a source read straight from a workbook (never written back
+// out) and one read back from a write it went through still agree on
+// everything a "same book" test asks about.
+const PROVENANCE_KEYS = ["formatVersion", "engineVersion", "taxDataHash", "templateHash", "templateScorecard", "reconciledCommit"];
+const PROVENANCE_LINE = new RegExp(`^"diya-gl:(?:${PROVENANCE_KEYS.join("|")})" = .*\\n`, "gm");
+
+function stripProvenance(bookToml) {
+  return bookToml.replace(PROVENANCE_LINE, "");
+}
+
 function expectSameBook(source) {
-  expect(canonicalBookToml(source.book)).toBe(referenceBookToml);
+  expect(stripProvenance(canonicalBookToml(source.book))).toBe(referenceBookToml);
   expect(canonicalLinesJsonl(source.lines)).toBe(referenceLinesJsonl);
 }
 
@@ -274,7 +288,7 @@ describe("a multi-file package, sniffed by the files and sheets it carries", () 
     const source = await readBookSource(await packageZipOf(SE_PACKAGE_DIR), "se.zip", { products: EVERY_PRODUCT });
     expect(source.kind).toBe("package-set");
     expect(source.product).toBe("se");
-    expect(canonicalBookToml(source.book)).toBe(readFileSync(join(outputDir, "book.toml"), "utf-8"));
+    expect(stripProvenance(canonicalBookToml(source.book))).toBe(stripProvenance(readFileSync(join(outputDir, "book.toml"), "utf-8")));
     expect(canonicalLinesJsonl(source.lines)).toBe(readFileSync(join(outputDir, "lines.jsonl"), "utf-8"));
   }, 120000);
 
@@ -652,7 +666,7 @@ describe("writeDiyaGlZip: the CLI's exact bytes, deterministic", () => {
 
     const bookToml = await zip.file("book.toml").async("string");
     const linesJsonl = await zip.file("lines.jsonl").async("string");
-    expect(bookToml).toBe(referenceBookToml);
+    expect(stripProvenance(bookToml)).toBe(referenceBookToml);
     expect(linesJsonl).toBe(referenceLinesJsonl);
   });
 
@@ -678,5 +692,37 @@ describe("writeDiyaGlZip: the CLI's exact bytes, deterministic", () => {
       overtyped: workbookSource.overtyped,
     });
     expect(Buffer.from(again).equals(Buffer.from(referenceDiyaGlZipBytes))).toBe(true);
+  });
+});
+
+describe("provenance stamps: book.toml and report.json carry the same five values", () => {
+  it("stamps the zip's book.toml with this build's five provenance values", async () => {
+    const zip = await JSZip.loadAsync(referenceDiyaGlZipBytes);
+    const bookToml = await zip.file("book.toml").async("string");
+    const stamps = provenanceStamps("bst");
+    for (const [key, value] of Object.entries(stamps)) {
+      expect(bookToml, key).toContain(`${JSON.stringify(key)} = ${JSON.stringify(value)}`);
+    }
+  });
+
+  it("stamps the JSON envelope's book the same way as the zip", () => {
+    const document = JSON.parse(referenceJson);
+    const stamps = provenanceStamps("bst");
+    for (const [key, value] of Object.entries(stamps)) {
+      expect(document.book.documentInfo[key]).toBe(value);
+    }
+  });
+
+  it("carries the same provenance header in report.json as the book's own stamps", async () => {
+    const zip = await JSZip.loadAsync(referenceDiyaGlZipBytes);
+    const reportJson = JSON.parse(await zip.file("report.json").async("string"));
+    expect(reportJson.provenance).toEqual(provenanceHeader("bst"));
+  });
+
+  it("returns a book with no declared product unchanged, stamps aside", async () => {
+    const { stampBook } = await import("../lib/provenance.js");
+    const book = { ...workbookSource.book, entityInformation: { ...workbookSource.book.entityInformation } };
+    delete book.entityInformation["diya-gl:product"];
+    expect(stampBook(book)).toBe(book);
   });
 });
