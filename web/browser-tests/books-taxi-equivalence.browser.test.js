@@ -20,6 +20,9 @@ import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { s1, s2, s3, s3YearEnd, canonical, parseFigure, SCENARIOS_TAXI } from "./r-sources.js";
+import { loadDiyaGlData } from "../../app/lib/diya-gl-loader.js";
+import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
+import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
 const publicDir = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
@@ -28,6 +31,14 @@ const FRESH_PACKAGE_PATH = path.join(ROOT, "examples/taxi-latest/GB_Accounts_Tax
 const ASSETS_EXAMPLE_DIR = path.join(publicDir, "books/assets/examples/basic-taxi-driver/taxi");
 const TARGET_DIR = path.join(ROOT, "target", "books-taxi-equivalence");
 fs.mkdirSync(TARGET_DIR, { recursive: true });
+
+// The served example's book.toml is a plain copy of
+// examples/basic-taxi-driver/taxi/book.toml, carrying no stamps of its own
+// -- a save always stamps the book fresh, so what the page's own download
+// should equal is that same book run through the CLI's writer.
+const BASIC_STAMPED_BOOK_TOML = canonicalBookToml(
+  stampBook(loadDiyaGlData(path.join(ROOT, "examples", "basic-taxi-driver", "taxi")).book),
+);
 
 let closeServer;
 let baseUrl;
@@ -95,7 +106,7 @@ test.describe("DIYA-GL Taxi books page — same information, same results (A1, A
 
     const bookToml = await zip.file("book.toml").async("string");
     const linesJsonl = await zip.file("lines.jsonl").async("string");
-    expect(bookToml).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "book.toml"), "utf-8"));
+    expect(bookToml).toBe(BASIC_STAMPED_BOOK_TOML);
     expect(linesJsonl).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "lines.jsonl"), "utf-8"));
   });
 

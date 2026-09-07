@@ -8,6 +8,15 @@ function trackEvent(eventName, params) {
   }
 }
 
+// Fires the runner_download event this page's own runner link calls on
+// click, once that link exists. Kept here, apart from the link itself, so
+// this event reads consistently with the books pages' book_loaded and
+// book_saved events for a downloads-to-donations ratio.
+function trackRunnerDownload(product) {
+  const built = buildRunnerDownloadEvent(product);
+  trackEvent(built.name, built.params);
+}
+
 let catalogue = null;
 
 function showDownloadAvailable(fileUrl) {
@@ -77,23 +86,16 @@ function initForm() {
   if (isPayPalReturn || isStripeReturn) {
     const savedFilename = sessionStorage.getItem("donateFilename");
     const savedProduct = sessionStorage.getItem("donateProduct");
+    const savedAmount = sessionStorage.getItem("donateAmount");
+    const savedCurrency = sessionStorage.getItem("donateCurrency") || "GBP";
     sessionStorage.removeItem("donateFilename");
     sessionStorage.removeItem("donateProduct");
+    sessionStorage.removeItem("donateAmount");
+    sessionStorage.removeItem("donateCurrency");
     if (savedFilename) {
       const provider = isStripeReturn ? "stripe" : "paypal";
-      trackEvent("purchase", {
-        transaction_id: provider + "_" + Date.now(),
-        value: 0,
-        currency: "GBP",
-        items: [
-          {
-            item_id: savedProduct,
-            item_name: savedProduct,
-            price: 0,
-            currency: "GBP",
-          },
-        ],
-      });
+      const amount = savedAmount !== null ? parseFloat(savedAmount) : null;
+      trackEvent("purchase", buildPurchaseEvent(provider, savedProduct, amount, savedCurrency));
       const fileUrl = "/zips/" + encodeURIComponent(savedFilename);
       showDownloadAvailable(fileUrl);
       window.location = fileUrl;
@@ -214,6 +216,16 @@ document.getElementById("download-donate-btn").addEventListener("click", functio
       ],
     });
   }
+});
+
+// Each product's single-file offline runner, downloaded straight off its
+// own link -- no product/period selection first, so this fires on click
+// rather than waiting on updateLinks() the way the packaged download's own
+// GA4 event does.
+document.querySelectorAll(".runner-download-link").forEach(function (link) {
+  link.addEventListener("click", function () {
+    trackRunnerDownload(link.dataset.product);
+  });
 });
 
 loadCatalogue();

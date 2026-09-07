@@ -27,6 +27,8 @@ import { parse as parseTOML } from "smol-toml";
 import { parseDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { writeBookJson } from "../../app/lib/books-interchange.js";
 import { readXlsxCellValues } from "../../app/lib/xlsx-reader.js";
+import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
+import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
@@ -49,6 +51,11 @@ const precisionBookToml = fs.readFileSync(path.join(PRECISION_DIR, "book.toml"),
 const precisionLinesJsonl = fs.readFileSync(path.join(PRECISION_DIR, "lines.jsonl"), "utf-8");
 const { book: precisionBook, lines: precisionLines } = parseDiyaGlData(precisionBookToml, precisionLinesJsonl);
 const precisionJsonText = writeBookJson(precisionBook, precisionLines);
+// The served example's book.toml is a plain copy of examples/precision-code-ltd/bst/book.toml
+// (build-books-bundle.mjs), carrying no stamps of its own -- a save always
+// stamps the book fresh, so what the page's own download should equal is
+// that same book run through the CLI's writer, not the untouched copy.
+const precisionStampedBookToml = canonicalBookToml(stampBook(precisionBook));
 
 async function zipOf(entries) {
   const zip = new JSZip();
@@ -302,8 +309,7 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
 
     const bookToml = await zip.file("book.toml").async("string");
     const linesJsonl = await zip.file("lines.jsonl").async("string");
-    const expectedBookToml = fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "book.toml"), "utf-8");
-    expect(bookToml).toBe(expectedBookToml);
+    expect(bookToml).toBe(precisionStampedBookToml);
     expect(linesJsonl).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "lines.jsonl"), "utf-8"));
   });
 

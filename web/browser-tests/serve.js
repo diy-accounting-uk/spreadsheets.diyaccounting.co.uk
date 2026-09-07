@@ -27,6 +27,8 @@ const CONTENT_TYPES = {
   ".jsonl": "text/plain; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".svg": "image/svg+xml",
 };
 
 function readSecurityHeaders() {

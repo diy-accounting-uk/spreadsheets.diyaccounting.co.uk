@@ -20,6 +20,8 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { parseDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { writeBookJson } from "../../app/lib/books-interchange.js";
+import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
+import { stampBook } from "../../app/lib/provenance.js";
 import { SCENARIOS_SE } from "./r-sources.js";
 
 const ROOT = process.cwd();
@@ -38,6 +40,9 @@ const advancedBookToml = fs.readFileSync(path.join(BOOK_DIR, "book.toml"), "utf-
 const advancedLinesJsonl = fs.readFileSync(path.join(BOOK_DIR, "lines.jsonl"), "utf-8");
 const { book: advancedBook, lines: advancedLines } = parseDiyaGlData(advancedBookToml, advancedLinesJsonl);
 const advancedJsonText = writeBookJson(advancedBook, advancedLines);
+// A save always stamps the book fresh, so the page's own download equals the
+// fixture run through the CLI's writer, not the unstamped copy on disk.
+const advancedStampedBookToml = canonicalBookToml(stampBook(advancedBook));
 
 async function zipOf(entries) {
   const zip = new JSZip();
@@ -185,7 +190,7 @@ test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
 
     const roundTripped = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(roundTripped.bytes);
-    expect(await zip.file("book.toml").async("string")).toBe(advancedBookToml);
+    expect(await zip.file("book.toml").async("string")).toBe(advancedStampedBookToml);
     expect(await zip.file("lines.jsonl").async("string")).toBe(advancedLinesJsonl);
 
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });

@@ -15,6 +15,7 @@ export function buildSitemapXml(products, articles, reconciliationPages = []) {
   urls.push({ loc: "https://spreadsheets.diyaccounting.co.uk/download.html", changefreq: "monthly", priority: "0.9" });
   urls.push({ loc: "https://spreadsheets.diyaccounting.co.uk/donate.html", changefreq: "yearly", priority: "0.5" });
   urls.push({ loc: "https://spreadsheets.diyaccounting.co.uk/knowledge-base.html", changefreq: "monthly", priority: "0.9" });
+  urls.push({ loc: "https://spreadsheets.diyaccounting.co.uk/diya-gl.html", changefreq: "monthly", priority: "0.7" });
 
   // Product download pages
   for (const prod of products) {

@@ -43,6 +43,7 @@ web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 web/spreadsheets.diyaccounting.co.uk/public/books/engine/
 web/spreadsheets.diyaccounting.co.uk/public/books/assets/
 web/spreadsheets.diyaccounting.co.uk/public/books/examples.js
+web/spreadsheets.diyaccounting.co.uk/public/books/build-stamp.js
 
 # Generated zip packages
 target/zips/

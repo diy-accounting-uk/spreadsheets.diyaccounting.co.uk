@@ -1940,6 +1940,64 @@ table.kv-table tr.total td {
   }
 }
 
+/* ============================== Donation prompt ============================== */
+
+/* books/shell.js's two donation nudges: a small corner card, never a modal,
+   so the page underneath stays clickable and an edit in progress keeps its
+   focus. */
+.donation-prompt {
+  position: fixed;
+  top: calc(var(--topbar-h) + var(--tabstrip-h) + 0.75rem);
+  right: 1rem;
+  z-index: 60;
+  max-width: 280px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 0.85rem 1rem;
+}
+.donation-prompt p {
+  margin: 0 1.25rem 0.65rem 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.donation-prompt-dismiss {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+.donation-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.donation-prompt-actions .btn {
+  min-height: 36px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+}
+.donation-prompt-link {
+  font-size: 0.8rem;
+  color: var(--rule);
+  text-decoration: underline;
+}
+@media (max-width: 899px) and (orientation: portrait) {
+  .donation-prompt {
+    left: 0.75rem;
+    right: 0.75rem;
+    max-width: none;
+  }
+}
+
 /* headlines */
 /* books/headlines.js -- the "year at a glance" strip: four stat tiles, two
    pies and the collapsible "through the year" charts. One hue, the site's

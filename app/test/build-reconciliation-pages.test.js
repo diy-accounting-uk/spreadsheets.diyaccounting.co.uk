@@ -2,10 +2,10 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect, afterEach } from "vitest";
-import { mkdtempSync, writeFileSync, rmSync } from "fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { parseReport, renderFrontMatter } from "../bin/build-reconciliation-pages.js";
+import { parseReport, renderFrontMatter, loadReleases, recordRelease } from "../bin/build-reconciliation-pages.js";
 
 const FIXTURE_REPORT = `# Reconciliation Report: GB Accounts Company 2026-03-31 (Mar26) Excel 2007
 
@@ -72,5 +72,59 @@ describe("renderFrontMatter", () => {
 
   it("renders nothing when the report has no front matter", () => {
     expect(renderFrontMatter({ frontMatter: [] })).toBe("");
+  });
+});
+
+describe("loadReleases", () => {
+  it("returns an empty list when the file does not exist yet", () => {
+    expect(loadReleases(join(tmpdir(), "releases-that-do-not-exist.json"))).toEqual({ releases: [] });
+  });
+});
+
+describe("recordRelease", () => {
+  let workDir;
+
+  afterEach(() => {
+    if (workDir) rmSync(workDir, { recursive: true, force: true });
+  });
+
+  const provenanceData = {
+    formatVersion: "diya-gl-books/1",
+    engineVersion: "1.0.0+abc123def456",
+    taxDataHash: "942a6388a226",
+    reconciledCommit: "abc123def456",
+    templates: { bst: { hash: "06fdcd072930", scorecard: "810 passed, 0 warnings, 0 failed" } },
+  };
+
+  it("creates the file and appends the tagged release under a given date", () => {
+    workDir = mkdtempSync(join(tmpdir(), "releases-record-"));
+    const path = join(workDir, "releases.json");
+
+    const data = recordRelease(path, "diya-gl-v1.0.0", provenanceData, "2026-09-10");
+
+    expect(data.releases).toEqual([{ tag: "diya-gl-v1.0.0", date: "2026-09-10", ...provenanceData }]);
+    expect(existsSync(path)).toBe(true);
+    expect(JSON.parse(readFileSync(path, "utf8"))).toEqual(data);
+  });
+
+  it("appends to an already-recorded release rather than replacing it", () => {
+    workDir = mkdtempSync(join(tmpdir(), "releases-record-"));
+    const path = join(workDir, "releases.json");
+    recordRelease(path, "diya-gl-v1.0.0", provenanceData, "2026-09-10");
+
+    const data = recordRelease(path, "diya-gl-v1.1.0", { ...provenanceData, engineVersion: "1.1.0+def456abc123" }, "2026-10-01");
+
+    expect(data.releases).toHaveLength(2);
+    expect(data.releases[0].tag).toBe("diya-gl-v1.0.0");
+    expect(data.releases[1].tag).toBe("diya-gl-v1.1.0");
+  });
+
+  it("defaults the date to today when none is given", () => {
+    workDir = mkdtempSync(join(tmpdir(), "releases-record-"));
+    const path = join(workDir, "releases.json");
+
+    const data = recordRelease(path, "diya-gl-v1.0.0", provenanceData);
+
+    expect(data.releases[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
