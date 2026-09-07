@@ -11,6 +11,7 @@ import vm from "node:vm";
 // `window`. Run it in a sandbox and read the function back off that global,
 // the same way a browser would.
 let buildPurchaseEvent;
+let buildRunnerDownloadEvent;
 
 beforeAll(() => {
   const src = readFileSync(
@@ -21,6 +22,7 @@ beforeAll(() => {
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);
   buildPurchaseEvent = sandbox.window.buildPurchaseEvent;
+  buildRunnerDownloadEvent = sandbox.window.buildRunnerDownloadEvent;
 });
 
 describe("buildPurchaseEvent", () => {
@@ -52,5 +54,13 @@ describe("buildPurchaseEvent", () => {
     const event = buildPurchaseEvent("stripe", "Company", 45, undefined);
     expect(event.currency).toBe("GBP");
     expect(event.items[0].currency).toBe("GBP");
+  });
+});
+
+describe("buildRunnerDownloadEvent", () => {
+  it("names the event runner_download and carries the product", () => {
+    const event = buildRunnerDownloadEvent("bst");
+    expect(event.name).toBe("runner_download");
+    expect(event.params).toEqual({ product: "bst" });
   });
 });

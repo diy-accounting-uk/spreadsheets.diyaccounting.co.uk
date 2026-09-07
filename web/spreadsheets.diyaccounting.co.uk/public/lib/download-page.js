@@ -8,6 +8,15 @@ function trackEvent(eventName, params) {
   }
 }
 
+// Fires the runner_download event this page's own runner link calls on
+// click, once that link exists. Kept here, apart from the link itself, so
+// this event reads consistently with the books pages' book_loaded and
+// book_saved events for a downloads-to-donations ratio.
+function trackRunnerDownload(product) {
+  const built = buildRunnerDownloadEvent(product);
+  trackEvent(built.name, built.params);
+}
+
 let catalogue = null;
 
 function showDownloadAvailable(fileUrl) {
