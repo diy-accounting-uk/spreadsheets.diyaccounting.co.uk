@@ -29,6 +29,7 @@
 import { resolve as resolvePath } from "path";
 import { extractBookFromFile, buildFileReportDocument, calculatedResultsFor } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
+import { stampBook } from "../provenance.js";
 import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
 import { saveWorkbook, savePackageZip, loadTaxDataForBook, productOf } from "../product-workbook.js";
 import { productModule } from "../products.js";
@@ -155,7 +156,7 @@ async function extractBook(session, { path, product }) {
   return {
     book,
     lines,
-    bookToml: canonicalBookToml(book),
+    bookToml: canonicalBookToml(stampBook(book)),
     linesJsonl: canonicalLinesJsonl(lines),
     report: document,
     overtyped,

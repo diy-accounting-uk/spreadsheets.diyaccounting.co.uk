@@ -31,6 +31,7 @@
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",
     "build:redirects": "node scripts/build-spreadsheets-redirects.cjs",
     "build:books-bundle": "node scripts/build-books-bundle.mjs",
+    "build:provenance-data": "node scripts/build-provenance-data.mjs",
     "cdk:synth": "cd cdk-spreadsheets && npx cdk synth --require-approval never --ci true --strict --validation && cd ..",
     "cdk:diff": "cd cdk-spreadsheets && npx cdk diff && cd ..",
     "formatting": "prettier --check . && ./mvnw spotless:check",

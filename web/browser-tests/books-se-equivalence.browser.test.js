@@ -29,11 +29,20 @@ import { taxYearFileName } from "../../app/lib/product-workbook.js";
 import { externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
 import { readXlsxCellValues } from "../../app/lib/xlsx-reader.js";
 import { parse as parseTOML } from "smol-toml";
+import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
+import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
 const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "books/assets/examples/precision-code-ltd/advanced");
 const TARGET_DIR = path.join(ROOT, "target", "books-se-equivalence");
+// The served example's book.toml is a plain copy of
+// examples/precision-code-ltd/advanced/book.toml, carrying no stamps of its
+// own -- a save always stamps the book fresh, so what the page's own
+// download should equal is that same book run through the CLI's writer.
+const FEATURED_STAMPED_BOOK_TOML = canonicalBookToml(
+  stampBook(loadDiyaGlData(path.join(ROOT, "examples", "precision-code-ltd", "advanced")).book),
+);
 const LAYOUT = JSON.parse(fs.readFileSync(path.join(ROOT, "app/data/hmrc/form-layouts/se.json"), "utf-8"));
 
 const FEATURED = SCENARIOS_SE[0];
@@ -209,7 +218,7 @@ test.describe("DIYA-GL books page — the Self Employed diya-gl download (A1, A2
     const zip = await JSZip.loadAsync(bytes);
     expect(Object.keys(zip.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
-    expect(await zip.file("book.toml").async("string")).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "book.toml"), "utf-8"));
+    expect(await zip.file("book.toml").async("string")).toBe(FEATURED_STAMPED_BOOK_TOML);
     expect(await zip.file("lines.jsonl").async("string")).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "lines.jsonl"), "utf-8"));
   });
 

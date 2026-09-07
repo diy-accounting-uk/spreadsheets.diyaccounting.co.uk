@@ -22,6 +22,7 @@
 // rather than a diff line.
 
 import { PROFIT_BRIDGE_TITLE, CATEGORY_NETTING_TITLE } from "./report-generator.js";
+import { provenanceHeader } from "./provenance.js";
 
 // The hub every multi-file package hangs off. A results key with no "!" in
 // it names a sheet on this file; a key that carries one already names its
@@ -357,6 +358,12 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
   const document = { package: packageName, engine };
   if (scenarioName) document.scenario = scenarioName;
   if (yearEnd) document.yearEnd = yearEnd;
+  // The five provenance stamps, the same values book.toml's documentInfo
+  // carries for this product -- which engine build produced this report,
+  // which tax data and template it rests on. Independent of engine: an
+  // Excel-side run and a JS-side run of the same package carry identical
+  // provenance, since both are the same build reading the same product.
+  document.provenance = provenanceHeader(packageName);
   // An undeclared unit is an absent field, not a null: a value with no unit
   // is compared exactly, and writing the absence explicitly would only
   // invite a reader to treat "null" as a unit of its own.

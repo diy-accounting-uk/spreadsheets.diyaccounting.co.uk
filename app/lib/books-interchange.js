@@ -44,6 +44,7 @@ import { validateBook, validateLines } from "./diya-gl-schema.js";
 import { canonicalBookToml, canonicalLinesJsonl, compareLines, orderedBookTopLevel, orderedLine } from "./diya-gl-canonical.js";
 import { serializeReportDocument } from "./report-serializer.js";
 import { parseDiyaGlData } from "./diya-gl-loader.js";
+import { stampBook } from "./provenance.js";
 import * as bst from "../products/bst.js";
 
 export { AnchorError };
@@ -496,7 +497,7 @@ export function writeBookJson(book, lines) {
     format: JSON_FORMAT,
     version: JSON_VERSION,
     product,
-    book: orderedBookTopLevel(book),
+    book: orderedBookTopLevel(stampBook(book)),
     lines: [...lines].sort(compareLines).map(orderedLine),
   };
   return JSON.stringify(document, null, 2) + "\n";
@@ -523,7 +524,7 @@ const ZIP_ENTRY_DATE = new Date(Date.UTC(1980, 0, 1));
  */
 export async function writeDiyaGlZip({ book, lines, report, bookchecks, overtyped }) {
   const zip = new JSZip();
-  zip.file("book.toml", canonicalBookToml(book), { date: ZIP_ENTRY_DATE });
+  zip.file("book.toml", canonicalBookToml(stampBook(book)), { date: ZIP_ENTRY_DATE });
   zip.file("lines.jsonl", canonicalLinesJsonl(lines), { date: ZIP_ENTRY_DATE });
   zip.file("report.json", serializeReportDocument(report), { date: ZIP_ENTRY_DATE });
   if (bookchecks !== undefined) zip.file("bookchecks.json", `${JSON.stringify(bookchecks, null, 2)}\n`, { date: ZIP_ENTRY_DATE });

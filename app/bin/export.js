@@ -42,6 +42,7 @@ import { resolve, dirname, basename } from "path";
 import { extractBook, extractLines } from "../lib/xlsx-exporter.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
+import { stampBook } from "../lib/provenance.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
@@ -221,13 +222,14 @@ export async function extractBookFromFile(filePath, { product } = {}) {
 // can only ever differ in how they got to (book, lines), never in how that
 // pair reaches disk -- which is what the byte-for-byte verification rests on.
 function writeDiyaGlData(outputDir, book, lines) {
-  const bookErrors = validateBook(book);
+  const stamped = stampBook(book);
+  const bookErrors = validateBook(stamped);
   if (!bookErrors.valid) {
     console.error(`The exported book does not conform to the published v2 book schema:`);
     for (const error of bookErrors.errors) console.error(`  ${error}`);
     process.exit(1);
   }
-  const lineErrors = validateLines(lines, book);
+  const lineErrors = validateLines(lines, stamped);
   if (!lineErrors.valid) {
     console.error(`The exported lines do not conform to the published v2 lines schema:`);
     for (const error of lineErrors.errors.slice(0, 20)) console.error(`  ${error}`);
@@ -237,10 +239,10 @@ function writeDiyaGlData(outputDir, book, lines) {
 
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(resolve(outputDir, "lines.jsonl"), canonicalLinesJsonl(lines));
-  writeFileSync(resolve(outputDir, "book.toml"), canonicalBookToml(book));
+  writeFileSync(resolve(outputDir, "book.toml"), canonicalBookToml(stamped));
 
   console.log(`  lines.jsonl: ${lines.length} entries`);
-  console.log(`  book.toml: ${Object.keys(book).length} tables`);
+  console.log(`  book.toml: ${Object.keys(stamped).length} tables`);
 }
 
 async function runFileMode(filePath, outputDirArg, packageName) {
