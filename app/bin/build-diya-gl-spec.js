@@ -536,21 +536,20 @@ ${table(
   stampRows.map((row) => [escapeHtml(row[0]), row[1], escapeHtml(row[2]), escapeHtml(row[3])]),
 )}`);
 
+  // A scorecard's status, run count and date move with every generate run, so
+  // they stay on the scorecard; this table carries what does not move.
   const scorecardRow = (card) => [
     `<a href="reconciliation/${escapeHtml(card.page)}">${escapeHtml(card.name)}</a>`,
-    escapeHtml(card.status),
     escapeHtml(card.featuredScenario),
-    escapeHtml(String(card.runs)),
-    escapeHtml(card.updated),
   ];
   sections.push(`      <h3 id="evidence">Reconciliation evidence</h3>
       <p>
         Every figure this format computes is checked against the same figure in the spreadsheet. For each product, CI generates the
         package from a set of books, recalculates the workbook in LibreOffice, computes the same figures from the diya-gl data alone, and
-        compares the two to the penny. The scorecards carry the whole run: the checks, the input transactions, screenshots of the
-        recalculated sheets, the accounting statements and the tax review.
+        compares the two to the penny. Each scorecard carries the whole run: its status, the checks, the input transactions, screenshots
+        of the recalculated sheets, the accounting statements and the tax review.
       </p>
-${table(["Product", "Status", "Featured scenario", "Runs published", "Updated"], scorecards.map(scorecardRow))}
+${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
       <p><a href="reconciliation/index.html">All reconciliation reports</a></p>`);
 
   sections.push(`      <h3 id="tools">Getting the tools</h3>
