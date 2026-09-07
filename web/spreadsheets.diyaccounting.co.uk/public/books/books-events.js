@@ -33,8 +33,27 @@ function buildDonationPromptEvent(prompt, action) {
   return { name: "donation_prompt", params: { prompt: prompt, action: action } };
 }
 
+// The three cloud sign-in and save events cloud.js sends through shell.js's
+// own trackEvent (see books/cloud.js) -- kept here rather than in cloud.js
+// itself so a corrupted analytics payload is a pure-function bug this
+// file's own unit tests already catch the same way as the other builders.
+function buildCloudSignInEvent(step) {
+  return { name: "cloud_sign_in", params: { step: step } };
+}
+
+function buildCloudSaveEvent(product, outcome) {
+  return { name: "cloud_save", params: { product: product, outcome: outcome } };
+}
+
+function buildCloudConflictEvent(resolution) {
+  return { name: "cloud_conflict", params: { resolution: resolution } };
+}
+
 if (typeof window !== "undefined") {
   window.buildBookLoadedEvent = buildBookLoadedEvent;
   window.buildBookSavedEvent = buildBookSavedEvent;
   window.buildDonationPromptEvent = buildDonationPromptEvent;
+  window.buildCloudSignInEvent = buildCloudSignInEvent;
+  window.buildCloudSaveEvent = buildCloudSaveEvent;
+  window.buildCloudConflictEvent = buildCloudConflictEvent;
 }
