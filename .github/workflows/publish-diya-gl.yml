@@ -73,8 +73,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Record the release against the reconciled-releases page
-        run: node app/bin/build-reconciliation-pages.js --record "${GITHUB_REF_NAME}"
+      - name: Record the release and rebuild the reconciled-releases page
+        run: |
+          node app/bin/build-reconciliation-pages.js --record "${GITHUB_REF_NAME}"
+          node app/bin/build-reconciliation-pages.js --index-only
 
       - name: Commit the release record onto main
         id: push
@@ -82,7 +84,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add app/data/releases.json web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html
+          git add app/data/releases.json \
+            web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html \
+            web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
