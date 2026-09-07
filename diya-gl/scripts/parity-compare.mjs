@@ -3,14 +3,18 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // parity-compare.mjs — one product's report.json and bookchecks.json,
-// compared byte for byte against a committed fixture. The only thing
-// normalised is report.json's provenance.engineVersion: the one stamp that
-// changes on every commit by construction (the package version plus the
-// short commit hash). The other four stamps, and everything in
-// bookchecks.json, only change when a deliberate edit moves them -- tax
-// data, a template, the reconciled-commit hook, or the figures themselves
-// -- which is exactly when the fixture is meant to be refreshed too
-// (`npm run parity:refresh`), not silently allowed through.
+// compared against a committed fixture. Every byte of both files must
+// match except report.json's whole provenance object: a generate
+// workflow's commit job refreshes provenance-data.js with every package
+// build (build-provenance-data.mjs --reconciled-commit), so all five
+// stamps -- format version, engine version, tax-data hash, template hash
+// and scorecard, reconciled commit -- move on an ordinary run that changes
+// none of the figures this gate exists to check. The stamps' own
+// correctness is proven by app/test/provenance.test.js and the
+// books-equivalence specs, not by this gate. Comparing through a JSON
+// parse-and-reserialise (rather than a text substitution) means a change
+// to any other value anywhere in the document -- however deeply nested,
+// however the stamps themselves are shaped -- still fails the gate.
 //
 // Usage: node parity-compare.mjs <expectedDir> <actualDir> <label>
 
@@ -25,10 +29,14 @@ if (!expectedDir || !actualDir || !label) {
   process.exit(1);
 }
 
-const ENGINE_VERSION = /("engineVersion":\s*")[^"]*(")/;
-
+// The same 2-space-indented, newline-terminated form report-serializer.js
+// writes report.json in, so parsing out the provenance object and putting
+// the placeholder back leaves every other byte exactly as report.json's
+// own writer produced it.
 function normalisedReport(path) {
-  return readFileSync(path, "utf8").replace(ENGINE_VERSION, "$1<normalised>$2");
+  const document = JSON.parse(readFileSync(path, "utf8"));
+  document.provenance = "<normalised>";
+  return `${JSON.stringify(document, null, 2)}\n`;
 }
 
 function reportDiff(name, expectedText, actualText) {
@@ -66,4 +74,4 @@ if (!reportOk || !checksOk) {
   process.exit(1);
 }
 
-console.log(`${label}: report.json and bookchecks.json match the committed fixture byte for byte (engineVersion excepted)`);
+console.log(`${label}: report.json and bookchecks.json match the committed fixture byte for byte (provenance excepted)`);

@@ -4,11 +4,13 @@
 //
 // parity-fixtures.mjs — regenerate examples/parity/<product>/{report.json,
 // bookchecks.json}: the fixtures the parity gate (diya-gl/parity.sh) checks
-// the packed CLI's output against, byte for byte. Run this deliberately,
-// after a change that is meant to move one of these files -- a tax data
-// update, a template change, the reconciled-commit stamp, or an engine
-// change that changes the figures on purpose -- and commit the result.
-// Never run it to make a gate failure go away without reading why first.
+// the packed CLI's output against. The gate ignores report.json's whole
+// provenance object (its five stamps are proven elsewhere, and every one of
+// them moves on an ordinary generate run), so a refresh is only needed when
+// this actually changes the figures or checks themselves -- a tax data
+// update, a template change, or an engine change that changes the numbers
+// on purpose. Run it deliberately and commit the result; never run it to
+// make a gate failure go away without reading why first.
 //
 // Runs the source CLI (app/bin/export.js), not the packed tarball: the
 // fixture records what the engine is supposed to produce, independent of
@@ -57,4 +59,4 @@ try {
   rmSync(scratch, { recursive: true, force: true });
 }
 
-console.log("\nDone. Run `npm run build:provenance-data` first next time if a stamp needs to move before a refresh.");
+console.log("\nDone.");
