@@ -218,4 +218,14 @@ document.getElementById("download-donate-btn").addEventListener("click", functio
   }
 });
 
+// Each product's single-file offline runner, downloaded straight off its
+// own link -- no product/period selection first, so this fires on click
+// rather than waiting on updateLinks() the way the packaged download's own
+// GA4 event does.
+document.querySelectorAll(".runner-download-link").forEach(function (link) {
+  link.addEventListener("click", function () {
+    trackRunnerDownload(link.dataset.product);
+  });
+});
+
 loadCatalogue();
