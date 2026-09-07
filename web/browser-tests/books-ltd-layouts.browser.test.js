@@ -167,6 +167,12 @@ test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () 
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(ltdUrl(), { waitUntil: "domcontentloaded" });
 
+    // Stop 0: the account button -- cloud sign-in is live on this server, so
+    // the topbar now carries it ahead of Checks/Undo/New/Save.
+    await tabTo(page, "#account-btn");
+    focusRingSamples.push(await activeElementHasFocusRing(page));
+    await expect(page.getByRole("button", { name: "Sign in to save to your account" })).toBeFocused();
+
     // Stop 1: the example button. Loading a book always lands on the Year
     // view (shell.js's applyLoadedSnapshot sets state.view = "year"), so
     // there is no separate stop needed to reach it.
@@ -261,10 +267,11 @@ test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () 
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(2);
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(3);
+    await expect(saveMenu.getByRole("menuitem", { name: "Save to my account", exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
 
-    expect(focusRingSamples.length).toBeGreaterThanOrEqual(5);
+    expect(focusRingSamples.length).toBeGreaterThanOrEqual(6);
     for (const [i, hasRing] of focusRingSamples.entries()) {
       expect(hasRing, `focus stop #${i + 1} carries no visible focus ring`).toBe(true);
     }

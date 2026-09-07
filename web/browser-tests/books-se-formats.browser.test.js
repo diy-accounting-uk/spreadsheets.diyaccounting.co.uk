@@ -262,7 +262,7 @@ test.describe("DIYA-GL books page — Self Employed downloads (E5)", () => {
 
     await page.click("#save-btn");
     const items = await page.getByRole("menuitem").allInnerTexts();
-    expect(items).toEqual(["Download books as diya-gl (.zip)", "Download books as JSON (.json)"]);
+    expect(items).toEqual(["Download books as diya-gl (.zip)", "Download books as JSON (.json)", "Save to my account"]);
     await page.keyboard.press("Escape");
 
     const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
