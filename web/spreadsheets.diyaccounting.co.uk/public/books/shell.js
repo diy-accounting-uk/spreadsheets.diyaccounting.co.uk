@@ -535,6 +535,7 @@
     applyDriftMarks(els.viewRoot);
     bindViewInteractions(view);
     mountHeadlinesStrip();
+    maybeOfferFiguresDonation(view);
 
     els.inspector.innerHTML = renderInspectorFull();
     els.inspectorDrawer.innerHTML =
@@ -2944,6 +2945,7 @@
         return saveModule.buildSaveArtifact(current.book, current.lines, format, extras).then(function (artifact) {
           saveModule.downloadArtifact(artifact);
           showToast("Saved " + artifact.filename + ".");
+          showDonationPrompt("save", "Saved. If DIYA-GL saves you time, please consider a donation.");
         });
       })
       .catch(function (error) {
@@ -2985,6 +2987,89 @@
         els.toast.classList.remove("is-visible");
       }, 4000);
     }
+  }
+
+  // ============================== donation prompts ==============================
+
+  // Two nudges, never more than once a browser ever sees them: one the first
+  // time the year view shows real figures, one after a save completes. Same
+  // Stripe link donate.html's own £10 button carries, plus a link to that
+  // page for another amount or PayPal. Neither prompt gates on consent --
+  // it is not analytics, and books pages carry no GA4 of their own -- and
+  // neither steals focus: it is a corner card, appended and left alone.
+  var DONATE_STRIPE_LINK = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200";
+  var DONATE_PAGE_LINK = "../donate.html";
+
+  function donationPromptSeen(id) {
+    try {
+      return window.localStorage.getItem("diya-books-donation-seen-" + id) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markDonationPromptSeen(id) {
+    try {
+      window.localStorage.setItem("diya-books-donation-seen-" + id, "true");
+    } catch (e) {
+      /* private browsing or storage disabled: the prompt may show again */
+    }
+  }
+
+  function showDonationPrompt(id, message) {
+    if (donationPromptSeen(id)) return;
+    markDonationPromptSeen(id);
+
+    var card = document.createElement("div");
+    card.className = "donation-prompt";
+    card.id = "donation-prompt-" + id;
+    card.setAttribute("role", "note");
+
+    var dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "donation-prompt-dismiss";
+    dismiss.setAttribute("aria-label", "Dismiss");
+    dismiss.textContent = "×";
+    dismiss.addEventListener("click", function () {
+      card.remove();
+    });
+    card.appendChild(dismiss);
+
+    var text = document.createElement("p");
+    text.textContent = message;
+    card.appendChild(text);
+
+    var actions = document.createElement("div");
+    actions.className = "donation-prompt-actions";
+
+    var donateLink = document.createElement("a");
+    donateLink.className = "btn btn-primary";
+    donateLink.href = DONATE_STRIPE_LINK;
+    donateLink.target = "_blank";
+    donateLink.rel = "noopener";
+    donateLink.textContent = "Donate £10";
+    actions.appendChild(donateLink);
+
+    var otherLink = document.createElement("a");
+    otherLink.className = "donation-prompt-link";
+    otherLink.href = DONATE_PAGE_LINK;
+    otherLink.target = "_blank";
+    otherLink.rel = "noopener";
+    otherLink.textContent = "Other ways to give";
+    actions.appendChild(otherLink);
+
+    card.appendChild(actions);
+    document.body.appendChild(card);
+  }
+
+  // Called on every render while a book is loaded; showDonationPrompt's own
+  // seen-check keeps this to one appearance no matter how often the year
+  // view re-renders. A brand new, still-empty book carries no lines yet --
+  // nothing to prompt over until it holds real figures.
+  function maybeOfferFiguresDonation(view) {
+    if (!view || view.shared !== "year") return;
+    if (!state.lines || state.lines.length === 0) return;
+    showDonationPrompt("figures", "DIYA-GL is free to use. If it helps, please consider a donation.");
   }
 
   // ============================== the public surface ==============================
