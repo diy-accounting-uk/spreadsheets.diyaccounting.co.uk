@@ -7,7 +7,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Wave 1 of the launch plan runs as seven worktree agents on batch branch `claude/b3-launch`
-(this repo) and per-row Submit PRs. Worktrees: `../.worktrees/spreadsheets/<row>` for G1,
+(this repo, draft PR #69) and per-row Submit PRs. Worktrees: `../.worktrees/spreadsheets/<row>` for G1,
 LP-1, LP-6, LP-7 and LP-8; `../.worktrees/submit/<row>` for LP-15 and LP-16, which never touch
 the Submit checkout's main tree (another session works there). Each row's Status names its
 branch. Sub-agents run no LibreOffice and prove JS calculations against the committed packages'
@@ -43,7 +43,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| G1 | GA4 `purchase` from `download.html?stripe=success` carries no money: the £45 Company package sale of 2026-09-03 09:38 UTC (Stripe pi_3UBX5pCD0Ld2ukzI0ASK1VDj) reached the BigQuery export as `purchase`, item "Company", revenue 0. Send `value` and `currency` (and the item price) from the Stripe session or price the page already knows, so GA4 reports income; unit-test the event builder. The submit repo's checkout page does this from `amountTotal / 100` and `currency` of the checkout session. | submit session, 2026-09-07 (GA4 export query) | machine | — | in-flight | Sonnet, the analytics agent; `claude/ga4-purchase-value`, worktree g1  |
+| G1 | GA4 `purchase` from `download.html?stripe=success` carries no money: the £45 Company package sale of 2026-09-03 09:38 UTC (Stripe pi_3UBX5pCD0Ld2ukzI0ASK1VDj) reached the BigQuery export as `purchase`, item "Company", revenue 0. Send `value` and `currency` (and the item price) from the Stripe session or price the page already knows, so GA4 reports income; unit-test the event builder. The submit repo's checkout page does this from `amountTotal / 100` and `currency` of the checkout session. | submit session, 2026-09-07 (GA4 export query) | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11  |
 | LP-1 | The five provenance stamps in `book.toml`'s document info and `report.json`'s header: engine version and commit, tax-data hash, template hash and scorecard, reconciled commit (the format version exists) | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the stamps agent; `claude/lp-1-stamps`, worktree lp-1  |
 | LP-2 | The reconciled-releases page: one row per release with the five stamps, linking the per-product reconciliation scorecards | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | blocked-to-start | Sonnet, the releases-page agent; workstream A |
 | LP-3 | The npm package `@diy-accounting-uk/diya-gl`: `recalc`, `read-workbook`, `write-workbook` and the MCP server as `bin` entries, built from the engine and published from a reconciled tag | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1, H7 | blocked-to-start | Sonnet, the package agent; workstream A |
@@ -64,6 +64,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-15, LP-16 | blocked-to-start | the CDK path is the AWS write; no console step |
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
+| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-6, LP-7, LP-8 | blocked-to-start | draft until every wave 1 row is merged into it |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the Rust port plan and the operator's
