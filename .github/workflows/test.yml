@@ -148,6 +148,9 @@ jobs:
       - name: Verify scenario fixtures and diya-gl subsets in sync with master data
         run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/
 
+      - name: Build provenance data
+        run: npm run build:provenance-data
+
       - name: Run tests
         run: npm test
 
@@ -415,6 +418,9 @@ jobs:
 
       - name: Build sitemaps
         run: npm run build:sitemaps
+
+      - name: Build provenance data
+        run: npm run build:provenance-data
 
       - name: Build the books engine bundle
         run: npm run build:books-bundle

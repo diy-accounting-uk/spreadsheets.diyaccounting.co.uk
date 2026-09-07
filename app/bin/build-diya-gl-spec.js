@@ -515,11 +515,16 @@ ${table(["Entry", "What it holds"], zip.entries.map(zipRow))}
       "engine version",
       "the package version, and the commit it was built from",
       "Which code produced these figures",
-      "with the next engine release",
+      "written today",
     ],
-    ["tax-data version", "a hash over the year's rate files", "Which rates were applied", "with the next engine release"],
-    ["template version", "a hash over the product's workbook templates", "Which workbook this reproduces", "with the next engine release"],
-    ["reconciled commit", "the commit whose reconciliation run passed", "The proof this release rests on", "with the next engine release"],
+    ["tax-data version", "a hash over the year's rate files", "Which rates were applied", "written today"],
+    ["template version", "a hash over the product's workbook templates", "Which workbook this reproduces", "written today"],
+    [
+      "reconciled commit",
+      "the commit whose reconciliation run passed",
+      "The proof this release rests on",
+      "written by the reconciliation workflows' commit job, empty until the first one runs",
+    ],
   ];
   sections.push(`      <h3 id="versioning">Versioning and provenance</h3>
       <p>
