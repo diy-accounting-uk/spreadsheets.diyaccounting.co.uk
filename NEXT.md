@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Waves 1 and 2 landed with PRs #69 and #70 on 2026-09-07; prod deploys from each. Wave 3 is
 batch branch `claude/b5-launch` (draft PR #71) carrying LP-4 and CQ-1, one worktree per row under
-`../.worktrees/spreadsheets/<row>`. Submit PR #150 (LP-16) belongs to the Submit session.
+`../.worktrees/spreadsheets/<row>`. Submit PRs #149 and #150 are merged; their deploy of main is H9.
 Sub-agents run no LibreOffice and prove JS calculations against the committed packages'
 extraction (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs`
 before any books browser spec, and a rebuild after merging engine changes. The generate workflows
@@ -48,10 +48,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | none | human | H7 | blocked-to-start | the operator writes and posts; the package publishes on a `diya-gl-v*` tag after H7  |
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | H8 | blocked-to-start | Haiku, the distribution agent; workstream C  |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository for the formula | none | human | — | ready-to-start | an empty public repo; the formula lands by PR |
-| LP-16 | In the Submit repo: the storage API in submit-prod: an S3 bucket keyed per user and book, four routes (list, get version, put version, delete) behind the pool's authoriser, a metadata sidecar for optimistic concurrency | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Submit PR #150 (205832dc); the Submit session owns it |
-| LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-16, H9 | blocked-to-start | steps 1 to 8 landed dark with PR #70; step 9 fills the ids, step 10 the ci case, after H9  |
-| LP-18 | Billing: the subscribe button carries the Cognito subject to the 99p Payment Link; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-16, H10, H12 | blocked-to-start | Sonnet, the billing agent; workstream D, both repos  |
-| H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-16 | ready-to-start | PR #149 merged; PR #150 at 205832dc with the audience fix, its ci deploy is the proof (Submit session) |
+| LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H9 | blocked-to-start | step 9 fills the client id and API base from the deployed stacks, step 10 the ci case  |
+| LP-18 | Billing: the subscribe button carries the Cognito subject to the 99p Payment Link; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | H9, H10, H12 | blocked-to-start | Sonnet, the billing agent; workstream D, both repos  |
+| H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | — | in-flight | PRs #149 and #150 merged 2026-09-07; the Submit deploy of main is the gate (Submit session)  |
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
