@@ -30,7 +30,7 @@ describe("cloud-config.js's environment resolver", () => {
     const config = runCloudConfig("spreadsheets.diyaccounting.co.uk");
     expect(config.apiBase).toBe("https://submit.diyaccounting.co.uk/api/v1");
     expect(config.hostedUi).toBe("https://prod-auth.diyaccounting.co.uk");
-    expect(config.clientId).toBeNull();
+    expect(config.clientId).toBe("1c8hjrjp5g5ipm8o47t6qkks4r");
   });
 
   it("maps every other host to ci, including ci-spreadsheets, localhost and a random test port", () => {
@@ -38,7 +38,7 @@ describe("cloud-config.js's environment resolver", () => {
       const config = runCloudConfig(hostname);
       expect(config.apiBase).toBe("https://ci-submit.diyaccounting.co.uk/api/v1");
       expect(config.hostedUi).toBe("https://ci-auth.diyaccounting.co.uk");
-      expect(config.clientId).toBeNull();
+      expect(config.clientId).toBe("53op0ccvcaseceue5t8kfr1vq1");
     }
   });
 
