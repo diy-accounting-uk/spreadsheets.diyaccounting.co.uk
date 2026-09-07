@@ -246,6 +246,9 @@ jobs:
       - name: Build books engine bundle
         run: npm run build:books-bundle
 
+      - name: Build offline runners
+        run: npm run build:runners
+
       - uses: actions/setup-java@v6
         with:
           distribution: 'corretto'
@@ -303,6 +306,13 @@ jobs:
           BUCKET_NAME=$(jq -r ".\"${STACK_NAME}\".OriginBucketName" cdk-spreadsheets.out/cdk-outputs-spreadsheets.json)
           echo "Uploading zips to s3://${BUCKET_NAME}/zips/"
           aws s3 sync target/zips/ "s3://${BUCKET_NAME}/zips/" --delete
+
+      - name: Upload offline runners to S3
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-SpreadsheetsStack"
+          BUCKET_NAME=$(jq -r ".\"${STACK_NAME}\".OriginBucketName" cdk-spreadsheets.out/cdk-outputs-spreadsheets.json)
+          echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
+          aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
 
       - name: Show stack outputs
         run: |

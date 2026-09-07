@@ -25,6 +25,7 @@ export default defineConfig({
         "**/books-row-editing.browser.test.js",
         "**/books-bundle-gate.browser.test.js",
         "**/books-pwa.browser.test.js",
+        "**/books-runner.browser.test.js",
         "**/books-save.browser.test.js",
         "**/books-donation.browser.test.js",
         "**/books-measurement.browser.test.js",
