@@ -45,13 +45,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Haiku, the distribution agent; the tap repo exists, the publish workflow is on main |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H16 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after H16 |
 | LP-18 | Billing: the subscribe button calls Submit's checkout route for the `diya-gl` bundle; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-21 | blocked-to-start | Sonnet, the billing agent; both repos |
-| LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | the operator writes and posts; the package publishes on a `diya-gl-v*` tag |
 | H16 | In the Submit repo, add the DIYA-GL app client to `scripts/toggle-cognito-native-auth.js` so the ci behaviour case can sign in | none | human | — | ready-to-start | Submit's NEXT.md B50; the Submit session has the ask by inbox |
 
 ## Plans not tracked here
 
-- `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the Rust port plan and the operator's
-  research). Its phase rows are not yet on the board.
+- `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
+  and the operator's research). Its phase rows are not yet on the board.
 
 ## Discipline
 
