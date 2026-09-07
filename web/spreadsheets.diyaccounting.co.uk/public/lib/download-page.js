@@ -77,23 +77,16 @@ function initForm() {
   if (isPayPalReturn || isStripeReturn) {
     const savedFilename = sessionStorage.getItem("donateFilename");
     const savedProduct = sessionStorage.getItem("donateProduct");
+    const savedAmount = sessionStorage.getItem("donateAmount");
+    const savedCurrency = sessionStorage.getItem("donateCurrency") || "GBP";
     sessionStorage.removeItem("donateFilename");
     sessionStorage.removeItem("donateProduct");
+    sessionStorage.removeItem("donateAmount");
+    sessionStorage.removeItem("donateCurrency");
     if (savedFilename) {
       const provider = isStripeReturn ? "stripe" : "paypal";
-      trackEvent("purchase", {
-        transaction_id: provider + "_" + Date.now(),
-        value: 0,
-        currency: "GBP",
-        items: [
-          {
-            item_id: savedProduct,
-            item_name: savedProduct,
-            price: 0,
-            currency: "GBP",
-          },
-        ],
-      });
+      const amount = savedAmount !== null ? parseFloat(savedAmount) : null;
+      trackEvent("purchase", buildPurchaseEvent(provider, savedProduct, amount, savedCurrency));
       const fileUrl = "/zips/" + encodeURIComponent(savedFilename);
       showDownloadAvailable(fileUrl);
       window.location = fileUrl;
