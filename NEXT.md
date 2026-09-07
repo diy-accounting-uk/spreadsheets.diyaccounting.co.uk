@@ -6,16 +6,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 1 of the launch plan runs as seven worktree agents on batch branch `claude/b3-launch`
-(this repo, draft PR #69) and per-row Submit PRs. Worktrees: `../.worktrees/spreadsheets/<row>` for G1,
-LP-1, LP-6, LP-7 and LP-8; `../.worktrees/submit/<row>` for LP-15 and LP-16, which never touch
-the Submit checkout's main tree (another session works there). Each row's Status names its
-branch. Sub-agents run no LibreOffice and prove JS calculations against the committed packages'
-extraction (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs`
-before any books browser spec, and a rebuild after merging engine changes. The generate workflows
-cancel their own in-progress run on a push to their ref, so a session pushes nothing to a branch
-while a generate run is in progress on it. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
-plan of record and carries its own open items.
+Wave 1 landed with PR #69 on 2026-09-07; prod deploys from it. Wave 2 is batch branch
+`claude/b4-launch` (draft PR #70) carrying LP-3 and LP-17, worktree `../.worktrees/spreadsheets/b4-launch`.
+The Submit rows LP-15 and LP-16 are on Submit PRs #149 and #150 for H9. Sub-agents run no
+LibreOffice and prove JS calculations against the committed packages' extraction
+(`report.js --source-dir`). Every worktree lives at `../.worktrees/spreadsheets/<row>` on a
+branch named `claude/<ns>-<topic>` while its row is in flight, and the board names it; a fresh
+worktree needs `node scripts/build-books-bundle.mjs` before any books browser spec, and a rebuild
+after merging engine changes. The generate workflows cancel their own in-progress run on a push
+to their ref, so a session pushes nothing to a branch while a generate run is in progress on it.
+`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
 
 ## Context for the open rows
 
@@ -43,29 +43,21 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| G1 | GA4 `purchase` from `download.html?stripe=success` carries no money: the £45 Company package sale of 2026-09-03 09:38 UTC (Stripe pi_3UBX5pCD0Ld2ukzI0ASK1VDj) reached the BigQuery export as `purchase`, item "Company", revenue 0. Send `value` and `currency` (and the item price) from the Stripe session or price the page already knows, so GA4 reports income; unit-test the event builder. The submit repo's checkout page does this from `amountTotal / 100` and `currency` of the checkout session. | submit session, 2026-09-07 (GA4 export query) | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11  |
-| LP-1 | The five provenance stamps in `book.toml`'s document info and `report.json`'s header: engine version and commit, tax-data hash, template hash and scorecard, reconciled commit (the format version exists) | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
-| LP-2 | The reconciled-releases page: one row per release with the five stamps, linking the per-product reconciliation scorecards | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
-| LP-3 | The npm package `@diy-accounting-uk/diya-gl`: `recalc`, `read-workbook`, `write-workbook` and the MCP server as `bin` entries, built from the engine and published from a reconciled tag | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1, H11 | blocked-to-resume | code complete on local `claude/lp-3-package` (5 commits, smoke green); lands on the next batch after H11; the first publish needs H7  |
-| LP-4 | The parity gate in CI: `npx diya-gl recalc` reproduces the committed examples' `report.json` and `bookchecks.json` byte for byte on every product's fixtures | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3 | blocked-to-start | Sonnet, the parity agent; workstream A |
+| LP-3 | The npm package `@diy-accounting-uk/diya-gl`: `recalc`, `read-workbook`, `write-workbook` and the MCP server as `bin` entries, built from the engine and published from a reconciled tag | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | in-flight | code complete, merged to `claude/b4-launch` (PR #70); waits on H13; the first publish needs H7  |
+| LP-4 | The parity gate in CI: `npx diya-gl recalc` reproduces the committed examples' `report.json` and `bookchecks.json` byte for byte on every product's fixtures | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3, H13 | blocked-to-start | Sonnet, the parity agent; workstream A  |
 | H7 | Add an npm publish token for the `diy-accounting-uk` org as the `NPM_TOKEN` repository secret | none | human | — | ready-to-start | Settings, Secrets and variables, Actions |
-| LP-5 | The single-file HTML runner per product: engine, schemas, tax data and the product's templates inlined into one stamped page, uploaded beside the zips and linked from `download.html` | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
-| LP-6 | The PWA: a web manifest and a service worker caching the books pages, engine, schemas and examples for offline use, installable from the live page | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
-| LP-7 | Two donation prompts on the books pages, each once and dismissable: after a successful save and when a year's figures first appear, pointing at the Stripe links | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`; waits on H11  |
-| LP-8 | The format spec page: the declared subset, every field's XBRL GL 2015 element, every computed figure's SA103S box, the check catalogue, the zip layout, the version, and the reconciliation evidence | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, merged to `claude/b3-launch`, regenerated after LP-1; waits on H11  |
-| LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a donation prompt shown and followed; the downloads-to-donations ratio readable from the export | PLAN_DIYA_GL_LAUNCH.md | machine | G1 | in-flight | code complete, merged to `claude/b3-launch`; waits on H11 |
 | LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | none | human | LP-3, LP-8 | blocked-to-start | the operator writes and posts |
-| LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3, H8 | blocked-to-start | Haiku, the distribution agent; workstream C |
+| LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3, H8, H13 | blocked-to-start | Haiku, the distribution agent; workstream C  |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository for the formula | none | human | — | ready-to-start | an empty public repo; the formula lands by PR |
 | LP-15 | In the Submit repo: a second app client on the shared Cognito pool with Google federation, callback and sign-out URLs on `spreadsheets.diyaccounting.co.uk/books/`, the client id published as a stack output | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, Submit PR #149 (Maven and npm green); waits on H9  |
 | LP-16 | In the Submit repo: the storage API in submit-prod: an S3 bucket keyed per user and book, four routes (list, get version, put version, delete) behind the pool's authoriser, a metadata sidecar for optimistic concurrency | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | code complete, Submit PR #150 (Maven and npm green); waits on H9  |
-| LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-15, LP-16, H9, H11 | blocked-to-resume | steps 1 to 8 code complete on local `claude/lp-17-cloud` (dark, client id null); lands on the next batch after H11; ids and the ci case after H9  |
+| LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-15, LP-16, H9 | in-flight | steps 1 to 8 code complete (dark), merged to `claude/b4-launch` (PR #70); waits on H13; ids and the ci case after H9  |
 | LP-18 | Billing: the subscribe button carries the Cognito subject to the 99p Payment Link; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-16, H10, H12 | blocked-to-start | Sonnet, the billing agent; workstream D, both repos  |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-15, LP-16 | ready-to-start | PRs #149 and #150 are ready; then the books client joins `toggle-cognito-native-auth.js` for the ci case  |
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
-| H11 | Merge PR #69 (`claude/b3-launch`, wave 1 batch) once its checks are green | none | human | G1, LP-1, LP-2, LP-5, LP-6, LP-7, LP-8, LP-9 | ready-to-start | every check green on `e12b40ce`; ready for review; merging deploys prod |
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
+| H13 | Merge PR #70 (`claude/b4-launch`, wave 2 batch) once its checks are green | none | human | LP-3, LP-17 | blocked-to-start | draft until the batch is green |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the Rust port plan and the operator's
