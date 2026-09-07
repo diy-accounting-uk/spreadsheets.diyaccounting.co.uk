@@ -759,9 +759,12 @@
     panelEl.innerHTML = renderSignedOut();
   }
 
+  // Journey 3.3 step 4: the signed-out panel carries the session-ended
+  // wording, not the plain sign-in prompt -- reusing "failure"'s render
+  // (a message plus a Sign in button) is exactly that shape.
   function handlePanelError(error) {
     if (error instanceof CloudSignedOutError) {
-      panelState = { status: "signed-out" };
+      panelState = { status: "failure", message: error.message };
       syncAccountButton();
       renderPanel();
       return;
@@ -1009,6 +1012,10 @@
           showToastMessage(messageForApiError(apiError(response.status, body)));
           return;
         }
+        // A successful save is fresher evidence than a 403 seen earlier
+        // this session -- the next list call's own entitlementAtPut.reason
+        // takes over from here (C8).
+        sawUnentitled403 = false;
         setLink({ bookId: bookId, latestETag: body.metadata.latestETag, latestVersion: body.metadata.latestVersion });
         sendSaveEvent(product, isNew ? "created" : "updated");
         showToastMessage("Saved to your account as version " + body.metadata.latestVersion + ".");
@@ -1021,6 +1028,14 @@
   function saveCurrentBook() {
     var current = window.DiyaGlBooksPage && window.DiyaGlBooksPage.currentBook();
     if (!current) return;
+    // Journey 3.1 step 4: signed out, this opens the plain sign-in prompt
+    // rather than discovering the missing session deep inside the PUT call,
+    // which would show the "session ended" wording instead.
+    if (!getSession()) {
+      panelState = { status: "signed-out" };
+      openPanel();
+      return;
+    }
     var product = window.DiyaGlBooksPage.productId();
     var editedAt = new Date().toISOString();
     window.DiyaGlBooksPage.buildArtifact("diya-gl-zip")
@@ -1069,6 +1084,9 @@
       })
       .then(function (body) {
         if (body && body.url) window.location.assign(body.url);
+      })
+      .catch(function () {
+        showToastMessage("Your account could not be reached. Your book is safe on this page -- try the download.");
       });
   }
 

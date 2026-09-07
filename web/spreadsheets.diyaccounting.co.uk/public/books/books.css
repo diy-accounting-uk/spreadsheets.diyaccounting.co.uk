@@ -2071,11 +2071,12 @@ table.kv-table tr.total td {
 .account-error {
   color: var(--correction);
 }
+/* C10: the backdrop belongs to the mobile bottom sheet only -- the desktop
+   card is never a modal, so display:none here keeps it out of the hit-test
+   order entirely rather than merely invisible, which would otherwise catch
+   every click on the rest of the page while the panel is open. */
 #account-backdrop {
-  position: fixed;
-  inset: 0;
-  background: transparent;
-  z-index: 55;
+  display: none;
 }
 @media (max-width: 899px) and (orientation: portrait) {
   .account-panel {
@@ -2087,8 +2088,12 @@ table.kv-table tr.total td {
     max-height: 70vh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
-  #account-backdrop {
+  #account-backdrop:not(.hidden) {
+    display: block;
+    position: fixed;
+    inset: 0;
     background: rgba(0, 0, 0, 0.25);
+    z-index: 55;
   }
   .account-row {
     flex-direction: column;
