@@ -8,14 +8,19 @@
 //   node app/bin/build-reconciliation-pages.js --product ltd
 //   node app/bin/build-reconciliation-pages.js --product all --no-screenshots
 //   node app/bin/build-reconciliation-pages.js --index-only
+//   node app/bin/build-reconciliation-pages.js --record diya-gl-v1.0.0
 //
 // Reads:  reports/*.md
 //         app/test/fixtures/<scenario>.toml
 //         examples/<product>-latest/*.xlsx
+//         app/data/releases.json
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/<product>.html
 //         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/<product>.json
 //         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/screenshots/*.png
 //         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/index.html
+//         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html
+//         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json
+//         app/data/releases.json (only with --record)
 
 import { execFileSync } from "child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
@@ -25,6 +30,7 @@ import { fileURLToPath } from "url";
 import JSZip from "jszip";
 import { loadScenario, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { getLibreOffice } from "../lib/spreadsheet-runner.js";
+import { PROVENANCE_DATA } from "../lib/provenance-data.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -32,6 +38,7 @@ const REPORTS_DIR = resolve(ROOT, "reports");
 const FIXTURES_DIR = resolve(ROOT, "app", "test", "fixtures");
 const EXAMPLES_DIR = resolve(ROOT, "examples");
 const OUT_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation");
+const RELEASES_FILE = resolve(ROOT, "app", "data", "releases.json");
 
 // ── Product configuration ───────────────────────────────────────────────────
 
@@ -862,6 +869,7 @@ function renderIndexPage(metadata) {
     '      <nav class="nav-back" aria-label="Breadcrumb"><a href="../index.html">&larr; Products</a></nav>',
     '      <h2 class="kb-page-title">Reconciliation reports</h2>',
     '      <p class="kb-page-description">Each product is driven with a full year of transactions, recalculated in the shipped workbooks, and read back sheet by sheet. These pages publish what went in, what the sheets produced, and how the two tie up.</p>',
+    '      <p><a href="releases.html">Reconciled releases</a> lists every diya-gl release next to the scorecard it shipped with.</p>',
     renderSection({ id: "products", title: "Products" }, runsTable),
     renderSection(
       { id: "matrix", title: "What each product reconciles" },
@@ -893,10 +901,94 @@ function buildIndex(outDir) {
   console.log(`Index: ${products.length} products (${products.join(", ")})`);
 }
 
+// ── Reconciled releases page ────────────────────────────────────────────────
+
+// app/data/releases.json carries one entry per diya-gl-v* tag, in the shape
+// LP-3's publish workflow appends with --record: a tag, the date it was cut,
+// and PROVENANCE_DATA's own fields as they stood at that tag. No tags exist
+// yet, so this file starts absent -- loadReleases() returns an empty list
+// rather than treating that as an error.
+export function loadReleases(path) {
+  if (!existsSync(path)) return { releases: [] };
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+// Appends one release under `tag`, carrying whatever PROVENANCE_DATA holds
+// at the moment this runs. Called by --record, once a generate workflow has
+// a passing reconciliation run to tag.
+export function recordRelease(path, tag, provenanceData, date = new Date().toISOString().slice(0, 10)) {
+  const data = loadReleases(path);
+  data.releases.push({ tag, date, ...provenanceData });
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+  return data;
+}
+
+// The rows the releases page renders: every recorded release, or -- before
+// any tag exists -- the current working state under one "unreleased" row,
+// so the page is never empty and never invents a past release.
+function releaseRows() {
+  const { releases } = loadReleases(RELEASES_FILE);
+  if (releases.length > 0) return releases;
+  return [{ tag: "unreleased", date: null, ...PROVENANCE_DATA }];
+}
+
+function renderReleasesTable(releases) {
+  const head = [
+    "Release",
+    "Date",
+    "Engine version",
+    "Tax data hash",
+    "Reconciled commit",
+    ...PRODUCT_ORDER.flatMap((product) => [`${PRODUCTS[product].name} template`, `${PRODUCTS[product].name} scorecard`]),
+  ];
+  const align = head.map(() => "left");
+  const rows = releases.map((release) => {
+    const cells = [
+      release.tag,
+      release.date ?? "unreleased",
+      release.engineVersion ?? "—",
+      release.taxDataHash ?? "—",
+      release.reconciledCommit || "—",
+    ];
+    for (const product of PRODUCT_ORDER) {
+      const template = release.templates?.[product];
+      cells.push(template?.hash ?? "—");
+      cells.push(template ? { html: `<a href="${product}.html">${escapeHtml(template.scorecard)}</a>` } : "—");
+    }
+    return cells;
+  });
+  return renderTable({ head, align, rows });
+}
+
+function renderReleasesPage(releases) {
+  const body = [
+    '      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>',
+    '      <h2 class="kb-page-title">Reconciled releases</h2>',
+    '      <p class="kb-page-description">Every diya-gl release carries five stamps: the format it is written to, the engine build that produced it, the tax data it applied, each product\'s template, and the commit its scorecard was proved against. <a href="../diya-gl.html#versioning">The diya-gl format</a> explains what each one means.</p>',
+    renderSection({ id: "releases", title: "Releases" }, renderReleasesTable(releases)),
+  ].join("\n");
+
+  return pageShell({
+    title: "Reconciled releases - DIY Accounting Spreadsheets",
+    description:
+      "Every diya-gl release and the five provenance stamps it carries: format version, engine build, tax data, template hash and reconciled commit.",
+    canonical: "https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html",
+    body,
+  });
+}
+
+function buildReleasesPage(outDir) {
+  const releases = releaseRows();
+  writeFileSync(join(outDir, "releases.html"), renderReleasesPage(releases), "utf8");
+  writeFileSync(join(outDir, "releases.json"), `${JSON.stringify({ releases: releases.length }, null, 2)}\n`, "utf8");
+  console.log(`Releases: ${releases.length} release(s) (${releases.map((r) => r.tag).join(", ")})`);
+}
+
 // ── Entry point ─────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const args = { product: "all", reportsDir: REPORTS_DIR, outDir: OUT_DIR, screenshots: true, indexOnly: false };
+  const args = { product: "all", reportsDir: REPORTS_DIR, outDir: OUT_DIR, screenshots: true, indexOnly: false, record: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--product") args.product = argv[++i];
@@ -904,6 +996,7 @@ function parseArgs(argv) {
     else if (arg === "--out") args.outDir = resolve(argv[++i]);
     else if (arg === "--no-screenshots") args.screenshots = false;
     else if (arg === "--index-only") args.indexOnly = true;
+    else if (arg === "--record") args.record = argv[++i];
     else throw new Error(`Unknown argument: ${arg}`);
   }
   if (args.product !== "all" && !PRODUCTS[args.product]) {
@@ -914,6 +1007,13 @@ function parseArgs(argv) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  if (args.record) {
+    recordRelease(RELEASES_FILE, args.record, PROVENANCE_DATA);
+    console.log(`Recorded release ${args.record} in ${RELEASES_FILE.replace(ROOT + "/", "")}`);
+    return;
+  }
+
   mkdirSync(args.outDir, { recursive: true });
 
   if (!args.indexOnly) {
@@ -940,6 +1040,7 @@ async function main() {
     }
   }
 
+  buildReleasesPage(args.outDir);
   buildIndex(args.outDir);
 }
 
