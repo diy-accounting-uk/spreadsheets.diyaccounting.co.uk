@@ -1,0 +1,74 @@
+[
+  {
+    "id": "book-accounts-in-chart",
+    "tier": "check",
+    "label": "Every entry reaches an account in the book's chart",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-amounts-whole-pence",
+    "tier": "check",
+    "label": "Every amount is a whole number of pence",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-dates-in-period",
+    "tier": "check",
+    "label": "Every entry is dated inside the accounting period",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-duplicate-entries",
+    "tier": "warning",
+    "label": "No two entries share the same journal, date, amount and detail",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-detail",
+    "tier": "warning",
+    "label": "Every entry names who or what it was with",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-month",
+    "tier": "warning",
+    "label": "Every month between the first and last entry has at least one entry",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-negative-amount",
+    "tier": "warning",
+    "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-vat-threshold",
+    "tier": "warning",
+    "label": "Turnover for the year is £409,900.00, against a £90,000.00 VAT registration threshold.",
+    "result": "warn",
+    "actual": 409900,
+    "consequence": "Once a business's turnover passes the VAT registration threshold, it must register for VAT with HMRC within 30 days.",
+    "offenders": []
+  }
+]

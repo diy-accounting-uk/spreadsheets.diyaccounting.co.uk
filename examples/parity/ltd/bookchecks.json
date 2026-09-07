@@ -1,0 +1,146 @@
+[
+  {
+    "id": "book-accounts-in-chart",
+    "tier": "check",
+    "label": "Every entry reaches an account in the book's chart",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-amounts-whole-pence",
+    "tier": "check",
+    "label": "Every amount is a whole number of pence",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-dates-in-period",
+    "tier": "check",
+    "label": "Every entry is dated inside the accounting period",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-duplicate-entries",
+    "tier": "warning",
+    "label": "No two entries share the same journal, date, amount and detail",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-detail",
+    "tier": "warning",
+    "label": "Every entry names who or what it was with",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-month",
+    "tier": "warning",
+    "label": "Every month between the first and last entry has at least one entry",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-bank-code-analysed",
+    "tier": "check",
+    "label": "Every bank entry is coded to a column its workbook analyses",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-bank-line-has-side",
+    "tier": "check",
+    "label": "Every bank entry is a receipt or a payment",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-cis-on-subcontractor-line",
+    "tier": "warning",
+    "label": "Every CIS deduction sits on a sub-contractor purchase",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-dividend-within-distributable-profits",
+    "tier": "warning",
+    "label": "Dividends declared are £15,000.00, against £323,660.62 of retained profit brought forward plus profit after tax for the year.",
+    "result": "pass",
+    "actual": 15000,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-fixed-asset-rows-fit-schedule",
+    "tier": "check",
+    "label": "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-payroll-line-names-employee",
+    "tier": "check",
+    "label": "Every payroll entry names someone on the payroll",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-straddling-line-has-vat-period",
+    "tier": "check",
+    "label": "Every sale and purchase outside the period names the VAT period it belongs to",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-transfer-has-counter-leg",
+    "tier": "warning",
+    "label": "Every transfer between the company's own accounts appears on both of them",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-negative-amount",
+    "tier": "warning",
+    "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-vat-threshold",
+    "tier": "warning",
+    "label": "Turnover for the year is £424,900.00, against a £90,000.00 VAT registration threshold.",
+    "result": "warn",
+    "actual": 424900,
+    "consequence": "Once a business's turnover passes the VAT registration threshold, it must register for VAT with HMRC within 30 days.",
+    "offenders": []
+  }
+]

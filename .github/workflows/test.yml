@@ -451,7 +451,7 @@ jobs:
           path: target/behaviour-test-results/
 
   pack-diya-gl:
-    name: 'pack diya-gl and smoke test'
+    name: 'pack diya-gl, smoke and parity'
     runs-on: ubuntu-24.04
     steps:
 
@@ -478,6 +478,9 @@ jobs:
 
       - name: Pack diya-gl and run each bin from the tarball
         run: diya-gl/smoke.sh target/diya-gl-smoke
+
+      - name: 'Parity gate: the packed CLI against the committed report.json and bookchecks.json'
+        run: diya-gl/parity.sh target/diya-gl-parity
 
   reconciliation-check:
     name: 'check reconciliation reports'
