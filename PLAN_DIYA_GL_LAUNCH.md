@@ -548,6 +548,9 @@ here until their phase opens.
   99p subscription against the Cognito subject carried as `client_reference_id`, expose the
   entitlement to LP-16's put route, and add the subscribe button and the portal link to the
   books pages' account panel. H10 supplies the link.
+  `PLAN_DIYA_GL_STORAGE.md` (Submit repo) found that the webhook keys bundles on the hashed sub while
+  the Payment Link would carry the raw one; H12 decides between the checkout route and a
+  hashed-sub route before this row starts.
 - **LP-12**: the port's design wave first: the type model, the float and half-up rounding
   contract that reproduces the JS serializer byte for byte, the module map, the oracle harness
   that diffs `report.json` and `bookchecks.json` against the JS over the fixtures, and the CI
