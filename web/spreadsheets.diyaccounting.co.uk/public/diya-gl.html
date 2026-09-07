@@ -92,7 +92,7 @@
         the framework is named in either schema. The framework's nested tuples are flattened: an entry header and its detail are one line,
         and <code>gl-cor:account</code> becomes the pair <code>accountMainID</code> and <code>accountMainDescription</code>. Where a UK
         small business needs something the framework has no element for, the schema declares a diya-gl extension: a
-        <code>diya-gl:</code> prefix on a field, or a whole table marked as one. There are 129 extension fields, and the tables
+        <code>diya-gl:</code> prefix on a field, or a whole table marked as one. There are 135 extension fields, and the tables
         below mark every one.
       </p>
       <p>
@@ -118,6 +118,12 @@
             <tr><td><code>documentInfo.entriesComment</code></td><td>string</td><td><code>gl-cor:entriesComment</code></td><td>Free text note about this book</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:vatStaggerGroup</code></td><td>integer, one of 3</td><td><em>diya-gl extension</em></td><td>Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb.</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:payrollYearStart</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:formatVersion</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The diya-gl-books format name and version this file is written as, e.g. &quot;diya-gl-books/1&quot;.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:engineVersion</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The npm package version and commit of the engine that wrote this file, e.g. &quot;1.0.0+3f2a1b9c4d7e&quot;.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:taxDataHash</code></td><td>string</td><td><em>diya-gl extension</em></td><td>A hash over every app/data/*.toml tax-year file, naming which rates this file's figures were calculated from.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:templateHash</code></td><td>string</td><td><em>diya-gl extension</em></td><td>A hash over this product's own Excel template files, naming which workbook this file reproduces.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:templateScorecard</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The published reconciliation check counts for this product's template, e.g. &quot;132 passed, 0 warnings, 0 failed&quot;.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:reconciledCommit</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The commit whose CI reconciliation run last passed for this product, the proof this file's figures rest on.</td><td>optional</td></tr>
             <tr><td><code>entityInformation</code></td><td>table</td><td><code>gl-cor:entityInformation + gl-bus:organizationInformation</code></td><td>Who this book belongs to</td><td>required</td></tr>
             <tr><td><code>entityInformation.organizationIdentifier</code></td><td>string</td><td><code>gl-bus:organizationIdentifier</code></td><td>Trading name or legal entity name</td><td>required</td></tr>
             <tr><td><code>entityInformation.organizationDescription</code></td><td>string</td><td><code>gl-bus:organizationDescription</code></td><td>Nature of the business</td><td>optional</td></tr>
