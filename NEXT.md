@@ -7,7 +7,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Waves 1 and 2 landed with PRs #69 and #70 on 2026-09-07; prod deploys from each. Wave 3 is
-batch branch `claude/b5-launch` carrying LP-4 and CQ-1, one worktree per row under
+batch branch `claude/b5-launch` (draft PR #71) carrying LP-4 and CQ-1, one worktree per row under
 `../.worktrees/spreadsheets/<row>`. Submit PR #150 (LP-16) belongs to the Submit session.
 Sub-agents run no LibreOffice and prove JS calculations against the committed packages'
 extraction (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs`
@@ -55,6 +55,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
 
 | H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
+| H14 | Merge PR #71 (`claude/b5-launch`, wave 3 batch) once its checks are green | none | human | LP-4, CQ-1 | blocked-to-start | draft until LP-4 lands and the batch is green |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the Rust port plan and the operator's
