@@ -21,16 +21,8 @@ echo "=== diya-gl smoke test ==="
 echo "package dir: $DIYA_GL_DIR"
 echo "scratch dir: $SCRATCH"
 
-cd "$DIYA_GL_DIR"
-TARBALL_NAME=$(npm pack --pack-destination "$SCRATCH" --json | node -pe "JSON.parse(require('fs').readFileSync(0,'utf8'))[0].filename")
-TARBALL="$SCRATCH/$TARBALL_NAME"
-echo "tarball: $TARBALL ($(du -h "$TARBALL" | cut -f1))"
-
-INSTALL_DIR="$SCRATCH/install"
-mkdir -p "$INSTALL_DIR"
-(cd "$INSTALL_DIR" && npm init -y >/dev/null && npm install "$TARBALL" >/dev/null)
-
-BIN="$INSTALL_DIR/node_modules/.bin"
+source "$DIYA_GL_DIR/scripts/pack-and-install.sh"
+BIN=$(pack_and_install "$DIYA_GL_DIR" "$SCRATCH")
 
 echo "--- recalc ---"
 "$BIN/diya-gl-recalc" --package bst --data "$REPO_ROOT/examples/precision-code-ltd/bst" --years se-2025-2026 \

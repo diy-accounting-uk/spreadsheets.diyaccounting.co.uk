@@ -1,0 +1,2553 @@
+{
+  "package": "taxi",
+  "engine": "js",
+  "scenario": "Exported from taxi package",
+  "yearEnd": "2027-03-31",
+  "provenance": {
+    "formatVersion": "diya-gl-books/1",
+    "engineVersion": "1.0.0+ccc72b894a7d",
+    "taxDataHash": "942a6388a226",
+    "templateHash": "6c36b3785a83",
+    "templateScorecard": "686 passed, 0 warnings, 0 failed"
+  },
+  "values": [
+    {
+      "key": "cell/Admin!F21",
+      "unit": "count",
+      "value": "10000"
+    },
+    {
+      "key": "cell/Admin!F22",
+      "unit": "count",
+      "value": "10001"
+    },
+    {
+      "key": "cell/Admin!F26",
+      "unit": "money",
+      "value": "90000"
+    },
+    {
+      "key": "cell/Admin!G21",
+      "unit": "rate",
+      "value": "0.45"
+    },
+    {
+      "key": "cell/Admin!G22",
+      "unit": "rate",
+      "value": "0.25"
+    },
+    {
+      "key": "cell/Admin!G4",
+      "unit": "rate",
+      "value": "1"
+    },
+    {
+      "key": "cell/Admin!G5",
+      "unit": "rate",
+      "value": "0.14"
+    },
+    {
+      "key": "cell/Admin!L16",
+      "unit": "rate",
+      "value": "3.65"
+    },
+    {
+      "key": "cell/Admin!L20",
+      "unit": "rate",
+      "value": "0.06"
+    },
+    {
+      "key": "cell/Admin!L23",
+      "unit": "rate",
+      "value": "0.02"
+    },
+    {
+      "key": "cell/Admin!M11",
+      "unit": "money",
+      "value": "37700"
+    },
+    {
+      "key": "cell/Admin!N12",
+      "unit": "money",
+      "value": "37701"
+    },
+    {
+      "key": "cell/Admin!N13",
+      "unit": "money",
+      "value": "125140"
+    },
+    {
+      "key": "cell/Admin!N16",
+      "unit": "money",
+      "value": "7105"
+    },
+    {
+      "key": "cell/Admin!N20",
+      "unit": "money",
+      "value": "12570"
+    },
+    {
+      "key": "cell/Admin!N23",
+      "unit": "money",
+      "value": "50270"
+    },
+    {
+      "key": "cell/Admin!N4",
+      "unit": "money",
+      "value": "12570"
+    },
+    {
+      "key": "cell/Admin!N5",
+      "unit": "money",
+      "value": "100000"
+    },
+    {
+      "key": "cell/Admin!N6",
+      "unit": "rate",
+      "value": "0.2"
+    },
+    {
+      "key": "cell/Admin!N7",
+      "unit": "rate",
+      "value": "0.4"
+    },
+    {
+      "key": "cell/Admin!N8",
+      "unit": "rate",
+      "value": "0.45"
+    },
+    {
+      "key": "cell/Business Details!C17",
+      "unit": "text",
+      "value": "DE1 2GH"
+    },
+    {
+      "key": "cell/Business Details!C5",
+      "unit": "text",
+      "value": "Basic Taxi Driver"
+    },
+    {
+      "key": "cell/Business Details!C8",
+      "unit": "text",
+      "value": "Owner-driver private hire and taxi services"
+    },
+    {
+      "key": "cell/Business Details!O5",
+      "unit": "identifier",
+      "value": "5566778899"
+    },
+    {
+      "key": "cell/Draft Tax calculation!C10",
+      "unit": "money",
+      "value": "125140"
+    },
+    {
+      "key": "cell/Draft Tax calculation!C9",
+      "unit": "money",
+      "value": "37700"
+    },
+    {
+      "key": "cell/Draft Tax calculation!D10",
+      "unit": "rate",
+      "value": "0.45"
+    },
+    {
+      "key": "cell/Draft Tax calculation!D8",
+      "unit": "rate",
+      "value": "0.2"
+    },
+    {
+      "key": "cell/Draft Tax calculation!D9",
+      "unit": "rate",
+      "value": "0.4"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E10",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E11",
+      "unit": "money",
+      "value": "3299"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E14",
+      "unit": "money",
+      "value": "989.7"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E15",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E17",
+      "unit": "money",
+      "value": "4288.7"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E25",
+      "unit": "money",
+      "value": "2144.35"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E26",
+      "unit": "money",
+      "value": "2144.35"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E5",
+      "unit": "money",
+      "value": "29065"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E6",
+      "unit": "money",
+      "value": "12570"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E7",
+      "unit": "money",
+      "value": "16495"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E8",
+      "unit": "money",
+      "value": "3299"
+    },
+    {
+      "key": "cell/Draft Tax calculation!E9",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Fixed Assets!D47",
+      "unit": "money",
+      "value": "8000"
+    },
+    {
+      "key": "cell/Fixed Assets!I1",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Fixed Assets!J1",
+      "unit": "money",
+      "value": "1120"
+    },
+    {
+      "key": "cell/Fixed Assets!K1",
+      "unit": "money",
+      "value": "6880"
+    },
+    {
+      "key": "cell/Fixed Assets!P1",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Fixed Assets!Q1",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B10",
+      "unit": "money",
+      "value": "1120"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B11",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B12",
+      "unit": "money",
+      "value": "6100"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B13",
+      "unit": "money",
+      "value": "29945"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B14",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B15",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B16",
+      "unit": "money",
+      "value": "480"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B17",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B18",
+      "unit": "money",
+      "value": "900"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B19",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B20",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B21",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B22",
+      "unit": "money",
+      "value": "1380"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B23",
+      "unit": "money",
+      "value": "28565"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B24",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B5",
+      "unit": "money",
+      "value": "36045"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B6",
+      "unit": "money",
+      "value": "3600"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B7",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B8",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!B9",
+      "unit": "money",
+      "value": "1380"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!C12",
+      "unit": "money",
+      "value": "1773.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!C22",
+      "unit": "money",
+      "value": "520"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!C24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!C5",
+      "unit": "money",
+      "value": "3045"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!D12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!D22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!D24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!D5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!E12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!E22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!E24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!E5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!F12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!F22",
+      "unit": "money",
+      "value": "120"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!F24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!F5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!G12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!G22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!G24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!G5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!H12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!H22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!H24",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!H5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!I12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!I22",
+      "unit": "money",
+      "value": "120"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!I24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!I5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!J1",
+      "unit": "money",
+      "value": "6100"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!J12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!J22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!J24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!J5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!K12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!K22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!K24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!K5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!L12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!L22",
+      "unit": "money",
+      "value": "620"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!L24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!L5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!M12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!M22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!M24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!M5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!N12",
+      "unit": "money",
+      "value": "393.33"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!N22",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!N24",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Profit & Loss Acc!N5",
+      "unit": "money",
+      "value": "3000"
+    },
+    {
+      "key": "cell/PurchasesMar!A1",
+      "unit": "count",
+      "value": "0"
+    },
+    {
+      "key": "cell/PurchasesMar!A2",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/PurchasesMar!I2",
+      "unit": "money",
+      "value": "4980"
+    },
+    {
+      "key": "cell/PurchasesMar!T1",
+      "unit": "money",
+      "value": "8000"
+    },
+    {
+      "key": "cell/SE Short!D106",
+      "unit": "money",
+      "value": "29065"
+    },
+    {
+      "key": "cell/SE Short!D38",
+      "unit": "money",
+      "value": "36045"
+    },
+    {
+      "key": "cell/SE Short!D71",
+      "unit": "money",
+      "value": "29685"
+    },
+    {
+      "key": "cell/SE Short!D80",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!D85",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!D94",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!D99",
+      "unit": "money",
+      "value": "28565"
+    },
+    {
+      "key": "cell/SE Short!O71",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!O80",
+      "unit": "money",
+      "value": "1120"
+    },
+    {
+      "key": "cell/SE Short!O85",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!O94",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/SE Short!O99",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/VitalTax!C29",
+      "unit": "money",
+      "value": "3079.99"
+    },
+    {
+      "key": "cell/VitalTax!C5",
+      "unit": "money",
+      "value": "9045"
+    },
+    {
+      "key": "cell/VitalTax!C6",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/VitalTax!D29",
+      "unit": "money",
+      "value": "1299.99"
+    },
+    {
+      "key": "cell/VitalTax!D5",
+      "unit": "money",
+      "value": "9000"
+    },
+    {
+      "key": "cell/VitalTax!D6",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/VitalTax!E29",
+      "unit": "money",
+      "value": "1299.99"
+    },
+    {
+      "key": "cell/VitalTax!E5",
+      "unit": "money",
+      "value": "9000"
+    },
+    {
+      "key": "cell/VitalTax!E6",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/VitalTax!F29",
+      "unit": "money",
+      "value": "1799.99"
+    },
+    {
+      "key": "cell/VitalTax!F5",
+      "unit": "money",
+      "value": "9000"
+    },
+    {
+      "key": "cell/VitalTax!F6",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/VitalTax!G29",
+      "unit": "money",
+      "value": "7479.96"
+    },
+    {
+      "key": "cell/VitalTax!G5",
+      "unit": "money",
+      "value": "36045"
+    },
+    {
+      "key": "cell/VitalTax!G6",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/Wages Forecast!C19",
+      "unit": "count",
+      "value": "12"
+    },
+    {
+      "key": "cell/Wages Forecast!C20",
+      "unit": "money",
+      "value": "36045"
+    },
+    {
+      "key": "cell/Wages Forecast!C22",
+      "unit": "money",
+      "value": "500"
+    },
+    {
+      "key": "cell/Wages Forecast!C24",
+      "unit": "money",
+      "value": "6099.96"
+    },
+    {
+      "key": "cell/Wages Forecast!C28",
+      "unit": "money",
+      "value": "1380"
+    },
+    {
+      "key": "cell/Wages Forecast!C30",
+      "unit": "money",
+      "value": "29065.04"
+    },
+    {
+      "key": "cell/Wages Forecast!C34",
+      "unit": "money",
+      "value": "29065.04"
+    },
+    {
+      "key": "cell/Wages Forecast!C35",
+      "unit": "money",
+      "value": "12570"
+    },
+    {
+      "key": "cell/Wages Forecast!C36",
+      "unit": "money",
+      "value": "16495.04"
+    },
+    {
+      "key": "cell/Wages Forecast!C37",
+      "unit": "money",
+      "value": "3299.008"
+    },
+    {
+      "key": "cell/Wages Forecast!C38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Wages Forecast!C39",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Wages Forecast!C40",
+      "unit": "money",
+      "value": "989.7024"
+    },
+    {
+      "key": "cell/Wages Forecast!C41",
+      "unit": "money",
+      "value": "4288.7104"
+    },
+    {
+      "key": "check/Accounting profit to tax profit bridge closes to zero",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Admin: AIA Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1",
+      "actual": "1",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Additional Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.45",
+      "actual": "0.45",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Basic Band End = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "37700",
+      "actual": "37700",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: Basic Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.2",
+      "actual": "0.2",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Higher Band End = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "125140",
+      "actual": "125140",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: Higher Band Start = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "37701",
+      "actual": "37701",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: Higher Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.4",
+      "actual": "0.4",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Mileage Higher Rate Limit = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "10000",
+      "actual": "10000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: Mileage Higher Rate Pence = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.45",
+      "actual": "0.45",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Mileage Lower Rate Pence = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.25",
+      "actual": "0.25",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Mileage Lower Rate Start = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "10001",
+      "actual": "10001",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: NI Class 2 Small Profits Threshold = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "7105",
+      "actual": "7105",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: NI Class 2 Weekly Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3.65",
+      "actual": "3.65",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: NI Class 4 Lower Limit = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "12570",
+      "actual": "12570",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: NI Class 4 Lower Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.06",
+      "actual": "0.06",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: NI Class 4 Upper Limit = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "50270",
+      "actual": "50270",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: NI Class 4 Upper Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.02",
+      "actual": "0.02",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Admin: Personal Allowance = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "12570",
+      "actual": "12570",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: Personal Allowance Taper Threshold = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "100000",
+      "actual": "100000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: VAT Registration Threshold = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "90000",
+      "actual": "90000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Admin: WDA Rate = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.14",
+      "actual": "0.14",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Fixed Assets: New asset cost recorded",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "8000",
+      "actual": "8000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed Assets: Schedule capital allowance total = P&L Capital Allowances",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1120",
+      "actual": "1120",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed Assets: WDA claimed = cost x Admin WDA rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1120",
+      "actual": "1120",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed Assets: written-down value = cost less the allowance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6880",
+      "actual": "6880",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/Forecast: National Insurance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "989.7024",
+      "actual": "989.7024",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: cost of sales = P&L cost of sales",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6099.96",
+      "actual": "6099.96",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: cost of sales = the traded months plus the year spread over the rest",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6099.96",
+      "actual": "6099.96",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: general expenses = P&L general expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1380",
+      "actual": "1380",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: general expenses = the traded months plus the year spread over the rest",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1380",
+      "actual": "1380",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: months of actual trade = P&L months with turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "12",
+      "actual": "12",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/Forecast: other business income = P&L other business income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "500",
+      "actual": "500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: personal allowance after taper",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "12570",
+      "actual": "12570",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: profit = turnover + other income - cost of sales - expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "29065.04",
+      "actual": "29065.04",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: tax and NI liability",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "4288.7104",
+      "actual": "4288.7104",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: tax at additional rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: tax at higher rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: tax at standard rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3299.008",
+      "actual": "3299.008",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Forecast: turnover = P&L turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "36045",
+      "actual": "36045",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Forecast: turnover = the traded months plus the year spread over the rest",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "36045",
+      "actual": "36045",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Income Tax",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3299",
+      "actual": "3299",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/NI Class 4 (lower)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "989.7",
+      "actual": "989.7",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Other business income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "500",
+      "actual": "500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L: Capital Allowances / Mileage Allowance mutually exclusive",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/P&L: Cost of Sales = vehicle cost lines",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6100",
+      "actual": "6100",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L: General expense lines sum = Total",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1380",
+      "actual": "1380",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L: Gross = Turnover - Cost of Sales",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "29945",
+      "actual": "29945",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L: Net = Gross - General Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "28565",
+      "actual": "28565",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L: the comparison figure = running costs plus the schedule's allowances",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6100",
+      "actual": "6100",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/P&L: the route follows the comparison",
+      "unit": "verdict",
+      "value": "pass"
+    },
+    {
+      "key": "check/Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "14360",
+      "actual": "14360",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "29685",
+      "actual": "29685",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103S: Other business income (box 30) = P&L other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "500",
+      "actual": "500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103S: Profit for tax = Draft Tax E5",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "29065",
+      "actual": "29065",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103S: Turnover = P&L Sales",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "36045",
+      "actual": "36045",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax at additional rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax at basic rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3299",
+      "actual": "3299",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax at higher rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: IT = Basic + Higher + Additional",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3299",
+      "actual": "3299",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: Personal allowance after taper",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "12570",
+      "actual": "12570",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: Taxable = Profit - Allowance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "16495",
+      "actual": "16495",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: Total = IT + NI",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "4288.7",
+      "actual": "4288.7",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: first payment on account is half the liability",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "2144.35",
+      "actual": "2144.35",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Tax: second payment on account is half the liability",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "2144.35",
+      "actual": "2144.35",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Tax: sheet applies the additional rate above the higher band",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.45",
+      "actual": "0.45",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Tax: sheet applies the basic rate to the lower band",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.2",
+      "actual": "0.2",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Tax: sheet applies the higher rate above the band",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.4",
+      "actual": "0.4",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Tax: sheet splits the basic and higher bands at the basic band end",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "37700",
+      "actual": "37700",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Tax: sheet splits the higher and additional bands at the higher band end",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "125140",
+      "actual": "125140",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Total Sales",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "36045",
+      "actual": "36045",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Total Tax + NI",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "4288.7",
+      "actual": "4288.7",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/VitalTax: Q1 other income = P&L Q1 other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q1 total allowable expenses = P&L Q1 Cost of Sales + Total Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3079.99",
+      "actual": "3079.99",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q1 turnover = P&L Q1 turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "9045",
+      "actual": "9045",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q2 other income = P&L Q2 other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "500",
+      "actual": "500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q2 total allowable expenses = P&L Q2 Cost of Sales + Total Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1299.99",
+      "actual": "1299.99",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q2 turnover = P&L Q2 turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "9000",
+      "actual": "9000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q3 other income = P&L Q3 other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q3 total allowable expenses = P&L Q3 Cost of Sales + Total Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1299.99",
+      "actual": "1299.99",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q3 turnover = P&L Q3 turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "9000",
+      "actual": "9000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q4 other income = P&L Q4 other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q4 total allowable expenses = P&L Q4 Cost of Sales + Total Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1799.99",
+      "actual": "1799.99",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: Q4 turnover = P&L Q4 turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "9000",
+      "actual": "9000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: annual other income = P&L annual other income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "500",
+      "actual": "500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "7480",
+      "actual": "7479.96",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/VitalTax: annual turnover = P&L annual turnover",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "36045",
+      "actual": "36045",
+      "tolerance": "1"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-26",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O85"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-capital-allowances-charged-in-cost-of-sales",
+      "unit": "money",
+      "value": "1120",
+      "source": "cell/Profit & Loss Acc!B10"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D94"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-10",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O38"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-30",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/SE Short!O99"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D80"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O94"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-net-loss-for-the-year-box-22",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O71"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-25",
+      "unit": "money",
+      "value": "-1120",
+      "source": "cell/SE Short!O80"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-24",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D85"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
+      "unit": "money",
+      "value": "28565",
+      "source": "cell/Profit & Loss Acc!B23"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/residue",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
+      "unit": "money",
+      "value": "29065",
+      "derivedFrom": [
+        "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
+        "section/accounting-profit-to-tax-profit-bridge/add-capital-allowances-charged-in-cost-of-sales",
+        "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-10",
+        "section/accounting-profit-to-tax-profit-bridge/less-net-loss-for-the-year-box-22",
+        "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
+        "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-24",
+        "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-25",
+        "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-26",
+        "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
+        "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-30",
+        "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29"
+      ]
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
+      "unit": "money",
+      "value": "29065",
+      "source": "cell/Draft Tax calculation!E5"
+    },
+    {
+      "key": "section/admin-generator-injected/additional-rate",
+      "unit": "rate",
+      "value": "0.45",
+      "source": "cell/Admin!N8"
+    },
+    {
+      "key": "section/admin-generator-injected/annual-investment-allowance-rate",
+      "unit": "rate",
+      "value": "1",
+      "source": "cell/Admin!G4"
+    },
+    {
+      "key": "section/admin-generator-injected/basic-band-end",
+      "unit": "money",
+      "value": "37700",
+      "source": "cell/Admin!M11"
+    },
+    {
+      "key": "section/admin-generator-injected/basic-rate",
+      "unit": "rate",
+      "value": "0.2",
+      "source": "cell/Admin!N6"
+    },
+    {
+      "key": "section/admin-generator-injected/higher-band-end",
+      "unit": "money",
+      "value": "125140",
+      "source": "cell/Admin!N13"
+    },
+    {
+      "key": "section/admin-generator-injected/higher-band-start",
+      "unit": "money",
+      "value": "37701",
+      "source": "cell/Admin!N12"
+    },
+    {
+      "key": "section/admin-generator-injected/higher-rate",
+      "unit": "rate",
+      "value": "0.4",
+      "source": "cell/Admin!N7"
+    },
+    {
+      "key": "section/admin-generator-injected/mileage-higher-rate-limit",
+      "unit": "count",
+      "value": "10000",
+      "source": "cell/Admin!F21"
+    },
+    {
+      "key": "section/admin-generator-injected/mileage-higher-rate-pence",
+      "unit": "rate",
+      "value": "0.45",
+      "source": "cell/Admin!G21"
+    },
+    {
+      "key": "section/admin-generator-injected/mileage-lower-rate-pence",
+      "unit": "rate",
+      "value": "0.25",
+      "source": "cell/Admin!G22"
+    },
+    {
+      "key": "section/admin-generator-injected/mileage-lower-rate-start",
+      "unit": "count",
+      "value": "10001",
+      "source": "cell/Admin!F22"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-2-small-profits-threshold",
+      "unit": "money",
+      "value": "7105",
+      "source": "cell/Admin!N16"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-2-weekly-rate",
+      "unit": "rate",
+      "value": "3.65",
+      "source": "cell/Admin!L16"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-4-lower-limit",
+      "unit": "money",
+      "value": "12570",
+      "source": "cell/Admin!N20"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-4-lower-rate",
+      "unit": "rate",
+      "value": "0.06",
+      "source": "cell/Admin!L20"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-4-upper-limit",
+      "unit": "money",
+      "value": "50270",
+      "source": "cell/Admin!N23"
+    },
+    {
+      "key": "section/admin-generator-injected/ni-class-4-upper-rate",
+      "unit": "rate",
+      "value": "0.02",
+      "source": "cell/Admin!L23"
+    },
+    {
+      "key": "section/admin-generator-injected/personal-allowance",
+      "value": "12570"
+    },
+    {
+      "key": "section/admin-generator-injected/personal-allowance-taper-threshold",
+      "unit": "money",
+      "value": "100000",
+      "source": "cell/Admin!N5"
+    },
+    {
+      "key": "section/admin-generator-injected/vat-registration-threshold",
+      "unit": "money",
+      "value": "90000",
+      "source": "cell/Admin!F26"
+    },
+    {
+      "key": "section/admin-generator-injected/writing-down-allowance-rate",
+      "unit": "rate",
+      "value": "0.14",
+      "source": "cell/Admin!G5"
+    },
+    {
+      "key": "section/business-details/business-name",
+      "unit": "text",
+      "value": "Basic Taxi Driver",
+      "source": "cell/Business Details!C5"
+    },
+    {
+      "key": "section/business-details/description-of-business",
+      "unit": "text",
+      "value": "Owner-driver private hire and taxi services",
+      "source": "cell/Business Details!C8"
+    },
+    {
+      "key": "section/business-details/postcode",
+      "unit": "text",
+      "value": "DE1 2GH",
+      "source": "cell/Business Details!C17"
+    },
+    {
+      "key": "section/business-details/utr",
+      "unit": "identifier",
+      "value": "5566778899",
+      "source": "cell/Business Details!O5"
+    },
+    {
+      "key": "section/draft-tax-calculation/additional-rate-the-sheet-applies",
+      "unit": "rate",
+      "value": "0.45",
+      "source": "cell/Draft Tax calculation!D10"
+    },
+    {
+      "key": "section/draft-tax-calculation/additional-rate-threshold-the-sheet-applies",
+      "unit": "money",
+      "value": "125140",
+      "source": "cell/Draft Tax calculation!C10"
+    },
+    {
+      "key": "section/draft-tax-calculation/basic-band-ceiling-the-sheet-applies",
+      "unit": "money",
+      "value": "37700",
+      "source": "cell/Draft Tax calculation!C9"
+    },
+    {
+      "key": "section/draft-tax-calculation/basic-rate-the-sheet-applies",
+      "unit": "rate",
+      "value": "0.2",
+      "source": "cell/Draft Tax calculation!D8"
+    },
+    {
+      "key": "section/draft-tax-calculation/first-payment-on-account-31-january",
+      "unit": "money",
+      "value": "2144.35",
+      "source": "cell/Draft Tax calculation!E25"
+    },
+    {
+      "key": "section/draft-tax-calculation/higher-rate-the-sheet-applies",
+      "unit": "rate",
+      "value": "0.4",
+      "source": "cell/Draft Tax calculation!D9"
+    },
+    {
+      "key": "section/draft-tax-calculation/less-personal-allowance",
+      "unit": "money",
+      "value": "12570",
+      "source": "cell/Draft Tax calculation!E6"
+    },
+    {
+      "key": "section/draft-tax-calculation/ni-class-4-lower-band",
+      "unit": "money",
+      "value": "989.7",
+      "source": "cell/Draft Tax calculation!E14"
+    },
+    {
+      "key": "section/draft-tax-calculation/ni-class-4-upper-band",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Draft Tax calculation!E15"
+    },
+    {
+      "key": "section/draft-tax-calculation/profit-from-self-employment",
+      "unit": "money",
+      "value": "29065",
+      "source": "cell/Draft Tax calculation!E5"
+    },
+    {
+      "key": "section/draft-tax-calculation/second-payment-on-account-31-july",
+      "unit": "money",
+      "value": "2144.35",
+      "source": "cell/Draft Tax calculation!E26"
+    },
+    {
+      "key": "section/draft-tax-calculation/tax-at-additional-rate",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Draft Tax calculation!E10"
+    },
+    {
+      "key": "section/draft-tax-calculation/tax-at-basic-rate",
+      "unit": "money",
+      "value": "3299",
+      "source": "cell/Draft Tax calculation!E8"
+    },
+    {
+      "key": "section/draft-tax-calculation/tax-at-higher-rate",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Draft Tax calculation!E9"
+    },
+    {
+      "key": "section/draft-tax-calculation/taxable-income",
+      "unit": "money",
+      "value": "16495",
+      "source": "cell/Draft Tax calculation!E7"
+    },
+    {
+      "key": "section/draft-tax-calculation/total-income-tax",
+      "unit": "money",
+      "value": "3299",
+      "source": "cell/Draft Tax calculation!E11"
+    },
+    {
+      "key": "section/draft-tax-calculation/total-tax-ni",
+      "unit": "money",
+      "value": "4288.7",
+      "source": "cell/Draft Tax calculation!E17"
+    },
+    {
+      "key": "section/fixed-assets/new-asset-cost-vehicle-under-12-000",
+      "unit": "money",
+      "value": "8000",
+      "source": "cell/Fixed Assets!D47"
+    },
+    {
+      "key": "section/fixed-assets/total-annual-investment-allowance",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Fixed Assets!I1"
+    },
+    {
+      "key": "section/fixed-assets/total-balancing-charge",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Fixed Assets!Q1"
+    },
+    {
+      "key": "section/fixed-assets/total-capital-allowance-on-disposal",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Fixed Assets!P1"
+    },
+    {
+      "key": "section/fixed-assets/total-writing-down-allowance",
+      "unit": "money",
+      "value": "1120",
+      "source": "cell/Fixed Assets!J1"
+    },
+    {
+      "key": "section/fixed-assets/written-down-value-carried-forward",
+      "unit": "money",
+      "value": "6880",
+      "source": "cell/Fixed Assets!K1"
+    },
+    {
+      "key": "section/monthly-other-income/apr",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!C24"
+    },
+    {
+      "key": "section/monthly-other-income/aug",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/dec",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/feb",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/jan",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!L24"
+    },
+    {
+      "key": "section/monthly-other-income/jul",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!F24"
+    },
+    {
+      "key": "section/monthly-other-income/jun",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/mar",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/may",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/nov",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-other-income/oct",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!I24"
+    },
+    {
+      "key": "section/monthly-other-income/sep",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/Profit & Loss Acc!H24"
+    },
+    {
+      "key": "section/monthly-running-costs/apr",
+      "unit": "money",
+      "value": "520",
+      "source": "cell/Profit & Loss Acc!C22"
+    },
+    {
+      "key": "section/monthly-running-costs/aug",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/dec",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/feb",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/jan",
+      "unit": "money",
+      "value": "620",
+      "source": "cell/Profit & Loss Acc!L22"
+    },
+    {
+      "key": "section/monthly-running-costs/jul",
+      "unit": "money",
+      "value": "120",
+      "source": "cell/Profit & Loss Acc!F22"
+    },
+    {
+      "key": "section/monthly-running-costs/jun",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/mar",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/may",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/nov",
+      "value": "0"
+    },
+    {
+      "key": "section/monthly-running-costs/oct",
+      "unit": "money",
+      "value": "120",
+      "source": "cell/Profit & Loss Acc!I22"
+    },
+    {
+      "key": "section/monthly-running-costs/sep",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!H22"
+    },
+    {
+      "key": "section/monthly-takings/apr",
+      "unit": "money",
+      "value": "3045",
+      "source": "cell/Profit & Loss Acc!C5"
+    },
+    {
+      "key": "section/monthly-takings/aug",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!G5"
+    },
+    {
+      "key": "section/monthly-takings/dec",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!K5"
+    },
+    {
+      "key": "section/monthly-takings/feb",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!M5"
+    },
+    {
+      "key": "section/monthly-takings/jan",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!L5"
+    },
+    {
+      "key": "section/monthly-takings/jul",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!F5"
+    },
+    {
+      "key": "section/monthly-takings/jun",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!E5"
+    },
+    {
+      "key": "section/monthly-takings/mar",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!N5"
+    },
+    {
+      "key": "section/monthly-takings/may",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!D5"
+    },
+    {
+      "key": "section/monthly-takings/nov",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!J5"
+    },
+    {
+      "key": "section/monthly-takings/oct",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!I5"
+    },
+    {
+      "key": "section/monthly-takings/sep",
+      "unit": "money",
+      "value": "3000",
+      "source": "cell/Profit & Loss Acc!H5"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/apr",
+      "unit": "money",
+      "value": "1773.33",
+      "source": "cell/Profit & Loss Acc!C12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/aug",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!G12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/dec",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!K12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/feb",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!M12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/jan",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!L12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/jul",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!F12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/jun",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!E12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/mar",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!N12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/may",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!D12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/nov",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!J12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/oct",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!I12"
+    },
+    {
+      "key": "section/monthly-vehicle-costs/sep",
+      "unit": "money",
+      "value": "393.33",
+      "source": "cell/Profit & Loss Acc!H12"
+    },
+    {
+      "key": "section/profit-loss-account/advertising",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B17"
+    },
+    {
+      "key": "section/profit-loss-account/any-other-business-income",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/Profit & Loss Acc!B24"
+    },
+    {
+      "key": "section/profit-loss-account/bank-charges",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B20"
+    },
+    {
+      "key": "section/profit-loss-account/capital-allowances",
+      "unit": "money",
+      "value": "1120",
+      "source": "cell/Profit & Loss Acc!B10"
+    },
+    {
+      "key": "section/profit-loss-account/car-hire-rental",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B7"
+    },
+    {
+      "key": "section/profit-loss-account/cost-of-sales-vehicle-costs",
+      "unit": "money",
+      "value": "6100",
+      "source": "cell/Profit & Loss Acc!B12"
+    },
+    {
+      "key": "section/profit-loss-account/employee-costs",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B14"
+    },
+    {
+      "key": "section/profit-loss-account/fuel",
+      "unit": "money",
+      "value": "3600",
+      "source": "cell/Profit & Loss Acc!B6"
+    },
+    {
+      "key": "section/profit-loss-account/general-admin",
+      "unit": "money",
+      "value": "480",
+      "source": "cell/Profit & Loss Acc!B16"
+    },
+    {
+      "key": "section/profit-loss-account/gross-profit",
+      "unit": "money",
+      "value": "29945",
+      "source": "cell/Profit & Loss Acc!B13"
+    },
+    {
+      "key": "section/profit-loss-account/interest-bank-charges",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B19"
+    },
+    {
+      "key": "section/profit-loss-account/legal-professional",
+      "unit": "money",
+      "value": "900",
+      "source": "cell/Profit & Loss Acc!B18"
+    },
+    {
+      "key": "section/profit-loss-account/mileage-allowance",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B11"
+    },
+    {
+      "key": "section/profit-loss-account/net-profit",
+      "unit": "money",
+      "value": "28565",
+      "source": "cell/Profit & Loss Acc!B23"
+    },
+    {
+      "key": "section/profit-loss-account/other-expenses",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B21"
+    },
+    {
+      "key": "section/profit-loss-account/premises-costs",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B15"
+    },
+    {
+      "key": "section/profit-loss-account/repairs-servicing",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Profit & Loss Acc!B8"
+    },
+    {
+      "key": "section/profit-loss-account/road-tax-insurance",
+      "unit": "money",
+      "value": "1380",
+      "source": "cell/Profit & Loss Acc!B9"
+    },
+    {
+      "key": "section/profit-loss-account/running-costs-plus-capital-allowances",
+      "unit": "money",
+      "value": "6100",
+      "source": "cell/Profit & Loss Acc!J1"
+    },
+    {
+      "key": "section/profit-loss-account/total-general-expenses",
+      "unit": "money",
+      "value": "1380",
+      "source": "cell/Profit & Loss Acc!B22"
+    },
+    {
+      "key": "section/profit-loss-account/turnover-total-fares",
+      "unit": "money",
+      "value": "36045",
+      "source": "cell/Profit & Loss Acc!B5"
+    },
+    {
+      "key": "section/purchase-analysis/business-miles-for-the-year",
+      "unit": "count",
+      "value": "0",
+      "source": "cell/PurchasesMar!A1"
+    },
+    {
+      "key": "section/purchase-analysis/mileage-claimed-for-the-year",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/PurchasesMar!A2"
+    },
+    {
+      "key": "section/purchase-analysis/vehicle-purchases-capitalised",
+      "unit": "money",
+      "value": "8000",
+      "source": "cell/PurchasesMar!T1"
+    },
+    {
+      "key": "section/purchase-analysis/vehicle-running-costs-for-the-year",
+      "unit": "money",
+      "value": "4980",
+      "source": "cell/PurchasesMar!I2"
+    },
+    {
+      "key": "section/quarterly-summary/annual-other-income",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/VitalTax!G6"
+    },
+    {
+      "key": "section/quarterly-summary/annual-total-allowable-expenses",
+      "unit": "money",
+      "value": "7479.96",
+      "source": "cell/VitalTax!G29"
+    },
+    {
+      "key": "section/quarterly-summary/annual-turnover",
+      "unit": "money",
+      "value": "36045",
+      "source": "cell/VitalTax!G5"
+    },
+    {
+      "key": "section/quarterly-summary/q1-other-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/VitalTax!C6"
+    },
+    {
+      "key": "section/quarterly-summary/q1-total-allowable-expenses",
+      "unit": "money",
+      "value": "3079.99",
+      "source": "cell/VitalTax!C29"
+    },
+    {
+      "key": "section/quarterly-summary/q1-turnover",
+      "unit": "money",
+      "value": "9045",
+      "source": "cell/VitalTax!C5"
+    },
+    {
+      "key": "section/quarterly-summary/q2-other-income",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/VitalTax!D6"
+    },
+    {
+      "key": "section/quarterly-summary/q2-total-allowable-expenses",
+      "unit": "money",
+      "value": "1299.99",
+      "source": "cell/VitalTax!D29"
+    },
+    {
+      "key": "section/quarterly-summary/q2-turnover",
+      "unit": "money",
+      "value": "9000",
+      "source": "cell/VitalTax!D5"
+    },
+    {
+      "key": "section/quarterly-summary/q3-other-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/VitalTax!E6"
+    },
+    {
+      "key": "section/quarterly-summary/q3-total-allowable-expenses",
+      "unit": "money",
+      "value": "1299.99",
+      "source": "cell/VitalTax!E29"
+    },
+    {
+      "key": "section/quarterly-summary/q3-turnover",
+      "unit": "money",
+      "value": "9000",
+      "source": "cell/VitalTax!E5"
+    },
+    {
+      "key": "section/quarterly-summary/q4-other-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/VitalTax!F6"
+    },
+    {
+      "key": "section/quarterly-summary/q4-total-allowable-expenses",
+      "unit": "money",
+      "value": "1799.99",
+      "source": "cell/VitalTax!F29"
+    },
+    {
+      "key": "section/quarterly-summary/q4-turnover",
+      "unit": "money",
+      "value": "9000",
+      "source": "cell/VitalTax!F5"
+    },
+    {
+      "key": "section/self-assessment-sa103s/annual-investment-allowance-box-23",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D80"
+    },
+    {
+      "key": "section/self-assessment-sa103s/balancing-charges-box-26",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O85"
+    },
+    {
+      "key": "section/self-assessment-sa103s/goods-and-services-for-own-use-box-27",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D94"
+    },
+    {
+      "key": "section/self-assessment-sa103s/loss-brought-forward-box-29",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O94"
+    },
+    {
+      "key": "section/self-assessment-sa103s/net-business-profit-box-28",
+      "unit": "money",
+      "value": "28565",
+      "source": "cell/SE Short!D99"
+    },
+    {
+      "key": "section/self-assessment-sa103s/net-loss-box-22",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!O71"
+    },
+    {
+      "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
+      "unit": "money",
+      "value": "29065",
+      "source": "cell/SE Short!D106"
+    },
+    {
+      "key": "section/self-assessment-sa103s/net-profit-loss-box-21",
+      "unit": "money",
+      "value": "29685",
+      "source": "cell/SE Short!D71"
+    },
+    {
+      "key": "section/self-assessment-sa103s/other-business-income-box-30",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/SE Short!O99"
+    },
+    {
+      "key": "section/self-assessment-sa103s/other-capital-allowances-box-25",
+      "unit": "money",
+      "value": "1120",
+      "source": "cell/SE Short!O80"
+    },
+    {
+      "key": "section/self-assessment-sa103s/small-balance-allowance-box-24",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/SE Short!D85"
+    },
+    {
+      "key": "section/self-assessment-sa103s/turnover-box-9",
+      "unit": "money",
+      "value": "36045",
+      "source": "cell/SE Short!D38"
+    },
+    {
+      "key": "section/wages-forecast/forecast-cost-of-sales",
+      "unit": "money",
+      "value": "6099.96",
+      "source": "cell/Wages Forecast!C24"
+    },
+    {
+      "key": "section/wages-forecast/forecast-general-expenses",
+      "unit": "money",
+      "value": "1380",
+      "source": "cell/Wages Forecast!C28"
+    },
+    {
+      "key": "section/wages-forecast/forecast-investment-grants",
+      "unit": "money",
+      "value": "500",
+      "source": "cell/Wages Forecast!C22"
+    },
+    {
+      "key": "section/wages-forecast/forecast-profit-before-tax",
+      "unit": "money",
+      "value": "29065.04",
+      "source": "cell/Wages Forecast!C30"
+    },
+    {
+      "key": "section/wages-forecast/forecast-sales-turnover",
+      "unit": "money",
+      "value": "36045",
+      "source": "cell/Wages Forecast!C20"
+    },
+    {
+      "key": "section/wages-forecast/forecast-tax-ni-liability",
+      "unit": "money",
+      "value": "4288.7104",
+      "source": "cell/Wages Forecast!C41"
+    },
+    {
+      "key": "section/wages-forecast/months-of-actual-trade",
+      "unit": "count",
+      "value": "12",
+      "source": "cell/Wages Forecast!C19"
+    },
+    {
+      "key": "section/wages-forecast/national-insurance",
+      "unit": "money",
+      "value": "989.7024",
+      "source": "cell/Wages Forecast!C40"
+    },
+    {
+      "key": "section/wages-forecast/personal-allowance",
+      "value": "12570"
+    },
+    {
+      "key": "section/wages-forecast/profit-after-allowance",
+      "unit": "money",
+      "value": "16495.04",
+      "source": "cell/Wages Forecast!C36"
+    },
+    {
+      "key": "section/wages-forecast/profit-before-tax",
+      "unit": "money",
+      "value": "29065.04",
+      "source": "cell/Wages Forecast!C34"
+    },
+    {
+      "key": "section/wages-forecast/tax-at-additional-rate",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Wages Forecast!C39"
+    },
+    {
+      "key": "section/wages-forecast/tax-at-higher-rate",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Wages Forecast!C38"
+    },
+    {
+      "key": "section/wages-forecast/tax-at-standard-rate",
+      "unit": "money",
+      "value": "3299.008",
+      "source": "cell/Wages Forecast!C37"
+    }
+  ]
+}

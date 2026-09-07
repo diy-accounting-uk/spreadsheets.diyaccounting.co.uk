@@ -21,6 +21,8 @@
     "mcp:diya-gl": "node app/bin/diya-gl-mcp.js",
     "pack:diya-gl": "cd diya-gl && npm pack",
     "smoke:diya-gl": "diya-gl/smoke.sh",
+    "parity:diya-gl": "diya-gl/parity.sh",
+    "parity:refresh": "node diya-gl/scripts/parity-fixtures.mjs",
     "verify:roundtrip": "node app/bin/verify-roundtrip.js",
     "verify:stability": "node app/bin/verify-stability.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
