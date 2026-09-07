@@ -1,6 +1,6 @@
-# PLAN: sign-in and "save to my account" on the books pages
+# PLAN: sign-in and "save to my account" on the DIYA-GL pages
 
-The four books pages hold a year of accounts in the browser and save a 15 KB zip to disk. The paid
+The four DIYA-GL pages hold a year of accounts in the browser and save a 15 KB zip to disk. The paid
 tier signs the reader in on Submit's Cognito pool and puts that zip in their account. This is the
 spreadsheets side: one new script, four small hooks in `shell.js`, a config file, some CSS and a
 browser spec. The launch plan is `PLAN_DIYA_GL_LAUNCH.md`, row LP-17. The Submit side is that
@@ -13,7 +13,7 @@ Decided by the operator (launch plan, sections 5a and 5c): one Cognito pool, Sub
 federation; Submit's hosted sign-in page redirecting back here, nothing moves; computation stays in
 the browser; 99p a month; a conflict shown rather than merged.
 
-Built already, read from the pushed branches. The books app client: no secret, authorization-code
+Built already, read from the pushed branches. The DIYA-GL app client: no secret, authorization-code
 grant only, scopes `openid profile email`, callbacks and logout URLs `https://<host>/books/` and
 `/books/{bst,se,taxi,ltd}.html` for `spreadsheets.diyaccounting.co.uk` (prod) and
 `ci-spreadsheets.diyaccounting.co.uk` plus `http://localhost:3000` (ci); its id is the output
@@ -48,7 +48,7 @@ exchanges the code directly against the pool's token endpoint with PKCE.
 2. The topbar shows `#account-btn` — a person glyph, `aria-label="Sign in to save to your account"`,
    label text "Sign in" at 561px and up, icon only below, the `.btn-label` rule the other topbar
    buttons follow.
-3. Clicking it opens the panel: one line, "Save your books to your DIYA account and open them on any
+3. Clicking it opens the panel: one line, "Save your books to your DIYA-GL account and open them on any
    device.", and one button, "Sign in".
 4. The save menu carries a third item, "Save to my account". Clicking it while signed out opens the
    panel at step 3 rather than starting a save.
@@ -60,7 +60,7 @@ exchanges the code directly against the pool's token endpoint with PKCE.
 2. `window.location.assign()` goes to
    `{hostedUi}/oauth2/authorize?response_type=code&client_id=…&redirect_uri=…&scope=openid+profile+email&state=…&nonce=…&code_challenge=…&code_challenge_method=S256`.
    A plain navigation, not a form post, so `form-action` needs no change.
-3. The reader signs in with Google on Submit's hosted page and comes back to the same books page
+3. The reader signs in with Google on Submit's hosted page and comes back to the same DIYA-GL page
    with `?code=…&state=…` (or `?error=…&error_description=…`).
 4. `cloud.js` runs at script-eval time, before `shell.js`'s `DOMContentLoaded` handler. It reads and
    removes `code`, `state`, `error` and `error_description` from the URL with `history.replaceState`,
@@ -187,7 +187,7 @@ A classic script, no module syntax, publishing `window.DiyaGlBooksCloud`:
 | `mount()` | Called at the end of `shell.js`'s `init()`. Renders the topbar button, binds the panel. |
 | `openPanel()` / `closePanel()` | The panel, in whichever of section 3's states applies. |
 | `saveCurrentBook()` | Journey 3.5. |
-| `startSubscription()` | Section 6's one function, whichever way H12 lands. |
+| `startSubscription()` | Section 6's one function: Submit's checkout route. |
 | `signIn()` / `signOut()` | Journeys 3.2 and 3.7. |
 
 Internally: `pkce.js`-style helpers (`randomUrlSafe(bytes)`, `challengeFor(verifier)`) kept as
@@ -271,23 +271,16 @@ Errors arrive as `{message, code}`. Every one of them leaves the local book exac
 | 500 | `storage-error` | "Your account could not be reached. Your book is safe on this page — try the download." with **Retry**. |
 | network failure | — | The same wording as 500. |
 
-## 6. Billing, either way H12 lands
+## 6. Billing through Submit's checkout route
 
-The panel calls one function, `startSubscription()`, and its button, its wording and its placement
-do not change with the answer. Only that function's body does.
+The panel calls one function, `startSubscription()`: `POST {apiBase}/billing/checkout` with the id
+token for the `diya-gl` bundle, read `{url}` from the response, `location.assign(url)`. Submit's
+server sets `metadata.hashedSub`, which is what `getUserBundles` reads. Cost on this side: the four
+lines in that function. Cost on Submit's side: the checkout route must accept the DIYA-GL audience.
 
-- **Checkout route (recommended).** `POST {apiBase}/billing/checkout` with the id token, read `{url}`
-  from the response, `location.assign(url)`. Submit's server sets `metadata.hashedSub`, which is
-  what `getUserBundles` actually reads. Cost on this side: nothing beyond the four lines in that
-  function. Cost on Submit's side: the existing checkout route must accept the books audience.
-- **Payment Link plus a hashed-sub route.** `GET {apiBase}/books/me` for `{hashedSub}`, then
-  `location.assign(paymentLink + "?client_reference_id=" + hashedSub)`. Cost on this side: one more
-  key in `cloud-config.js` for H10's link id, and one more row in section 5's route table. Cost on
-  Submit's side: a new route.
-
-Either way the navigation is `location.assign`, so `form-action` in the CSP is untouched, and the
-return from Stripe lands on whatever URL Stripe is configured with; the panel re-reads entitlement
-from the next list call (C8).
+The navigation is `location.assign`, so `form-action` in the CSP is untouched, and the return from
+Stripe lands on whatever URL Stripe is configured with; the panel re-reads entitlement from the
+next list call (C8).
 
 ## 7. Security and headers
 
@@ -309,7 +302,7 @@ exchange then fails with the section 5 network wording.
 XSS that already reaches the loaded book. Against that: the tokens die with the tab (C2), the
 refresh token never leaves `sessionStorage`, no token is ever written into the URL, the panel never
 renders a token, and sign-out ends the pool session as well as the tab's copy (C9). The pages' CSP
-has no `'unsafe-eval'` and the books pages load no third-party script inside `/books/`.
+has no `'unsafe-eval'` and the DIYA-GL pages load no third-party script inside `/books/`.
 
 **The `file://` runner.** `scripts/build-runner.mjs` adds both files to its `SKIP_SCRIPT_SRC` set,
 so the runner never carries them; C5 is the second guard, since on `file://` the protocol is not
@@ -396,5 +389,3 @@ reads, so those two run the full browser suite, not the cloud spec alone.
    behaviour case is dropped and the browser spec's stubs stay the only coverage of sign-in, which
    leaves the real redirect, the real authoriser and the real CORS untested until a person clicks
    through. The first needs a one-line change in the Submit repo, in LP-15's own file.
-2. **H12, how the subscription reaches the user.** Section 6 holds both routes and the recommendation
-   (the checkout route). The panel is the same either way; only `startSubscription()` differs.

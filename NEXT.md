@@ -6,23 +6,23 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the books
+Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the DIYA-GL
 pages' cloud sign-in is live against Submit's storage API. No worktree is open. Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
-any books browser spec, and a rebuild after merging engine changes. The generate workflows cancel
+any DIYA-GL browser spec, and a rebuild after merging engine changes. The generate workflows cancel
 their own in-progress run on a push to their ref, so a session pushes nothing to a branch while a
 generate run is in progress on it. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of
 record and carries its own open items.
 
 ## Context for the open rows
 
-The `LP` and `H7` to `H10` rows are `PLAN_DIYA_GL_LAUNCH.md`'s task list, same ids; each row's
+The `LP` and `H7` rows are `PLAN_DIYA_GL_LAUNCH.md`'s task list, same ids; each row's
 brief lives there under "Briefs". LP-12 to LP-14 (the Rust port) and LP-19, LP-20 (Filing) stay
 in the plan until their phase opens. They pack into four workstreams by area of change, each a batch
 branch `claude/b<n>-<topic>` with one worktree per row:
 
-- **Workstream A, the engine and the package** (LP-1 to LP-4): `app/lib` and `app/bin`,
+- **Workstream A, the DIYA-GL engine and the package** (LP-1 to LP-4): `app/lib` and `app/bin`,
   `package.json`, `scripts/build-books-bundle.mjs`, the workflows. Sonnet throughout; LP-1 first,
   the rest in series on its output.
 - **Workstream B, the web pages** (LP-5 to LP-9): `web/spreadsheets.diyaccounting.co.uk/public/`
@@ -30,9 +30,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
   on G1. Sonnet, except the spec page on Opus.
 - **Workstream C, distribution** (LP-10, LP-11): after the package. Haiku for the mechanical
   half; the launch posts are the operator's.
-- **Workstream D, the cloud** (LP-15 to LP-18): the Submit repo's CDK and Lambdas
+- **Workstream D, the cloud** (LP-15 to LP-18, LP-21): the Submit repo's CDK and Lambdas
   (`../submit.diyaccounting.co.uk/infra/main/java/co/uk/diyaccounting/submit/stacks/`,
-  `IdentityStack.java`, `ApiStack.java`, `BillingWebhookStack.java`) plus this repo's books
+  `IdentityStack.java`, `ApiStack.java`, `BillingWebhookStack.java`) plus this repo's DIYA-GL
   pages. Two design waves on Opus (LP-16, LP-17), then Sonnet. Every AWS change goes through a
   Submit PR and its deploy workflow (H9), never a console write.
 
@@ -41,15 +41,13 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H16 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after H16 |
-| LP-18 | Billing: the subscribe button carries the Cognito subject to the 99p Payment Link; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | H10, H12 | blocked-to-start | Sonnet, the billing agent; both repos |
-| LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | H8 | blocked-to-start | Haiku, the distribution agent; the publish workflow is on main |
+| LP-21 | The `diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the bundle agent; a Submit PR, then the sync on a "go" |
+| LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Haiku, the distribution agent; the tap repo exists, the publish workflow is on main |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H16 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after H16 |
+| LP-18 | Billing: the subscribe button calls Submit's checkout route for the `diya-gl` bundle; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-21 | blocked-to-start | Sonnet, the billing agent; both repos |
 | LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | PLAN_DIYA_GL_LAUNCH.md | human | H7 | blocked-to-start | the operator writes and posts; the package publishes on a `diya-gl-v*` tag after H7 |
 | H7 | Add an npm publish token for the `diy-accounting-uk` org as the `NPM_TOKEN` repository secret | none | human | — | ready-to-start | Settings, Secrets and variables, Actions |
-| H8 | Create the `diy-accounting-uk/homebrew-tap` repository for the formula | none | human | — | ready-to-start | an empty public repo; the formula lands by PR |
-| H10 | Create the 99p a month Stripe Payment Link (one price, monthly) and enable the customer portal | none | human | — | ready-to-start | Stripe dashboard; paste the link id into the LP-18 brief |
-| H12 | Decide how the 99p subscription reaches the books user: route the subscribe button through Submit's `POST /api/v1/billing/checkout` (server sets the hashed sub, no Payment Link), or keep the Payment Link and add a route returning the caller's hashed sub | PLAN_DIYA_GL_STORAGE.md | human | — | ready-to-start | the webhook keys on the hashed sub, the Payment Link would carry the raw one |
-| H16 | In the Submit repo, add the books app client to `scripts/toggle-cognito-native-auth.js` so the ci behaviour case can sign in | none | human | — | ready-to-start | the Submit session; one line in LP-15's file |
+| H16 | In the Submit repo, add the DIYA-GL app client to `scripts/toggle-cognito-native-auth.js` so the ci behaviour case can sign in | none | human | — | ready-to-start | Submit's NEXT.md B50; the Submit session has the ask by inbox |
 
 ## Plans not tracked here
 

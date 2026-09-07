@@ -1,6 +1,6 @@
 # PLAN: diya-gl launch — the free face, the tech community, the paid tier
 
-The BST books page shipped on 2026-09-03 (PR #57) and proved the thing this plan sells: a
+The BST DIYA-GL page shipped on 2026-09-03 (PR #57) and proved the thing this plan sells: a
 full year of a sole trader's accounts fits in a 15 KB zip, recalculates in a browser or on a
 command line without Excel or a server, and produces the same bytes on every surface. Self
 Employed, Taxi and Limited Company followed by 2026-09-06 (PRs #60 to #68): four products on
@@ -39,7 +39,7 @@ million businesses were unregistered for VAT or PAYE, about 3 million businesses
 below the registration thresholds ([money.co.uk, citing the Department for Business and
 Trade's Business Population Estimates](https://www.money.co.uk/business/business-statistics),
 read 2026-09-03). That unregistered half is the spreadsheets site's audience today and the
-books page's audience tomorrow.
+DIYA-GL page's audience tomorrow.
 
 **The forcing event.** Making Tax Digital for Income Tax becomes mandatory for sole traders
 and landlords with qualifying income over £50,000 from 6 April 2026, over £30,000 from April
@@ -171,7 +171,7 @@ range and treats the site's own donation history as the better prior. The operat
 put the site's actual downloads-to-donations ratio into this section; it is the one number
 this document cannot find online.
 
-**Revenue at the freemium range.** With 10,000 active free users of the books page or the
+**Revenue at the freemium range.** With 10,000 active free users of the DIYA-GL page or the
 local runner, 2% to 5% paying 99p a month is 200 to 500 subscribers and £1,860 to £4,650 a
 year after fees. That funds hosting and support for the tier many times over (section 4)
 and buys nothing else. The tier is a foundation and a data point.
@@ -207,8 +207,8 @@ ten years of history is 18 GB.
 
 **Payments.** Stripe's fee is the table in section 3. Stripe Billing for subscriptions adds
 a percentage on top of card fees on its paid tiers; the starter tier is included with
-standard pricing, and the plan assumes Payment Links plus the customer portal, which the
-donation page already uses.
+standard pricing, and the plan assumes Submit's checkout route and customer portal, which its own
+bundles already use.
 
 **Support.** The real cost. A storage tier's tickets are sign-in problems, lost files, and
 "my figures changed", which the provenance stamps (section 6) answer by design. Budget one
@@ -238,14 +238,14 @@ engine and book checks with their helpers; edits lines in place, including addin
 bank, cash and payroll journals; saves the diya-gl zip and JSON; nothing leaves the machine.
 The page's own workbook and package downloads were removed on 2026-09-06 (operator): the
 `.xlsx` and the package come from the CLI (`app/bin/export.js --package <product> --file`)
-and the MCP server's `save_workbook`, and the engine bundle still carries the writer. The
+and the MCP server's `save_workbook`, and the DIYA-GL engine bundle still carries the writer. The
 gaps between that and the operator's sketch:
 
 **The local runner for non-technical desktop users.** Four packagings, weighed:
 
 | Packaging | Size | Signing cost | Update path | Verdict |
 | --- | --- | --- | --- | --- |
-| Single-file HTML, opened by double-click | about 1.2 MB with the engine (794 KB measured 2026-09-06, all four products), schemas and tax data inlined; about 4 MB if the 2.5 MB BST template is inlined for `.xlsx` export | none; browsers open local HTML without a signature | download the new file; the file carries its own version stamp | first, and the "distro" the operator describes |
+| Single-file HTML, opened by double-click | about 1.2 MB with the DIYA-GL engine (794 KB measured 2026-09-06, all four products), schemas and tax data inlined; about 4 MB if the 2.5 MB BST template is inlined for `.xlsx` export | none; browsers open local HTML without a signature | download the new file; the file carries its own version stamp | first, and the "distro" the operator describes |
 | PWA (install from the live page) | the site's own assets, cached | none | automatic on next visit | second; gives an icon and offline use with no build |
 | Tauri app | about 3 to 10 MB | Apple Developer Program $99 a year for notarisation; Windows OV certificate about $216 a year or Azure Artifact Signing $9.99 a month | an updater to build and maintain | later, if the file-association and menu-bar experience earns it |
 | Electron app | 85 to 100+ MB | as Tauri | as Tauri | no; size without benefit |
@@ -259,13 +259,13 @@ certificates at $215.99 a year, with lifetimes capped at one year from 15 Februa
 Signing, formerly Trusted Signing, $9.99 a month for up to 5,000 signatures
 ([Microsoft](https://azure.microsoft.com/en-us/products/artifact-signing), read 2026-09-03).
 
-The single-file HTML runner needs one build step: inline the engine bundle, the two
+The single-file HTML runner needs one build step: inline the DIYA-GL engine bundle, the two
 schemas, the tax-year TOMLs and, for the product chosen, its template, into one page, and
 stamp it. "Just the extraction and templates for the chosen product" is the build's input
 list. The page already generates the `.xlsx` client-side, so the runner does too. The
 operator's "packaging TBD" resolves to: HTML file now, PWA with it, Tauri only on demand.
 
-**Donation prompts.** The books pages show no ask (2026-09-06); the download page now leads
+**Donation prompts.** The DIYA-GL pages show no ask (2026-09-06); the download page now leads
 only to the donation page, whose "download without donating" link is the one skip. The right moments are after a successful
 save and after a year's figures first appear, each once, each dismissable, each pointing at
 the existing Stripe links, with the 99p cloud offer beside them once it exists.
@@ -351,7 +351,7 @@ a 99p product.
 needs, keyed to SA103S boxes. Submit holds the HMRC production credentials for VAT and the
 fraud-prevention header work. The Income Tax path is: recognition for the 2027–28 cycle
 (section 1), the quarterly update and final declaration endpoints in Submit, and a "send
-this quarter" action on the books page for signed-in users. That is the Filing rung, priced
+this quarter" action on the DIYA-GL page for signed-in users. That is the Filing rung, priced
 with Submit, and it is where the money is.
 
 ### 5d. White-label and referral
@@ -397,7 +397,7 @@ community, the thing they check first. It costs a build step and a page.
 | 0. Provenance (LP-1 to LP-4, H7) | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
 | 1. The free face (LP-5 to LP-9) | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
 | 2. Tech launch (LP-10 to LP-14, H8) | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
-| 3. Cloud, 99p a month (LP-15 to LP-18, H9, H10) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; one Stripe Payment Link at 99p a month; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
+| 3. Cloud, 99p a month (LP-15 to LP-18, LP-21, H9) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA-GL Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; the `diya-gl` bundle at 99p a month through Submit's checkout route; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
 | 4. The other products | SE, Taxi and Ltd on the page and in the package | none: landed 2026-09-04 to 2026-09-06 (PRs #60 to #68), ahead of phase 3 | done: each product reconciles in CI and loads on the page; the plans are archived | three days for the three, under the coordinator model |
 | 5. Filing (LP-19, LP-20) | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
@@ -458,8 +458,8 @@ here until their phase opens.
 | LP-3 | The npm package `@diy-accounting-uk/diya-gl` with `recalc`, `read-workbook`, `write-workbook` and the MCP server | 0 | LP-1, H7 | Sonnet, the package agent | `diya-gl/package.json` (new), `app/bin/*.js`, `.github/workflows/publish-diya-gl.yml` (new) |
 | LP-4 | The parity gate: the packed CLI reproduces the committed `report.json` and `bookchecks.json` byte for byte | 0 | LP-3 | Sonnet, the parity agent | `.github/workflows/test.yml` |
 | LP-5 | The single-file HTML runner per product | 1 | LP-1 | Sonnet, the runner agent | `scripts/build-runner.mjs` (new), `.github/workflows/deploy.yml`, `public/download.html` |
-| LP-6 | The PWA: manifest, service worker, offline books pages | 1 | — | Sonnet, the pwa agent | `public/books/manifest.webmanifest` (new), `public/books/sw.js` (new), the four books pages, the response-headers policy |
-| LP-7 | Two donation prompts on the books pages | 1 | — | Sonnet, the prompts agent | `public/books/shell.js`, `public/books/books.css`, `web/browser-tests/books-donation.browser.test.js` (new) |
+| LP-6 | The PWA: manifest, service worker, offline DIYA-GL pages | 1 | — | Sonnet, the pwa agent | `public/books/manifest.webmanifest` (new), `public/books/sw.js` (new), the four DIYA-GL pages, the response-headers policy |
+| LP-7 | Two donation prompts on the DIYA-GL pages | 1 | — | Sonnet, the prompts agent | `public/books/shell.js`, `public/books/books.css`, `web/browser-tests/books-donation.browser.test.js` (new) |
 | LP-8 | The format spec page: the declared subset with its mappings and evidence | 1 | — | Opus, the spec-page agent | `public/diya-gl.html` (new), `app/bin/build-sitemaps.js` |
 | LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a prompt shown and followed | 1 | G1 | Sonnet, the analytics agent | `public/lib/analytics.js`, `public/lib/ecommerce-events.js`, `public/books/shell.js`, `web/unit-tests` |
 | LP-10 | The Show HN post and the AccountingWEB piece | 2 | LP-3, LP-8 | operator | — |
@@ -469,14 +469,14 @@ here until their phase opens.
 | LP-14 | The Rust port: the core, then the workbook layer, with the CI parity job | 2 | LP-12 | per the Rust plan | per the Rust plan |
 | LP-15 | Submit repo: a second app client on the shared Cognito pool with Google federation and the spreadsheets callback | 3 | — | Sonnet, the app-client agent | `../submit.diyaccounting.co.uk/infra/.../IdentityStack.java` |
 | LP-16 | Submit repo: the storage API in submit-prod (bucket, four routes, authoriser, metadata sidecar) | 3 | — | Opus design, then Sonnet, the storage-api agent | `../submit.diyaccounting.co.uk/infra/.../ApiStack.java`, a new storage stack, its Lambdas |
-| LP-17 | Sign-in and "save to my account" on the books pages | 3 | LP-15, LP-16, H9 | Opus design, then Sonnet, the cloud-page agent | `public/books/shell.js`, `public/books/cloud.js` (new), the CSP |
-| LP-18 | Billing: the subscribe button, Submit's billing webhook, the entitlement check, the portal link | 3 | LP-16, H10 | Sonnet, the billing agent | `../submit.diyaccounting.co.uk/.../BillingWebhookStack.java`, LP-16's put route, the books pages |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages | 3 | LP-15, LP-16, H9 | Opus design, then Sonnet, the cloud-page agent | `public/books/shell.js`, `public/books/cloud.js` (new), the CSP |
+| LP-18 | Billing: the subscribe button, Submit's billing webhook, the entitlement check, the portal link | 3 | LP-16, LP-21 | Sonnet, the billing agent | `../submit.diyaccounting.co.uk/.../BillingWebhookStack.java`, LP-16's put route, the books pages |
 | LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
 | LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
+| LP-21 | The `diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
 | H7 | Add the `NPM_TOKEN` repository secret for the `diy-accounting-uk` npm org | 0 | — | operator | GitHub settings |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
-| H10 | Create the 99p a month Stripe Payment Link and enable the customer portal | 3 | — | operator | Stripe dashboard |
 
 ### Briefs
 
@@ -502,13 +502,13 @@ here until their phase opens.
 - **LP-4**: a `test.yml` job (or the publish workflow's gate) runs the packed CLI over
   `examples/<product>-latest` for all four products and diffs the output against the committed
   `report.json` and `bookchecks.json`; any byte difference fails.
-- **LP-5**: a `scripts/build-runner.mjs` that inlines the engine bundle, the two schemas under
+- **LP-5**: a `scripts/build-runner.mjs` that inlines the DIYA-GL engine bundle, the two schemas under
   `public/schema/`, the tax TOMLs and the product's `app/templates/<product>/*.xlsx` (base64)
   into one `diya-gl-<product>.html`, stamped with LP-1's values, written to `target/runners/` and
   uploaded by `deploy.yml` beside the zips; `download.html` gains the link. Prove by opening the
   file from disk in Playwright and loading an example book.
 - **LP-6**: `public/books/manifest.webmanifest`, `public/books/sw.js` caching the shell, engine,
-  schemas, CSS and `examples.js`, the link and registration tags in the four books pages, and
+  schemas, CSS and `examples.js`, the link and registration tags in the four DIYA-GL pages, and
   the response-headers policy (the CSP the BST plan's T2 centralised; find its source by grepping
   for `Content-Security-Policy` in `infra/` and `scripts/`) allowing the worker. Prove with a
   Playwright case that loads a page, goes offline and loads it again.
@@ -519,7 +519,7 @@ here until their phase opens.
 - **LP-8**: a `public/diya-gl.html` (the spec page) generated or hand-written: the field table
   from the two schemas' descriptions (both cite XBRL GL 2015), the SA103S box table from
   `app/data/hmrc/sa103-mtd-mapping.json`, the check catalogue from `app/lib/book-checks.js` and
-  the engine checks, the zip layout, the version, and links to the reconciliation pages; added to
+  the DIYA-GL engine checks, the zip layout, the version, and links to the reconciliation pages; added to
   `app/bin/build-sitemaps.js` and the SEO test. Opus because the declared-subset wording is a
   judgment the launch plan's section 1 constrains.
 - **LP-9**: `public/lib/analytics.js` and `ecommerce-events.js` carry the GA4 senders; add events
@@ -544,27 +544,29 @@ here until their phase opens.
   a conflict card when the ETag mismatches. Then Sonnet in `books/shell.js` and a new
   `books/cloud.js`, the CSP `connect-src` for the API host, a browser spec with the API stubbed
   through Playwright routes, and a behaviour case against ci once LP-16 is deployed.
-- **LP-18**: the Submit repo's `BillingWebhookStack` already receives Stripe events; record the
-  99p subscription against the Cognito subject carried as `client_reference_id`, expose the
-  entitlement to LP-16's put route, and add the subscribe button and the portal link to the
-  books pages' account panel. H10 supplies the link.
-  `PLAN_DIYA_GL_STORAGE.md` (Submit repo) found that the webhook keys bundles on the hashed sub while
-  the Payment Link would carry the raw one; H12 decides between the checkout route and a
-  hashed-sub route before this row starts.
+- **LP-18**: the subscribe button calls Submit's `POST /api/v1/billing/checkout` for the
+  `diya-gl` bundle, so `BillingWebhookStack` records the subscription under the hashed sub the
+  way it does for every other bundle; expose the entitlement to LP-16's put route, and add the
+  subscribe button and the portal link to the DIYA-GL pages' account panel. LP-21 supplies the
+  bundle and its price ids.
+- **LP-21**: in the Submit repo, a `[[bundles]]` entry `diya-gl` shaped like `resident-itsa`
+  (`allocation = "on-subscription"`, `stripePriceAmount = 99`, `gbp`, `month`) carrying the
+  DIYA-GL storage activity, then the `stripe-catalogue-sync` skill: dry run, test on a "go",
+  live on its own "go", the price ids onto `.env.ci` and `.env.prod`; one Submit PR.
 - **LP-12**: the port's design wave first: the type model, the float and half-up rounding
   contract that reproduces the JS serializer byte for byte, the module map, the oracle harness
   that diffs `report.json` and `bookchecks.json` against the JS over the fixtures, and the CI
   parity job; then the code waves and the closing ladder, sized from section 5b's estimate.
   Fable coordinates; Sonnet and Opus workers. Does not wait on LP-13.
 
-## Where this changes the DIYA Cloud plan
+## Where this changes the DIYA-GL Cloud plan
 
 `_developers/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
 and a full general ledger. This plan keeps its storage, identity and account placement
 decisions and changes three things on the strength of what shipped this week: computation
 is client-side (the browser engine is the same code CI reconciles), `.xlsx` generation is
 client-side (no LibreOffice anywhere in the service), and the front end is the existing
-books page signed in, under the spreadsheets domain, rather than a new area of the Submit
+DIYA-GL page signed in, under the spreadsheets domain, rather than a new area of the Submit
 site. Its phases 1 and 2 (the library and the storage API) are this plan's phases 0 and 3;
 its phases 3 to 5 are absorbed by the page; its phase 6 is this plan's Filing rung.
 
