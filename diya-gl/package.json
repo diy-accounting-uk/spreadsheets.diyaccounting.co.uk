@@ -10,14 +10,7 @@
     "url": "git+https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk.git",
     "directory": "diya-gl"
   },
-  "keywords": [
-    "accounting",
-    "bookkeeping",
-    "uk-tax",
-    "mtd",
-    "diya-gl",
-    "self-assessment"
-  ],
+  "keywords": ["accounting", "bookkeeping", "uk-tax", "mtd", "diya-gl", "self-assessment"],
   "bin": {
     "diya-gl": "bin/diya-gl.js",
     "diya-gl-recalc": "bin/diya-gl-recalc.js",
@@ -25,11 +18,7 @@
     "diya-gl-write-workbook": "bin/diya-gl-write-workbook.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },
-  "files": [
-    "bin/",
-    "dist/",
-    "README.md"
-  ],
+  "files": ["bin/", "dist/", "README.md"],
   "scripts": {
     "prepack": "node scripts/prepack.mjs"
   },

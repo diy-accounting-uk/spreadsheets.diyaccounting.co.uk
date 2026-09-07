@@ -9,10 +9,10 @@
 import { runDistBin } from "./run-dist-bin.js";
 
 const SUBCOMMANDS = {
-  recalc: "app/bin/report.js",
+  "recalc": "app/bin/report.js",
   "read-workbook": "app/bin/export.js",
   "write-workbook": "app/bin/write-workbook.js",
-  mcp: "app/bin/diya-gl-mcp.js",
+  "mcp": "app/bin/diya-gl-mcp.js",
 };
 
 const [subcommand, ...rest] = process.argv.slice(2);
