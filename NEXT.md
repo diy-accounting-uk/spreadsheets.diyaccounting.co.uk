@@ -6,17 +6,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #68 merged to main on 2026-09-06 with the T37 batch: the entries grid's add row works on the
-bank, cash and payroll journals for SE and Ltd, with the SE and Ltd proofs in the browser specs.
-PR #67 landed earlier the same day with the b1 batch. Prod deploys from each merge. CodeQL runs
-from `.github/workflows/codeql.yml` on `test.yml`'s trigger criteria. Sub-agents run no
-LibreOffice and prove JS calculations against the committed packages' extraction
-(`report.js --source-dir`). Every worktree lives at `../.worktrees/spreadsheets/<row>` on a
-branch named `claude/<ns>-<topic>` while its row is in flight, and the board names it; a fresh
-worktree needs `node scripts/build-books-bundle.mjs` before any books browser spec, and a rebuild
-after merging engine changes. The generate workflows cancel their own in-progress run on a push
-to their ref, so a session pushes nothing to a branch while a generate run is in progress on it.
-`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record and carries its own open items.
+Wave 1 of the launch plan runs as seven worktree agents on batch branch `claude/b3-launch`
+(this repo) and per-row Submit PRs. Worktrees: `../.worktrees/spreadsheets/<row>` for G1,
+LP-1, LP-6, LP-7 and LP-8; `../.worktrees/submit/<row>` for LP-15 and LP-16, which never touch
+the Submit checkout's main tree (another session works there). Each row's Status names its
+branch. Sub-agents run no LibreOffice and prove JS calculations against the committed packages'
+extraction (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs`
+before any books browser spec, and a rebuild after merging engine changes. The generate workflows
+cancel their own in-progress run on a push to their ref, so a session pushes nothing to a branch
+while a generate run is in progress on it. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
+plan of record and carries its own open items.
 
 ## Context for the open rows
 
@@ -44,22 +43,22 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| G1 | GA4 `purchase` from `download.html?stripe=success` carries no money: the £45 Company package sale of 2026-09-03 09:38 UTC (Stripe pi_3UBX5pCD0Ld2ukzI0ASK1VDj) reached the BigQuery export as `purchase`, item "Company", revenue 0. Send `value` and `currency` (and the item price) from the Stripe session or price the page already knows, so GA4 reports income; unit-test the event builder. The submit repo's checkout page does this from `amountTotal / 100` and `currency` of the checkout session. | submit session, 2026-09-07 (GA4 export query) | machine | — | ready-to-start | Sonnet, the analytics agent |
-| LP-1 | The five provenance stamps in `book.toml`'s document info and `report.json`'s header: engine version and commit, tax-data hash, template hash and scorecard, reconciled commit (the format version exists) | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the stamps agent; workstream A |
+| G1 | GA4 `purchase` from `download.html?stripe=success` carries no money: the £45 Company package sale of 2026-09-03 09:38 UTC (Stripe pi_3UBX5pCD0Ld2ukzI0ASK1VDj) reached the BigQuery export as `purchase`, item "Company", revenue 0. Send `value` and `currency` (and the item price) from the Stripe session or price the page already knows, so GA4 reports income; unit-test the event builder. The submit repo's checkout page does this from `amountTotal / 100` and `currency` of the checkout session. | submit session, 2026-09-07 (GA4 export query) | machine | — | in-flight | Sonnet, the analytics agent; `claude/ga4-purchase-value`, worktree g1  |
+| LP-1 | The five provenance stamps in `book.toml`'s document info and `report.json`'s header: engine version and commit, tax-data hash, template hash and scorecard, reconciled commit (the format version exists) | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the stamps agent; `claude/lp-1-stamps`, worktree lp-1  |
 | LP-2 | The reconciled-releases page: one row per release with the five stamps, linking the per-product reconciliation scorecards | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | blocked-to-start | Sonnet, the releases-page agent; workstream A |
 | LP-3 | The npm package `@diy-accounting-uk/diya-gl`: `recalc`, `read-workbook`, `write-workbook` and the MCP server as `bin` entries, built from the engine and published from a reconciled tag | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1, H7 | blocked-to-start | Sonnet, the package agent; workstream A |
 | LP-4 | The parity gate in CI: `npx diya-gl recalc` reproduces the committed examples' `report.json` and `bookchecks.json` byte for byte on every product's fixtures | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3 | blocked-to-start | Sonnet, the parity agent; workstream A |
 | H7 | Add an npm publish token for the `diy-accounting-uk` org as the `NPM_TOKEN` repository secret | none | human | — | ready-to-start | Settings, Secrets and variables, Actions |
 | LP-5 | The single-file HTML runner per product: engine, schemas, tax data and the product's templates inlined into one stamped page, uploaded beside the zips and linked from `download.html` | PLAN_DIYA_GL_LAUNCH.md | machine | LP-1 | blocked-to-start | Sonnet, the runner agent; workstream B |
-| LP-6 | The PWA: a web manifest and a service worker caching the books pages, engine, schemas and examples for offline use, installable from the live page | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the pwa agent; workstream B |
-| LP-7 | Two donation prompts on the books pages, each once and dismissable: after a successful save and when a year's figures first appear, pointing at the Stripe links | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the prompts agent; workstream B |
-| LP-8 | The format spec page: the declared subset, every field's XBRL GL 2015 element, every computed figure's SA103S box, the check catalogue, the zip layout, the version, and the reconciliation evidence | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Opus, the spec-page agent; workstream B |
+| LP-6 | The PWA: a web manifest and a service worker caching the books pages, engine, schemas and examples for offline use, installable from the live page | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the pwa agent; `claude/lp-6-pwa`, worktree lp-6  |
+| LP-7 | Two donation prompts on the books pages, each once and dismissable: after a successful save and when a year's figures first appear, pointing at the Stripe links | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the prompts agent; `claude/lp-7-prompts`, worktree lp-7  |
+| LP-8 | The format spec page: the declared subset, every field's XBRL GL 2015 element, every computed figure's SA103S box, the check catalogue, the zip layout, the version, and the reconciliation evidence | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Opus, the spec-page agent; `claude/lp-8-spec`, worktree lp-8  |
 | LP-9 | Phase 1 measurement: GA4 events for a book loaded, a save, a runner download, a donation prompt shown and followed; the downloads-to-donations ratio readable from the export | PLAN_DIYA_GL_LAUNCH.md | machine | G1 | blocked-to-start | Sonnet, the analytics agent; workstream B |
 | LP-10 | The Show HN post and the AccountingWEB piece: 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and browser | none | human | LP-3, LP-8 | blocked-to-start | the operator writes and posts |
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-3, H8 | blocked-to-start | Haiku, the distribution agent; workstream C |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository for the formula | none | human | — | ready-to-start | an empty public repo; the formula lands by PR |
-| LP-15 | In the Submit repo: a second app client on the shared Cognito pool with Google federation, callback and sign-out URLs on `spreadsheets.diyaccounting.co.uk/books/`, the client id published as a stack output | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Sonnet, the app-client agent; workstream D, Submit repo |
-| LP-16 | In the Submit repo: the storage API in submit-prod: an S3 bucket keyed per user and book, four routes (list, get version, put version, delete) behind the pool's authoriser, a metadata sidecar for optimistic concurrency | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Opus design wave, then Sonnet, the storage-api agent; workstream D, Submit repo |
+| LP-15 | In the Submit repo: a second app client on the shared Cognito pool with Google federation, callback and sign-out URLs on `spreadsheets.diyaccounting.co.uk/books/`, the client id published as a stack output | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the app-client agent; Submit `claude/books-app-client`, worktree lp-15  |
+| LP-16 | In the Submit repo: the storage API in submit-prod: an S3 bucket keyed per user and book, four routes (list, get version, put version, delete) behind the pool's authoriser, a metadata sidecar for optimistic concurrency | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Opus design wave writing `PLAN_DIYA_GL_STORAGE.md`; Submit `claude/books-storage-api`, worktree lp-16  |
 | LP-17 | Sign-in and "save to my account" on the books pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-15, LP-16, H9 | blocked-to-start | Opus design wave, then Sonnet, the cloud-page agent; workstream D |
 | LP-18 | Billing: the subscribe button carries the Cognito subject to the 99p Payment Link; Submit's billing webhook records the subscription; the storage API's put route checks the entitlement; the customer portal link | PLAN_DIYA_GL_LAUNCH.md | machine | LP-16, H10 | blocked-to-start | Sonnet, the billing agent; workstream D, both repos |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18 and let its deploy workflow apply them to submit-prod | none | human | LP-15, LP-16 | blocked-to-start | the CDK path is the AWS write; no console step |
