@@ -62,7 +62,7 @@ jobs:
       - name: Check the npm publish token is configured
         run: |
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::error::The NPM_TOKEN repository secret is not set. Add it (an npm automation token for the diy-accounting-uk org) before pushing a diya-gl-v* tag."
+            echo "::error::The NPM_TOKEN repository secret is not set. Add it (an npm granular token for the @diyaccounting.co.uk scope) before pushing a diya-gl-v* tag."
             exit 1
           fi
         env:

@@ -1,4 +1,4 @@
-# @diy-accounting-uk/diya-gl
+# @diyaccounting.co.uk/diya-gl
 
 Run a UK sole trader's or company's accounts from the command line. A diya-gl book is a
 book.toml and a lines.jsonl file, usually a few kilobytes, that hold a year of transactions
@@ -12,7 +12,7 @@ Four products: Basic Sole Trader, Taxi Driver, Self Employed, Limited Company.
 ## Install
 
 ```
-npm install -g @diy-accounting-uk/diya-gl
+npm install -g @diyaccounting.co.uk/diya-gl
 ```
 
 ## Use

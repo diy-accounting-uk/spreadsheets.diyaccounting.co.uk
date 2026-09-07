@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// diya-gl-package.test.js — the publishable @diy-accounting-uk/diya-gl
+// diya-gl-package.test.js — the publishable @diyaccounting.co.uk/diya-gl
 // package's bin map and prepack output resolve to real files. Runs
 // prepack.mjs itself (no npm install needed: it only touches fs/path/url),
 // then checks every bin target and the files list's roots exist — so a

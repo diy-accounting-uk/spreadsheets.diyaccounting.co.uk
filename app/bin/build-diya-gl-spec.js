@@ -565,7 +565,7 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package
-        <code>@diy-accounting-uk/diya-gl</code>. It is not on npm yet; this page will carry the install line when it is.
+        <code>@diyaccounting.co.uk/diya-gl</code>. It is not on npm yet; this page will carry the install line when it is.
       </p>
       <p>
         The spreadsheets themselves stay free to download on a donation basis. <a href="download.html">Download a package</a>, or
