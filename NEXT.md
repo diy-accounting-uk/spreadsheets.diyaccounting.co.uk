@@ -41,6 +41,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
+| LP-22 | Publish `@diy-accounting-uk/diya-gl` 1.0.0: push the `diya-gl-v1.0.0` tag on main, watch the publish run, confirm the package on npm and the releases page entry | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | the session pushes the tag on the operator's "go"; `NPM_TOKEN` is set |
 | LP-11 | Docker image (`node:alpine` plus the package, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-start | Haiku, the distribution agent; the tap repo exists, the publish workflow is on main |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H16 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after H16 |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-books` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
