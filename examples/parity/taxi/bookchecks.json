@@ -1,0 +1,1368 @@
+[
+  {
+    "id": "book-accounts-in-chart",
+    "tier": "check",
+    "label": "Every entry reaches an account in the book's chart",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-amounts-whole-pence",
+    "tier": "check",
+    "label": "Every amount is a whole number of pence",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-dates-in-period",
+    "tier": "check",
+    "label": "Every entry is dated inside the accounting period",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-duplicate-entries",
+    "tier": "warning",
+    "label": "No two entries share the same journal, date, amount and detail",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-detail",
+    "tier": "warning",
+    "label": "Every entry names who or what it was with",
+    "result": "warn",
+    "actual": 179,
+    "consequence": "A blank detail leaves no way to tell what the amount was for when the books are reviewed later.",
+    "offenders": [
+      {
+        "entryNumber": "SAL-0001",
+        "postingDate": "2026-04-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 245
+      },
+      {
+        "entryNumber": "SAL-0002",
+        "postingDate": "2026-04-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 220
+      },
+      {
+        "entryNumber": "SAL-0003",
+        "postingDate": "2026-04-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 180
+      },
+      {
+        "entryNumber": "SAL-0004",
+        "postingDate": "2026-04-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 210
+      },
+      {
+        "entryNumber": "SAL-0005",
+        "postingDate": "2026-04-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 190
+      },
+      {
+        "entryNumber": "SAL-0006",
+        "postingDate": "2026-04-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0007",
+        "postingDate": "2026-04-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 220
+      },
+      {
+        "entryNumber": "SAL-0008",
+        "postingDate": "2026-04-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 180
+      },
+      {
+        "entryNumber": "SAL-0009",
+        "postingDate": "2026-04-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0010",
+        "postingDate": "2026-04-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0011",
+        "postingDate": "2026-04-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0012",
+        "postingDate": "2026-04-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0013",
+        "postingDate": "2026-04-23",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0014",
+        "postingDate": "2026-04-24",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0015",
+        "postingDate": "2026-04-25",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0016",
+        "postingDate": "2026-05-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0017",
+        "postingDate": "2026-05-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0018",
+        "postingDate": "2026-05-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0019",
+        "postingDate": "2026-05-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0020",
+        "postingDate": "2026-05-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0021",
+        "postingDate": "2026-05-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0022",
+        "postingDate": "2026-05-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0023",
+        "postingDate": "2026-05-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0024",
+        "postingDate": "2026-05-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0025",
+        "postingDate": "2026-05-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0026",
+        "postingDate": "2026-05-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0027",
+        "postingDate": "2026-05-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0028",
+        "postingDate": "2026-05-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0029",
+        "postingDate": "2026-05-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0030",
+        "postingDate": "2026-05-23",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0031",
+        "postingDate": "2026-06-02",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0032",
+        "postingDate": "2026-06-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0033",
+        "postingDate": "2026-06-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0034",
+        "postingDate": "2026-06-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0035",
+        "postingDate": "2026-06-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0036",
+        "postingDate": "2026-06-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0037",
+        "postingDate": "2026-06-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0038",
+        "postingDate": "2026-06-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0039",
+        "postingDate": "2026-06-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0040",
+        "postingDate": "2026-06-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0041",
+        "postingDate": "2026-06-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0042",
+        "postingDate": "2026-06-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0043",
+        "postingDate": "2026-06-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0044",
+        "postingDate": "2026-06-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0045",
+        "postingDate": "2026-06-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0046",
+        "postingDate": "2026-07-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0047",
+        "postingDate": "2026-07-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0048",
+        "postingDate": "2026-07-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0049",
+        "postingDate": "2026-07-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0050",
+        "postingDate": "2026-07-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0051",
+        "postingDate": "2026-07-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0052",
+        "postingDate": "2026-07-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0053",
+        "postingDate": "2026-07-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0054",
+        "postingDate": "2026-07-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0055",
+        "postingDate": "2026-07-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0056",
+        "postingDate": "2026-07-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0057",
+        "postingDate": "2026-07-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0058",
+        "postingDate": "2026-07-23",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0059",
+        "postingDate": "2026-07-24",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0060",
+        "postingDate": "2026-07-25",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0061",
+        "postingDate": "2026-08-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0062",
+        "postingDate": "2026-08-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0063",
+        "postingDate": "2026-08-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0064",
+        "postingDate": "2026-08-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0065",
+        "postingDate": "2026-08-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0066",
+        "postingDate": "2026-08-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0067",
+        "postingDate": "2026-08-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0068",
+        "postingDate": "2026-08-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0069",
+        "postingDate": "2026-08-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0070",
+        "postingDate": "2026-08-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0071",
+        "postingDate": "2026-08-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0072",
+        "postingDate": "2026-08-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0073",
+        "postingDate": "2026-08-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0074",
+        "postingDate": "2026-08-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0075",
+        "postingDate": "2026-08-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0076",
+        "postingDate": "2026-09-01",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0077",
+        "postingDate": "2026-09-02",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0078",
+        "postingDate": "2026-09-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0079",
+        "postingDate": "2026-09-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0080",
+        "postingDate": "2026-09-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0081",
+        "postingDate": "2026-09-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0082",
+        "postingDate": "2026-09-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0083",
+        "postingDate": "2026-09-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0084",
+        "postingDate": "2026-09-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0085",
+        "postingDate": "2026-09-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0088",
+        "postingDate": "2026-09-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0089",
+        "postingDate": "2026-09-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0090",
+        "postingDate": "2026-09-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0091",
+        "postingDate": "2026-09-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0092",
+        "postingDate": "2026-10-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0093",
+        "postingDate": "2026-10-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0094",
+        "postingDate": "2026-10-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0095",
+        "postingDate": "2026-10-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0096",
+        "postingDate": "2026-10-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0097",
+        "postingDate": "2026-10-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0098",
+        "postingDate": "2026-10-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0099",
+        "postingDate": "2026-10-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0100",
+        "postingDate": "2026-10-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0101",
+        "postingDate": "2026-10-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0102",
+        "postingDate": "2026-10-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0103",
+        "postingDate": "2026-10-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0104",
+        "postingDate": "2026-10-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0105",
+        "postingDate": "2026-10-23",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0106",
+        "postingDate": "2026-10-24",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0107",
+        "postingDate": "2026-11-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0108",
+        "postingDate": "2026-11-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0109",
+        "postingDate": "2026-11-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0110",
+        "postingDate": "2026-11-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0111",
+        "postingDate": "2026-11-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0112",
+        "postingDate": "2026-11-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0113",
+        "postingDate": "2026-11-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0114",
+        "postingDate": "2026-11-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0115",
+        "postingDate": "2026-11-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0116",
+        "postingDate": "2026-11-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0117",
+        "postingDate": "2026-11-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0118",
+        "postingDate": "2026-11-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0119",
+        "postingDate": "2026-11-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0120",
+        "postingDate": "2026-11-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0121",
+        "postingDate": "2026-11-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0122",
+        "postingDate": "2026-12-01",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0123",
+        "postingDate": "2026-12-02",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0124",
+        "postingDate": "2026-12-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0125",
+        "postingDate": "2026-12-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0126",
+        "postingDate": "2026-12-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0127",
+        "postingDate": "2026-12-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0128",
+        "postingDate": "2026-12-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0129",
+        "postingDate": "2026-12-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0130",
+        "postingDate": "2026-12-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0131",
+        "postingDate": "2026-12-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0132",
+        "postingDate": "2026-12-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0133",
+        "postingDate": "2026-12-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0134",
+        "postingDate": "2026-12-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0135",
+        "postingDate": "2026-12-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0136",
+        "postingDate": "2026-12-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0137",
+        "postingDate": "2027-01-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0138",
+        "postingDate": "2027-01-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0139",
+        "postingDate": "2027-01-07",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0140",
+        "postingDate": "2027-01-08",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0141",
+        "postingDate": "2027-01-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0142",
+        "postingDate": "2027-01-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0143",
+        "postingDate": "2027-01-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0144",
+        "postingDate": "2027-01-14",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0145",
+        "postingDate": "2027-01-15",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0146",
+        "postingDate": "2027-01-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0147",
+        "postingDate": "2027-01-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0148",
+        "postingDate": "2027-01-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0149",
+        "postingDate": "2027-01-21",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0150",
+        "postingDate": "2027-01-22",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0151",
+        "postingDate": "2027-01-23",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0152",
+        "postingDate": "2027-02-02",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0153",
+        "postingDate": "2027-02-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0154",
+        "postingDate": "2027-02-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0155",
+        "postingDate": "2027-02-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0156",
+        "postingDate": "2027-02-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0157",
+        "postingDate": "2027-02-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0158",
+        "postingDate": "2027-02-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0159",
+        "postingDate": "2027-02-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0160",
+        "postingDate": "2027-02-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0161",
+        "postingDate": "2027-02-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0162",
+        "postingDate": "2027-02-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0163",
+        "postingDate": "2027-02-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0164",
+        "postingDate": "2027-02-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0165",
+        "postingDate": "2027-02-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0166",
+        "postingDate": "2027-02-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0167",
+        "postingDate": "2027-03-02",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0168",
+        "postingDate": "2027-03-03",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0169",
+        "postingDate": "2027-03-04",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0170",
+        "postingDate": "2027-03-05",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0171",
+        "postingDate": "2027-03-06",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0172",
+        "postingDate": "2027-03-09",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0173",
+        "postingDate": "2027-03-10",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0174",
+        "postingDate": "2027-03-11",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0175",
+        "postingDate": "2027-03-12",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0176",
+        "postingDate": "2027-03-13",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0177",
+        "postingDate": "2027-03-16",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0178",
+        "postingDate": "2027-03-17",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0179",
+        "postingDate": "2027-03-18",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0180",
+        "postingDate": "2027-03-19",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      },
+      {
+        "entryNumber": "SAL-0181",
+        "postingDate": "2027-03-20",
+        "accountMainID": "4000",
+        "detail": "",
+        "amount": 200
+      }
+    ]
+  },
+  {
+    "id": "book-empty-month",
+    "tier": "warning",
+    "label": "Every month between the first and last entry has at least one entry",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-negative-amount",
+    "tier": "warning",
+    "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-taxi-fare-miles",
+    "tier": "warning",
+    "label": "Every fare day carrying miles elsewhere carries its own",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-taxi-miles-band",
+    "tier": "warning",
+    "label": "Business miles stay inside the higher-rate band",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-taxi-vehicle-register",
+    "tier": "warning",
+    "label": "Every vehicle bought is on the Fixed Assets register",
+    "result": "warn",
+    "actual": 1,
+    "consequence": "A vehicle bought but not entered on the Fixed Assets register earns no capital allowance, and PurchasesMar!T2 has nothing to schedule against it.",
+    "offenders": [
+      {
+        "entryNumber": "PUR-0007",
+        "postingDate": "2026-06-01",
+        "accountMainID": "7000",
+        "detail": "Car Dealer",
+        "amount": 8000
+      }
+    ],
+    "helper": {
+      "id": "book-taxi-vehicle-register",
+      "label": "Register these vehicles",
+      "kind": "book"
+    }
+  },
+  {
+    "id": "book-vat-threshold",
+    "tier": "warning",
+    "label": "Turnover for the year is £36,545.00, against a £90,000.00 VAT registration threshold.",
+    "result": "pass",
+    "actual": 36545,
+    "consequence": null,
+    "offenders": []
+  }
+]

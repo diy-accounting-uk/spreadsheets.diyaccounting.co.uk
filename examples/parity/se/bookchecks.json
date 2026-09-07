@@ -1,0 +1,146 @@
+[
+  {
+    "id": "book-accounts-in-chart",
+    "tier": "check",
+    "label": "Every entry reaches an account in the book's chart",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-amounts-whole-pence",
+    "tier": "check",
+    "label": "Every amount is a whole number of pence",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-bank-account-has-workbook",
+    "tier": "check",
+    "label": "Every bank entry is on an account the package keeps a workbook for",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-bank-code-analysed",
+    "tier": "check",
+    "label": "Every bank entry is coded to a column its workbook analyses",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-bank-line-has-side",
+    "tier": "check",
+    "label": "Every bank entry is a receipt or a payment",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-bank-overdrawn",
+    "tier": "warning",
+    "label": "The bank book closes every month at zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-cash-never-overdrawn",
+    "tier": "warning",
+    "label": "The cash book closes every month at zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-dates-in-period",
+    "tier": "check",
+    "label": "Every entry is dated inside the accounting period",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-duplicate-entries",
+    "tier": "warning",
+    "label": "No two entries share the same journal, date, amount and detail",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-employee-paid-every-month",
+    "tier": "warning",
+    "label": "Every employee is paid in each month between their first payslip and their last",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-detail",
+    "tier": "warning",
+    "label": "Every entry names who or what it was with",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-empty-month",
+    "tier": "warning",
+    "label": "Every month between the first and last entry has at least one entry",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-fixed-asset-rows-fit",
+    "tier": "check",
+    "label": "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-negative-amount",
+    "tier": "warning",
+    "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-payslip-names-employee",
+    "tier": "check",
+    "label": "Every payslip names someone the book employs",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-vat-threshold",
+    "tier": "warning",
+    "label": "Turnover for the year is £354,083.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
+    "result": "pass",
+    "actual": 354083.3333333333,
+    "consequence": null,
+    "offenders": []
+  }
+]
