@@ -394,7 +394,7 @@ community, the thing they check first. It costs a build step and a page.
 
 | Phase | Builds | Prerequisite | Gate to the next phase | Effort |
 | --- | --- | --- | --- | --- |
-| 0. Provenance (LP-1 to LP-4, H7) | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
+| 0. Provenance (LP-1 to LP-4) | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
 | 1. The free face (LP-5 to LP-9) | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
 | 2. Tech launch (LP-10 to LP-14, H8) | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
 | 3. Cloud, 99p a month (LP-15 to LP-18, LP-21, H9) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA-GL Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; the `diya-gl` bundle at 99p a month through Submit's checkout route; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
@@ -455,7 +455,7 @@ here until their phase opens.
 |---|---|---|---|---|---|
 | LP-1 | The five provenance stamps in `book.toml` and `report.json` | 0 | — | Sonnet, the stamps agent | `app/lib/books-interchange.js`, `app/lib/report-serializer.js`, `scripts/build-books-bundle.mjs`, `app/test` |
 | LP-2 | The reconciled-releases page over the reconciliation scorecards | 0 | LP-1 | Sonnet, the releases-page agent | `app/bin/build-reconciliation-pages.js`, `public/reconciliation/releases.html` |
-| LP-3 | The npm package `@diy-accounting-uk/diya-gl` with `recalc`, `read-workbook`, `write-workbook` and the MCP server | 0 | LP-1, H7 | Sonnet, the package agent | `diya-gl/package.json` (new), `app/bin/*.js`, `.github/workflows/publish-diya-gl.yml` (new) |
+| LP-3 | The npm package `@diy-accounting-uk/diya-gl` with `recalc`, `read-workbook`, `write-workbook` and the MCP server | 0 | LP-1 | Sonnet, the package agent | `diya-gl/package.json` (new), `app/bin/*.js`, `.github/workflows/publish-diya-gl.yml` (new) |
 | LP-4 | The parity gate: the packed CLI reproduces the committed `report.json` and `bookchecks.json` byte for byte | 0 | LP-3 | Sonnet, the parity agent | `.github/workflows/test.yml` |
 | LP-5 | The single-file HTML runner per product | 1 | LP-1 | Sonnet, the runner agent | `scripts/build-runner.mjs` (new), `.github/workflows/deploy.yml`, `public/download.html` |
 | LP-6 | The PWA: manifest, service worker, offline DIYA-GL pages | 1 | — | Sonnet, the pwa agent | `public/books/manifest.webmanifest` (new), `public/books/sw.js` (new), the four DIYA-GL pages, the response-headers policy |
@@ -474,7 +474,6 @@ here until their phase opens.
 | LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
 | LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
 | LP-21 | The `diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
-| H7 | Add the `NPM_TOKEN` repository secret for the `diy-accounting-uk` npm org | 0 | — | operator | GitHub settings |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
 
@@ -497,7 +496,7 @@ here until their phase opens.
   `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
   (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
   is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
-  `diya-gl-v*` with `NPM_TOKEN` (H7) and provenance attestation. Prove with `npm pack` and a
+  `diya-gl-v*` with `NPM_TOKEN` and provenance attestation. Prove with `npm pack` and a
   smoke run of each bin in CI.
 - **LP-4**: a `test.yml` job (or the publish workflow's gate) runs the packed CLI over
   `examples/<product>-latest` for all four products and diffs the output against the committed
