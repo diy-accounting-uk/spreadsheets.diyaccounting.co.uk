@@ -1,0 +1,108 @@
+name: publish-diya-gl
+run-name: "publish-diya-gl from ${{ github.ref_name }}"
+
+on:
+  push:
+    tags:
+      - 'diya-gl-v*'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify the tag matches diya-gl/package.json's version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TAG_VERSION="${TAG#diya-gl-v}"
+          PKG_VERSION=$(node -p "require('./diya-gl/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $TAG names version $TAG_VERSION but diya-gl/package.json is at $PKG_VERSION"
+            exit 1
+          fi
+          echo "Publishing $PKG_VERSION"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Node dependencies
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+
+      - name: Build provenance data
+        run: npm run build:provenance-data
+
+      - name: diya-gl package dependencies
+        run: cd diya-gl && npm ci
+
+      - name: Pack diya-gl and run each bin from the tarball
+        run: diya-gl/smoke.sh target/diya-gl-smoke
+
+      - name: Check the npm publish token is configured
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::The NPM_TOKEN repository secret is not set. Add it (an npm automation token for the diy-accounting-uk org) before pushing a diya-gl-v* tag."
+            exit 1
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        run: cd diya-gl && npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Record the release and rebuild the reconciled-releases page
+        run: |
+          node app/bin/build-reconciliation-pages.js --record "${GITHUB_REF_NAME}"
+          node app/bin/build-reconciliation-pages.js --index-only
+
+      - name: Commit the release record onto main
+        id: push
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/data/releases.json \
+            web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html \
+            web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Record diya-gl release ${GITHUB_REF_NAME}"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Retry push after delay
+        if: ${{ steps.push.outcome == 'failure' }}
+        run: |
+          for i in 5 10 15 20 25 30; do
+            echo "Waiting... ${i}s"
+            sleep 5
+          done
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main

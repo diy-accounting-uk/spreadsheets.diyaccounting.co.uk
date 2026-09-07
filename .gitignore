@@ -62,3 +62,9 @@ reports/screenshots/
 reports/judge-verdict-*.json
 
 .claude/worktrees/
+
+# diya-gl package: files copied into place by diya-gl/scripts/prepack.mjs, its
+# own node_modules, and any tarball a local npm pack leaves behind
+diya-gl/dist/
+diya-gl/node_modules/
+diya-gl/*.tgz
