@@ -15,6 +15,7 @@ DIYA_GL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$DIYA_GL_DIR/.." && pwd)"
 SCRATCH="${1:-$(mktemp -d)}"
 mkdir -p "$SCRATCH"
+SCRATCH="$(cd "$SCRATCH" && pwd)"
 
 echo "=== diya-gl smoke test ==="
 echo "package dir: $DIYA_GL_DIR"
