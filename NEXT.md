@@ -42,11 +42,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | H18 | blocked-to-resume | tap at 1.0.1, installed and tested; image 1.0.1 on GHCR, private until H18 |
-| H18 | Make the GHCR package `diya-gl` public | none | human | — | ready-to-start | github.com/orgs/diy-accounting-uk/packages/container/diya-gl/settings, Danger Zone, change visibility |
+| CQ-1 | `update.yml`'s commit job overlays a formatting artifact from the run's start onto the branch tip and commits it, so a newer `NEXT.md` on main lost two rows to a4cdc13f; check out the run's own sha before applying the artifacts so the rebase carries only the diff | none | machine | — | in-flight | Haiku-sized; the coordinator's PR is open |
+| LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | on PR #80, cloud spec and fast suite green; browser suite re-running after a spec race fix; operator merges |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-23 | in-flight | on PR #80; operator merges; the case runs for real once LP-23 lands |
 | LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | Submit role | blocked-to-start | Sonnet; the ci pool already keeps native sign-in on for the DIYA-GL client; waits on Submit's role ARN |
-| LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | on PR #80, cloud spec and fast suite green; operator merges |
 
 ## Plans not tracked here
 
