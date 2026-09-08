@@ -173,6 +173,8 @@ jobs:
 
       - name: Node dependencies
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
@@ -223,6 +225,8 @@ jobs:
 
       - name: Node dependencies
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
@@ -273,6 +277,8 @@ jobs:
 
       - name: Node dependencies
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
@@ -323,6 +329,8 @@ jobs:
 
       - name: Node dependencies
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
