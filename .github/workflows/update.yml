@@ -201,9 +201,12 @@ jobs:
     needs: [params, formatting, node-update, java-update, validate]
     if: ${{ !cancelled() && needs.validate.result == 'success' && needs.params.outputs.skip-commit != 'true' }}
     steps:
+      # The artifacts were produced from the run's own commit, so they are applied to
+      # that commit and rebased onto the branch tip; applied to the tip directly, a
+      # file changed on the branch since the run began is silently reverted.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/download-artifact@v8
         continue-on-error: true
@@ -234,8 +237,9 @@ jobs:
             git commit -m "Update formatting and dependencies
 
           Triggered by: ${{ github.sha }}"
-            git pull --rebase
-            git push
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Retry push after delay
         if: ${{ steps.push.outcome == 'failure' }}
@@ -244,5 +248,6 @@ jobs:
             echo "Waiting... ${i}s"
             sleep 5
           done
-          git pull --rebase
-          git push
+          git fetch origin "${GITHUB_REF_NAME}"
+          git rebase "origin/${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
