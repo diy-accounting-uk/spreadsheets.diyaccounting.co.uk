@@ -62,6 +62,25 @@
 
   captureOAuthReturn();
 
+  // Section 6: Stripe returns the browser to returnTo?checkout=success or
+  // ?checkout=canceled, session_id and all. returnTo carries no query of
+  // its own (the checkout body sends origin+pathname only), so stripping
+  // these two known keys is enough -- there is no deep link to restore.
+  var pendingCheckoutReturn = null;
+
+  function captureCheckoutReturn() {
+    var params = new URLSearchParams(window.location.search);
+    var checkout = params.get("checkout");
+    if (!checkout) return;
+    pendingCheckoutReturn = checkout;
+    params.delete("checkout");
+    params.delete("session_id");
+    var search = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (search ? "?" + search : "") + window.location.hash);
+  }
+
+  captureCheckoutReturn();
+
   // ============================== storage ==============================
   // Every key this file writes carries this prefix, so sign-out can clear
   // all of them by prefix rather than naming each one by hand as new ones
@@ -172,6 +191,11 @@
   function sendSignInEvent(step) {
     if (typeof window.buildCloudSignInEvent !== "function") return;
     sendCloudEvent(window.buildCloudSignInEvent(step));
+  }
+
+  function sendBillingEvent(action) {
+    if (typeof window.buildCloudBillingEvent !== "function") return;
+    sendCloudEvent(window.buildCloudBillingEvent(action));
   }
 
   // ============================== sign-in redirect and exchange ==============================
@@ -607,7 +631,11 @@
   function renderEntitlement(books) {
     var reason = currentEntitlementReason(books);
     if (reason === "active-subscription") {
-      return '<div class="account-entitlement">Subscribed</div>';
+      return (
+        '<div class="account-entitlement">Subscribed' +
+        '<div class="account-row-actions"><button type="button" class="btn" data-action="manage-subscription">Manage subscription</button></div>' +
+        "</div>"
+      );
     }
     if (reason === "no-subscription" || reason === "expired") {
       return (
@@ -1068,26 +1096,53 @@
       });
   }
 
+  // Every billing failure -- a bad response, a network error, a missing
+  // url field -- lands on messageForApiError's own default branch, the
+  // same "try the download" wording the books routes already show for a
+  // reach failure. Only a signed-out session gets the different panel.
+  function handleBillingError(error) {
+    if (error instanceof CloudSignedOutError) {
+      handlePanelError(error);
+      return;
+    }
+    showToastMessage(messageForApiError(error && error.status ? error : { status: 0 }));
+  }
+
   // Section 6: the checkout route. Submit's server sets metadata.hashedSub
   // from the id token; the panel re-reads entitlement from the next list
-  // call once the reader returns from Stripe.
+  // call once the reader returns from Stripe (processPendingCheckoutReturn).
   function startSubscription() {
-    var session = getSession();
-    if (!session) return;
-    var config = window.DIYA_GL_CLOUD_CONFIG;
-    fetch(config.apiBase + "/billing/checkout", {
+    if (!getSession()) return;
+    sendBillingEvent("subscribe-started");
+    apiFetch("/billing/checkout", {
       method: "POST",
-      headers: { Authorization: "Bearer " + session.idToken },
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bundleId: "resident-diya-gl", returnTo: redirectUri() }),
     })
       .then(function (response) {
-        return response.json();
+        return parseJsonBody(response).then(function (body) {
+          if (!response.ok || !body.checkoutUrl) throw apiError(response.status, body);
+          window.location.assign(body.checkoutUrl);
+        });
       })
-      .then(function (body) {
-        if (body && body.url) window.location.assign(body.url);
+      .catch(handleBillingError);
+  }
+
+  // The entitlement card's "Manage subscription" action: Submit's portal
+  // route returns the customer-portal URL for the reader's own Stripe
+  // customer, read back through the same returnTo the checkout route takes.
+  function openBillingPortal() {
+    if (!getSession()) return;
+    sendBillingEvent("manage-opened");
+    var query = new URLSearchParams({ returnTo: redirectUri() });
+    apiFetch("/billing/portal?" + query.toString(), { method: "GET" })
+      .then(function (response) {
+        return parseJsonBody(response).then(function (body) {
+          if (!response.ok || !body.portalUrl) throw apiError(response.status, body);
+          window.location.assign(body.portalUrl);
+        });
       })
-      .catch(function () {
-        showToastMessage("Your account could not be reached. Your book is safe on this page -- try the download.");
-      });
+      .catch(handleBillingError);
   }
 
   function signOut() {
@@ -1126,6 +1181,8 @@
       renderPanel();
     } else if (action === "subscribe") {
       startSubscription();
+    } else if (action === "manage-subscription") {
+      openBillingPortal();
     } else if (action === "duplicate-update") {
       var updatePending = panelState.pending;
       var duplicate = panelState.duplicate;
@@ -1225,6 +1282,21 @@
       });
   }
 
+  // Section 6, the return from Stripe: never trust the query flag as proof
+  // of entitlement -- the entitlement card renders from the next list
+  // call's entitlementAtPut.reason, not from checkout=success itself.
+  function processPendingCheckoutReturn() {
+    if (!pendingCheckoutReturn) return;
+    var result = pendingCheckoutReturn;
+    pendingCheckoutReturn = null;
+    if (result === "success") {
+      showToastMessage("Thanks, your subscription is active. Saving to your account is on.");
+      if (getSession()) fetchBooksList();
+    } else if (result === "canceled") {
+      showToastMessage("Checkout cancelled. Your book is safe on this page.");
+    }
+  }
+
   function mount() {
     if (!isEnabled()) return;
     accountBtnEl = document.getElementById("account-btn");
@@ -1244,6 +1316,7 @@
       }
     });
     processPendingReturn();
+    processPendingCheckoutReturn();
   }
 
   window.DiyaGlBooksCloud = {
