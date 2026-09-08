@@ -175,6 +175,7 @@ jobs:
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate BST package from diya-gl data
@@ -225,6 +226,7 @@ jobs:
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate Taxi package from diya-gl data
@@ -275,6 +277,7 @@ jobs:
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate SE package from diya-gl data
@@ -325,6 +328,7 @@ jobs:
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
+          PUPPETEER_SKIP_DOWNLOAD: "1"
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate Ltd package from diya-gl data with offset
@@ -478,6 +482,25 @@ jobs:
 
       - name: Pack diya-gl and run each bin from the tarball
         run: diya-gl/smoke.sh target/diya-gl-smoke
+
+      - name: Find the packed tarball
+        id: tarball
+        run: |
+          TARBALL=$(basename "$(ls target/diya-gl-smoke/*.tgz)")
+          echo "name=${TARBALL}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Build the diya-gl image
+        run: |
+          VERSION=$(node -p "require('./diya-gl/package.json').version")
+          docker build \
+            --build-arg TARBALL="${{ steps.tarball.outputs.name }}" \
+            --build-arg VERSION="$VERSION" \
+            -t diya-gl:test \
+            -f diya-gl/Dockerfile \
+            target/diya-gl-smoke
+
+      - name: Image smoke test
+        run: diya-gl/image-smoke.sh diya-gl:test "$PWD"
 
       - name: 'Parity gate: the packed CLI against the committed report.json and bookchecks.json'
         run: diya-gl/parity.sh target/diya-gl-parity

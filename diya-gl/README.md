@@ -15,6 +15,13 @@ Four products: Basic Sole Trader, Taxi Driver, Self Employed, Limited Company.
 npm install -g @diy-accounting-uk/diya-gl
 ```
 
+Or run the image straight from GHCR, no install:
+
+```
+docker run --rm -v "$PWD":/data ghcr.io/diy-accounting-uk/diya-gl:latest \
+  recalc --package bst --data /data/my-book --years se-2025-2026 --output-dir /data/out
+```
+
 ## Use
 
 ```
