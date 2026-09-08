@@ -7,8 +7,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the DIYA-GL
-pages' cloud sign-in is live against Submit's storage API. Wave 5 is in flight: the image half is PR #77 (`claude/lp-11-docker`, worktree
-`../.worktrees/spreadsheets/lp-11-docker`, now targeting main); the tap half is on
+pages' cloud sign-in is live against Submit's storage API. Wave 5 is in flight: the image half is merged (PR #77); the tap half is on
 `diy-accounting-uk/homebrew-tap`'s main, its hourly workflow writing the formula once 1.0.0 is on npm. Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
@@ -43,9 +42,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | H17 | blocked-to-resume | on main; the first publish job found `NPM_TOKEN` empty; re-dispatch after H17 |
-| H17 | Set the `NPM_TOKEN` secret's value: the first set stored an empty string | none | human | — | ready-to-start | `pbpaste \| gh secret set NPM_TOKEN -R diy-accounting-uk/spreadsheets.diyaccounting.co.uk` |
-| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | PR #77 green, Docker build and image smoke proved in CI; operator merges |
+| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | 1.0.0 published and tagged; PR #78 lands the record, the roll to 1.0.1 and the rebase fix |
+| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | PR #77 merged; first GHCR push rides the running prod deploy; the tap waits for npm to list 1.0.0 |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B55 is on its b12 batch |
 
