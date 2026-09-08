@@ -90,14 +90,22 @@ the operator's generate dispatches (H-LU-3).
 Registration is form-filling on gov.uk; a solicitor is needed only if an application is opposed.
 Fees are as of September 2026 and are checked on gov.uk before paying.
 
-- **DIYA-GL** as a UK word mark in classes 9 (downloadable software and data files), 42 (software as
-  a service and hosting) and 35 (accounting and bookkeeping services): £170 plus £50 per extra class,
-  £270. A coined term; expected to register unopposed in about four months.
-- **DIY ACCOUNTING** as a word mark risks refusal as descriptive. File it through the Right Start
-  option (£100 for the examiner's report, £100 more only if it looks registrable) with twenty years
-  of use as the acquired-distinctiveness argument, and file the logo as a stylised mark beside it.
+The three marks, the operator's choice: **DIY ACCOUNTING SPREADSHEETS**, **DIY ACCOUNTING SUBMIT**
+and **DIYA-GL**. Each is a UK word mark in classes 9 (downloadable software and data files), 42
+(software as a service and hosting) and 35 (accounting and bookkeeping services).
+
+- **DIYA-GL**: a coined term, expected to register unopposed in about four months. Standard
+  application, £170 plus £50 per extra class, £270.
+- **DIY ACCOUNTING SUBMIT** and **DIY ACCOUNTING SPREADSHEETS**: both lean on descriptive words, the
+  second most of all, so each goes through the Right Start option (£100 for the examiner's report,
+  £100 more only if it looks registrable) with twenty years of trading as DIY Accounting as the
+  acquired-distinctiveness argument, and the logo filed as a stylised mark beside each. The two may
+  qualify as one series application, since they differ only in a descriptive word; the pack (LU-10)
+  checks the IPO's series rule and files them as a series if it holds, which saves one fee.
+- Budget if every application proceeds to registration: about £810 for the three word marks in
+  three classes, plus the stylised marks.
 - Before filing: the IPO search and TMview, both free.
-- From now: ™ after DIYA-GL and DIY Accounting on the site footer, the spec page and the package
+- From now: ™ after the three marks on the site footer, the spec page and the package
   README; ® only once registered. The marks are always adjectives before a noun.
 - Now, while unowned: the domains `diya-gl.com`, `diya-gl.co.uk`, `diya-gl.dev`; a `diya-gl` GitHub
   organisation; a `@diya-gl` npm organisation.
@@ -108,7 +116,7 @@ Fees are as of September 2026 and are checked on gov.uk before paying.
 | --- | --- | --- | --- | --- |
 | LU-10 | The filing pack: the free searches run and their results recorded; the goods and services wording for classes 9, 42 and 35 drafted from the IPO's pre-approved terms; the first-use evidence gathered with dates; `TRADEMARKS.md` extended with the ™ usage rules | H-LU-1 | Sonnet | `TRADEMARKS.md`, `_developers/trade-marks/` (new) |
 | LU-11 | ™ on the marks across the site footer, the spec page and the package README, in the same PR as LU-6 | LU-6 | Sonnet | as LU-6 |
-| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL in three classes; DIY ACCOUNTING via Right Start with the logo beside it | LU-10 | operator | gov.uk |
+| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL as a standard application; DIY ACCOUNTING SUBMIT and DIY ACCOUNTING SPREADSHEETS via Right Start, as a series if the rule holds, with the stylised marks beside them | LU-10 | operator | gov.uk |
 | H-LU-5 | Register the `diya-gl` domains and the GitHub and npm organisations | — | operator | registrars, github.com, npmjs.com |
 
 ## Consistent branding
@@ -120,7 +128,8 @@ the other repositories pull from it instead of carrying their own copies. What i
   SVG, with the PNG and ICO renders and the web manifest icons generated from them.
 - The tokens: colours, type scale and spacing as CSS custom properties in `tokens.css` and as a JSON
   file for anything that is not CSS; the font stack and where it loads from.
-- The words: the names and their casings (DIY Accounting, DIYA-GL, DIY Accounting Submit), the ™
+- The words: the names and their casings (DIY Accounting, DIY Accounting Spreadsheets, DIY Accounting
+  Submit, DIYA-GL), the ™
   rule, "free to use, source available, open specification", the copyright line, the wording never
   used ("open source").
 - The canonical legal texts: the PolyForm additional grant, the Apache NOTICE, `TRADEMARKS.md`. The
