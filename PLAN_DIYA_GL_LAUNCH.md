@@ -475,6 +475,7 @@ here until their phase opens.
 | LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
 | LP-21 | The `resident-diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's B54, done 2026-09-08 in test and live) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | 2 | — | Sonnet | `.github/workflows/publish-diya-gl.yml`, `.github/workflows/deploy.yml` |
+| LP-23 | The ci behaviour job mints its Cognito test user per run through Submit's cross-account role | 3 | Submit's role | Sonnet | `.github/workflows/deploy.yml` |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
 
@@ -573,6 +574,13 @@ here until their phase opens.
   entitlement from its next list call. Waits on Submit's B55 (their PR #151). The bundle is listed
   for purchase on ci only until the operator lifts it, so the prod button finds no bundle until
   then; the Stripe product and prices exist in test and live (Submit, 2026-09-08).
+- **LP-23**: the ci behaviour job's test user. Submit's suites store no credentials: their deploy
+  runs `scripts/ensure-cognito-test-user.js <env> <lane>` per run, which keeps one durable user per
+  lane, rotates its password, re-enrols its authenticator and purges its data. This repo's
+  `deploy.yml` does the same on ci: assume the cross-account role Submit provides (its ARN in a
+  repository variable), fetch the script from Submit's main, run it for the `spreadsheetsBehaviour`
+  lane, and pass `TEST_AUTH_USERNAME`, `TEST_AUTH_PASSWORD` and `TEST_AUTH_TOTP_SECRET` as masked
+  values into the behaviour run. Sonnet, once the role exists.
 - **LP-21**: in the Submit repo (its `NEXT.md` B54), a `[[bundles]]` entry `resident-diya-gl`, the id
   `BooksStack` already checks, shaped like `resident-itsa`
   (`allocation = "on-subscription"`, `stripePriceAmount = 99`, `gbp`, `month`) carrying the
