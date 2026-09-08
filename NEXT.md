@@ -42,8 +42,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | 1.0.0 is on npm; PR #78 lands the record, the roll to 1.0.1 and the rebase fix |
-| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | GHCR push rides the 1.0.1 publish after PR #78; the tap's formula run is dispatched |
+| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | 1.0.0 is on npm; PR #78 lands the record, the roll to 1.0.1 (root and package) and the workflow fixes |
+| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | tap formula 1.0.0 installed and tested on a runner; GHCR push rides the 1.0.1 publish after PR #78 |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B55 is on its b12 batch |
 
