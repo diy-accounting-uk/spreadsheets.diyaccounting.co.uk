@@ -352,6 +352,10 @@ jobs:
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
+        env:
+          TEST_AUTH_USERNAME: ${{ secrets.TEST_AUTH_USERNAME }}
+          TEST_AUTH_PASSWORD: ${{ secrets.TEST_AUTH_PASSWORD }}
+          TEST_AUTH_TOTP_SECRET: ${{ secrets.TEST_AUTH_TOTP_SECRET }}
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}

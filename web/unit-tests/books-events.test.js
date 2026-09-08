@@ -16,6 +16,7 @@ let buildDonationPromptEvent;
 let buildCloudSignInEvent;
 let buildCloudSaveEvent;
 let buildCloudConflictEvent;
+let buildCloudBillingEvent;
 
 beforeAll(() => {
   const src = readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/books/books-events.js"), "utf8");
@@ -28,6 +29,7 @@ beforeAll(() => {
   buildCloudSignInEvent = sandbox.window.buildCloudSignInEvent;
   buildCloudSaveEvent = sandbox.window.buildCloudSaveEvent;
   buildCloudConflictEvent = sandbox.window.buildCloudConflictEvent;
+  buildCloudBillingEvent = sandbox.window.buildCloudBillingEvent;
 });
 
 describe("buildBookLoadedEvent", () => {
@@ -100,5 +102,12 @@ describe("buildCloudConflictEvent", () => {
     expect(buildCloudConflictEvent("new-book")).toEqual({ name: "cloud_conflict", params: { resolution: "new-book" } });
     expect(buildCloudConflictEvent("reloaded")).toEqual({ name: "cloud_conflict", params: { resolution: "reloaded" } });
     expect(buildCloudConflictEvent("cancelled")).toEqual({ name: "cloud_conflict", params: { resolution: "cancelled" } });
+  });
+});
+
+describe("buildCloudBillingEvent", () => {
+  it("names the event cloud_billing and carries the action", () => {
+    expect(buildCloudBillingEvent("subscribe-started")).toEqual({ name: "cloud_billing", params: { action: "subscribe-started" } });
+    expect(buildCloudBillingEvent("manage-opened")).toEqual({ name: "cloud_billing", params: { action: "manage-opened" } });
   });
 });
