@@ -566,9 +566,13 @@ here until their phase opens.
   webhook records the subscription under the hashed sub the way it does for every other bundle
   and LP-16's put route sees it. This repo's: the subscribe button posts
   `{"bundleId":"resident-diya-gl","returnTo":"<the page URL>"}` to `POST /api/v1/billing/checkout`
-  and follows the returned `url`; the account panel carries the portal link; waits on B55. The
-  bundle is listed for purchase on ci only until the operator lifts it, so the prod button finds
-  no bundle until then; the Stripe product and prices exist in test and live (Submit, 2026-09-08).
+  with `Authorization: Bearer <the DIYA-GL id token>` and follows the returned `url`; the portal
+  link is `GET /api/v1/billing/portal?returnTo=<page URL>`. `returnTo` must be a DIYA-GL origin on
+  the API's per-environment allow-list; Stripe returns the browser to
+  `<returnTo>?checkout=success&session_id=…` or `?checkout=canceled`, and the panel re-reads
+  entitlement from its next list call. Waits on Submit's B55 (their PR #151). The bundle is listed
+  for purchase on ci only until the operator lifts it, so the prod button finds no bundle until
+  then; the Stripe product and prices exist in test and live (Submit, 2026-09-08).
 - **LP-21**: in the Submit repo (its `NEXT.md` B54), a `[[bundles]]` entry `resident-diya-gl`, the id
   `BooksStack` already checks, shaped like `resident-itsa`
   (`allocation = "on-subscription"`, `stripePriceAmount = 99`, `gbp`, `month`) carrying the
