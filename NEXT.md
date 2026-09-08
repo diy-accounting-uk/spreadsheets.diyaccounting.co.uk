@@ -46,12 +46,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | PR #76 merged; the prod deploy carrying the first publish is running |
 | LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | image half is PR #77 on #76; the tap half is on the tap's main, its hourly workflow waits for 1.0.0 |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
-| LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-books` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
+| LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-diya-gl` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
 
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
-  and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-books` bundle, LP-21 there) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
+  and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-diya-gl` bundle, LP-21 there) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
 
 ## Discipline
 

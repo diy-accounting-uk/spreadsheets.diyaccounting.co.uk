@@ -397,7 +397,7 @@ community, the thing they check first. It costs a build step and a page.
 | 0. Provenance (LP-1 to LP-4) | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
 | 1. The free face (LP-5 to LP-9) | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
 | 2. Tech launch (LP-10 to LP-14, LP-22, H8) | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
-| 3. Cloud, 99p a month (LP-15 to LP-18, LP-21, H9) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA-GL Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; the `resident-books` bundle at 99p a month through Submit's checkout route; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
+| 3. Cloud, 99p a month (LP-15 to LP-18, LP-21, H9) | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA-GL Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; the `resident-diya-gl` bundle at 99p a month through Submit's checkout route; the customer portal | phase 1 (the pool tier is decided: Plus) | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
 | 4. The other products | SE, Taxi and Ltd on the page and in the package | none: landed 2026-09-04 to 2026-09-06 (PRs #60 to #68), ahead of phase 3 | done: each product reconciles in CI and loads on the page; the plans are archived | three days for the three, under the coordinator model |
 | 5. Filing (LP-19, LP-20) | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
@@ -473,7 +473,7 @@ here until their phase opens.
 | LP-18 | Billing: the subscribe button, Submit's billing webhook, the entitlement check, the portal link | 3 | LP-16, LP-21 | Sonnet, the billing agent | `../submit.diyaccounting.co.uk/.../BillingWebhookStack.java`, LP-16's put route, the books pages |
 | LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
 | LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
-| LP-21 | The `resident-books` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's `NEXT.md` B54) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
+| LP-21 | The `resident-diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's `NEXT.md` B54) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | 2 | — | Sonnet | `.github/workflows/publish-diya-gl.yml`, `.github/workflows/deploy.yml` |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
@@ -562,11 +562,11 @@ here until their phase opens.
   `books/cloud.js`, the CSP `connect-src` for the API host, a browser spec with the API stubbed
   through Playwright routes, and a behaviour case against ci once LP-16 is deployed.
 - **LP-18**: two halves. Submit's (its `NEXT.md` B55): the checkout and portal routes accept a
-  token from the DIYA-GL app client, and checkout takes the `resident-books` bundle, so the
+  token from the DIYA-GL app client, and checkout takes the `resident-diya-gl` bundle, so the
   webhook records the subscription under the hashed sub the way it does for every other bundle
   and LP-16's put route sees it. This repo's: the subscribe button calls
   `POST /api/v1/billing/checkout` and the account panel carries the portal link; waits on B55.
-- **LP-21**: in the Submit repo (its `NEXT.md` B54), a `[[bundles]]` entry `resident-books`, the id
+- **LP-21**: in the Submit repo (its `NEXT.md` B54), a `[[bundles]]` entry `resident-diya-gl`, the id
   `BooksStack` already checks, shaped like `resident-itsa`
   (`allocation = "on-subscription"`, `stripePriceAmount = 99`, `gbp`, `month`) carrying the
   DIYA-GL storage activity, then the `stripe-catalogue-sync` skill: dry run, test on a "go",
