@@ -41,8 +41,8 @@ prepare accounts for their clients. It is bespoke and a solicitor reads it befor
 (H-LU-2). The recommendation that accountants are permitted users rests on each client being a
 prospective Submit user; the operator confirms it at H-LU-1.
 
-Copyright line everywhere: `Copyright (C) 2006-2026 DIY Accounting Limited`. The site says
-"since 2006"; no individual is named in the notices.
+Copyright line everywhere: `Copyright (C) 2006-2026 DIY Accounting Limited`, the company's standard
+way of writing its name. The site says "since 2006"; no individual is named in the notices.
 
 The protection of the funnel is not in the engine's licence. Filing lands on Submit's servers, which
 alone hold the HMRC credentials, the recognition and the billing. The engine's licence is chosen to
@@ -63,18 +63,65 @@ specification". They never say "open source".
 2. Accountants preparing clients' accounts are permitted users of the spreadsheets.
 3. No contributions are accepted; the README says so; no CLA or DCO is needed.
 4. The copyright span 2006-2026 and the company as the only named holder.
+5. The company name is written **DIY Accounting Limited** everywhere: headers, copyright lines,
+   footers, JSON-LD, READMEs, manifests. "DIY Accounting Ltd" and bare "DIY Accounting" as the legal
+   name go; bare "DIY Accounting" survives only as the brand in titles and `og:site_name`.
+6. The archive stays public and is relicensed to match (decided 2026-09-08).
+
+## Delivery groups, ranked by urgency
+
+The rows keep their ids from the sections below. Each group is one wave of concurrent workstreams
+by area; a group also sweeps up the less urgent rows that touch the same files, so no file is
+opened twice. Urgency 1 stops the bleed before exposure grows; 2 protects the names; 3 consolidates.
+
+### Urgency 1: the terms are right in every copy and on every page
+
+Ships the first engine version under Apache-2.0, the first packages under PolyForm, and the words
+that match, across all five repositories. Six workstreams, no shared files between them.
+
+| Group | Rows | Area and files | Sweeps up | Model |
+| --- | --- | --- | --- | --- |
+| 1A the engine and the licence files | LU-1, LU-2, LU-8d (prepack) | spreadsheets: `LICENSE`, `LICENSING.md`, `diya-gl/LICENSE`, `diya-gl/NOTICE`, `diya-gl/package.json`, `package.json`, `diya-gl/Dockerfile`, `diya-gl/scripts/prepack.mjs`, the schemas' licence file | the README's MPL line; the package test asserting no template ships | Opus for the grant and `LICENSING.md`; Sonnet for the rest |
+| 1B the public statement | LU-6, LU-11, LU-7 | spreadsheets: every `public/*.html`, `public/books/*.html`, the spec and reconciliation page builders, `README.md`, `TRADEMARKS.md`, `SECURITY.md` | the company name in footers and JSON-LD; ™ on the marks; the no-contributions line | Sonnet; Opus for the trademark text |
+| 1C headers | LU-3, LU-8d (headers) | spreadsheets: every source file; `app/test/licence-headers.test.js` | the 103 missing headers; "Ltd" to "Limited"; the year span | Haiku for the sweep; Sonnet for the test |
+| 1D the packages and workbooks | LU-4, LU-5 | spreadsheets: `app/bin/build-packages.js`, `scripts/build-books-bundle.mjs`, `scripts/build-runner.mjs`, `app/lib/generator.js`, `app/templates/*/`, their tests | nothing else touches these | Sonnet; the template line follows the reconciliation-bug method |
+| 1E Submit | LU-8a | submit: `LICENSE`, `web/public/terms.html`, `web/public/accessibility.html`, the simulator copies, `infra/.../OpenApiGenerator.java`, every header | the eleven `-or-later` headers, the battery-pack MIT and AGPL mix, the 97 missing headers, "Ltd" to "Limited" | Sonnet; Opus for the terms wording |
+| 1F the archive, root and www | LU-8b, LU-8c | archive: `LICENSE`, `README.md`, `download.html`, `package.json`, `favicon.svg`; root and www: `LICENSE`, `README.md`, the one header, www's footer and a local `og:image` | the archive's pre-migration organisation scope and link, the 53 missing archive headers, www's three name spellings on its cards, "Ltd" to "Limited" | Haiku |
+
+Then, once every group's PR is merged: LU-9, the first release under the new terms, with H-LU-3's
+generate dispatches rebuilding every package.
+
+### Urgency 2: the names
+
+| Group | Rows | Area and files | Sweeps up | Model |
+| --- | --- | --- | --- | --- |
+| 2A the filing pack | LU-10 | `TRADEMARKS.md`, `_developers/trade-marks/` | the first-use evidence, the class wording, the series-rule check | Sonnet |
+| 2B the filings and registrations | H-LU-4, H-LU-5 | gov.uk, registrars, github.com, npmjs.com | — | operator |
+
+### Urgency 3: one brand source
+
+| Group | Rows | Area and files | Sweeps up | Model |
+| --- | --- | --- | --- | --- |
+| 3A the baseline and the repository | LU-12, LU-13, LU-14, H-LU-6, H-LU-7 | the new `diy-accounting-uk/brand` repository | the two favicon identities resolved to one; the blue token matched to its mark; the teal leftovers in www | Opus for the guidelines and words; Sonnet for tokens and the package |
+| 3B consumption | LU-15, LU-16 | spreadsheets, submit, www: `package.json`, build scripts, stylesheets, `public/`; www's `/brand` page | every local logo, favicon and token copy deleted | Sonnet, one agent per repository |
+
+### Human rows across the groups
+
+| # | Task | Gates |
+| --- | --- | --- |
+| H-LU-1 | Approve this plan and confirm the six decisions | every group |
+| H-LU-2 | A solicitor reads the additional grant and the trademark notice | LU-9, at the operator's discretion |
+| H-LU-3 | Dispatch the four `generate-*` workflows after 1D merges, then the prod deploy | LU-9 |
 
 ## Task list
 
-Machine rows are Sonnet unless stated. `LU-3` and `LU-6` share files with nothing else and run at
-once; `LU-4` and `LU-5` follow `LU-1`. Every row lands by PR; `LU-5`'s regenerated packages land by
-the operator's generate dispatches (H-LU-3).
+The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
 | LU-1 | The licence files: root `LICENSE` becomes PolyForm Internal Use 1.0.0 with the additional grant; `diya-gl/LICENSE` (Apache-2.0) and `diya-gl/NOTICE`; a licence file beside the schemas; `LICENSING.md` at the root mapping every directory to its layer, with the source offer and the copyright line | H-LU-1 | Opus for the additional grant and `LICENSING.md`; Sonnet for the rest | `LICENSE`, `LICENSING.md`, `diya-gl/LICENSE`, `diya-gl/NOTICE`, the schemas' directory |
 | LU-2 | Manifests and metadata: `license` in `diya-gl/package.json` (Apache-2.0) and the root `package.json` (`SEE LICENSE IN LICENSE`); the Dockerfile's licence label; the CDK tags if any name a licence; README badges; the tap's formula picks the licence up from npm on its own | LU-1 | Sonnet | `diya-gl/package.json`, `package.json`, `diya-gl/Dockerfile`, `infra/`, READMEs |
-| LU-3 | Headers: every source file's `SPDX-License-Identifier` matches its layer (`Apache-2.0` under `diya-gl/` and the bundled engine modules; `LicenseRef-PolyForm-Internal-Use-1.0.0` elsewhere) and the copyright line reads `2006-2026 DIY Accounting Limited`; a unit test walks the tree and fails on a missing or mismatched header | H-LU-1 | Haiku for the sweep; Sonnet for the test | every `.js`, `.mjs`, `.cjs`, `.java`, `.sh`, `.toml` source file; `app/test/licence-headers.test.js` (new) |
+| LU-3 | Headers: every source file's `SPDX-License-Identifier` matches its layer (`Apache-2.0` under `diya-gl/` and the bundled engine modules; `LicenseRef-PolyForm-Internal-Use-1.0.0` elsewhere) and the copyright line reads `Copyright (C) 2006-2026 DIY Accounting Limited`, the company's standard name, replacing every "DIY Accounting Ltd"; a unit test walks the tree and fails on a missing or mismatched header | H-LU-1 | Haiku for the sweep; Sonnet for the test | every `.js`, `.mjs`, `.cjs`, `.java`, `.sh`, `.toml` source file; `app/test/licence-headers.test.js` (new) |
 | LU-4 | Distributed copies carry their terms: the npm tarball ships `LICENSE` and `NOTICE` (automatic once LU-1 lands); every spreadsheet zip gains `LICENCE.txt` and `README.txt` (product, year, licence, copyright, source and download addresses); the Docker image inherits the tarball's files; the engine bundle and the single-file runner start with a licence comment | LU-1 | Sonnet | `app/bin/build-packages.js`, `scripts/build-books-bundle.mjs`, `scripts/build-runner.mjs`, their tests |
 | LU-5 | The workbooks state their copyright: the generator writes `dc:creator`, `dc:rights` and the company name into every workbook's core properties; each product's front sheet gains a licence and copyright line in the template; the reconciliation gates prove nothing else moved | LU-1 | Sonnet; the template edit follows the reconciliation-bug method | `app/lib/generator.js`, `app/templates/*/`, the fixtures' `report.json` if a cell moves |
 | LU-6 | The public statement: the shared footer gains the licence and a source link on all site pages and the four DIYA-GL pages; the download page paragraph is rewritten; the spec page gets a licence section naming the three layers; every "open source" phrase goes | H-LU-1 | Sonnet | `web/spreadsheets.diyaccounting.co.uk/public/*.html`, `public/books/*.html`, `app/bin/build-diya-gl-spec.js`, `app/bin/build-reconciliation-pages.js` |
@@ -198,8 +245,8 @@ operator wants under PolyForm. Its README says Mozilla Public License 2.0 and na
 as the creator of the originals in the early 2000s; its download page says MPL 2.0 and links the
 pre-migration GitHub organisation; its `package.json` still carries that organisation's scope. 134
 pages reference a `favicon.svg` that does not exist in the repository. The uplift cannot leave a
-public AGPL copy of the originals beside a PolyForm live copy: the archive is relicensed to match, or
-made private.
+public AGPL copy of the originals beside a PolyForm live copy: the archive stays public and is
+relicensed to match.
 
 **root.** 24 of 25 files carry a header; the one gap is `scripts/aws-accounts/export-root-zone.sh`.
 Nothing is published; the holding page states nothing. No product code, so infrastructure only.
@@ -220,10 +267,9 @@ guideline exists. This inventory is LU-12's baseline.
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
 | LU-8a | Submit: canonical PolyForm text with the additional grant replaces the paraphrased `LICENSE`; the eleven `-or-later` headers and the battery-pack subtree's MIT and AGPL mix become the PolyForm identifier; `terms.html` clauses 10, 11 and 21 and `accessibility.html` are rewritten to "free to use, source available", with the contribution invitation removed, and the simulator copy regenerated; `info.license` added to the OpenAPI generator; the 97 missing headers added | LU-1, H-LU-1 | Sonnet; Opus for the terms wording | `LICENSE`, `web/public/terms.html`, `web/public/accessibility.html`, `web/public-simulator/`, `infra/.../OpenApiGenerator.java`, headers |
-| LU-8b | Archive: the operator's choice at H-LU-8 executed; if it stays public, `LICENSE`, README and download page move to PolyForm with the source offer, the pre-migration organisation scope and link are corrected, and the missing `favicon.svg` is restored; if it goes private, nothing else changes | H-LU-8 | Haiku | `LICENSE`, `README.md`, `web/.../download.html`, `package.json`, `public/favicon.svg` |
+| LU-8b | Archive: `LICENSE`, README and download page move to PolyForm with the source offer, the pre-migration organisation scope and link are corrected, the missing `favicon.svg` is restored, and the 53 missing headers are added | LU-1 | Haiku | `LICENSE`, `README.md`, `web/.../download.html`, `package.json`, `public/favicon.svg` |
 | LU-8c | Root and www: `LICENSE` and README to PolyForm; the one missing header; www's footer gains the licence line and a local copy of the logo its `og:image` points at (from the brand package once LU-14 exists, a copy until then) | LU-1 | Haiku | `LICENSE`, `README.md`, the header, `web/www.diyaccounting.co.uk/public/` |
 | LU-8d | Spreadsheets, beyond LU-1 to LU-7: the 103 missing headers; the README's MPL line removed; `prepack.mjs` stops copying `app/templates` into the engine package and the package test asserts no template ships | LU-1 | Haiku for headers; Sonnet for prepack and its test | headers, `README.md`, `diya-gl/scripts/prepack.mjs`, `app/test/diya-gl-package.test.js` |
-| H-LU-8 | Decide the archive's fate: relicensed public, or private | H-LU-1 | operator | github.com |
 
 ## Verification
 
