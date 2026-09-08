@@ -379,13 +379,15 @@ jobs:
           npm install --no-audit --no-fund \
             @aws-sdk/client-cloudformation \
             @aws-sdk/client-cognito-identity-provider \
-            @aws-sdk/client-dynamodb \
-            @aws-sdk/lib-dynamodb \
             otpauth
           curl -fsSL -o ensure-cognito-test-user.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/ensure-cognito-test-user.js
-          curl -fsSL -o scripts/delete-user-data.js \
-            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/delete-user-data.js
+          # The mint script purges the lane user's data through Submit's delete-user-data.js,
+          # which hashes the sub with a salt this role may not read. The lane's only data is
+          # the book the sign-in case deletes itself, so the purge is a no-op here.
+          cat > scripts/delete-user-data.js <<'JS'
+          console.log("Purge skipped: the spreadsheets lane holds no data beyond what its own case removes.");
+          JS
           if ! node ensure-cognito-test-user.js "${{ needs.params.outputs.environment-name }}" spreadsheetsBehaviour > mint.log 2>&1; then
             echo "::error::ensure-cognito-test-user.js failed"
             grep -vi -E 'password|totp' mint.log || true
