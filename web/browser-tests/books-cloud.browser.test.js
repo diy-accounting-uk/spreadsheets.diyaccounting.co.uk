@@ -658,10 +658,11 @@ test.describe("DIYA-GL books page — billing", () => {
     });
 
     await openAccountPanel(page);
+    // Read the token before the click: the stubbed checkout URL navigates the page away.
+    const idToken = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.idToken"));
     await page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" }).click();
 
     await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
-    const idToken = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.idToken"));
     expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", returnTo: bstUrl() });
     expect(checkoutRequest.headers["authorization"]).toBe(`Bearer ${idToken}`);
     expect(checkoutRequest.headers["content-type"]).toBe("application/json");
