@@ -44,7 +44,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 |---|---|---|---|---|---|---|
 | LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | H18 | blocked-to-resume | tap at 1.0.1, installed and tested; image 1.0.1 on GHCR, private until H18 |
 | H18 | Make the GHCR package `diya-gl` public | none | human | — | ready-to-start | github.com/orgs/diy-accounting-uk/packages/container/diya-gl/settings, Danger Zone, change visibility |
-| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the ci sign-in agent, worktree `lp-17` (`claude/lp-17-cloud`); the case lands dark until the secrets exist |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | H19 | in-flight | Sonnet, the ci sign-in agent, worktree `lp-17` (`claude/lp-17-cloud`); its ci run needs H19 and Submit's ci toggle change |
+| H19 | Add `TEST_AUTH_USERNAME`, `TEST_AUTH_PASSWORD` and `TEST_AUTH_TOTP_SECRET` as repository secrets, the same values as Submit's | none | human | — | ready-to-start | `pbpaste \| gh secret set <NAME> -R diy-accounting-uk/spreadsheets.diyaccounting.co.uk`, one per secret |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | Sonnet, the billing agent, worktree `lp-18` (`claude/lp-18-cloud`) |
 
 ## Plans not tracked here
