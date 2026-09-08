@@ -375,6 +375,7 @@ jobs:
           mkdir -p "$WORKDIR/scripts"
           cd "$WORKDIR"
           npm init -y > /dev/null
+          npm pkg set type=module > /dev/null
           npm install --no-audit --no-fund \
             @aws-sdk/client-cloudformation \
             @aws-sdk/client-cognito-identity-provider \
