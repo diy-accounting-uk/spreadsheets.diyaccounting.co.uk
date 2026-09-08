@@ -4,7 +4,7 @@
 // books/headlines.js
 //
 // The "year at a glance" strip: four stat tiles and two pies, mounted once
-// at the top of the books page's main column, plus the "through the year"
+// at the top of the DIYA-GL page's main column, plus the "through the year"
 // charts (the outgoings-by-category bar, the monthly columns and the
 // cumulative-profit line) collapsed underneath.
 //

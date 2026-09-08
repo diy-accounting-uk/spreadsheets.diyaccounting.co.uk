@@ -37,7 +37,7 @@ const EXAMPLES_DIR = resolve(ROOT, "examples");
 const OUT_PATH = resolve(PUBLIC_DIR, "diya-gl.html");
 
 const CANONICAL_URL = "https://spreadsheets.diyaccounting.co.uk/diya-gl.html";
-const PAGE_TITLE = "The diya-gl format - DIY Accounting Spreadsheets";
+const PAGE_TITLE = "The DIYA-GL format - DIY Accounting Spreadsheets";
 const PAGE_DESCRIPTION =
   "The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence.";
 
@@ -383,9 +383,9 @@ function buildPage() {
 
   const sections = [];
 
-  sections.push(`      <h3 id="what-it-is">What diya-gl is</h3>
+  sections.push(`      <h3 id="what-it-is">What DIYA-GL is</h3>
       <p>
-        diya-gl is the file format behind DIY Accounting's books pages, its command line tools and the spreadsheets it generates. A whole
+        DIYA-GL is the file format behind DIY Accounting's DIYA-GL pages, its command line tools and the spreadsheets it generates. A whole
         year of a small business's accounts is two text files in a zip. <code>book.toml</code> says who the business is, what period the
         books cover and what the chart of accounts holds. <code>lines.jsonl</code> holds one transaction per line. A sole trader's year
         runs to about 15 KB.
@@ -455,7 +455,7 @@ function buildPage() {
       </p>
       <p>
         Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
-        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own books page, and
+        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
         the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
       </p>
 ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "MTD API field"], boxes.rows.map(boxRow))}`);
@@ -502,7 +502,7 @@ ${table(["Entry", "What it holds"], zip.entries.map(zipRow))}
       <p>
         The same book and lines also travel as one JSON file, with a
         <code>{ "format": "${escapeHtml(zip.format)}", "version": ${escapeHtml(zip.version)}, "product": ..., "book": ..., "lines": [...] }</code>
-        envelope, and as that JSON zipped. The books pages read all three, plus a workbook and a package zip.
+        envelope, and as that JSON zipped. The DIYA-GL pages read all three, plus a workbook and a package zip.
       </p>`);
 
   const stampRows = [
@@ -555,7 +555,7 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
 
   sections.push(`      <h3 id="tools">Getting the tools</h3>
       <p>
-        The books pages read and write the format in your browser. Nothing you load leaves the machine.
+        The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
         <li><a href="books/bst.html">Basic Sole Trader books</a></li>
@@ -573,7 +573,7 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
       </p>`);
 
   const toc = [
-    ["what-it-is", "What diya-gl is"],
+    ["what-it-is", "What DIYA-GL is"],
     ["declared-subset", "The declared subset"],
     ["sa103s", "Computed figures and their SA103S boxes"],
     ["checks", "The check catalogue"],
@@ -631,7 +631,7 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
     <main id="mainContent">
       <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Products</a></nav>
 
-      <h2 class="kb-page-title">The diya-gl format</h2>
+      <h2 class="kb-page-title">The DIYA-GL format</h2>
       <p class="kb-page-description">A year of accounts in two text files, and the mapping, the checks and the evidence behind them.</p>
 
       <nav class="spec-toc" aria-label="On this page">

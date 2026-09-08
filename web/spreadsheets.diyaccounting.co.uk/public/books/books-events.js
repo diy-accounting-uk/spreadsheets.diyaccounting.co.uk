@@ -3,7 +3,7 @@
 
 // books/books-events.js
 //
-// Pure GA4 event-payload builders for the books pages: a book loaded, a
+// Pure GA4 event-payload builders for the DIYA-GL pages: a book loaded, a
 // save and a donation prompt shown or followed. Kept apart from
 // public/lib/ecommerce-events.js so this file can sit inside the /books/
 // service worker's cache scope and never risks that file's own
