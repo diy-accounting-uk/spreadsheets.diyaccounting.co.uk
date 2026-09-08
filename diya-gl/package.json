@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/diya-gl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Recalculate, read and write diya-gl books: a UK sole trader or company's accounts, reconciled the same way in a browser, a CLI and an MCP server.",
   "license": "AGPL-3.0-only",
@@ -10,7 +10,14 @@
     "url": "git+https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk.git",
     "directory": "diya-gl"
   },
-  "keywords": ["accounting", "bookkeeping", "uk-tax", "mtd", "diya-gl", "self-assessment"],
+  "keywords": [
+    "accounting",
+    "bookkeeping",
+    "uk-tax",
+    "mtd",
+    "diya-gl",
+    "self-assessment"
+  ],
   "bin": {
     "diya-gl": "bin/diya-gl.js",
     "diya-gl-recalc": "bin/diya-gl-recalc.js",
@@ -18,7 +25,11 @@
     "diya-gl-write-workbook": "bin/diya-gl-write-workbook.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },
-  "files": ["bin/", "dist/", "README.md"],
+  "files": [
+    "bin/",
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "prepack": "node scripts/prepack.mjs"
   },

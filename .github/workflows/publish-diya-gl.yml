@@ -158,6 +158,7 @@ jobs:
             web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json \
             diya-gl/package.json diya-gl/package-lock.json
           git commit -m "Published diya-gl ${{ steps.version.outputs.version }}; next publish is ${{ steps.roll.outputs.next }}"
+          git restore .
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
@@ -169,6 +170,7 @@ jobs:
             echo "Waiting... ${i}s"
             sleep 5
           done
+          git restore .
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
