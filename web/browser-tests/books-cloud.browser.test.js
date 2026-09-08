@@ -609,3 +609,141 @@ test.describe("DIYA-GL books page — save to my account", () => {
     expect(await cloudStorageKeys(page)).toEqual([]);
   });
 });
+
+function unsubscribedBook() {
+  return {
+    bookId: "book-1",
+    title: "Precision Code Trading",
+    product: "bst",
+    latestVersion: 1,
+    latestETag: "etag-1",
+    latestSize: 15000,
+    updatedAt: "2026-01-01T09:00:00.000Z",
+    periodCoveredStart: "2025-01-01",
+    periodCoveredEnd: "2025-12-31",
+    versions: [],
+    provenance: {},
+    entitlementAtPut: { reason: "no-subscription" },
+  };
+}
+
+function subscribedBook() {
+  return Object.assign({}, unsubscribedBook(), { entitlementAtPut: { reason: "active-subscription" } });
+}
+
+test.describe("DIYA-GL books page — billing", () => {
+  test("subscribe posts the exact body and follows the returned checkout URL", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${CI_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [unsubscribedBook()] }) });
+    });
+
+    let checkoutRequest = null;
+    await page.route(`${CI_API_BASE}/billing/checkout`, async (route) => {
+      checkoutRequest = { body: route.request().postDataJSON(), headers: route.request().headers() };
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ checkoutUrl: `${baseUrl}/fake-stripe-checkout` }),
+      });
+    });
+    let checkoutPageUrl = null;
+    await page.route(`${baseUrl}/fake-stripe-checkout`, async (route) => {
+      checkoutPageUrl = route.request().url();
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
+    });
+
+    await openAccountPanel(page);
+    await page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" }).click();
+
+    await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
+    const idToken = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.idToken"));
+    expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", returnTo: bstUrl() });
+    expect(checkoutRequest.headers["authorization"]).toBe(`Bearer ${idToken}`);
+    expect(checkoutRequest.headers["content-type"]).toBe("application/json");
+
+    // location.assign's navigation tears the document down the moment it
+    // commits, wiping window.dataLayer with it before a poll could ever read
+    // cloud_billing back -- the PKCE authorize test hits the same Chromium
+    // behaviour. The event fires (buildCloudBillingEvent's own unit case
+    // covers its shape); only the request and the navigation are asserted
+    // here.
+    await expect.poll(() => checkoutPageUrl !== null, { timeout: 10_000 }).toBe(true);
+    expect(checkoutPageUrl).toBe(`${baseUrl}/fake-stripe-checkout`);
+  });
+
+  test("returning with checkout=success cleans the URL, toasts, and re-lists the account", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+
+    let booksCalls = 0;
+    await page.route(`${CI_API_BASE}/books`, (route) => {
+      booksCalls += 1;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
+    });
+
+    await page.goto(`${bstUrl()}?checkout=success&session_id=test-session`, { waitUntil: "domcontentloaded" });
+
+    await expect.poll(() => new URL(page.url()).search).toBe("");
+    await expect(page.locator("#toast")).toContainText("Thanks, your subscription is active.", { timeout: 10_000 });
+    await expect.poll(() => booksCalls, { timeout: 10_000 }).toBeGreaterThan(0);
+    await expect(page.locator(".account-entitlement")).toContainText("Subscribed");
+  });
+
+  test("returning with checkout=canceled cleans the URL, toasts, and does not re-list", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+
+    let booksCalls = 0;
+    await page.route(`${CI_API_BASE}/books`, (route) => {
+      booksCalls += 1;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
+    });
+
+    await page.goto(`${bstUrl()}?checkout=canceled`, { waitUntil: "domcontentloaded" });
+
+    await expect.poll(() => new URL(page.url()).search).toBe("");
+    await expect(page.locator("#toast")).toContainText("Checkout cancelled. Your book is safe on this page.", { timeout: 10_000 });
+    expect(booksCalls).toBe(0);
+  });
+
+  test("manage subscription calls the portal route with returnTo and follows the returned URL", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${CI_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
+    });
+
+    let portalRequestUrl = null;
+    await page.route(`${CI_API_BASE}/billing/portal*`, async (route) => {
+      portalRequestUrl = new URL(route.request().url());
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ portalUrl: `${baseUrl}/fake-stripe-portal` }),
+      });
+    });
+    let portalPageUrl = null;
+    await page.route(`${baseUrl}/fake-stripe-portal`, async (route) => {
+      portalPageUrl = route.request().url();
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
+    });
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-entitlement")).toContainText("Subscribed");
+    await page.locator(".account-entitlement").getByRole("button", { name: "Manage subscription" }).click();
+
+    await expect.poll(() => portalRequestUrl !== null, { timeout: 10_000 }).toBe(true);
+    expect(portalRequestUrl.searchParams.get("returnTo")).toBe(bstUrl());
+
+    await expect.poll(() => portalPageUrl !== null, { timeout: 10_000 }).toBe(true);
+    expect(portalPageUrl).toBe(`${baseUrl}/fake-stripe-portal`);
+  });
+});

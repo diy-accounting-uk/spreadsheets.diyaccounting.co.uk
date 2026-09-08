@@ -49,6 +49,13 @@ function buildCloudConflictEvent(resolution) {
   return { name: "cloud_conflict", params: { resolution: resolution } };
 }
 
+// Subscribe started and manage-subscription opened (books/cloud.js's
+// startSubscription and openBillingPortal), the same builder shape as the
+// three above.
+function buildCloudBillingEvent(action) {
+  return { name: "cloud_billing", params: { action: action } };
+}
+
 if (typeof window !== "undefined") {
   window.buildBookLoadedEvent = buildBookLoadedEvent;
   window.buildBookSavedEvent = buildBookSavedEvent;
@@ -56,4 +63,5 @@ if (typeof window !== "undefined") {
   window.buildCloudSignInEvent = buildCloudSignInEvent;
   window.buildCloudSaveEvent = buildCloudSaveEvent;
   window.buildCloudConflictEvent = buildCloudConflictEvent;
+  window.buildCloudBillingEvent = buildCloudBillingEvent;
 }
