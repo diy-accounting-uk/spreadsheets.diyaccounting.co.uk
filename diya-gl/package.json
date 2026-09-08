@@ -2,7 +2,7 @@
   "name": "@diy-accounting-uk/diya-gl",
   "version": "1.0.1",
   "type": "module",
-  "description": "Recalculate, read and write diya-gl books: a UK sole trader or company's accounts, reconciled the same way in a browser, a CLI and an MCP server.",
+  "description": "Recalculate, read and write DIYA-GL books from the command line",
   "license": "AGPL-3.0-only",
   "homepage": "https://spreadsheets.diyaccounting.co.uk/diya-gl.html",
   "repository": {
