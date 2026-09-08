@@ -8,7 +8,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the DIYA-GL
 pages' cloud sign-in is live against Submit's storage API. Publishing is automatic: every green prod deploy from a push to main publishes the next
-`diya-gl` version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
+`diya-gl` version, pushes the image and rolls the version; the tap tracks npm hourly. The
+billing panel and the ci sign-in case are on main (PR #80); no worktree is open. Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
 any DIYA-GL browser spec, and a rebuild after merging engine changes. The generate workflows cancel
@@ -42,9 +43,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-1 | `update.yml`'s commit job overlays a formatting artifact from the run's start onto the branch tip and commits it, so a newer `NEXT.md` on main lost two rows to a4cdc13f; check out the run's own sha before applying the artifacts so the rebase carries only the diff | none | machine | — | in-flight | PR #81 open; operator merges |
-| LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | PR #80 green; operator merges |
-| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-23 | in-flight | PR #80 green; operator merges; the case runs for real once LP-23 lands |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-23 | blocked-to-resume | steps 1 to 10 on main; the ci case skips until LP-23 supplies the test user |
 | LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | Submit role | blocked-to-start | Sonnet; the ci pool already keeps native sign-in on for the DIYA-GL client; waits on Submit's role ARN |
 
 ## Plans not tracked here
