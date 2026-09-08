@@ -44,7 +44,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-23 | in-flight | steps 1 to 10 on main; the ci sign-in case's first real run is the dispatched ci deploy |
-| LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | merged (PR #82); ci variable set; the first real mint-and-sign-in run is dispatched |
+| LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | merged (PR #82); ci variable set; PR #83 makes the purge a no-op, its ci run is the first real mint |
 
 ## Plans not tracked here
 
