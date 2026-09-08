@@ -232,6 +232,7 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
 }
 
 function hasLibreOffice() {
+  if (process.env.SKIP_LIBREOFFICE) return false;
   try {
     getLibreOffice();
     return true;

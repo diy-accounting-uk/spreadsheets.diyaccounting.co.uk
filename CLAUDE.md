@@ -85,7 +85,8 @@ npm run cdk:synth
 ## Testing
 
 ```bash
-npm test                                    # Unit tests (vitest) — SEO validation + smoke tests
+npm test                                    # Unit tests (vitest), including the LibreOffice recalculation tests when soffice is installed (many minutes)
+npm run test:fast                           # The same suite with SKIP_LIBREOFFICE=1, so the recalculation tests skip themselves (about 3 minutes); the pre-push check for any change outside the generator, templates or tax data
 npm run test:browser                        # Browser tests (Playwright) — HTML content validation
 npm run test:spreadsheetsBehaviour-local    # Behaviour tests against local server (localhost:3000)
 npm run test:spreadsheetsBehaviour-ci       # Behaviour tests against CI environment
