@@ -127,6 +127,10 @@ function bstUrl() {
 // simulate. Falls back to document.body when no card exists (a book is
 // already loaded), which is exactly the case the "refused" tests exercise.
 async function dropFile(page, bytes, name, mimeType) {
+  // The page binds its drop handler inside its own DOMContentLoaded listener,
+  // which can run after Playwright's domcontentloaded wait resolves; a drop
+  // dispatched before it lands on nothing. The manifest is set after binding.
+  await page.waitForFunction(() => window.DiyaGlBooksPage && window.DiyaGlBooksPage.manifest, null, { timeout: 30_000 });
   const base64 = bytes.toString("base64");
   await page.evaluate(
     ({ base64, name, mimeType }) => {
