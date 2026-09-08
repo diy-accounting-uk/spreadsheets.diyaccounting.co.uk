@@ -474,7 +474,7 @@ here until their phase opens.
 | LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
 | LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
 | LP-21 | The `resident-books` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's `NEXT.md` B54) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
-| LP-22 | Publish `@diy-accounting-uk/diya-gl` 1.0.0 from the `diya-gl-v1.0.0` tag; confirm the package on npm and the releases page entry | 2 | — | the session, on the operator's "go" | `.github/workflows/publish-diya-gl.yml` |
+| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | 2 | — | Sonnet | `.github/workflows/publish-diya-gl.yml`, `.github/workflows/deploy.yml` |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
 
@@ -497,7 +497,7 @@ here until their phase opens.
   `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
   (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
   is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
-  `diya-gl-v*` with `NPM_TOKEN` and provenance attestation. Prove with `npm pack` and a
+  every green prod deploy from a push to main, with `NPM_TOKEN` and provenance attestation, rolling the patch version afterwards so the next deploy publishes the next one. Prove with `npm pack` and a
   smoke run of each bin in CI.
 - **LP-4**: a `test.yml` job (or the publish workflow's gate) runs the packed CLI over
   `examples/<product>-latest` for all four products and diffs the output against the committed

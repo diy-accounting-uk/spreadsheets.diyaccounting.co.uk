@@ -178,7 +178,8 @@ Deployments are triggered via GitHub Actions workflows:
 | Workflow     | Purpose                                          | Trigger                       |
 | ------------ | ------------------------------------------------ | ----------------------------- |
 | `test.yml`   | Lint, format check, Maven verify, CDK synth      | Push, PRs, daily schedule     |
-| `deploy.yml` | Deploy SpreadsheetsStack, upload zips, smoke test | Push to main, manual dispatch |
+| `deploy.yml` | Deploy SpreadsheetsStack, upload zips, smoke test; after a green prod deploy from a push, publish `diya-gl` | Push to main, manual dispatch |
+| `publish-diya-gl.yml` | Publish `diya-gl/package.json`'s version to npm if it is not there yet, record the release, roll the patch version on main | Called by `deploy.yml`; manual dispatch |
 
 GitHub repository variables:
 

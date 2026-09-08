@@ -401,3 +401,15 @@ jobs:
           aws ssm put-parameter \
             --name "/spreadsheets/${{ needs.params.outputs.environment-name }}/last-known-good-deployment" \
             --type String --value "${{ github.sha }}" --overwrite
+
+  publish-diya-gl:
+    name: 'publish diya-gl to npm'
+    if: ${{ !cancelled() && needs.set-last-known-good-deployment.result == 'success' && needs.params.outputs.environment-name == 'prod' && github.event_name != 'schedule' }}
+    needs:
+      - params
+      - set-last-known-good-deployment
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/publish-diya-gl.yml
+    secrets: inherit
