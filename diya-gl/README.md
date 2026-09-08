@@ -15,6 +15,12 @@ Four products: Basic Sole Trader, Taxi Driver, Self Employed, Limited Company.
 npm install -g @diy-accounting-uk/diya-gl
 ```
 
+With Homebrew:
+
+```
+brew install diy-accounting-uk/tap/diya-gl
+```
+
 Or run the image straight from GHCR, no install:
 
 ```
