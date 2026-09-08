@@ -111,6 +111,43 @@ Fees are as of September 2026 and are checked on gov.uk before paying.
 | H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL in three classes; DIY ACCOUNTING via Right Start with the logo beside it | LU-10 | operator | gov.uk |
 | H-LU-5 | Register the `diya-gl` domains and the GitHub and npm organisations | — | operator | registrars, github.com, npmjs.com |
 
+## Consistent branding
+
+One brand repository, `diy-accounting-uk/brand`, is the single source for every mark and rule, and
+the other repositories pull from it instead of carrying their own copies. What it holds:
+
+- The marks: the DIY Accounting logo and wordmark, the DIYA-GL wordmark and the Submit wordmark as
+  SVG, with the PNG and ICO renders and the web manifest icons generated from them.
+- The tokens: colours, type scale and spacing as CSS custom properties in `tokens.css` and as a JSON
+  file for anything that is not CSS; the font stack and where it loads from.
+- The words: the names and their casings (DIY Accounting, DIYA-GL, DIY Accounting Submit), the ™
+  rule, "free to use, source available, open specification", the copyright line, the wording never
+  used ("open source").
+- The canonical legal texts: the PolyForm additional grant, the Apache NOTICE, `TRADEMARKS.md`. The
+  other repositories copy these verbatim from a pinned version, never by hand.
+- The guidelines as a document, published as a page on www.diyaccounting.co.uk from the same source.
+
+The brand repository is public so the guidelines page can be read, but its assets are not licensed:
+its `LICENSE` says all rights reserved and points at `TRADEMARKS.md`. The package's `license` field
+reads `SEE LICENSE IN LICENSE`.
+
+How the others consume it: the repository publishes `@diy-accounting-uk/brand` to npm on every
+green push to its main, the same roll-and-publish pattern as `diya-gl`. Each site pins a version in
+its `package.json`, copies the assets and `tokens.css` into its public directory at build, and
+imports the tokens from its stylesheet. A version bump is a one-line PR in each repository, and the
+inventory of copies the audit found (section "Across the repositories") is what the first pins
+replace.
+
+| # | Task | Precursors | Model | Files |
+| --- | --- | --- | --- | --- |
+| LU-12 | The baseline: from the audit's branding inventory, the one palette, type stack, logo set and naming table the brand repository starts from; every inconsistency listed with its resolution | audit | Opus | `_developers/brand-baseline.md` (new, this repo, moves to the brand repository at LU-13) |
+| LU-13 | The brand repository: structure, the SVG marks and generated renders, `tokens.css` and `tokens.json`, the words, the canonical legal texts, `LICENSE` and `TRADEMARKS.md`, the guidelines document | LU-12, H-LU-6 | Opus for the guidelines and words; Sonnet for tokens, renders and structure | the new repository |
+| LU-14 | The brand package: `package.json`, the render build, a publish workflow that publishes to npm and rolls the patch version on every green push to main, with a test that every asset the guidelines name exists | LU-13 | Sonnet | the new repository's `.github/workflows/`, `scripts/` |
+| LU-15 | Consumption: each of `spreadsheets`, `submit` and `www` pins the package, copies assets and tokens at build, imports the tokens, and deletes its local copies; one PR per repository; the footer, favicon and title conventions read from the words file | LU-14 | Sonnet, one agent per repository | each repository's `package.json`, build scripts, stylesheets, `public/` |
+| LU-16 | The guidelines page: www builds `/brand` from the package's guidelines document and publishes the SVG marks for download under the trademark rules | LU-14 | Sonnet | `www.diyaccounting.co.uk` |
+| H-LU-6 | Create the `diy-accounting-uk/brand` repository (public, empty) | H-LU-1 | operator, or the session on the operator's word | github.com |
+| H-LU-7 | Review the guidelines and the marks on sight before LU-15 pins them | LU-13 | operator | the brand repository |
+
 ## Across the repositories
 
 Pending: filled from the read-only audit of `spreadsheets.diyaccounting.co.uk`,
