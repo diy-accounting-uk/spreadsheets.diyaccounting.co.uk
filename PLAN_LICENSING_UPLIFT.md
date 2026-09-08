@@ -163,9 +163,67 @@ replace.
 
 ## Across the repositories
 
-Pending: filled from the read-only audit of `spreadsheets.diyaccounting.co.uk`,
-`submit.diyaccounting.co.uk`, `diy-accounting-archive`, `root.diyaccounting.co.uk` and
-`www.diyaccounting.co.uk`.
+From the read-only audit of 2026-09-08. Facts first, then the rows the uplift adds per repository.
+
+**What is common to all five.** Every repository carries a root `LICENSE`; four hold the canonical
+AGPL-3.0 text and GitHub detects them; Submit's is a twenty-line paraphrase with an "additional
+terms" clause, and GitHub returns no detection for it. No repository has CONTRIBUTING, a code of
+conduct, a CLA or DCO, a trademark notice or `SECURITY.md`. No external pull request has ever been
+merged in any of them. No GPL-family runtime dependency exists anywhere; `jszip` in the engine is
+dual MIT or GPL and is taken under MIT. The company name appears three ways: "DIY Accounting Ltd" in
+every SPDX header, "DIY Accounting Limited" in page footers and JSON-LD, and bare "DIY Accounting" in
+titles and `og:site_name`.
+
+**spreadsheets.** 351 of 454 source files carry an SPDX header; the gaps are `app/templates` (0 of
+5), `app/data` (0 of 18), `web/data/ref-additions/*.toml` and four loose root files. The README
+contradicts itself: line 8 says Mozilla Public License 2.0, line 80 says AGPL. The engine package
+ships no licence file and its `prepack.mjs` copies `app/templates`, the hand-built workbooks, into the
+public npm and Docker artefact: the PolyForm-designated content is inside the Apache-designated
+package today, and LU-1 to LU-4 must split it out. `web/.../schema/diya-gl-docs.md` carries the XBRL
+International attribution, which the CC BY layer keeps. The seven user-guide PDFs and 343 tracked
+PDF and docx files carry no licence text.
+
+**submit.** 646 of 743 source files carry a header; eleven use `AGPL-3.0-or-later` against the
+`-only` norm, and the `_developers/backlog/battery-pack/` subtree mixes an MIT `LICENSE` with AGPL
+headers. The public commitment is the strongest of the five: `terms.html` clause 11 says the Service
+is AGPL-3.0 open source with the copyleft obligation spelt out, clause 21 invites contributions, and
+`accessibility.html` repeats the open source claim; the simulator's copy matches byte for byte. The
+OpenAPI document has no `info.license`. The Lambda image goes to a private ECR, nothing is
+published. The three-layer model did not name this repository; it is the hosted product, so it is
+PolyForm Internal Use with the same additional grant, and its terms page is rewritten to say so.
+
+**diy-accounting-archive.** Public, AGPL text at the root, and holds a full second copy of the
+generator pipeline plus four package trees (2006-07 to 2025-26) of the same hand-built workbooks the
+operator wants under PolyForm. Its README says Mozilla Public License 2.0 and names Terry Cartwright
+as the creator of the originals in the early 2000s; its download page says MPL 2.0 and links the
+pre-migration GitHub organisation; its `package.json` still carries that organisation's scope. 134
+pages reference a `favicon.svg` that does not exist in the repository. The uplift cannot leave a
+public AGPL copy of the originals beside a PolyForm live copy: the archive is relicensed to match, or
+made private.
+
+**root.** 24 of 25 files carry a header; the one gap is `scripts/aws-accounts/export-root-zone.sh`.
+Nothing is published; the holding page states nothing. No product code, so infrastructure only.
+
+**www.** 27 of 27 files carry a header, the only repository at full coverage. Nothing states a
+licence on its two pages. Its `og:image` is a live cross-site reference to a logo hosted by Submit.
+
+**Branding, across the five.** Two visual identities: a teal ledger favicon (`#158484`) on
+spreadsheets and the archive, and a blue document-and-tick favicon on Submit and www, with the blue
+CSS token (`#2c5aa0`) matching neither the favicon gradient (`#3366b8` to `#2b579a`) nor Submit's
+manifest theme (`#2b579a`); www's stylesheet also carries the teal twice. Fonts are consistent
+everywhere: system stacks, no web fonts. The product names appear as "DIY Accounting Submit",
+"DIY Accounting Spreadsheets" and "DIY Accounting Limited" side by side as card titles on www; the
+engine is "DIYA-GL" in headings and "diya-gl" in meta descriptions. The only shared files are the
+teal favicon (spreadsheets, archive, and a buried copy in Submit) and a partner's logo. No brand
+guideline exists. This inventory is LU-12's baseline.
+
+| # | Task | Precursors | Model | Files |
+| --- | --- | --- | --- | --- |
+| LU-8a | Submit: canonical PolyForm text with the additional grant replaces the paraphrased `LICENSE`; the eleven `-or-later` headers and the battery-pack subtree's MIT and AGPL mix become the PolyForm identifier; `terms.html` clauses 10, 11 and 21 and `accessibility.html` are rewritten to "free to use, source available", with the contribution invitation removed, and the simulator copy regenerated; `info.license` added to the OpenAPI generator; the 97 missing headers added | LU-1, H-LU-1 | Sonnet; Opus for the terms wording | `LICENSE`, `web/public/terms.html`, `web/public/accessibility.html`, `web/public-simulator/`, `infra/.../OpenApiGenerator.java`, headers |
+| LU-8b | Archive: the operator's choice at H-LU-8 executed; if it stays public, `LICENSE`, README and download page move to PolyForm with the source offer, the pre-migration organisation scope and link are corrected, and the missing `favicon.svg` is restored; if it goes private, nothing else changes | H-LU-8 | Haiku | `LICENSE`, `README.md`, `web/.../download.html`, `package.json`, `public/favicon.svg` |
+| LU-8c | Root and www: `LICENSE` and README to PolyForm; the one missing header; www's footer gains the licence line and a local copy of the logo its `og:image` points at (from the brand package once LU-14 exists, a copy until then) | LU-1 | Haiku | `LICENSE`, `README.md`, the header, `web/www.diyaccounting.co.uk/public/` |
+| LU-8d | Spreadsheets, beyond LU-1 to LU-7: the 103 missing headers; the README's MPL line removed; `prepack.mjs` stops copying `app/templates` into the engine package and the package test asserts no template ships | LU-1 | Haiku for headers; Sonnet for prepack and its test | headers, `README.md`, `diya-gl/scripts/prepack.mjs`, `app/test/diya-gl-package.test.js` |
+| H-LU-8 | Decide the archive's fate: relicensed public, or private | H-LU-1 | operator | github.com |
 
 ## Verification
 
