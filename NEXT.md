@@ -42,6 +42,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
+| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | H18 | blocked-to-resume | tap at 1.0.1, installed and tested; image 1.0.1 on GHCR, private until H18 |
+| H18 | Make the GHCR package `diya-gl` public | none | human | — | ready-to-start | github.com/orgs/diy-accounting-uk/packages/container/diya-gl/settings, Danger Zone, change visibility |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
 | LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B55 is on its b12 batch |
 
