@@ -24,6 +24,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      packages: write
     steps:
 
       - name: Checkout
@@ -88,6 +89,42 @@ jobs:
         run: cd diya-gl && npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Find the packed tarball
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        id: tarball
+        run: |
+          TARBALL=$(basename "$(ls target/diya-gl-smoke/*.tgz)")
+          echo "name=${TARBALL}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build the diya-gl image
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        run: |
+          docker build \
+            --build-arg TARBALL="${{ steps.tarball.outputs.name }}" \
+            --build-arg VERSION="${{ steps.version.outputs.version }}" \
+            -t "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}" \
+            -f diya-gl/Dockerfile \
+            target/diya-gl-smoke
+
+      - name: Image smoke test
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        run: diya-gl/image-smoke.sh "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}" "$PWD"
+
+      - name: Push the diya-gl image to GHCR
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        run: |
+          docker tag "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}" ghcr.io/diy-accounting-uk/diya-gl:latest
+          docker push "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}"
+          docker push ghcr.io/diy-accounting-uk/diya-gl:latest
 
       - name: Tag the published commit
         if: ${{ steps.version.outputs.publish == 'true' }}

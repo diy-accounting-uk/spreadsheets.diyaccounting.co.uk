@@ -411,5 +411,6 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      packages: write
     uses: ./.github/workflows/publish-diya-gl.yml
     secrets: inherit

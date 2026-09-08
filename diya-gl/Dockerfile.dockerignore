@@ -1,0 +1,5 @@
+# The build context is smoke.sh's scratch directory: the packed tarball
+# plus its own install/ (node_modules) and recalc-out/read-out/write-out
+# from the tarball smoke test. Only the tarball belongs in the image build.
+*
+!*.tgz
