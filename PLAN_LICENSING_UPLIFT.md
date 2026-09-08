@@ -85,6 +85,32 @@ the operator's generate dispatches (H-LU-3).
 | H-LU-2 | A solicitor reads the additional grant and the trademark notice before LU-9 | LU-1, LU-7 | operator | `LICENSE`, `TRADEMARKS.md` |
 | H-LU-3 | Dispatch the four `generate-*` workflows after LU-5 merges, then the prod deploy | LU-5 | operator | GitHub Actions |
 
+## Trade marks
+
+Registration is form-filling on gov.uk; a solicitor is needed only if an application is opposed.
+Fees are as of September 2026 and are checked on gov.uk before paying.
+
+- **DIYA-GL** as a UK word mark in classes 9 (downloadable software and data files), 42 (software as
+  a service and hosting) and 35 (accounting and bookkeeping services): £170 plus £50 per extra class,
+  £270. A coined term; expected to register unopposed in about four months.
+- **DIY ACCOUNTING** as a word mark risks refusal as descriptive. File it through the Right Start
+  option (£100 for the examiner's report, £100 more only if it looks registrable) with twenty years
+  of use as the acquired-distinctiveness argument, and file the logo as a stylised mark beside it.
+- Before filing: the IPO search and TMview, both free.
+- From now: ™ after DIYA-GL and DIY Accounting on the site footer, the spec page and the package
+  README; ® only once registered. The marks are always adjectives before a noun.
+- Now, while unowned: the domains `diya-gl.com`, `diya-gl.co.uk`, `diya-gl.dev`; a `diya-gl` GitHub
+  organisation; a `@diya-gl` npm organisation.
+- Evidence of first use kept in one place: Wayback snapshots, npm publish dates, release tags.
+- EU and US filings wait for revenue abroad.
+
+| # | Task | Precursors | Model | Files |
+| --- | --- | --- | --- | --- |
+| LU-10 | The filing pack: the free searches run and their results recorded; the goods and services wording for classes 9, 42 and 35 drafted from the IPO's pre-approved terms; the first-use evidence gathered with dates; `TRADEMARKS.md` extended with the ™ usage rules | H-LU-1 | Sonnet | `TRADEMARKS.md`, `_developers/trade-marks/` (new) |
+| LU-11 | ™ on the marks across the site footer, the spec page and the package README, in the same PR as LU-6 | LU-6 | Sonnet | as LU-6 |
+| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL in three classes; DIY ACCOUNTING via Right Start with the logo beside it | LU-10 | operator | gov.uk |
+| H-LU-5 | Register the `diya-gl` domains and the GitHub and npm organisations | — | operator | registrars, github.com, npmjs.com |
+
 ## Across the repositories
 
 Pending: filled from the read-only audit of `spreadsheets.diyaccounting.co.uk`,
