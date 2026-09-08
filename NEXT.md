@@ -44,7 +44,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-23 | blocked-to-resume | steps 1 to 10 on main; the ci case skips until LP-23 supplies the test user |
-| LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | Submit role | blocked-to-start | Sonnet; the ci pool already keeps native sign-in on for the DIYA-GL client; waits on Submit's role ARN |
+| LP-23 | The ci behaviour job mints its test user: assume Submit's cross-account role, fetch `scripts/ensure-cognito-test-user.js` from Submit's main, run it for the `spreadsheetsBehaviour` lane, mask its three outputs into the sign-in case | PLAN_DIYA_GL_LAUNCH.md | machine | Submit role | in-flight | Sonnet, the test-user agent, worktree `lp-23` (`claude/lp-23-testuser`); ci role ARN stored; Submit builds the role as B57 |
 
 ## Plans not tracked here
 
