@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/diya-gl",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Recalculate, read and write DIYA-GL books from the command line",
   "license": "AGPL-3.0-only",
