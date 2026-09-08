@@ -144,8 +144,9 @@ jobs:
         if: ${{ steps.version.outputs.publish == 'true' }}
         id: roll
         run: |
-          cd diya-gl
           NEXT=$(npm version patch --no-git-tag-version)
+          (cd diya-gl && npm version "${NEXT#v}" --no-git-tag-version)
+          npx prettier --write package.json package-lock.json diya-gl/package.json diya-gl/package-lock.json
           echo "next=${NEXT#v}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Commit the release record and the rolled version onto main
@@ -156,8 +157,9 @@ jobs:
           git add app/data/releases.json \
             web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html \
             web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json \
-            diya-gl/package.json diya-gl/package-lock.json
+            package.json package-lock.json diya-gl/package.json diya-gl/package-lock.json
           git commit -m "Published diya-gl ${{ steps.version.outputs.version }}; next publish is ${{ steps.roll.outputs.next }}"
+          git restore .
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
@@ -169,6 +171,7 @@ jobs:
             echo "Waiting... ${i}s"
             sleep 5
           done
+          git restore .
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
