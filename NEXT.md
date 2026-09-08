@@ -43,10 +43,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | PR #76 merged; the prod deploy carrying the first publish is running |
-| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | image half is PR #77 on #76; the tap half is on the tap's main, its hourly workflow waits for 1.0.0 |
+| LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | PLAN_DIYA_GL_LAUNCH.md | machine | — | in-flight | on main; the prod deploy carrying the first publish is at its deploy step |
+| LP-11 | Docker image (`node:alpine` plus the packed tarball, pushed to GHCR from the publish workflow) and the Homebrew formula in the tap | PLAN_DIYA_GL_LAUNCH.md | machine | LP-22 | in-flight | PR #77 to main, its first Docker build running; tap half on the tap's main |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B50 | blocked-to-start | steps 1 to 9 live on main; step 10, the ci behaviour case, after Submit's B50 |
-| LP-18 | Billing on the DIYA-GL pages: the subscribe button calls Submit's checkout route for the `resident-diya-gl` bundle; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B54 and B55 carry the bundle and the routes |
+| LP-18 | Billing on the DIYA-GL pages: the subscribe button posts the `resident-diya-gl` bundle id to Submit's checkout route; the portal link in the account panel | PLAN_DIYA_GL_LAUNCH.md | machine | Submit B55 | blocked-to-start | Sonnet, the billing agent; Submit's B55 is on its b12 batch |
 
 ## Plans not tracked here
 
