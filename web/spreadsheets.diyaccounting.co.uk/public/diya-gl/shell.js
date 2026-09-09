@@ -30,7 +30,7 @@
     if (typeof gtag === "function") gtag("event", eventName, params);
   }
 
-  // books-events.js publishes these builders on window; each call is
+  // diya-gl-events.js publishes these builders on window; each call is
   // guarded so a book still loads, saves and prompts even if that script
   // has not run for some reason.
   function sendBookLoadedEvent(product, rawSourceKind) {

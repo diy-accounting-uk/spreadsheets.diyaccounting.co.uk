@@ -8,7 +8,7 @@
 // call. Clicking either button runs the real save path: build the diya-gl
 // zip or the JSON document, hand the browser a Blob to download. The
 // report each carries is a placeholder ({}), since this probe proves the
-// save mechanism, not the report's own fidelity -- that is books-formats
+// save mechanism, not the report's own fidelity -- that is diya-gl-formats
 // browser test's job. The result also lands on window.__DIYA_SAVE_RESULT__
 // so the browser test can read the bytes back without depending on how the
 // browser's own download UI behaves.

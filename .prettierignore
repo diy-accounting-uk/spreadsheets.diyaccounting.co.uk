@@ -20,6 +20,6 @@ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
 # Generated diya-gl format spec page (built by app/bin/build-diya-gl-spec.js)
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
 
-# Books engine bundle and the app/ files it reads (built by scripts/build-books-bundle.mjs)
+# Books engine bundle and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/

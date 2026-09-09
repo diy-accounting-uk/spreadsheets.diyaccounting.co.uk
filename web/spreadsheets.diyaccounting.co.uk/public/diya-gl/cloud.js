@@ -178,7 +178,7 @@
   }
 
   // ============================== events ==============================
-  // books-events.js's builders and shell.js's own trackEvent both exist by
+  // diya-gl-events.js's builders and shell.js's own trackEvent both exist by
   // the time any of these fire -- the former loads before this script, the
   // latter is the last line of shell.js's own eval, which finishes before
   // DOMContentLoaded, which is what calls mount().

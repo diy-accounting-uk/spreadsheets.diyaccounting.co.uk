@@ -4,8 +4,8 @@
 /* books/taxi-views.css -- the rules the Taxi views in
    products/taxi-views.js and products/taxi-forms.js need on top of the
    shared books sheet. The page's own stylesheet (taxi.css) imports this
-   file alongside books.css; no colour here is new, every one comes from
-   the custom properties books.css already declares. */
+   file alongside diya-gl.css; no colour here is new, every one comes from
+   the custom properties diya-gl.css already declares. */
 
 /* The mileage comparison: the sheet's own decision, laid out as the two
    figures it weighs against each other and the three that follow from it. */

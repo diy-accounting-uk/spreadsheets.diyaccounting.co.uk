@@ -8,7 +8,7 @@
 // every page's example buttons need, so the four DIYA-GL pages -- and one
 // example book on each -- keep working with no network at all. The exact
 // list and the cache name both come from build-stamp.js
-// (scripts/build-books-bundle.mjs writes it, so this file never needs
+// (scripts/build-diya-gl-bundle.mjs writes it, so this file never needs
 // editing when a page's own scripts or examples change): the cache name is
 // a hash of every precached file's own bytes, so a rebuild that changed
 // nothing keeps the same cache, and one that changed a single file gets a
@@ -19,7 +19,7 @@
 
 importScripts("./build-stamp.js");
 
-const CACHE_PREFIX = "diya-gl-books-";
+const CACHE_PREFIX = "diya-gl-";
 const CACHE_NAME = CACHE_PREFIX + self.DIYA_GL_BUILD_STAMP;
 const PRECACHE_URLS = self.DIYA_GL_PRECACHE_URLS;
 const SCOPE_PATH = "/diya-gl/";

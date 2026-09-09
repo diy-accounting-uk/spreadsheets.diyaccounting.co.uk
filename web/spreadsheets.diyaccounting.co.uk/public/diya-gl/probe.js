@@ -8,7 +8,7 @@
 // shell is bst.html, which mounts shell.js on the same bundle.
 //
 // The steps below are the whole of what the page asks the engine to do, and
-// the Node side of the bundle gate (web/browser-tests/books-bundle-gate.browser.test.js)
+// the Node side of the bundle gate (web/browser-tests/diya-gl-bundle-gate.browser.test.js)
 // runs the same calls in the same order against the unbundled modules.
 
 import * as engine from "./engine/diya-gl-engine.js";

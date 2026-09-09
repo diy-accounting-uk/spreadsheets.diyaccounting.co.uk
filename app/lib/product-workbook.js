@@ -83,8 +83,8 @@ export function productOf(book) {
   return product;
 }
 
-// Re-exported for product-workbook.js's own callers (books-engine.js,
-// books-interchange.js, the workbook tests); its home is tax-year.js so
+// Re-exported for product-workbook.js's own callers (diya-gl-engine.js,
+// diya-gl-interchange.js, the workbook tests); its home is tax-year.js so
 // diya-gl-loader.js can share it without importing this module.
 export { taxYearFileName };
 

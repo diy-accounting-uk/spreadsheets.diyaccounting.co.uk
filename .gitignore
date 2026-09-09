@@ -39,7 +39,7 @@ web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
-# Books engine bundle, examples, and the app/ files it reads (built by scripts/build-books-bundle.mjs)
+# Books engine bundle, examples, and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/examples.js

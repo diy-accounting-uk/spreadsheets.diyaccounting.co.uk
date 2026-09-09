@@ -4,7 +4,7 @@
 /* books/se.css -- the Self Employed page's sheet: the shared books sheet,
    plus the rules the views only this product has need. */
 
-@import url("books.css");
+@import url("diya-gl.css");
 
 /* The journal switch above the entries grid, and the bank book's own
    account switch: a second tab row, one line that scrolls on a phone

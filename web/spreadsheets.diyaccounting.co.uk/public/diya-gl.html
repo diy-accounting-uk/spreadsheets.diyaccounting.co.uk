@@ -120,7 +120,7 @@
             <tr><td><code>documentInfo.entriesComment</code></td><td>string</td><td><code>gl-cor:entriesComment</code></td><td>Free text note about this book</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:vatStaggerGroup</code></td><td>integer, one of 3</td><td><em>diya-gl extension</em></td><td>Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb.</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:payrollYearStart</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart.</td><td>optional</td></tr>
-            <tr><td><code>documentInfo.diya-gl:formatVersion</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The diya-gl-books format name and version this file is written as, e.g. &quot;diya-gl-books/1&quot;.</td><td>optional</td></tr>
+            <tr><td><code>documentInfo.diya-gl:formatVersion</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The diya-gl format name and version this file is written as, e.g. &quot;diya-gl/1&quot;.</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:engineVersion</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The npm package version and commit of the engine that wrote this file, e.g. &quot;1.0.0+3f2a1b9c4d7e&quot;.</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:taxDataHash</code></td><td>string</td><td><em>diya-gl extension</em></td><td>A hash over every app/data/*.toml tax-year file, naming which rates this file's figures were calculated from.</td><td>optional</td></tr>
             <tr><td><code>documentInfo.diya-gl:templateHash</code></td><td>string</td><td><em>diya-gl extension</em></td><td>A hash over this product's own Excel template files, naming which workbook this file reproduces.</td><td>optional</td></tr>
@@ -523,13 +523,13 @@
       </ul>
       <p>
         The same book and lines also travel as one JSON file, with a
-        <code>{ "format": "diya-gl-books", "version": 1, "product": ..., "book": ..., "lines": [...] }</code>
+        <code>{ "format": "diya-gl", "version": 1, "product": ..., "book": ..., "lines": [...] }</code>
         envelope, and as that JSON zipped. The DIYA-GL pages read all three, plus a workbook and a package zip.
       </p>
 
       <h3 id="versioning">Versioning and provenance</h3>
       <p>
-        The format is <code>diya-gl-books</code> version 1. The two schemas are at v2, and the version is
+        The format is <code>diya-gl</code> version 1. The two schemas are at v2, and the version is
         part of each schema's <code>$id</code> URL. A v1 existed but nothing outside this repository ever read it, so v2 replaced it in place.
       </p>
       <p>
@@ -541,7 +541,7 @@
           <table class="spec-table">
             <thead><tr><th>Stamp</th><th>Value</th><th>What it answers</th><th>Status</th></tr></thead>
             <tbody>
-            <tr><td>format version</td><td><code>diya-gl-books</code> 1</td><td>Can this tool read this file</td><td>written today</td></tr>
+            <tr><td>format version</td><td><code>diya-gl</code> 1</td><td>Can this tool read this file</td><td>written today</td></tr>
             <tr><td>engine version</td><td>the package version, and the commit it was built from</td><td>Which code produced these figures</td><td>written today</td></tr>
             <tr><td>tax-data version</td><td>a hash over the year's rate files</td><td>Which rates were applied</td><td>written today</td></tr>
             <tr><td>template version</td><td>a hash over the product's workbook templates</td><td>Which workbook this reproduces</td><td>written today</td></tr>

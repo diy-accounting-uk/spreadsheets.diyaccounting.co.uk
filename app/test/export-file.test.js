@@ -278,7 +278,7 @@ describe("export.js --file mode", () => {
       postingDate: dayAfterPeriodEnd.toISOString().slice(0, 10),
     };
 
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const brokenDir = tempDir("export-file-break-src-");
     const brokenPath = resolve(brokenDir, "broken-diya-gl.json");
     writeFileSync(brokenPath, writeBookJson(book, [...lines, outOfPeriodLine]));
@@ -463,7 +463,7 @@ describe("export.js --file mode", () => {
     expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
   }, 30000);
 
-  // A Taxi workbook fed to --file still runs books-interchange.js's single-
+  // A Taxi workbook fed to --file still runs diya-gl-interchange.js's single-
   // workbook sniff, which has no Taxi anchor table yet (that table is a
   // separate row) and so refuses any single-file workbook that is not BST.
   // The diya-gl JSON format carries its own declared product and skips that
@@ -479,7 +479,7 @@ describe("export.js --file mode", () => {
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line));
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const jsonDir = tempDir("export-file-taxi-json-src-");
     const jsonPath = resolve(jsonDir, "book-diya-gl.json");
     writeFileSync(jsonPath, writeBookJson(book, lines));
@@ -579,7 +579,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line));
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const jsonDir = tempDir("export-file-json-src-");
     const jsonPath = resolve(jsonDir, "book-diya-gl.json");
     writeFileSync(jsonPath, writeBookJson(book, lines));
@@ -601,7 +601,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line));
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
 
     const zip = new JSZip();
     zip.file("book-diya-gl.json", writeBookJson(book, lines));
@@ -673,7 +673,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line));
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const document = JSON.parse(writeBookJson(book, lines));
     document.version = 2;
 

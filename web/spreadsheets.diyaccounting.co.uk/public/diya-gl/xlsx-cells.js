@@ -8,7 +8,7 @@
 //
 // This is glue, not engine logic. app/lib/xlsx-exporter.js already reads
 // cells this way (readCellValue in app/lib/spreadsheet-runner.js), but that
-// helper is internal to the pipeline and is not part of the books-engine.js
+// helper is internal to the pipeline and is not part of the diya-gl-engine.js
 // bundle surface the page imports (app/lib/ is read-only for this track), so
 // the as-read layer -- reading the workbook's own cached formula results for
 // the cells CELL_MAP names, to annotate drift against the diya-gl-computed

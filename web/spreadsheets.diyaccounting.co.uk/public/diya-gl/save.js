@@ -4,7 +4,7 @@
 // save.js — the current book turned into a download, through the same
 // engine bundle the rest of the page reads from.
 //
-// writeDiyaGlZip and writeBookJson (app/lib/books-interchange.js, the same
+// writeDiyaGlZip and writeBookJson (app/lib/diya-gl-interchange.js, the same
 // module the CLI's export.js writes through) turn the book into the diya-gl
 // zip and the single-file JSON downloads. Both need R -- shell.js passes it
 // in through extras.report, the same document window.DIYA_BOOKS_SNAPSHOT.report

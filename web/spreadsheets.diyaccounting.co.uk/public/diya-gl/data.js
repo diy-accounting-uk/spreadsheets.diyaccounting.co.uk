@@ -4,14 +4,14 @@
 // diya-gl/data.js
 //
 // The extract/recalculate/report loop behind the page. It loads the engine
-// bundle (scripts/build-books-bundle.mjs) and computes
+// bundle (scripts/build-diya-gl-bundle.mjs) and computes
 // window.DIYA_BOOKS_SNAPSHOT from one of four sources: an uploaded workbook or
 // package, one of the product's example books served as static assets, a
 // blank book from the new-book form, or the working book autosave handed
 // back. Every view in the shell reads book data only through the snapshot --
 // this file fills it, and is no view's rewrite.
 //
-// Every function here takes the mounted product manifest (books/products/
+// Every function here takes the mounted product manifest (diya-gl/products/
 // <id>.js) and reaches the product module through engine.productModule(id):
 // the manifest says how lines group into month rows, how an upload becomes a
 // book and which product-specific figures join the snapshot; this file owns

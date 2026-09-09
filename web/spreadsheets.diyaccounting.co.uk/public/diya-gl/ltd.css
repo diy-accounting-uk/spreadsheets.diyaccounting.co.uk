@@ -4,7 +4,7 @@
 /* books/ltd.css -- the Limited Company page's sheet: the shared books
    sheet, plus the rules the views only this product has need. */
 
-@import url("books.css");
+@import url("diya-gl.css");
 
 /* The Year view's journal switch (shell.js renders it for every multi-file
    product) and the Bank view's account switch: one row of buttons, the

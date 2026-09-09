@@ -93,7 +93,7 @@ function attribute(file, sheet, cellRef, extractionMap, reportLabels) {
 // process. A BST or SE template is a file in this repo that never changes
 // while a process runs, so the path itself is the cache key; Taxi's own
 // baseline is a workbook the generator builds fresh for the book's own tax
-// year (see readWorkbookSource in books-interchange.js), which has no path
+// year (see readWorkbookSource in diya-gl-interchange.js), which has no path
 // on disk to key on, so its entry in options.templates carries its own cache
 // key (a string like "taxi:se-2025-2026") alongside a loader that is only
 // called on a cache miss.

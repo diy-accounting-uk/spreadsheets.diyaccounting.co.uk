@@ -4,7 +4,7 @@
 //
 // zip-package-flat.mjs — zip a directory's *.xlsx files flat at the zip
 // root, the shape a customer's own multi-file package download ships as
-// (books-interchange.js's "package-set" sniff: several workbook entries,
+// (diya-gl-interchange.js's "package-set" sniff: several workbook entries,
 // the hub workbook among them, no lines.jsonl). Shared by the parity gate
 // and the fixture refresh script so both zip a package the same way.
 //

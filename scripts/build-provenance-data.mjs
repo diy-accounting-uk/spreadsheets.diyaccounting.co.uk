@@ -31,7 +31,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_FILE = resolve(ROOT, "app", "lib", "provenance-data.js");
 const REPORTS_DIR = resolve(ROOT, "reports");
 
-const FORMAT_VERSION = "diya-gl-books/1";
+const FORMAT_VERSION = "diya-gl/1";
 
 // Every product's template files and the reconciliation reports that name
 // its own trust claim, keyed the way the rest of the pipeline names a

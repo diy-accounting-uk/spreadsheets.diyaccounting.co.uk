@@ -409,9 +409,9 @@ describe("an SE upload's overtyped keys", () => {
 
 // Taxi's own predicate (app/lib/anchors/taxi.js) and its own baseline: unlike
 // BST and SE, examples/taxi-latest is itself the correct baseline for its own
-// tax year (books-interchange.js builds the real one fresh per book through
+// tax year (diya-gl-interchange.js builds the real one fresh per book through
 // generateSpreadsheet -- see the "reports no overtypes" case in
-// books-interchange.test.js, which proves that wiring), so these cases patch
+// diya-gl-interchange.test.js, which proves that wiring), so these cases patch
 // a copy and read it back against the untouched fixture.
 describe("a Taxi upload's overtyped keys", () => {
   const taxiOriginal = readFileSync(TAXI_XLSX);

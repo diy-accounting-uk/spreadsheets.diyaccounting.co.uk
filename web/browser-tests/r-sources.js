@@ -3,7 +3,7 @@
 
 // web/browser-tests/r-sources.js
 //
-// The five sources of a figure the books-equivalence spec joins on a report
+// The five sources of a figure the diya-gl-equivalence spec joins on a report
 // key, S1 through S3 (S4 and S5 are the page's own zip export and its DOM,
 // out of this module's reach). Each function is a thin read: S1 parses a
 // fixture's own [expected] table, S2 and S3 spawn report.js and read back
