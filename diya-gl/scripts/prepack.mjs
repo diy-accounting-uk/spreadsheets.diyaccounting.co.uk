@@ -8,10 +8,17 @@
 // so the copied app/lib code resolves its own data files exactly as it
 // does inside the parent repo. Run automatically by npm before pack and
 // publish; safe to re-run, since it clears dist/ first.
+//
+// What ships is the four entry points' import closure, the runtime data and
+// the two schemas. The workbook templates and the repository's build scripts
+// stay behind: they are the company's own work under different terms, and the
+// engine fetches a template from the site when it first needs one.
 
 import { cpSync, mkdirSync, rmSync, readFileSync } from "fs";
-import { resolve, dirname, sep } from "path";
+import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+
+import { engineClosure } from "./engine-closure.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PKG_ROOT = resolve(__dirname, "..");
@@ -33,24 +40,19 @@ if (ownPkg.version !== rootPkg.version) {
 rmSync(DIST, { recursive: true, force: true });
 mkdirSync(DIST, { recursive: true });
 
-// app/lib, app/bin, app/products, app/data: copied whole. Nothing here is
-// generated; a moved file is caught by the resolvable-paths test this
-// package ships (test/bin-paths.test.js) rather than by a silent gap here.
-for (const dir of ["lib", "bin", "products", "data"]) {
-  cpSync(resolve(REPO_ROOT, "app", dir), resolve(DIST, "app", dir), { recursive: true });
+// The four entry points and every module they reach, one file at a time.
+// engineClosure throws on an import that resolves to nothing, so a moved
+// file fails here rather than at publish.
+const closure = engineClosure(REPO_ROOT);
+for (const file of closure) {
+  const target = resolve(DIST, file);
+  mkdirSync(dirname(target), { recursive: true });
+  cpSync(resolve(REPO_ROOT, file), target);
 }
 
-// app/templates, minus the screenshots and guide markdown no packaged bin
-// ever reads (only the guide PDF pipeline does, which stays in the parent
-// repo). Every *.xlsx, meta.toml and the Ltd dividend voucher .docx ship.
-const templateExclude = (src) => {
-  const parts = src.split(sep);
-  return !parts.includes("screenshots") && !src.endsWith(".md");
-};
-cpSync(resolve(REPO_ROOT, "app", "templates"), resolve(DIST, "app", "templates"), {
-  recursive: true,
-  filter: templateExclude,
-});
+// The tax year files, the HMRC form layouts and the filing data the closure
+// reads through app-resources.js at run time.
+cpSync(resolve(REPO_ROOT, "app", "data"), resolve(DIST, "app", "data"), { recursive: true });
 
 // The two published v2 schemas, at the path app-resources.js's
 // nodeResourceLoader resolves relative to dist/app: dist/app/../web/....
@@ -64,4 +66,4 @@ cpSync(
 // line of stdout, and a lifecycle script's stdout output lands ahead of it
 // on the same stream, so a caller parsing that line as JSON needs this
 // script to stay off stdout entirely.
-console.error("diya-gl: prepack copied app/{lib,bin,products,data,templates} and the v2 schemas into dist/");
+console.error(`diya-gl: prepack copied ${closure.length} engine files, app/data and the v2 schemas into dist/`);

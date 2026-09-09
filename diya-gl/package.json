@@ -18,7 +18,7 @@
     "diya-gl-write-workbook": "bin/diya-gl-write-workbook.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },
-  "files": ["bin/", "dist/", "README.md"],
+  "files": ["bin/", "dist/", "README.md", "NOTICE"],
   "scripts": {
     "prepack": "node scripts/prepack.mjs"
   },
