@@ -7,17 +7,28 @@
 // call is one landed function from export.js, diya-gl-edits.js or
 // product-workbook.js.
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 import { TOOLS, createSession } from "./diya-gl-tools.js";
 
-// One directory layout serves both homes: app/lib/mcp in a checkout puts the
-// repository's package.json three levels up, and dist/app/lib/mcp in an
-// install puts the package's own there. prepack refuses a tarball whose two
-// versions disagree, so either answer is the version the caller is running.
-const PACKAGE_JSON = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "package.json");
+// The nearest package.json above this module: the repository's own in a
+// checkout (app/lib/mcp sits under the root), the package's own in an install
+// (dist/app/lib/mcp sits under the package). prepack refuses a tarball whose
+// two versions disagree, so either answer is the version the caller is running.
+function nearestPackageJson(from) {
+  let dir = from;
+  for (;;) {
+    const candidate = resolve(dir, "package.json");
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`No package.json above ${from}`);
+    dir = parent;
+  }
+}
+
+const PACKAGE_JSON = nearestPackageJson(dirname(fileURLToPath(import.meta.url)));
 
 export const SERVER_INFO = { name: "diya-gl", version: JSON.parse(readFileSync(PACKAGE_JSON, "utf8")).version };
 

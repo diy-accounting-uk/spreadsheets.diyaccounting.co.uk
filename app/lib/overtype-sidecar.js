@@ -31,8 +31,9 @@
 
 import JSZip from "jszip";
 import { readFileSync } from "fs";
-import { resolve as resolvePath, dirname as directoryOf } from "path";
+import { resolve as resolvePath, dirname as directoryOf, relative as relativePath, sep as pathSeparator } from "path";
 import { fileURLToPath } from "url";
+import { nodeResourceLoader } from "./app-resources.js";
 import { buildSheetMap, loadSharedStrings, readCellValue } from "./spreadsheet-runner.js";
 import { parseCells, workbookFormulaMap, sortCellRefs } from "./template-formula-map.js";
 import { isBstInputCell } from "./xlsx-exporter.js";
@@ -98,10 +99,19 @@ function attribute(file, sheet, cellRef, extractionMap, reportLabels) {
 // called on a cache miss.
 const templateFormulasByKey = new Map();
 
+// A path under app/templates goes through the resource loader, which serves
+// the repository's copy when it is present and fetches the packaged engine's
+// from the site when it is not; any other path is read as it is.
+async function templateBytesAt(path) {
+  const withinTemplates = relativePath(TEMPLATES_DIR, path);
+  if (withinTemplates.startsWith("..") || resolvePath(TEMPLATES_DIR, withinTemplates) !== path) return readFileSync(path);
+  return nodeResourceLoader().readBinary(`templates/${withinTemplates.split(pathSeparator).join("/")}`);
+}
+
 async function templateFormulasAt(template) {
   const key = typeof template === "string" ? template : template.key;
   if (!templateFormulasByKey.has(key)) {
-    const bytes = typeof template === "string" ? readFileSync(template) : await template.load();
+    const bytes = typeof template === "string" ? await templateBytesAt(template) : await template.load();
     const zip = await JSZip.loadAsync(bytes);
     templateFormulasByKey.set(key, await workbookFormulaMap(zip));
   }

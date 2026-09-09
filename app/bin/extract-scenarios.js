@@ -67,6 +67,9 @@ import {
 } from "../lib/scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
+const FIXTURE_HEADER =
+  "# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0\n# Copyright (C) 2006-2026 DIY Accounting Limited\n";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const FIXTURES_DIR = join(ROOT, "app", "test", "fixtures");
@@ -93,13 +96,13 @@ const extracted = [];
 function writeSubset(masterDir, subsetName, book, subsetSpec, lines) {
   const dir = join(masterDir, subsetName);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "book.toml"), canonicalBookToml(buildSubsetBook(book, { subsetName, ...subsetSpec })));
+  writeFileSync(join(dir, "book.toml"), FIXTURE_HEADER + canonicalBookToml(buildSubsetBook(book, { subsetName, ...subsetSpec })));
   writeFileSync(join(dir, "lines.jsonl"), canonicalLinesJsonl(lines));
   return { dataLines: lines.length };
 }
 
 function writeFixture(name, toml) {
-  writeFileSync(join(FIXTURES_DIR, `${name}.toml`), toml);
+  writeFileSync(join(FIXTURES_DIR, `${name}.toml`), FIXTURE_HEADER + toml);
   const rows = (table) => (toml.match(new RegExp(`^\\[\\[${table}[.\\]]`, "gm")) || []).length;
   extracted.push({ name, sales: rows("sales"), purchases: rows("purchases"), bank: rows("bank"), payroll: rows("payroll") });
 }
