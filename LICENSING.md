@@ -91,8 +91,9 @@ its directory takes in the table above. A generated spreadsheet package states i
 
 ## Third-party material
 
-- **XBRL International, Global Ledger Taxonomy Framework 2015** (gl-cor, gl-bus, gl-muc and gl-taf
-  modules). The diya-gl field names are adapted from it, and the attribution in
+- **XBRL Global Ledger Taxonomy Framework 2015**, (c) XBRL International Inc., licensed for
+  derivative works with attribution. The diya-gl field names use its semantics in a JSON and TOML
+  surface syntax; no taxonomy XSD file is reproduced. The attribution in
   `web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-docs.md` and in both schemas'
   descriptions is kept verbatim. Reference:
   http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html

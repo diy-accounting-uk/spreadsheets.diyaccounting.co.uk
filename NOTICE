@@ -10,8 +10,10 @@ Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk
 Third-party material
 --------------------
 
-XBRL International, Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc
-and gl-taf modules). The diya-gl field names are adapted from it. Reference:
+XBRL Global Ledger Taxonomy Framework 2015, (c) XBRL International Inc., licensed
+for derivative works with attribution (Section 1.0 of the GL Framework). The
+diya-gl field names use its semantics in a JSON and TOML surface syntax; no
+taxonomy XSD file is reproduced. Reference:
 http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html
 
 JSZip. Copyright (c) 2009-2016 Stuart Knightley and contributors. Taken under the
