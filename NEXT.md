@@ -16,7 +16,6 @@ merges on the operator's word, the tap's after the rename.
 | 1B pages | LU-6, LU-11, README lines | `spreadsheets/lu-1b` | `claude/lu-1b-pages` | Sonnet |
 | 1D workbooks | LU-5 | `spreadsheets/lu-5` | `claude/lu-5-workbooks` | Opus |
 | 1F archive | LU-8b | `archive/lu-8b` | `claude/lu-8b-terms` | Haiku |
-| 2A filing pack | LU-10 | `spreadsheets/lu-10` | `claude/lu-10-filing` | Sonnet |
 
 Wave 2 follows: LU-3's header sweep once the pages and workbooks rows merge, so the sweep touches
 nothing in flight. LU-20's rename on GitHub is the operator's command:
@@ -69,7 +68,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LU-8b | Archive: `LICENSE`, README and download page to PolyForm with the source offer; the 17 pre-migration organisation links and the package scope corrected; the missing `favicon.svg`; the 53 missing headers; one `LICENCE.txt` per package tree | PLAN_LICENSING_UPLIFT.md | machine | — | in-flight | `archive/lu-8b` |
 | LU-8c | Root and www: `LICENSE` and README to PolyForm; the missing headers; www's footer gains the licence line, a local copy of its `og:image` logo, and one spelling of the company name | PLAN_LICENSING_UPLIFT.md | machine | — | done | root PR #28, www PR #27 |
 | LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride LU-17, the spec builder's line rides LU-6 and the package README rides LU-8d | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
-| LU-10 | The filing pack: the IPO and TMView searches recorded; goods and services wording for classes 9, 42 and 35 from the IPO's pre-approved terms; the series-rule check for the two composite marks; the first-use evidence; the ™ usage rules in `TRADEMARKS.md` | PLAN_LICENSING_UPLIFT.md | machine | — | in-flight | `lu-10`; the searches and the pack |
+| LU-10 | The filing pack: the IPO and TMView searches recorded; goods and services wording for classes 9, 42 and 35 from the IPO's pre-approved terms; the series-rule check for the two composite marks; the first-use evidence; the ™ usage rules in `TRADEMARKS.md` | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch; the searches are the operator's to run by hand |
 | H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | checks running on the 01:22 UTC push; merge on green |
 | LU-2 | Manifests and metadata: `license` in `diya-gl/package.json` and the root `package.json`; the Dockerfile's OCI licence label; README badges; CDK tags if any name a licence | PLAN_LICENSING_UPLIFT.md | machine | LU-1 | done | on the batch, 34dc1282 |
 | LU-18 | Third-party lines in `NOTICE` and `LICENSING.md`: the XBRL International GL adaptation, the PolicyBee logo, jszip and smol-toml, the vendored `qrcode.min.js` in Submit | PLAN_LICENSING_UPLIFT.md | machine | LU-1 | done | on the batch, 34dc1282 |
