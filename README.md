@@ -4,25 +4,24 @@ Spreadsheet download site for [DIY Accounting](https://spreadsheets.diyaccountin
 
 # diy-accounting
 
-This is the home of DIY Accounting's community edition spreadsheet based packages. Formerly, these DIY Accounting
-spreadsheets were distributed as a set of proprietary products, owned by DIY Accounting Limited and created by
-Terry Cartwright in the early 2000s. The spreadsheets are now Open Source and released under the Mozilla Public
-License Version 2.0. See: https://www.mozilla.org/en-US/MPL/2.0/
+This is the home of DIY Accounting Spreadsheets™, spreadsheet-based packages for UK bookkeeping and accounts. Terry
+Cartwright built the original spreadsheets in the early 2000s, and DIY Accounting Limited has maintained and extended
+them since. They are free to use, source available, under the PolyForm Internal Use License 1.0.0 — see the License
+section below.
 
 # The relationship to DIY Accounting Limited
 
 https://www.diyaccounting.co.uk/
 
 DIY Accounting Limited continues to maintain these packages and remains a for-profit company. DIY Accounting Limited
-shall be releasing new proprietary products in the future and if you wish to help with our running costs while we do
-this, you can click the sponsor link above or send a donation here:
+will keep releasing new products, and if you wish to help with our running costs while we do this, you can click the
+sponsor link above or send a donation here:
 https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW
 
 # Getting help with DIY Accounting
 
-As proprietary software support was supplied by email and staffed part-time. There is no longer a support service and
-users are encouraged to start a discussion here: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/discussions or raise
-an issue here https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/issues .
+Email support@diyaccounting.co.uk, or raise an issue here:
+https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/issues.
 
 ## Architecture
 
@@ -79,4 +78,15 @@ an issue here https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co
 
 ## License
 
-AGPL-3.0-only. Copyright (C) 2025-2026 DIY Accounting Ltd.
+Three licences cover this repository, by layer:
+
+- The spreadsheets, packages and this site: [PolyForm Internal Use License 1.0.0](LICENSE), with an additional grant
+  for accountants preparing clients' accounts. Free to use, source available. No redistribution, and no hosting a
+  copy — modified or not — under another name. Running on localhost is fine.
+- The DIYA-GL engine (`diya-gl/`): Apache-2.0.
+- The DIYA-GL specification text: CC BY 4.0. Its schemas: Apache-2.0.
+
+See `LICENSING.md` for the file-by-file map. Copyright (C) 2006-2026 DIY Accounting Limited.
+
+This repository does not accept contributions. Email support@diyaccounting.co.uk if you find a bug or want to raise
+something.

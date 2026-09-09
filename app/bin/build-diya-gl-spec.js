@@ -383,9 +383,9 @@ function buildPage() {
 
   const sections = [];
 
-  sections.push(`      <h3 id="what-it-is">What DIYA-GL is</h3>
+  sections.push(`      <h3 id="what-it-is">What DIYA-GL&trade; is</h3>
       <p>
-        DIYA-GL is the file format behind DIY Accounting's DIYA-GL pages, its command line tools and the spreadsheets it generates. A whole
+        DIYA-GL&trade; is the file format behind DIY Accounting's DIYA-GL pages, its command line tools and the spreadsheets it generates. A whole
         year of a small business's accounts is two text files in a zip. <code>book.toml</code> says who the business is, what period the
         books cover and what the chart of accounts holds. <code>lines.jsonl</code> holds one transaction per line. A sole trader's year
         runs to about 15 KB.
@@ -568,7 +568,7 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
         <code>@diy-accounting-uk/diya-gl</code>. Install it one of three ways:
       </p>
       <pre><code>npm install -g @diy-accounting-uk/diya-gl
-brew install diy-accounting-uk/tap/diya-gl
+brew install diy-accounting-uk/diya-gl/diya-gl
 docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
@@ -577,6 +577,22 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <p>
         The spreadsheets themselves stay free to download on a donation basis. <a href="download.html">Download a package</a>, or
         <a href="donate.html">chip in</a> if the tools earn it.
+      </p>`);
+
+  sections.push(`      <h3 id="licence">Licence</h3>
+      <p>
+        Three licences cover the format, by layer. This page's text and the two JSON schemas it describes are
+        <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> for the text and Apache-2.0 for the schemas: implement
+        the DIYA-GL&trade; format in anything, with attribution.
+      </p>
+      <p>
+        The DIYA-GL&trade; engine — the npm package, the CLI, the MCP server, the Docker image and the Homebrew tap — is Apache-2.0,
+        so you can embed it anywhere without legal review.
+      </p>
+      <p>
+        DIY Accounting Spreadsheets&trade; itself, the packages and this site are licensed under the
+        <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE">PolyForm Internal Use License 1.0.0</a>,
+        with an additional grant for accountants preparing clients' accounts: free to use, source available.
       </p>`);
 
   const toc = [
@@ -588,9 +604,11 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
     ["versioning", "Versioning and provenance"],
     ["evidence", "Reconciliation evidence"],
     ["tools", "Getting the tools"],
+    ["licence", "Licence"],
   ];
 
   return `<!doctype html>
+<!-- This page's text is licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/): DIY Accounting Limited, adapted in part from the XBRL International GL Framework. -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -638,7 +656,7 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
     <main id="mainContent">
       <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Products</a></nav>
 
-      <h2 class="kb-page-title">The DIYA-GL format</h2>
+      <h2 class="kb-page-title">The DIYA-GL&trade; format</h2>
       <p class="kb-page-description">A year of accounts in two text files, and the mapping, the checks and the evidence behind them.</p>
 
       <nav class="spec-toc" aria-label="On this page">
@@ -661,7 +679,12 @@ ${sections.join("\n\n")}
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
         </div>
         <div class="footer-center">
-          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+          <p>
+            DIY Accounting Spreadsheets&trade; is free to use, source available under the
+            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE">PolyForm Internal Use License</a>.
+            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk">Source on GitHub</a>.
+          </p>
+          <p>&copy; 2006-2026 DIY Accounting Limited</p>
         </div>
       </div>
     </footer>

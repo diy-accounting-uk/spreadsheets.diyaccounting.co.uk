@@ -9,9 +9,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const booksDir = path.join(publicDir, "books");
 
 function readHtml(filename) {
   return fs.readFileSync(path.join(publicDir, filename), "utf-8");
+}
+
+function readBooksHtml(filename) {
+  return fs.readFileSync(path.join(booksDir, filename), "utf-8");
 }
 
 test.describe("Spreadsheets index.html", () => {
@@ -158,6 +163,23 @@ test.describe("Spreadsheets knowledge-base.html", () => {
     const articleList = page.locator("#article-list");
     await expect(articleList).toBeAttached();
   });
+});
+
+test.describe("Books pages have a footer", () => {
+  const booksFiles = ["bst.html", "se.html", "ltd.html", "taxi.html", "probe.html", "save-probe.html", "headlines-probe.html"];
+
+  for (const file of booksFiles) {
+    test(`${file} has the licence footer`, async ({ page }) => {
+      await page.setContent(readBooksHtml(file), { waitUntil: "domcontentloaded" });
+
+      const footer = page.locator("footer");
+      await expect(footer).toBeAttached();
+
+      const footerText = await footer.textContent();
+      expect(footerText).toContain("DIY Accounting");
+      expect(footerText).toContain("2006-2026");
+    });
+  }
 });
 
 test.describe("All HTML pages have required structure", () => {

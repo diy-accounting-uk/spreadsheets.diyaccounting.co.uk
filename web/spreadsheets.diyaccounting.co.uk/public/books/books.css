@@ -2475,3 +2475,20 @@ table.kv-table tr.total td {
     transition: none !important;
   }
 }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.app-footer {
+  padding: 0.75rem 1rem 1.25rem;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.app-footer p {
+  margin: 0.25rem 0;
+}
+.app-footer a {
+  color: var(--rule);
+}

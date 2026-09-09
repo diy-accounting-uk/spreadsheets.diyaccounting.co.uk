@@ -638,7 +638,12 @@ ${body}
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
         </div>
         <div class="footer-center">
-          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+          <p>
+            DIY Accounting Spreadsheets&trade; is free to use, source available under the
+            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE">PolyForm Internal Use License</a>.
+            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk">Source on GitHub</a>.
+          </p>
+          <p>&copy; 2006-2026 DIY Accounting Limited</p>
         </div>
       </div>
     </footer>
@@ -981,7 +986,11 @@ function renderReleasesPage(releases) {
 function buildReleasesPage(outDir) {
   const releases = releaseRows();
   writeFileSync(join(outDir, "releases.html"), renderReleasesPage(releases), "utf8");
-  writeFileSync(join(outDir, "releases.json"), `${JSON.stringify({ releases: releases.length }, null, 2)}\n`, "utf8");
+  writeFileSync(
+    join(outDir, "releases.json"),
+    `${JSON.stringify({ releases: releases.length, license: "LicenseRef-PolyForm-Internal-Use-1.0.0" }, null, 2)}\n`,
+    "utf8",
+  );
   console.log(`Releases: ${releases.length} release(s) (${releases.map((r) => r.tag).join(", ")})`);
 }
 
@@ -1034,6 +1043,7 @@ async function main() {
         runs: built.runs.length,
         updated: new Date().toISOString().slice(0, 10),
         features: detectFeatures(built.report, built.scenario, shots),
+        license: "LicenseRef-PolyForm-Internal-Use-1.0.0",
       };
       writeFileSync(join(args.outDir, `${product}.json`), `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
       console.log(`  page ${product}.html (${built.runs.length} runs, ${shots.length} screenshots)`);
