@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "type": "module",
   "description": "Recalculate, read and write DIYA-GL books from the command line",
-  "license": "AGPL-3.0-only",
+  "license": "Apache-2.0",
   "homepage": "https://spreadsheets.diyaccounting.co.uk/diya-gl.html",
   "repository": {
     "type": "git",

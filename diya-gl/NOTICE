@@ -30,3 +30,13 @@ Workbook templates are not part of this package. The package fetches them from
 https://spreadsheets.diyaccounting.co.uk when it first needs one, under the
 PolyForm Internal Use License 1.0.0 with an additional grant:
 https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE
+
+Runtime dependencies
+---------------------
+
+From this package's package.json:
+
+  ajv           ^8.20.0    MIT
+  ajv-formats   ^3.0.1     MIT
+  jszip         ^3.10.1    MIT (dual MIT or GPL-3.0-or-later; taken under MIT)
+  smol-toml     ^1.8.0     BSD-3-Clause

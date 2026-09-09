@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2026 DIY Accounting Ltd
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 #
 # Dockerfile — installs the packed @diy-accounting-uk/diya-gl tarball
 # globally. Build context is the scratch directory diya-gl/smoke.sh packs
@@ -16,7 +16,11 @@ ARG VERSION=0.0.0
 
 LABEL org.opencontainers.image.source="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk" \
       org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.licenses="AGPL-3.0-only" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.vendor="DIY Accounting Limited" \
+      org.opencontainers.image.title="diya-gl" \
+      org.opencontainers.image.documentation="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" \
+      org.opencontainers.image.url="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" \
       org.opencontainers.image.description="Recalculate, read and write diya-gl books: a UK sole trader or company's accounts."
 
 COPY ${TARBALL} /tmp/diya-gl.tgz

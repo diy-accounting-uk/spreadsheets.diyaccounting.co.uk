@@ -106,13 +106,35 @@ its directory takes in the table above. A generated spreadsheet package states i
   books bundle is Ajv-generated code and carries the same licence.
 - **Apache Maven Wrapper** (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties`), Apache
   License 2.0, copyright the Apache Software Foundation.
-- **HMRC-derived data**. The rates, thresholds, form layouts and box mappings under `app/data/`, and
+- **HMRC-derived data**. The rates, thresholds, form layouts and box mappings under `app/data/`
+  (including `app/data/filing/` and `app/data/hmrc/sa103f_mapping_v3.csv`), the knowledge-base
+  reference additions under `web/spreadsheets.diyaccounting.co.uk/public/data/ref-additions/`, and
   the reference material under `_developers/hmrc-references/`, come from HM Revenue & Customs
   publications. Crown copyright, used under the
   [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
 - **PolicyBee logo**
   (`web/spreadsheets.diyaccounting.co.uk/public/images/policybee-logo.png`). Used under the partner
   arrangement with PolicyBee. Not licensed onward.
+
+### Runtime dependencies
+
+The root `package.json`:
+
+| Package | Version range | Licence |
+| --- | --- | --- |
+| ajv | `^8.20.0` | MIT |
+| ajv-formats | `^3.0.1` | MIT |
+| stripe | `^22.6.1` | MIT |
+| @aws-sdk/client-bedrock-runtime | `^3.1128.0` | Apache-2.0 |
+
+`diya-gl/package.json`:
+
+| Package | Version range | Licence |
+| --- | --- | --- |
+| ajv | `^8.20.0` | MIT |
+| ajv-formats | `^3.0.1` | MIT |
+| jszip | `^3.10.1` | MIT (dual MIT or GPL-3.0-or-later; taken under MIT) |
+| smol-toml | `^1.8.0` | BSD-3-Clause |
 
 ## SPDX identifiers
 
