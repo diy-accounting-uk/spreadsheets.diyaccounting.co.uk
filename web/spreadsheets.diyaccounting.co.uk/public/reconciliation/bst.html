@@ -59,8 +59,6 @@
       <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>
       <h2 class="kb-page-title">Basic Sole Trader reconciliation</h2>
       <p class="kb-page-description">Reconciliation Report: GB Accounts Basic Sole Trader 2027-04-05 (Apr27) Excel 2007. Every figure below comes from a scenario driven through the shipped workbooks and read back out of the recalculated sheets.</p>
-      <p>&lt;!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 --&gt;</p>
-      <p>&lt;!-- Copyright (C) 2006-2026 DIY Accounting Limited --&gt;</p>
       <p>BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll.</p>
       <p>Trade: IT consultancy and software development</p>
       <nav class="recon-toc" aria-label="On this page">
@@ -84,8 +82,11 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>All indicators consistently support the headline: non-VAT-registered sole trader with turnover £409,900, gross profit £391,360, net profit £265,508, correct capital allowances treatment, zero profit bridge residue, and appropriate tax calculation. No contradictions detected.</p>
-          <p class="recon-verdict-meta">Read back by us.amazon.nova-2-lite-v1:0, 2026-09-09. The arithmetic checks below run first and decide the status.</p>
+          <p>Indicators match the headline: no VAT anywhere, turnover and profit on scale, capital spend excluded from P&amp;L and claimed as allowances, bridge residue nil and tax charged on the taxable profit. Only note is the tapered nil personal allowance.</p>
+          <ul>
+            <li><strong>Personal allowance 0.00</strong> (Income tax indicator): Consistent with taper at 226,508.00 income, but worth a glance that the taper is intended rather than a missing allowance. [note]</li>
+          </ul>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-06. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -179,9 +180,9 @@
 <tr><td>Admin: Mileage Lower Rate Start = tax data</td><td>10001</td><td>10001</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: Mileage Lower Rate Pence = tax data</td><td>0.25</td><td>0.25</td><td>0</td><td>PASS</td></tr>
 <tr><td>Admin: VAT Registration Threshold = tax data</td><td>90000</td><td>90000</td><td>0</td><td>PASS</td></tr>
-<tr><td>Income Tax</td><td>88131.6</td><td>88131.6</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>88132</td><td>88131.6</td><td>-0.39999999999417923</td><td>PASS</td></tr>
 <tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI, less the CIS already deducted</td><td>93918.36</td><td>93918.36</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI</td><td>93918</td><td>93918.36</td><td>+0.3600000000005821</td><td>PASS</td></tr>
 <tr><td>Tax: Personal allowance after taper</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the basic rate to the lower band</td><td>0.2</td><td>0.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the higher rate above the band</td><td>0.4</td><td>0.4</td><td>0</td><td>PASS</td></tr>
@@ -1379,12 +1380,7 @@
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
         </div>
         <div class="footer-center">
-          <p>
-            DIY Accounting Spreadsheets&trade; is free to use, source available under the
-            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE">PolyForm Internal Use License</a>.
-            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk">Source on GitHub</a>.
-          </p>
-          <p>&copy; 2006-2026 DIY Accounting Limited</p>
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
         </div>
       </div>
     </footer>

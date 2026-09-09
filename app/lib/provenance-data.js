@@ -12,13 +12,13 @@
 
 export const PROVENANCE_DATA = {
   "formatVersion": "diya-gl-books/1",
-  "engineVersion": "1.1.2+df3a1487cc4c",
+  "engineVersion": "1.1.2+2b7182570f78",
   "taxDataHash": "6a9c036b5f9c",
   "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b",
   "templates": {
     "bst": {
       "hash": "0d003e10e00c",
-      "scorecard": "811 passed, 0 warnings, 0 failed"
+      "scorecard": "810 passed, 0 warnings, 0 failed"
     },
     "taxi": {
       "hash": "1ff69654d64d",

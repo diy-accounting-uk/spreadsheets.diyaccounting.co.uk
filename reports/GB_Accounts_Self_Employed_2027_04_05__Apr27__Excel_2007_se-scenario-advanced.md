@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-scenario-advanced

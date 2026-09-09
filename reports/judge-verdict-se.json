@@ -1,24 +1,11 @@
 {
   "product": "se",
   "verdict": "pass",
-  "summary": "Indicators are consistent with the headline: VAT-registered with all four quarters carrying VAT, turnover net of the 15,000 disposals at the headline scale, capital allowances explaining the lower taxable profit, tax charged on the profit plus grants, and a zero-residue bridge. Only minor items worth a glance.",
-  "concerns": [
-    {
-      "figure": "SA103S net profit 183,429.68 vs profit before tax 171,773.02",
-      "where": "Turnover/profit indicator and self assessment indicator",
-      "why": "The two profit figures differ by 11,656.66 with no stated bridging item; worth a glance though the deterministic checks and the zero-residue bridge pass.",
-      "severity": "note"
-    },
-    {
-      "figure": "Personal allowance 1,813.49",
-      "where": "Income tax indicator",
-      "why": "Unusually small tapered allowance for income of ~121.5k (full taper would normally exhaust it); plausible but worth a look.",
-      "severity": "note"
-    }
-  ],
-  "model": "anthropic.claude-opus-5",
+  "summary": "All indicators align with the headline. VAT registration is confirmed by non-zero quarterly boxes, profit bridge residue is zero, tax is correctly charged on the adjusted profit, and turnover differences are accounted for by VAT exclusion and fixed asset disposals as explained in the scenario.",
+  "concerns": [],
+  "model": "us.amazon.nova-2-lite-v1:0",
   "region": "us-east-1",
-  "digestHash": "818082abfaf4407c4e674940ddeb8af4b64e1475c0ad82c45a90bf1bc7769cc7",
+  "digestHash": "52e9b868b8d3c558971f476700bffcb609b5b0e7eb38a4df69a9f1199f9d65ad",
   "runs": [
     {
       "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
@@ -27,5 +14,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-06T03:30:16.407Z"
+  "timestamp": "2026-09-09T18:46:12.807Z"
 }

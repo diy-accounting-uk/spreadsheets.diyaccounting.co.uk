@@ -1,5 +1,3 @@
-<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
-<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Basic Sole Trader 2021-04-05 (Apr21) Excel 2007
 
 Scenario: bst-scenario-basic
@@ -72,7 +70,6 @@ Trade: IT consultancy and software development
 | Admin: Higher Band Start = tax data | 37501 | 37501 | 0 | PASS |
 | Admin: Higher Band End = tax data | 150000 | 150000 | 0 | PASS |
 | Admin: NI Class 2 Rate = tax data | 3.05 | 3.05 | 0 | PASS |
-| Admin: NI Class 2 Small Profits Threshold = tax data | 6475 | 6475 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.09 | 0.09 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 9500 | 9500 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -84,9 +81,9 @@ Trade: IT consultancy and software development
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 85000 | 85000 | 0 | PASS |
-| Income Tax | 86928.6 | 86928.6 | 0 | PASS |
+| Income Tax | 86929 | 86928.6 | -0.39999999999417923 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 94103.76000000001 | 94103.76 | -1.4551915228366852e-11 | PASS |
+| Total Tax + NI | 94104 | 94103.76 | -0.2400000000052387 | PASS |
 | Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
@@ -195,7 +192,7 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 34,428.6 |
 | **Total Income Tax** | 86,928.6 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,645 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 3,530.16 |
 | **Total Tax + NI** | 94,103.76 |
@@ -297,7 +294,6 @@ Trade: IT consultancy and software development
 | Higher Band Start | 37,501 |
 | Higher Band End | 150,000 |
 | NI Class 2 Rate | 3.05 |
-| NI Class 2 Small Profits Threshold | 6,475 |
 | NI Class 4 Lower Rate | 0.09 |
 | NI Class 4 Lower Limit | 9,500 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -481,7 +477,6 @@ Trade: IT consultancy and software development
 | N13 | Higher Band Start | 37501 | tax.incomeTax.basicRateLimit (+1) |
 | N14 | Higher Band End | 150000 | tax.incomeTax.additionalRateThreshold |
 | L17 | NI Class 2 Rate | 3.05 | tax.nationalInsurance.class2WeeklyRate |
-| N17 | NI Class 2 Small Profits Threshold | 6475 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
