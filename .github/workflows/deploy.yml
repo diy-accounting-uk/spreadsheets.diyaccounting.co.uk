@@ -404,12 +404,52 @@ jobs:
           echo "::add-mask::${PASSWORD}"
           echo "::add-mask::${TOTP_SECRET}"
 
+      - name: Enable native sign-in for prod DIYA-GL Cognito client
+        if: ${{ vars.SUBMIT_TEST_USER_ROLE_ARN != '' }}
+        env:
+          AWS_REGION: eu-west-2
+          AWS_DEFAULT_REGION: eu-west-2
+        run: |
+          set -euo pipefail
+          WORKDIR="${RUNNER_TEMP}/toggle-cognito-native-auth"
+          mkdir -p "$WORKDIR"
+          cd "$WORKDIR"
+          npm init -y > /dev/null
+          npm pkg set type=module > /dev/null
+          npm install --no-audit --no-fund \
+            @aws-sdk/client-cloudformation \
+            @aws-sdk/client-cognito-identity-provider
+          curl -fsSL -o toggle-cognito-native-auth.js \
+            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
+          node toggle-cognito-native-auth.js enable prod --client books
+
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
         env:
           TEST_AUTH_USERNAME: ${{ steps.mint.outputs.test-auth-username || secrets.TEST_AUTH_USERNAME }}
           TEST_AUTH_PASSWORD: ${{ steps.mint.outputs.test-auth-password || secrets.TEST_AUTH_PASSWORD }}
           TEST_AUTH_TOTP_SECRET: ${{ steps.mint.outputs.test-auth-totp-secret || secrets.TEST_AUTH_TOTP_SECRET }}
+
+      # Runs on always() rather than the workflow's usual !cancelled(): a cancelled run must still
+      # turn prod's native sign-in back off, not just a failed one.
+      - name: Disable native sign-in for prod DIYA-GL Cognito client
+        if: ${{ always() && vars.SUBMIT_TEST_USER_ROLE_ARN != '' }}
+        env:
+          AWS_REGION: eu-west-2
+          AWS_DEFAULT_REGION: eu-west-2
+        run: |
+          set -euo pipefail
+          WORKDIR="${RUNNER_TEMP}/toggle-cognito-native-auth"
+          mkdir -p "$WORKDIR"
+          cd "$WORKDIR"
+          npm init -y > /dev/null
+          npm pkg set type=module > /dev/null
+          npm install --no-audit --no-fund \
+            @aws-sdk/client-cloudformation \
+            @aws-sdk/client-cognito-identity-provider
+          curl -fsSL -o toggle-cognito-native-auth.js \
+            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
+          node toggle-cognito-native-auth.js disable prod --client books
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}
