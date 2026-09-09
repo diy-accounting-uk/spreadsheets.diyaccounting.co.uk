@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. Copyright (C) 2006-2026 DIY Accounting Limited. Field names adapted from the XBRL International Global Ledger Taxonomy Framework 2015; see http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk",
   "title": "DIY Accounting GL-aligned Book Configuration (v2)",
   "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 adds the tables a book needs to state opening balances, stock, debtors, creditors, the fixed asset register, hire purchase agreements, dividends, the register of members and registered charges.",
   "type": "object",
