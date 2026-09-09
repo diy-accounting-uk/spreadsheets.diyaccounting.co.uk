@@ -1278,18 +1278,18 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
     test.skip(missing.length > 0, `Cloud sign-in case needs: ${missing.join(", ")}`);
 
-    // Submit's ci API lives on an environment that is deployed and torn down on
-    // its own cadence, so the host can be absent while the pages and the pool
-    // are up. Probe it first: any HTTP answer (401 is the expected one without
-    // a token) means the API is there; no answer at all is not a defect here.
-    const ciApiBase = "https://ci-submit.diyaccounting.co.uk/api/v1";
+    // The pages talk to Submit's released environment on every host, including
+    // this ci one. Probe it before starting: any HTTP answer (401 is the
+    // expected one without a token) means the API is there; no answer at all
+    // is a network problem, not a defect in this case.
+    const apiBase = "https://submit.diyaccounting.co.uk/api/v1";
     let apiReachable = true;
     try {
-      await page.request.fetch(`${ciApiBase}/books`, { timeout: 15000, failOnStatusCode: false });
+      await page.request.fetch(`${apiBase}/books`, { timeout: 15000, failOnStatusCode: false });
     } catch {
       apiReachable = false;
     }
-    test.skip(!apiReachable, `Cloud sign-in case needs Submit's ci API: ${ciApiBase} did not answer`);
+    test.skip(!apiReachable, `Cloud sign-in case needs Submit's API: ${apiBase} did not answer`);
 
     // What the browser reported, printed when a step fails so a CI failure
     // names the request or console error behind it.

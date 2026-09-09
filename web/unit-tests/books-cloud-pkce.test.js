@@ -25,24 +25,17 @@ function runCloudConfig(hostname) {
   return sandbox.window.DIYA_GL_CLOUD_CONFIG;
 }
 
-describe("cloud-config.js's environment resolver", () => {
-  it("maps the production host to the prod api and hosted UI", () => {
-    const config = runCloudConfig("spreadsheets.diyaccounting.co.uk");
-    expect(config.apiBase).toBe("https://submit.diyaccounting.co.uk/api/v1");
-    expect(config.hostedUi).toBe("https://prod-auth.diyaccounting.co.uk");
-    expect(config.clientId).toBe("1c8hjrjp5g5ipm8o47t6qkks4r");
-  });
-
-  it("maps every other host to ci, including ci-spreadsheets, localhost and a random test port", () => {
-    for (const hostname of ["ci-spreadsheets.diyaccounting.co.uk", "localhost", "127.0.0.1"]) {
+describe("cloud-config.js", () => {
+  it("resolves to Submit's prod api and hosted UI on the prod host, the ci host and localhost", () => {
+    for (const hostname of ["spreadsheets.diyaccounting.co.uk", "ci-spreadsheets.diyaccounting.co.uk", "localhost", "127.0.0.1"]) {
       const config = runCloudConfig(hostname);
-      expect(config.apiBase).toBe("https://ci-submit.diyaccounting.co.uk/api/v1");
-      expect(config.hostedUi).toBe("https://ci-auth.diyaccounting.co.uk");
-      expect(config.clientId).toBe("53op0ccvcaseceue5t8kfr1vq1");
+      expect(config.apiBase).toBe("https://submit.diyaccounting.co.uk/api/v1");
+      expect(config.hostedUi).toBe("https://prod-auth.diyaccounting.co.uk");
+      expect(config.clientId).toBe("1c8hjrjp5g5ipm8o47t6qkks4r");
     }
   });
 
-  it("folds a test client id set before it runs into the resolved config, leaving the rest of ci untouched", () => {
+  it("folds a test client id set before it runs into the resolved config, leaving the rest untouched", () => {
     const sandbox = {
       window: {
         DIYA_GL_CLOUD_TEST_CLIENT_ID: "test-books-client",
@@ -53,7 +46,7 @@ describe("cloud-config.js's environment resolver", () => {
     vm.runInContext(CONFIG_SRC, sandbox);
     const config = sandbox.window.DIYA_GL_CLOUD_CONFIG;
     expect(config.clientId).toBe("test-books-client");
-    expect(config.apiBase).toBe("https://ci-submit.diyaccounting.co.uk/api/v1");
+    expect(config.apiBase).toBe("https://submit.diyaccounting.co.uk/api/v1");
   });
 });
 
