@@ -10,7 +10,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Urgency 1 of the licensing uplift is code complete: PR #86 (`claude/lu-1-terms`) carries LU-1 to
 LU-7, LU-8d, LU-10, LU-11, LU-18, LU-19 and CQ-1, with Maven verify and `npm run test:fast` green
-(8,517 tests); its CI reruns on ef4e98a3 after four pipeline fixes landed on top. The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
+(8,517 tests); every check is green on 06bf98cb after four pipeline fixes landed on top. The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
 rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b). No worktree is open.
 LU-9, the first release under the new terms, follows the merges and H-LU-3's generate dispatches.
 
@@ -51,7 +51,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 |---|---|---|---|---|---|---|
 | LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride the tap PR #1, the spec builder's line and the package README are on PR #86 | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
 | H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | green and mergeable |
-| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | CI on ef4e98a3 after fixes for the gate, smoke, bundle, CodeQL |
+| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | every check green on 06bf98cb |
 | H5 | Merge root PR #28 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, README |
 | H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
 | H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
