@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // template-formula-map.js — what formulas a workbook's sheets carry, read
 // straight out of the sheet XML with JSZip and no LibreOffice.

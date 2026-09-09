@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2026 DIY Accounting Ltd
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 #
 # image-smoke.sh — run the built diya-gl image against the same fixture
 # smoke.sh uses for recalc, mounting the repo's examples/ read-only and

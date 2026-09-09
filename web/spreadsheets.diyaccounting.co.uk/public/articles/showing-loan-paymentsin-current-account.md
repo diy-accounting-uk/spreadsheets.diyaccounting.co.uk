@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This small article gives information on showing Loan Payments within the package.
 
 Loan payments are shown as a Long Term Creditor.

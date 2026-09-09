@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every company registered in the UK must have a Memorandum of Association that defines the scope, powers and objects of the limited liability company. The Memorandum of Association is vitally important as any transactions deemed to be outside the objects are not legally enforceable.
         
         When registering a new limited liability company the Memorandum of Association is submitted with the Companies House company registration forms. Failing to submit a valid Memorandum of Association when forming a company would result in the company registration being rejected.

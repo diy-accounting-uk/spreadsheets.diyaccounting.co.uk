@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 After forming a company in the UK the directors have a number of immediate responsibilities in regard to the newly registered company. Share certificates should be issued, statutory registers implemented and updated, affixing the company name and noting critical dates to avoid penalty fines and the implementation of a financial control system.
         
          

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article helps if you do need to amend the set data on the spreadsheets.
 
 Adding or deleting rows and columns from the sheets is likely to break the formula.

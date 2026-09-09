@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Maintaining accounting records can be difficult for any business, especially self employed and small business organisations where a lack of accounting knowledge can be prohibitive. Selecting the right accounting software for your business can seriously improve financial performance.
 
 The best choice is often dependent upon the size of the business and the employment of full time accountants, accounting staff, bookkeepers or management of the accounting records by the proprietor. Every business needs to choose the most appropriate accounts package according to both the requirements of the business and the capabilities of the person or people who will operate the accounting solution.

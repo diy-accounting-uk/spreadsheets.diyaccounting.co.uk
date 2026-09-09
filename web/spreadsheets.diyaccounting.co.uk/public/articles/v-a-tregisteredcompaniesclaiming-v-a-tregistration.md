@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 When a business registers for VAT the VAT rate should be added to all sales from the date of registration. The standard VAT rate is 20 per cent of the sales value. The value added tax added to sales is known as the output tax.
     Value added tax paid to suppliers on purchases is known as the input tax. When completing the VAT form the amount paid to HMRC is the total output tax after deducting the input tax.
     VAT on goods purchased up to three years prior to VAT registration can be reclaimed against the output tax liability. A business can also claim VAT paid on services incurred up to 6 months before vat registration.

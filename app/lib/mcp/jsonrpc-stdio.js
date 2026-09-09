@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // jsonrpc-stdio.js — a minimal JSON-RPC 2.0 framing over two Node streams:
 // one JSON object per line in, one JSON object per line out. This is the

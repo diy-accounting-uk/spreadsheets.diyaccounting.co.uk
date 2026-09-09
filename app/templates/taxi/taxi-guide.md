@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # DIY Accounting Taxi Driver User Guide
 
 Thank you for using DIY Accounting as your accounting system.

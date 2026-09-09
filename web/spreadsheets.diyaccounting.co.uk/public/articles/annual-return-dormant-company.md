@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Rules apply to dormant companies in the UK with regard to accounting documents and submission of information to companies house that needs attention even if the company has not traded during its financial year. Dormant companies risked being fined if these rules are ignored.
 
 A dormant company in the UK is defined as a company that has had no significant accounting transactions during its financial year. It is not sufficient that the company may not have traded if the company has had any accounting transactions at all with the exception of three specific transactions that are allowed.

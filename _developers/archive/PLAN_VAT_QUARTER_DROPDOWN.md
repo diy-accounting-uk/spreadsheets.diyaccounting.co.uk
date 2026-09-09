@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: VAT quarter-end dropdown does not roll with the package year
 
 Status: **all four surfaces fixed, deployed, and live-verified** (2026-08-24: surfaces 1–3 via PR #2 + regeneration + deploy; surface 4 via PR #4 + regeneration + the 08:36 push-triggered deploy; live Aug27 artefact verified on both the dropdown-list and closed-workbook link-update paths). The guard test now covers the 4th chain link (`9e9cb12a`), and the monthly `generate-ltd` schedule has run, which settles determinism. Remaining: the operator's six-donor decision.

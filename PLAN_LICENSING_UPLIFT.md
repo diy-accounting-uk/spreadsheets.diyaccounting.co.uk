@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: the licensing and copyright uplift
 
 Status: approved, go given 2026-09-09. Urgency 1 is on the board in `NEXT.md` and starts in a fresh

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "Kestrel Executive Cars"
 description = "Executive chauffeur operator banking weekly settlements, with employed drivers, a leased yard and a profit into the additional rate band"

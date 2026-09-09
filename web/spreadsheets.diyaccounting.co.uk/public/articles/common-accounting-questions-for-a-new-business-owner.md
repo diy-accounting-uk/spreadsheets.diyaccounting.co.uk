@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Starting you own business brings in a lot of new concepts and terms. Here is a quick run through some of those we regularly encounter from new business owners.
 
 **What is the difference between: Turnover, Net Profit and Gross Profit?**

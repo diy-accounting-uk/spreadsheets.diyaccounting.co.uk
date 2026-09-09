@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Accurate financial records must be kept by every business and bookkeeping software spreadsheets can satisfy this requirement. Further by adopting a simple accounting system the small business can use the bookkeeping spreadsheets to both manage financial control over the business and complete the essential task of reporting for tax purposes
 
 Businesses generally make extensive use of spreadsheets both in accounting and all other business fields. Being a numerically based system of analysing information spreadsheets are used throughout every accounting function as the technique presents an ideal basis to maintain accuracy and automate the collection of financial information.

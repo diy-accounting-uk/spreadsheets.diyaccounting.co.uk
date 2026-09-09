@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // ltd-headlines.test.js — proves the Ltd HEADLINES declaration in
 // app/products/ltd.js against the three diya-gl Ltd fixtures, built the same

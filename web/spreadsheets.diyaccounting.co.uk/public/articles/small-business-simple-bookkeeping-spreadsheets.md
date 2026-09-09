@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 There is a major difference between sophisticated accounting software used by larger businesses for financial control purposes than is required for small business where a simple bookkeeping spreadsheet is sufficient.
 
 Accounting software is used by accountants to enter many complex financial transactions into the financial books of account and is almost invariably based upon double entry bookkeeping principles. A major advantage to those companies and the finance staff is the extent to which financial information contained in the database can be queried for financial control purposes.

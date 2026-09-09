@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The bookkeeping system adopted by a business is based upon double entry bookkeeping principles for all limited companies but self employed businesses may use a single entry bookkeeping system if a statement of assets and liabilities is not required. Bookkeeping is the recording of the prime financial transactions of a business usually by a bookkeeper or accounts clerk in the business books.
 
 The difference between bookkeeping services and accounting may be unclear to the uninitiated while both are of vital importance to financial success. Bookkeeping is an important part of the accounting function and is essentially the record keeping of the financial transactions. Accounting is while incorporating the record keeping also includes the presentation, interpretation and financial control functions including interpretation of the numbers for the financial health of a business of which taxation can play a major part.

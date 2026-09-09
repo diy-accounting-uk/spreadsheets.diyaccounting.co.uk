@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [[reference]]
 id = "REF389"
 claim = "A VAT invoice must show a sequential number, time of supply, supplier name/address/VAT number, customer name/address, description of goods/services, quantity, rate of VAT, and amount of VAT"

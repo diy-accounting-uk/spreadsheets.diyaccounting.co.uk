@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Registration of a limited company in the UK is not complex. Four documents are required to create a limited liability company. Documents which are available quite cheaply including the main company registration forms which are free
     Starting a limited liability company in the UK requires the submission to Company House forms, 10 and 12, plus a memorandum and articles of association to complete the company formation and registration.
 

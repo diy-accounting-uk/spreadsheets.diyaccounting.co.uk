@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Taxi drivers must fill in a self employed tax return if they have worked as a taxi driver at anytime during the financial year. Self employed tax returns for 2008-09 have to be filed by 31st January 2010 to avoid the £100 late filing penalty with interest being charged on any tax not paid by this date.
     The simplest solution to preparing the taxi driver accounts is to collect all the taxi receipts and expenses together, hand them over to a taxi accountant who will prepare the self employed tax return and might charge £150 to £500 for the privilege, that is taxing. Taxi accounting does not have to be taxing. Taxi drivers and cabbies can prepare the taxi accounts and self employed tax return.
     *Taxi driver notes in preparing the taxi driver accounts*

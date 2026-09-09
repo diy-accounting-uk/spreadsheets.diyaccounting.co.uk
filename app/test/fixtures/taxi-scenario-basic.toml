@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "Basic taxi driver"
 description = "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental."

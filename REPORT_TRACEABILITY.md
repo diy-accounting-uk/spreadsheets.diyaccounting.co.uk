@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Tax Data Traceability Report
 
 Traces every value in `app/data/se-*.toml` back to its authoritative HMRC source (see [SOURCES.md](SOURCES.md) for reference URLs).

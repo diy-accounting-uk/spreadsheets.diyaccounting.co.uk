@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every business is required to keep a set of financial records to enable those accounts to be submitted and the tax payable calculated. Bookkeeping is the prime stage in keeping those books and at its most basic level does not require high levels of accounting knowledge and experience and accountant fees can be saved.
 
 Basic bookkeeping consists of recording the prime business transactions of sales, purchases and cash. The accounting documents supporting and evidencing these transactions being called prime documents which are entered into the business books by a bookkeeper.

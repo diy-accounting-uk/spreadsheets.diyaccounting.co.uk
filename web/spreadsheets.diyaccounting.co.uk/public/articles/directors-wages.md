@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 How do I Input Directors Wages into my Accounts?
 
 As a Director and 100% Shareholder you can take drawings out of the business, either as Dividends (which attract capital gains tax) or as a Salary (which is PAYE).

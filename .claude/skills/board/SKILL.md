@@ -2,6 +2,8 @@
 name: board
 description: Render the work board — the table in NEXT.md of every open task with its source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # board
 

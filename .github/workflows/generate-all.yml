@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 name: generate-all
 run-name: "generate-all from ${{ github.ref_name }}${{ inputs.skip-tests && ' skip-tests' || '' }}${{ inputs.skip-generation && ' skip-generation' || '' }}${{ inputs.skip-reconciliation && ' skip-reconciliation' || '' }}${{ inputs.skip-commit && ' skip-commit' || '' }}"
 concurrency:

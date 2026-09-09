@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how you would show cash being introduced into your accounts.
 
 In the Basic Sole Trader package you don’t need to enter the cash introduced at all. As there is no separate corporate entity and any cash is yours whether lent to the business or left in your account. It’s only the profits from trading that incur a tax liability irrespective of whether a loan is settled or not. If you don't make the money back in the first year your business would declare a loss (having spent more money that was earned). So you don't loose the ability to take the funds out without incurring a tax liability you'd need to carry the losses forward into the next year.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 When times get hard and 2008 has all the hallmarks of being a difficult financial year control over cash flow is critical. The best defence in these days of the credit crunch is to introduce and monitor cash flow liquidity at the earliest stage of which stock levels and inventory control can be crucial elements.
 
 The first sign of problems is often a reduction in net profit while the last post, literally the last post is a severe cash flow deficiency. Sound accounting procedures should produce financial control information on stock levels, debtors and creditors and financial investment to provide early warning systems of impending cash flow problems.

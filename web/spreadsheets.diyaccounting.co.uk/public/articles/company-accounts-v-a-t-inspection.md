@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The first step to keeping out of trouble is to understand the basics of the paperwork required. The second step is to ensure accurate financial records are maintained and many types of accounting software and bookkeeping software can assist by at the very least producing a required audit trail to support the financial figures entered on the quarterly vat tax return.
     To determine the need for accuracy and compliance it is worth first summarising the work a vat inspector might carry out when the business is visited to carry out an inspection of the business financial accounts.
     While each customs and excise inspector might tend to conduct the audit in their own way typically the totals for several quarterly tax returns will be compared with the total sales turnover and total expenditure to indicate if the returns are likely to be accurate. In addition cash and bank accounts may be examined to determine if the volume of payments and receipts also reflects the scale of financial transactions.

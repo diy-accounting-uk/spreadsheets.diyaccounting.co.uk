@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how to use the Written Down Book Value and Written Down Tax Value columns within the Fixed Assets spread sheet.
 
 After claiming 50% of the value of the asset in one year the sum of any allowance made in future years should only ever add up to the other 50%.

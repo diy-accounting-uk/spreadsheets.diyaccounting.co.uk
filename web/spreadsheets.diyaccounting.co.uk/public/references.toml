@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 # DIY Accounting Knowledge Base — Citation Reference Database
 # Each [[reference]] has a unique ID, a claim summary, and one or more [[reference.source]] entries.
 # Sources include verbatim extracts, access dates, and authority level.

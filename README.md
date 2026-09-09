@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # spreadsheets.diyaccounting.co.uk
 
 Spreadsheet download site for [DIY Accounting](https://spreadsheets.diyaccounting.co.uk) — free Excel bookkeeping spreadsheets for UK sole traders, self-employed, and small companies.

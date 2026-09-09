@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every new business start up has a business plan that varies in sophistication from a few brief thoughts, an idea or aspiration to a formal written document setting out all major elements. Preparing a business plan is essential if grants are to be applied for or money is being borrowed to fund the start up. The strong message being that potential lenders regard a business plan as essential.
 
 Finance companies and banks demand a written business plan before putting up financial support to a new business. All medium and large companies inevitably prepare a financial budget for the coming year. That should tell everyone that not producing a written business plan is the first mistake everyone starting a new business might make.

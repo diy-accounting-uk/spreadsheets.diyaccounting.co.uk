@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 A sole trader in the UK can operate a very basic accounting system. Provided supporting evidence is retained to show the basic accounts are realistic and the income and expenditure statement accurate for basic tax purposes sophisticated accountancy, debits and credits are not required. Basic accounts for sole traders do not require the production of a balance sheet.
 
 In order for a sole trader to be able to keep basic tax accounts certain conditions regarding the status of business accounts must be satisfied. Sales turnover should be under the vat threshold limit, a balance sheet not required, a business bank account not used and no employees employed. If the conditions are met then a simple income and expenditure statement is all that is required greatly simplifying the bookkeeping.

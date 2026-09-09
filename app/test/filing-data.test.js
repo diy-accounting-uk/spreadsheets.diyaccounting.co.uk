@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // Structural checks on the Filing data (T19): the CT600 (2026) Version 3 box
 // list, the HMRC computation format v1.1 lines and the FRS 105 micro-entity

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains the use of the Income Tax sheet within the Basic Sole Trader package.
 
 The Income Tax sheet in the Basic Sole Trader package just focuses on the business side of things so it's is only an indication of your bill.

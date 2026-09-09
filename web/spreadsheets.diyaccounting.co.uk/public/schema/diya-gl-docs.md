@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # DIY Accounting Global Ledger Lines Schema
 
 ## Adapted from XBRL Global Ledger Taxonomy Framework 2015 (Recommendation)

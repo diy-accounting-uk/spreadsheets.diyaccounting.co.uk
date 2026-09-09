@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // payslips-layout.js — where a month tab's monthly payroll block sits on
 // Payslips.xlsx, and the cells the printed payslip joins through. One rule in

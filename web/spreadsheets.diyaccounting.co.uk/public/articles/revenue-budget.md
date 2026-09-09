@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The revenue budget is an essential business management accounting tool monitoring actual financial performance against financial targets
 
 The revenue budget is an essential business accounting tool monitoring actual financial performance against the approved financial targets. Fixing a budget produces few tangible improvements in financial performance unless it is structured to reflect the financial performance of individual activity areas and management responsibility within the business.

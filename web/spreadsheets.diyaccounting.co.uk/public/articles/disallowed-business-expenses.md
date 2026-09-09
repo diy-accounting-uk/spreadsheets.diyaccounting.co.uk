@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The costs of goods, materials or services purchased by a business which are for private use are not allowable for tax purposes. The disallowed element also applies to goods and materials bought for business use which are subsequently used for private use.
     Payments made by the business for none business work are not allowed. as a deduction from the tax bill
     A limited company can claim the wages and salaries of directors as a valid business expense. If the business is self employed then the proprietors own wages and drawings are not allowable as business expenses as such costs are distributions of the net taxable profit and not deductions from it. Also included in this category of disallowed expenses relating to the proprietor wages would be national insurance contributions, income tax payments and pension contributions

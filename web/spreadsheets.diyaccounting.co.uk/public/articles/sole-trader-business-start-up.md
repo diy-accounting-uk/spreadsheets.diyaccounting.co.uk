@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Information for sole traders starting your own new sole trader business set up including how to start up business, basic accounts and easy accounting
 
 Setting up in business as a sole trader is the easiest way most businesses choose but some knowledge of how to start up business is useful. Every budding entrepreneur should be aware of the need to adequately prepare for the business venture. Administration and accounting is usually straightforward, you are your own boss and all the profits belong to the sole traders. 

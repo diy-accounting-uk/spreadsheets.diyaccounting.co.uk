@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article includes steps by step instructions and an example of an actual Making Tax Digital (MTD) submission.
 
 From April 2019 VAT submissions need to be automated and VitalTax has been designed to work specifically with the layout of the DIY Accounting VAT calculations. 

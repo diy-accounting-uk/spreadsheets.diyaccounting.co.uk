@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every business that employs people is responsible for using a payroll system and the alternatives are for the business to arrange for outsourcing payroll, use a payroll software package or produce the payroll calculations manually (such as using HMRC's Basic PAYE Tools). Each function has both benefits and disadvantages.
 
 **Outsourcing Payroll**

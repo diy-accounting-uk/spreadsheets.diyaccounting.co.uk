@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article helps explain Non Allowable Expenses for Corporation Tax
 
 Self employed individuals are eligible to certain reliefs including tax relief from particular expenses. For example, expenses associated with your business and the running costs can be exempt from your business income for tax purposes e.g. travel expenses, cost of stock, payroll costs. Some expenses however, such as private expenditure cannot be claimed for. This includes an expense which is both for business and private purposes

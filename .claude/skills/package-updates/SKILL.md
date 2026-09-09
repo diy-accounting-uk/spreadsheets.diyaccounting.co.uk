@@ -2,6 +2,8 @@
 name: package-updates
 description: How to update UK tax rate data for a new financial year (SE/Ltd TOML files) and publish the regenerated spreadsheet packages. Load when adding a new tax year's data, updating HMRC rates, or working the generate/reconcile/deploy publishing pipeline.
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # Skill: Annual Tax Data Updates and Package Publishing
 

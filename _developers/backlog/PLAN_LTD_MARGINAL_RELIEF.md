@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Corporation Tax marginal relief — what is still open
 
 The working sheet charges marginal relief. `Admin!P8`, `P9`, `P12` and `P13` carry the main

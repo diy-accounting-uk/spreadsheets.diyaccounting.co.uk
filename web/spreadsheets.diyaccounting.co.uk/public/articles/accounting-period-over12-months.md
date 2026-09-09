@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article is information on how you would record an accounting period of over 12 months.
 
 There are DIY Accounting Limited Company packages for each month end.

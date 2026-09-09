@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-tools.js — the four MCP tools, each a thin call into a function
 // phase 1 already tests: extract_book wraps export.js's --file pipeline

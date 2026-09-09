@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 name: generate-taxi
 run-name: "generate-taxi from ${{ github.ref_name }}"
 concurrency:

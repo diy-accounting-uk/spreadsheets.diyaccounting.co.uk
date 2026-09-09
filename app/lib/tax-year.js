@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // tax-year.js — which app/data/<year>.toml file a date falls in. Shared by
 // the package writer (product-workbook.js, which needs the file to apply)

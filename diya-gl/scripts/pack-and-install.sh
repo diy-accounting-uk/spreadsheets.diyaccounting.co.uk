@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2026 DIY Accounting Ltd
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 #
 # pack-and-install.sh — pack this package and install the tarball into a
 # fresh scratch project, so a caller can run its bins from node_modules/.bin

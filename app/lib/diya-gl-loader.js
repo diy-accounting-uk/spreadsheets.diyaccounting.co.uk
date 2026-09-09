@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-loader.js — Load diya-gl book.toml + lines.jsonl and convert
 // to the scenario format that product modules' cellWrites() expect.

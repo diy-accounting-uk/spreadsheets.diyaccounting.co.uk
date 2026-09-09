@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2026 DIY Accounting Ltd
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 #
 # parity.sh — pack this package, install the tarball into a scratch
 # project, then run its read-workbook bin over each product's committed

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 A talented entrepreneur may have all the skills in the world but only achieves the desired level of financial performance by paying acute attention to the profitability of the business. Small business accounting software is a vital management tool to broaden the management function to include accounting and finance and improve business performance.
 
 Every business functions through a range of disciplines, sales and marketing, operational skills, purchasing and management. Small business accounting software is an essential tool to bring financial control to the business. No matter how skilled and well trained the business every small business needs a full range of functions to reach the highest levels of success.

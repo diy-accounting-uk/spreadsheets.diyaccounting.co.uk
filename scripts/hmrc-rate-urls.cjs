@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 // Generate URLs to HMRC pages most likely to contain current and recent tax rates.
 // Usage: node scripts/hmrc-rate-urls.cjs [year]
 // If year not given, uses the current calendar year.

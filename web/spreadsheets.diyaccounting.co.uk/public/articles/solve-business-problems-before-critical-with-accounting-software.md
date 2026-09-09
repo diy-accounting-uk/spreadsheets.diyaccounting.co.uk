@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Running a business and ignoring or having inadequate accounting software is like building a house on top of a bonfire and not bothering to fit a fire alarm. Many small businesses run into difficulties sooner or later, it is a fact of business life. Timing and how those crises are dealt with are critical to both the success and in some cases survival of the business.
 
 All medium and large companies hold regular meetings at which the financial accounts are presented and discussed. While all businesses have problems from time to time rarely do medium and larger businesses actually go out of business and if they do it is invariably because financial mistakes have been made.

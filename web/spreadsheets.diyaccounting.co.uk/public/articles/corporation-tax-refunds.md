@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how to input a transaction for Corporation Tax Refunds
 
 Every company which is liable to corporation tax should fill out the Company Tax Return for each accounting period even if you don't owe any corporation tax or are due a refund. If you are due a refund you can choose how this is repaid; either straight away or this can be carried forward to the next accounting year.
