@@ -2,8 +2,8 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // What a reader sees under File > Properties on anything the pipeline hands
-// out: the company as the author, and the terms as the rights. The template's
-// own title and dates survive the write.
+// out: the company as the author, and the terms as the description. The
+// template's own title and dates survive the write.
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
@@ -30,14 +30,14 @@ async function coreProperties(bytes) {
     xml,
     creator: read("dc:creator"),
     lastModifiedBy: read("cp:lastModifiedBy"),
-    rights: read("dc:rights"),
+    rights: read("dc:description"),
     title: read("dc:title"),
     created: read("dcterms:created"),
   };
 }
 
 describe("a workbook the generator writes", () => {
-  it("names the company as its author and carries the terms as its rights", async () => {
+  it("names the company as its author and carries the terms as its description", async () => {
     const meta = parseTOML(readFileSync(resolve(APP_DIR, "templates/bst/meta.toml"), "utf8"));
     const taxData = parseTOML(readFileSync(resolve(APP_DIR, "data/se-2025-2026.toml"), "utf8"));
     const template = readFileSync(resolve(APP_DIR, "templates/bst/bst-excel.xlsx"));
@@ -98,7 +98,7 @@ describe("a package the generator has no cells to edit", () => {
 });
 
 describe("the files of a written package", () => {
-  it("each carry the author and the rights, the dividend voucher among them", async () => {
+  it("each carry the author and the terms, the dividend voucher among them", async () => {
     const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/precision-code-ltd/full"));
 
     const { files } = await saveWorkbookFiles(book, lines);
@@ -108,7 +108,7 @@ describe("the files of a written package", () => {
       const properties = await coreProperties(file.bytes);
       expect(properties.creator, `${file.name} names someone else as its author`).toBe(PACKAGE_AUTHOR);
       expect(properties.lastModifiedBy, `${file.name} names someone else as its last editor`).toBe(PACKAGE_AUTHOR);
-      expect(properties.rights, `${file.name} carries no rights`).toBe(PACKAGE_RIGHTS);
+      expect(properties.rights, `${file.name} states no terms`).toBe(PACKAGE_RIGHTS);
     }
   }, 300000);
 });

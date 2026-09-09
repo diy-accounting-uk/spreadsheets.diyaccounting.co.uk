@@ -197,7 +197,7 @@ describe("the Company package for the year end the templates carry", () => {
 
     const core = await written.file("docProps/core.xml").async("string");
     expect(core).toContain(`<dc:creator>${PACKAGE_AUTHOR}</dc:creator>`);
-    expect(core).toContain(`<dc:rights>${PACKAGE_RIGHTS}</dc:rights>`);
+    expect(core).toContain(`<dc:description>${PACKAGE_RIGHTS}</dc:description>`);
   });
 
   it("asks the spreadsheet app to recalculate every one of the thirteen workbooks on open", async () => {

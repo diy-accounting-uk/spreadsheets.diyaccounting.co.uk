@@ -43,7 +43,9 @@ function stabilizeDirDates(zip) {
 //
 // Every workbook and every document the pipeline hands out says who wrote it
 // and on what terms, in the core properties a spreadsheet app shows under
-// File > Properties.
+// File > Properties. The terms go in the description, which the OPC core
+// properties allow and Excel shows as Comments; dc:rights is not one of the
+// elements that part may carry.
 
 export const PACKAGE_AUTHOR = "DIY Accounting Limited";
 export const PACKAGE_COPYRIGHT = "Copyright (C) 2006-2026 DIY Accounting Limited";
@@ -103,7 +105,7 @@ async function writeCoreProperties(zip) {
   const xml = existing ? await existing.async("string") : CORE_PROPERTIES_SKELETON;
   let updated = setCoreProperty(xml, "dc:creator", PACKAGE_AUTHOR);
   updated = setCoreProperty(updated, "cp:lastModifiedBy", PACKAGE_AUTHOR);
-  updated = setCoreProperty(updated, "dc:rights", PACKAGE_RIGHTS);
+  updated = setCoreProperty(updated, "dc:description", PACKAGE_RIGHTS);
   zip.file(CORE_PROPERTIES_PART, updated, { date: existing ? existing.date : DOS_EPOCH, createFolders: false });
   if (!existing) await declareCorePropertiesPart(zip);
 }
