@@ -355,6 +355,8 @@ function buildProvenanceStamp(product) {
     `scorecard ${stamps["diya-gl:templateScorecard"]}`,
   ];
   if (stamps["diya-gl:reconciledCommit"]) parts.push(`reconciled at ${stamps["diya-gl:reconciledCommit"]}`);
+  parts.push("Apache-2.0");
+  parts.push("Copyright (C) 2006-2026 DIY Accounting Limited");
   return { content: parts.join("; "), stamps };
 }
 
