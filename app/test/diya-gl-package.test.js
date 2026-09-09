@@ -6,6 +6,10 @@
 // prepack.mjs itself (no npm install needed: it only touches fs/path/url),
 // then checks every bin target and the files list's roots exist — so a
 // file moved out from under the package fails here, not at publish.
+//
+// The second suite packs the tarball and reads its listing, which is what
+// proves the templates and the build scripts stay out of the published
+// package and the licence and notice go into it.
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { execFileSync } from "child_process";
@@ -13,6 +17,8 @@ import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+
+import { engineClosure } from "../../diya-gl/scripts/engine-closure.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -70,15 +76,66 @@ describe("diya-gl package", () => {
     expect(existsSync(resolve(schemaDir, "diya-gl-lines-v2.schema.json"))).toBe(true);
   });
 
-  it("carries every product's template directory, including the Ltd dividend voucher", () => {
-    for (const product of ["bst", "taxi", "se", "ltd"]) {
-      const templateDir = resolve(DIYA_GL_DIR, "dist", "app", "templates", product);
-      expect(existsSync(resolve(templateDir, "meta.toml")), `${product}/meta.toml`).toBe(true);
+  it("carries no workbook template", () => {
+    expect(existsSync(resolve(DIYA_GL_DIR, "dist", "app", "templates"))).toBe(false);
+  });
+
+  it("carries every module the four entry points import", () => {
+    for (const file of engineClosure(ROOT)) {
+      expect(existsSync(resolve(DIYA_GL_DIR, "dist", file)), file).toBe(true);
     }
-    expect(existsSync(resolve(DIYA_GL_DIR, "dist", "app", "templates", "ltd", "Dividend Voucher.docx"))).toBe(true);
   });
 
   it("declares only the npm packages the copied runtime code actually imports", () => {
     expect(Object.keys(pkg.dependencies).sort()).toEqual(["ajv", "ajv-formats", "jszip", "smol-toml"]);
+  });
+});
+
+// The twelve app/bin scripts that build the site, the packages and the
+// reconciliation evidence. None of them is reachable from a package bin, and
+// each is the company's own work under different terms from the engine.
+const BUILD_SCRIPTS = [
+  "build-diya-gl-spec.js",
+  "build-packages.js",
+  "build-reconciliation-pages.js",
+  "build-sitemaps.js",
+  "compliance-report.js",
+  "cross-package-reconciliation.js",
+  "extract-scenarios.js",
+  "generate.js",
+  "judge-reconciliation.js",
+  "reconcile.js",
+  "verify-roundtrip.js",
+  "verify-stability.js",
+];
+
+describe("the packed diya-gl tarball", () => {
+  let packedPaths;
+
+  beforeAll(() => {
+    const output = execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: DIYA_GL_DIR, encoding: "utf8" });
+    packedPaths = JSON.parse(output)[0].files.map((file) => file.path);
+  }, 180000);
+
+  it("ships the licence and the notice", () => {
+    expect(packedPaths).toContain("LICENSE");
+    expect(packedPaths).toContain("NOTICE");
+  });
+
+  it("ships no workbook template", () => {
+    expect(packedPaths.filter((path) => path.includes("templates/"))).toEqual([]);
+  });
+
+  it("ships none of the repository's build scripts", () => {
+    expect(BUILD_SCRIPTS.filter((name) => packedPaths.includes(`dist/app/bin/${name}`))).toEqual([]);
+  });
+
+  it("ships the four entry points and the two schemas", () => {
+    for (const name of ["export.js", "report.js", "write-workbook.js", "diya-gl-mcp.js"]) {
+      expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
+    }
+    for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
+      expect(packedPaths, name).toContain(`dist/web/spreadsheets.diyaccounting.co.uk/public/schema/${name}`);
+    }
   });
 });

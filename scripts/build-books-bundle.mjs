@@ -54,7 +54,7 @@ const NODE_STUBS = {
   fs: ["readFileSync", "writeFileSync", "existsSync", "readdirSync", "mkdirSync", "rmSync", "cpSync", "statSync"],
   path: ["resolve", "dirname", "basename", "join", "extname", "relative"],
   url: ["fileURLToPath", "pathToFileURL"],
-  os: ["tmpdir", "platform"],
+  os: ["tmpdir", "platform", "homedir"],
   crypto: ["randomBytes", "createHash"],
   child_process: ["execSync", "spawnSync"],
 };

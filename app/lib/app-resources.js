@@ -26,6 +26,71 @@
 const SCHEMA_PREFIX = "schema/";
 const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "public", "schema"];
 
+// The workbook templates are the company's own work and carry their own terms,
+// so the published npm package and the image leave them out. A repository
+// checkout has app/templates and reads it straight off disk. A packaged install
+// has not, so the loader takes the same file from the site, which already
+// serves the templates the books page uses, and keeps it in a user cache so
+// every later run works with no network.
+const TEMPLATE_PREFIX = "templates/";
+const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/books/assets/";
+
+let templateTermsAnnounced = false;
+
+function templateSource() {
+  return (process.env.DIYA_GL_TEMPLATE_SOURCE || DEFAULT_TEMPLATE_SOURCE).replace(/\/$/, "");
+}
+
+function announceTemplateTerms(source) {
+  if (templateTermsAnnounced) return;
+  templateTermsAnnounced = true;
+  console.error(
+    [
+      `diya-gl: the workbook templates are not part of this package. Fetching them from ${source} and caching them.`,
+      "The templates are Copyright (C) 2006-2026 DIY Accounting Limited, licensed under the PolyForm Internal Use",
+      "License 1.0.0 with an additional grant: use them for your own accounts, or for your clients' accounts if you",
+      "are an accountant or a bookkeeper, and do not redistribute them. The terms are at",
+      "https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE",
+    ].join("\n"),
+  );
+}
+
+/**
+ * A template the packaged engine has no local copy of, taken from the site once
+ * and read from the user cache every time after.
+ *
+ * @param {string} path - the resource path, always under "templates/"
+ * @returns {Promise<Uint8Array>}
+ */
+async function fetchTemplate(path) {
+  const { existsSync, mkdirSync, readFileSync, writeFileSync } = await import("fs");
+  const { dirname, resolve } = await import("path");
+  const { homedir } = await import("os");
+
+  const cacheRoot = process.env.XDG_CACHE_HOME || resolve(homedir(), ".cache");
+  const cached = resolve(cacheRoot, "diya-gl", path);
+  if (existsSync(cached)) return readFileSync(cached);
+
+  const source = templateSource();
+  announceTemplateTerms(source);
+
+  const url = `${source}/${path}`;
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (cause) {
+    throw new ResourceUnavailableError(path, `${url} could not be reached: ${cause.message}`);
+  }
+  if (!response.ok) {
+    throw new ResourceUnavailableError(path, `${url} returned ${response.status} ${response.statusText}`);
+  }
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  mkdirSync(dirname(cached), { recursive: true });
+  writeFileSync(cached, bytes);
+  return bytes;
+}
+
 /**
  * A resource read attempted where the file system is not reachable.
  */
@@ -45,13 +110,17 @@ export class ResourceUnavailableError extends Error {
  */
 export function nodeResourceLoader(appDir) {
   async function read(path, encoding) {
-    const { readFileSync } = await import("fs");
+    const { existsSync, readFileSync } = await import("fs");
     const { resolve, dirname } = await import("path");
     const { fileURLToPath } = await import("url");
     const base = appDir ?? resolve(dirname(fileURLToPath(import.meta.url)), "..");
     const full = path.startsWith(SCHEMA_PREFIX)
       ? resolve(base, ...SCHEMA_ROOT_FROM_APP, path.slice(SCHEMA_PREFIX.length))
       : resolve(base, path);
+    if (path.startsWith(TEMPLATE_PREFIX) && !existsSync(full)) {
+      const bytes = await fetchTemplate(path);
+      return encoding ? new TextDecoder(encoding).decode(bytes) : bytes;
+    }
     return readFileSync(full, encoding);
   }
 
