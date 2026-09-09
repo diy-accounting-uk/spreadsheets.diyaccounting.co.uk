@@ -39,8 +39,7 @@ files through Submit) while the original work and the hosted brand stay the comp
 | The original work and the hosted product | The spreadsheets and their packages, `app/templates/`, the build scripts and every `app/lib` module outside the closure, the web pages and sites, Submit, the infrastructure | PolyForm Internal Use 1.0.0 plus one additional grant | Download and use for your own accounts, or your clients' accounts if you are an accountant. No redistribution. No hosting, and no hosting of a modified version under another name. Running on localhost is permitted use. |
 
 The additional grant, one sentence, permits an accountant or bookkeeper to use the spreadsheets to
-prepare accounts for their clients. It is bespoke and a solicitor reads it before it publishes
-(H-LU-2). The recommendation that accountants are permitted users rests on each client being a
+prepare accounts for their clients. It is bespoke; the operator publishes it on the plain text without a legal read. The recommendation that accountants are permitted users rests on each client being a
 prospective Submit user; the operator confirms it at H-LU-1.
 
 SPDX identifiers: `Apache-2.0`, `CC-BY-4.0`, and `LicenseRef-PolyForm-Internal-Use-1.0.0` for the
