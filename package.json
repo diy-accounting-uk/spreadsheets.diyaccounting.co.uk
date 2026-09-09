@@ -3,6 +3,7 @@
   "version": "1.0.5",
   "type": "module",
   "description": "Spreadsheets download site for spreadsheets.diyaccounting.co.uk",
+  "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "scripts": {
     "prestart": "node app/bin/build-packages.js --years 2 && ln -sfn ../../../target/zips web/spreadsheets.diyaccounting.co.uk/public/zips",
