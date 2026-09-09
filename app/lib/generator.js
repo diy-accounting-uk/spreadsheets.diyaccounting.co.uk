@@ -90,7 +90,8 @@ async function declareCorePropertiesPart(zip) {
   const relsFile = zip.file("_rels/.rels");
   if (!relsFile) throw new Error("The package has no _rels/.rels to relate the core properties from");
   const rels = await relsFile.async("string");
-  if (rels.includes(CORE_PROPERTIES_RELATIONSHIP)) return;
+  const related = [...rels.matchAll(/<Relationship\b[^>]*\bType="([^"]*)"/g)].some((match) => match[1] === CORE_PROPERTIES_RELATIONSHIP);
+  if (related) return;
   const taken = [...rels.matchAll(/Id="rId(\d+)"/g)].map((match) => parseInt(match[1], 10));
   const id = `rId${taken.length ? Math.max(...taken) + 1 : 1}`;
   const relationship = `<Relationship Id="${id}" Type="${CORE_PROPERTIES_RELATIONSHIP}" Target="${CORE_PROPERTIES_PART}"/>`;

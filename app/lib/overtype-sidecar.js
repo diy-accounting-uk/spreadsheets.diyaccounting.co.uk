@@ -31,7 +31,7 @@
 
 import JSZip from "jszip";
 import { readFileSync } from "fs";
-import { resolve as resolvePath, dirname as directoryOf, relative as relativePath, sep as pathSeparator } from "path";
+import { resolve as resolvePath, dirname as directoryOf, relative as relativePath } from "path";
 import { fileURLToPath } from "url";
 import { nodeResourceLoader } from "./app-resources.js";
 import { buildSheetMap, loadSharedStrings, readCellValue } from "./spreadsheet-runner.js";
@@ -105,7 +105,7 @@ const templateFormulasByKey = new Map();
 async function templateBytesAt(path) {
   const withinTemplates = relativePath(TEMPLATES_DIR, path);
   if (withinTemplates.startsWith("..") || resolvePath(TEMPLATES_DIR, withinTemplates) !== path) return readFileSync(path);
-  return nodeResourceLoader().readBinary(`templates/${withinTemplates.split(pathSeparator).join("/")}`);
+  return nodeResourceLoader().readBinary(`templates/${withinTemplates.split(/[\\/]/).join("/")}`);
 }
 
 async function templateFormulasAt(template) {

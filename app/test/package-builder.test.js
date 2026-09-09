@@ -3,7 +3,7 @@
 
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "child_process";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, cpSync } from "fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, cpSync, readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -316,9 +316,7 @@ describe("build-packages.js package docs", () => {
 
     execFileSync(process.execPath, [join(root, "app", "bin", "build-packages.js")], { cwd: root, encoding: "utf8" });
 
-    const catalogue = execFileSync("cat", [join(root, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml")], {
-      encoding: "utf8",
-    });
+    const catalogue = readFileSync(join(root, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml"), "utf8");
     expect(catalogue).toContain(`# SPDX-License-Identifier: ${SPDX_LICENSE_ID}`);
     expect(catalogue).toContain(`# ${COPYRIGHT_LINE}`);
   });
