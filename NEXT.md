@@ -10,8 +10,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Urgency 1 of the licensing uplift has shipped: every repository's PR is merged, the four generate
 runs and the prod deploy of 2026-09-09 19:15 UTC rebuilt every package with `LICENCE.txt` and the
-workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. LU-9 is down to its npm deprecations and GHCR
-deletions, both needing the operator's tokens; ITSA-T8 is ready; LP-24's toggle steps are ready to
+workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. 1.0.0 to 1.0.5 are deprecated on npm; LU-9 is down to the
+GHCR deletions; ITSA-T8 is ready; LP-24's toggle steps are ready to
 resume with the variable set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
 spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's. No
 worktree is open.
@@ -56,7 +56,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | NM-3 | Rename the `/books/*` public URL namespace to DIYA-GL: `public/books/**`, `download.html`'s hrefs, the manifest and service worker, with `redirects.toml` and CloudFront function entries for every old path | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | Sonnet; ~15 references, ~40 served files |
 | NM-4 | Rename the same-repo "books" code identifiers: `books-engine.js`, `books-interchange.js`, `build-books-bundle.mjs`, 46 test filenames, `download.html`'s DOM ids, `books-events.js`, `books.css`, and the `"diya-gl-books"` format string (decided: `diya-gl/1`, the reader keeps accepting the old stamps; needs a version bump and a back-compat reader) | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | Sonnet; the stamp decision is made: `diya-gl/1` |
 | ITSA-T8 | The two self-employed derivations in the DIYA-GL package, `buildSelfEmploymentQuarterlyUpdates` and `buildSelfEmploymentAnnualSubmission` (Submit's ITSA phase 2, track T8): `app/lib/calculators/se-derivations.js` and its tests, proved cell by cell against the self-employed package's own report over every example | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | — | ready-to-start | the go given 2026-09-09; Opus for the mapping, Sonnet for the wiring |
-| LU-9 | The remainder of the first release under the new terms: deprecate npm `@diy-accounting-uk/diya-gl` below 1.1.0 and delete the superseded GHCR tags. The publish half has shipped | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-resume | 1.1.2 is on npm; the two commands need the operator's tokens |
+| LU-9 | Delete the superseded GHCR tags of `diya-gl`, the pre-Apache images below 1.1.0. The publish and the npm deprecations have shipped | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-resume | ids listed; the operator picks the five-tag or three-tag set |
 | NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | NM-S3 | blocked-to-start | Opus to design, then Sonnet; NM-S3 is blocked on busy in Submit |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
 
