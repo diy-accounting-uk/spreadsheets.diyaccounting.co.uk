@@ -1,3 +1,7 @@
+---
+description: Security review: OWASP Top 10 and repository-specific analysis
+---
+
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Security Review: OWASP Top 10 & Repository-Specific Analysis

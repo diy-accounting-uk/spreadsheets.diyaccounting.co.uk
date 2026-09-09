@@ -9,15 +9,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 The licensing uplift runs on the batch branch `claude/lu-1-terms`, draft PR #86, one worktree per
-group under `../.worktrees/`. Landed on the batch: LU-1, LU-2, LU-4, LU-5, LU-6, LU-7, LU-8d, LU-10, LU-11, LU-18, LU-19
-and CQ-1. Sibling-repository PRs open: the tap's #1 (LU-17), root's #28 and www's #27 (LU-8c), the
+group under `../.worktrees/`. Landed on the batch: LU-1, LU-2, LU-3, LU-4, LU-5, LU-6, LU-7, LU-8d, LU-10, LU-11, LU-18,
+LU-19 and CQ-1. Sibling-repository PRs open: the tap's #1 (LU-17), root's #28 and www's #27 (LU-8c), the
 archive's #31 (LU-8b); each merges on the operator's word, the tap's after the rename.
 
-| Group | Rows | Worktree | Branch | Model |
-| --- | --- | --- | --- | --- |
-| 1C headers | LU-3 | `spreadsheets/lu-3` | `claude/lu-3-headers` | Sonnet |
-
-After LU-3 merges, PR #86 leaves draft on a green `npm run test:fast`; LU-9 follows the operator's
+No worktree is open. PR #86 leaves draft on a green `npm run test:fast`; LU-9 follows the operator's
 merges. LU-20's rename on GitHub is the operator's command:
 `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`.
 
@@ -62,7 +58,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LU-19 | The engine announces its terms: `diya-gl --version` prints the version, Apache-2.0 and the copyright line; the MCP server's `instructions` carry them | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 40638b4b |
 | LU-6 | The public statement: the footer gains the licence and a source link on the eleven site pages and a footer on the four DIYA-GL pages; the download page paragraph rewritten; the spec page's licence section naming the three layers; every "open source" phrase goes | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, e8476f90 |
 | LU-7 | The names and the door: `TRADEMARKS.md`, the README's no-contributions line, `SECURITY.md` | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, c755e1c8 |
-| LU-3 | Headers: every comment-capable file carries the SPDX identifier for its layer and `Copyright (C) 2006-2026 DIY Accounting Limited`; a unit test walks the tree and fails on a missing or mismatched header; the 103 missing headers | PLAN_LICENSING_UPLIFT.md | machine | LU-6, LU-5 | in-flight | `lu-3`; the test then the sweep |
+| LU-3 | Headers: every comment-capable file carries the SPDX identifier for its layer and `Copyright (C) 2006-2026 DIY Accounting Limited`; a unit test walks the tree and fails on a missing or mismatched header; the 103 missing headers | PLAN_LICENSING_UPLIFT.md | machine | LU-6, LU-5 | done | on the batch, d0707698 |
 | LU-4 | Distributed copies carry their terms: `LICENCE.txt` and `README.txt` in every spreadsheet zip; licence comments at the head of the engine bundle and the single-file runner; the bundle build keeps jszip's and smol-toml's legal comments | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, dbf53917 |
 | LU-5 | The workbooks and guides state their copyright: the generator writes creator and rights into every workbook's core properties; a licence line on each product's front sheet through the reconciliation gates; the guide PDFs get author and rights metadata | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 7150531e |
 | LU-8b | Archive: `LICENSE`, README and download page to PolyForm with the source offer; the 17 pre-migration organisation links and the package scope corrected; the missing `favicon.svg`; the 53 missing headers; one `LICENCE.txt` per package tree | PLAN_LICENSING_UPLIFT.md | machine | — | done | archive PR #31 |
