@@ -1278,6 +1278,34 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
     test.skip(missing.length > 0, `Cloud sign-in case needs: ${missing.join(", ")}`);
 
+    // Submit's ci API lives on an environment that is deployed and torn down on
+    // its own cadence, so the host can be absent while the pages and the pool
+    // are up. Probe it first: any HTTP answer (401 is the expected one without
+    // a token) means the API is there; no answer at all is not a defect here.
+    const ciApiBase = "https://ci-submit.diyaccounting.co.uk/api/v1";
+    let apiReachable = true;
+    try {
+      await page.request.fetch(`${ciApiBase}/books`, { timeout: 15000, failOnStatusCode: false });
+    } catch {
+      apiReachable = false;
+    }
+    test.skip(!apiReachable, `Cloud sign-in case needs Submit's ci API: ${ciApiBase} did not answer`);
+
+    // What the browser reported, printed when a step fails so a CI failure
+    // names the request or console error behind it.
+    const browserFailures = [];
+    page.on("requestfailed", (request) => {
+      browserFailures.push(`request failed: ${request.method()} ${request.url()} ${request.failure()?.errorText || ""}`);
+    });
+    page.on("console", (message) => {
+      if (message.type() === "error") browserFailures.push(`console error: ${message.text()}`);
+    });
+    const reportBrowserFailures = () => {
+      if (browserFailures.length === 0) return;
+      console.log(" Browser reported:");
+      for (const line of browserFailures) console.log(`  ${line}`);
+    };
+
     // otpauth is imported here, not at module scope, so this file still
     // lists cleanly with Playwright's --list even before a real install
     // has put the package in node_modules.
@@ -1287,250 +1315,255 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     fs.mkdirSync(cloudScreenshotPath, { recursive: true });
     const shot = (name) => page.screenshot({ path: `${cloudScreenshotPath}/${timestamp()}-${name}.png` });
 
-    // ============================================================
-    // STEP 1: Open the books page and the signed-out account panel
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 1: Open the books page and the account panel");
-    console.log("=".repeat(60));
-
-    const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
-    await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await shot("01-books-page");
-
-    const accountBtn = page.locator("#account-btn");
-    await expect(accountBtn, "STEP 1 failed: the account button never appeared").toBeVisible({ timeout: 15000 });
-    await accountBtn.click();
-    const panel = page.locator("#account-panel");
-    await expect(panel, "STEP 1 failed: the account panel never opened").toBeVisible({ timeout: 10000 });
-    await expect(
-      panel.getByRole("button", { name: "Sign in" }),
-      "STEP 1 failed: the signed-out panel's Sign in button never appeared",
-    ).toBeVisible({ timeout: 10000 });
-    await shot("02-panel-signed-out");
-    console.log(" Signed-out account panel is showing the Sign in button");
-
-    // ============================================================
-    // STEP 2: Sign in and land on the ci hosted UI
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 2: Sign in and land on the ci hosted UI");
-    console.log("=".repeat(60));
-
-    const appOrigin = new URL(page.url()).origin;
-    await panel.getByRole("button", { name: "Sign in" }).click();
-    await page
-      .waitForURL((url) => url.origin !== appOrigin, { timeout: 20000 })
-      .catch((error) => {
-        throw new Error(`STEP 2 failed: the sign-in button never redirected to the hosted UI (still at ${page.url()})`, {
-          cause: error,
-        });
-      });
-    await page.waitForLoadState("domcontentloaded");
-    await shot("03-hosted-ui");
-    console.log(` Landed on the hosted UI: ${page.url()}`);
-
-    // ============================================================
-    // STEP 3: Sign in with username and password on the hosted UI
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 3: Sign in with username and password on the hosted UI");
-    console.log("=".repeat(60));
-
-    await page.waitForSelector('input[name="username"]', { state: "attached", timeout: 20000 }).catch((error) => {
-      throw new Error(`STEP 3 failed: the hosted UI sign-in form never rendered (still at ${page.url()})`, { cause: error });
-    });
-    await page.waitForSelector('input[name="password"]', { state: "attached", timeout: 5000 });
-
-    await typeIntoVisibleField(page, 'input[name="username"]', testAuthUsername);
-    await typeIntoVisibleField(page, 'input[name="password"]', testAuthPassword);
-    await page.evaluate(() => {
-      for (const form of document.querySelectorAll("form")) form.noValidate = true;
-    });
-    await shot("04-hosted-ui-filled");
-
-    await clickVisibleButton(page, 'input[name="signInSubmitButton"]');
-    await page.waitForLoadState("networkidle").catch(() => {});
-    await shot("05-hosted-ui-submitted");
-    console.log(" Submitted the hosted UI sign-in form");
-
-    // ============================================================
-    // STEP 4: Answer the TOTP challenge if the hosted UI asks for one
-    // ============================================================
-    const totpFieldSelector = 'input[name="totpCode"], input[name="SOFTWARE_TOKEN_MFA_CODE"], input[type="text"][inputmode="numeric"]';
-    const totpField = await page.waitForSelector(totpFieldSelector, { state: "attached", timeout: 8000 }).catch(() => null);
-    if (totpField) {
+    try {
+      // ============================================================
+      // STEP 1: Open the books page and the signed-out account panel
+      // ============================================================
       console.log("\n" + "=".repeat(60));
-      console.log("STEP 4: Answer the TOTP challenge");
+      console.log("STEP 1: Open the books page and the account panel");
       console.log("=".repeat(60));
 
-      const totp = new TOTP({ secret: Secret.fromBase32(testAuthTotpSecret), algorithm: "SHA1", digits: 6, period: 30 });
-      const code = totp.generate();
-      await typeIntoVisibleField(page, totpFieldSelector, code);
-      await shot("06-totp-entered");
-      await clickVisibleButton(page, 'input[name="signInSubmitButton"], button[type="submit"], input[type="submit"]');
+      const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+      await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await shot("01-books-page");
+
+      const accountBtn = page.locator("#account-btn");
+      await expect(accountBtn, "STEP 1 failed: the account button never appeared").toBeVisible({ timeout: 15000 });
+      await accountBtn.click();
+      const panel = page.locator("#account-panel");
+      await expect(panel, "STEP 1 failed: the account panel never opened").toBeVisible({ timeout: 10000 });
+      await expect(
+        panel.getByRole("button", { name: "Sign in" }),
+        "STEP 1 failed: the signed-out panel's Sign in button never appeared",
+      ).toBeVisible({ timeout: 10000 });
+      await shot("02-panel-signed-out");
+      console.log(" Signed-out account panel is showing the Sign in button");
+
+      // ============================================================
+      // STEP 2: Sign in and land on the ci hosted UI
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 2: Sign in and land on the ci hosted UI");
+      console.log("=".repeat(60));
+
+      const appOrigin = new URL(page.url()).origin;
+      await panel.getByRole("button", { name: "Sign in" }).click();
+      await page
+        .waitForURL((url) => url.origin !== appOrigin, { timeout: 20000 })
+        .catch((error) => {
+          throw new Error(`STEP 2 failed: the sign-in button never redirected to the hosted UI (still at ${page.url()})`, {
+            cause: error,
+          });
+        });
+      await page.waitForLoadState("domcontentloaded");
+      await shot("03-hosted-ui");
+      console.log(` Landed on the hosted UI: ${page.url()}`);
+
+      // ============================================================
+      // STEP 3: Sign in with username and password on the hosted UI
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 3: Sign in with username and password on the hosted UI");
+      console.log("=".repeat(60));
+
+      await page.waitForSelector('input[name="username"]', { state: "attached", timeout: 20000 }).catch((error) => {
+        throw new Error(`STEP 3 failed: the hosted UI sign-in form never rendered (still at ${page.url()})`, { cause: error });
+      });
+      await page.waitForSelector('input[name="password"]', { state: "attached", timeout: 5000 });
+
+      await typeIntoVisibleField(page, 'input[name="username"]', testAuthUsername);
+      await typeIntoVisibleField(page, 'input[name="password"]', testAuthPassword);
+      await page.evaluate(() => {
+        for (const form of document.querySelectorAll("form")) form.noValidate = true;
+      });
+      await shot("04-hosted-ui-filled");
+
+      await clickVisibleButton(page, 'input[name="signInSubmitButton"]');
       await page.waitForLoadState("networkidle").catch(() => {});
-      await shot("07-totp-submitted");
-      console.log(" Submitted the TOTP challenge");
-    } else {
-      console.log(" No TOTP challenge was presented");
-    }
+      await shot("05-hosted-ui-submitted");
+      console.log(" Submitted the hosted UI sign-in form");
 
-    // ============================================================
-    // STEP 5: Return to the page signed in
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 5: Return to the page signed in");
-    console.log("=".repeat(60));
+      // ============================================================
+      // STEP 4: Answer the TOTP challenge if the hosted UI asks for one
+      // ============================================================
+      const totpFieldSelector = 'input[name="totpCode"], input[name="SOFTWARE_TOKEN_MFA_CODE"], input[type="text"][inputmode="numeric"]';
+      const totpField = await page.waitForSelector(totpFieldSelector, { state: "attached", timeout: 8000 }).catch(() => null);
+      if (totpField) {
+        console.log("\n" + "=".repeat(60));
+        console.log("STEP 4: Answer the TOTP challenge");
+        console.log("=".repeat(60));
 
-    await page
-      .waitForURL((url) => url.origin === appOrigin, { timeout: 20000 })
-      .catch((error) => {
-        throw new Error(`STEP 5 failed: the hosted UI never returned to the books page (still at ${page.url()})`, { cause: error });
+        const totp = new TOTP({ secret: Secret.fromBase32(testAuthTotpSecret), algorithm: "SHA1", digits: 6, period: 30 });
+        const code = totp.generate();
+        await typeIntoVisibleField(page, totpFieldSelector, code);
+        await shot("06-totp-entered");
+        await clickVisibleButton(page, 'input[name="signInSubmitButton"], button[type="submit"], input[type="submit"]');
+        await page.waitForLoadState("networkidle").catch(() => {});
+        await shot("07-totp-submitted");
+        console.log(" Submitted the TOTP challenge");
+      } else {
+        console.log(" No TOTP challenge was presented");
+      }
+
+      // ============================================================
+      // STEP 5: Return to the page signed in
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 5: Return to the page signed in");
+      console.log("=".repeat(60));
+
+      await page
+        .waitForURL((url) => url.origin === appOrigin, { timeout: 20000 })
+        .catch((error) => {
+          throw new Error(`STEP 5 failed: the hosted UI never returned to the books page (still at ${page.url()})`, { cause: error });
+        });
+      await expect(
+        panel.locator('[data-action="sign-out"]'),
+        "STEP 5 failed: never reached the signed-in account panel after returning from the hosted UI",
+      ).toBeVisible({ timeout: 20000 });
+      await shot("08-signed-in");
+      console.log(" Returned to the books page signed in");
+
+      // ============================================================
+      // STEP 6: Load an example
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 6: Load an example");
+      console.log("=".repeat(60));
+
+      await accountBtn.click(); // close the panel so the example button is reachable
+      await page.locator('[data-example="bst-scenario-basic"]').click();
+      const yearTotals = page.locator("tfoot.year-totals");
+      await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
+      await shot("09-example-loaded");
+
+      const bookTitle = await page.evaluate(() => window.DiyaGlBooksPage.currentBook().book.entityInformation.organizationIdentifier);
+      console.log(` Loaded the bst-scenario-basic example: "${bookTitle}"`);
+
+      // ============================================================
+      // STEP 7: Save to the account through the save menu
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 7: Save to the account through the save menu");
+      console.log("=".repeat(60));
+
+      await page.click("#save-btn");
+      const cloudMenuItem = page.getByRole("menuitem", { name: "Save to my account", exact: true });
+      await expect(cloudMenuItem, "STEP 7 failed: the save menu never carried a Save to my account item").toBeVisible({ timeout: 10000 });
+      await cloudMenuItem.click();
+
+      const toast = page.locator("#toast");
+      const duplicateNewButton = panel.getByRole("button", { name: "New book" });
+      let saveOutcome;
+      try {
+        saveOutcome = await Promise.race([
+          toast.waitFor({ state: "visible", timeout: 20000 }).then(() => "saved"),
+          duplicateNewButton.waitFor({ state: "visible", timeout: 20000 }).then(() => "duplicate"),
+        ]);
+      } catch (error) {
+        throw new Error(
+          `STEP 7 failed: neither the save toast nor the near-duplicate prompt appeared (panel now shows: ${await panel.innerText().catch(() => "<unreadable>")})`,
+          { cause: error },
+        );
+      }
+      if (saveOutcome === "duplicate") {
+        // A prior run of this same case left a book with this title, product
+        // and dates in the account -- save as a new book rather than update it.
+        await duplicateNewButton.click();
+        await expect(toast, "STEP 7 failed: saving as a new book never showed the save toast").toContainText(
+          /Saved to your account as version \d+\./,
+          { timeout: 20000 },
+        );
+      } else {
+        await expect(toast, "STEP 7 failed: the save toast did not carry the expected wording").toContainText(
+          /Saved to your account as version \d+\./,
+        );
+      }
+      await shot("10-saved");
+      console.log(" Saved the book to the account");
+
+      // ============================================================
+      // STEP 8: See the row in the list
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 8: See the row in the list");
+      console.log("=".repeat(60));
+
+      const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
+      await expect(savedRow, "STEP 8 failed: the saved book never appeared as a row in the account list").toBeVisible({
+        timeout: 15000,
       });
-    await expect(
-      panel.locator('[data-action="sign-out"]'),
-      "STEP 5 failed: never reached the signed-in account panel after returning from the hosted UI",
-    ).toBeVisible({ timeout: 20000 });
-    await shot("08-signed-in");
-    console.log(" Returned to the books page signed in");
+      await shot("11-row-listed");
+      console.log(" The saved book is listed in the account panel");
 
-    // ============================================================
-    // STEP 6: Load an example
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 6: Load an example");
-    console.log("=".repeat(60));
+      // ============================================================
+      // STEP 9: Open it
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 9: Open it");
+      console.log("=".repeat(60));
 
-    await accountBtn.click(); // close the panel so the example button is reachable
-    await page.locator('[data-example="bst-scenario-basic"]').click();
-    const yearTotals = page.locator("tfoot.year-totals");
-    await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
-    await shot("09-example-loaded");
+      await savedRow.getByRole("button", { name: "Open", exact: true }).click();
+      const openConfirm = panel.locator('[data-action="confirm-open"]');
+      if (await openConfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await openConfirm.click();
+      }
+      await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,900.00", {
+        timeout: 20000,
+      });
+      await shot("12-opened");
+      console.log(" Opened the saved book from the account");
 
-    const bookTitle = await page.evaluate(() => window.DiyaGlBooksPage.currentBook().book.entityInformation.organizationIdentifier);
-    console.log(` Loaded the bst-scenario-basic example: "${bookTitle}"`);
+      // ============================================================
+      // STEP 10: Delete it
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 10: Delete it");
+      console.log("=".repeat(60));
 
-    // ============================================================
-    // STEP 7: Save to the account through the save menu
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 7: Save to the account through the save menu");
-    console.log("=".repeat(60));
+      await accountBtn.click(); // reopen the panel with a fresh list
+      const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
+      await expect(rowToDelete, "STEP 10 failed: the book was not listed to delete").toBeVisible({ timeout: 15000 });
+      await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
+      const confirmDelete = panel.locator('[data-action="confirm-delete"]');
+      await expect(confirmDelete, "STEP 10 failed: the delete confirmation never appeared").toBeVisible({ timeout: 10000 });
+      await confirmDelete.click();
+      await expect(
+        panel.locator(".account-row", { hasText: bookTitle }),
+        "STEP 10 failed: the book was still listed after delete",
+      ).toHaveCount(0, { timeout: 15000 });
+      await shot("13-deleted");
+      console.log(" Deleted the book from the account");
 
-    await page.click("#save-btn");
-    const cloudMenuItem = page.getByRole("menuitem", { name: "Save to my account", exact: true });
-    await expect(cloudMenuItem, "STEP 7 failed: the save menu never carried a Save to my account item").toBeVisible({ timeout: 10000 });
-    await cloudMenuItem.click();
+      // ============================================================
+      // STEP 11: Sign out and see the signed-out panel
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 11: Sign out and see the signed-out panel");
+      console.log("=".repeat(60));
 
-    const toast = page.locator("#toast");
-    const duplicateNewButton = panel.getByRole("button", { name: "New book" });
-    let saveOutcome;
-    try {
-      saveOutcome = await Promise.race([
-        toast.waitFor({ state: "visible", timeout: 20000 }).then(() => "saved"),
-        duplicateNewButton.waitFor({ state: "visible", timeout: 20000 }).then(() => "duplicate"),
-      ]);
+      const signOutBtn = panel.locator('[data-action="sign-out"]');
+      await expect(signOutBtn, "STEP 11 failed: the sign-out button never appeared").toBeVisible({ timeout: 10000 });
+      await signOutBtn.click();
+      await page
+        .waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 })
+        .catch((error) => {
+          throw new Error(`STEP 11 failed: sign-out never returned to the books page (still at ${page.url()})`, { cause: error });
+        });
+      await accountBtn.click();
+      await expect(
+        panel.getByRole("button", { name: "Sign in" }),
+        "STEP 11 failed: the panel never showed the signed-out state after sign-out",
+      ).toBeVisible({ timeout: 15000 });
+      await shot("14-signed-out");
+      console.log(" Signed out and saw the signed-out account panel");
+
+      console.log("\n" + "=".repeat(60));
+      console.log("TEST COMPLETE - Cloud sign-in journey verified");
+      console.log("=".repeat(60));
     } catch (error) {
-      throw new Error(
-        `STEP 7 failed: neither the save toast nor the near-duplicate prompt appeared (panel now shows: ${await panel.innerText().catch(() => "<unreadable>")})`,
-        { cause: error },
-      );
+      reportBrowserFailures();
+      throw error;
     }
-    if (saveOutcome === "duplicate") {
-      // A prior run of this same case left a book with this title, product
-      // and dates in the account -- save as a new book rather than update it.
-      await duplicateNewButton.click();
-      await expect(toast, "STEP 7 failed: saving as a new book never showed the save toast").toContainText(
-        /Saved to your account as version \d+\./,
-        { timeout: 20000 },
-      );
-    } else {
-      await expect(toast, "STEP 7 failed: the save toast did not carry the expected wording").toContainText(
-        /Saved to your account as version \d+\./,
-      );
-    }
-    await shot("10-saved");
-    console.log(" Saved the book to the account");
-
-    // ============================================================
-    // STEP 8: See the row in the list
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 8: See the row in the list");
-    console.log("=".repeat(60));
-
-    const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
-    await expect(savedRow, "STEP 8 failed: the saved book never appeared as a row in the account list").toBeVisible({
-      timeout: 15000,
-    });
-    await shot("11-row-listed");
-    console.log(" The saved book is listed in the account panel");
-
-    // ============================================================
-    // STEP 9: Open it
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 9: Open it");
-    console.log("=".repeat(60));
-
-    await savedRow.getByRole("button", { name: "Open", exact: true }).click();
-    const openConfirm = panel.locator('[data-action="confirm-open"]');
-    if (await openConfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await openConfirm.click();
-    }
-    await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,900.00", {
-      timeout: 20000,
-    });
-    await shot("12-opened");
-    console.log(" Opened the saved book from the account");
-
-    // ============================================================
-    // STEP 10: Delete it
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 10: Delete it");
-    console.log("=".repeat(60));
-
-    await accountBtn.click(); // reopen the panel with a fresh list
-    const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
-    await expect(rowToDelete, "STEP 10 failed: the book was not listed to delete").toBeVisible({ timeout: 15000 });
-    await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
-    const confirmDelete = panel.locator('[data-action="confirm-delete"]');
-    await expect(confirmDelete, "STEP 10 failed: the delete confirmation never appeared").toBeVisible({ timeout: 10000 });
-    await confirmDelete.click();
-    await expect(
-      panel.locator(".account-row", { hasText: bookTitle }),
-      "STEP 10 failed: the book was still listed after delete",
-    ).toHaveCount(0, { timeout: 15000 });
-    await shot("13-deleted");
-    console.log(" Deleted the book from the account");
-
-    // ============================================================
-    // STEP 11: Sign out and see the signed-out panel
-    // ============================================================
-    console.log("\n" + "=".repeat(60));
-    console.log("STEP 11: Sign out and see the signed-out panel");
-    console.log("=".repeat(60));
-
-    const signOutBtn = panel.locator('[data-action="sign-out"]');
-    await expect(signOutBtn, "STEP 11 failed: the sign-out button never appeared").toBeVisible({ timeout: 10000 });
-    await signOutBtn.click();
-    await page
-      .waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 })
-      .catch((error) => {
-        throw new Error(`STEP 11 failed: sign-out never returned to the books page (still at ${page.url()})`, { cause: error });
-      });
-    await accountBtn.click();
-    await expect(
-      panel.getByRole("button", { name: "Sign in" }),
-      "STEP 11 failed: the panel never showed the signed-out state after sign-out",
-    ).toBeVisible({ timeout: 15000 });
-    await shot("14-signed-out");
-    console.log(" Signed out and saw the signed-out account panel");
-
-    console.log("\n" + "=".repeat(60));
-    console.log("TEST COMPLETE - Cloud sign-in journey verified");
-    console.log("=".repeat(60));
   });
 });
