@@ -1,18 +1,11 @@
 {
   "product": "bst",
   "verdict": "pass",
-  "summary": "Indicators match the headline: no VAT anywhere, turnover and profit on scale, capital spend excluded from P&L and claimed as allowances, bridge residue nil and tax charged on the taxable profit. Only note is the tapered nil personal allowance.",
-  "concerns": [
-    {
-      "figure": "Personal allowance 0.00",
-      "where": "Income tax indicator",
-      "why": "Consistent with taper at 226,508.00 income, but worth a glance that the taper is intended rather than a missing allowance.",
-      "severity": "note"
-    }
-  ],
-  "model": "anthropic.claude-opus-5",
+  "summary": "All indicators consistently support the headline: non-VAT-registered sole trader with turnover £409,900, gross profit £391,360, net profit £265,508, correct capital allowances treatment, zero profit bridge residue, and appropriate tax calculation. No contradictions detected.",
+  "concerns": [],
+  "model": "us.amazon.nova-2-lite-v1:0",
   "region": "us-east-1",
-  "digestHash": "50a47f1138687614cf9af8233d1a86022d6d101bf19bb8af748814e42e17ed30",
+  "digestHash": "647afc0e194dab5f0304d4797659e519940b2c7b4b2f231d65d8564b1e31a5a2",
   "runs": [
     {
       "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
@@ -21,5 +14,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-06T03:03:17.729Z"
+  "timestamp": "2026-09-09T18:44:14.182Z"
 }

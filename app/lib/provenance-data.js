@@ -11,26 +11,26 @@
 // stamped by any of the three surfaces carries the same values.
 
 export const PROVENANCE_DATA = {
-  formatVersion: "diya-gl-books/1",
-  engineVersion: "1.0.0+ccc72b894a7d",
-  taxDataHash: "942a6388a226",
-  reconciledCommit: "",
-  templates: {
-    bst: {
-      hash: "06fdcd072930",
-      scorecard: "810 passed, 0 warnings, 0 failed",
+  "formatVersion": "diya-gl-books/1",
+  "engineVersion": "1.1.2+df3a1487cc4c",
+  "taxDataHash": "6a9c036b5f9c",
+  "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b",
+  "templates": {
+    "bst": {
+      "hash": "0d003e10e00c",
+      "scorecard": "811 passed, 0 warnings, 0 failed"
     },
-    taxi: {
-      hash: "6c36b3785a83",
-      scorecard: "686 passed, 0 warnings, 0 failed",
+    "taxi": {
+      "hash": "1ff69654d64d",
+      "scorecard": "686 passed, 0 warnings, 0 failed"
     },
-    se: {
-      hash: "aaf63ff852c5",
-      scorecard: "7679 passed, 0 warnings, 0 failed",
+    "se": {
+      "hash": "c6a50059cc90",
+      "scorecard": "7679 passed, 0 warnings, 0 failed"
     },
-    ltd: {
-      hash: "c3da60838497",
-      scorecard: "101279 passed, 0 warnings, 0 failed",
-    },
-  },
+    "ltd": {
+      "hash": "0c18ceeaced4",
+      "scorecard": "101279 passed, 0 warnings, 0 failed"
+    }
+  }
 };
