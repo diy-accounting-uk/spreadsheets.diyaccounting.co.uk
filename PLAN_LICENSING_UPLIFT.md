@@ -127,7 +127,10 @@ Words: the site, the package READMEs and the launch posts say "free to use, sour
 specification". They never say "open source" of the company's own work. "Open source" stays where
 it describes someone else's thing (MCP on Submit's `mcp.html`).
 
-## Decisions the operator confirms at H-LU-1
+## Decisions
+
+Decisions 7 to 10 were taken on 2026-09-09, each on the recommendation. Decisions 1 to 6 were settled in
+conversation on 2026-09-08 and are confirmed with the plan at H-LU-1.
 
 1. The three layers as tabled, with the engine boundary drawn by the import closure.
 2. Accountants preparing clients' accounts are permitted users of the spreadsheets.
@@ -137,7 +140,7 @@ it describes someone else's thing (MCP on Submit's `mcp.html`).
    footers, JSON-LD, READMEs, manifests. "DIY Accounting Ltd" and bare "DIY Accounting" as the legal
    name go; bare "DIY Accounting" survives only as the brand in titles and `og:site_name`.
 6. The archive stays public and is relicensed to match (decided 2026-09-08).
-7. How the Apache package writes a workbook without shipping the templates. (a) Recommended: the
+7. **Decided:** the package fetches the templates from the site at first use under PolyForm and caches them. How the Apache package writes a workbook without shipping the templates. (a) Recommended: the
    package fetches the templates from the site at first use under the PolyForm terms and caches
    them; `prepack.mjs` stops shipping `app/templates`. (b) The package keeps shipping the templates
    under their own `dist/app/templates/LICENSE`; `diya-gl/package.json` then reads
@@ -145,14 +148,14 @@ it describes someone else's thing (MCP on Submit's `mcp.html`).
    without legal review" effect is lost. (c) `write-workbook` and the MCP save tool leave the
    package and workbooks are written only on the site; bank tools then read and recalculate but
    cannot produce a workbook. The rows follow (a); (b) or (c) rewrites LU-8d and LU-4.
-8. Whether the Docker image gets its own repository. Recommendation: not now, see "The Docker
+8. **Decided: no, one pipeline.** Whether the Docker image gets its own repository. Recommendation: not now, see "The Docker
    image" in the review section. The rows follow the recommendation; a yes adds H-LU-10 and LU-20.
-9. Whether to tell HMRC. Submit's MTD approval submission and production-credentials email
+9. **Decided: send the one-paragraph update.** Whether to tell HMRC. Submit's MTD approval submission and production-credentials email
    (`_developers/hmrc/HMRC_MTD_API_APPROVAL_SUBMISSION.md:134,143,666,812`,
    `HMRC_PRODUCTION_CREDENTIALS_EMAIL.md:57`) described the service as AGPL open source. If the
    operator treats those as representations HMRC relied on, H-LU-9 sends a one-paragraph update to
    the SDS team; if not, the documents are annotated and nothing is sent.
-10. Deprecate npm 1.0.0 to 1.0.3 and delete the three old GHCR tags, per the recommendation above.
+10. **Decided: yes.** Deprecate npm 1.0.0 to 1.0.3 and delete the three old GHCR tags, per the recommendation above.
 
 Decided 2026-09-08: the tap repository is renamed `homebrew-diya-gl`, so the install line becomes
 `brew install diy-accounting-uk/diya-gl/diya-gl` (H-LU-8, LU-17). It is still `homebrew-tap` today.
@@ -203,7 +206,7 @@ generate dispatches rebuilding every package.
 | H-LU-2 | A solicitor reads the additional grant and the trademark notice | LU-9, at the operator's discretion |
 | H-LU-3 | Dispatch the four `generate-*` workflows after 1D merges, then the prod deploy | LU-9 |
 | H-LU-8 | Rename `homebrew-tap` to `homebrew-diya-gl` on GitHub | LU-17 |
-| H-LU-9 | Tell HMRC's SDS team the licence changed, if decision 9 says so | none |
+| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | none |
 
 ## Task list
 
@@ -227,7 +230,7 @@ The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 | H-LU-2 | A solicitor reads the additional grant and the trademark notice before LU-9 | LU-1, LU-7 | operator | `LICENSE`, `TRADEMARKS.md` |
 | H-LU-3 | Dispatch the four `generate-*` workflows after LU-5 merges, then the prod deploy | LU-5 | operator | GitHub Actions |
 | H-LU-8 | Rename the tap repository to `homebrew-diya-gl` on GitHub; GitHub redirects the old name | H-LU-1 | operator | github.com |
-| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph, if decision 9 says so | LU-8a | operator | email |
+| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 ## Trade marks
 
