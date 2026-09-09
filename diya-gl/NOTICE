@@ -1,0 +1,30 @@
+DIYA-GL
+Copyright (C) 2006-2026 DIY Accounting Limited
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk
+
+Third-party material
+--------------------
+
+XBRL International, Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc
+and gl-taf modules). The diya-gl field names are adapted from it. Reference:
+http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html
+
+JSZip. Copyright (c) 2009-2016 Stuart Knightley and contributors. Taken under the
+MIT licence of its dual MIT or GPLv3 offer.
+
+smol-toml. Copyright (c) Cynthia Rey. BSD-3-Clause.
+
+Ajv and ajv-formats. Copyright (c) Evgeny Poberezkin. MIT.
+
+HMRC-derived data. The tax rates, thresholds, form layouts and box mappings under
+dist/app/data/ are derived from HM Revenue & Customs publications. Crown copyright,
+used under the Open Government Licence v3.0:
+https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+Workbook templates are not part of this package. The package fetches them from
+https://spreadsheets.diyaccounting.co.uk when it first needs one, under the
+PolyForm Internal Use License 1.0.0 with an additional grant:
+https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE
