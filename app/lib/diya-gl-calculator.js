@@ -16,6 +16,7 @@ import { calculateSeCells, calculateSeResults } from "./calculators/se.js";
 import { calculateLtdCells, calculateLtdResults } from "./calculators/ltd.js";
 
 export { aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./calculators/shared.js";
+export { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmission } from "./calculators/se-derivations.js";
 
 /**
  * Main entry point. Calculate financial reports from diya-gl data.
