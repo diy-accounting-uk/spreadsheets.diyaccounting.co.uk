@@ -8,14 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-The licensing uplift runs on the batch branch `claude/lu-1-terms`, draft PR #86, one worktree per
-group under `../.worktrees/`. Landed on the batch: LU-1, LU-2, LU-3, LU-4, LU-5, LU-6, LU-7, LU-8d, LU-10, LU-11, LU-18,
-LU-19 and CQ-1. Sibling-repository PRs open: the tap's #1 (LU-17), root's #28 and www's #27 (LU-8c), the
-archive's #31 (LU-8b); each merges on the operator's word, the tap's after the rename.
-
-No worktree is open. PR #86 leaves draft on a green `npm run test:fast`; LU-9 follows the operator's
-merges. LU-20's rename on GitHub is the operator's command:
-`gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`.
+Urgency 1 of the licensing uplift is code complete: PR #86 (`claude/lu-1-terms`) carries LU-1 to
+LU-7, LU-8d, LU-10, LU-11, LU-18, LU-19 and CQ-1, with Maven verify and `npm run test:fast` green
+(8,517 tests). The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
+rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b). No worktree is open.
+LU-9, the first release under the new terms, follows the merges and H-LU-3's generate dispatches.
 
 Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
 version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
@@ -52,35 +49,25 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-1 | Bump `joi` to 18.2.5 in `package-lock.json` (transitive through `wait-on`); Dependabot alerts 84 and 85 | none | machine | — | done | on the batch, 651508dd |
-| LU-1 | Licence files: root `LICENSE` to PolyForm Internal Use 1.0.0 with the accountants' grant; `diya-gl/LICENSE` (Apache-2.0) and `diya-gl/NOTICE`; the schemas' licence file; `LICENSING.md` mapping every directory to its layer with the source offer and the copyright line | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 40638b4b |
-| LU-8d | The engine package stops shipping the templates: `prepack.mjs` excludes `app/templates`, the writer fetches them from the site at first use under PolyForm and caches them; the package test asserts no template ships; the README's MPL line goes | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 40638b4b |
-| LU-19 | The engine announces its terms: `diya-gl --version` prints the version, Apache-2.0 and the copyright line; the MCP server's `instructions` carry them | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 40638b4b |
-| LU-6 | The public statement: the footer gains the licence and a source link on the eleven site pages and a footer on the four DIYA-GL pages; the download page paragraph rewritten; the spec page's licence section naming the three layers; every "open source" phrase goes | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, e8476f90 |
-| LU-7 | The names and the door: `TRADEMARKS.md`, the README's no-contributions line, `SECURITY.md` | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, c755e1c8 |
-| LU-3 | Headers: every comment-capable file carries the SPDX identifier for its layer and `Copyright (C) 2006-2026 DIY Accounting Limited`; a unit test walks the tree and fails on a missing or mismatched header; the 103 missing headers | PLAN_LICENSING_UPLIFT.md | machine | LU-6, LU-5 | done | on the batch, d0707698 |
-| LU-4 | Distributed copies carry their terms: `LICENCE.txt` and `README.txt` in every spreadsheet zip; licence comments at the head of the engine bundle and the single-file runner; the bundle build keeps jszip's and smol-toml's legal comments | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, dbf53917 |
-| LU-5 | The workbooks and guides state their copyright: the generator writes creator and rights into every workbook's core properties; a licence line on each product's front sheet through the reconciliation gates; the guide PDFs get author and rights metadata | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch, 7150531e |
-| LU-8b | Archive: `LICENSE`, README and download page to PolyForm with the source offer; the 17 pre-migration organisation links and the package scope corrected; the missing `favicon.svg`; the 53 missing headers; one `LICENCE.txt` per package tree | PLAN_LICENSING_UPLIFT.md | machine | — | done | archive PR #31 |
-| LU-8c | Root and www: `LICENSE` and README to PolyForm; the missing headers; www's footer gains the licence line, a local copy of its `og:image` logo, and one spelling of the company name | PLAN_LICENSING_UPLIFT.md | machine | — | done | root PR #28, www PR #27 |
 | LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride LU-17, the spec builder's line rides LU-6 and the package README rides LU-8d | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
-| LU-10 | The filing pack: the IPO and TMView searches recorded; goods and services wording for classes 9, 42 and 35 from the IPO's pre-approved terms; the series-rule check for the two composite marks; the first-use evidence; the ™ usage rules in `TRADEMARKS.md` | PLAN_LICENSING_UPLIFT.md | machine | — | done | on the batch; the searches are the operator's to run by hand |
 | H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | checks running on the 01:22 UTC push; merge on green |
-| LU-2 | Manifests and metadata: `license` in `diya-gl/package.json` and the root `package.json`; the Dockerfile's OCI licence label; README badges; CDK tags if any name a licence | PLAN_LICENSING_UPLIFT.md | machine | LU-1 | done | on the batch, 34dc1282 |
-| LU-18 | Third-party lines in `NOTICE` and `LICENSING.md`: the XBRL International GL adaptation, the PolicyBee logo, jszip and smol-toml, the vendored `qrcode.min.js` in Submit | PLAN_LICENSING_UPLIFT.md | machine | LU-1 | done | on the batch, 34dc1282 |
-| LU-11 | ™ on DIY Accounting Spreadsheets, DIY Accounting Submit and DIYA-GL across the footer, the spec page and the package README, in LU-6's PR | PLAN_LICENSING_UPLIFT.md | machine | LU-6 | done | on the batch, e8476f90 |
-| LU-17 | The tap: its own Apache `LICENSE`; `update-formula.sh` reads the licence from the registry instead of hardcoding AGPL; headers; README and both install lines follow the rename | PLAN_LICENSING_UPLIFT.md | machine | LU-20 | done | tap PR #1, merges after the rename |
+| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | Maven verify and `test:fast` green locally; CI on the last push |
+| H5 | Merge root PR #28 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, README |
+| H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
+| H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
+| H4 | Merge tap PR #1 (LU-17) | operator | human | LU-20 | blocked-to-start | after the rename |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | H3 | blocked-to-start | rebuilds every package with `LICENCE.txt` and the workbook properties |
 | LP-24 | The ci pages target Submit's released environment: one cloud config for every host (prod API, prod hosted UI, prod DIYA-GL client), the ci behaviour run mints its user in the prod pool through the prod role, the sign-in case probes the prod API | operator | machine | H1 | blocked-to-resume | PR #84 open; smoke mint denied until H1; toggle steps follow |
 | H2 | Merge PR #84 (`claude/lp-24-prod-target`) | operator | human | LP-24 | blocked-to-start | waits for a green smoke test after H1 |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case's first green run needs LP-24 |
-| LU-9 | The first release under the new terms: the package and root at 1.1.0; the prod deploy publishes it under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.3 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | LU-2, LU-3, LU-4, LU-5, LU-6, LU-8d, LU-17, LU-19, H-LU-3 | blocked-to-start | Sonnet, verification and the deprecations by PR and CLI on the operator's merge |
+| LU-9 | The first release under the new terms: the package and root at 1.1.0; the prod deploy publishes it under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.3 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H3, H4, H-LU-3 | blocked-to-start | Sonnet; the 1.1.0 bump, the publish check, the deprecations by CLI |
 | LU-8a | Submit: canonical PolyForm `LICENSE` with the grant; `terms.html` and `accessibility.html` say free to use, source available; the 28 `-or-later` headers and the battery-pack mix; `info.license` in the OpenAPI generator; the missing headers; the stale simulator copy | PLAN_LICENSING_UPLIFT.md | machine | operator | blocked-on-busy | group 1E; Sonnet, Opus for the terms wording; the Submit repository is paused |
 
 ## Plans not tracked here
 
-- `PLAN_LICENSING_UPLIFT.md`: the urgency 1 rows, the filing pack and the two unblocking human rows are
-  on the board; the urgency 2 filings (H-LU-4, H-LU-5), the HMRC note (H-LU-9), the generate dispatch
-  (H-LU-3) and the brand repository (urgency 3) stay in the plan until their turn. Everything that
+- `PLAN_LICENSING_UPLIFT.md`: the merges, the generate dispatch and LU-9 are on the board; the
+  urgency 2 filings (H-LU-4, H-LU-5), the HMRC note (H-LU-9) and the brand repository (urgency 3)
+  stay in the plan until their turn. Everything that
   touches `submit.diyaccounting.co.uk` is blocked on busy until the operator's word.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
   and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-diya-gl` bundle, LP-21 there, done) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.

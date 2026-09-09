@@ -2,8 +2,8 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: the licensing and copyright uplift
 
-Status: approved, go given 2026-09-09. Urgency 1 is on the board in `NEXT.md` and starts in a fresh
-session; nothing was dispatched in the session that wrote the plan.
+Status: approved, go given 2026-09-09. Urgency 1 is code complete on PR #86 and the four
+sibling-repository PRs (tap #1, root #28, www #27, archive #31); LU-9 follows the merges.
 The cross-repository section is filled from a read-only audit of all six repositories; the review
 of 2026-09-08 (section "Review") re-checked every row against the trees with eight search agents
 and corrected what it found.
