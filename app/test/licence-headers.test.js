@@ -125,6 +125,7 @@ function headerLines(absPath, style) {
   if (style.skipFrontMatter && raw[0] === "---") {
     const close = raw.indexOf("---", 1);
     if (close !== -1) i = close + 1;
+    while (raw[i] === "") i += 1;
   }
   return [raw[i], raw[i + 1]];
 }
