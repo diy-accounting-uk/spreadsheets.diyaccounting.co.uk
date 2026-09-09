@@ -6,12 +6,28 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Waves 1 to 4 landed with PRs #69 to #72 on 2026-09-07; prod deploys from each, and the DIYA-GL
-pages' cloud sign-in is live against Submit's storage API. The licensing uplift has the operator's go (2026-09-09) and starts in a fresh session: dispatch the
-ready `LU` rows as the plan's urgency 1 groups (1A to 1G, one worktree per group, the models the
-rows name, one PR per repository), then LU-9. Publishing is automatic: every green prod deploy from a push to main publishes the next
-`diya-gl` version, pushes the image and rolls the version; the tap tracks npm hourly. The
-billing panel and the ci sign-in case are on main (PR #80); no worktree is open. Sub-agents run no
+The licensing uplift's wave 1 is running on the batch branch `claude/lu-1-terms` (PR to follow on the
+first landing), one worktree per group under `../.worktrees/`:
+
+| Group | Rows | Worktree | Branch | Model |
+| --- | --- | --- | --- | --- |
+| 1A engine | LU-1, LU-8d, LU-19 | `spreadsheets/lu-1a` | `claude/lu-1a-engine` | Opus |
+| 1B pages | LU-6, LU-11, README lines | `spreadsheets/lu-1b` | `claude/lu-1b-pages` | Sonnet |
+| 1B marks | LU-7 | `spreadsheets/lu-7` | `claude/lu-7-marks` | Opus |
+| 1D packaging | LU-4 | `spreadsheets/lu-1d` | `claude/lu-1d-emitters` | Sonnet |
+| 1D workbooks | LU-5 | `spreadsheets/lu-5` | `claude/lu-5-workbooks` | Opus |
+| 1G tap | LU-17 | `tap/lu-17` | `claude/lu-17-licence` | Sonnet |
+| CQ | CQ-1 | `spreadsheets/cq-1` | `claude/cq-1-joi` | Haiku |
+
+Wave 1.5 follows the first landings: LU-2 and LU-18 (Sonnet, in `lu-1a` after LU-1), the 1F
+worktrees `archive/lu-8b`, `root/lu-8c` and `www/lu-8c` (Haiku, once the root `LICENSE` exists to
+copy). Wave 2: LU-3 headers (after the other spreadsheets groups merge, so the sweep touches
+nothing in flight) and LU-10 (after LU-7). LU-20's rename on GitHub is the operator's command:
+`gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the tap's follow-through
+edits are in LU-17's worktree.
+
+Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
+version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
 LibreOffice and prove JS calculations against the committed packages' extraction
 (`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
 any DIYA-GL browser spec, and a rebuild after merging engine changes. The generate workflows cancel
@@ -56,7 +72,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LU-5 | The workbooks and guides state their copyright: the generator writes creator and rights into every workbook's core properties; a licence line on each product's front sheet through the reconciliation gates; the guide PDFs get author and rights metadata | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | group 1D, Sonnet; the reconciliation-bug method |
 | LU-8b | Archive: `LICENSE`, README and download page to PolyForm with the source offer; the 17 pre-migration organisation links and the package scope corrected; the missing `favicon.svg`; the 53 missing headers; one `LICENCE.txt` per package tree | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | group 1F, Haiku |
 | LU-8c | Root and www: `LICENSE` and README to PolyForm; the missing headers; www's footer gains the licence line, a local copy of its `og:image` logo, and one spelling of the company name | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | group 1F, Haiku |
-| LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name) and follow the name through: the tap's README and workflow, the spec page builder's install line, the package README, and any Submit reference found by search, each by PR in its repository | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | group 1G, Haiku; the session renames the repository |
+| LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride LU-17, the spec builder's line rides LU-6 and the package README rides LU-8d | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
 | LU-10 | The filing pack: the IPO and TMView searches recorded; goods and services wording for classes 9, 42 and 35 from the IPO's pre-approved terms; the series-rule check for the two composite marks; the first-use evidence; the ™ usage rules in `TRADEMARKS.md` | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | group 2A, Sonnet |
 | H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | checks running on the 01:22 UTC push; merge on green |
 | LU-2 | Manifests and metadata: `license` in `diya-gl/package.json` and the root `package.json`; the Dockerfile's OCI licence label; README badges; CDK tags if any name a licence | PLAN_LICENSING_UPLIFT.md | machine | LU-1 | blocked-to-start | group 1A, Sonnet |
