@@ -151,7 +151,7 @@ The go for urgency 1 was given on 2026-09-09 for the board; the work starts in a
    package and workbooks are written only on the site; bank tools then read and recalculate but
    cannot produce a workbook. The rows follow (a); (b) or (c) rewrites LU-8d and LU-4.
 8. **Decided: no, one pipeline.** Whether the Docker image gets its own repository. Recommendation: not now, see "The Docker
-   image" in the review section. The rows follow the recommendation; a yes adds H-LU-10 and LU-20.
+   image" in the review section. The rows follow the recommendation; no repository is created.
 9. **Decided: send the one-paragraph update.** Whether to tell HMRC. Submit's MTD approval submission and production-credentials email
    (`_developers/hmrc/HMRC_MTD_API_APPROVAL_SUBMISSION.md:134,143,666,812`,
    `HMRC_PRODUCTION_CREDENTIALS_EMAIL.md:57`) described the service as AGPL open source. If the
@@ -615,15 +615,12 @@ shape as the tap. It would cost a second publish pipeline that tracks the npm ve
 cross-repository trigger, a lag between npm and GHCR, one more repository to keep consistent, and a
 split of `image-smoke.sh` from the smoke that runs before publish. Recommendation: not now. Fix what
 the GHCR page shows with labels (`licenses`, `vendor`, `title`, `documentation`, `url`; LU-2) and keep
-one pipeline while the image has no issues and no consumer of its own. If the operator says yes:
-H-LU-10 creates `diy-accounting-uk/diya-gl-docker` (public), and LU-20 moves `Dockerfile`,
-`Dockerfile.dockerignore` and `image-smoke.sh` there behind a tap-pattern hourly workflow that reads
-the registry, builds from `dist.tarball`, pushes the version tag and `latest`, and removes the Docker
-steps from `publish-diya-gl.yml`.
+one pipeline while the image has no issues and no consumer of its own. Decided no on 2026-09-09;
+should that change, a separate repository would follow the tap's pattern: an hourly workflow that
+reads the registry, builds from `dist.tarball`, pushes the version tag and `latest`, and the Docker
+steps leave `publish-diya-gl.yml`.
 
-**Open decisions for the operator**, all at the go: decisions 7 (templates), 8 (Docker repository),
-9 (HMRC) and 10 (deprecate and delete the AGPL versions), plus confirmation of the
-layers, the accountants' grant, the name, the span, no contributions and the archive.
+All decisions are taken (see Decisions).
 
 **Not verified by this review.** Whether LibreOffice's xlsx writer preserves `docProps/core.xml` on
 the recalculation path; irrelevant to the shipped packages, relevant if LU-5 ever asserts the
