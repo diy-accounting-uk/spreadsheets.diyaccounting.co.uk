@@ -39,6 +39,86 @@ function stabilizeDirDates(zip) {
   }
 }
 
+// ── Package identity ───────────────────────────────────────────────────────
+//
+// Every workbook and every document the pipeline hands out says who wrote it
+// and on what terms, in the core properties a spreadsheet app shows under
+// File > Properties.
+
+export const PACKAGE_AUTHOR = "DIY Accounting Limited";
+export const PACKAGE_COPYRIGHT = "Copyright (C) 2006-2026 DIY Accounting Limited";
+export const PACKAGE_LICENCE = "PolyForm Internal Use License 1.0.0 with an additional grant for accountants";
+export const PACKAGE_RIGHTS = `${PACKAGE_COPYRIGHT}. Licensed under the ${PACKAGE_LICENCE}.`;
+
+const CORE_PROPERTIES_PART = "docProps/core.xml";
+const CORE_PROPERTIES_CONTENT_TYPE = "application/vnd.openxmlformats-package.core-properties+xml";
+const CORE_PROPERTIES_RELATIONSHIP = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties";
+
+const CORE_PROPERTIES_SKELETON =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
+  '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"' +
+  ' xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"' +
+  ' xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+  "</cp:coreProperties>";
+
+// Replaces the element's text where the part already carries it, keeping the
+// element's own attributes, and appends the element where it does not. Every
+// other property the template holds, its title and its dates, stays as it is.
+function setCoreProperty(xml, tag, value) {
+  const text = escapeXml(value);
+  const filled = new RegExp(`<${tag}(\\s[^>]*)?>[\\s\\S]*?</${tag}>`);
+  if (filled.test(xml)) return xml.replace(filled, (whole, attrs) => `<${tag}${attrs ?? ""}>${text}</${tag}>`);
+  const selfClosing = new RegExp(`<${tag}(\\s[^>]*)?/>`);
+  if (selfClosing.test(xml)) return xml.replace(selfClosing, (whole, attrs) => `<${tag}${attrs ?? ""}>${text}</${tag}>`);
+  return xml.replace("</cp:coreProperties>", `<${tag}>${text}</${tag}></cp:coreProperties>`);
+}
+
+// A package built without core properties needs the part declared in the
+// content types and related from the package root before a reader looks for
+// it.
+async function declareCorePropertiesPart(zip) {
+  const typesFile = zip.file("[Content_Types].xml");
+  if (!typesFile) throw new Error("The package has no [Content_Types].xml to declare the core properties in");
+  const types = await typesFile.async("string");
+  if (!types.includes(`PartName="/${CORE_PROPERTIES_PART}"`)) {
+    const override = `<Override PartName="/${CORE_PROPERTIES_PART}" ContentType="${CORE_PROPERTIES_CONTENT_TYPE}"/>`;
+    zip.file("[Content_Types].xml", types.replace("</Types>", `${override}</Types>`), { date: typesFile.date, createFolders: false });
+  }
+
+  const relsFile = zip.file("_rels/.rels");
+  if (!relsFile) throw new Error("The package has no _rels/.rels to relate the core properties from");
+  const rels = await relsFile.async("string");
+  if (rels.includes(CORE_PROPERTIES_RELATIONSHIP)) return;
+  const taken = [...rels.matchAll(/Id="rId(\d+)"/g)].map((match) => parseInt(match[1], 10));
+  const id = `rId${taken.length ? Math.max(...taken) + 1 : 1}`;
+  const relationship = `<Relationship Id="${id}" Type="${CORE_PROPERTIES_RELATIONSHIP}" Target="${CORE_PROPERTIES_PART}"/>`;
+  zip.file("_rels/.rels", rels.replace("</Relationships>", `${relationship}</Relationships>`), { date: relsFile.date, createFolders: false });
+}
+
+async function writeCoreProperties(zip) {
+  const existing = zip.file(CORE_PROPERTIES_PART);
+  const xml = existing ? await existing.async("string") : CORE_PROPERTIES_SKELETON;
+  let updated = setCoreProperty(xml, "dc:creator", PACKAGE_AUTHOR);
+  updated = setCoreProperty(updated, "cp:lastModifiedBy", PACKAGE_AUTHOR);
+  updated = setCoreProperty(updated, "dc:rights", PACKAGE_RIGHTS);
+  zip.file(CORE_PROPERTIES_PART, updated, { date: existing ? existing.date : DOS_EPOCH, createFolders: false });
+  if (!existing) await declareCorePropertiesPart(zip);
+}
+
+/**
+ * The company and the terms in an already-composed package: the workbooks the
+ * generator has no cells to edit, and the Company package's dividend voucher.
+ *
+ * @param {Uint8Array|Buffer} packageBuffer - an xlsx or docx
+ * @returns {Promise<Uint8Array>}
+ */
+export async function applyCoreProperties(packageBuffer) {
+  const zip = await JSZip.loadAsync(packageBuffer);
+  await writeCoreProperties(zip);
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
 // ── VAT return cycle ────────────────────────────────────────────────────────
 
 // Months from the book's first month to each of the five return forms' default
@@ -1382,6 +1462,8 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   const wbXml = await zip.file("xl/workbook.xml").async("string");
   const wbDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", withFullCalcOnLoad(wbXml), { date: wbDate });
+
+  await writeCoreProperties(zip);
 
   stabilizeDirDates(zip);
   return zip.generateAsync({
