@@ -26,7 +26,15 @@ import {
   BookFieldError,
   SingleFileOnlyError,
 } from "../lib/product-workbook.js";
-import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad, toExcelSerial } from "../lib/generator.js";
+import {
+  generateSpreadsheet,
+  applyYearEndSequence,
+  setFullCalcOnLoad,
+  toExcelSerial,
+  applyCoreProperties,
+  PACKAGE_AUTHOR,
+  PACKAGE_RIGHTS,
+} from "../lib/generator.js";
 import { applyCellWrites, buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { cellWrites } from "../products/ltd.js";
@@ -89,6 +97,7 @@ async function packageTheGeneratePathComposes(book, lines, taxYearName, yearEndM
 
     let buffer = readFileSync(resolve(APP_DIR, "templates/ltd", templateFile));
     if (sheetsConfig) buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
+    else buffer = await applyCoreProperties(buffer);
     if (templateFile.endsWith(".xlsx")) {
       buffer = await applyYearEndSequence(buffer, templateFile, sheetsConfig, yearEndMonth, endDate, taxData.financial_year);
       if (writes[templateFile]) buffer = await applyCellWrites(buffer, writes[templateFile]);
@@ -174,10 +183,21 @@ describe("the Company package for the year end the templates carry", () => {
     expect(held.filter((name) => name.endsWith(".pdf"))).toEqual([]);
   }, 600000);
 
-  it("copies the dividend voucher out of the template byte for byte", () => {
-    const template = readFileSync(resolve(APP_DIR, "templates/ltd/Dividend Voucher.docx"));
-    const written = workbookNamed(saved.files, "Dividend Voucher.docx");
-    expect(Buffer.compare(Buffer.from(written), template)).toBe(0);
+  it("copies the dividend voucher out of the template, changing nothing but the core properties", async () => {
+    const template = await JSZip.loadAsync(readFileSync(resolve(APP_DIR, "templates/ltd/Dividend Voucher.docx")));
+    const written = await JSZip.loadAsync(workbookNamed(saved.files, "Dividend Voucher.docx"));
+
+    expect(Object.keys(written.files).sort()).toEqual(Object.keys(template.files).sort());
+    for (const name of Object.keys(template.files)) {
+      if (template.files[name].dir || name === "docProps/core.xml") continue;
+      const before = await template.file(name).async("nodebuffer");
+      const after = await written.file(name).async("nodebuffer");
+      expect(Buffer.compare(after, before), `${name} in the voucher differs from the template`).toBe(0);
+    }
+
+    const core = await written.file("docProps/core.xml").async("string");
+    expect(core).toContain(`<dc:creator>${PACKAGE_AUTHOR}</dc:creator>`);
+    expect(core).toContain(`<dc:description>${PACKAGE_RIGHTS}</dc:description>`);
   });
 
   it("asks the spreadsheet app to recalculate every one of the thirteen workbooks on open", async () => {

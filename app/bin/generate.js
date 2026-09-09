@@ -17,7 +17,7 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { generateSpreadsheet, packageNaming, applyYearEndSequence, monthEnd } from "../lib/generator.js";
+import { generateSpreadsheet, packageNaming, applyYearEndSequence, monthEnd, applyCoreProperties } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
@@ -79,6 +79,8 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
 
       if (sheetsConfig && Object.keys(sheetsConfig).length > 0) {
         buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
+      } else {
+        buffer = await applyCoreProperties(buffer);
       }
 
       buffer = await applyYearEndSequence(buffer, templateFile, sheetsConfig, yearEndMonth, endDate, ty);
