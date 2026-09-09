@@ -9,8 +9,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Urgency 1 of the licensing uplift is on main: PR #86 merged as a6b091b2 (LU-1 to LU-7, LU-8d,
-LU-10, LU-11, LU-18, LU-19, CQ-1) and its prod deploy publishes `diya-gl` 1.1.0, the first
-release under Apache-2.0. The sibling repositories' rows are PRs of their own: the tap's #1
+LU-10, LU-11, LU-18, LU-19, CQ-1) and its prod deploy published `diya-gl` 1.1.0 under Apache-2.0 (npm
+confirms the licence). The sibling repositories' rows are PRs of their own: the tap's #1
 (LU-17, after the rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b).
 PR #84 (LP-24) and Submit's batch 14 are on their mains; LP-24's toggle steps and the ci variable
 remain. No worktree is open. LU-9 follows the generate dispatches (H-LU-3) and the tap merge.
@@ -56,7 +56,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
 | H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
 | H8 | Merge Dependabot PR #87 (the Maven group, four updates) | none | human | — | ready-to-start | CI on the PR |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | the merge's prod deploy is running; dispatch when it is green |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | prod deploy of a6b091b2 green; 1.1.0 is on npm; dispatch now |
 | H4 | Merge tap PR #1 (LU-17) | operator | human | LU-20 | blocked-to-start | after the rename |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
 | LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H4, H-LU-3 | blocked-to-start | Sonnet; the publish check, then the deprecations by CLI |
