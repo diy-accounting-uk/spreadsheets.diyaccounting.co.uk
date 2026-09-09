@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Sheet coverage: reconciliation flow test coverage
 
 Date: 2026-08-31. Repo state: `claude/next-batch-wave-1` merged at `e3dabaad`.

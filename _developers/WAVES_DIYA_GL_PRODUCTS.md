@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Cross-plan waves: SE, Taxi, Ltd
 
 Batch branch `claude/diya-gl-products`. Every workstream is one worktree forked from `main`

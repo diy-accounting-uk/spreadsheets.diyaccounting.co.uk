@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Allowable costs for tax purposes include the cost of goods bought for resale including the cost of raw materials and all costs of production after adjusting the cost of sales for changes to the opening and closing stock of stock including stores being held, work in progress and finished stock.
     The adjustments of opening and closing stock values being to adjust the cost of sales to represent the cost price of the goods included in sales turnover. Also included in the calculated cost of sales are commissions paid and discounts given to suppliers.
     Contractor costs are allowable at the gross invoiced value before deduction of any with holding taxes. Where sub contractors costs and expenses directly produce goods or services for resale they may also be considered for inclusion in the cost of sales.

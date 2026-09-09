@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Employers and particularly new employers ask a variety of questions in administering the PAYE scheme. The top questions and answers include tax codes, week 1 basis, employee or self employment status, national insurance, statutory sick pay and what happens when an employee does not provide a P45 from previous employment.
 
 Employers and especially new employers who may not be experienced with operating a payroll system. The most common questions asked by employers operating or about to operate a PAYE scheme are here

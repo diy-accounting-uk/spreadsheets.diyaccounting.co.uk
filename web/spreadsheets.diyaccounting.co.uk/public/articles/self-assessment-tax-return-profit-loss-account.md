@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Applicable for the self assessment tax return up to financial tax year 2006-07
     Businesses whose turnover has exceeded 15,000 pounds are required to show greater analysis of the income and expenditure. From a practical point of view even those businesses who expect the turnover to be less than 15,000 pounds should also maintain financial accounts which show the increased analysis to both maintain financial control and be prepared to enter the increase3d analysis should turnover exceed the 15,000 turnover threshold.
     A self employed business enters the income and expenses on page SE1 of the self assessment tax return form if the total sales of the business for the financial year were less than 15,000 pounds. Only the totals of turnover, expenses and net profit are required.

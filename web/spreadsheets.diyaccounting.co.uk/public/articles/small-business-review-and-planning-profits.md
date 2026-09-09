@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 There are several ways a business can improve profitability. The single most important tip for a small business owner is to take time out from the day to day routine and focus on the business and its activities. Emphasis being placed upon cost management a financial budget and business plan which should include sales and working capital requirements
 
 Small business owners are frequently totally involved in every business activity on a day to day basis. Such close hands on involvement has major advantages although not taking time out to focus on the factors affecting business profitability both as a whole and in detail can result in the profit performance being lower than is achievable.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Preparing a cash flow forecast can be an effective business tool in identifying adverse liquidity trends within a business at the earliest stages. Of particular importance during a credit crunch when cash flow is tight the cash flow forecast can indicate where positive action is required before those warning signs become critical.
 
 Producing a cash flow is not difficult providing the business already has reasonable bookkeeping or accounting records. Manual accounts are fine although accounting software is likely to produce the best information base from which a cash flow forecast can be prepared.

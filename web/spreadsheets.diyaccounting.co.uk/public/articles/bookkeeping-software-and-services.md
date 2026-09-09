@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 All small businesses have to choose between keeping manual records of financial transactions and the benefits, advantages and disadvantages of utilising bookkeeping software and or employing bookkeeping services for this purpose. The correct choice will vary from business to business but a choice should be made to achieve the best financial performance.
 
 Every small business is required to keep bookkeeping records to produce at the end of the financial year a set of accounts to show the sales income, business expenses and the net profit for tax purposes. Medium and larger businesses employ accounts clerks, bookkeepers and accountants to maintain the financial records and produce regular accounting information.

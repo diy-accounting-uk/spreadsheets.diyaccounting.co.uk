@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Small business often accepts business expenses as inevitable and while some effort is usually made to keep expenses down it is often done without reference to the accounts. Maintaining a regular system of bookkeeping using suitable accounting software can assist the cost accounting for profit exercise by providing the source and extent of the actions to be taken.
 
 Cost accounting is a complex subject that specialist accountants use to examine and report on business expenses to ensure financial control. Such expert cost accounting might involve absorption costing, marginal costing, break even and variance analysis. Such specialist accounting techniques are not usually available to the small business as they lack a cost accountant.

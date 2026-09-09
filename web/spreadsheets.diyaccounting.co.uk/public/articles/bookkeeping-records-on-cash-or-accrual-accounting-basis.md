@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every business is required by the tax authority to keep bookkeeping records to enable the net taxable profit or loss to be calculated. While complex accounting systems can be appropriate in some circumstances the choice for small business is basically cash accounting or accrual accounting.
 
 Bookkeeping based upon cash accounting principles is the easiest accountancy practise but not necessarily the most accurate or beneficial for tax purposes for the business. This is because cash accounting adopts the date of financial documents such as sales invoices and purchase invoices as the automotive date for those primary financial records to be entered into the accounts.

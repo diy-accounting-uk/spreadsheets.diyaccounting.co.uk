@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 You can pay using your credit card but without using a PayPal Account. PayPal still process the transactions and we'll need your email but no PayPal account is required.
 
 Buying software through DIY Accounting does not require a PayPal account. Once you click Checkout, look for the "Don't have a PayPal Account?" link:

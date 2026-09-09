@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Every self employed business is required to register the business with HMRC within three months of commencing trading. Following registration HMRC issue the unique tax payers reference and annually send out the self assessment tax return. The self assessment paper tax return is submitted by October while filing the Inland Revenue self assessment tax return online requires further registration.
 
 **Filing Paper Self Assessment Tax Return**

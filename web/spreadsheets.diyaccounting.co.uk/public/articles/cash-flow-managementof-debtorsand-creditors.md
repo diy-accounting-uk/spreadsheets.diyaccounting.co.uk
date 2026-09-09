@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Cash flow management is a critical of business finance that every business must get right to survive. Debtors and creditors represent two major areas which business might address to ensure sufficient liquidity and working capital to survive the credit crunch and continue in business to generate profit.
 
 Sales turnover and net profits may follow a rollercoaster pattern familiar to most business but when the cash flow dries up the game is over. Cash flow management is critical not just to business performance but to business survival in the days and months of a credit crunch. Accounting software can offer many solutions but there is no substitute for astute management to boost cash flow and reduce liquidity risks.

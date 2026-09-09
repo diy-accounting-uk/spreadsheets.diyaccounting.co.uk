@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Business journeys incur travelling expenses that can be deducted from net taxable profit as tax allowances for car mileage rates, meal allowances and travel and subsistence allowance expenses. Subsistence allowance expenses broadly include additional travel expenses necessarily incurred but not for example fares or car allowances.
 
 The cost of a business journey and meal cost is a claimable travel expense from one workplace to another including travelling between your main permanent workplace and a temporary workplace or travel to or from a certain workplace because the job demands it. Business journeys do not include ordinary commuting, home to a permanent workplace or private journeys which are not travel expenses.

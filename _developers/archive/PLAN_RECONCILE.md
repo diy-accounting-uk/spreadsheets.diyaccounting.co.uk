@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Reconciliation Scenarios from Precision Code Ltd Data
 
 Extend the Precision Code Ltd example data to model a realistic, comprehensive year of business activity, extract three product-scoped reconciliation scenarios (basic/advanced/full), update E2E tests to use them, and extend reconciliation reports to cover balance sheet items.

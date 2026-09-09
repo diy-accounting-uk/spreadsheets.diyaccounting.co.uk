@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 DIY Accounting Payroll Software is unusually written on a series of excel accounting spreadsheet templates. Three versions of the small business payroll system are available dependent upon the number of employees, being the wages solution for up to 5 employees, up to 10 employees and up to 20 employees.
 
 **Payroll Software Strengths**

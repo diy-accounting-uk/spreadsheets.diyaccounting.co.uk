@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article will help you get started using the Company Limited Package.
 
 The package is spreadsheet based, so you will need a spreadsheet package to run. If you don’t have Microsoft Excel and don’t plan to purchase it, you’ll need an alternative like OpenOffice which you can download free.

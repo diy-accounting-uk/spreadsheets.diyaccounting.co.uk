@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Big business uses the financial function and accounting software to analyse and improve financial performance through financial control and the exploitation of opportunities. Small business has a serious problem of viewing accounting software as an administrative headache for annual tax purposes missing the valuable opportunities the financial system can provide.
 
 Producing financial accounts may well be an administrative headache for a small business and many self employed businesses put off this essential business and reduce it to an annual event. There are major benefits that small business can derive from operating the financial system as an important part of the business management.

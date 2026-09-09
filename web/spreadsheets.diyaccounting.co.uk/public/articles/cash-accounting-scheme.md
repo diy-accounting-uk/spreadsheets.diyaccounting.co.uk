@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how to use the Cash Accounting Scheme rather than the Double Entry Scheme.
 
 To use DIY Accounting package with a Cash Accounting scheme rather than the normal Double Entry scheme, only enter the values in Sales and Purchases when the transaction actually clears and use the cleared transaction date. 

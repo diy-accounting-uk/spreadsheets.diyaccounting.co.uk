@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Taxi drivers who employ a taxi accountant to prepare their taxi accounts may or may not be at risk of under claiming capital tax allowances. Many drivers who prepare their own taxi driver accounts may not have the expert capital tax allowance knowledge to minimise their tax liability.
 
 Capital tax allowances are allowances on fixed assets a business may claim as a deduction from net profit to arrive at the net taxable profit. If a taxi driver does not claim the correct capital tax allowances in the  taxi accounts, that net taxable profit and the income tax and national insurance payable will be higher than it need be. Hard cash lost to the government that they are not entitled to, your cash.

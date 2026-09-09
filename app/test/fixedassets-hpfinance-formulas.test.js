@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // fixedassets-hpfinance-formulas.test.js — Proves the HPfinance sheet's
 // #REF! repair in the SE and Ltd Fixedassets.xlsx templates: every agreement

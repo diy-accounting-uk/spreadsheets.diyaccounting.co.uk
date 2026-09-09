@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Marginal costing is an accounting term in which costs and expenses are identified by their variability according to the volume of goods bought or produced. By analysing costs according to the variability in prices can significantly improve profit efficiency levels within a business.
 
 Business costs and expenses as expressed as a unit cost of a product can vary significantly as purchase or production volumes change. The first stage in using marginal costing to generate higher levels of profit is to identify the variability of all the individual cost elements.

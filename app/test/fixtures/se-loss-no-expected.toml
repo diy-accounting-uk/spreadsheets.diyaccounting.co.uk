@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "SE-T27 loss, no expected table"
 description = "A small trade whose purchases outrun its sales, carrying no [expected] table, for the checkCompliance regression on a loss-making book with no expected figures to compare against."

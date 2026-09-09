@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Double entry bookkeeping is the technique employed by accounting software to accurately record financial transactions stretching back hundreds of years Double entry bookkeeping means every financial transaction has an equal and opposite effect which is checked using a trial balance prior to producing a profit and loss account and balance sheet.
 
 Double entry bookkeeping stretches back centuries perhaps even as early as the 12th century and is now accepted worldwide as the accounting standard to be employed by all companies in recording the financial accounting records. The first written explanation of the accounting system was reportedly by a Venetian mathematician Luca Pacioli towards the end of the 15th century.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Affiliate programs offer an excellent opportunity to make money online with two tier affiliate programs potentially the most lucrative of all providing a viral network for the affiliate marketing program and affiliates the benefit of substantial residual earnings. A two tier affiliate program pays commission to affiliates at two levels, on sales generated from your own website link plus a percentage of the commission earned by other affiliates introduced to the affiliate program through your link.
     **The Hype**
     Join a Two Tier Affiliate Program and become Super Rich in the virtual world virtually overnight simply by placing a link on your website then sit back and watch enormous lumps of money swell your own private cash pile growing by the hour. Amazing! Fantastic! New car, new home, extended holidays, all while you relax by the pool and your affiliate program link delivers you super rich status! It is that easy!

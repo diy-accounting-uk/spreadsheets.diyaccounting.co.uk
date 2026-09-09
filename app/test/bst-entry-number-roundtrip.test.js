@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // bst-entry-number-roundtrip.test.js — a Basic Sole Trader workbook carries
 // no entry-number cell, so extractBstTransactions (xlsx-exporter.js) assigns

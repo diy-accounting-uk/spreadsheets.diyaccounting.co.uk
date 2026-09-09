@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: diya-gl BST — CLI, MCP, web
 
 One engine, three surfaces: a CLI over the extract/recalculate loop, an MCP server exposing

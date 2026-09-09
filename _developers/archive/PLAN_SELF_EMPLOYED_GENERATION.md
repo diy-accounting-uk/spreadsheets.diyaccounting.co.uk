@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Self Employed Package Generation
 
 Extends the generation pipeline to the Self Employed product. Unlike BST (1 xlsx) and Taxi (1 xlsx), Self Employed is a **multi-file package** with 9 xlsx files, cross-file external links, and two independent Admin sheets (Financialaccounts + Payslips).

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 DIY Accounting Paye payroll software using a paye calculator to calculate income tax and national insurance, payroll system prints payslips and produce the paye 2008 revenue forms for a complete paye employers payroll solution for up to 20 employees.
 
 DIY Accounting One Click Payroll is easy-to-use paye employers payroll software, designed specifically for employees who are not contracted out of the state pension scheme with an automated paye calculator to work out income tax and national insurance deductions. The paye calculator is a series of excel formulae built into the payroll system to lookup income tax and national insurance  tables to provide a complete payroll solution. Excel must be installed on your computer to enable the UK payroll system to operate.

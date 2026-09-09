@@ -60,9 +60,7 @@ function isExcluded(path) {
 }
 
 function trackedFiles(root) {
-  return execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" })
-    .split("\n")
-    .filter(Boolean);
+  return execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" }).split("\n").filter(Boolean);
 }
 
 function lineStyle(token) {
@@ -160,7 +158,9 @@ describe("licence headers", () => {
         offenders.push(`${path}: header says ${foundId}, its layer expects ${expectedId}`);
       }
       if (copyrightLine !== expectedCopyrightLine) {
-        offenders.push(`${path}: copyright line is ${JSON.stringify(copyrightLine ?? null)}, expected ${JSON.stringify(expectedCopyrightLine)}`);
+        offenders.push(
+          `${path}: copyright line is ${JSON.stringify(copyrightLine ?? null)}, expected ${JSON.stringify(expectedCopyrightLine)}`,
+        );
       }
     }
 

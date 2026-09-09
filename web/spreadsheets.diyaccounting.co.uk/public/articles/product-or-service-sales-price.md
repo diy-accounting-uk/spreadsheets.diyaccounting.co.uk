@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Setting the price at which a business sells its products or services is one of the most crucial decisions a business must make. Setting a selling price too low throws money away while setting a price too high loses sales volume and inhibits growth.
 
 Fixing the selling price can be based upon a value basis or a cost plus basis with either basis subject to modification according to market conditions. Not exactly scientific and true in all cases but the most profitable businesses tend to be managed by accountants while the best sales growth companies have a sales oriented manager at the helm.

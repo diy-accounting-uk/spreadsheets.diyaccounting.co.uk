@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains Double Entry Bookkeeping Accounts
 
 Businesses can use double entry bookkeeping (in which each transaction is entered twice; both as a credit and debit transaction) when keeping their accounts which may serve to minimize errors and increase the chances of the books balancing.

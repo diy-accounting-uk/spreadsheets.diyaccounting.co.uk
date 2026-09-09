@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: diya-gl launch — the free face, the tech community, the paid tier
 
 The BST DIYA-GL page shipped on 2026-09-03 (PR #57) and proved the thing this plan sells: a

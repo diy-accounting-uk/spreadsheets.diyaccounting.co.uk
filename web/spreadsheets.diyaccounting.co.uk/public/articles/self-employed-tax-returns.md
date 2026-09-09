@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Tax accounting software has its basics in each of the three elements of the title. Accounting being the production of the financial accounts in a template format suitable for the tax system. Tax and tax software denotes the inclusion of the tax rules with software being a description of the fact that the process is automated.
 
 **Self employed accounting**

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "Precision Code Ltd - full"
 description = "Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts."

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 A new employer needs to register with HMRC as an employer and operate a PAYE scheme and make important checks on each new employee recruited and complete the initial paperwork to set up the employees pay records of tax national insurance and personal details and inform HMRC the employee has started.
 
 **P45 review for PAYE and new employee pay status**

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Small and medium sized companies in the UK can take advantage of supplying abbreviated year end accounts to Companies House which have not been audited by independent accountants. This guide sets out the conditions under which abbreviated accounts can be submitted.
 
 To qualify for being able to file shortened accounts, the small company accounts should satisfy at least two of three conditions. The three exemption conditions prior to April 2008 were that annual turnover is less than 5.6 million pounds, balance sheet total is less than 2.8 million pounds and the average number of employees is less than 50. Where the financial year started after April 2008 the parameters increased to, annual turnover less than 6.5 million pounds, balance sheet total less than 3.26 million pounds and average number of employees less than 50.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how you record last year's figures in this current year's Basic Sole Trader package
 
 To record last year's figures in this year's package, do the following:

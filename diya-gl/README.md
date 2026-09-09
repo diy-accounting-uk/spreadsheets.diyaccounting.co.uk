@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # @diy-accounting-uk/diya-gl
 
 Run a UK sole trader's or company's accounts from the command line. A DIYA-GL™ book is a

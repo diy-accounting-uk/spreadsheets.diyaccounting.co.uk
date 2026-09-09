@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 
 // The Payslips Admin calendar seeds B2 with 6 April and lays out a fixed 53
 // weeks below it. I1 names the day the calendar runs to; it must be 5 April

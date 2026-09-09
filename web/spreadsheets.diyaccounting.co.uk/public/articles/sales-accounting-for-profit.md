@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Many small businesses concentrate on the job in hand and treat bookkeeping as an administrative burden. By adopting suitable accounting software as an essential tool of the business the financial performance can be improved by taking positive management action on the sales and profit generated.
 
 It is a natural phenomenon for small business to be deeply involved in the particular skills and operations of the business. A fundamental issue that many small businesses overlook is that the particular industry in which they work and their personal skills are just tools of the trade not the trade of business itself. That trade of business is to produce a satisfactory bottom line.

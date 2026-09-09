@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Capital tax allowances are allowances on fixed assets a business may claim as a deduction from net profit to arrive at the net taxable profit. If a taxi driver does not claim the correct capital tax allowances in the taxi accounts that net taxable profit and the income tax and national insurance payable will be higher than it need be. Hard cash lost to the government that they are not entitled to, your cash.
     A fixed asset is equipment used to generate a profit over more than one year, as opposed to an item that is consumed within the financial year. Examples of fixed assets include plant and machinery, fixtures and fittings, computers and vehicles.
     For most fixed assets the capital tax allowance consists of an enhanced first year allowance in the year of purchase and writing down allowance in subsequent years. This type of tax allowance spreads the allowance of the amount spent over the life of the asset rather than that item being expensed in the year the purchase was made.

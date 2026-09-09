@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation judge rubric
 
 ## What you are reviewing

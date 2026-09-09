@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 
 // Template-level guard for Home sheet hyperlinks: walks the Home sheet in
 // BST and Taxi templates and asserts every hyperlink target sheet exists.

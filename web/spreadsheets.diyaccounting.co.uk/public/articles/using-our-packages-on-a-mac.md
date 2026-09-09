@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article will inform you how to use our DIY packages on a Mac
 
 DIY Accounting is spreadsheet based, you have three options for running it on a Mac.  

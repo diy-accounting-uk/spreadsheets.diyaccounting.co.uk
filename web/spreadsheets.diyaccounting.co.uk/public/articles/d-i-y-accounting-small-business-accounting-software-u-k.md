@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 DIY Accounting small business accounting software UK package is a series of templates written on excel spreadsheets, suitable for any self-employed business whether vat registered or not producing an automated monthly profit and loss account and an excel copy of the self employed tax return as the end products.
 
 **Accounting Software Strengths**

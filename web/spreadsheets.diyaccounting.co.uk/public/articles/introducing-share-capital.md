@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how to introduce Share Capital in your accounts.
 
 1. Cash Account - Receipts Section of the first month - Input the value of shares (£1.00) in Cell F6 using code DL in E6.

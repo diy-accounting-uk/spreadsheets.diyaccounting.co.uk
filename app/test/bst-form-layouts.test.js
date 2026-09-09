@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // bst-form-layouts.test.js — proves app/data/hmrc/form-layouts/bst.json
 // against the form it prints and the workbook it reads: the 2026 SA103S box

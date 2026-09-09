@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Procedures in declaring dividends and calculating the dividend tax credit and understanding the position with regard to income tax on dividends.
 
 **Declaring a Dividend**

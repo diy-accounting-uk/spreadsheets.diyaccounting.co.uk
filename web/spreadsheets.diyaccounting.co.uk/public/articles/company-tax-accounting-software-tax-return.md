@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Tax accounting software for a private limited company in the UK includes the prime elements of using accounting software to produce the required quarterly vat returns and annual net profit with the tax software automating the calculation of the tax liability and producing an automated corporation tax return.
 
 **Company Accounting Software**

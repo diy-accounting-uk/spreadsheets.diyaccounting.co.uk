@@ -2,6 +2,8 @@
 name: archive-packages
 description: Take a cut of the generated spreadsheet packages and land it in diy-accounting-archive as one reviewed commit. Invoke when the operator says "archive the packages", "take a cut", "record the catalogue in the archive repo", or after a tax year's packages are finished.
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # archive-packages — copy a cut of the catalogue into the archive repository
 

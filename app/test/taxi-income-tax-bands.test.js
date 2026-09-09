@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // taxi-income-tax-bands.test.js — Drives the Taxi Draft Tax calculation across
 // the whole band table by writing a profit straight into E5 and recalculating.

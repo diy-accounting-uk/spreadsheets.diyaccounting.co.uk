@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Choosing a name for company during formation is not difficult but there are rules which have to be adhered to regarding the choice of company name. A company name search of the company name register is important. When a limited company is formed the founding subscribers and directors will decide the company name which when submitted forms part of the company registration.
 
 **Name A Company Using The Company Name Search Register**

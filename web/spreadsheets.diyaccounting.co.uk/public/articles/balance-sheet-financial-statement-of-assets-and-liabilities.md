@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 A balance sheet is the financial statement of company accounts showing fixed and current assets, long term and current liabilities at a specified date
 
 The balance sheet is a financial statement of the assets and liabilities of a business or organisation at a specific date. The main balances reported being separated between fixed and current assets, current and long term liabilities to provide a snapshot of the financial standing of the company accounts.

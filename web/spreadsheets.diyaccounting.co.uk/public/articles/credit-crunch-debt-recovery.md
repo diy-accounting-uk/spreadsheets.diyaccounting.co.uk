@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Making sure customers pay on time within the terms and conditions of the business is a serious issue and critical in days of a credit crunch, Late payments and bad debts cause liquidity and cash flow problems and in the most crucial cases can force a business into insolvency without adequate business finance.
 
 Undoubtedly the best credit control initiative is to arrange the sales invoicing such that customers pay up front for goods and services. Despite care taken to exercise credit checks on new customers the actual payment experience is often more valuable in practise.

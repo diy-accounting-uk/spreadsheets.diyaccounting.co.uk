@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This small article gives information on showing Overdraft figures within the package.
 
 Your Overdraft facility does not need a special entry within the accounts.

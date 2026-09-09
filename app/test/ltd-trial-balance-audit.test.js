@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // ltd-trial-balance-audit.test.js — Proves the trial balance audit check
 // (TrialBalance!EJ91) actually gates on the workbook's own whole-book
