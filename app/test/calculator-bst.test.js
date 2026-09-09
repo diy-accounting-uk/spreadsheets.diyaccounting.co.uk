@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // calculator-bst.test.js — Mirrors app/products/bst.js's checkCompliance()
 // checks against the pure JS calculator, one test per check, run on three

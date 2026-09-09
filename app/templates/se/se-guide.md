@@ -1,6 +1,8 @@
 ---
 title: Self Employed User Guide
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # DIY Accounting Self Employed User Guide
 
@@ -350,7 +352,7 @@ Enter data in the Invoice Database: Column B (invoice number), Column C (custome
 
 Our website is the first place to look for any information: http://www.diyaccounting.co.uk/
 
-DIY Accounting's spreadsheet packages are maintained and supported under an Open Source model. In return for allowing anyone access to our source files, we find an indefinite low-cost home at GitHub.
+These spreadsheets are free to use, and the source is available to read. Use them for your own accounts, or for your clients' accounts if you are an accountant or bookkeeper. Please do not redistribute them. Point people at the download page instead. Copyright (C) 2006-2026 DIY Accounting Limited. Licensed under the PolyForm Internal Use License 1.0.0 with an additional grant for accountants. Downloads: https://spreadsheets.diyaccounting.co.uk/. Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk.
 
 Please raise a question in our discussion forum here: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/discussions
 

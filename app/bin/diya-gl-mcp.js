@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-mcp.js — a stdio MCP server exposing the diya-gl pipeline as
 // four tools: extract_book, report, edit_lines, save_workbook, over any of

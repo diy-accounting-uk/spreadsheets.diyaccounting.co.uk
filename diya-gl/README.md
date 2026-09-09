@@ -1,10 +1,12 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # @diy-accounting-uk/diya-gl
 
-Run a UK sole trader's or company's accounts from the command line. A diya-gl book is a
+Run a UK sole trader's or company's accounts from the command line. A DIYA-GL™ book is a
 book.toml and a lines.jsonl file, usually a few kilobytes, that hold a year of transactions
 and the chart of accounts they post to. This package recalculates one, reads one out of an
 Excel workbook, writes one back into a workbook, and serves one over MCP, all through the
-same engine the [DIY Accounting spreadsheets site](https://spreadsheets.diyaccounting.co.uk)
+same engine the [DIY Accounting Spreadsheets™ site](https://spreadsheets.diyaccounting.co.uk)
 reconciles in CI.
 
 Four products: Basic Sole Trader, Taxi Driver, Self Employed, Limited Company.
@@ -18,7 +20,8 @@ npm install -g @diy-accounting-uk/diya-gl
 With Homebrew:
 
 ```
-brew install diy-accounting-uk/tap/diya-gl
+brew tap diy-accounting-uk/diya-gl
+brew install diy-accounting-uk/diya-gl/diya-gl
 ```
 
 Or run the image straight from GHCR, no install:
@@ -71,6 +74,21 @@ byte for byte or names the stamp that differs. Every published release is cut fr
 whose reconciliation checks passed; the scorecards are on the
 [reconciled releases page](https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html).
 
-## License
+## Licence
 
-AGPL-3.0-only. Copyright (C) 2026 DIY Accounting Ltd.
+This package is licensed under the Apache License 2.0. Embed it, ship it, change it. See `LICENSE`
+and `NOTICE`.
+
+The diya-gl format itself is an open specification. The two JSON Schemas are Apache-2.0 and the
+format text is CC BY 4.0, so you can implement the format in anything with attribution.
+
+The workbook templates are not part of this package. `write-workbook` and the MCP `save_workbook`
+tool fetch the template they need from
+[spreadsheets.diyaccounting.co.uk](https://spreadsheets.diyaccounting.co.uk) the first time they run,
+print the terms, and cache it for later runs. The templates are the company's own work, under the
+PolyForm Internal Use License 1.0.0 with an additional grant: use them for your own accounts, or for
+your clients' accounts if you are an accountant or a bookkeeper, and do not redistribute them.
+
+This repository does not accept contributions.
+
+Copyright (C) 2006-2026 DIY Accounting Limited.

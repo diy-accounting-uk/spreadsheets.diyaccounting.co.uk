@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The PAYE system is a payroll administration system whereby employers deduct on a weekly or monthly basis income tax and national insurance contributions from employees wages and salaries. The PAYE administration involves the calculation of deductions, often performed by payroll software, and the payroll tax returns and forms required by the tax authority which in the UK is the Inland Revenue.
 
 PAYE is the common abbreviation for the Pay As You Earn scheme that was first introduced by the UK in 1944 as a tax system by the inland revenue which employers administer to deduct from employees wages and salaries income tax and national insurance contributions and account for the employers national insurance contributions. Although strictly speaking not part of the PAYE scheme employers also use the pay as you earn framework and documents to administer other deductions.

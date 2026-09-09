@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json",
+  "$comment": "SPDX-License-Identifier: Apache-2.0. Copyright (C) 2006-2026 DIY Accounting Limited. Field names adapted from the XBRL International Global Ledger Taxonomy Framework 2015; see http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk",
   "title": "DIY Accounting GL-aligned Transaction Lines (v2)",
   "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 makes debitCreditCode required on journal lines and adds the fields that link a line to the book's asset, hire purchase and member registers.",
   "type": "object",

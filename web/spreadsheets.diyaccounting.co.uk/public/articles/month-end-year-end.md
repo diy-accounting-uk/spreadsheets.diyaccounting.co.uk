@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 How to find your Month End for a UK Limited Company using the Companies House Website.
 
 Our Limited Company accounts package is sold by Year End aligned to each Month End. We update the tax rules for each year and a new purchase is required for each accounting period.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Much of the financial crisis in the world is caused by a lack of confidence between banks and financial institutions and their clients which are symptoms of the credit crunch not the root cause. Changing the supply and demand for oil which is the root cause would restore confidence and avoid financial turmoil.
 
 The threat of recession and economic disaster facing many areas of business, its effect on employment and income levels, personal debt and security of homes is solvable. If the root cause is not addressed then the financial crisis can only deepen causing financial misery throughout both the developed world and emerging nations.

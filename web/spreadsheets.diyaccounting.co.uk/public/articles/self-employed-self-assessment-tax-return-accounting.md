@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Accounting Software for the self employed businessman in the UK does not have to be complex. There are different requirements to double entry bookkeeping that anyone self employed may fulfil and Accounting Software available to satisfy those requirements. The most important requirement of any Accounting Software purchased by a self employed businessman being the automated production of the Self Assessment tax return.
 
 In the UK anyone receiving earned income which is not taxed under the employers PAYE system is technically self employed. Anyone who is self employed and running a business in the UK must register that business with HM Revenue and Customs within 3 months of starting that self employed business and failure to do so can lead to penalty fines.

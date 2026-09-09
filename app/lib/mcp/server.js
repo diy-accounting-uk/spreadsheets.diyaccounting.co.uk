@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // server.js — the MCP method table: initialize, tools/list and tools/call,
 // wired to the four diya-gl tools over one in-memory session per server
@@ -7,9 +7,44 @@
 // call is one landed function from export.js, diya-gl-edits.js or
 // product-workbook.js.
 
+import { readFileSync, existsSync } from "fs";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+
 import { TOOLS, createSession } from "./diya-gl-tools.js";
 
-export const SERVER_INFO = { name: "diya-gl", version: "0.1.0" };
+// The nearest package.json above this module: the repository's own in a
+// checkout (app/lib/mcp sits under the root), the package's own in an install
+// (dist/app/lib/mcp sits under the package). prepack refuses a tarball whose
+// two versions disagree, so either answer is the version the caller is running.
+function nearestPackageJson(from) {
+  let dir = from;
+  for (;;) {
+    const candidate = resolve(dir, "package.json");
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) throw new Error(`No package.json above ${from}`);
+    dir = parent;
+  }
+}
+
+const PACKAGE_JSON = nearestPackageJson(dirname(fileURLToPath(import.meta.url)));
+
+export const SERVER_INFO = { name: "diya-gl", version: JSON.parse(readFileSync(PACKAGE_JSON, "utf8")).version };
+
+export const SOURCE_URL = "https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk";
+
+// MCP's Implementation object has no licence field, so the terms travel in the
+// instructions the client shows alongside the tools.
+const INSTRUCTIONS = [
+  "Read, check, edit and write DIYA-GL books: a UK sole trader's or company's accounts as a book.toml",
+  "and a lines.jsonl file. Load a workbook or a book with extract_book, then call report for the",
+  "figures and checks, edit_lines to change transactions, and save_workbook to write the package.",
+  "",
+  `This server is licensed under Apache-2.0. Copyright (C) 2006-2026 DIY Accounting Limited. Source: ${SOURCE_URL}`,
+  "The workbook templates save_workbook writes onto are fetched from spreadsheets.diyaccounting.co.uk",
+  "under the PolyForm Internal Use License 1.0.0 with an additional grant.",
+].join("\n");
 
 /**
  * Build the JSON-RPC method table for one server session (one loaded book).
@@ -28,6 +63,7 @@ export function createMethods(session = createSession()) {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
+        instructions: INSTRUCTIONS,
       };
     },
 

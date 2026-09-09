@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Networking by personal contact with prospective clients is undoubtedly the best way for bookkeepers to start up and promote home bookkeeping services.
 
 There are a number of ways in which networking can be achieved by bookkeepers. In addition the range of bookkeeping services offered, qualifications and experience have an impact upon the success of each strategy. Networking to increase the exposure of the bookkeeper and build the home bookkeeping services is the essential element to building a clientele of quality bookkeeping clients.

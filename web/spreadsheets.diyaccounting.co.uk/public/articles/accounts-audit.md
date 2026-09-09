@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article helps you audit your accounts to help find any errors.
 
 If your accounts do not balance or you believe something isn't correct - you can follow the following steps to audit your own accounts.

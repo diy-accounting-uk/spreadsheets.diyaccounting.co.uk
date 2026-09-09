@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains what to do if you cannot pay your tax bill on time.
 
 **If you cannot pay because of coronavirus (COVID-19)**

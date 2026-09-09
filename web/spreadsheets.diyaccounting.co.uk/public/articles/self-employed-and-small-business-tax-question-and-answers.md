@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 **What is Business Turnover?**
 Sales turnover is the amount the business earns before deducting business expenses including receipts of any kind for goods sold or work done such as commission, tips, payments in kind, fees and insurance proceeds. The turnover to be included in your financial accounts is the date it was invoiced or earned and not the date it was received.
     **What is excluded from Business Turnover?**

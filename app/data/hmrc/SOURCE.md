@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # HMRC source files
 
 ## sa103f_mapping_v3.csv

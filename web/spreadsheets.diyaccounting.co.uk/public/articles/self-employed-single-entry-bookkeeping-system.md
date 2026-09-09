@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Single entry bookkeeping is an accounting practise that can be employed by small business and in particular self employed business where a balance sheet is not required for financial control or tax purposes. A self employed bookkeeping system is basically the production of an income and expenditure account to produce a net taxable profit for tax purposes
 
 Double entry bookkeeping is an accounting technique to record the financial transactions of a business where every transaction is entered twice, equal and opposite transactions. Double entry is required for all businesses that must produce both a profit and loss account and a balance sheet.

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The essentials ingredients required for company formation of a new limited liability company in the UK. Tax advantages are an important consideration with corporation tax changing over the next period from 2007 - 2010 while incorporation of a limited liability company carries several other advantages and disadvantages.
 
 **Limited liability company formation**

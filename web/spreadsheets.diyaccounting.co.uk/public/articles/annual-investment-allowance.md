@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 From 1st April 2008 for small limited companies and 6th April for unincorporated self employed businesses in the UK the previous capital allowance structure of first year allowances and writing down allowances changes to a combination of annual investment allowances and writing down allowances.
 
 When a business buys a long term fixed asset it is normal to depreciate that capital asset over a number of years to smooth out the effect on net profit. Depreciation being a management decision is not allowed as a deductible taxable expense and while being deducted to arrive at the management net profit is written back in the accounts for the calculation of tax.

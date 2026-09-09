@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // se-e2e.test.js — End-to-end tests for the Self Employed multi-file package.
 // Loads the se-scenario-advanced.toml fixture, injects via the product module,

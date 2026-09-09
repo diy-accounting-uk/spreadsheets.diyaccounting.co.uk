@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // bst-se-short-sheet.test.js — proves the shipped BST template's SE Short
 // sheet prints the 2026 SA103S box numbers, the same renumber SE's

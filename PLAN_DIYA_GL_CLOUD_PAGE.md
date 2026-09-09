@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: sign-in and "save to my account" on the DIYA-GL pages
 
 The four DIYA-GL pages hold a year of accounts in the browser and save a 15 KB zip to disk. The paid

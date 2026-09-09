@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 
 // Catalogue-wide guard for the VATQtr "VAT Period ends" dropdown (see
 // PLAN_VAT_QUARTER_DROPDOWN.md). Walks every packages/*/Vatreturns.xlsx

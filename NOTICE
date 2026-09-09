@@ -1,0 +1,59 @@
+DIY Accounting Spreadsheets
+Copyright (C) 2006-2026 DIY Accounting Limited
+
+This repository is licensed under the PolyForm Internal Use License 1.0.0 with an
+additional grant, except for the parts LICENSING.md places in another layer. See
+LICENSE and LICENSING.md.
+
+Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk
+
+Third-party material
+--------------------
+
+XBRL Global Ledger Taxonomy Framework 2015, (c) XBRL International Inc., licensed
+for derivative works with attribution (Section 1.0 of the GL Framework). The
+diya-gl field names use its semantics in a JSON and TOML surface syntax; no
+taxonomy XSD file is reproduced. Reference:
+http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html
+
+JSZip. Copyright (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger and
+Antonio Afonso. Taken under the MIT licence of its dual MIT or GPLv3 offer. Compiled into
+the books bundle and the single-file runner, and a runtime dependency of the diya-gl
+package.
+
+smol-toml. Copyright (c) Squirrel Chat et al. BSD-3-Clause. Compiled into the books bundle
+and the single-file runner, and a runtime dependency of the diya-gl package.
+
+Ajv and ajv-formats. Copyright (c) 2015-2021 Evgeny Poberezkin. MIT. The schema validator
+compiled into the books bundle is Ajv-generated code and carries the same licence.
+
+Apache Maven Wrapper (mvnw, mvnw.cmd, .mvn/wrapper/maven-wrapper.properties).
+Copyright the Apache Software Foundation. Apache License 2.0.
+
+HMRC-derived data. The tax rates, thresholds, form layouts and box mappings under
+app/data/ (including app/data/filing/ and app/data/hmrc/sa103f_mapping_v3.csv), the
+knowledge-base reference additions under
+web/spreadsheets.diyaccounting.co.uk/public/data/ref-additions/, and the HMRC
+reference material under _developers/hmrc-references/, are derived from HM Revenue
+& Customs publications. Crown copyright, used under the Open Government Licence
+v3.0: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+PolicyBee logo (web/spreadsheets.diyaccounting.co.uk/public/images/policybee-logo.png).
+Used under the partner arrangement with PolicyBee. Not licensed onward.
+
+Runtime dependencies
+---------------------
+
+From this repository's package.json:
+
+  ajv                              ^8.20.0     MIT
+  ajv-formats                      ^3.0.1      MIT
+  stripe                           ^22.6.1     MIT
+  @aws-sdk/client-bedrock-runtime  ^3.1128.0   Apache-2.0
+
+From diya-gl/package.json:
+
+  ajv           ^8.20.0    MIT
+  ajv-formats   ^3.0.1     MIT
+  jszip         ^3.10.1    MIT (dual MIT or GPL-3.0-or-later; taken under MIT)
+  smol-toml     ^1.8.0     BSD-3-Clause

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "BrickWork Pro BST"
 description = "Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, the labourer's wage is an employee cost, and there is no bank journal. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5."

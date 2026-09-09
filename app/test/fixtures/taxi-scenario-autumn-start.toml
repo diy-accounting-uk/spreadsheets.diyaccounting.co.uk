@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "Autumn Start Cabs"
 description = "Owner-driver who started trading in October, so the year's takings and costs sit in the last six month tabs"

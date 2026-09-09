@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // ct600-capital-allowances-formulas.test.js — Proves the Ltd CT600 sheet's
 // capital-allowance schedule (boxes 107/108, 109) reads the corporation tax

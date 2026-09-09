@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The Articles of Association of a limited liability company are an essential element of any limited company formation since the Articles of Association set out the rules and regulations by which the internal affairs of the company are governed.
 
 **Articles of Association**

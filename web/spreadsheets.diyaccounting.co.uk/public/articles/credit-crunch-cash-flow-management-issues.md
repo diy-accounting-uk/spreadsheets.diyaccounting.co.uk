@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Business finance and cash flow management is a critical business area every business must get right to survive. This article suggests a number of areas that a business might address to ensure the business have sufficient liquidity and working capital to survive the credit crunch and continue in business to generate profit.
 
 There is a fundamental difference between cash flow and net profit. Net profit is the bottom line of the profit and loss account measuring the net growth in financial value. Cash is the business liquidity and closely related to the changes in the value of the current business assets in the balance sheet representing the amount of money the business has at its disposal to generate further business.

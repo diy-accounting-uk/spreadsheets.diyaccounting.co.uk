@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // build-packages.js — Scan packages/ directories, create zip files, generate catalogue.toml
 //
@@ -12,22 +12,37 @@
 // Writes: target/zips/          (zip files for S3 upload)
 //         web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 
-import { existsSync, readdirSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from "fs";
+import { existsSync, readdirSync, mkdirSync, rmSync, unlinkSync, writeFileSync, readFileSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
-import { PRODUCTS, parsePackageDir, parseCompanyAnyDir, generateCompanyVariantNames, generateCatalogue } from "../lib/package-builder.js";
+import {
+  PRODUCTS,
+  parsePackageDir,
+  parseCompanyAnyDir,
+  generateCompanyVariantNames,
+  generateCatalogue,
+  buildReadmeText,
+  licenceNameFromText,
+} from "../lib/package-builder.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const PACKAGES_DIR = join(ROOT, "packages");
 const ZIPS_DIR = join(ROOT, "target", "zips");
 const CATALOGUE_PATH = join(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml");
+const LICENSE_TEXT = readFileSync(join(ROOT, "LICENSE"), "utf8");
+const LICENCE_NAME = licenceNameFromText(LICENSE_TEXT);
 
 // Parse --years N argument (default: no filter, build all)
 const yearsArg = process.argv.indexOf("--years");
 const YEARS_LIMIT = yearsArg !== -1 && process.argv[yearsArg + 1] ? parseInt(process.argv[yearsArg + 1], 10) : null;
 const CUTOFF_DATE = YEARS_LIMIT ? new Date(Date.now() - YEARS_LIMIT * 365.25 * 24 * 60 * 60 * 1000) : null;
+
+function writePackageDocs(dirPath, productName, date) {
+  writeFileSync(join(dirPath, "LICENCE.txt"), LICENSE_TEXT);
+  writeFileSync(join(dirPath, "README.txt"), buildReadmeText(productName, date, LICENCE_NAME));
+}
 
 function zipDirectory(sourceDir, zipPath) {
   const zipDir = dirname(zipPath);
@@ -85,6 +100,7 @@ function scanAndBuild() {
       for (const v of variants) {
         const zipPath = join(ZIPS_DIR, `${v.zipName}.zip`);
         console.log(`  Zipping Company variant: ${v.zipName}`);
+        writePackageDocs(dirPath, "Company", v.date);
         zipDirectory(dirPath, zipPath);
         allPackages.push({
           product: "Company",
@@ -120,6 +136,7 @@ function scanAndBuild() {
     const zipPath = join(ZIPS_DIR, zipName);
 
     console.log(`Zipping: ${dirName}`);
+    writePackageDocs(dirPath, productName, date);
     zipDirectory(dirPath, zipPath);
 
     allPackages.push({ product: productName, date, shortLabel, format, filename: zipName });

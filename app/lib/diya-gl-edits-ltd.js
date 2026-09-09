@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-edits-ltd.js — The named edits only a Company book carries: a
 // payroll line's own figures, and the three registers book.toml holds rather

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Limited Company Package Generation (All Year-End Months)
 
 Merged from PLAN_LTD_MAR_GENERATION.md (completed March implementation) and PLAN_LTD_ALL_GENERATE.md (research on all 12 months). The product is now unified as `ltd` with a single template at `app/templates/ltd/`.

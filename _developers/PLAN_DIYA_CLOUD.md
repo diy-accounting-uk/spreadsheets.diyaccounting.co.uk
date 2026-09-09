@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: DIYA Cloud -- Browser-Based Cloud Accounting Service
 
 A browser UI / Node.js backend (Lambda) service that provides a cloud-based interface to the DIY Accounting packages. Uses DIYA GL for persistence (related documents in a zip stored in S3). The backend is a full General Ledger with trial balance, but users interact through BST, SE, or Ltd views with screens based on those packages.

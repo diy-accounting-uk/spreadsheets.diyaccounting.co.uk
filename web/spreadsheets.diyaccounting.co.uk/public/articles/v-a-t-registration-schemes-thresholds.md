@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 **VAT Registration**
     Businesses become liable for vat when sales reach the VAT threshold set on 1st April 2012 at £77,000 p.a. regardless of whether that business has registered for VAT purposes.
     Businesses whose customers are VAT registered should consider opting for voluntary registration as sales would not be affected by registration and registering would permit that business to also reclaim VAT inputs on purchases. Businesses with mainly non vat registered customers may wish to delay registration until the point is reached at which liability to vat becomes inevitable. Consideration should be given to maintaining sales below the VAT threshold provided this does not result in a significant loss of profit. When the VAT threshold of £77,000 p.a. is exceeded Customs & Excise should be advised. It may be possible to delay registration if sales breached the vat threshold due to an abnormal sales period that may not necessarily be repeated in the foreseeable future.

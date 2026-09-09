@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // product-workbook.js — a book turned into its product's workbooks.
 //
@@ -18,7 +18,7 @@
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
 
-import { generateSpreadsheet, packageNaming, applyYearEndSequence, setFullCalcOnLoad } from "./generator.js";
+import { generateSpreadsheet, packageNaming, applyYearEndSequence, setFullCalcOnLoad, applyCoreProperties } from "./generator.js";
 import { taxYearFileName } from "./tax-year.js";
 import { applyCellWrites } from "./spreadsheet-runner.js";
 import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "./link-caches.js";
@@ -221,6 +221,8 @@ async function composeFile(inputs, templateFile) {
   let buffer = await resources.readBinary(`${templateDir}/${templateFile}`);
   if (sheetsConfig && Object.keys(sheetsConfig).length > 0) {
     buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
+  } else {
+    buffer = await applyCoreProperties(buffer);
   }
   if (!templateFile.endsWith(".xlsx")) return buffer;
 

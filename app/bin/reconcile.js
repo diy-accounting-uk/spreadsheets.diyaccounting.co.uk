@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // reconcile.js — Run test scenarios against generated packages, compare
 // computed results to expected values, generate compliance reports.
@@ -31,6 +31,9 @@ const ROOT = resolve(APP_DIR, "..");
 const PACKAGES_DIR = resolve(ROOT, "packages");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const REPORTS_DIR = resolve(ROOT, "reports");
+
+const REPORT_HEADER =
+  "<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->\n<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->\n";
 
 // Each product module owns its own prefix, cell writes, reads, and compliance checks.
 const PRODUCTS = {
@@ -221,7 +224,7 @@ async function main() {
 
       // Report naming: <product>_<scenario>.md
       const reportFile = `${pkgSlug}_${scenarioName}.md`;
-      writeFileSync(resolve(REPORTS_DIR, reportFile), content);
+      writeFileSync(resolve(REPORTS_DIR, reportFile), REPORT_HEADER + content);
       console.log(`    Report: reports/${reportFile}`);
       console.log(
         `    Status: ${compliant ? "RECONCILES" : "ANOMALYDETECTED"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`,

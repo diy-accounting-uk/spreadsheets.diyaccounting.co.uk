@@ -1,7 +1,12 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import { execFileSync } from "child_process";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, cpSync, readFileSync } from "fs";
+import { tmpdir } from "os";
+import { join, dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import {
   pad2,
   isLeapYear,
@@ -11,8 +16,17 @@ import {
   generateCompanyVariantNames,
   dateToLabel,
   generateCatalogue,
+  buildReadmeText,
+  licenceNameFromText,
+  SOURCE_URL,
+  DOWNLOAD_URL,
+  COPYRIGHT_LINE,
+  SPDX_LICENSE_ID,
   PRODUCTS,
 } from "../lib/package-builder.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const REAL_ROOT = resolve(__dirname, "..", "..");
 
 // ── pad2 ───────────────────────────────────────────────────────────────────
 
@@ -154,6 +168,43 @@ describe("dateToLabel", () => {
   });
 });
 
+// ── licenceNameFromText ────────────────────────────────────────────────────
+
+describe("licenceNameFromText", () => {
+  it("takes the first non-blank line as the licence name", () => {
+    expect(licenceNameFromText("\n\nPolyForm Internal Use License 1.0.0\n\nBody text\n")).toBe("PolyForm Internal Use License 1.0.0");
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(licenceNameFromText("   GNU Affero General Public License   \nmore text")).toBe("GNU Affero General Public License");
+  });
+
+  it("returns an empty string for blank text", () => {
+    expect(licenceNameFromText("\n\n\n")).toBe("");
+  });
+});
+
+// ── buildReadmeText ────────────────────────────────────────────────────────
+
+describe("buildReadmeText", () => {
+  it("names the product, the year and the licence", () => {
+    const text = buildReadmeText("Basic Sole Trader", "2025-04-05", "PolyForm Internal Use License 1.0.0");
+    expect(text).toContain("Basic Sole Trader");
+    expect(text).toContain("April 2025");
+    expect(text).toContain("Licence: PolyForm Internal Use License 1.0.0");
+  });
+
+  it("states the permitted use and carries the copyright, source and download lines", () => {
+    const text = buildReadmeText("Company", "2026-03-31", "PolyForm Internal Use License 1.0.0");
+    expect(text).toContain("your clients' accounts if you are an accountant");
+    expect(text).toContain("Do not redistribute this package");
+    expect(text).toContain("under another name");
+    expect(text).toContain(COPYRIGHT_LINE);
+    expect(text).toContain(SOURCE_URL);
+    expect(text).toContain(DOWNLOAD_URL);
+  });
+});
+
 // ── generateCatalogue ──────────────────────────────────────────────────────
 
 describe("generateCatalogue", () => {
@@ -161,6 +212,13 @@ describe("generateCatalogue", () => {
     const toml = generateCatalogue([], "2026-04-05");
     expect(toml).toContain('generated = "2026-04-05"');
     expect(toml).toContain("Auto-generated");
+  });
+
+  it("starts with the SPDX and copyright header", () => {
+    const toml = generateCatalogue([], "2026-04-05");
+    const lines = toml.split("\n");
+    expect(lines[0]).toBe(`# SPDX-License-Identifier: ${SPDX_LICENSE_ID}`);
+    expect(lines[1]).toBe(`# ${COPYRIGHT_LINE}`);
   });
 
   it("groups packages by product in stable order", () => {
@@ -197,5 +255,69 @@ describe("generateCatalogue", () => {
     const packages = [{ product: "Unknown Product", date: "2025-04-05", shortLabel: "Apr25", format: "Excel 2007", filename: "x.zip" }];
     const toml = generateCatalogue(packages, "2026-04-05");
     expect(toml).not.toContain("Unknown Product");
+  });
+});
+
+// ── build-packages.js: LICENCE.txt and README.txt land in the built zip ────
+//
+// Runs the real script against a throwaway tree standing in for this repo
+// (only build-packages.js, package-builder.js, a root LICENSE and one
+// synthetic package), the way archive-packages.test.js already does for
+// archive-packages.js, so the real packages/ and LICENSE are never read.
+
+describe("build-packages.js package docs", () => {
+  const tempDirs = [];
+
+  afterEach(() => {
+    while (tempDirs.length > 0) rmSync(tempDirs.pop(), { recursive: true, force: true });
+  });
+
+  function makeRepo(licenseText) {
+    const root = mkdtempSync(join(tmpdir(), "build-packages-"));
+    tempDirs.push(root);
+    mkdirSync(join(root, "app", "bin"), { recursive: true });
+    mkdirSync(join(root, "app", "lib"), { recursive: true });
+    mkdirSync(join(root, "web", "spreadsheets.diyaccounting.co.uk", "public"), { recursive: true });
+    cpSync(join(REAL_ROOT, "app", "bin", "build-packages.js"), join(root, "app", "bin", "build-packages.js"));
+    cpSync(join(REAL_ROOT, "app", "lib", "package-builder.js"), join(root, "app", "lib", "package-builder.js"));
+    writeFileSync(join(root, "LICENSE"), licenseText);
+    const pkgName = "GB Accounts Basic Sole Trader 2025-04-05 (Apr25) Excel 2007";
+    const pkgDir = join(root, "packages", pkgName);
+    mkdirSync(pkgDir, { recursive: true });
+    writeFileSync(join(pkgDir, "Accounts.xlsx"), "xlsx-content");
+    writeFileSync(join(pkgDir, "Guide.pdf"), "pdf-content");
+    return { root, pkgDir };
+  }
+
+  it("writes LICENCE.txt and README.txt into a built zip, naming the licence in force", () => {
+    const licenseText = "Test Licence 1.0.0\n\nBody of the test licence.\n";
+    const { root } = makeRepo(licenseText);
+
+    execFileSync(process.execPath, [join(root, "app", "bin", "build-packages.js")], { cwd: root, encoding: "utf8" });
+
+    const zipPath = join(root, "target", "zips", "GB Accounts Basic Sole Trader 2025-04-05 (Apr25) Excel 2007.zip");
+    const listing = execFileSync("unzip", ["-l", zipPath], { encoding: "utf8" });
+    expect(listing).toContain("LICENCE.txt");
+    expect(listing).toContain("README.txt");
+
+    const licenceOut = execFileSync("unzip", ["-p", zipPath, "LICENCE.txt"], { encoding: "utf8" });
+    expect(licenceOut).toBe(licenseText);
+
+    const readmeOut = execFileSync("unzip", ["-p", zipPath, "README.txt"], { encoding: "utf8" });
+    expect(readmeOut).toContain("Basic Sole Trader");
+    expect(readmeOut).toContain("Licence: Test Licence 1.0.0");
+    expect(readmeOut).toContain(COPYRIGHT_LINE);
+    expect(readmeOut).toContain(SOURCE_URL);
+    expect(readmeOut).toContain(DOWNLOAD_URL);
+  });
+
+  it("gains a header comment naming the licence in force in catalogue.toml", () => {
+    const { root } = makeRepo("PolyForm Internal Use License 1.0.0\n\nBody.\n");
+
+    execFileSync(process.execPath, [join(root, "app", "bin", "build-packages.js")], { cwd: root, encoding: "utf8" });
+
+    const catalogue = readFileSync(join(root, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml"), "utf8");
+    expect(catalogue).toContain(`# SPDX-License-Identifier: ${SPDX_LICENSE_ID}`);
+    expect(catalogue).toContain(`# ${COPYRIGHT_LINE}`);
   });
 });

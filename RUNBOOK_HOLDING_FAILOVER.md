@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Holding Failover Runbook
 
 Procedure for moving live spreadsheets.diyaccounting.co.uk traffic onto a maintenance page and

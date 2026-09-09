@@ -1,9 +1,9 @@
 {
   "name": "@diy-accounting-uk/diya-gl",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "type": "module",
   "description": "Recalculate, read and write DIYA-GL books from the command line",
-  "license": "AGPL-3.0-only",
+  "license": "Apache-2.0",
   "homepage": "https://spreadsheets.diyaccounting.co.uk/diya-gl.html",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "diya-gl-write-workbook": "bin/diya-gl-write-workbook.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },
-  "files": ["bin/", "dist/", "README.md"],
+  "files": ["bin/", "dist/", "README.md", "NOTICE"],
   "scripts": {
     "prepack": "node scripts/prepack.mjs"
   },

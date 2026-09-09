@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Pay as you earn administration and maintaining payroll records is time consuming and all small businesses require a tax pay national insurance scheme. The inland revenue paye records are highly sensitive and must be scrupulously accurate since it may be inspected by the Inland Revenue and carries legal responsibilities to the employees. Payroll Software can carry the paye administrative burden and complete the paye returns.
 
 Every employer has a legal responsibility to register with HMRC and operate the inland revenue paye scheme for its employees with regular payslips a P60 end of year certificate and a P45 showing details of gross pay and income tax deducted during the employment if you leave. If the employee does not have a P45 then the employee has to complete a P46 form. The paye system has to satisfy both the payroll requirements for each employee and the paye administration records required by HMRC.

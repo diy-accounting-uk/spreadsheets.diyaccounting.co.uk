@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The success of every small business and especially a new start up business is dependent upon the personal qualities and abilities of the small business owner. Some skills and abilities are more important than others to an entrepreneur but rarely are all qualities are required and invariably some are essential to start your own business and make it a success.
 
 A lack of skill, ability and experience in certain business areas need not be a barrier to success and starting your own business. The personal qualities exerted by a small business owner overcoming deficiencies over and over again are vital and present in many entrepreneurs much more so that specific technical knowledge.

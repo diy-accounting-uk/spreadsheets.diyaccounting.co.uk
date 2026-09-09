@@ -1,7 +1,9 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: the licensing and copyright uplift
 
-Status: approved, go given 2026-09-09. Urgency 1 is on the board in `NEXT.md` and starts in a fresh
-session; nothing was dispatched in the session that wrote the plan.
+Status: approved, go given 2026-09-09. Urgency 1 is code complete on PR #86 and the four
+sibling-repository PRs (tap #1, root #28, www #27, archive #31); LU-9 follows the merges.
 The cross-repository section is filled from a read-only audit of all six repositories; the review
 of 2026-09-08 (section "Review") re-checked every row against the trees with eight search agents
 and corrected what it found.
@@ -237,26 +239,27 @@ The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 ## Trade marks
 
 Registration is form-filling on gov.uk; a solicitor is needed only if an application is opposed.
-Fees are as of September 2026 and are checked on gov.uk before paying.
+Fees are the IPO's schedule from 1 April 2026, recorded with the sources in
+`_developers/trade-marks/GOODS_AND_SERVICES.md`; check gov.uk before paying.
 
 The marks, the operator's choice: **DIY ACCOUNTING SPREADSHEETS**, **DIY ACCOUNTING SUBMIT** and
 **DIYA-GL**, with **DIY ACCOUNTING** on its own tried through Right Start. Each is a UK word mark in classes 9 (downloadable software and data files), 42
 (software as a service and hosting) and 35 (accounting and bookkeeping services).
 
 - **DIYA-GL**: a coined term, expected to register unopposed in about four months. Standard
-  application, £170 plus £50 per extra class, £270.
+  application, £205 plus £60 per extra class, £325.
 - **DIY ACCOUNTING SUBMIT** and **DIY ACCOUNTING SPREADSHEETS**: both lean on descriptive words, the
-  second most of all, so each goes through the Right Start option (£100 for the examiner's report,
-  £100 more only if it looks registrable) with twenty years of trading as DIY Accounting as the
-  acquired-distinctiveness argument, and the logo filed as a stylised mark beside each. The two may
-  qualify as one series application, since they differ only in a descriptive word; the pack (LU-10)
-  checks the IPO's series rule and files them as a series if it holds, which saves one fee.
-- **DIY ACCOUNTING** on its own: a Right Start probe, £100 for the examiner's view on whether twenty
-  years of use has made the bare name distinctive. If the examiner accepts it, the second £100
+  second most of all, so each goes through the Right Start option (£185 for the examiner's report in three
+  classes, £185 more only if it looks registrable) with twenty years of trading as DIY Accounting as the
+  acquired-distinctiveness argument, and the logo filed as a stylised mark beside each. The series rule
+  does not hold (`_developers/trade-marks/SERIES_CHECK.md`): the two differ in the product word,
+  distinctive matter under s.41(2), so each files on its own.
+- **DIY ACCOUNTING** on its own: a Right Start probe, £185 for the examiner's view on whether twenty
+  years of use has made the bare name distinctive. If the examiner accepts it, the second £185
   registers the strongest mark of the set and the two composite marks become defensive; if not, the
-  probe has cost £100 and the composites carry the brand.
-- Budget if every application proceeds to registration: about £1,010 for the four word marks in
-  three classes, plus the stylised marks; £100 less if the bare name is refused at the report.
+  probe has cost £185 and the composites carry the brand.
+- Budget if every application proceeds to registration: about £1,435 for the four word marks in
+  three classes, plus the stylised marks; £185 less if the bare name is refused at the report.
 - Before filing: the IPO search and TMview, both free.
 - From now: ™ after the three marks on the site footer, the spec page and the package
   README; ® only once registered. The marks are always adjectives before a noun.
@@ -269,7 +272,7 @@ The marks, the operator's choice: **DIY ACCOUNTING SPREADSHEETS**, **DIY ACCOUNT
 | --- | --- | --- | --- | --- |
 | LU-10 | The filing pack: the free searches run and their results recorded; the goods and services wording for classes 9, 42 and 35 drafted from the IPO's pre-approved terms; the first-use evidence gathered with dates; `TRADEMARKS.md` extended with the ™ usage rules | — | Sonnet | `TRADEMARKS.md`, `_developers/trade-marks/` (new) |
 | LU-11 | ™ on the marks across the site footer, the spec page and the package README, in the same PR as LU-6 | LU-6 | Sonnet | as LU-6 |
-| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL as a standard application; DIY ACCOUNTING SUBMIT and DIY ACCOUNTING SPREADSHEETS via Right Start, as a series if the rule holds, with the stylised marks beside them; DIY ACCOUNTING on its own via Right Start as the probe | LU-10 | operator | gov.uk |
+| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL as a standard application; DIY ACCOUNTING SUBMIT and DIY ACCOUNTING SPREADSHEETS via Right Start, each on its own, with the stylised marks beside them; DIY ACCOUNTING on its own via Right Start as the probe | LU-10 | operator | gov.uk |
 | H-LU-5 | Register the `diya-gl` domains and the GitHub and npm organisations | — | operator | registrars, github.com, npmjs.com |
 
 ## Consistent branding

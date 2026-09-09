@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how to record CIS deductions and income received.
 
 To record Income received as a Sub Contractor, you would input the following:

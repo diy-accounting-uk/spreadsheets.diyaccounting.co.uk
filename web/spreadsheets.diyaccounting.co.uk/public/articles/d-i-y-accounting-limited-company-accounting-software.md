@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 DIY Accounting Software for UK limited liability companies is a series of bookkeeping templates on excel spreadsheets, suitable for any small limited company producing an automated monthly profit and loss account and a set of final company accounts with balance sheet and notes ready for publication.
 
 **Accounting Software Strengths**

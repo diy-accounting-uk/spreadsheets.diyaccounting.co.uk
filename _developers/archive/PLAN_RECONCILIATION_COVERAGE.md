@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Reconciliation coverage, published reports, and an LLM judge
 
 Status: scoping approved. Draft PR #27 (VAT data flow) grows to include item 1 before

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # UK Tax Data Sources
 
 Authoritative references for the rates and thresholds used in `app/data/*.toml`.

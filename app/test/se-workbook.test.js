@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // The writer on the Self Employed package: nine workbooks composed from the
 // templates the way the CLI composes a generated package, the entries none of
@@ -21,7 +21,7 @@ import { parse as parseTOML } from "smol-toml";
 import JSZip from "jszip";
 
 import { saveWorkbookFiles, savePackageZip, taxYearFileName } from "../lib/product-workbook.js";
-import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad } from "../lib/generator.js";
+import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad, applyCoreProperties } from "../lib/generator.js";
 import { applyCellWrites, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "../lib/link-caches.js";
 import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
@@ -120,6 +120,7 @@ async function packageTheGeneratePathComposes(book, lines, targetStartYear) {
 
     let buffer = readFileSync(resolve(APP_DIR, "templates/se", templateFile));
     if (sheetsConfig) buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
+    else buffer = await applyCoreProperties(buffer);
     buffer = await applyYearEndSequence(buffer, templateFile, sheetsConfig, 0, endDate, taxData.tax_year);
     if (writes[templateFile]) buffer = await applyCellWrites(buffer, writes[templateFile]);
     files.push({ name: templateFile, bytes: await setFullCalcOnLoad(buffer) });

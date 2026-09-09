@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 The financial benefits of preparing basic accounts bookkeeping records and producing the self assessment tax return can be overlooked. Starting bookkeeping at home is an option for anyone self employed and is important as the self assessment tax paid each year is typically the highest financial outgoing. Bookkeeping home accounts is worth the effort and does not require a high level of technical accounting or tax knowledge.
 
 The financial benefits of preparing basic accounts bookkeeping records and producing the self assessment tax return can be overlooked. Starting bookkeeping at home is an option for anyone self employed and is important as the self assessment tax paid each year is typically the highest financial outgoing. Bookkeeping home accounts is worth the effort and does not require a high level of technical accounting or tax knowledge.

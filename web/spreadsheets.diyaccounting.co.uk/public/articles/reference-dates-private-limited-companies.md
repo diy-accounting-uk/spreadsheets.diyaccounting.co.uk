@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 All companies and self employed businesses including dormant non trading companies have a legal requirement to keep a set of annual financial accounts for tax purposes. There are rules governing the accounting year end date at which the set of accounts is made up which have advantages and disadvantages to the business.
 
 When a private limited company is incorporated companies house advise the company of the accounting reference date and a set of financial accounts are required to be made up and submitted from the day of incorporation to this accounting reference date. The accounting reference date is set by companies house as the last day of the month 12 months after the date of incorporation.

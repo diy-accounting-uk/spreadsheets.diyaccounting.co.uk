@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Internet and local media advertising are useful sources to start up and promote home bookkeeping services.
         
         There are numerous opportunities to advertise bookkeeping services although not all sources of new business will justify the marketing investment. An essential first step is to determine all potential promotion areas, set an expenditure budget for each and maintain a record of enquiries and fee basis for the bookkeeping services obtained.

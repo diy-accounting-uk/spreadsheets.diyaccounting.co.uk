@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // xlsx-parts.js — reading the parts of an xlsx with JSZip and regex: the
 // sheet name to path map, the shared strings table, one cell's value, and

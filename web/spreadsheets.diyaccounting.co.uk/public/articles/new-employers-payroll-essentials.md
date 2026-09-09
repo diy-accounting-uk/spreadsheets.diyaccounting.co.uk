@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 An employee is anyone who works on a full time, part time or casual basis for the business and includes company directors. When you engage someone to work for you, you become their employer. Every employer operating a PAYE scheme must have an understanding of the HMRC payroll essentials. Payroll essentials that payroll software packages satisfy include both the knowledge to correctly calculate income tax and national insurance plus legal obligations to each employee.
 
 **When should an Employer Register for PAYE**

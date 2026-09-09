@@ -2,6 +2,8 @@
 name: excel
 description: Catalogues xlsx XML manipulation, external-link cache updates, LibreOffice xls-roundtrip recalculation, and testing approaches used across this project's spreadsheet pipeline. Load before writing or debugging code that edits xlsx files, chases external-link caches, renames tabs for non-March year-ends, or runs the LibreOffice recalculation pipeline.
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # Excel Sheet Manipulation Techniques
 

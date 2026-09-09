@@ -1,6 +1,8 @@
 ---
 title: Company Accounts User Guide
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # DIY Accounting Company Accounts User Guide
 
@@ -347,6 +349,8 @@ The Salesinvoice workbook is independent. Set up Business Details, Customer Deta
 ## Contact Information
 
 Our website: http://www.diyaccounting.co.uk/
+
+These spreadsheets are free to use, and the source is available to read. Use them for your own accounts, or for your clients' accounts if you are an accountant or bookkeeper. Please do not redistribute them. Point people at the download page instead. Copyright (C) 2006-2026 DIY Accounting Limited. Licensed under the PolyForm Internal Use License 1.0.0 with an additional grant for accountants. Downloads: https://spreadsheets.diyaccounting.co.uk/. Source: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk.
 
 Discussion forum: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/discussions
 

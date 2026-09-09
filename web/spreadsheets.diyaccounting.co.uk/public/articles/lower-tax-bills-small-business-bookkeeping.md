@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Tax authorities are often relaxed about the need for small business to prepare and produce formal accounting records. Often the requirement is simply that each business retains sufficient financial records to support the accounts submitted.
     Such advice from tax authorities places a burden upon small business in that the vast majority are honest hard working people who are meticulous about keeping accounting records of sales made during the financial year. Unfortunately many small businesses are not so meticulous about keeping financial records of business expenses in their accounts.
     A typical taxi driver may for instance keep a diary and record the daily receipts from his fares. If those recorded receipts are accurate then the total sales turnover for the year will show the correct total. The same may not be true of expenses and the accounts thereby overstated.

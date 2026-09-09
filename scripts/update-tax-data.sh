@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
 # scripts/update-tax-data.sh
 #
 # Generates missing tax-data TOML files in app/data/ by scraping HMRC pages

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Sample directors report required when the company director submits the company year end accounts to HMRC requiring a limited company directors report
 
 Sample directors report required when the company director submits the company year end accounts to HMRC requiring a limited company directors report

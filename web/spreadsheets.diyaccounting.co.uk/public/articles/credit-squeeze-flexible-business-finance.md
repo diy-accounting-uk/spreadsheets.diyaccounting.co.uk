@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Five proactive steps a business can take to beat the credit squeeze including business finance, planning and taking a positive approach to meeting and solving the problems that might arise.
 
 The credit squeeze is a fact of business life and is not just about money but confidence in the market too. There are always winners and losers in every business situation and confidence and business finance can beat the credit crunch.

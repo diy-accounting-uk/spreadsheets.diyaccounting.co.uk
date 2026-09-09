@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article gives information on Directors Loans & Dividends
 
 A shareholder is entitled to take dividends from a company which he/ she holds shares in a company which is not repayable to the company. Any money taken out of the company which is not a salary or dividend, over and above the amount you have put in by a company director or "participator", is called a Directors Loan and is repayable to the company. Alternatively, a director can loan money to the Company.

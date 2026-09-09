@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Self employed business can use its own accounting period the tax position can become more complex if the accounts use a basis period rather than the standard financial tax year.
 
 Accounts are required each year for tax and financial control purposes with preset dates by which those accounting records must be submitted and penalties for failure to deliver on time.

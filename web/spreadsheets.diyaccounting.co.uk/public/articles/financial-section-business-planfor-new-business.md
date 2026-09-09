@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Guessing is not an option. Preparing the financial section of a business plan is more than scribbling some pleasing numbers on a sheet of paper. The end result of every business plan is not how great the business start up will be or the tremendous skills to be employed in the business but the bottom line.
 
 Having extraordinary skills and talent in a business area, being hardworking and determined, persistent, having great ideas and full of energy is a fantastic mix for a successful business career. But all those exquisite qualities mean nothing if the end result is not represented in the bottom line.

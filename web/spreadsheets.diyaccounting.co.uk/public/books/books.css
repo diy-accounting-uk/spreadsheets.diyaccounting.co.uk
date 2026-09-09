@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: AGPL-3.0-only */
-/* Copyright (C) 2025-2026 DIY Accounting Ltd */
+/* SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 */
+/* Copyright (C) 2006-2026 DIY Accounting Limited */
 
 /* books/books.css -- the DIYA-GL books page in the spreadsheets site's own
    design system: the site's teal palette and Arial type over the background
@@ -2474,4 +2474,21 @@ table.kv-table tr.total td {
   .headline-bar-svg rect {
     transition: none !important;
   }
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.app-footer {
+  padding: 0.75rem 1rem 1.25rem;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.app-footer p {
+  margin: 0.25rem 0;
+}
+.app-footer a {
+  color: var(--rule);
 }

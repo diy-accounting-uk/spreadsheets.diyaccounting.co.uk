@@ -2,6 +2,8 @@
 name: Tax Data Updater
 description: Research current HMRC tax rates, update SOURCES.md, create new app/data TOML files, and generate a traceability report.
 ---
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Tax Data Updater Agent
 
 Purpose: Keep the tax data files in `app/data/` current by researching HMRC published rates and thresholds, updating `SOURCES.md` with new reference links, creating TOML data files for any tax years not yet covered, and updating `REPORT_TRACEABILITY.md`.

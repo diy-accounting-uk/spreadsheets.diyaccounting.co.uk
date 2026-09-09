@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // build-runner.mjs — one single-file HTML runner per product: the books
 // page's own markup, styles and scripts, with every fetch and dynamic
@@ -355,6 +355,8 @@ function buildProvenanceStamp(product) {
     `scorecard ${stamps["diya-gl:templateScorecard"]}`,
   ];
   if (stamps["diya-gl:reconciledCommit"]) parts.push(`reconciled at ${stamps["diya-gl:reconciledCommit"]}`);
+  parts.push("Apache-2.0");
+  parts.push("Copyright (C) 2006-2026 DIY Accounting Limited");
   return { content: parts.join("; "), stamps };
 }
 

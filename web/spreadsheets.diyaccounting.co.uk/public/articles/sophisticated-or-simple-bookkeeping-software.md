@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 Many types of accounting software exist to record the financial transactions of business and provide the management with financial control to achieve the profit and loss performance required. The correct choice is highly dependent upon the size of the business and the degree of sophistication and financial control required.
 
 [Accounting software](https://www.diyaccounting.co.uk) is a system of recording financial transactions on a computer across a full range of accounting options almost invariably dependent upon the size of business being catered for. Accounting software can vary from multi million pound solutions for major public companies to simple managed lists of income and expenses.

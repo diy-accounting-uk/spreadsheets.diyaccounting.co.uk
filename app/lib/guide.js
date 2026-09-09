@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2026 DIY Accounting Ltd
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // guide.js — Generate PDF user guide from markdown template.
 // Uses pandoc + weasyprint. Install: `brew install pandoc` and `pip install weasyprint`.
@@ -8,9 +8,30 @@
 //   - Default: mtime of the markdown source file
 //   - Override: pass sourceDateEpoch parameter (e.g. git commit timestamp)
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { dirname, resolve } from "path";
 import { existsSync, statSync } from "fs";
+
+import { PACKAGE_AUTHOR, PACKAGE_RIGHTS } from "./generator.js";
+
+// pandoc renders the guide as HTML before weasyprint prints it, and the HTML
+// template carries author, description and keywords through to the PDF's own
+// properties. The rights land in the description, which is where a PDF reader
+// shows a copyright notice.
+export function pandocArguments(markdownPath, outputPath) {
+  return [
+    markdownPath,
+    "-o",
+    outputPath,
+    "--pdf-engine=weasyprint",
+    "--metadata",
+    `author=${PACKAGE_AUTHOR}`,
+    "--metadata",
+    `rights=${PACKAGE_RIGHTS}`,
+    "--metadata",
+    `description=${PACKAGE_RIGHTS}`,
+  ];
+}
 
 export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
   if (!existsSync(markdownPath)) {
@@ -25,7 +46,7 @@ export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
   const mdDir = dirname(absMd);
 
   // Run pandoc from the markdown's directory so relative image paths (e.g. screenshots/home.png) resolve naturally
-  execSync(`pandoc "${absMd}" -o "${absOut}" --pdf-engine=weasyprint`, {
+  execFileSync("pandoc", pandocArguments(absMd, absOut), {
     cwd: mdDir,
     stdio: "pipe",
     env: { ...process.env, SOURCE_DATE_EPOCH: String(epoch) },

@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 This article explains how Capital Allowances are calculated within the accounts.
 
 The tax written down value is the price paid less the capital allowances whereas the written down book value is the price paid less depreciation. 
