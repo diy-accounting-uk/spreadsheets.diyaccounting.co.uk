@@ -59,8 +59,6 @@
       <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>
       <h2 class="kb-page-title">Self Employed reconciliation</h2>
       <p class="kb-page-description">Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007. Every figure below comes from a scenario driven through the shipped workbooks and read back out of the recalculated sheets.</p>
-      <p>&lt;!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 --&gt;</p>
-      <p>&lt;!-- Copyright (C) 2006-2026 DIY Accounting Limited --&gt;</p>
       <p>SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.</p>
       <p>Trade: IT consultancy and software development</p>
       <nav class="recon-toc" aria-label="On this page">
@@ -84,8 +82,12 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>All indicators align with the headline. VAT registration is confirmed by non-zero quarterly boxes, profit bridge residue is zero, tax is correctly charged on the adjusted profit, and turnover differences are accounted for by VAT exclusion and fixed asset disposals as explained in the scenario.</p>
-          <p class="recon-verdict-meta">Read back by us.amazon.nova-2-lite-v1:0, 2026-09-09. The arithmetic checks below run first and decide the status.</p>
+          <p>Indicators are consistent with the headline: VAT-registered with all four quarters carrying VAT, turnover net of the 15,000 disposals at the headline scale, capital allowances explaining the lower taxable profit, tax charged on the profit plus grants, and a zero-residue bridge. Only minor items worth a glance.</p>
+          <ul>
+            <li><strong>SA103S net profit 183,429.68 vs profit before tax 171,773.02</strong> (Turnover/profit indicator and self assessment indicator): The two profit figures differ by 11,656.66 with no stated bridging item; worth a glance though the deterministic checks and the zero-residue bridge pass. [note]</li>
+            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): Unusually small tapered allowance for income of ~121.5k (full taper would normally exhaust it); plausible but worth a look. [note]</li>
+          </ul>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-06. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -3878,12 +3880,7 @@
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
         </div>
         <div class="footer-center">
-          <p>
-            DIY Accounting Spreadsheets&trade; is free to use, source available under the
-            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE">PolyForm Internal Use License</a>.
-            <a href="https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk">Source on GitHub</a>.
-          </p>
-          <p>&copy; 2006-2026 DIY Accounting Limited</p>
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
         </div>
       </div>
     </footer>

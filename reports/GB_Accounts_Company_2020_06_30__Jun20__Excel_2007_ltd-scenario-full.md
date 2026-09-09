@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Company 2020-06-30 (Jun20) Excel 2007
 
 Scenario: ltd-scenario-full
@@ -180,8 +182,7 @@ Trade: IT consultancy and software development
 | Vatinterface I17: quarter purchases net = its three period rows | 10528.54166666667 | 10528.5416666667 | +3.092281986027956e-11 | PASS |
 | Vatinterface K17: quarter input VAT = its three period rows | 2105.708333333333 | 2105.70833333333 | -3.183231456205249e-12 | PASS |
 | VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G17) | 16860 | 16860 | 0 | PASS |
-| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2105.70833333333 | 2105.70833333333 | 0 | PASS |
-| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 10528.5416666667 0 | PASS |
+| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 210 0 | PASS |
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
 | VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 44043 | 44043 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
@@ -3352,6 +3353,10 @@ l | DIY Label | Value | diya-gl mapping |
 ### Creditcardaccount.xlsx!Jun
 
 | Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 1025 |  |
+| A2 |  | 1025 |  |
+l | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 1025 |  |
 | A2 |  | 1025 |  |
