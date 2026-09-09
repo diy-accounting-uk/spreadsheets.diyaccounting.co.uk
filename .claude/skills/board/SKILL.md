@@ -53,12 +53,13 @@ the branch audit.
 
 ### Rules
 
-- **Row order.** `ready-to-resume` rows first, then `blocked-to-resume`, then rows with no
-  product (`CQ-n`); then one block per product in the order BST, SE, Taxi, Ltd. A product's
-  block runs: the rows of other products its rows name as precursors, transitively,
-  precursors before dependants (each row is placed once, in the first block that needs
-  it); its `ready-to-start` rows; its `blocked-to-start` rows. `H` rows sit at the end of
-  their product's blocked rows.
+- **Row order (the operator's standing order, 2026-09-09).** Four bands, in this order:
+  1. machine rows that can be worked now: `in-flight`, `ready-to-start`, `ready-to-resume`;
+  2. human rows that can be done now: `ready-to-start`, `ready-to-resume`;
+  3. blocked rows of either owner: `blocked-to-start`, `blocked-to-resume`;
+  4. rows gated by a date, whatever their owner.
+  Within a band, precursors come before their dependants, then `CQ-n` rows, then product order
+  BST, SE, Taxi, Ltd. `D` rows follow the four bands in the render and are never written back.
 - One row per discrete task. When a plan defines tasks, the board carries one row per
   task, never one per wave or bullet; grouping is visible through `Precursors`.
 - Verification is never a human row. Confirming a deploy, checking a page loads, looking
