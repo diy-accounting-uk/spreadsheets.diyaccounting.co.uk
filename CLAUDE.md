@@ -188,7 +188,7 @@ GitHub repository variables:
 | `SPREADSHEETS_ACTIONS_ROLE_ARN` | OIDC auth for spreadsheets account |
 | `SPREADSHEETS_DEPLOY_ROLE_ARN`  | CDK deploy in spreadsheets account |
 | `SPREADSHEETS_CERTIFICATE_ARN`  | ACM certificate for CloudFront     |
-| `SUBMIT_TEST_USER_ROLE_ARN`     | Submit's cross-account role, per environment; when set, the ci behaviour job mints a fresh Cognito test user through it instead of relying on stored secrets |
+| `SUBMIT_TEST_USER_ROLE_ARN`     | Submit's cross-account role for its prod account; the pages target Submit's released environment on every host, so this is a prod role now, not a per-environment one. When set, the ci behaviour job mints a fresh Cognito test user through it instead of relying on stored secrets |
 
 ## AWS CLI Access
 

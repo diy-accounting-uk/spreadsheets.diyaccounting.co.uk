@@ -160,23 +160,18 @@ exchanges the code directly against the pool's token endpoint with PKCE.
 
 ### 4.1 `public/books/cloud-config.js`
 A committed classic script, loaded before `cloud.js` on the four pages. It publishes
-`window.DIYA_GL_CLOUD_CONFIG` = one of two entries, chosen by `location.hostname`:
-`spreadsheets.diyaccounting.co.uk` gets prod, everything else (`ci-spreadsheets…`, `localhost`,
-`127.0.0.1`, and the browser tests' own random port) gets ci.
+`window.DIYA_GL_CLOUD_CONFIG`, the same on every host: `spreadsheets.diyaccounting.co.uk`,
+`ci-spreadsheets…`, `localhost`, `127.0.0.1`, and the browser tests' own random port all talk to
+Submit's released environment. Submit's ci environment is deployed and torn down on its own
+cadence and is not a target for these pages.
 
-| Key | prod | ci |
-|---|---|---|
-| `apiBase` | `https://submit.diyaccounting.co.uk/api/v1` | `https://ci-submit.diyaccounting.co.uk/api/v1` |
-| `hostedUi` | `https://prod-auth.diyaccounting.co.uk` | `https://ci-auth.diyaccounting.co.uk` |
-| `clientId` | `null` until H9 | `null` until H9 |
+| Key | value |
+|---|---|
+| `apiBase` | `https://submit.diyaccounting.co.uk/api/v1` |
+| `hostedUi` | `https://prod-auth.diyaccounting.co.uk` |
+| `clientId` | `1c8hjrjp5g5ipm8o47t6qkks4r` |
 
-The client id is a public OAuth identifier, so it is committed rather than injected. `deploy.yml`
-gets no new step: the spreadsheets deploy role cannot read Submit's SSM across accounts, and a
-GitHub repository variable would only move the same paste somewhere less visible. Once H9 deploys,
-one commit fills both ids, read with
-`aws --profile submit-ci ssm get-parameter --name /submit/ci/spreadsheets-books-app-client-id` and
-the submit-prod equivalent. Until then C5 keeps every cloud control off the page, in every
-environment, including the local test server.
+The client id is a public OAuth identifier, so it is committed rather than injected.
 
 ### 4.2 `public/books/cloud.js`
 A classic script, no module syntax, publishing `window.DiyaGlBooksCloud`:
@@ -373,7 +368,7 @@ control off the page until step 9 fills the client ids.
 | 6 | ✓ The panel: sign in, list, open, sign out | `cloud.js`, `books.css` | the browser spec's sign-in, list, open and sign-out cases pass. Deviation: landed in the same commit as step 7 -- the panel render/state machine and the save/conflict/entitlement flow share `renderPanel()`/`panelState` closely enough that splitting them after the fact risked more than it saved. |
 | 7 | ✓ Save, conflict, entitlement | `cloud.js`, `books.css`, `web/browser-tests/books-cloud.browser.test.js` complete | every case in section 8's table passes. Deviation: the 401 case exercises the plan's own stated rule (one refresh, one retry, a second 401 or a failed refresh both end the session) rather than the test table's literal "oauth2/token -> 200 then 400" sequence, which would need a second refresh attempt the rule does not call for. The near-duplicate prompt (3.5 step 4) has no dedicated case -- not in section 8's table -- but the code path exists (`renderDuplicate`). |
 | 8 | ✓ The runner exclusion | `scripts/build-runner.mjs` | `books-runner.browser.test.js` green; the built runner carries no `cloud` script |
-| 9 | The client ids | `public/books/cloud-config.js` | landed: both ids from the IdentityStack outputs (prod 1c8hjrjp5g5ipm8o47t6qkks4r, ci 53op0ccvcaseceue5t8kfr1vq1); the test override pins or nulls the id |
+| 9 | The client id | `public/books/cloud-config.js` | landed: every host uses the prod IdentityStack's client id (1c8hjrjp5g5ipm8o47t6qkks4r); the test override pins or nulls the id |
 | 10 | The ci behaviour case | `behaviour-tests/spreadsheets.behaviour.test.js`, the three repository secrets | **waits on H9 and open question 1.** `npm run test:spreadsheetsBehaviour-ci` green |
 
 Before any push: `npm test` and `npm run test:browser`. Steps 3 and 5 touch files the whole suite
