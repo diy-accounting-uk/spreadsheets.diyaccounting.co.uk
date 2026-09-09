@@ -55,7 +55,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | H5 | Merge root PR #28 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, README |
 | H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
 | H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | PR #86 is on main; dispatch after its prod deploy is green |
+| H8 | Merge Dependabot PR #87 (the Maven group, four updates) | none | human | — | ready-to-start | CI on the PR |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | the merge's prod deploy is running; dispatch when it is green |
 | H4 | Merge tap PR #1 (LU-17) | operator | human | LU-20 | blocked-to-start | after the rename |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
 | LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H4, H-LU-3 | blocked-to-start | Sonnet; the publish check, then the deprecations by CLI |
