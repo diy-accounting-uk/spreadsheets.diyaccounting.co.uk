@@ -10,7 +10,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Urgency 1 of the licensing uplift is code complete: PR #86 (`claude/lu-1-terms`) carries LU-1 to
 LU-7, LU-8d, LU-10, LU-11, LU-18, LU-19 and CQ-1, with Maven verify and `npm run test:fast` green
-(8,517 tests). The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
+(8,517 tests); its CI reruns on ef4e98a3 after four pipeline fixes landed on top. The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
 rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b). No worktree is open.
 LU-9, the first release under the new terms, follows the merges and H-LU-3's generate dispatches.
 
@@ -49,18 +49,19 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride LU-17, the spec builder's line rides LU-6 and the package README rides LU-8d | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
-| H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | checks running on the 01:22 UTC push; merge on green |
-| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | Maven verify and `test:fast` green locally; CI on the last push |
+| LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride the tap PR #1, the spec builder's line and the package README are on PR #86 | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
+| H1 | Merge Submit PR #159 (batch 14, carrying B63: the ci behaviour role may read prod's Identity stack) | operator | human | — | ready-to-start | green and mergeable |
+| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | CI on ef4e98a3 after fixes for the gate, smoke, bundle, CodeQL |
 | H5 | Merge root PR #28 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, README |
 | H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
 | H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
 | H4 | Merge tap PR #1 (LU-17) | operator | human | LU-20 | blocked-to-start | after the rename |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | H3 | blocked-to-start | rebuilds every package with `LICENCE.txt` and the workbook properties |
 | LP-24 | The ci pages target Submit's released environment: one cloud config for every host (prod API, prod hosted UI, prod DIYA-GL client), the ci behaviour run mints its user in the prod pool through the prod role, the sign-in case probes the prod API | operator | machine | H1 | blocked-to-resume | PR #84 open; smoke mint denied until H1; toggle steps follow |
 | H2 | Merge PR #84 (`claude/lp-24-prod-target`) | operator | human | LP-24 | blocked-to-start | waits for a green smoke test after H1 |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | H3 | blocked-to-start | rebuilds every package with `LICENCE.txt` and the workbook properties |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case's first green run needs LP-24 |
-| LU-9 | The first release under the new terms: the package and root at 1.1.0; the prod deploy publishes it under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.3 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H3, H4, H-LU-3 | blocked-to-start | Sonnet; the 1.1.0 bump, the publish check, the deprecations by CLI |
+| LU-9 | The first release under the new terms: the package and root at 1.1.0; the prod deploy publishes it under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H3, H4, H-LU-3 | blocked-to-start | Sonnet; the 1.1.0 bump, the publish check, the deprecations by CLI |
+| ITSA-T8 | The engine derivations that feed the annual submission (Submit's ITSA phase 2, track T8): what "The books import" says the DIYA-GL package lacks | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | the operator's go | blocked-to-start | Opus for the mapping, Sonnet for the wiring |
 | LU-8a | Submit: canonical PolyForm `LICENSE` with the grant; `terms.html` and `accessibility.html` say free to use, source available; the 28 `-or-later` headers and the battery-pack mix; `info.license` in the OpenAPI generator; the missing headers; the stale simulator copy | PLAN_LICENSING_UPLIFT.md | machine | operator | blocked-on-busy | group 1E; Sonnet, Opus for the terms wording; the Submit repository is paused |
 
 ## Plans not tracked here
@@ -69,6 +70,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
   urgency 2 filings (H-LU-4, H-LU-5), the HMRC note (H-LU-9) and the brand repository (urgency 3)
   stay in the plan until their turn. Everything that
   touches `submit.diyaccounting.co.uk` is blocked on busy until the operator's word.
+- Submit's `PLAN_ITSA_PHASE_2.md` names track T8 in this repository's package; the row waits on the
+  operator's go.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
   and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-diya-gl` bundle, LP-21 there, done) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
 
