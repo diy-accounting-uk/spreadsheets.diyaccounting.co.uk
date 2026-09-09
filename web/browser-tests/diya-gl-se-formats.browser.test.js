@@ -170,7 +170,7 @@ function cliExport(zipBytes, name) {
   };
 }
 
-test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
+test.describe("DIYA-GL page — Self Employed round trips (E3)", () => {
   // The nine workbooks carry no column for an entry number, a document type
   // or a tax code, so a line that went in through the master book comes back
   // out renumbered and without them: what has to hold is that the page's own
@@ -207,7 +207,7 @@ test.describe("DIYA-GL books page — Self Employed round trips (E3)", () => {
 
 // ── E4: what the page refuses, and what it says ──────────────────────────
 
-test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
+test.describe("DIYA-GL page — Self Employed refusals (E4)", () => {
   test("a bare Financialaccounts.xlsx is refused as the hub of a package, not read as anything else", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
@@ -260,7 +260,7 @@ test.describe("DIYA-GL books page — Self Employed refusals (E4)", () => {
 
 // ── E5: every download the save menu offers ──────────────────────────────
 
-test.describe("DIYA-GL books page — Self Employed downloads (E5)", () => {
+test.describe("DIYA-GL page — Self Employed downloads (E5)", () => {
   test("both downloads are well-formed", async ({ page }) => {
     await openAdvancedExample(page);
 

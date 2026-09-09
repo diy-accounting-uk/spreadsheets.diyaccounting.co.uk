@@ -6,7 +6,7 @@
 // The render-equivalence sweep for Ltd (assertion T9 in
 // PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md): every cell/, section/ and check/ key
 // report-serializer.js gives a Company book's R either carries a data-r-key
-// somewhere on the books page, or is named with a reason in
+// somewhere on the DIYA-GL page, or is named with a reason in
 // app/data/render-unrepresentable/ltd.json. Neither side may run short --
 // an undeclared absence fails, and so does a data-r-key the page invented.
 

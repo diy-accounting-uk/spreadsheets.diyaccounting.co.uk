@@ -126,7 +126,7 @@ function money(text) {
   return Number(String(text).replace(/[£,\s]/g, ""));
 }
 
-test.describe("DIYA-GL books page — the six Ltd form views (LT-T8)", () => {
+test.describe("DIYA-GL page — the six Ltd form views (LT-T8)", () => {
   test("the CT600's chips are the layout's box list, in the layout's order", async ({ page }) => {
     await openPackage(page);
     await openView(page, "ct600");

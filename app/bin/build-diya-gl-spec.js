@@ -454,8 +454,8 @@ function buildPage() {
         ${boxesWithField} of the ${boxes.rows.length} boxes have one.
       </p>
       <p>
-        Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
-        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
+        The Self Employed package fills the full pages, SA103F, as well, and both the Self Employed package and the Limited Company package fill a VAT return. The Limited Company
+        package files a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
         the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
       </p>
 ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "MTD API field"], boxes.rows.map(boxRow))}`);
@@ -558,10 +558,10 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
         The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
-        <li><a href="diya-gl/bst.html">Basic Sole Trader books</a></li>
-        <li><a href="diya-gl/taxi.html">Taxi Driver books</a></li>
-        <li><a href="diya-gl/se.html">Self Employed books</a></li>
-        <li><a href="diya-gl/ltd.html">Limited Company books</a></li>
+        <li><a href="diya-gl/bst.html">Basic Sole Trader package</a></li>
+        <li><a href="diya-gl/taxi.html">Taxi Driver package</a></li>
+        <li><a href="diya-gl/se.html">Self Employed package</a></li>
+        <li><a href="diya-gl/ltd.html">Limited Company package</a></li>
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package

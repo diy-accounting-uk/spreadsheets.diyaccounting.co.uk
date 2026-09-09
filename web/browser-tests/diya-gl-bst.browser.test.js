@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 // web/browser-tests/diya-gl-bst.browser.test.js
-// Browser tests for the DIYA-GL books page (web/spreadsheets.diyaccounting.co.uk/public/diya-gl/bst.html)
+// Browser tests for the DIYA-GL page (web/spreadsheets.diyaccounting.co.uk/public/diya-gl/bst.html)
 // covering the four designed layouts, the download.html entry panel, and (W1)
 // the live upload path: extraction, the as-read drift layer and its
 // breakability proof.
@@ -124,7 +124,7 @@ async function withRenamedSheet(sourcePath, oldName, newName) {
   return zip.generateAsync({ type: "nodebuffer" });
 }
 
-test.describe("DIYA-GL books page — empty state", () => {
+test.describe("DIYA-GL page — empty state", () => {
   test("offers the picker, new book and every example as the first thing shown", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -192,7 +192,7 @@ test.describe("DIYA-GL books page — empty state", () => {
   });
 });
 
-test.describe("DIYA-GL books page — loaded views", () => {
+test.describe("DIYA-GL page — loaded views", () => {
   test("year table shows twelve months, category columns and an anchored totals row", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
 
@@ -393,7 +393,7 @@ test.describe("DIYA-GL books page — loaded views", () => {
   });
 });
 
-test.describe("DIYA-GL books page — the rung: upload, drift, breakability", () => {
+test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
   test("a freshly generated package uploaded shows zero drift", async ({ page }) => {
     await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Basic_Sole_Trader.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
@@ -437,7 +437,7 @@ test.describe("DIYA-GL books page — the rung: upload, drift, breakability", ()
   });
 });
 
-test.describe("DIYA-GL books page — four layouts", () => {
+test.describe("DIYA-GL page — four layouts", () => {
   test("desktop landscape: inspector rail beside the year table", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await expectStripAboveYearTable(page);
@@ -576,7 +576,7 @@ test.describe("Spreadsheets download.html — DIYA-GL entry panel", () => {
     await expect(link).toHaveAttribute("href", "diya-gl/bst.html");
     await expect(link).toHaveText("View in DIYA-GL");
 
-    // No file picker on this panel -- the books page owns it.
+    // No file picker on this panel -- the DIYA-GL page owns it.
     await expect(section.locator("input[type=file]")).toHaveCount(0);
   });
 });

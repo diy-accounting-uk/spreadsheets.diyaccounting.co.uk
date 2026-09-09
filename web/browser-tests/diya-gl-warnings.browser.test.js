@@ -128,7 +128,7 @@ async function downloadBookChecksJson(page) {
   return JSON.parse(await zip.file("bookchecks.json").async("string"));
 }
 
-test.describe("DIYA-GL books page — E2: deliberate warnings and failures", () => {
+test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
   test("an entry dated outside the period flips book-dates-in-period alone", async ({ page }) => {
     await openBook(page, /bst-scenario-basic/);
     await openAprilEntries(page);

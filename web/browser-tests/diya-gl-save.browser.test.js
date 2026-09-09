@@ -4,7 +4,7 @@
 // diya-gl-save.browser.test.js — the save rung, in the browser.
 //
 // save-probe.html loads the SP Sixty Driving BST book through the bundled
-// engine and wires two buttons to save.js, the same module the books page's
+// engine and wires two buttons to save.js, the same module the DIYA-GL page's
 // save controls call. This test clicks each button and proves the download
 // it triggers is well-formed: unzip or parse the bytes the page reports and
 // check the book's own details came through.

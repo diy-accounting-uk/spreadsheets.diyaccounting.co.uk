@@ -3,7 +3,7 @@
 # PLAN: diya-gl SE — CLI, MCP, web
 
 The Self Employed package on the three surfaces the BST plan built: the CLI's `--file` mode,
-the MCP server and the books page. SE is the next product by launch plan decision 4, so this
+the MCP server and the DIYA-GL pages. SE is the next product by launch plan decision 4, so this
 plan owns the generalisation every product needs (rows S1 to S8) and the Taxi and Ltd plans
 name those rows as precursors.
 

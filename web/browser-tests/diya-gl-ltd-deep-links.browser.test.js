@@ -49,7 +49,7 @@ const EXAMPLES = [
   { key: "ltd-brickwork-pro-nonvat", name: "BrickWork Pro Ltd" },
 ];
 
-test.describe("DIYA-GL books page — Ltd deep links load an example on arrival", () => {
+test.describe("DIYA-GL page — Ltd deep links load an example on arrival", () => {
   test("each ?example= loads its book straight away", async ({ page }) => {
     for (const example of EXAMPLES) {
       await page.setViewportSize(VIEWPORTS["desktop-landscape"]);

@@ -4,7 +4,7 @@
 //
 // diya-gl-write-workbook.js — writes the Excel package a diya-gl book
 // composes onto its product's template, with no LibreOffice: the same
-// client-side compose path the books page uses. See
+// client-side compose path the DIYA-GL pages use. See
 // app/bin/write-workbook.js in the source repository for the full option
 // list (--data or --file, plus --zip for the package download).
 

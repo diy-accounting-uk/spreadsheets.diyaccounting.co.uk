@@ -60,7 +60,7 @@ async function openLoadedBook(page, viewport) {
 
 // ── E6a: axe, one loaded book per viewport ──────────────────────────────
 
-test.describe("DIYA-GL books page — accessibility per viewport (E6)", () => {
+test.describe("DIYA-GL page — accessibility per viewport (E6)", () => {
   for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     test(`${name}: zero serious or critical axe violations`, async ({ page }, testInfo) => {
       test.skip(!AxeBuilder, `@axe-core/playwright is not installed. Install it with: ${AXE_INSTALL_HINT}`);
@@ -119,7 +119,7 @@ async function activeElementAttr(page, attr) {
   return page.evaluate((a) => document.activeElement && document.activeElement.getAttribute(a), attr);
 }
 
-test.describe("DIYA-GL books page — keyboard-only traversal (E6)", () => {
+test.describe("DIYA-GL page — keyboard-only traversal (E6)", () => {
   test("load, drill into a month, edit an amount, and open the save menu, keyboard only", async ({ page }) => {
     const focusRingSamples = [];
 
@@ -217,7 +217,7 @@ test.describe("DIYA-GL books page — keyboard-only traversal (E6)", () => {
 
 // ── Screenshots, one per viewport, alongside the axe run ────────────────
 
-test.describe("DIYA-GL books page — layout screenshots (E6)", () => {
+test.describe("DIYA-GL page — layout screenshots (E6)", () => {
   for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     test(`${name}: screenshot of a loaded book`, async ({ page }) => {
       await openLoadedBook(page, viewport);

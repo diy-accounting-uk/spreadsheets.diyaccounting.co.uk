@@ -135,7 +135,7 @@ async function uploadFile(page, buffer, name) {
 
 // ── A3: the sheet agrees ─────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
+test.describe("DIYA-GL page — the sheet agrees (A3)", () => {
   test("S3 (bst-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
     const s3Map = s3();
@@ -180,7 +180,7 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
 
 // ── A4: the screen agrees ────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
+test.describe("DIYA-GL page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS) {
     test(`${example.scenario}: every rendered figure matches S2`, async ({ page }) => {
       const s2Map = s2(example.bookDir, example.scenario);
@@ -239,7 +239,7 @@ const EXPECTED_KEY_MAP = {
   fixed_asset_cost: "cell/Fixed Assets!E1",
 };
 
-test.describe("DIYA-GL books page — the fixture holds (A6)", () => {
+test.describe("DIYA-GL page — the fixture holds (A6)", () => {
   for (const example of SCENARIOS) {
     test(`${example.scenario}: S1's totals equal S2's cells`, () => {
       const expected = s1(example.scenario);
@@ -268,7 +268,7 @@ test.describe("DIYA-GL books page — the fixture holds (A6)", () => {
 
 // ── A7: no drift on a true upload ────────────────────────────────────────
 
-test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
+test.describe("DIYA-GL page — no drift on a true upload (A7)", () => {
   test("a fresh bst-latest upload carries no drift", async ({ page }) => {
     await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Basic_Sole_Trader.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
@@ -374,7 +374,7 @@ function cellKeyOf(rKey) {
   return rKey === null ? null : rKey.split(" || ")[0];
 }
 
-test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () => {
+test.describe("DIYA-GL page — the SA103S form prints the form (A9)", () => {
   test("SA103S prints the 2026 short-return boxes in order, each keyed to its cell where the sheet has one", async ({ page }) => {
     const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
     const s2Map = s2(basic.bookDir, basic.scenario);
@@ -456,7 +456,7 @@ async function triggerSaveDownload(page, menuItemName) {
   return Buffer.concat(chunks);
 }
 
-test.describe("DIYA-GL books page — the browser bundle stamps the same as the CLI", () => {
+test.describe("DIYA-GL page — the browser bundle stamps the same as the CLI", () => {
   test("the diya-gl zip's book.toml and report.json carry Node's own provenance stamps", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });

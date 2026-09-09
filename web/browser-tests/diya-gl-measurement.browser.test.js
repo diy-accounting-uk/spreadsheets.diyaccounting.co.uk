@@ -66,7 +66,7 @@ function gaEvents(page, eventName) {
   );
 }
 
-test.describe("DIYA-GL books page — measurement", () => {
+test.describe("DIYA-GL page — measurement", () => {
   test("loading an example sends book_loaded with the product and the example source", async ({ page }) => {
     await loadExample(page);
 

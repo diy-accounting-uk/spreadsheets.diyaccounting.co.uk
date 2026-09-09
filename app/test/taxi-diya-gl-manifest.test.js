@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// The Taxi Driver view manifest the books page mounts
+// The Taxi Driver view manifest the DIYA-GL page mounts
 // (web/.../diya-gl/products/taxi.js), proved against the product module it
 // derives from, the calculator's own cells, and the Sales grid the workbook
 // is written from. The manifest is a classic script that assigns one global,

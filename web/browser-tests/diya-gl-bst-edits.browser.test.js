@@ -143,7 +143,7 @@ async function downloadDiyaGlReport(page) {
   return zip.file("report.json").async("string");
 }
 
-test.describe("DIYA-GL books page — in-place edits", () => {
+test.describe("DIYA-GL page — in-place edits", () => {
   test("an added purchase of X lowers profit by X and leaves turnover alone", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -256,7 +256,7 @@ test.describe("DIYA-GL books page — in-place edits", () => {
   });
 });
 
-test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's", () => {
+test.describe("DIYA-GL page — E1: each edit's report.json equals Node's", () => {
   test("add a purchase of X: browser and Node agree, and profit falls by X with turnover unchanged", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -459,7 +459,7 @@ test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's"
   });
 });
 
-test.describe("DIYA-GL books page — a book started from nothing", () => {
+test.describe("DIYA-GL page — a book started from nothing", () => {
   test("a brand-new book takes its first entry in the grid", async ({ page }) => {
     await page.setViewportSize(DESKTOP_LANDSCAPE);
     await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });
@@ -482,7 +482,7 @@ test.describe("DIYA-GL books page — a book started from nothing", () => {
   });
 });
 
-test.describe("DIYA-GL books page — undo", () => {
+test.describe("DIYA-GL page — undo", () => {
   test("undo restores the exact prior render, by button and by keyboard", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -543,7 +543,7 @@ test.describe("DIYA-GL books page — undo", () => {
   });
 });
 
-test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broken book", () => {
+test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book", () => {
   test("the featured book passes every book check before anything is broken", async ({ page }) => {
     await openBook(page);
     for (const id of ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"]) {
@@ -699,7 +699,7 @@ test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broke
   });
 });
 
-test.describe("DIYA-GL books page — drift after an edit", () => {
+test.describe("DIYA-GL page — drift after an edit", () => {
   test("an uploaded workbook's drift annotations relabel as recalculated once the book is edited", async ({ page }) => {
     await page.setViewportSize(DESKTOP_LANDSCAPE);
     await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });

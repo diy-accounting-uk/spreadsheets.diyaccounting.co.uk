@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// diya-gl-shell-money-format.test.js — the books page's fmtMoney formats the
+// diya-gl-shell-money-format.test.js — the DIYA-GL page's fmtMoney formats the
 // same value the reconciliation reads, not the raw double Intl.NumberFormat
 // would round on its own.
 //
@@ -35,7 +35,7 @@ function fmtMoney(n) {
   return moneyFmt.format(Number(canonicalForUnit(String(n), "money")));
 }
 
-describe("the books page formats a money figure at the reconciliation's own precision", () => {
+describe("the DIYA-GL page formats a money figure at the reconciliation's own precision", () => {
   it("Profit Forecast!C41 on the advanced SE fixture carries float noise below the penny", () => {
     const scenario = loadScenario(resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml"));
     const c41 = calculateSeCells({}, [], TAX_DATA, scenario)["Profit Forecast"].C41;

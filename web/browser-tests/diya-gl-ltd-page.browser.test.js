@@ -137,7 +137,7 @@ async function sweepEveryView(page) {
   return { viewIds, rKeys, rootHtmlByView };
 }
 
-test.describe("DIYA-GL books page — Ltd page boots on a real package (LT-T7)", () => {
+test.describe("DIYA-GL page — Ltd page boots on a real package (LT-T7)", () => {
   test("every VIEWS id renders with no console error and a non-empty view root", async ({ page }) => {
     const errors = watchForErrors(page);
     await openPackage(page);

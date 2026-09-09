@@ -210,7 +210,7 @@ async function sweepPage(page, example) {
 
 // ── A1, A2: the diya-gl download is the book, byte for byte ───────────────
 
-test.describe("DIYA-GL books page — the Self Employed diya-gl download (A1, A2)", () => {
+test.describe("DIYA-GL page — the Self Employed diya-gl download (A1, A2)", () => {
   test("A1: the diya-gl zip's book.toml and lines.jsonl equal the served example, byte for byte", async ({ page }) => {
     await openBook(page, FEATURED);
 
@@ -255,7 +255,7 @@ test.describe("DIYA-GL books page — the Self Employed diya-gl download (A1, A2
 
 // ── A3: the sheet agrees ─────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
+test.describe("DIYA-GL page — the sheet agrees (A3)", () => {
   // Two key families S3 can never carry, because --source-dir --mode saved
   // reads the workbooks' own cached cells with no scenario alongside them: a
   // compliance verdict, and the journal-category VAT netting, which
@@ -301,7 +301,7 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
 
 // ── A4: the screen agrees ────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — the screen agrees (A4)", () => {
+test.describe("DIYA-GL page — the screen agrees (A4)", () => {
   for (const example of SCENARIOS_SE) {
     test(`${example.scenario}: every rendered figure matches S2`, async ({ page }) => {
       const s2Map = seReport(example);
@@ -376,7 +376,7 @@ const EXPECTED_KEY_MAP = {
   total_legal_net: "cell/Financialaccounts.xlsx!Profit & Loss Account!B28",
 };
 
-test.describe("DIYA-GL books page — the fixture holds (A6)", () => {
+test.describe("DIYA-GL page — the fixture holds (A6)", () => {
   for (const example of SCENARIOS_SE) {
     test(`${example.scenario}: S1's totals equal S2's cells`, () => {
       const expected = s1(example.scenario);
@@ -513,7 +513,7 @@ async function uploadedFigureFor(entry, overrides = {}) {
   return read[sheet][cell];
 }
 
-test.describe("DIYA-GL books page — a true package upload (A7)", () => {
+test.describe("DIYA-GL page — a true package upload (A7)", () => {
   test("the se-latest package loads as Self Employed, on the book the engine reads back", async ({ page }) => {
     await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
 
@@ -713,7 +713,7 @@ function checkBoxes(rows, boxes, s2Map, problems) {
   });
 }
 
-test.describe("DIYA-GL books page — the forms print the form (A9)", () => {
+test.describe("DIYA-GL page — the forms print the form (A9)", () => {
   test("SA103S prints the 2026 short-return boxes, each keyed to its cell", async ({ page }) => {
     const s2Map = seReport(FEATURED);
     await openBook(page, FEATURED);

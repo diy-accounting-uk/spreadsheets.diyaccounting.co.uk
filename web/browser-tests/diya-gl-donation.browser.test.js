@@ -64,7 +64,7 @@ async function triggerSave(page, menuItemName) {
   await Promise.all([page.waitForEvent("download"), item.click()]);
 }
 
-test.describe("DIYA-GL books page — the figures donation prompt", () => {
+test.describe("DIYA-GL page — the figures donation prompt", () => {
   test("appears once the year view first shows a loaded book's figures, links the Stripe donation, and stays gone across a reload once dismissed", async ({
     page,
   }) => {
@@ -95,7 +95,7 @@ test.describe("DIYA-GL books page — the figures donation prompt", () => {
   });
 });
 
-test.describe("DIYA-GL books page — the save donation prompt", () => {
+test.describe("DIYA-GL page — the save donation prompt", () => {
   test("appears once a save completes, links the Stripe donation, and does not return on a later save", async ({ page }) => {
     await loadExample(page);
     await expect(page.locator("#donation-prompt-save")).toHaveCount(0);

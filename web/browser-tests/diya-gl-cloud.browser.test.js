@@ -119,7 +119,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => window.sessionStorage.clear());
 });
 
-test.describe("DIYA-GL books page — signed out", () => {
+test.describe("DIYA-GL page — signed out", () => {
   test("the signed-out page offers sign-in, and the save menu's third item opens the same panel", async ({ page }) => {
     await withTestClientId(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -163,7 +163,7 @@ test.describe("DIYA-GL books page — signed out", () => {
   });
 });
 
-test.describe("DIYA-GL books page — the sign-in redirect", () => {
+test.describe("DIYA-GL page — the sign-in redirect", () => {
   test("carries S256 PKCE, a redirect_uri with no query, and a state", async ({ page }) => {
     await withTestClientId(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -199,7 +199,7 @@ test.describe("DIYA-GL books page — the sign-in redirect", () => {
   });
 });
 
-test.describe("DIYA-GL books page — the sign-in return", () => {
+test.describe("DIYA-GL page — the sign-in return", () => {
   test("exchanges the code, cleans the URL, restores the deep link, and lands signed in", async ({ page }) => {
     await withTestClientId(page);
     await page.goto(`${bstUrl()}?example=bst-scenario-basic&view=income-tax`, { waitUntil: "domcontentloaded" });
@@ -277,7 +277,7 @@ test.describe("DIYA-GL books page — the sign-in return", () => {
   });
 });
 
-test.describe("DIYA-GL books page — signed in", () => {
+test.describe("DIYA-GL page — signed in", () => {
   test("the list renders newest first, with version, date and period", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
@@ -420,7 +420,7 @@ test.describe("DIYA-GL books page — signed in", () => {
   });
 });
 
-test.describe("DIYA-GL books page — save to my account", () => {
+test.describe("DIYA-GL page — save to my account", () => {
   test("the first save creates with no If-Match; the second updates with the first response's latestETag", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
@@ -631,7 +631,7 @@ function subscribedBook() {
   return Object.assign({}, unsubscribedBook(), { entitlementAtPut: { reason: "active-subscription" } });
 }
 
-test.describe("DIYA-GL books page — billing", () => {
+test.describe("DIYA-GL page — billing", () => {
   test("subscribe posts the exact body and follows the returned checkout URL", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);

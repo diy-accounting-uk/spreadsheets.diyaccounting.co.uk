@@ -31,7 +31,7 @@ test.afterAll(async () => {
   await closeServer();
 });
 
-test.describe("books PWA manifest", () => {
+test.describe("DIYA-GL PWA manifest", () => {
   for (const page of PAGES) {
     test(`${page} links a manifest that resolves and parses`, async ({ page: browserPage }) => {
       await browserPage.goto(`${baseUrl}/diya-gl/${page}`, { waitUntil: "domcontentloaded" });
@@ -50,7 +50,7 @@ test.describe("books PWA manifest", () => {
   }
 });
 
-test.describe("books PWA offline", () => {
+test.describe("DIYA-GL PWA offline", () => {
   test("the BST page reloads offline and an example book still renders", async ({ page, context }) => {
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(String(error)));

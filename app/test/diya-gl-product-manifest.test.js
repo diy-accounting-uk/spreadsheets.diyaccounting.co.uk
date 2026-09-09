@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// The Basic Sole Trader view manifest the books page mounts
+// The Basic Sole Trader view manifest the DIYA-GL page mounts
 // (web/.../diya-gl/products/bst.js), proved against the product module it
 // derives from and the calculator's own annual cells over the three diya-gl
 // BST fixtures. The manifest is a classic script that assigns one global, so

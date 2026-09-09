@@ -50,7 +50,7 @@ const EXAMPLES = [
 
 const SE_EXAMPLE_KEYS = ["se-scenario-advanced", "se-brickwork-pro-nonvat", "se-brickwork-pro-vat"];
 
-test.describe("DIYA-GL books page — deep links load an example on arrival", () => {
+test.describe("DIYA-GL page — deep links load an example on arrival", () => {
   for (const example of EXAMPLES) {
     test(`?example=${example.key} loads ${example.name} straight away`, async ({ page }) => {
       await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
@@ -130,7 +130,7 @@ test.describe("DIYA-GL books page — deep links load an example on arrival", ()
   });
 });
 
-test.describe("DIYA-GL books page — a deep link never touches the autosave record", () => {
+test.describe("DIYA-GL page — a deep link never touches the autosave record", () => {
   test("a link arrival shows no continue offer and leaves a saved book alone", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
 
@@ -156,7 +156,7 @@ test.describe("DIYA-GL books page — a deep link never touches the autosave rec
   });
 });
 
-test.describe("DIYA-GL books page — SE deep links", () => {
+test.describe("DIYA-GL page — SE deep links", () => {
   test("?example=se-brickwork-pro-nonvat&view=bank lands on the bank view", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(seUrl("?example=se-brickwork-pro-nonvat&view=bank"), { waitUntil: "domcontentloaded" });

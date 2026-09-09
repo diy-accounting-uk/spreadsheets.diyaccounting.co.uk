@@ -41,7 +41,7 @@ function bstUrl() {
   return `${baseUrl}/diya-gl/bst.html`;
 }
 
-test.describe("DIYA-GL books page — one decision on the card", () => {
+test.describe("DIYA-GL page — one decision on the card", () => {
   test("choosing a file is the filled button; everything else is quieter", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -73,7 +73,7 @@ test.describe("DIYA-GL books page — one decision on the card", () => {
   });
 });
 
-test.describe("DIYA-GL books page — new-book form", () => {
+test.describe("DIYA-GL page — new-book form", () => {
   test("the form creates and renders an empty, honest book", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -133,7 +133,7 @@ test.describe("DIYA-GL books page — new-book form", () => {
   });
 });
 
-test.describe("DIYA-GL books page — IndexedDB autosave", () => {
+test.describe("DIYA-GL page — IndexedDB autosave", () => {
   test("a loaded book survives a reload via the continue offer; discard clears it", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });

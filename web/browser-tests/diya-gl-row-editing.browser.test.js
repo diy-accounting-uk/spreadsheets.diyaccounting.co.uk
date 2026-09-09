@@ -87,7 +87,7 @@ function bookCheck(id) {
 
 // ── Date editing ─────────────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — entry date editing", () => {
+test.describe("DIYA-GL page — entry date editing", () => {
   test("moving an entry's date to another month moves both months' totals and leaves the year alone", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -182,7 +182,7 @@ test.describe("DIYA-GL books page — entry date editing", () => {
 
 // ── Account editing ─────────────────────────────────────────────────────
 
-test.describe("DIYA-GL books page — entry account editing", () => {
+test.describe("DIYA-GL page — entry account editing", () => {
   test("reposting an entry moves the category columns and leaves the year alone", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -233,7 +233,7 @@ test.describe("DIYA-GL books page — entry account editing", () => {
 
 // ── The year table's default columns ────────────────────────────────────
 
-test.describe("DIYA-GL books page — year table default columns", () => {
+test.describe("DIYA-GL page — year table default columns", () => {
   test("five columns show by default; the toggle reveals the eleven expense columns, hidden cells kept with their r-key", async ({
     page,
   }) => {

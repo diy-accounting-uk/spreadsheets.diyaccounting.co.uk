@@ -4,7 +4,7 @@
 // web/browser-tests/diya-gl-formats.browser.test.js
 //
 // E3-E5 in PLAN_DIYA_GL_BST_CLI_MCP_WEB.md's test approach: every way a
-// file can reach the books page, sniffed by content; the diya-gl zip and
+// file can reach the DIYA-GL page, sniffed by content; the diya-gl zip and
 // JSON downloads the save menu now offers; and the byte-identity rungs
 // (A1, A2) that tie a browser export to a CLI export of the same book.
 //
@@ -173,7 +173,7 @@ async function triggerSaveDownload(page, menuItemName) {
   return { download, bytes };
 }
 
-test.describe("DIYA-GL books page — every way in", () => {
+test.describe("DIYA-GL page — every way in", () => {
   test("workbook, package zip, diya-gl zip, JSON and zipped JSON all drop to the same book", async ({ page }) => {
     const kinds = [
       ["workbook", FIXTURES.workbook],
@@ -301,7 +301,7 @@ function withoutUploadOnlyGaps(book) {
   return clone;
 }
 
-test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON downloads", () => {
+test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON downloads", () => {
   test("A1: the diya-gl zip's book.toml and lines.jsonl equal the served example, byte for byte", async ({ page }) => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
@@ -389,7 +389,7 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
   });
 });
 
-test.describe("DIYA-GL books page — breakability", () => {
+test.describe("DIYA-GL page — breakability", () => {
   test("an edited amount moves the report, so A2 fails on the moved keys", async ({ page }) => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();

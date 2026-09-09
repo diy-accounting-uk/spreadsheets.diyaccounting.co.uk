@@ -6,7 +6,7 @@ The four DIYA-GL pages hold a year of accounts in the browser and save a 15 KB z
 tier signs the reader in on Submit's Cognito pool and puts that zip in their account. This is the
 spreadsheets side: one new script, four small hooks in `shell.js`, a config file, some CSS and a
 browser spec. The launch plan is `PLAN_DIYA_GL_LAUNCH.md`, row LP-17. The Submit side is that
-repo's `PLAN_DIYA_GL_STORAGE.md` (LP-16) and its `IdentityStack` books client (LP-15); both are
+repo's `PLAN_DIYA_GL_STORAGE.md` (LP-16) and its `IdentityStack` DIYA-GL client (LP-15); both are
 pushed and waiting on H9.
 
 ## 1. What this rests on
@@ -33,7 +33,7 @@ exchanges the code directly against the pool's token endpoint with PKCE.
 |---|---|---|
 | C1 | PKCE S256, code exchanged straight against `{hostedUi}/oauth2/token` from the page. | No server on this origin, no secret on the client. `crypto.subtle` is there on https and localhost. |
 | C2 | All three tokens live in `sessionStorage`, not `localStorage`. | Closing the tab signs out. A 15 KB book is not worth a token that outlives the session. |
-| C3 | The API is called with the **id token** as the bearer. | The authoriser validates `aud` against the books client id; a Cognito access token carries `client_id`, not `aud`, so only the id token passes. |
+| C3 | The API is called with the **id token** as the bearer. | The authoriser validates `aud` against the DIYA-GL client id; a Cognito access token carries `client_id`, not `aud`, so only the id token passes. |
 | C4 | The `redirect_uri` is `location.origin + location.pathname`, with no query. | Cognito matches callbacks exactly and the registered list has no query. The reader's deep link is put back after the exchange from `sessionStorage`. |
 | C5 | `cloud.js` disables itself whenever `clientId` is null, the protocol is not https or localhost, or `crypto.subtle` is missing. | One switch turns the whole feature off: it merges dark before H9, and the LP-5 `file://` runner has no sign-in control at all. |
 | C6 | The book's cloud identity (`bookId`, `latestETag`, `latestVersion`) lives in `sessionStorage`, not in the book. | Putting it in `book.toml` would change the bytes and break the byte-identity gates. A new tab that saves an already-stored book gets the near-duplicate prompt in journey 4 instead. |
@@ -350,9 +350,9 @@ maps the prod host to prod and every other host to ci.
 `ci-auth.diyaccounting.co.uk`, sign in with `TEST_AUTH_USERNAME` / `TEST_AUTH_PASSWORD` /
 `TEST_AUTH_TOTP_SECRET` (new repository secrets, the same values Submit's suites use), return, load
 an example, save to the account, see the row, open it, delete it, sign out. It needs the pool's
-native login form enabled for the books client for the length of the run — Submit's
+native login form enabled for the DIYA-GL client for the length of the run — Submit's
 `scripts/toggle-cognito-native-auth.js` does exactly this for the main client and must learn the
-books client's name. That is open question 1, and this step is the last one in section 9, marked as
+DIYA-GL client's name. That is open question 1, and this step is the last one in section 9, marked as
 waiting on H9.
 
 ## 9. Build order for the Sonnet builder
@@ -378,9 +378,9 @@ reads, so those two run the full browser suite, not the cloud spec alone.
 
 ## 10. Open questions
 
-1. **How the ci behaviour case signs in.** The books client deliberately omits the native Cognito
+1. **How the ci behaviour case signs in.** The DIYA-GL client deliberately omits the native Cognito
    login form, and CI cannot drive Google's own sign-in. Either Submit's
-   `scripts/toggle-cognito-native-auth.js` learns to toggle the books client too, so the ci run
+   `scripts/toggle-cognito-native-auth.js` learns to toggle the DIYA-GL client too, so the ci run
    enables the form for its own duration and disables it after — **recommended**, it reuses a
    working script and a durable test user, and the form is off outside the run — or the ci
    behaviour case is dropped and the browser spec's stubs stay the only coverage of sign-in, which

@@ -3,7 +3,7 @@
 //
 // diya-gl-bundle-gate.browser.test.js — the bundle gate.
 //
-// The engine the books page runs in a browser has to be the engine the
+// The engine the DIYA-GL page runs in a browser has to be the engine the
 // pipeline runs in Node, not a copy of it that drifted. This loads the
 // SP Sixty Driving BST book twice — once through the unbundled modules under
 // Node, once through the esbuild bundle in Chromium — and requires the two to

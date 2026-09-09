@@ -3,7 +3,7 @@
 # PLAN: diya-gl Ltd — CLI, MCP, web
 
 The Limited Company package on the three surfaces the BST plan built: the CLI's `--file`
-mode, the MCP tools and the books page. Ltd is the widest product in the catalogue and
+mode, the MCP tools and the DIYA-GL pages. Ltd is the widest product in the catalogue and
 exercises everything BST did not. Its package is thirteen workbooks and a Word dividend
 voucher, joined by external links with `Financialaccounts.xlsx` as the hub. It ships all
 twelve year ends, so the writer runs the non-March tab and formula rewrite. Its tax is
@@ -2117,7 +2117,7 @@ Purpose: the deployed page loads a Company example under production's headers.
 Files. Modifies `behaviour-tests/spreadsheets.behaviour.test.js` (append one test after the
 BST probe at line 936).
 
-Test: "DIYA-GL books page loads the ltd-scenario-full example under production's security
+Test: "the DIYA-GL page loads the ltd-scenario-full example under production's security
 headers": open `/books/ltd.html`, click `[data-example="ltd-scenario-full"]`, wait for the
 headline strip's turnover tile to read the S2 figure (`£341,283.00`) and the year totals
 row, assert no console error and no CSP text, screenshot as the BST probe does.
