@@ -58,4 +58,12 @@ describe("buildSitemapXml", () => {
     expect(xml).toMatch(/^<\?xml version="1\.0" encoding="UTF-8"\?>/);
     expect(xml).toMatch(/<urlset[^>]*>[\s\S]*<\/urlset>\n$/);
   });
+
+  it("carries a licence comment right after the XML declaration", () => {
+    const { xml } = buildSitemapXml([], []);
+    const lines = xml.split("\n");
+    expect(lines[0]).toBe('<?xml version="1.0" encoding="UTF-8"?>');
+    expect(lines[1]).toBe("<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->");
+    expect(lines[2]).toBe("<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->");
+  });
 });
