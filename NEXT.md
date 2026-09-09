@@ -49,18 +49,19 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-24 | The ci pages target Submit's released environment: one cloud config for every host (prod API, prod hosted UI, prod DIYA-GL client), the ci behaviour run mints its user in the prod pool through the prod role, the sign-in case probes the prod API | operator | machine | — | ready-to-resume | PR #84 merged; the toggle steps and the ci variable remain |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | prod deploy of a6b091b2 green; 1.1.0 is on npm; dispatch now |
-| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
-| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H-LU-3 | blocked-to-start | Sonnet; the tap's formula still reads AGPL until its hourly run sees 1.1.1 |
+| LP-24 | The ci behaviour run switches native sign-in on for the prod DIYA-GL client before the cloud case and off after it, through Submit's `toggle-cognito-native-auth.js enable|disable prod --client books` under the prod role; the case stops skipping once H9 sets the variable | operator | machine | — | ready-to-resume | PR #84 merged; Submit's B63 landed; the toggle steps remain, Sonnet |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | in-flight | the four generate runs dispatched 18:35 UTC; then the prod deploy |
+| H9 | Set the repository variable `SUBMIT_TEST_USER_ROLE_ARN` to Submit's prod role `prod-env-spreadsheets-behaviour-role` (account 972912397388) | operator | human | — | ready-to-start | `gh variable set SUBMIT_TEST_USER_ROLE_ARN --body <arn>`; the case skips until then |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24, H9 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
+| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H-LU-3 | blocked-to-start | Sonnet; the tap formula reads Apache-2.0 for 1.1.1; waits on the generate runs |
 | ITSA-T8 | The engine derivations that feed the annual submission (Submit's ITSA phase 2, track T8): what "The books import" says the DIYA-GL package lacks | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | the operator's go | blocked-to-start | Opus for the mapping, Sonnet for the wiring |
-| LU-8a | Submit: canonical PolyForm `LICENSE` with the grant; `terms.html` and `accessibility.html` say free to use, source available; the 28 `-or-later` headers and the battery-pack mix; `info.license` in the OpenAPI generator; the missing headers; the stale simulator copy | PLAN_LICENSING_UPLIFT.md | machine | operator | blocked-on-busy | group 1E; Sonnet, Opus for the terms wording; the Submit repository is paused |
+| LU-8a | Submit's share of the uplift: rows S1 to S7 of `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md` (licence files, terms and footers, headers and the header test, OpenAPI `info.license`, Dockerfile labels, third-party notices, the simulator build) | PLAN_LICENSING_UPLIFT_SUBMIT.md | machine | operator | blocked-on-busy | the Submit repository is paused; landings come back through the inbox |
 
 ## Plans not tracked here
 
-- `PLAN_LICENSING_UPLIFT.md`: the merges, the generate dispatch and LU-9 are on the board; the
-  urgency 2 filings (H-LU-4, H-LU-5), the HMRC note (H-LU-9) and the brand repository (urgency 3)
-  stay in the plan until their turn. Everything that
+- `PLAN_LICENSING_UPLIFT.md`: the generate dispatch and LU-9 are on the board; the urgency 2
+  filings (H-LU-4, H-LU-5) and the brand repository (urgency 3) stay in the plan until their turn.
+  Submit's share is `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md`, one row here (LU-8a). Everything that
   touches `submit.diyaccounting.co.uk` is blocked on busy until the operator's word.
 - Submit's `PLAN_ITSA_PHASE_2.md` names track T8 in this repository's package; the row waits on the
   operator's go.
