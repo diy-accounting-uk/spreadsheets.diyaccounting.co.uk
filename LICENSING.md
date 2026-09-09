@@ -27,8 +27,9 @@ or a renamed version of it as a service.
 
 PolyForm Internal Use permits use for your own and your company's internal business operations. Running
 the npm package, the Docker image or a local copy of this site on your own machine to keep your own
-books, or your clients' books, is exactly that. What the licence does not permit is distributing the
-software or the spreadsheets to other people, or hosting the product for others under any name.
+books, or your clients' books, is exactly that. The licence stops at distribution. Do not pass the
+software or the spreadsheets on to other people, and do not host the product for others under any
+name.
 
 ## Where each layer applies
 
