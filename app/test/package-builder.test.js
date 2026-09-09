@@ -316,11 +316,9 @@ describe("build-packages.js package docs", () => {
 
     execFileSync(process.execPath, [join(root, "app", "bin", "build-packages.js")], { cwd: root, encoding: "utf8" });
 
-    const catalogue = execFileSync(
-      "cat",
-      [join(root, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml")],
-      { encoding: "utf8" },
-    );
+    const catalogue = execFileSync("cat", [join(root, "web", "spreadsheets.diyaccounting.co.uk", "public", "catalogue.toml")], {
+      encoding: "utf8",
+    });
     expect(catalogue).toContain(`# SPDX-License-Identifier: ${SPDX_LICENSE_ID}`);
     expect(catalogue).toContain(`# ${COPYRIGHT_LINE}`);
   });
