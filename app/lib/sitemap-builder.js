@@ -45,6 +45,8 @@ export function buildSitemapXml(products, articles, reconciliationPages = []) {
 
   const lines = [];
   lines.push('<?xml version="1.0" encoding="UTF-8"?>');
+  lines.push("<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->");
+  lines.push("<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->");
   lines.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
   for (const u of urls) {
     let entry = `  <url><loc>${u.loc}</loc>`;
