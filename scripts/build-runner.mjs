@@ -8,7 +8,7 @@
 // no server, no origin and no network.
 //
 // It reads scripts/build-books-bundle.mjs's own output (the engine bundle
-// and the copied runtime assets under books/assets/) rather than
+// and the copied runtime assets under diya-gl/assets/) rather than
 // duplicating that build: run that script first.
 //
 //   node scripts/build-runner.mjs
@@ -50,7 +50,7 @@ import { provenanceStamps } from "../app/lib/provenance.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
-const BOOKS_DIR = resolve(PUBLIC_DIR, "books");
+const BOOKS_DIR = resolve(PUBLIC_DIR, "diya-gl");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const ASSETS_DIR = resolve(BOOKS_DIR, "assets");
 const OUT_DIR = resolve(ROOT, "target", "runners");
@@ -60,7 +60,7 @@ const OUT_DIR = resolve(ROOT, "target", "runners");
 // file header. ".invalid" is the reserved TLD for exactly this: a name
 // that must never resolve on a real network (RFC 2606).
 const ORIGIN = "https://runner.diya-gl.invalid";
-const BASE_PATH = "/books/";
+const BASE_PATH = "/diya-gl/";
 const BASE_HREF = `${ORIGIN}${BASE_PATH}`;
 
 const PRODUCTS = {
@@ -266,7 +266,7 @@ function rewriteSaveJsEngineImport(source) {
 // reaches a real page rather than a dead address.
 function rewriteSiteLinks(bodyHtml, product) {
   return bodyHtml
-    .replace(`href="${product}.html"`, `href="https://spreadsheets.diyaccounting.co.uk/books/${product}.html"`)
+    .replace(`href="${product}.html"`, `href="https://spreadsheets.diyaccounting.co.uk/diya-gl/${product}.html"`)
     .replace('href="../donate.html"', 'href="https://spreadsheets.diyaccounting.co.uk/donate.html"');
 }
 

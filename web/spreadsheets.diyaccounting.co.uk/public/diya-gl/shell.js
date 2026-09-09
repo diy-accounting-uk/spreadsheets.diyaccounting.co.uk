@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/shell.js
+// diya-gl/shell.js
 //
 // The DIYA-GL page shell: state, the empty state, the file picker and drop
 // zone, deep links, autosave, undo, the inspector, the save menu, the toast,
@@ -24,7 +24,7 @@
   // The same GA4 sender every other page on the site uses. gtag comes from
   // ../lib/analytics.js, which the four DIYA-GL pages load beside consent-
   // banner.js like the rest of the site; that script sits outside the
-  // service worker's own /books/ scope, so offline it simply never loads --
+  // service worker's own /diya-gl/ scope, so offline it simply never loads --
   // this stays a silent no-op rather than a thrown error either way.
   function trackEvent(eventName, params) {
     if (typeof gtag === "function") gtag("event", eventName, params);

@@ -9,9 +9,20 @@
 #   "spreadsheets" → spreadsheets.diyaccounting.co.uk (ci: ci-spreadsheets.diyaccounting.co.uk)
 #   "submit"       → submit.diyaccounting.co.uk (ci: ci.submit.diyaccounting.co.uk)
 #   "self"         → same host (internal redirect, no 301)
+#
+# [[redirect]] matches one path exactly; [[redirect_prefix]] matches every
+# path starting with "from" and rewrites it onto the same suffix under "to".
 
 # Placeholder redirect to exercise the redirect engine
 [[redirect]]
 from = "/about-redirect-test.html"
 to = "/about.html"
 target = "self"
+
+# The DIYA-GL pages moved from /books/ to /diya-gl/ — every old page, asset
+# and PWA path still resolves, including one added to the tree after this
+# rule was written.
+[[redirect_prefix]]
+from = "/books/"
+to = "/diya-gl/"
+target = "spreadsheets"

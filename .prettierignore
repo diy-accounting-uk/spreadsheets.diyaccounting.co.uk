@@ -21,5 +21,5 @@ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
 
 # Books engine bundle and the app/ files it reads (built by scripts/build-books-bundle.mjs)
-web/spreadsheets.diyaccounting.co.uk/public/books/engine/
-web/spreadsheets.diyaccounting.co.uk/public/books/assets/
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/

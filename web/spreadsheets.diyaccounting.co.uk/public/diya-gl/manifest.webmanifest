@@ -2,14 +2,14 @@
   "name": "DIYA-GL Books",
   "short_name": "DIYA-GL",
   "description": "View and edit a DIYA-GL workbook as books in your browser, online or off.",
-  "start_url": "/books/",
-  "scope": "/books/",
+  "start_url": "/diya-gl/",
+  "scope": "/diya-gl/",
   "display": "standalone",
   "background_color": "#f7fafa",
   "theme_color": "#158484",
   "icons": [
     {
-      "src": "/books/icon.svg",
+      "src": "/diya-gl/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

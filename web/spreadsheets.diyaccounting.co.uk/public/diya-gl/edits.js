@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/edits.js
+// diya-gl/edits.js
 //
 // The edit path, the undo stack and the fix-it helpers. Every change to the
 // book -- a hand edit in the entries grid, a delete, an added entry, or a

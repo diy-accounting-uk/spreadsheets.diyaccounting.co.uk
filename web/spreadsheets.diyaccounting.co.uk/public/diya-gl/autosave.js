@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/autosave.js
+// diya-gl/autosave.js
 //
 // The working book's only persistence: an IndexedDB record of { book, lines,
 // source, savedAt } written on every state commit (a workbook loads, an

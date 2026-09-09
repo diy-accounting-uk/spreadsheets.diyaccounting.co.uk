@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// The takings view under the Taxi year table (web/.../books/products/
+// The takings view under the Taxi year table (web/.../diya-gl/products/
 // taxi-takings.js), rendered against the takings the Taxi manifest groups
 // from the example books. Both product files are classic scripts assigning
 // one global each, so they are imported for their side effects and the
@@ -15,7 +15,7 @@ import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const PRODUCTS_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "books", "products");
+const PRODUCTS_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl", "products");
 const TAKINGS_FILE = resolve(PRODUCTS_DIR, "taxi-takings.js");
 
 await import(resolve(PRODUCTS_DIR, "taxi.js"));

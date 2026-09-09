@@ -33,7 +33,7 @@ const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "
 // serves the templates the books page uses, and keeps it in a user cache so
 // every later run works with no network.
 const TEMPLATE_PREFIX = "templates/";
-const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/books/assets/";
+const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets/";
 
 let templateTermsAnnounced = false;
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/cloud-config.js
+// diya-gl/cloud-config.js
 //
 // The one environment the DIYA-GL pages' cloud sign-in talks to, on every
 // host: Submit's released environment. The client id is a public OAuth

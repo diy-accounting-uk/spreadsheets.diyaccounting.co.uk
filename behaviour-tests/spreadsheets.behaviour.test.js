@@ -961,7 +961,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-18-books-bst-empty.png` });
@@ -1021,7 +1021,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the SE books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/se.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/se.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-20-books-se-empty.png` });
@@ -1093,7 +1093,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Taxi books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/taxi.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/taxi.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-22-books-taxi-empty.png` });
@@ -1163,7 +1163,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Ltd books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/ltd.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/ltd.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-24-books-ltd-empty.png` });
@@ -1323,7 +1323,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 1: Open the books page and the account panel");
       console.log("=".repeat(60));
 
-      const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+      const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
       await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await shot("01-books-page");
 

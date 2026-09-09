@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/xlsx-cells.js
+// diya-gl/xlsx-cells.js
 //
 // A minimal reader for one cell's cached value inside an uploaded .xlsx, and
 // for finding the .xlsx entry inside an uploaded .zip.
@@ -17,7 +17,7 @@
 // answers exactly one question, "what value is cached at sheet!cell", the
 // same question a spreadsheet application answers when it opens the file.
 //
-// Depends on window.JSZip (vendored at books/assets/vendor/jszip.min.js,
+// Depends on window.JSZip (vendored at diya-gl/assets/vendor/jszip.min.js,
 // loaded by bst.html as a classic script before this one).
 
 (function (global) {

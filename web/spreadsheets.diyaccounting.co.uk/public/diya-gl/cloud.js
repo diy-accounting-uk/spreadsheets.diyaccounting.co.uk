@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/cloud.js
+// diya-gl/cloud.js
 //
 // Sign-in and "save to my account" for the DIYA-GL pages: a book stays a
 // browser-only file until a reader chooses to put it in their DIYA-GL account,

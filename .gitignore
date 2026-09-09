@@ -40,10 +40,10 @@ web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
 # Books engine bundle, examples, and the app/ files it reads (built by scripts/build-books-bundle.mjs)
-web/spreadsheets.diyaccounting.co.uk/public/books/engine/
-web/spreadsheets.diyaccounting.co.uk/public/books/assets/
-web/spreadsheets.diyaccounting.co.uk/public/books/examples.js
-web/spreadsheets.diyaccounting.co.uk/public/books/build-stamp.js
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/examples.js
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/build-stamp.js
 
 # Generated zip packages
 target/zips/

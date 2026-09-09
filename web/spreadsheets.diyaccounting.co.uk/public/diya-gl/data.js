@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/data.js
+// diya-gl/data.js
 //
 // The extract/recalculate/report loop behind the page. It loads the engine
 // bundle (scripts/build-books-bundle.mjs) and computes

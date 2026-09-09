@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// books/headlines.js
+// diya-gl/headlines.js
 //
 // The "year at a glance" strip: four stat tiles and two pies, mounted once
 // at the top of the DIYA-GL page's main column, plus the "through the year"
