@@ -34,7 +34,7 @@ the branch audit.
   comma-separated (`T3, T10`); a date or a named decision where that is the gate; `—`
   when nothing gates it. Ids only, never prose. A machine task that waits on a human
   activity names the human row here; the human activity is its own row.
-- `State`: exactly one of six values, derived from the precursors and the evidence:
+- `State`: exactly one of seven values, derived from the precursors and the evidence:
   - `done` — finished in the current session, and only then.
   - `in-flight` — being worked right now by an agent or the operator.
   - `ready-to-start` — never started; every precursor is done.
@@ -43,6 +43,9 @@ the branch audit.
   - `blocked-to-start` — never started; a precursor is not done.
   - `blocked-to-resume` — started, paused, and a precursor is not done or landed work
     conflicts with it.
+  - `blocked-on-busy` — the row's files live in a repository the operator has paused work in
+    (the operator's standing order, 2026-09-09, for `submit.diyaccounting.co.uk`); it waits for
+    the operator's word, whatever its precursors say. `Precursors` names `operator`.
 
   Started means evidence, not intent: check `git branch -a`, `git worktree list` and
   `gh pr list` for the row's branch or PR before calling it resumable. Operator-owned
@@ -56,7 +59,7 @@ the branch audit.
 - **Row order (the operator's standing order, 2026-09-09).** Four bands, in this order:
   1. machine rows that can be worked now: `in-flight`, `ready-to-start`, `ready-to-resume`;
   2. human rows that can be done now: `ready-to-start`, `ready-to-resume`;
-  3. blocked rows of either owner: `blocked-to-start`, `blocked-to-resume`;
+  3. blocked rows of either owner: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
   4. rows gated by a date, whatever their owner.
   Within a band, precursors come before their dependants, then `CQ-n` rows, then product order
   BST, SE, Taxi, Ltd. `D` rows follow the four bands in the render and are never written back.
