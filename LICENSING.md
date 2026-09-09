@@ -98,11 +98,12 @@ its directory takes in the table above. A generated spreadsheet package states i
   `web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-docs.md` and in both schemas'
   descriptions is kept verbatim. Reference:
   http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html
-- **JSZip**, MIT, taken under the MIT side of its dual MIT or GPLv3 offer. A runtime dependency of
+- **JSZip**, MIT, taken under the MIT side of its dual MIT or GPLv3 offer, copyright Stuart
+  Knightley, David Duponchel, Franz Buchinger and Antonio Afonso. A runtime dependency of
   the diya-gl package and compiled into the books bundle and the single-file runner.
-- **smol-toml**, BSD-3-Clause. Same two places.
-- **Ajv** and **ajv-formats**, MIT. The validator compiled into the books bundle is Ajv-generated
-  code and carries the same licence.
+- **smol-toml**, BSD-3-Clause, copyright Squirrel Chat et al. Same two places.
+- **Ajv** and **ajv-formats**, MIT, copyright Evgeny Poberezkin. The validator compiled into the
+  books bundle is Ajv-generated code and carries the same licence.
 - **Apache Maven Wrapper** (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties`), Apache
   License 2.0, copyright the Apache Software Foundation.
 - **HMRC-derived data**. The rates, thresholds, form layouts and box mappings under `app/data/`, and
