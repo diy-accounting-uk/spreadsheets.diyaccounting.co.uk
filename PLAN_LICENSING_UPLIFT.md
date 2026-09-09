@@ -129,8 +129,10 @@ it describes someone else's thing (MCP on Submit's `mcp.html`).
 
 ## Decisions
 
-Decisions 7 to 10 were taken on 2026-09-09, each on the recommendation. Decisions 1 to 6 were settled in
-conversation on 2026-09-08 and are confirmed with the plan at H-LU-1.
+All ten decisions are taken: 1 to 6 on 2026-09-08 and confirmed on 2026-09-09, 7 to 10 on
+2026-09-09, each on the recommendation. No solicitor reads the grant or the trademark notice; the
+operator publishes on the plain text. The brand repository (urgency 3) starts after urgency 1 lands.
+The go for urgency 1 has not been given; the plan is approved as written and waits for it.
 
 1. The three layers as tabled, with the engine boundary drawn by the import closure.
 2. Accountants preparing clients' accounts are permitted users of the spreadsheets.
@@ -203,7 +205,6 @@ generate dispatches rebuilding every package.
 | # | Task | Gates |
 | --- | --- | --- |
 | H-LU-1 | Approve this plan and confirm the ten decisions | every group |
-| H-LU-2 | A solicitor reads the additional grant and the trademark notice | LU-9, at the operator's discretion |
 | H-LU-3 | Dispatch the four `generate-*` workflows after 1D merges, then the prod deploy | LU-9 |
 | H-LU-8 | Rename `homebrew-tap` to `homebrew-diya-gl` on GitHub | LU-17 |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | none |
@@ -227,7 +228,6 @@ The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 | LU-18 | Third-party lines in `NOTICE` and `LICENSING.md`, spreadsheets and Submit: the XBRL International GL Framework adaptation (`schema/diya-gl-docs.md:1-10`, both schemas' descriptions; CC BY layer, attribution kept verbatim); jszip (MIT, taken under MIT of its dual licence), smol-toml (BSD-3-Clause) and ajv's generated validator (MIT) compiled into the books bundle and the runners; one consolidated Crown copyright and Open Government Licence v3.0 line for the HMRC-derived data (`app/data/*.toml`, `app/data/filing/`, `app/data/hmrc/sa103f_mapping_v3.csv`, the 40 `ref-additions/*.toml`, Submit's `web/public/docs/hmrc-form-field-standards/README.md`); the Apache Maven Wrapper in every repository that has one; the PolicyBee logo in spreadsheets and Submit (used under the partner arrangement, `?partner=35`, not licensed onward); Submit's Google "G" logo on `auth/login.html` (Google brand guidelines); Submit's `web/public/lib/qrcode.min.js` (node-qrcode, MIT; its notice is stripped today and is restored at the top of the file); the Lighthouse (Apache-2.0), Playwright and React (Apache-2.0, MIT) and OWASP ZAP reports committed under Submit's `web/public/tests/`; the runtime dependency tables from each `package.json` | LU-1 | Sonnet | `NOTICE`, `LICENSING.md`, `diya-gl/NOTICE`; submit: `NOTICE`, `LICENSING.md`, `web/public/lib/qrcode.min.js` |
 | LU-19 | The engine announces its terms: `diya-gl --version` prints the version, `Apache-2.0` and the copyright line; the MCP server's `serverInfo` version stops reading `0.1.0` and its `instructions` string names the licence and the source address, since the MCP `Implementation` object has no licence field; the templates fetched under decision 7(a) print the PolyForm terms once on first fetch | LU-1 | Sonnet | `diya-gl/bin/diya-gl.js`, `app/lib/mcp/server.js`, `app/lib/app-resources.js` |
 | H-LU-1 | Approve this plan and confirm the ten decisions | — | operator | this file |
-| H-LU-2 | A solicitor reads the additional grant and the trademark notice before LU-9 | LU-1, LU-7 | operator | `LICENSE`, `TRADEMARKS.md` |
 | H-LU-3 | Dispatch the four `generate-*` workflows after LU-5 merges, then the prod deploy | LU-5 | operator | GitHub Actions |
 | H-LU-8 | Rename the tap repository to `homebrew-diya-gl` on GitHub; GitHub redirects the old name | H-LU-1 | operator | github.com |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
