@@ -82,6 +82,10 @@ the branch audit.
 - Never annotate a row "deferred", "later", or similar. Status words describe state, not
   priority.
 - If a row cites a GitHub PR or issue known to be closed, drop the ref.
+- A command the session could not run (the permission classifier refused it, or it needs a
+  host or an account the session cannot reach) is shown in full wherever the row is reported:
+  the exact command in a fenced block, `!`-prefixed, so the operator can paste it into this chat
+  or a terminal. Never a description in place of the command.
 - After the table: one line naming the plans `NEXT.md` lists as not tracked there, if
   any; and one sentence per row the session materially changed since `NEXT.md` was last
   written. No other commentary.

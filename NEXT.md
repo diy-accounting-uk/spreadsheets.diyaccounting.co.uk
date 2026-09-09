@@ -8,11 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Urgency 1 of the licensing uplift is on every main: spreadsheets PR #86 (a6b091b2), the tap's #1,
-root's #28, www's #27 and the archive's #31 are merged, and npm carries `diya-gl` 1.1.0 and 1.1.1
-under Apache-2.0. PR #84 (LP-24) and Submit's batches 14 and 15 are on their mains; LP-24's
-toggle steps and the ci variable remain. No worktree is open. The generate dispatches (H-LU-3)
-are the operator's next step; LU-9's publish check and deprecations follow them.
+Urgency 1 of the licensing uplift has shipped: every repository's PR is merged, the four generate
+runs and the prod deploy of 2026-09-09 19:15 UTC rebuilt every package with `LICENCE.txt` and the
+workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. LU-9 (the publish check and
+the deprecations) and ITSA-T8 are ready; LP-24's toggle steps are ready to resume with the variable
+set. A Sonnet agent is sweeping both repositories for "books" used as a product name (NM-1). No
+worktree is open.
 
 Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
 version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
@@ -49,12 +50,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-24 | The ci behaviour run switches native sign-in on for the prod DIYA-GL client before the cloud case and off after it, through Submit's `toggle-cognito-native-auth.js enable|disable prod --client books` under the prod role; the case stops skipping once H9 sets the variable | operator | machine | — | ready-to-resume | PR #84 merged; Submit's B63 landed; the toggle steps remain, Sonnet |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | in-flight | the four generate runs dispatched 18:35 UTC; then the prod deploy |
-| H9 | Set the repository variable `SUBMIT_TEST_USER_ROLE_ARN` to Submit's prod role `prod-env-spreadsheets-behaviour-role` (account 972912397388) | operator | human | — | ready-to-start | `gh variable set SUBMIT_TEST_USER_ROLE_ARN --body <arn>`; the case skips until then |
-| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24, H9 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
-| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H-LU-3 | blocked-to-start | Sonnet; the tap formula reads Apache-2.0 for 1.1.1; waits on the generate runs |
-| ITSA-T8 | The engine derivations that feed the annual submission (Submit's ITSA phase 2, track T8): what "The books import" says the DIYA-GL package lacks | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | the operator's go | blocked-to-start | Opus for the mapping, Sonnet for the wiring |
+| NM-1 | The naming sweep: every place either repository calls "books" a product, feature or page (the products are the packages; a book is a DIYA-GL file; the import is the DIYA-GL import), classified by what a rename costs, with rows per repository | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | Sonnet agent sweeping both trees; writes the plan and this board's rows |
+| LP-24 | The ci behaviour run switches native sign-in on for the prod DIYA-GL client before the cloud case and off after it, through Submit's `toggle-cognito-native-auth.js enable|disable prod --client books` under the prod role | operator | machine | — | ready-to-resume | PR #84 merged; the variable is set; the toggle steps remain, Sonnet |
+| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | Sonnet; the generate runs and prod deploy are green; 1.1.2 is on npm |
+| ITSA-T8 | The two self-employed derivations in the DIYA-GL package, `buildSelfEmploymentQuarterlyUpdates` and `buildSelfEmploymentAnnualSubmission` (Submit's ITSA phase 2, track T8): `app/lib/calculators/se-derivations.js` and its tests, proved cell by cell against the self-employed package's own report over every example | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | — | ready-to-start | the go given 2026-09-09; Opus for the mapping, Sonnet for the wiring |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
 | LU-8a | Submit's share of the uplift: rows S1 to S7 of `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md` (licence files, terms and footers, headers and the header test, OpenAPI `info.license`, Dockerfile labels, third-party notices, the simulator build) | PLAN_LICENSING_UPLIFT_SUBMIT.md | machine | operator | blocked-on-busy | the Submit repository is paused; landings come back through the inbox |
 
 ## Plans not tracked here
