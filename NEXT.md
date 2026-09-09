@@ -12,7 +12,8 @@ Urgency 1 of the licensing uplift has shipped: every repository's PR is merged, 
 runs and the prod deploy of 2026-09-09 19:15 UTC rebuilt every package with `LICENCE.txt` and the
 workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. LU-9 (the publish check and
 the deprecations) and ITSA-T8 are ready; LP-24's toggle steps are ready to resume with the variable
-set. A Sonnet agent is sweeping both repositories for "books" used as a product name (NM-1). No
+set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
+spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's. No
 worktree is open.
 
 Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
@@ -50,7 +51,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| NM-1 | The naming sweep: every place either repository calls "books" a product, feature or page (the products are the packages; a book is a DIYA-GL file; the import is the DIYA-GL import), classified by what a rename costs, with rows per repository | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | Sonnet agent sweeping both trees; writes the plan and this board's rows |
+| NM-2 | Rename "books" to "DIYA-GL" in prose: docs, comments, page copy and 46 test files' titles | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | Haiku; ~563 hits |
+| NM-3 | Rename the `/books/*` public URL namespace to DIYA-GL: `public/books/**`, `download.html`'s hrefs, the manifest and service worker, with `redirects.toml` and CloudFront function entries for every old path | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | Sonnet; ~15 references, ~40 served files |
+| NM-4 | Rename the same-repo "books" code identifiers: `books-engine.js`, `books-interchange.js`, `build-books-bundle.mjs`, 46 test filenames, `download.html`'s DOM ids, `books-events.js`, `books.css`, and the `"diya-gl-books"` format string (needs a version bump and a back-compat reader) | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | Sonnet; 2 core modules, 1 build script, 46 test files, 39 format-string hits |
+| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | NM-S3 | blocked-to-start | Opus to design, then Sonnet; 16 shared identifiers |
 | LP-24 | The ci behaviour run switches native sign-in on for the prod DIYA-GL client before the cloud case and off after it, through Submit's `toggle-cognito-native-auth.js enable|disable prod --client books` under the prod role | operator | machine | — | ready-to-resume | PR #84 merged; the variable is set; the toggle steps remain, Sonnet |
 | LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | — | ready-to-start | Sonnet; the generate runs and prod deploy are green; 1.1.2 is on npm |
 | ITSA-T8 | The two self-employed derivations in the DIYA-GL package, `buildSelfEmploymentQuarterlyUpdates` and `buildSelfEmploymentAnnualSubmission` (Submit's ITSA phase 2, track T8): `app/lib/calculators/se-derivations.js` and its tests, proved cell by cell against the self-employed package's own report over every example | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | — | ready-to-start | the go given 2026-09-09; Opus for the mapping, Sonnet for the wiring |
