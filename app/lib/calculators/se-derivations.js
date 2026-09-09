@@ -22,13 +22,16 @@ import { extractTaxYearStart, parseDate } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
 import { splitVat } from "../tax/vat.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const MAPPING_PATH = resolve(__dirname, "..", "..", "data", "hmrc", "sa103-mtd-mapping.json");
-
 let cachedMapping = null;
 
+// Resolved on first use, not at import: the engine bundle loads in the browser,
+// where import.meta.url is an http URL and fileURLToPath throws.
 function loadMapping() {
-  if (!cachedMapping) cachedMapping = JSON.parse(readFileSync(MAPPING_PATH, "utf8"));
+  if (!cachedMapping) {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const mappingPath = resolve(here, "..", "..", "data", "hmrc", "sa103-mtd-mapping.json");
+    cachedMapping = JSON.parse(readFileSync(mappingPath, "utf8"));
+  }
   return cachedMapping;
 }
 
