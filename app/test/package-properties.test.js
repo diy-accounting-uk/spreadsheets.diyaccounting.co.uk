@@ -14,6 +14,7 @@ import { parse as parseTOML } from "smol-toml";
 
 import { generateSpreadsheet, applyCoreProperties, PACKAGE_AUTHOR, PACKAGE_RIGHTS } from "../lib/generator.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
+import { buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -110,4 +111,47 @@ describe("the files of a written package", () => {
       expect(properties.rights, `${file.name} carries no rights`).toBe(PACKAGE_RIGHTS);
     }
   }, 300000);
+});
+
+// The line a user reads on the sheet in front of them, in the template and in
+// the workbook the download carries. Each cell sits below the sheet's last
+// used row, so nothing the reconciliation reads moves to make room.
+const FRONT_SHEET = [
+  ["bst", "examples/precision-code-ltd/bst", "templates/bst/bst-excel.xlsx", "Financialaccountsto050426.xlsx", "Home", "B22", "B23"],
+  ["taxi", "examples/basic-taxi-driver/taxi", "templates/taxi/taxi-excel.xlsx", "Financialaccountsyearto050426.xlsx", "Home", "B22", "B23"],
+  ["se", "examples/precision-code-ltd/advanced", "templates/se/Financialaccounts.xlsx", "Financialaccounts.xlsx", "Business Details", "A58", "A59"],
+  ["ltd", "examples/precision-code-ltd/full", "templates/ltd/Financialaccounts.xlsx", "Financialaccounts.xlsx", "OpenAccounts", "B88", "B89"],
+];
+
+const COPYRIGHT_LINE = "Copyright (C) 2006-2026 DIY Accounting Limited";
+const LICENCE_LINE =
+  "Licensed under the PolyForm Internal Use License 1.0.0 with an additional grant for accountants. Free to use, source available: https://spreadsheets.diyaccounting.co.uk";
+
+async function cellText(bytes, sheetName, cellRef) {
+  const zip = await JSZip.loadAsync(bytes);
+  const path = (await buildSheetMap(zip)).get(sheetName);
+  if (!path) throw new Error(`the workbook has no ${sheetName} sheet`);
+  return readCellValue(await zip.file(path).async("string"), cellRef, await loadSharedStrings(zip));
+}
+
+describe("the licence on a product's front sheet", () => {
+  for (const [product, , template, , sheet, copyrightCell, licenceCell] of FRONT_SHEET) {
+    it(`${product}'s template says it on ${sheet}`, async () => {
+      const bytes = readFileSync(resolve(APP_DIR, template));
+      expect(await cellText(bytes, sheet, copyrightCell)).toBe(COPYRIGHT_LINE);
+      expect(await cellText(bytes, sheet, licenceCell)).toBe(LICENCE_LINE);
+    });
+  }
+
+  for (const [product, book, , workbook, sheet, copyrightCell, licenceCell] of FRONT_SHEET) {
+    it(`${product}'s written package carries it through to ${workbook}`, async () => {
+      const { book: parsed, lines } = loadDiyaGlData(resolve(ROOT, book));
+      const { files } = await saveWorkbookFiles(parsed, lines);
+      const file = files.find((entry) => entry.name === workbook);
+      if (!file) throw new Error(`the writer produced no ${workbook}`);
+
+      expect(await cellText(file.bytes, sheet, copyrightCell)).toBe(COPYRIGHT_LINE);
+      expect(await cellText(file.bytes, sheet, licenceCell)).toBe(LICENCE_LINE);
+    }, 300000);
+  }
 });
