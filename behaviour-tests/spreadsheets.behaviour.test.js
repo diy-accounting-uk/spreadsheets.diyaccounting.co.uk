@@ -1278,6 +1278,19 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
     test.skip(missing.length > 0, `Cloud sign-in case needs: ${missing.join(", ")}`);
 
+    // The pages talk to Submit's released environment on every host, including
+    // this ci one. Probe it before starting: any HTTP answer (401 is the
+    // expected one without a token) means the API is there; no answer at all
+    // is a network problem, not a defect in this case.
+    const apiBase = "https://submit.diyaccounting.co.uk/api/v1";
+    let apiReachable = true;
+    try {
+      await page.request.fetch(`${apiBase}/books`, { timeout: 15000, failOnStatusCode: false });
+    } catch {
+      apiReachable = false;
+    }
+    test.skip(!apiReachable, `Cloud sign-in case needs Submit's API: ${apiBase} did not answer`);
+
     // otpauth is imported here, not at module scope, so this file still
     // lists cleanly with Playwright's --list even before a real install
     // has put the package in node_modules.
