@@ -59,14 +59,13 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | LU-9 | The remainder of the first release under the new terms: deprecate npm `@diy-accounting-uk/diya-gl` below 1.1.0 and delete the superseded GHCR tags. The publish half has shipped | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-resume | 1.1.2 is on npm; the two commands need the operator's tokens |
 | NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | NM-S3 | blocked-to-start | Opus to design, then Sonnet; NM-S3 is blocked on busy in Submit |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
-| LU-8a | Submit's share of the uplift: rows S1 to S7 of `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md` (licence files, terms and footers, headers and the header test, OpenAPI `info.license`, Dockerfile labels, third-party notices, the simulator build) | PLAN_LICENSING_UPLIFT_SUBMIT.md | machine | operator | blocked-on-busy | the Submit repository is paused; landings come back through the inbox |
 
 ## Plans not tracked here
 
 - `PLAN_LICENSING_UPLIFT.md`: the generate dispatch and LU-9 are on the board; the urgency 2
   filings (H-LU-4, H-LU-5) and the brand repository (urgency 3) stay in the plan until their turn.
-  Submit's share is `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md`, one row here (LU-8a). Everything that
-  touches `submit.diyaccounting.co.uk` is blocked on busy until the operator's word.
+  Submit's share is `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md`, tracked on
+  Submit's own board as B70.
 - Submit's `PLAN_ITSA_PHASE_2.md` names track T8 in this repository's package; the row waits on the
   operator's go.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
