@@ -26,7 +26,15 @@ import {
   BookFieldError,
   SingleFileOnlyError,
 } from "../lib/product-workbook.js";
-import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad, toExcelSerial, applyCoreProperties, PACKAGE_AUTHOR, PACKAGE_RIGHTS } from "../lib/generator.js";
+import {
+  generateSpreadsheet,
+  applyYearEndSequence,
+  setFullCalcOnLoad,
+  toExcelSerial,
+  applyCoreProperties,
+  PACKAGE_AUTHOR,
+  PACKAGE_RIGHTS,
+} from "../lib/generator.js";
 import { applyCellWrites, buildSheetMap, loadSharedStrings, readCellValue } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { cellWrites } from "../products/ltd.js";

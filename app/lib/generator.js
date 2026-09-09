@@ -92,7 +92,10 @@ async function declareCorePropertiesPart(zip) {
   const taken = [...rels.matchAll(/Id="rId(\d+)"/g)].map((match) => parseInt(match[1], 10));
   const id = `rId${taken.length ? Math.max(...taken) + 1 : 1}`;
   const relationship = `<Relationship Id="${id}" Type="${CORE_PROPERTIES_RELATIONSHIP}" Target="${CORE_PROPERTIES_PART}"/>`;
-  zip.file("_rels/.rels", rels.replace("</Relationships>", `${relationship}</Relationships>`), { date: relsFile.date, createFolders: false });
+  zip.file("_rels/.rels", rels.replace("</Relationships>", `${relationship}</Relationships>`), {
+    date: relsFile.date,
+    createFolders: false,
+  });
 }
 
 async function writeCoreProperties(zip) {

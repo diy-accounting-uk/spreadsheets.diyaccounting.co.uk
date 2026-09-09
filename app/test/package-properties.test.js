@@ -119,8 +119,24 @@ describe("the files of a written package", () => {
 const FRONT_SHEET = [
   ["bst", "examples/precision-code-ltd/bst", "templates/bst/bst-excel.xlsx", "Financialaccountsto050426.xlsx", "Home", "B22", "B23"],
   ["taxi", "examples/basic-taxi-driver/taxi", "templates/taxi/taxi-excel.xlsx", "Financialaccountsyearto050426.xlsx", "Home", "B22", "B23"],
-  ["se", "examples/precision-code-ltd/advanced", "templates/se/Financialaccounts.xlsx", "Financialaccounts.xlsx", "Business Details", "A58", "A59"],
-  ["ltd", "examples/precision-code-ltd/full", "templates/ltd/Financialaccounts.xlsx", "Financialaccounts.xlsx", "OpenAccounts", "B88", "B89"],
+  [
+    "se",
+    "examples/precision-code-ltd/advanced",
+    "templates/se/Financialaccounts.xlsx",
+    "Financialaccounts.xlsx",
+    "Business Details",
+    "A58",
+    "A59",
+  ],
+  [
+    "ltd",
+    "examples/precision-code-ltd/full",
+    "templates/ltd/Financialaccounts.xlsx",
+    "Financialaccounts.xlsx",
+    "OpenAccounts",
+    "B88",
+    "B89",
+  ],
 ];
 
 const COPYRIGHT_LINE = "Copyright (C) 2006-2026 DIY Accounting Limited";
