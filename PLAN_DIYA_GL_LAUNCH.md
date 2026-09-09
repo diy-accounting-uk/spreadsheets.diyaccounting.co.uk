@@ -532,7 +532,7 @@ here until their phase opens.
   - The image (this repo, on top of LP-22's branch): `diya-gl/Dockerfile`, `FROM node:24-alpine`,
     installs the tarball `smoke.sh` packed (`target/diya-gl-smoke/<name>.tgz`, passed as a build
     context file) with `npm install -g`, `ENTRYPOINT ["diya-gl"]`, `CMD ["--help"]`, OCI labels
-    for source, version and the AGPL-3.0-only licence. `publish-diya-gl.yml` builds it after the
+    for source, version and the Apache-2.0 licence. `publish-diya-gl.yml` builds it after the
     npm publish, runs `docker run --rm <image> recalc --help` as its smoke, logs in to
     `ghcr.io` with `GITHUB_TOKEN` (`packages: write`, on the called workflow and on `deploy.yml`'s
     caller job) and pushes `ghcr.io/diy-accounting-uk/diya-gl:<version>` and `:latest`. The
@@ -540,7 +540,7 @@ here until their phase opens.
   - The tap (`diy-accounting-uk/homebrew-tap`, its own clone, no cross-repo token):
     `Formula/diya-gl.rb` in Homebrew's node shape (`url` the registry tarball
     `https://registry.npmjs.org/@diy-accounting-uk/diya-gl/-/diya-gl-<v>.tgz`, `sha256`,
-    `license "AGPL-3.0-only"`, `depends_on "node"`, `std_npm_args`, `bin.install_symlink`, a
+    `license "Apache-2.0"`, `depends_on "node"`, `std_npm_args`, `bin.install_symlink`, a
     `test` that runs `diya-gl` and expects the usage line); `scripts/update-formula.sh` reads the
     latest version from the registry, downloads the tarball, computes the sha256 and rewrites
     the formula, exiting 0 with a message while the package is not on npm yet;

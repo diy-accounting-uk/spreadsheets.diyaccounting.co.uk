@@ -752,7 +752,7 @@ The commit job uses `continue-on-error: true` on the initial push, then a retry 
 | 2026-04-03 | CI: matrix reconciliation for all products | BST/SE/Taxi/Ltd all use parallel per-year-end reconcile jobs |
 | 2026-04-03 | CI: Playwright containers replaced with `npx playwright install` | Avoids container tag sync problem |
 | 2026-04-03 | CI: Corretto JDK 25 replaces Temurin | Temurin doesn't provide JDK 25 |
-| 2026-04-03 | License corrected to AGPL-3.0 on download page | Was incorrectly showing MPL 2.0 |
+| 2026-04-03 | License corrected to match the repository's licence on download page | Was incorrectly showing MPL 2.0 |
 | 2026-04-03 | Ltd payslip guide added | Same guide as SE, added to Ltd meta.toml |
 
 ## Techniques Reference
