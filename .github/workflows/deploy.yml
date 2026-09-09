@@ -388,7 +388,9 @@ jobs:
           cat > scripts/delete-user-data.js <<'JS'
           console.log("Purge skipped: the spreadsheets lane holds no data beyond what its own case removes.");
           JS
-          if ! node ensure-cognito-test-user.js "${{ needs.params.outputs.environment-name }}" spreadsheetsBehaviour > mint.log 2>&1; then
+          # The pages talk to Submit's released environment on every host, so the test user is
+          # minted in the prod pool regardless of this repo's own deploy environment.
+          if ! node ensure-cognito-test-user.js "prod" spreadsheetsBehaviour > mint.log 2>&1; then
             echo "::error::ensure-cognito-test-user.js failed"
             grep -vi -E 'password|totp' mint.log || true
             exit 1

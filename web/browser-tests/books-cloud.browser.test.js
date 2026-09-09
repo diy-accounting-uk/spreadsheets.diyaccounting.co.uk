@@ -21,8 +21,8 @@ const PUBLIC_DIR = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.u
 const ROOT = process.cwd();
 const PRECISION_DIR = path.join(ROOT, "examples/precision-code-ltd/bst");
 
-const CI_API_BASE = "https://ci-submit.diyaccounting.co.uk/api/v1";
-const CI_HOSTED_UI = "https://ci-auth.diyaccounting.co.uk";
+const PROD_API_BASE = "https://submit.diyaccounting.co.uk/api/v1";
+const PROD_HOSTED_UI = "https://prod-auth.diyaccounting.co.uk";
 
 let closeServer;
 let baseUrl;
@@ -182,7 +182,7 @@ test.describe("DIYA-GL books page — the sign-in redirect", () => {
     // uniqueness and length are already the unit test's job
     // (books-cloud-pkce.test.js).
     let capturedUrl = null;
-    await page.route(`${CI_HOSTED_UI}/oauth2/authorize*`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/oauth2/authorize*`, async (route) => {
       capturedUrl = new URL(route.request().url());
       await route.abort();
     });
@@ -205,7 +205,7 @@ test.describe("DIYA-GL books page — the sign-in return", () => {
     await page.goto(`${bstUrl()}?example=bst-scenario-basic&view=income-tax`, { waitUntil: "domcontentloaded" });
     await expect(page.locator('.tab-btn[data-view="income-tax"]')).toHaveAttribute("aria-selected", "true", { timeout: 30_000 });
 
-    await page.route(`${CI_HOSTED_UI}/oauth2/authorize*`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/oauth2/authorize*`, async (route) => {
       const url = new URL(route.request().url());
       const state = url.searchParams.get("state");
       await route.fulfill({
@@ -213,7 +213,7 @@ test.describe("DIYA-GL books page — the sign-in return", () => {
         headers: { location: `${bstUrl()}?code=test-auth-code&state=${encodeURIComponent(state)}` },
       });
     });
-    await page.route(`${CI_HOSTED_UI}/oauth2/token`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/oauth2/token`, async (route) => {
       const nonce = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.nonce"));
       await route.fulfill({
         status: 200,
@@ -226,7 +226,7 @@ test.describe("DIYA-GL books page — the sign-in return", () => {
         }),
       });
     });
-    await page.route(`${CI_API_BASE}/books`, (route) =>
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
       route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) }),
     );
 
@@ -260,7 +260,7 @@ test.describe("DIYA-GL books page — the sign-in return", () => {
     });
 
     let tokenCalled = false;
-    await page.route(`${CI_HOSTED_UI}/oauth2/token`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/oauth2/token`, async (route) => {
       tokenCalled = true;
       await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
     });
@@ -283,7 +283,7 @@ test.describe("DIYA-GL books page — signed in", () => {
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
-    await page.route(`${CI_API_BASE}/books`, (route) =>
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -336,7 +336,7 @@ test.describe("DIYA-GL books page — signed in", () => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
     const zipBase64 = await diyaGlZipBase64();
-    await page.route(`${CI_API_BASE}/books`, (route) =>
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -359,7 +359,7 @@ test.describe("DIYA-GL books page — signed in", () => {
         }),
       }),
     );
-    await page.route(`${CI_API_BASE}/books/book-1/versions/latest`, (route) =>
+    await page.route(`${PROD_API_BASE}/books/book-1/versions/latest`, (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -384,12 +384,12 @@ test.describe("DIYA-GL books page — signed in", () => {
     await withTestClientId(page);
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await page.route(`${CI_API_BASE}/books`, (route) =>
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
       route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) }),
     );
 
     let logoutUrl = null;
-    await page.route(`${CI_HOSTED_UI}/logout*`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/logout*`, async (route) => {
       logoutUrl = new URL(route.request().url());
       await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
     });
@@ -409,7 +409,7 @@ test.describe("DIYA-GL books page — signed in", () => {
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     let apiRouteHit = false;
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       apiRouteHit = true;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
     });
@@ -429,13 +429,13 @@ test.describe("DIYA-GL books page — save to my account", () => {
 
     const putRequests = [];
     let version = 0;
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() === "GET") {
         return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
       }
       return route.continue();
     });
-    await page.route(`${CI_API_BASE}/books/*`, async (route) => {
+    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
       if (route.request().method() !== "PUT") return route.continue();
       version += 1;
       putRequests.push({ ifMatch: route.request().headers()["if-match"] || null, bookId: route.request().url().split("/").pop() });
@@ -480,7 +480,7 @@ test.describe("DIYA-GL books page — save to my account", () => {
     });
 
     const putBookIds = [];
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() !== "GET") return route.continue();
       return route.fulfill({
         status: 200,
@@ -504,7 +504,7 @@ test.describe("DIYA-GL books page — save to my account", () => {
         }),
       });
     });
-    await page.route(`${CI_API_BASE}/books/*`, async (route) => {
+    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
       if (route.request().method() !== "PUT") return route.continue();
       const bookId = route.request().url().split("/").pop();
       putBookIds.push({ bookId: bookId, ifMatch: route.request().headers()["if-match"] || null });
@@ -552,11 +552,11 @@ test.describe("DIYA-GL books page — save to my account", () => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await loadExample(page);
 
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() !== "GET") return route.continue();
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
     });
-    await page.route(`${CI_API_BASE}/books/*`, async (route) => {
+    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
       if (route.request().method() !== "PUT") return route.continue();
       await route.fulfill({
         status: 403,
@@ -583,7 +583,7 @@ test.describe("DIYA-GL books page — save to my account", () => {
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
     let tokenCalls = 0;
-    await page.route(`${CI_HOSTED_UI}/oauth2/token`, async (route) => {
+    await page.route(`${PROD_HOSTED_UI}/oauth2/token`, async (route) => {
       tokenCalls += 1;
       await route.fulfill({
         status: 200,
@@ -596,7 +596,7 @@ test.describe("DIYA-GL books page — save to my account", () => {
       });
     });
     let booksCalls = 0;
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       booksCalls += 1;
       return route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "expired" }) });
     });
@@ -637,13 +637,13 @@ test.describe("DIYA-GL books page — billing", () => {
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() !== "GET") return route.continue();
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [unsubscribedBook()] }) });
     });
 
     let checkoutRequest = null;
-    await page.route(`${CI_API_BASE}/billing/checkout`, async (route) => {
+    await page.route(`${PROD_API_BASE}/billing/checkout`, async (route) => {
       checkoutRequest = { body: route.request().postDataJSON(), headers: route.request().headers() };
       await route.fulfill({
         status: 200,
@@ -682,7 +682,7 @@ test.describe("DIYA-GL books page — billing", () => {
     await withSignedInSession(page);
 
     let booksCalls = 0;
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       booksCalls += 1;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
     });
@@ -700,7 +700,7 @@ test.describe("DIYA-GL books page — billing", () => {
     await withSignedInSession(page);
 
     let booksCalls = 0;
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       booksCalls += 1;
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
     });
@@ -717,13 +717,13 @@ test.describe("DIYA-GL books page — billing", () => {
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
-    await page.route(`${CI_API_BASE}/books`, (route) => {
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() !== "GET") return route.continue();
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
     });
 
     let portalRequestUrl = null;
-    await page.route(`${CI_API_BASE}/billing/portal*`, async (route) => {
+    await page.route(`${PROD_API_BASE}/billing/portal*`, async (route) => {
       portalRequestUrl = new URL(route.request().url());
       await route.fulfill({
         status: 200,
