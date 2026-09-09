@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/spreadsheets-diyaccounting-co-uk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Spreadsheets download site for spreadsheets.diyaccounting.co.uk",
   "license": "SEE LICENSE IN LICENSE",
