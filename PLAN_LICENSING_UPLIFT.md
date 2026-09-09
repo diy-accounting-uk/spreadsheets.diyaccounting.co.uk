@@ -41,7 +41,7 @@ files through Submit) while the original work and the hosted brand stay the comp
 
 The additional grant, one sentence, permits an accountant or bookkeeper to use the spreadsheets to
 prepare accounts for their clients. It is bespoke; the operator publishes it on the plain text without a legal read. The recommendation that accountants are permitted users rests on each client being a
-prospective Submit user; the operator confirms it at H-LU-1.
+prospective Submit user; the operator confirmed it on 2026-09-09.
 
 SPDX identifiers: `Apache-2.0`, `CC-BY-4.0`, and `LicenseRef-PolyForm-Internal-Use-1.0.0` for the
 third layer. PolyForm Internal Use is not on the SPDX list and the additional grant makes the text
@@ -69,7 +69,7 @@ The templates are the one thing the closure needs and the model forbids. `write-
 MCP save tool read `app/templates/<product>/*.xlsx` and `meta.toml` through `app-resources.js`, and
 `prepack.mjs` ships them today, so npm 1.0.0 to 1.0.3 and the images distributed the hand-built
 workbooks under the AGPL. How the Apache package writes a workbook without carrying PolyForm
-content is decision 7 at H-LU-1; the recommendation is that the package fetches the templates at
+content is decision 7, taken on 2026-09-09; the recommendation is that the package fetches the templates at
 first use from `spreadsheets.diyaccounting.co.uk`, where the books pages already serve them under
 `books/assets/templates/`, caches them locally and prints the PolyForm terms once. The user then
 holds the templates under the same terms as a download, which is exactly the permitted use, and the
@@ -116,7 +116,7 @@ trees are the widest the operator has made and cannot be recalled; the change re
 taken after it lands. Moving the engine to Apache-2.0 relaxes; moving the spreadsheets, sites and
 Submit to PolyForm restricts, from the first generate run and deploy after this plan lands.
 
-Recommendation on the published engine versions, for H-LU-1: deprecate 1.0.0 to 1.0.3 on npm
+Recommendation on the published engine versions, taken as decision 10: deprecate 1.0.0 to 1.0.3 on npm
 (`npm deprecate "@diy-accounting-uk/diya-gl@<1.1.0" "Superseded by 1.1.0 under Apache-2.0; see
 https://spreadsheets.diyaccounting.co.uk/diya-gl.html#licence"`) so every installer sees the
 message; do not unpublish, which recalls nothing. Delete the 1.0.1 to 1.0.3 GHCR tags once the
@@ -509,7 +509,7 @@ PolicyBee logo. No brand guideline exists. This inventory is LU-12's baseline.
 
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
-| LU-8a | Submit: canonical PolyForm text with the additional grant replaces the paraphrased `LICENSE`; `package.json` `license` becomes `SEE LICENSE IN LICENSE`; `LICENSING.md` and `NOTICE` per LU-18; the 28 `-or-later` headers, the battery-pack subtree's MIT `LICENSE`, badge and `package.json`, and metric-son's `@license MIT` become the PolyForm identifier; `terms.html` lines 158, 272-275 and 431-437 and `accessibility.html:349-353` are rewritten to "free to use, source available", with the contribution invitation removed; `README.md:14,34,118,123`, `hmrc-fraud-prevention.md:3` and `_developers/MARKETING_GUIDANCE.md:83,130,193` say the new words; the HMRC approval documents are annotated per decision 9; `info.license`, `info.contact` and `termsOfService` added in `createInfoSection()`; OCI labels on the `Dockerfile`; every footer gains the licence line; the 88 and the 356 missing headers added; the deploy is checked to run `build-simulator.js` so the stale simulator copy is replaced | LU-1, LU-18, H-LU-1 | Sonnet; Opus for the terms wording | `LICENSE`, `LICENSING.md`, `NOTICE`, `package.json`, `README.md`, `web/public/terms.html`, `web/public/accessibility.html`, `web/public/*.html` footers, `web/public/lib/qrcode.min.js`, `infra/.../OpenApiGenerator.java`, `Dockerfile`, `_developers/backlog/battery-pack/`, `_developers/backlog/metric-son/`, headers |
+| LU-8a | Submit: canonical PolyForm text with the additional grant replaces the paraphrased `LICENSE`; `package.json` `license` becomes `SEE LICENSE IN LICENSE`; `LICENSING.md` and `NOTICE` per LU-18; the 28 `-or-later` headers, the battery-pack subtree's MIT `LICENSE`, badge and `package.json`, and metric-son's `@license MIT` become the PolyForm identifier; `terms.html` lines 158, 272-275 and 431-437 and `accessibility.html:349-353` are rewritten to "free to use, source available", with the contribution invitation removed; `README.md:14,34,118,123`, `hmrc-fraud-prevention.md:3` and `_developers/MARKETING_GUIDANCE.md:83,130,193` say the new words; the HMRC approval documents are annotated per decision 9; `info.license`, `info.contact` and `termsOfService` added in `createInfoSection()`; OCI labels on the `Dockerfile`; every footer gains the licence line; the 88 and the 356 missing headers added; the deploy is checked to run `build-simulator.js` so the stale simulator copy is replaced | LU-1, LU-18, the go | Sonnet; Opus for the terms wording | `LICENSE`, `LICENSING.md`, `NOTICE`, `package.json`, `README.md`, `web/public/terms.html`, `web/public/accessibility.html`, `web/public/*.html` footers, `web/public/lib/qrcode.min.js`, `infra/.../OpenApiGenerator.java`, `Dockerfile`, `_developers/backlog/battery-pack/`, `_developers/backlog/metric-son/`, headers |
 | LU-8b | Archive: `LICENSE`, README (lines 8-10, 17, 23, 24-25, 31, 126-127, 131) and `download.html` (57, 93-99) move to PolyForm with the source offer and the new organisation; `community.html`, `lib/community-page.js`, `app/templates/meta.toml`, `bst-guide.md:316,318` and the CDK tags follow; `package.json` is renamed into the `@diy-accounting-uk` scope with a `license` field and the lock file regenerated so `@antonycc` goes; the two "Open Source" articles are rewritten; the missing `favicon.svg` is restored; a `LICENCE.txt` is placed at the root of each of the four package trees; the 54 and the 323 missing headers are added | LU-1 | Haiku | `LICENSE`, `README.md`, `web/.../download.html`, `web/.../community.html`, `web/.../lib/community-page.js`, `app/templates/meta.toml`, `app/templates/bst/bst-guide.md`, `infra/.../SpreadsheetsStack.java`, `package.json`, `package-lock.json`, `public/favicon.svg`, `packages*/LICENCE.txt` |
 | LU-8c | Root and www: `LICENSE` and README to PolyForm; `license` in both `package.json`; root's 17 and www's 21 missing headers, and root's `deploy-holding.yml` outlier brought to the standard pair; www's two footers gain the licence line and a local copy of the logo its `og:image` points at (from the brand package once LU-14 exists, a copy until then) | LU-1 | Haiku | `LICENSE`, `README.md`, `package.json`, the headers, `web/www.diyaccounting.co.uk/public/` |
 | LU-8d | Spreadsheets, beyond LU-1 to LU-7: `prepack.mjs` copies the import closure of the four entry points plus `app/products`, `app/data` and the schemas, computed by the same module LU-3's test uses, and stops copying `app/templates` and the twelve build scripts; `app-resources.js`'s Node loader fetches a missing template from the site and caches it (decision 7a); the package test asserts no template and no build script ships and that the fetched-template path works offline once cached; the parity and smoke scripts follow | LU-1, LU-3 | Sonnet | `diya-gl/scripts/prepack.mjs`, `app/lib/app-resources.js`, `app/test/diya-gl-package.test.js`, `diya-gl/smoke.sh`, `diya-gl/parity.sh` |
@@ -621,7 +621,7 @@ H-LU-10 creates `diy-accounting-uk/diya-gl-docker` (public), and LU-20 moves `Do
 the registry, builds from `dist.tarball`, pushes the version tag and `latest`, and removes the Docker
 steps from `publish-diya-gl.yml`.
 
-**Open decisions for the operator**, all at H-LU-1: decisions 7 (templates), 8 (Docker repository),
+**Open decisions for the operator**, all at the go: decisions 7 (templates), 8 (Docker repository),
 9 (HMRC) and 10 (deprecate and delete the AGPL versions), plus confirmation of the
 layers, the accountants' grant, the name, the span, no contributions and the archive.
 
