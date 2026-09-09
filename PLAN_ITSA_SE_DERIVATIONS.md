@@ -485,7 +485,11 @@ The derivation reports box 44 as the template computes it and emits a warning ca
 It does not add the 172 into `depreciationDisallowable` on its own, because that would put a
 figure on HMRC's return that the customer's own SA103F does not show.
 
-### 8.2 Fifteen disallowable categories have no source
+### 8.2 Fourteen disallowable categories have no source
+
+(Implementation note: `sa103-mtd-mapping.json`'s own box list gives fourteen field names across
+boxes 32 to 43 and 45, box 39 carrying two -- not fifteen. `depreciationDisallowable` (box 44) is
+the fifteenth periodDisallowableExpenses field slot, and it is sourced.)
 
 Boxes 32 to 43 and 45. The template prints them and the VitalTax sheet names each one "Not
 captured in DIY Accounting". Every private-use restriction and every disallowed entertainment
