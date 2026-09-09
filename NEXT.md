@@ -8,11 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Urgency 1 of the licensing uplift is code complete: PR #86 (`claude/lu-1-terms`) carries LU-1 to
-LU-7, LU-8d, LU-10, LU-11, LU-18, LU-19 and CQ-1, with Maven verify and `npm run test:fast` green
-(8,517 tests); every check is green on 06bf98cb after four pipeline fixes landed on top. The sibling repositories' rows are PRs of their own: the tap's #1 (LU-17, after the
-rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b). No worktree is open.
-LU-9, the first release under the new terms, follows the merges and H-LU-3's generate dispatches.
+Urgency 1 of the licensing uplift is on main: PR #86 merged as a6b091b2 (LU-1 to LU-7, LU-8d,
+LU-10, LU-11, LU-18, LU-19, CQ-1) and its prod deploy publishes `diya-gl` 1.1.0, the first
+release under Apache-2.0. The sibling repositories' rows are PRs of their own: the tap's #1
+(LU-17, after the rename LU-20), root's #28 and www's #27 (LU-8c), the archive's #31 (LU-8b).
+PR #84 (LP-24) and Submit's batch 14 are on their mains; LP-24's toggle steps and the ci variable
+remain. No worktree is open. LU-9 follows the generate dispatches (H-LU-3) and the tap merge.
 
 Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
 version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
@@ -51,14 +52,13 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 |---|---|---|---|---|---|---|
 | LP-24 | The ci pages target Submit's released environment: one cloud config for every host (prod API, prod hosted UI, prod DIYA-GL client), the ci behaviour run mints its user in the prod pool through the prod role, the sign-in case probes the prod API | operator | machine | — | ready-to-resume | PR #84 merged; the toggle steps and the ci variable remain |
 | LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name); the follow-through edits ride the tap PR #1, the spec builder's line and the package README are on PR #86 | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | `gh repo rename homebrew-diya-gl -R diy-accounting-uk/homebrew-tap --yes`; the classifier blocked the session |
-| H3 | Merge PR #86 (`claude/lu-1-terms`, the licensing batch: groups 1A to 1D, LU-10, CQ-1) | operator | human | — | ready-to-start | every check green on 06bf98cb |
 | H5 | Merge root PR #28 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, README |
 | H6 | Merge www PR #27 (LU-8c) | operator | human | — | ready-to-start | headers, LICENSE, footers, local og:image |
 | H7 | Merge archive PR #31 (LU-8b) | operator | human | — | ready-to-start | 357 files; one `LICENCE.txt` per package tree |
+| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | PR #86 is on main; dispatch after its prod deploy is green |
 | H4 | Merge tap PR #1 (LU-17) | operator | human | LU-20 | blocked-to-start | after the rename |
-| H-LU-3 | Dispatch the four `generate-*` workflows, then the prod deploy | PLAN_LICENSING_UPLIFT.md | human | H3 | blocked-to-start | rebuilds every package with `LICENCE.txt` and the workbook properties |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
-| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H3, H4, H-LU-3 | blocked-to-start | Sonnet; the publish check, then the deprecations by CLI |
+| LU-9 | The first release under the new terms: the prod deploy from the merge publishes 1.1.0 under Apache-2.0 with the image; the generate dispatches rebuild every package with `LICENCE.txt` and the workbook properties; then deprecate npm 1.0.0 to 1.0.5 and delete the old GHCR tags | PLAN_LICENSING_UPLIFT.md | machine | H4, H-LU-3 | blocked-to-start | Sonnet; the publish check, then the deprecations by CLI |
 | ITSA-T8 | The engine derivations that feed the annual submission (Submit's ITSA phase 2, track T8): what "The books import" says the DIYA-GL package lacks | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | the operator's go | blocked-to-start | Opus for the mapping, Sonnet for the wiring |
 | LU-8a | Submit: canonical PolyForm `LICENSE` with the grant; `terms.html` and `accessibility.html` say free to use, source available; the 28 `-or-later` headers and the battery-pack mix; `info.license` in the OpenAPI generator; the missing headers; the stale simulator copy | PLAN_LICENSING_UPLIFT.md | machine | operator | blocked-on-busy | group 1E; Sonnet, Opus for the terms wording; the Submit repository is paused |
 
