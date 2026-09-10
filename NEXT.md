@@ -16,10 +16,15 @@ and 1.1.2 with `latest` on 1.1.2. ITSA-T8 is ready; LP-24's toggle steps are rea
 the variable set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
 spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's.
 
-Two batches are in flight. `claude/b7-board` is PR #89, ready for review, carrying the naming
-chain, the ITSA derivations and the toggle; its one open defect is LP-26, worktree `lp26`,
-branch `claude/b7-lp26`. `claude/b8-board` is PR #90, a draft branched off b7 and held draft
-until #89 merges, carrying TD-1 in worktree `td1`, branch `claude/b8-td1`. A wave starts from
+Two batches are in flight. `claude/b7-board` is PR #89, carrying the naming chain, the ITSA
+derivations and the toggle; its one open defect is the cloud case's tail, LP-28, worktree `lp27`.
+`claude/b8-board` is PR #90, a draft branched off b7 and held draft until #89 merges, carrying
+TD-1, NM-9 and NM-6 in worktrees `td1`, `identity` and `nm6`.
+
+One ci environment serves every branch, so only one batch branch can hold the deploy slot. The
+deploy group is keyed on the environment with `cancel-in-progress: false`, so a second branch's
+push displaces the first's pending deploy rather than racing it. While two batches are live,
+push the one whose PR needs to go green and let the draft's deploys wait. A wave starts from
 the sequenced board on a branch off the previous stable one; the earlier worktrees were:
 `naming` (branch `claude/b7-naming`, the NM-3 to NM-2 chain, serial because they share
 `download.html`), `itsa` (`claude/b7-itsa`, T8's design wave on Opus) and `lp24`
