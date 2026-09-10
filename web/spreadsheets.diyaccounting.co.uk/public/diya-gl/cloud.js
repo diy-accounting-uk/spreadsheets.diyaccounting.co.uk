@@ -882,6 +882,13 @@
       .then(function (response) {
         return parseJsonBody(response).then(function (body) {
           if (!response.ok) throw apiError(response.status, body);
+          // The tab still holds this book's bookId and latestETag. Deleting the
+          // book leaves that pointing at nothing, so the next save sends an
+          // If-Match for a book the account no longer has and the API answers
+          // 412. Forgetting the link makes the next save create a new book,
+          // which is what deleting and saving again means.
+          var link = getLink();
+          if (link && link.bookId === bookId) clearLink();
           return fetchBooksList();
         });
       })

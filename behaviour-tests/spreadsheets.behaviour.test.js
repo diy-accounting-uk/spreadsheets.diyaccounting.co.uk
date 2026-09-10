@@ -1313,8 +1313,17 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     const duplicateNewButton = panel.getByRole("button", { name: "New book" });
     let saveOutcome;
     try {
+      // The toast is a single element that persists, so it is very likely still
+      // visible carrying whatever the last step said. Waiting for it to be
+      // visible would resolve at once and report a save that never happened;
+      // what proves this save is the text CHANGING from what is there now.
+      const staleToast = (await toast.textContent().catch(() => "")) || "";
+      // An empty stale text would filter to nothing, because every string
+      // contains the empty string, so with nothing to distinguish from we wait
+      // on the toast itself.
+      const changedToast = staleToast ? toast.filter({ hasNotText: staleToast }) : toast;
       saveOutcome = await Promise.race([
-        toast.waitFor({ state: "visible", timeout: 30000 }).then(() => "saved"),
+        changedToast.waitFor({ state: "visible", timeout: 30000 }).then(() => "saved"),
         duplicateNewButton.waitFor({ state: "visible", timeout: 30000 }).then(() => "duplicate"),
       ]);
     } catch (error) {
