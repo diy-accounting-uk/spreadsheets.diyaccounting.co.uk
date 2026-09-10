@@ -289,16 +289,14 @@
           "rows": [
             {
               "box": 326,
-              "rule": { "op": "fixed", "value": 0, "why": "the working sheet's marginal relief assumes no associated companies" }
+              "rule": {
+                "op": "fixed",
+                "value": 0,
+                "why": "the sheet reports associated companies by financial year in boxes 327 and 328, not as a whole-period count"
+              }
             },
-            {
-              "box": 327,
-              "rule": { "op": "fixed", "value": 0, "why": "the working sheet's marginal relief assumes no associated companies" }
-            },
-            {
-              "box": 328,
-              "rule": { "op": "fixed", "value": 0, "why": "the working sheet's marginal relief assumes no associated companies" }
-            },
+            { "box": 327 },
+            { "box": 328 },
             {
               "box": 329,
               "rule": {

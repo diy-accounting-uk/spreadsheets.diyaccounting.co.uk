@@ -761,12 +761,23 @@
   // rate at all -- fmtRate would print "45%".
   var ADMIN_PENCE_PER_MILE_CELLS = ["O16", "O17"];
 
+  // P14 holds the associated companies count, a whole number of companies.
+  // unitFor() (app/products/ltd.js) has no entry for it in RATE_CELLS or
+  // COUNT_CELLS, so it falls through to the default "money" unit and
+  // formatByUnit would print "£0.00" for a count of zero. Formatted here as
+  // a plain number instead, the same override this file already makes for
+  // the whole-percent and pence-per-mile cells above.
+  var ADMIN_COUNT_CELLS = ["P14"];
+
   function adminCellText(value, cell, helpers) {
     if (ADMIN_WHOLE_PERCENT_CELLS.indexOf(cell) !== -1) {
       return typeof value === "number" ? String(Math.round(value * 100) / 100) + "%" : helpers.esc(String(value));
     }
     if (ADMIN_PENCE_PER_MILE_CELLS.indexOf(cell) !== -1) {
       return typeof value === "number" ? helpers.fmtPence(value) : helpers.esc(String(value));
+    }
+    if (ADMIN_COUNT_CELLS.indexOf(cell) !== -1) {
+      return typeof value === "number" ? value.toLocaleString("en-GB") : helpers.esc(String(value));
     }
     return null;
   }
@@ -784,6 +795,11 @@
     var rateRows = S.ADMIN_RATE_CELLS.map(function (cell) {
       return row(cell);
     });
+    // The count that divides both marginal relief limits, read alongside the
+    // rates it divides rather than folded into ADMIN_RATE_CELLS -- it is a
+    // count, not a rate, and adminCellText's ADMIN_COUNT_CELLS branch
+    // formats it as one.
+    var associatedCompaniesRow = row("P14", "Number of associated companies");
     var capitalAllowanceRows = S.ADMIN_CAPITAL_ALLOWANCE_CELLS.map(function (cell) {
       return row(cell);
     });
@@ -822,7 +838,7 @@
       "<h2>Admin</h2>" +
       '<p class="view-lede rate-provenance">The tax year\'s rates and thresholds as the package was generated with them, read-only.</p>' +
       '<div class="panel-card"><h3>Corporation tax and capital allowance rates</h3>' +
-      helpers.kvRows(rateRows.concat(capitalAllowanceRows)) +
+      helpers.kvRows(rateRows.concat([associatedCompaniesRow]).concat(capitalAllowanceRows)) +
       "</div>" +
       '<div class="panel-card"><h3>Depreciation rates</h3>' +
       helpers.kvRows(depreciationRows) +

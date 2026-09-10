@@ -50,7 +50,14 @@
   // undefined where the cell is absent -- an empty cell in a sparse row is
   // not a zero on the sheet.
   function cellValue(sheetXml, cellRef, sharedStrings) {
-    const re = new RegExp(`<c\\s+r="${cellRef}"([^>]*)(?:/>|>([\\s\\S]*?)</c>)`, "s");
+    // The attrs group must be lazy: a greedy [^>]* on a self-closed cell
+    // ("<c r=\"X\" s=\"1\"/>") swallows the trailing "/" along with the
+    // attributes, so the "/>" branch below never matches and the pattern
+    // falls through to the open-tag branch instead -- which then reads
+    // forward to the next cell that does close with "</c>" and returns
+    // that cell's value as if it were this one's. A blank cell one row
+    // ahead of a real figure would silently read as that figure.
+    const re = new RegExp(`<c\\s+r="${cellRef}"([^>]*?)(?:/>|>([\\s\\S]*?)</c>)`, "s");
     const match = re.exec(sheetXml);
     if (!match) return undefined;
     const attrs = match[1] || "";
