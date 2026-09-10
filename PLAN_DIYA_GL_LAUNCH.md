@@ -659,7 +659,7 @@ changed from us rather than from the release.
 
 | # | Task | Gates | Owner | Where |
 | --- | --- | --- | --- | --- |
-| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`. Both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars |
+| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`. Both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service. The operator approved the registration on 2026-09-10 to USD 25 a domain, so this is a session task now: register in the management account beside `diyaccounting.co.uk`, copying that registration's contact block | — | machine | Route 53 Domains, management account |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 `BRIEF_OPERATOR_TASKS_2026-09-10.md` writes the HMRC note out in full — the address, what changed,
