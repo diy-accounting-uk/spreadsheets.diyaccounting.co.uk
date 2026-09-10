@@ -1268,7 +1268,11 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   async function saveGrownBookAndClean(page, panel, accountBtn, bookTitle, exampleLines, extraCount, sizeLabel) {
     const measured = await page.evaluate(
       async ({ exampleLines, extraCount }) => {
-        const periodEnd = window.DiyaGlPage.currentBook().book.documentInfo.periodCoveredEnd;
+        // documentInfo carries its period as a Date, while a line's postingDate
+        // is an ISO day string. The page keys a line to its month with
+        // dateStr.slice, so handing it the Date rejects the whole edit.
+        const rawPeriodEnd = window.DiyaGlPage.currentBook().book.documentInfo.periodCoveredEnd;
+        const periodEnd = typeof rawPeriodEnd === "string" ? rawPeriodEnd.slice(0, 10) : new Date(rawPeriodEnd).toISOString().slice(0, 10);
         const grown = exampleLines.slice();
         let i = 0;
         while (grown.length < exampleLines.length + extraCount) {
