@@ -1888,9 +1888,14 @@ export function categoryNetting(results, scenario) {
 export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
-  function check(name, actual, expectedVal, tolerance = 1) {
+  // A fourth, optional argument marks a check "warning": the shipped
+  // template genuinely diverges from the figure named here and no fixture
+  // closes the gap, so the report is asked to carry the divergence rather
+  // than fail outright. The diff column is what a hand computation would
+  // call the size of that gap.
+  function check(name, actual, expectedVal, tolerance = 1, severity) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance, severity });
   }
 
   // The same whole-year shift cellWrites applies before writing a posting
@@ -2252,6 +2257,21 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const [cell, caption, plFigure] of sa103fPlSources) {
       check(`SA103F ${caption} (${cell}) = the profit and loss account`, num(seFull[cell]), plFigure);
     }
+
+    // Box 44 is row 34 alone, so a loss on the disposal of an asset (row 33)
+    // stays inside box 29's allowable total with nothing moved to a
+    // disallowable box, even though a loss on disposal is not an allowable
+    // deduction: the balancing allowance in box 56 is what relieves it. The
+    // template has no fix available -- this warns of the gap rather than
+    // failing on it, carrying the loss itself as the size of what box 44
+    // leaves out.
+    check(
+      "SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries",
+      num(seFull.O114),
+      num(seFull.D114),
+      0.01,
+      "warning",
+    );
 
     // The form's own arithmetic, each total against the boxes it adds up.
     check(
