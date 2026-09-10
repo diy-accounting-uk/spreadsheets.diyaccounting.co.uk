@@ -70,16 +70,19 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | PR #91; every check but the smoke test is green |
 | CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | in-flight | PR #91; every check but the smoke test is green |
 | CQ-5 | `setPath` in `app/lib/calculators/se-derivations.js` walks a dotted path with `node[parts[i]] ||= {}`, so a `__proto__` or `constructor` segment pollutes the prototype | none | machine | — | in-flight | PR #91; the alert clears when it merges |
+| SED-10 | The self-employed ITSA field set changes by tax year and the derivation ignores it: `sa103-mtd-mapping.json`'s `api.years` records two allowances gone from 2025-26, an adjustment gone from 2026-27 and two fields added, and `se-derivations.js` reads none of it, so a 2025-26 book can carry a field HMRC no longer accepts | PLAN_ITSA_SE_DERIVATIONS.md | machine | — | ready-to-start | the figures are year-agnostic; only the field set moves, Sonnet |
+| SED-2 | The fields the shipped self-employed template cannot source, taken together: fourteen disallowable categories, business entertainment lumped with advertising, seven annual fields and four adjustments with no cell to read (SED-2, SED-3, SED-7, SED-8) | PLAN_ITSA_SE_DERIVATIONS.md | machine | — | ready-to-start | a template change, not a derivation one; Opus to scope |
 | H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Both were available in Route 53 on 2026-09-10 at USD 9 and USD 16 a year. Delete the hosted zone Route 53 creates within twelve hours and it costs nothing; neither name has to resolve | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | USD 25 a year; `diyaccounting.com` is what not doing it costs |
 
 ## Plans not tracked here
 
-- `PLAN_LICENSING_UPLIFT.md`: the licence change itself, all of it shipped. Nothing open.
 - `PLAN_DIYACCOUNTING_BRAND.md`: the brand in three parts — one source for the marks and tokens,
   the trade mark filings, and what recovering `diyaccounting.com` would take.
 - `PLAN_DIYA_GL_LAUNCH.md`: carries the launch posts, the Rust port, the operator's research, and
   now the two rows the uplift handed over — the domain registrations (H-LU-5, on the board) and the
   HMRC licence note (H-LU-9).
+- `PLAN_ITSA_SE_DERIVATIONS.md`: its section 8 findings carry `SED-n` ids, the same ids the board
+  uses. SED-1, 4, 5, 6 and 9 are closed there; SED-2, 3, 7, 8 and 10 are the open ones.
 - `BRIEF_OPERATOR_TASKS_2026-09-10.md`: the two that need drafting rather than doing, written out
   with the addresses and the facts.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan

@@ -2,6 +2,15 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: sign-in and "save to my account" on the DIYA-GL pages
 
+> **Archived 2026-09-10.** Everything here is built and shipped: the ten decisions, the journeys,
+> the modules and the four hook points. Its one open question — how the ci behaviour case signs in —
+> was answered the way this document recommended, by teaching Submit's toggle script the DIYA-GL
+> client, and the cloud case now passes end to end against prod.
+>
+> Read it as a record, not a map. The paths and the global names have both moved since: the pages
+> are under `public/diya-gl/`, not `public/books/`, and the browser globals are `DiyaGlPage`,
+> `DiyaGlCloud`, `DiyaGlEdits`, `DiyaGlLoader`, `DiyaGlAutosave` and `DIYA_GL_SNAPSHOT`.
+
 The four DIYA-GL pages hold a year of accounts in the browser and save a 15 KB zip to disk. The paid
 tier signs the reader in on Submit's Cognito pool and puts that zip in their account. This is the
 spreadsheets side: one new script, four small hooks in `shell.js`, a config file, some CSS and a

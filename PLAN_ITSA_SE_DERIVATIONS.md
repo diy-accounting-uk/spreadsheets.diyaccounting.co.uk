@@ -467,11 +467,27 @@ and the page asks for it.
 
 ## 8. Open items
 
+Each finding carries an `SED-n` id. `NEXT.md` uses the same ids, so a board row and the finding it
+came from name the same thing.
+
+| # | Finding | State |
+| --- | --- | --- |
+| SED-1 | Loss on disposal in box 29 but not box 44 | closed — a warning check carries the true figure |
+| SED-2 | Fourteen disallowable categories have no source | **open**, on the board |
+| SED-3 | Business entertainment cannot be separated from advertising | **open**, on the board |
+| SED-4 | VitalTax turnover excludes sales code d | closed — a warning check carries the true figure |
+| SED-5 | VitalTax other income folds in grants | closed — a warning check carries the true figure |
+| SED-6 | Small pools allowance filed in box 55 | closed — the derivation warns at source |
+| SED-7 | Seven annual fields have no box and no cell | **open**, on the board |
+| SED-8 | Four adjustments have no box a book can fill | **open**, on the board |
+| SED-9 | CIS deductions do not belong here | closed — a boundary, not a defect |
+| SED-10 | The field set changes by tax year | **open**, on the board |
+
 Each of these is a field the plan names that the shipped template cannot source today. None is
 guessed and none is filled with a number the books do not hold. Each carries the figure computed
 by hand where a figure exists.
 
-### 8.1 The loss on disposal is in box 29 but not in box 44
+### SED-1 (8.1) The loss on disposal is in box 29 but not in box 44
 
 Box 29 is P&L rows 33 and 34. Box 44 is row 34 alone. A loss on the sale of a fixed asset is not
 an allowable deduction; the balancing allowance in box 56 is what relieves it. The template leaves
@@ -485,7 +501,7 @@ The derivation reports box 44 as the template computes it and emits a warning ca
 It does not add the 172 into `depreciationDisallowable` on its own, because that would put a
 figure on HMRC's return that the customer's own SA103F does not show.
 
-### 8.2 Fourteen disallowable categories have no source
+### SED-2 (8.2) Fourteen disallowable categories have no source
 
 (Implementation note: `sa103-mtd-mapping.json`'s own box list gives fourteen field names across
 boxes 32 to 43 and 45, box 39 carrying two -- not fifteen. `depreciationDisallowable` (box 44) is
@@ -504,7 +520,7 @@ What would close it: one disallowable percentage per expense category in `book.t
 per-line `diya-gl:disallowableAmount`. Either would let the derivation fill all sixteen
 disallowable fields and let the template's fifteen empty boxes take a value.
 
-### 8.3 Business entertainment cannot be separated from advertising
+### SED-3 (8.3) Business entertainment cannot be separated from advertising
 
 SA103F box 24 is "Advertising and business entertainment costs" and HMRC splits it into
 `advertisingCosts` and `businessEntertainmentCosts`. The P&L has one row 27, "Advertising &
@@ -517,7 +533,7 @@ Brickwork non-VAT is 300, brickwork VAT is 450, same treatment. The derivation o
 
 What would close it: a separate purchases account and analysis column for entertainment.
 
-### 8.4 VitalTax turnover excludes sales code d, SA103F includes it
+### SED-4 (8.4) VitalTax turnover excludes sales code d, SA103F includes it
 
 `VitalTax!C5` is `SUM('Profit & Loss Account'!C5:E7)`: rows 5, 6 and 7 only. `SE Full!D55` is
 box 15 and reads `'Profit & Loss Account'!B9`, which is rows 5 to 8. Row 8 is "Other Income",
@@ -532,7 +548,7 @@ sales or money earned by your business", which is what row 8 holds, and the annu
 quarters must reconcile to is box 15. VitalTax rows 5 and 12 to 29 stay as they are, because they
 are the template's own cells and the reconciliation scores them.
 
-### 8.5 VitalTax other income folds in grants, SA103F sends them to box 75
+### SED-5 (8.5) VitalTax other income folds in grants, SA103F sends them to box 75
 
 `VitalTax!C6` is rows 8, 11 and 38 together. `SE Full!O55` is box 16 and reads P&L B38 alone.
 Grants (row 11) are box 75, `adjustments.outstandingBusinessIncome`, on the annual submission.
@@ -542,7 +558,7 @@ quarter. VitalTax would put them in Q2 `other`; the derivation puts them in
 `outstandingBusinessIncome` on the annual submission and leaves `periodIncome.other` at nil,
 which is what box 16 says.
 
-### 8.6 The small pools allowance is filed in box 55
+### SED-6 (8.6) The small pools allowance is filed in box 55
 
 `SE Full!O144` is box 55, "100% and other enhanced capital allowances", and its formula is
 `IF((Schedule!R1 + Schedule!S1) < 1000, Schedule!S1, 0)`. That is the small pools allowance, the
@@ -559,7 +575,7 @@ branch is taken and returns nil. The advanced fixture's R1 is 3,360 and its S1 i
 24,000, so the branch is not taken. A fixture with a closing tax written down value between nil
 and 1,000 would produce a figure; none exists.
 
-### 8.7 Seven annual fields have no box and no cell
+### SED-7 (8.7) Seven annual fields have no box and no cell
 
 | Field | Why |
 |---|---|
@@ -578,7 +594,7 @@ derivation can assert they are blank rather than assume it.
 
 All seven are omitted from the payload with a warning naming the box.
 
-### 8.8 Four adjustments have no box a book can fill
+### SED-8 (8.8) Four adjustments have no box a book can fill
 
 `includedNonTaxableProfits` (box 62, `SE Full!D179`, printed and empty),
 `basisAdjustment` (box 68, `SE Full!D197`, which the template fills with a literal em dash),
@@ -603,7 +619,7 @@ and the tax profit with no template change.
 
 Hand-computed for all three fixtures: nil, because the cell is empty.
 
-### 8.9 CIS deductions do not belong here
+### SED-9 (8.9) CIS deductions do not belong here
 
 SA103F box 81 is total CIS deductions, `SE Full!D231`, and HMRC's mapping marks it "another API".
 Box 82, "Other tax taken off trading income", maps to `periodIncome.taxTakenOffTradingIncome`,
@@ -613,7 +629,7 @@ The books hold the CIS figure: brickwork non-VAT 200, brickwork VAT 300, advance
 sum of the sales month tabs' `cis` totals. The derivation does not send it. It goes on the CIS
 Deductions API, not on the period summary or the annual submission.
 
-### 8.10 The endpoint changes for 2025-26 and later
+### SED-10 (8.10) The endpoint changes for 2025-26 and later
 
 `app/data/hmrc/sa103-mtd-mapping.json`'s own `api.years` block records it: for 2023-24 and
 2024-25 the quarterly endpoint is `period-summary`, and from 2025-26 it is
