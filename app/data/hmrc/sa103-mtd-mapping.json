@@ -848,7 +848,7 @@
       "box": "102",
       "label": "Adjustment to profits chargeable to Class 4 NICs",
       "cell": null,
-      "field": "adjustmentToProfitsForClass4",
+      "field": "adjustments.adjustmentToProfitsForClass4",
       "route": "annual"
     },
     {
