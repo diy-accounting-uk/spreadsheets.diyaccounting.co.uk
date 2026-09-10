@@ -206,6 +206,7 @@ generate dispatches rebuilding every package.
 
 | Group | Rows | Area and files | Sweeps up | Model |
 | --- | --- | --- | --- | --- |
+| 3C the squatted name | H-LU-8 | the holder's listing, UKIPO | — | operator |
 | 3A the baseline and the repository | LU-12, LU-13, LU-14, H-LU-6, H-LU-7 | the new `diy-accounting-uk/brand` repository | the two favicon identities resolved to one; the blue token matched to its mark; the teal leftovers in www | Opus for the guidelines and words; Sonnet for tokens and the package |
 | 3B consumption | LU-15, LU-16 | spreadsheets, submit, www: `package.json`, build scripts, stylesheets, `public/`; www's `/brand` page | every local logo, favicon and token copy deleted | Sonnet, one agent per repository |
 
@@ -275,7 +276,7 @@ The marks, the operator's choice: **DIY ACCOUNTING SPREADSHEETS**, **DIY ACCOUNT
 | LU-10 | The filing pack: the free searches run and their results recorded; the goods and services wording for classes 9, 42 and 35 drafted from the IPO's pre-approved terms; the first-use evidence gathered with dates; `TRADEMARKS.md` extended with the ™ usage rules | — | Sonnet | `TRADEMARKS.md`, `_developers/trade-marks/` (new) |
 | LU-11 | ™ on the marks across the site footer, the spec page and the package README, in the same PR as LU-6 | LU-6 | Sonnet | as LU-6 |
 | H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL as a standard application; DIY ACCOUNTING SUBMIT and DIY ACCOUNTING SPREADSHEETS via Right Start, each on its own, with the stylised marks beside them; DIY ACCOUNTING on its own via Right Start as the probe | LU-10 | operator | gov.uk |
-| H-LU-5 | Register the `diya-gl` domains and the GitHub and npm organisations | — | operator | registrars, github.com, npmjs.com |
+| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Those two domains are the whole of it: both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars, github.com, npmjs.com |
 
 ## Consistent branding
 
@@ -314,6 +315,7 @@ replace.
 | LU-16 | The guidelines page: www builds `/brand` from the package's guidelines document and publishes the SVG marks for download under the trademark rules | LU-14 | Sonnet | `www.diyaccounting.co.uk` |
 | H-LU-6 | Create the `diy-accounting-uk/brand` repository (public, empty) | — | operator, or the session on the operator's word | github.com |
 | H-LU-7 | Review the guidelines and the marks on sight before LU-15 pins them | LU-13 | operator | the brand repository |
+| H-LU-8 | Find out what it would take to get `diyaccounting.com` back, and at what price. It is held and listed at USD 5,000, which is far beyond what the name is worth to us — even USD 1,000 would be too much. So this is a question, not a purchase: whether the holding is a parked listing or a used site, whether any UKIPO registration we obtain under H-LU-4 gives a cheaper route than paying the asking price, and what a UDRP complaint costs and needs. Answer it, record the answer, and only then decide whether anything follows | H-LU-4 | operator | uspto/UKIPO, the holder's listing |
 
 ## Across the repositories
 
