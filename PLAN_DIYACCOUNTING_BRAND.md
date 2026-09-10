@@ -3,7 +3,7 @@
 
 # PLAN: the DIY Accounting brand
 
-Split out of `PLAN_LICENSING_UPLIFT.md` on 2026-09-10. That plan was about changing the licence,
+Split out of `_developers/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10. That plan was about changing the licence,
 which is done. What is left of the brand is two separate things, and both live here: **one source
 for the marks, palette and tokens**, and **a name we do not hold**.
 

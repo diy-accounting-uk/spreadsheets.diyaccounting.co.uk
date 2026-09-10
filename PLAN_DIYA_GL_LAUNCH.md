@@ -596,7 +596,7 @@ here until their phase opens.
 
 ## The names and the notice
 
-Two operator rows moved here from `PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
+Two operator rows moved here from `_developers/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
 narrowed to the licence change and its filings. They sit with the launch because that is what they
 serve: the product needs its names held before it is talked about, and HMRC should hear the licence
 changed from us rather than from the release.
