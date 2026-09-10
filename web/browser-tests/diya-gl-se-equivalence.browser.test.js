@@ -316,7 +316,13 @@ test.describe("DIYA-GL page — the screen agrees (A4)", () => {
 
         if (key.startsWith("check/")) {
           const classNames = String(className).split(/\s+/);
-          const renderedVerdict = classNames.includes("fail") ? "fail" : classNames.includes("pass") ? "pass" : null;
+          const renderedVerdict = classNames.includes("fail")
+            ? "fail"
+            : classNames.includes("warn")
+              ? "warn"
+              : classNames.includes("pass")
+                ? "pass"
+                : null;
           if (renderedVerdict !== s2Entry.value) {
             mismatches.push(`${key}: rendered verdict "${renderedVerdict}" (class "${className}"), S2 says "${s2Entry.value}"`);
           }
