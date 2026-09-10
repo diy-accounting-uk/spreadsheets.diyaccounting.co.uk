@@ -13,7 +13,7 @@ expensive by sitting.
 
 ## 1. Tell HMRC's Software Developer Support team the licence changed
 
-**Plan row:** `H-LU-9` in `PLAN_LICENSING_UPLIFT.md`. **Cost:** nothing. **Impact:** medium.
+**Plan row:** `H-LU-9` in `PLAN_DIYA_GL_LAUNCH.md`. **Cost:** nothing. **Impact:** medium.
 **Owner:** operator, drafted by Cowork.
 
 ### Why this exists
@@ -68,7 +68,7 @@ anything, because nothing is needed from them.
 
 ## 2. Find out what recovering `diyaccounting.com` would take
 
-**Plan:** `PLAN_DIYACCOUNTING_COM.md`, rows DC-1 to DC-3. **Cost:** nothing to ask.
+**Plan:** `PLAN_DIYACCOUNTING_BRAND.md` part three, rows DC-1 to DC-3. **Cost:** nothing to ask.
 **Impact:** low. **Owner:** operator, researched by Cowork.
 
 ### Why this exists
@@ -101,7 +101,7 @@ price worth paying", the plan has succeeded — the question stops being open.
 
 ### What good looks like
 
-A short written answer in `PLAN_DIYACCOUNTING_COM.md`, so that nobody revisits this next year
+A short written answer in `PLAN_DIYACCOUNTING_BRAND.md`, so that nobody revisits this next year
 without knowing what was already established. **A finding of "not worth pursuing" is a complete
 result**, not a failure.
 
@@ -109,10 +109,11 @@ result**, not a failure.
 
 ## Not in this brief
 
-`H-LU-5`, registering `diya-gl.co.uk` and `diya-gl.com`, is on the board in `NEXT.md` rather than
+`H-LU-5`, registering `diya-gl.co.uk` and `diya-gl.com`, is on the board in `NEXT.md` and in
+`PLAN_DIYA_GL_LAUNCH.md` rather than
 here: it is a few minutes in a console rather than something needing drafting. USD 25 a year, and
 neither name needs a hosted zone — delete the one Route 53 creates within twelve hours and it costs
 nothing.
 
-`H-LU-4`, the trade mark filings, has its own pack in `_developers/trade-marks/` and is a larger
-piece of work at about £1,435. It is the precursor to DC-2 above.
+`H-LU-4`, the trade mark filings, is now `PLAN_DIYACCOUNTING_BRAND.md` part two, with its pack in
+`_developers/trade-marks/`. About £1,435, and the precursor to DC-2 above.

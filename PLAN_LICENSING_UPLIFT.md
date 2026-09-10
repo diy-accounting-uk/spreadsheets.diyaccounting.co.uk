@@ -4,8 +4,9 @@
 
 Status: approved, go given 2026-09-09. Urgency 1 is code complete on PR #86 and the four
 sibling-repository PRs (tap #1, root #28, www #27, archive #31); LU-9 follows the merges.
-`diyaccounting.com`, the name we do not hold, is `PLAN_DIYACCOUNTING_COM.md`: a different question
-from this plan's, so it is a separate document rather than a row at the end of this one.
+The brand is `PLAN_DIYACCOUNTING_BRAND.md`: one source for the marks and tokens, the trade mark
+filings, and `diyaccounting.com`. The domain registrations and the HMRC licence note went to
+`PLAN_DIYA_GL_LAUNCH.md`. What is left here is the licence change itself, which shipped.
 LU-20, the tap rename, is done: the repository is `diy-accounting-uk/homebrew-diya-gl`, its README
 carries the new name, and no reference to the old one survives in this repository or in Submit.
 The cross-repository section is filled from a read-only audit of all six repositories; the review
@@ -137,7 +138,7 @@ it describes someone else's thing (MCP on Submit's `mcp.html`).
 
 All ten decisions are taken: 1 to 6 on 2026-09-08 and confirmed on 2026-09-09, 7 to 10 on
 2026-09-09, each on the recommendation. No solicitor reads the grant or the trademark notice; the
-operator publishes on the plain text. The brand repository (urgency 3) starts after urgency 1 lands.
+operator publishes on the plain text. The brand work is `PLAN_DIYACCOUNTING_BRAND.md`.
 The go for urgency 1 was given on 2026-09-09 for the board; the work starts in a fresh session.
 
 1. The three layers as tabled, with the engine boundary drawn by the import closure.
@@ -204,21 +205,12 @@ generate dispatches rebuilding every package.
 | Group | Rows | Area and files | Sweeps up | Model |
 | --- | --- | --- | --- | --- |
 | 2A the filing pack | LU-10 | `TRADEMARKS.md`, `_developers/trade-marks/` | the first-use evidence, the class wording, the series-rule check | Sonnet |
-| 2B the filings and registrations | H-LU-4, H-LU-5 | gov.uk, registrars, github.com, npmjs.com | — | operator |
-
-### Urgency 3: one brand source
-
-| Group | Rows | Area and files | Sweeps up | Model |
-| --- | --- | --- | --- | --- |
-| 3A the baseline and the repository | LU-12, LU-13, LU-14, H-LU-6, H-LU-7 | the new `diy-accounting-uk/brand` repository | the two favicon identities resolved to one; the blue token matched to its mark; the teal leftovers in www | Opus for the guidelines and words; Sonnet for tokens and the package |
-| 3B consumption | LU-15, LU-16 | spreadsheets, submit, www: `package.json`, build scripts, stylesheets, `public/`; www's `/brand` page | every local logo, favicon and token copy deleted | Sonnet, one agent per repository |
 
 ### Human rows across the groups
 
 | # | Task | Gates |
 | --- | --- | --- |
 | H-LU-3 | Dispatch the four `generate-*` workflows after 1D merges, then the prod deploy | LU-9 |
-| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | none |
 
 ## Task list
 
@@ -239,7 +231,6 @@ The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 | LU-18 | Third-party lines in `NOTICE` and `LICENSING.md`, spreadsheets and Submit: the XBRL International GL Framework adaptation (`schema/diya-gl-docs.md:1-10`, both schemas' descriptions; CC BY layer, attribution kept verbatim); jszip (MIT, taken under MIT of its dual licence), smol-toml (BSD-3-Clause) and ajv's generated validator (MIT) compiled into the DIYA-GL bundle and the runners; one consolidated Crown copyright and Open Government Licence v3.0 line for the HMRC-derived data (`app/data/*.toml`, `app/data/filing/`, `app/data/hmrc/sa103f_mapping_v3.csv`, the 40 `ref-additions/*.toml`, Submit's `web/public/docs/hmrc-form-field-standards/README.md`); the Apache Maven Wrapper in every repository that has one; the PolicyBee logo in spreadsheets and Submit (used under the partner arrangement, `?partner=35`, not licensed onward); Submit's Google "G" logo on `auth/login.html` (Google brand guidelines); Submit's `web/public/lib/qrcode.min.js` (node-qrcode, MIT; its notice is stripped today and is restored at the top of the file); the Lighthouse (Apache-2.0), Playwright and React (Apache-2.0, MIT) and OWASP ZAP reports committed under Submit's `web/public/tests/`; the runtime dependency tables from each `package.json` | LU-1 | Sonnet | `NOTICE`, `LICENSING.md`, `diya-gl/NOTICE`; submit: `NOTICE`, `LICENSING.md`, `web/public/lib/qrcode.min.js` |
 | LU-19 | The engine announces its terms: `diya-gl --version` prints the version, `Apache-2.0` and the copyright line; the MCP server's `serverInfo` version stops reading `0.1.0` and its `instructions` string names the licence and the source address, since the MCP `Implementation` object has no licence field; the templates fetched under decision 7(a) print the PolyForm terms once on first fetch | LU-1 | Sonnet | `diya-gl/bin/diya-gl.js`, `app/lib/mcp/server.js`, `app/lib/app-resources.js` |
 | H-LU-3 | Dispatch the four `generate-*` workflows after LU-5 merges, then the prod deploy | LU-5 | operator | GitHub Actions |
-| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 ## Trade marks
 
@@ -277,12 +268,11 @@ The marks, the operator's choice: **DIY ACCOUNTING SPREADSHEETS**, **DIY ACCOUNT
 | --- | --- | --- | --- | --- |
 | LU-10 | The filing pack: the free searches run and their results recorded; the goods and services wording for classes 9, 42 and 35 drafted from the IPO's pre-approved terms; the first-use evidence gathered with dates; `TRADEMARKS.md` extended with the ™ usage rules | — | Sonnet | `TRADEMARKS.md`, `_developers/trade-marks/` (new) |
 | LU-11 | ™ on the marks across the site footer, the spec page and the package README, in the same PR as LU-6 | LU-6 | Sonnet | as LU-6 |
-| H-LU-4 | File the UK applications on gov.uk from the pack: DIYA-GL as a standard application; DIY ACCOUNTING SUBMIT and DIY ACCOUNTING SPREADSHEETS via Right Start, each on its own, with the stylised marks beside them; DIY ACCOUNTING on its own via Right Start as the probe | LU-10 | operator | gov.uk |
-| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Those two domains are the whole of it: both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars, github.com, npmjs.com |
 
 ## Consistent branding
 
-One brand repository, `diy-accounting-uk/brand`, is the single source for every mark and rule, and
+One brand repository, `diy-accounting-uk/brand`, is the single source for every mark and rule
+(now `PLAN_DIYACCOUNTING_BRAND.md`), and
 the other repositories pull from it instead of carrying their own copies. What it holds:
 
 - The marks: the DIY Accounting logo and wordmark, the DIYA-GL wordmark and the Submit wordmark as
@@ -310,13 +300,6 @@ replace.
 
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
-| LU-12 | The baseline: from the audit's branding inventory, the one palette, type stack, logo set and naming table the brand repository starts from; every inconsistency listed with its resolution | audit | Opus | `_developers/brand-baseline.md` (new, this repo, moves to the brand repository at LU-13) |
-| LU-13 | The brand repository: structure, the SVG marks and generated renders, `tokens.css` and `tokens.json`, the words, the canonical legal texts, `LICENSE` and `TRADEMARKS.md`, the guidelines document | LU-12, H-LU-6 | Opus for the guidelines and words; Sonnet for tokens, renders and structure | the new repository |
-| LU-14 | The brand package: `package.json`, the render build, a publish workflow that publishes to npm and rolls the patch version on every green push to main, with a test that every asset the guidelines name exists | LU-13 | Sonnet | the new repository's `.github/workflows/`, `scripts/` |
-| LU-15 | Consumption: each of `spreadsheets`, `submit` and `www` pins the package, copies assets and tokens at build, imports the tokens, and deletes its local copies; one PR per repository; the footer, favicon and title conventions read from the words file | LU-14 | Sonnet, one agent per repository | each repository's `package.json`, build scripts, stylesheets, `public/` |
-| LU-16 | The guidelines page: www builds `/brand` from the package's guidelines document and publishes the SVG marks for download under the trademark rules | LU-14 | Sonnet | `www.diyaccounting.co.uk` |
-| H-LU-6 | Create the `diy-accounting-uk/brand` repository (public, empty) | — | operator, or the session on the operator's word | github.com |
-| H-LU-7 | Review the guidelines and the marks on sight before LU-15 pins them | LU-13 | operator | the brand repository |
 
 ## Across the repositories
 
@@ -518,7 +501,7 @@ everywhere: system stacks, no web fonts, nothing to attribute. The product names
 Accounting Submit", "DIY Accounting Spreadsheets" and "DIY Accounting Limited" side by side as card
 titles on www; the engine is "DIYA-GL" in headings and "diya-gl" in meta descriptions. The only
 shared files are the teal favicon (spreadsheets, archive, and a buried copy in Submit) and the
-PolicyBee logo. No brand guideline exists. This inventory is LU-12's baseline.
+PolicyBee logo. No brand guideline exists. This inventory is the baseline `PLAN_DIYACCOUNTING_BRAND.md` starts from.
 
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
@@ -566,7 +549,7 @@ PolicyBee logo. No brand guideline exists. This inventory is LU-12's baseline.
   licence in `instructions`.
 - `LU-10`, `LU-11`: the pack exists with dated search results; ™ appears in the footer, the spec page
   and the package README.
-- `LU-12` to `LU-16`: the brand package publishes; each consumer's `public/` holds no local logo or
+- the brand rows, now in `PLAN_DIYACCOUNTING_BRAND.md`: the brand package publishes; each consumer's `public/` holds no local logo or
   token copy; www's `/brand` page renders from the package.
 
 ## Review
@@ -615,7 +598,7 @@ hand run and then maintains itself.
 
 **2A, 2B.** Sound and unchanged.
 
-**3A, 3B.** Sound and unchanged; the coverage tables and the branding inventory are LU-12's input.
+**3A, 3B.** Moved to `PLAN_DIYACCOUNTING_BRAND.md`; the coverage tables and the branding inventory are its input.
 
 **The Docker image as its own repository (decision 8).** Today the image is 28 lines: install the
 just-packed tarball into `node:24-alpine`, label it, set the entrypoint. It is built and pushed from

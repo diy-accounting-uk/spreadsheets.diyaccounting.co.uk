@@ -594,6 +594,22 @@ here until their phase opens.
   parity job; then the code waves and the closing ladder, sized from section 5b's estimate.
   Fable coordinates; Sonnet and Opus workers. Does not wait on LP-13.
 
+## The names and the notice
+
+Two operator rows moved here from `PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
+narrowed to the licence change and its filings. They sit with the launch because that is what they
+serve: the product needs its names held before it is talked about, and HMRC should hear the licence
+changed from us rather than from the release.
+
+| # | Task | Gates | Owner | Where |
+| --- | --- | --- | --- | --- |
+| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Those two domains are the whole of it: both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars, github.com, npmjs.com |
+| H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
+
+`BRIEF_OPERATOR_TASKS_2026-09-10.md` writes the HMRC note out in full — the address, what changed,
+and the one thing that has not, which is that we still issue no licence keys so the
+`Gov-Vendor-License-IDs` header carries no data either way.
+
 ## Where this changes the DIYA-GL Cloud plan
 
 `_developers/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
