@@ -42,3 +42,10 @@ The operator triages this list when cool-down lifts: each line becomes a board r
   are sequential within one job, so we have not. There is no concurrency group to key on, because
   the contention is on a live AWS resource shared across repositories. Submit is adding a retry
   with backoff to the toggle script. Unobserved here, recorded so it is not a surprise.
+
+- **The toggle flag can move to `--client diya-gl` whenever we like.** Submit's S3c is on their
+  main, verified in the raw file our CI fetches: the usage line now reads `app|diya-gl|both` and
+  `books` is normalised to `diya-gl` as an alias, so both spellings work for the window. Our
+  `deploy.yml` still says `books` in both the enable and disable steps. Nothing forces the change
+  and nothing breaks either way; doing it removes one future cut-over.
+
