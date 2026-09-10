@@ -30,10 +30,14 @@ const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "
 // so the published npm package and the image leave them out. A repository
 // checkout has app/templates and reads it straight off disk. A packaged install
 // has not, so the loader takes the same file from the site, which already
-// serves the templates the books page uses, and keeps it in a user cache so
+// serves the templates the DIYA-GL pages use, and keeps it in a user cache so
 // every later run works with no network.
+//
+// This stays on /books/ while the site still serves the pages there. Every
+// published version fetches this URL, so it moves only once the live site
+// redirects it, and the redirect keeps the older versions working after that.
 const TEMPLATE_PREFIX = "templates/";
-const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets/";
+const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/books/assets/";
 
 let templateTermsAnnounced = false;
 
