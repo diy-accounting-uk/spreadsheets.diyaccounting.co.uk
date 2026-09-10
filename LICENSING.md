@@ -80,7 +80,7 @@ The twelve `app/bin` build scripts outside the closure are PolyForm:
 
 The workbook templates under `app/templates/` stay PolyForm and do not ship in the npm package or
 the image. The package fetches the template it needs from
-`https://spreadsheets.diyaccounting.co.uk/books/assets/templates/`, prints the PolyForm terms once,
+`https://spreadsheets.diyaccounting.co.uk/diya-gl/assets/templates/`, prints the PolyForm terms once,
 and caches it. Holding a template that way is the same permitted use as downloading a package from
 the site.
 
