@@ -130,7 +130,7 @@ async function dropFile(page, bytes, name, mimeType) {
   // The page binds its drop handler inside its own DOMContentLoaded listener,
   // which can run after Playwright's domcontentloaded wait resolves; a drop
   // dispatched before it lands on nothing. The manifest is set after binding.
-  await page.waitForFunction(() => window.DiyaGlBooksPage && window.DiyaGlBooksPage.manifest, null, { timeout: 30_000 });
+  await page.waitForFunction(() => window.DiyaGlPage && window.DiyaGlPage.manifest, null, { timeout: 30_000 });
   const base64 = bytes.toString("base64");
   await page.evaluate(
     ({ base64, name, mimeType }) => {
@@ -152,7 +152,7 @@ async function waitForLoaded(page) {
 }
 
 async function readSnapshotTotal(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.annual.sales);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.annual.sales);
 }
 
 async function readDownload(download) {
@@ -399,10 +399,10 @@ test.describe("DIYA-GL page — breakability", () => {
     const beforeReport = JSON.parse(await (await JSZip.loadAsync(before.bytes)).file("report.json").async("string"));
 
     await page.evaluate(async () => {
-      const edited = window.DIYA_BOOKS_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
-      await window.DiyaGlBooksPage.setLines(edited, "test: bump the first line by £500");
+      const edited = window.DIYA_GL_SNAPSHOT.lines.map((line, i) => (i === 0 ? { ...line, amount: line.amount + 500 } : line));
+      await window.DiyaGlPage.setLines(edited, "test: bump the first line by £500");
     });
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const afterReport = JSON.parse(await (await JSZip.loadAsync(after.bytes)).file("report.json").async("string"));

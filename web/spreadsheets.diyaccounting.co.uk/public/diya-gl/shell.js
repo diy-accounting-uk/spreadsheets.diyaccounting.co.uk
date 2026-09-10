@@ -11,7 +11,7 @@
 // (books/products/<id>.js) the page names in body[data-product]; the shell
 // mounts that manifest and can mount another when a file sniffs as a
 // different product. Every figure it renders comes from the snapshot data.js
-// computes (window.DIYA_BOOKS_SNAPSHOT); every change it makes goes out
+// computes (window.DIYA_GL_SNAPSHOT); every change it makes goes out
 // through edits.js, which reaches the engine's own edit functions. This
 // file imports no engine module of its own.
 
@@ -105,7 +105,7 @@
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
 
     bindGlobalControls();
-    if (window.DiyaGlBooksCloud) window.DiyaGlBooksCloud.mount();
+    if (window.DiyaGlCloud) window.DiyaGlCloud.mount();
 
     var productId = document.body.dataset.product;
     var manifest = window.DiyaGlProducts && window.DiyaGlProducts[productId];
@@ -195,7 +195,7 @@
   // degrade contract), so this never blocks or errors the empty state --
   // it just never gets an offer to show.
   function checkForSavedBook() {
-    window.DiyaBooksAutosave.loadWorkingBook().then(function (record) {
+    window.DiyaGlAutosave.loadWorkingBook().then(function (record) {
       state.savedBook = record || null;
       if (!state.loaded) render();
     });
@@ -608,8 +608,8 @@
   }
 
   function renderUndoControls() {
-    var depth = window.DiyaGlBooksEdits.undo.depth();
-    var label = window.DiyaGlBooksEdits.undo.topLabel();
+    var depth = window.DiyaGlEdits.undo.depth();
+    var label = window.DiyaGlEdits.undo.topLabel();
     [els.undoBtn, els.undoBtnMobile].forEach(function (btn) {
       if (!btn) return;
       btn.classList.toggle("hidden", !state.loaded || depth === 0);
@@ -632,7 +632,7 @@
       snapshot: SNAPSHOT,
       report: SNAPSHOT.report,
       headlinesFromReport: function (report) {
-        return window.DiyaGlBooksLoader.headlinesFor(report, SNAPSHOT.context);
+        return window.DiyaGlLoader.headlinesFor(report, SNAPSHOT.context);
       },
       formatMoney: fmtMoney,
     });
@@ -1010,7 +1010,7 @@
     var label = active.newBook.label(values);
     var manifest = active;
     loadThrough("Creating a new book for " + label + "…", Promise.resolve({ productId: manifest.id }), function () {
-      return window.DiyaGlBooksLoader.createNewBook(values, manifest);
+      return window.DiyaGlLoader.createNewBook(values, manifest);
     }).then(function (snapshot) {
       if (!snapshot) return;
       state.newBookFormOpen = false;
@@ -1025,9 +1025,9 @@
     var label = (saved.source && saved.source.label) || "your working book";
     loadThrough(
       "Continuing " + label + "…",
-      window.DiyaGlBooksLoader.productIdOfBook(saved.book).then(idOnly),
+      window.DiyaGlLoader.productIdOfBook(saved.book).then(idOnly),
       function (sniffed, manifest) {
-        return window.DiyaGlBooksLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind, manifest);
+        return window.DiyaGlLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind, manifest);
       },
       { editedAtLoad: !!(saved.source && saved.source.edited) },
     ).then(function (snapshot) {
@@ -1040,7 +1040,7 @@
   }
 
   function handleDiscardSavedBook() {
-    window.DiyaBooksAutosave.clearWorkingBook().then(function () {
+    window.DiyaGlAutosave.clearWorkingBook().then(function () {
       state.savedBook = null;
       render();
       showToast("Discarded the saved working book.");
@@ -1095,7 +1095,7 @@
       "Loading " + exampleKey + "…",
       Promise.resolve({ productId: manifest.id }),
       function (sniffed, mounted) {
-        return window.DiyaGlBooksLoader.loadExample(exampleKey, mounted);
+        return window.DiyaGlLoader.loadExample(exampleKey, mounted);
       },
       opts,
     ).then(function (snapshot) {
@@ -1113,10 +1113,10 @@
   function loadFromAnySource(file) {
     var loadedProductId = null;
     var loadedSourceKind = null;
-    return loadThrough("Reading " + file.name + "…", window.DiyaGlBooksLoader.sniff(file), function (sniffed, manifest) {
+    return loadThrough("Reading " + file.name + "…", window.DiyaGlLoader.sniff(file), function (sniffed, manifest) {
       loadedProductId = manifest.id;
       loadedSourceKind = sniffed.kind;
-      return window.DiyaGlBooksLoader.loadSniffed(sniffed, manifest);
+      return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
     }).then(function (snapshot) {
       if (snapshot) {
         sendBookLoadedEvent(loadedProductId, loadedSourceKind);
@@ -1183,7 +1183,7 @@
   // to the source; editedAtLoad carries the answer across a continue, where
   // the stack starts empty however changed the book already is.
   function isEdited() {
-    return state.editedAtLoad || window.DiyaGlBooksEdits.undo.depth() > 0;
+    return state.editedAtLoad || window.DiyaGlEdits.undo.depth() > 0;
   }
 
   // The record autosave keeps and the continue offer restores: the live
@@ -1214,7 +1214,7 @@
     state.bookChecks = [];
     state.view = "home";
     state.openHelper = null;
-    window.DiyaGlBooksEdits.undo.clear();
+    window.DiyaGlEdits.undo.clear();
     render();
   }
 
@@ -1234,11 +1234,11 @@
   function applySnapshot(snapshot, opts) {
     opts = opts || {};
     SNAPSHOT = snapshot;
-    window.DIYA_BOOKS_SNAPSHOT = snapshot;
+    window.DIYA_GL_SNAPSHOT = snapshot;
     state.book = snapshot.book;
     state.lines = snapshot.lines;
     state.context = snapshot.context;
-    state.bookChecks = window.DiyaGlBooksEdits.bookChecks(snapshot);
+    state.bookChecks = window.DiyaGlEdits.bookChecks(snapshot);
     // A deep link never writes the autosave record -- whatever a reader had
     // saved before following the link stays exactly as it was.
     if (!opts.skipAutosave) autosaveCurrentBook();
@@ -1247,7 +1247,7 @@
   // The edit trail is reset before the snapshot lands, because the autosave
   // applySnapshot writes records whether the book is edited.
   function applyLoadedSnapshot(snapshot, opts) {
-    window.DiyaGlBooksEdits.undo.clear();
+    window.DiyaGlEdits.undo.clear();
     state.editedAtLoad = !!(opts && opts.editedAtLoad);
     applySnapshot(snapshot, opts);
     state.loaded = true;
@@ -1267,7 +1267,7 @@
   // autosave were never called.
   function autosaveCurrentBook() {
     if (!state.book || !state.lines) return;
-    window.DiyaBooksAutosave.saveWorkingBook(workingBookRecord());
+    window.DiyaGlAutosave.saveWorkingBook(workingBookRecord());
   }
 
   // ============================== the edit path ==============================
@@ -1284,10 +1284,10 @@
     return Promise.resolve()
       .then(edit)
       .then(function (newLines) {
-        return window.DiyaGlBooksLoader.recalculate(state.book, newLines, state.context);
+        return window.DiyaGlLoader.recalculate(state.book, newLines, state.context);
       })
       .then(function (snapshot) {
-        window.DiyaGlBooksEdits.undo.push(previousBook, previousLines, undoLabel);
+        window.DiyaGlEdits.undo.push(previousBook, previousLines, undoLabel);
         applySnapshot(snapshot);
         state.committing = false;
         render();
@@ -1323,9 +1323,9 @@
     state.committing = true;
     var previousBook = state.book;
     var previousLines = state.lines;
-    return window.DiyaGlBooksLoader.recalculateWithBook(nextBook, state.lines, state.context)
+    return window.DiyaGlLoader.recalculateWithBook(nextBook, state.lines, state.context)
       .then(function (snapshot) {
-        window.DiyaGlBooksEdits.undo.push(previousBook, previousLines, undoLabel);
+        window.DiyaGlEdits.undo.push(previousBook, previousLines, undoLabel);
         applySnapshot(snapshot);
         state.committing = false;
         render();
@@ -1339,7 +1339,7 @@
   }
 
   function undoLastEdit() {
-    var previous = window.DiyaGlBooksEdits.undo.pop();
+    var previous = window.DiyaGlEdits.undo.pop();
     if (!previous) {
       showToast("Nothing to undo.");
       return;
@@ -1348,7 +1348,7 @@
     // recalculateWithBook, not recalculate: undoing a year-end change has to
     // put back the tax year the restored book declares, not keep the one the
     // change brought in.
-    window.DiyaGlBooksLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
+    window.DiyaGlLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlEdits.undo.depth() > 0)
       .then(function (snapshot) {
         applySnapshot(snapshot);
         state.committing = false;
@@ -1356,7 +1356,7 @@
         showToast("Undid: " + previous.label + ".");
       })
       .catch(function (error) {
-        window.DiyaGlBooksEdits.undo.push(previous.book, previous.lines, previous.label);
+        window.DiyaGlEdits.undo.push(previous.book, previous.lines, previous.label);
         state.committing = false;
         showToast("Could not undo: " + (error && error.message ? error.message : error));
       });
@@ -2155,7 +2155,7 @@
         state.focusField = "amount";
         commit(
           function () {
-            return window.DiyaGlBooksEdits.changeAmount(state.book, state.lines, entryNumber, amount);
+            return window.DiyaGlEdits.changeAmount(state.book, state.lines, entryNumber, amount);
           },
           "change " + entryNumber + " to " + fmtMoney(amount),
           "Changed " + entryNumber + " to " + fmtMoney(amount) + ".",
@@ -2192,7 +2192,7 @@
         state.focusField = "date";
         commit(
           function () {
-            return window.DiyaGlBooksEdits.changeDate(state.book, state.lines, entryNumber, newDate);
+            return window.DiyaGlEdits.changeDate(state.book, state.lines, entryNumber, newDate);
           },
           "change " + entryNumber + "'s date to " + newDate,
           "Changed " + entryNumber + "'s date to " + newDate + ".",
@@ -2220,7 +2220,7 @@
                 return engine.changeLineBankAccount(state.book, state.lines, { entryNumber: entryNumber, newBankAccountID: newAccount });
               });
             }
-            return window.DiyaGlBooksEdits.changeAccount(state.book, state.lines, entryNumber, newAccount);
+            return window.DiyaGlEdits.changeAccount(state.book, state.lines, entryNumber, newAccount);
           },
           "change " + entryNumber + "'s account to " + newAccount,
           "Changed " + entryNumber + "'s account to " + newAccount + ".",
@@ -2233,7 +2233,7 @@
         var entryNumber = btn.getAttribute("data-delete-entry");
         commit(
           function () {
-            return window.DiyaGlBooksEdits.deleteEntry(state.book, state.lines, entryNumber);
+            return window.DiyaGlEdits.deleteEntry(state.book, state.lines, entryNumber);
           },
           "remove " + entryNumber,
           "Removed " + entryNumber + ".",
@@ -2354,7 +2354,7 @@
         addDraft[journal] = null;
         commit(
           function () {
-            return window.DiyaGlBooksEdits.addEntry(state.book, state.lines, entry);
+            return window.DiyaGlEdits.addEntry(state.book, state.lines, entry);
           },
           "add a " + journal + " entry of " + fmtMoney(amount),
           "Added a " + journal + " entry of " + fmtMoney(amount) + ".",
@@ -2614,7 +2614,7 @@
     if (check.helper.kind === "book") {
       return SNAPSHOT.context.engine.previewBookHelper({ book: SNAPSHOT.book, lines: SNAPSHOT.lines }, check.id);
     }
-    return window.DiyaGlBooksEdits.previewHelper(SNAPSHOT, check.id);
+    return window.DiyaGlEdits.previewHelper(SNAPSHOT, check.id);
   }
 
   // A focus helper does not change the book; it takes the reader to each
@@ -2732,7 +2732,7 @@
     }
     commit(
       function () {
-        return window.DiyaGlBooksEdits.applyHelper(snapshotAtPreview, checkId);
+        return window.DiyaGlEdits.applyHelper(snapshotAtPreview, checkId);
       },
       undoLabel,
       toastMessage,
@@ -2889,7 +2889,7 @@
       { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
       { label: "Download books as JSON (.json)", format: "json" },
     ];
-    if (window.DiyaGlBooksCloud && window.DiyaGlBooksCloud.isEnabled()) {
+    if (window.DiyaGlCloud && window.DiyaGlCloud.isEnabled()) {
       items.push({ label: "Save to my account", format: "cloud" });
     }
     return items;
@@ -2919,7 +2919,7 @@
       item.addEventListener("click", function () {
         closeSaveMenu();
         if (opt.format === "cloud") {
-          window.DiyaGlBooksCloud.saveCurrentBook();
+          window.DiyaGlCloud.saveCurrentBook();
         } else {
           runSave(current, opt.format);
         }
@@ -2982,7 +2982,7 @@
     return JSON.parse(engine.bookChecksJson(checkResults));
   }
 
-  // The artifact alone, with no download side effect -- window.DiyaGlBooksPage's
+  // The artifact alone, with no download side effect -- window.DiyaGlPage's
   // buildArtifact() calls this so cloud.js can put the same bytes a download
   // would write into a PUT body instead.
   function buildSaveArtifactFor(current, format) {
@@ -3198,7 +3198,7 @@
   // caller that is not the entries grid changes the book; undo is the same
   // stack the topbar button and Ctrl+Z pop; mount and loadManifest are how
   // another product's views reach this page.
-  window.DiyaGlBooksPage = {
+  window.DiyaGlPage = {
     setLines: setLines,
     undo: undoLastEdit,
     mount: mount,

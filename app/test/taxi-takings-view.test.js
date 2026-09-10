@@ -57,7 +57,7 @@ function stubHelpers(opts = {}) {
 }
 
 function render(fixture, monthKey, { bag = {}, state = {}, mobilePortrait = false } = {}) {
-  globalThis.DIYA_BOOKS_SNAPSHOT = { takings: fixture.takings, lines: fixture.lines };
+  globalThis.DIYA_GL_SNAPSHOT = { takings: fixture.takings, lines: fixture.lines };
   const helpers = stubHelpers({ mobilePortrait });
   Object.assign(helpers.viewState("taxi-takings", { openWeek: null, openDay: null, draft: null, pendingFocus: null }), bag);
   const html = view.renderMonthDetail(monthKey, { focusEntry: null, focusField: null, ...state }, helpers);
@@ -90,7 +90,7 @@ const ONE_FARE_DAY = "2025-04-08";
 const ONE_FARE_ENTRY = "TXN-0004";
 
 beforeEach(() => {
-  delete globalThis.DIYA_BOOKS_SNAPSHOT;
+  delete globalThis.DIYA_GL_SNAPSHOT;
 });
 
 describe("the takings view", () => {
@@ -371,7 +371,7 @@ describe("the takings view", () => {
     expect(count(source, "results[")).toBe(0);
     expect(count(source, "Profit & Loss Acc")).toBe(0);
     expect(count(source, "rkFor(")).toBe(0);
-    expect(count(source, "DIYA_BOOKS_SNAPSHOT")).toBe(1);
+    expect(count(source, "DIYA_GL_SNAPSHOT")).toBe(1);
   });
 
   it("defines DiyaGlTaxiTakings with its two entry points and internals", () => {

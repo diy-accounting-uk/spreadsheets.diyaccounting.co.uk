@@ -183,15 +183,15 @@ function assertOnlyThisRuleFlips(before, after, targetId) {
 
 async function appendLines(page, newLines) {
   await page.evaluate(async (newLines) => {
-    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-    await window.DiyaGlBooksPage.setLines(snapshot.lines.concat(newLines), "test: append a crafted line");
+    const snapshot = window.DIYA_GL_SNAPSHOT;
+    await window.DiyaGlPage.setLines(snapshot.lines.concat(newLines), "test: append a crafted line");
   }, newLines);
 }
 
 async function removeLineByEntryNumber(page, entryNumber) {
   await page.evaluate(async (entryNumber) => {
-    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-    await window.DiyaGlBooksPage.setLines(
+    const snapshot = window.DIYA_GL_SNAPSHOT;
+    await window.DiyaGlPage.setLines(
       snapshot.lines.filter((line) => line.entryNumber !== entryNumber),
       "test: remove a line",
     );
@@ -287,9 +287,9 @@ test.describe("DIYA-GL Self Employed page — E1: an edit moves the figure it sh
     const newGross = 3500 + delta;
     await page.evaluate(
       async ({ entryNumber, newGross }) => {
-        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+        const snapshot = window.DIYA_GL_SNAPSHOT;
         const lines = snapshot.lines.map((line) => (line.entryNumber === entryNumber ? { ...line, "diya-gl:grossPay": newGross } : line));
-        await window.DiyaGlBooksPage.setLines(lines, "test: change payroll gross");
+        await window.DiyaGlPage.setLines(lines, "test: change payroll gross");
       },
       { entryNumber, newGross },
     );
@@ -401,7 +401,7 @@ async function clickAdd(page, journal) {
 
 async function newestLine(page) {
   return page.evaluate(() => {
-    const lines = window.DIYA_BOOKS_SNAPSHOT.lines;
+    const lines = window.DIYA_GL_SNAPSHOT.lines;
     return lines[lines.length - 1];
   });
 }
@@ -550,7 +550,7 @@ test.describe("DIYA-GL Self Employed page — E1: a line added through the grid'
     await expect(page.locator("#toast")).toContainText("Changed " + entryNumber + "'s account to 1220");
 
     const line = await page.evaluate(
-      (entryNumber) => window.DIYA_BOOKS_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
+      (entryNumber) => window.DIYA_GL_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
       entryNumber,
     );
     expect(line.accountMainID).toBe("1220");
@@ -558,7 +558,7 @@ test.describe("DIYA-GL Self Employed page — E1: a line added through the grid'
 
     await undo(page);
     const restored = await page.evaluate(
-      (entryNumber) => window.DIYA_BOOKS_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
+      (entryNumber) => window.DIYA_GL_SNAPSHOT.lines.find((line) => line.entryNumber === entryNumber),
       entryNumber,
     );
     expect(restored.accountMainID).toBe("1200");
@@ -940,7 +940,7 @@ async function settleTestBook(page, businessName) {
 }
 
 async function lineCount(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 }
 
 test.describe("DIYA-GL Self Employed page — E2: each settlement helper's preview and result", () => {
@@ -1045,7 +1045,7 @@ async function uploadSePackage(page) {
 }
 
 function amountsByEntryNumber(page) {
-  return page.evaluate(() => Object.fromEntries(window.DIYA_BOOKS_SNAPSHOT.lines.map((line) => [line.entryNumber, line.amount])));
+  return page.evaluate(() => Object.fromEntries(window.DIYA_GL_SNAPSHOT.lines.map((line) => [line.entryNumber, line.amount])));
 }
 
 // The first month whose grid offers an editable amount in both journals.
@@ -1079,7 +1079,7 @@ test.describe("DIYA-GL Self Employed page — E3: an uploaded package's lines ar
   test("a payroll edit and a bank edit each land on their own line", async ({ page }) => {
     await uploadSePackage(page);
 
-    const numbers = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.map((line) => line.entryNumber));
+    const numbers = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.map((line) => line.entryNumber));
     const counts = new Map();
     for (const number of numbers) counts.set(number, (counts.get(number) || 0) + 1);
     const shared = [...counts].filter(([, count]) => count > 1).map(([number]) => number);

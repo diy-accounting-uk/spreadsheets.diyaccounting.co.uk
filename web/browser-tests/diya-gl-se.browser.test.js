@@ -131,10 +131,10 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
 
   test("the mounted manifest is the Self Employed one and the tab strip is its view list", async ({ page }) => {
     await openExample(page, FEATURED_EXAMPLE);
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("se");
-    expect(await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"])).toBe("SelfEmployed");
+    expect(await page.evaluate(() => window.DiyaGlPage.manifest.id)).toBe("se");
+    expect(await page.evaluate(() => window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:product"])).toBe("SelfEmployed");
     const tabIds = await page.locator(".tab-btn[data-view]").evaluateAll((tabs) => tabs.map((tab) => tab.getAttribute("data-view")));
-    const manifestIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
+    const manifestIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((view) => view.id));
     expect(tabIds).toEqual(manifestIds);
   });
 
@@ -152,7 +152,7 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
   test("every view renders and carries at least one report key", async ({ page }) => {
     const errors = watchForErrors(page);
     await openExample(page, FEATURED_EXAMPLE);
-    const viewIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
+    const viewIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((view) => view.id));
     for (const viewId of viewIds) {
       await page.locator(`.tab-btn[data-view="${viewId}"]`).click();
       await expect(page.locator(`.tab-btn[data-view="${viewId}"]`)).toHaveAttribute("aria-selected", "true");
@@ -403,11 +403,11 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
     const book = await page.evaluate(() => ({
-      lines: window.DIYA_BOOKS_SNAPSHOT.lines.length,
-      product: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"],
-      vat: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:vatRegistered"],
-      start: window.DIYA_BOOKS_SNAPSHOT.book.documentInfo.periodCoveredStart,
-      end: window.DIYA_BOOKS_SNAPSHOT.book.documentInfo.periodCoveredEnd,
+      lines: window.DIYA_GL_SNAPSHOT.lines.length,
+      product: window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:product"],
+      vat: window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:vatRegistered"],
+      start: window.DIYA_GL_SNAPSHOT.book.documentInfo.periodCoveredStart,
+      end: window.DIYA_GL_SNAPSHOT.book.documentInfo.periodCoveredEnd,
     }));
     expect(book).toEqual({ lines: 0, product: "SelfEmployed", vat: true, start: "2025-04-06", end: "2026-04-05" });
     expect(errors).toEqual([]);

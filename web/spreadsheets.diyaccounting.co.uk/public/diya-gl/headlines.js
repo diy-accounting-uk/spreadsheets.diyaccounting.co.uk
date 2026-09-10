@@ -12,7 +12,7 @@
 // returns { refresh(snapshot) } so a caller can repaint after every load or
 // edit without re-mounting. opts carries three things this module never
 // computes for itself: the books-page snapshot data.js builds
-// (window.DIYA_BOOKS_SNAPSHOT's shape), the pure headlinesFromReport()
+// (window.DIYA_GL_SNAPSHOT's shape), the pure headlinesFromReport()
 // function from app/lib/headlines.js (so the browser and the Node test
 // derive the same tiles from the same R keys), and formatMoney (the page's
 // own currency formatter, so the strip's figures render exactly like every

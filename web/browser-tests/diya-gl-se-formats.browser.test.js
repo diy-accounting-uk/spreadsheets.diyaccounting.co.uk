@@ -96,7 +96,7 @@ async function dropFile(page, bytes, name, mimeType) {
   // The page binds its drop handler inside its own DOMContentLoaded listener,
   // which can run after Playwright's domcontentloaded wait resolves; a drop
   // dispatched before it lands on nothing. The manifest is set after binding.
-  await page.waitForFunction(() => window.DiyaGlBooksPage && window.DiyaGlBooksPage.manifest, null, { timeout: 30_000 });
+  await page.waitForFunction(() => window.DiyaGlPage && window.DiyaGlPage.manifest, null, { timeout: 30_000 });
   const base64 = bytes.toString("base64");
   await page.evaluate(
     ({ base64, name, mimeType }) => {
@@ -253,8 +253,8 @@ test.describe("DIYA-GL page — Self Employed refusals (E4)", () => {
     );
     await waitForLoaded(page);
 
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("bst");
-    expect(await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"])).toBe("BasicSoleTrader");
+    expect(await page.evaluate(() => window.DiyaGlPage.manifest.id)).toBe("bst");
+    expect(await page.evaluate(() => window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:product"])).toBe("BasicSoleTrader");
   });
 });
 

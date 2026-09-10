@@ -60,7 +60,7 @@
       })
       .then(function (json) {
         layout = json;
-        if (global.DiyaGlBooksPage && global.DiyaGlBooksPage.helpers) global.DiyaGlBooksPage.helpers.render();
+        if (global.DiyaGlPage && global.DiyaGlPage.helpers) global.DiyaGlPage.helpers.render();
       })
       .catch(function (error) {
         layoutFailed = true;

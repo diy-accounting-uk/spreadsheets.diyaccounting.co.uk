@@ -72,7 +72,7 @@ async function addFareViaUI(page, date, { amount, detail, miles }) {
 // the page itself renders from.
 async function dayTakings(page, date) {
   return page.evaluate((date) => {
-    for (const month of Object.values(window.DIYA_BOOKS_SNAPSHOT.takings.months)) {
+    for (const month of Object.values(window.DIYA_GL_SNAPSHOT.takings.months)) {
       for (const week of month.weeks) {
         const day = week.days.find((d) => d.date === date);
         if (day) return day.takings;
@@ -83,7 +83,7 @@ async function dayTakings(page, date) {
 }
 
 async function lineCount(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 }
 
 // ── undo after a fare edit ──────────────────────────────────────────────
