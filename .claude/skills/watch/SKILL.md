@@ -114,6 +114,12 @@ Diagnose these before treating a red or a missing run as a defect.
   queued per group and cancels the older pending one when a third arrives. Two active branches
   sharing one environment means the last to push owns the slot, and the other's deploy silently
   never happens. "No run for this commit" is a distinct state from "run failed".
+- **A workflow cancelling itself.** When a caller workflow and its reusable callee share a
+  concurrency group, the caller fires first, then GitHub cancels it when it reaches the reusable
+  workflow's jobs. The tell is a cancellation with no other run in the group, followed seconds
+  later by the same jobs reappearing under a different workflow name. Check the workflow names
+  before reporting the cancellation as a failure—if the jobs landed under a different workflow,
+  the cancellation was intentional routing.
 
 ## On failure
 
