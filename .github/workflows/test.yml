@@ -2,6 +2,11 @@
 # Copyright (C) 2006-2026 DIY Accounting Limited
 name: test
 run-name: "test from ${{ github.ref_name }}"
+# A push to a branch and its pull request are separate refs, so each keeps its own
+# run and only supersedes its own predecessor.
+concurrency:
+  group: test-spreadsheets-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   schedule:
