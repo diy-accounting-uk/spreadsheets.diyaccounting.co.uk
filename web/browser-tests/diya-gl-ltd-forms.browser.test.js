@@ -245,7 +245,7 @@ test.describe("DIYA-GL page — the six Ltd form views (LT-T8)", () => {
   test("a drifting cell marks that box's own margin and no other", async ({ page }) => {
     await openPackage(page, { file: "Financialaccounts.xlsx", sheet: "CorporationTax", cell: "K35" });
     await openView(page, "corporation-tax");
-    const drift = await page.evaluate(() => (window.DIYA_BOOKS_SNAPSHOT.drift || []).map((entry) => entry.id));
+    const drift = await page.evaluate(() => (window.DIYA_GL_SNAPSHOT.drift || []).map((entry) => entry.id));
     expect(drift).toContain("Financialaccounts.xlsx!CorporationTax!K35");
     await expect(page.locator("#view-root .form-row-margin .pencil-correction")).toHaveCount(1);
     const owningRow = page.locator("#view-root .form-row", { has: page.locator(".form-row-margin .pencil-correction") });

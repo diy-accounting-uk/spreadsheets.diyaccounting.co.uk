@@ -405,13 +405,13 @@ test.describe("DIYA-GL page — E1: each edit's report.json equals Node's", () =
 
     await page.evaluate(
       async ({ entryNumber, newPostingDate }) => {
-        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+        const snapshot = window.DIYA_GL_SNAPSHOT;
         const lines = snapshot.lines.map((line) => (line.entryNumber === entryNumber ? { ...line, postingDate: newPostingDate } : line));
-        await window.DiyaGlBooksPage.setLines(lines, "test: change a date");
+        await window.DiyaGlPage.setLines(lines, "test: change a date");
       },
       { entryNumber, newPostingDate },
     );
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
     expect(await monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 1200);
@@ -437,15 +437,15 @@ test.describe("DIYA-GL page — E1: each edit's report.json equals Node's", () =
 
     await page.evaluate(
       async ({ entryNumber, newAccountMainID }) => {
-        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+        const snapshot = window.DIYA_GL_SNAPSHOT;
         const lines = snapshot.lines.map((line) =>
           line.entryNumber === entryNumber ? { ...line, accountMainID: newAccountMainID } : line,
         );
-        await window.DiyaGlBooksPage.setLines(lines, "test: change an account");
+        await window.DiyaGlPage.setLines(lines, "test: change an account");
       },
       { entryNumber, newAccountMainID },
     );
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
     const movedRow = page.locator(`tr.entry-row[data-entry="${entryNumber}"] .entry-account-code`);
@@ -631,7 +631,7 @@ test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book
     // line is installed the way a book from another surface would land,
     // through the page's own setLines seam.
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const imported = {
         entryNumber: "IMPORT-0001",
         sourceJournalID: "purchases",
@@ -641,7 +641,7 @@ test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book
         documentType: "invoice",
         detailComment: "Imported against a code this book has no account for",
       };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([imported]), "import a line");
+      await window.DiyaGlPage.setLines(snapshot.lines.concat([imported]), "import a line");
     });
 
     // The amount reached no total: the money is simply not in the book.

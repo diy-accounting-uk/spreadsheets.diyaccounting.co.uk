@@ -81,15 +81,15 @@ async function openFull(page) {
 
 async function appendLines(page, newLines) {
   await page.evaluate(async (newLines) => {
-    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-    await window.DiyaGlBooksPage.setLines(snapshot.lines.concat(newLines), "test: append a crafted line");
+    const snapshot = window.DIYA_GL_SNAPSHOT;
+    await window.DiyaGlPage.setLines(snapshot.lines.concat(newLines), "test: append a crafted line");
   }, newLines);
 }
 
 async function removeLineByEntryNumber(page, entryNumber) {
   await page.evaluate(async (entryNumber) => {
-    const snapshot = window.DIYA_BOOKS_SNAPSHOT;
-    await window.DiyaGlBooksPage.setLines(
+    const snapshot = window.DIYA_GL_SNAPSHOT;
+    await window.DiyaGlPage.setLines(
       snapshot.lines.filter((line) => line.entryNumber !== entryNumber),
       "test: remove a line",
     );
@@ -103,7 +103,7 @@ async function removeLineByEntryNumber(page, entryNumber) {
 async function patchLine(page, entryNumber, patch, label) {
   await page.evaluate(
     async ({ entryNumber, patch, label }) => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const lines = snapshot.lines.map((line) => {
         if (line.entryNumber !== entryNumber) return line;
         const changed = { ...line, ...patch };
@@ -112,7 +112,7 @@ async function patchLine(page, entryNumber, patch, label) {
         }
         return changed;
       });
-      await window.DiyaGlBooksPage.setLines(lines, label);
+      await window.DiyaGlPage.setLines(lines, label);
     },
     { entryNumber, patch, label },
   );
@@ -220,14 +220,14 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
     const before = await bookCheckStates(page);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const lines = snapshot.lines.map((line) => {
         if (line.entryNumber !== "TXN-0026") return line;
         const changed = { ...line };
         delete changed.debitCreditCode;
         return changed;
       });
-      await window.DiyaGlBooksPage.setLines(lines, "test: drop TXN-0026's debitCreditCode");
+      await window.DiyaGlPage.setLines(lines, "test: drop TXN-0026's debitCreditCode");
     });
 
     const after = await bookCheckStates(page);
@@ -348,9 +348,9 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
     const before = await bookCheckStates(page);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const nextBook = { ...snapshot.book, dividends: [{ ...snapshot.book.dividends[0], amount: 10000000 }] };
-      await window.DiyaGlBooksPage.helpers.commitBook(nextBook, "test: a dividend far above profits", "Changed the dividend.");
+      await window.DiyaGlPage.helpers.commitBook(nextBook, "test: a dividend far above profits", "Changed the dividend.");
     });
 
     const after = await bookCheckStates(page);
@@ -441,11 +441,11 @@ test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through 
     const bookBefore = await bookCheckStates(page);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const lines = snapshot.lines.map((line) =>
         line.entryNumber === "TXN-0010" && line.documentReference === "OB-001" ? { ...line, amount: line.amount + 100 } : line,
       );
-      await window.DiyaGlBooksPage.setLines(lines, "test: move the directors loan's opening line off balance");
+      await window.DiyaGlPage.setLines(lines, "test: move the directors loan's opening line off balance");
     });
 
     const engineAfter = await engineFailingLabels(page);

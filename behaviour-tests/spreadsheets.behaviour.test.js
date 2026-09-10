@@ -1437,7 +1437,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
       await shot("09-example-loaded");
 
-      const bookTitle = await page.evaluate(() => window.DiyaGlBooksPage.currentBook().book.entityInformation.organizationIdentifier);
+      const bookTitle = await page.evaluate(() => window.DiyaGlPage.currentBook().book.entityInformation.organizationIdentifier);
       console.log(` Loaded the bst-scenario-basic example: "${bookTitle}"`);
 
       // ============================================================

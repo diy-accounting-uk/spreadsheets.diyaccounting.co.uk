@@ -69,7 +69,7 @@ function runCloudJs() {
   };
   vm.createContext(sandbox);
   vm.runInContext(CLOUD_SRC, sandbox);
-  return sandbox.window.DiyaGlBooksCloud;
+  return sandbox.window.DiyaGlCloud;
 }
 
 describe("cloud.js's PKCE helpers", () => {

@@ -306,7 +306,7 @@
   // re-rendering, so a listener reads the live book here rather than closing
   // over the one its own render saw.
   function liveSnapshot() {
-    return global.DIYA_BOOKS_SNAPSHOT;
+    return global.DIYA_GL_SNAPSHOT;
   }
 
   var labelCache = new WeakMap();

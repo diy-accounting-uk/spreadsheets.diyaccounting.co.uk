@@ -7,7 +7,7 @@
 // writeDiyaGlZip and writeBookJson (app/lib/diya-gl-interchange.js, the same
 // module the CLI's export.js writes through) turn the book into the diya-gl
 // zip and the single-file JSON downloads. Both need R -- shell.js passes it
-// in through extras.report, the same document window.DIYA_BOOKS_SNAPSHOT.report
+// in through extras.report, the same document window.DIYA_GL_SNAPSHOT.report
 // already carries, so nothing here recomputes a result the page already has.
 
 const ENGINE_MODULE = "./engine/diya-gl-engine.js";

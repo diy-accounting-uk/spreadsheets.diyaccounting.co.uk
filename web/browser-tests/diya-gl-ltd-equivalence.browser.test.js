@@ -182,7 +182,7 @@ async function openEveryMonth(page, running) {
 
 async function sweepPage(page, example) {
   await openBook(page, example);
-  const viewIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
+  const viewIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((view) => view.id));
 
   const running = new Map();
   for (const view of viewIds) {
@@ -475,7 +475,7 @@ const HUB_MARKS_FOR_O1 = ["Financialaccounts.xlsx!Stock!J8", "Financialaccounts.
 
 function driftFromPage(page) {
   return page.evaluate(() =>
-    window.DIYA_BOOKS_SNAPSHOT.drift.map((entry) => ({
+    window.DIYA_GL_SNAPSHOT.drift.map((entry) => ({
       id: entry.id,
       state: entry.state,
       file: entry.file,

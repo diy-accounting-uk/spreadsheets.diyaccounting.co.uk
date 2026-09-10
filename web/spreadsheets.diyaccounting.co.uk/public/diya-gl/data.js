@@ -5,7 +5,7 @@
 //
 // The extract/recalculate/report loop behind the page. It loads the engine
 // bundle (scripts/build-diya-gl-bundle.mjs) and computes
-// window.DIYA_BOOKS_SNAPSHOT from one of four sources: an uploaded workbook or
+// window.DIYA_GL_SNAPSHOT from one of four sources: an uploaded workbook or
 // package, one of the product's example books served as static assets, a
 // blank book from the new-book form, or the working book autosave handed
 // back. Every view in the shell reads book data only through the snapshot --
@@ -214,7 +214,7 @@
         label: c.name,
         expected: c.expected,
         actual: c.actual,
-        result: c.pass ? "pass" : "fail",
+        result: c.pass ? "pass" : c.severity === "warning" ? "warn" : "fail",
       };
     });
   }
@@ -652,7 +652,7 @@
     return snapshot;
   }
 
-  global.DiyaGlBooksLoader = {
+  global.DiyaGlLoader = {
     sniff: sniff,
     productIdOfBook: productIdOfBook,
     loadSniffed: loadSniffed,

@@ -299,7 +299,7 @@ function checkEntries(checks) {
     const entry = {
       key: `check/${check.name}${seen > 1 ? `#${seen}` : ""}`,
       unit: "verdict",
-      value: check.pass ? "pass" : "fail",
+      value: check.pass ? "pass" : check.severity === "warning" ? "warn" : "fail",
     };
     const expected = canonicalValue(check.expected);
     const actual = canonicalValue(check.actual);

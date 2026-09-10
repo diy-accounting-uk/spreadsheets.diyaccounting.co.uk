@@ -198,7 +198,7 @@ async function undo(page) {
 
 async function reportValue(page, key) {
   return page.evaluate((key) => {
-    const entry = window.DIYA_BOOKS_SNAPSHOT.report.values.find((v) => v.key === key);
+    const entry = window.DIYA_GL_SNAPSHOT.report.values.find((v) => v.key === key);
     if (!entry) throw new Error(`no report value carries the key "${key}"`);
     return Number(entry.value);
   }, key);
@@ -441,7 +441,7 @@ test.describe("DIYA-GL Ltd page — E1: an edit moves the figure it should", () 
 
     const newGross = await page.evaluate(
       async ({ entryNumber, delta }) => {
-        const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+        const snapshot = window.DIYA_GL_SNAPSHOT;
         const line = snapshot.lines.find((l) => l.entryNumber === entryNumber);
         const newGross = line["diya-gl:grossPay"] + delta;
         const lines = snapshot.lines.map((l) => {
@@ -451,7 +451,7 @@ test.describe("DIYA-GL Ltd page — E1: an edit moves the figure it should", () 
           changed.amount = newGross;
           return changed;
         });
-        await window.DiyaGlBooksPage.setLines(lines, "test: change payroll gross");
+        await window.DiyaGlPage.setLines(lines, "test: change payroll gross");
         return newGross;
       },
       { entryNumber, delta },
@@ -507,7 +507,7 @@ test.describe("DIYA-GL Ltd page — E1: the settlement helper previews then appl
     await openNewLtdBook(page, "Settlement Test Ltd");
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const newLine = {
         "entryNumber": "BREAK-SETTLE-SALE",
         "sourceJournalID": "bank",
@@ -523,27 +523,27 @@ test.describe("DIYA-GL Ltd page — E1: the settlement helper previews then appl
         "diya-gl:bankCode": "DR",
         "diya-gl:bankAccountID": "1200",
       };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([newLine]), "test: append a crafted receipt");
+      await window.DiyaGlPage.setLines(snapshot.lines.concat([newLine]), "test: append a crafted receipt");
     });
 
     await openView(page, "bank");
     const id = "sale-from-receipt:BREAK-SETTLE-SALE";
-    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+    const before = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 
     // Preview alone changes nothing on the book.
     await page.locator(`[data-settlement-preview="${id}"]`).click();
     await expect(page.locator(".helper-changes li")).toContainText("sale 4000 — Sales Product A — £480.00 on 2025-07-20");
-    expect(await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before);
+    expect(await page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before);
 
     // Apply is the one undoable step.
     await page.locator(`[data-settlement-apply="${id}"]`).click();
     await expect(page.locator("#toast")).toContainText("Added the missing half of " + id);
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before + 1);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before + 1);
     await expect(page.locator(`[data-settlement-preview="${id}"]`)).toHaveCount(0);
     await allChecksPass(page);
 
     await undo(page);
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before);
     await expect(page.locator(`[data-settlement-preview="${id}"]`)).toHaveCount(1);
   });
 });
@@ -562,7 +562,7 @@ test.describe("DIYA-GL Ltd page — E1: the settlement helper previews then appl
 
 async function reportTextValue(page, key) {
   return page.evaluate((key) => {
-    const entry = window.DIYA_BOOKS_SNAPSHOT.report.values.find((v) => v.key === key);
+    const entry = window.DIYA_GL_SNAPSHOT.report.values.find((v) => v.key === key);
     if (!entry) throw new Error(`no report value carries the key "${key}"`);
     return entry.value;
   }, key);
@@ -727,7 +727,7 @@ test.describe("DIYA-GL Ltd page — the bank journal's Add button posts through 
     await openAprilEntries(page);
     await switchJournal(page, "bank");
 
-    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+    const before = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 
     await addEntry(page, "bank", {
       date: "2025-04-18",
@@ -738,7 +738,7 @@ test.describe("DIYA-GL Ltd page — the bank journal's Add button posts through 
       amount: 245.6,
     });
     await expect(page.locator("#toast")).toContainText("Added a bank entry of £245.60");
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before + 1);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before + 1);
 
     const row = page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]');
     await expect(row.locator(".entry-account-name")).toHaveText("Current account");
@@ -768,7 +768,7 @@ test.describe("DIYA-GL Ltd page — the bank journal's Add button posts through 
     await openAprilEntries(page);
     await switchJournal(page, "bank");
 
-    const before = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+    const before = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 
     await addEntry(page, "bank", {
       date: "2025-04-19",
@@ -779,11 +779,11 @@ test.describe("DIYA-GL Ltd page — the bank journal's Add button posts through 
       amount: 60,
     });
     await expect(page.locator("#toast")).toContainText("Added a bank entry of £60.00");
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before + 1);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before + 1);
 
     await undo(page);
     await expect(page.locator("#undo-btn")).toHaveClass(/hidden/);
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length)).toBe(before);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length)).toBe(before);
     await expect(page.locator('.entries-table[data-journal="bank"] tr.entry-row[data-entry="NEW-0001"]')).toHaveCount(0);
   });
 });

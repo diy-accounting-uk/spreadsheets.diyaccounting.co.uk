@@ -163,7 +163,7 @@
       });
   }
 
-  global.DiyaBooksAutosave = {
+  global.DiyaGlAutosave = {
     saveWorkingBook: saveWorkingBook,
     loadWorkingBook: loadWorkingBook,
     clearWorkingBook: clearWorkingBook,

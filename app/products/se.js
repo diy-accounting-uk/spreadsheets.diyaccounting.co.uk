@@ -1888,9 +1888,14 @@ export function categoryNetting(results, scenario) {
 export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
-  function check(name, actual, expectedVal, tolerance = 1) {
+  // A fourth, optional argument marks a check "warning": the shipped
+  // template genuinely diverges from the figure named here and no fixture
+  // closes the gap, so the report is asked to carry the divergence rather
+  // than fail outright. The diff column is what a hand computation would
+  // call the size of that gap.
+  function check(name, actual, expectedVal, tolerance = 1, severity) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance, severity });
   }
 
   // The same whole-year shift cellWrites applies before writing a posting
@@ -2251,6 +2256,56 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     ];
     for (const [cell, caption, plFigure] of sa103fPlSources) {
       check(`SA103F ${caption} (${cell}) = the profit and loss account`, num(seFull[cell]), plFigure);
+    }
+
+    // Box 44 is row 34 alone, so a loss on the disposal of an asset (row 33)
+    // stays inside box 29's allowable total with nothing moved to a
+    // disallowable box, even though a loss on disposal is not an allowable
+    // deduction: the balancing allowance in box 56 is what relieves it. The
+    // template has no fix available -- this warns of the gap rather than
+    // failing on it, carrying the loss itself as the size of what box 44
+    // leaves out.
+    check(
+      "SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries",
+      num(seFull.O114),
+      num(seFull.D114),
+      0.01,
+      "warning",
+    );
+
+    // VitalTax pools rows 5 to 7 for its own annual sales figure; box 15
+    // pools rows 5 to 8, the extra row being sales coded "d" ("Other
+    // Income" on the P&L, despite the name a turnover line). A trader
+    // reading VitalTax as a running total of the year's turnover would
+    // undercount it by that row. The shipped template has no fix
+    // available -- this warns of the gap rather than failing, carrying
+    // the excluded row as the size of the gap.
+    if (vt) {
+      check(
+        "VitalTax annual sales (G5) excludes the Other Income sales that SA103F box 15 (D55) includes",
+        num(vt.G5),
+        num(seFull.D55),
+        0.01,
+        "warning",
+      );
+
+      // VitalTax's own other-income row sums three P&L rows together --
+      // Other Income (turnover), Investment Grants and Interest received --
+      // where SA103F keeps them apart: the grants reach box 75 (O204), not
+      // box 16 (O55). A trader reading VitalTax's other-income row as a
+      // quarterly "other business income" figure would carry the grants
+      // there too, double-counting them against the annual return. The
+      // Other Income row's own contribution is anchored on the scenario's
+      // own sales coded "d" rather than on the P&L cell it feeds, so a
+      // wrong Other Income line cannot hide inside this check.
+      const otherIncomeSales = journalTotalsByCode(expected.sales, rate, "a").net.d || 0;
+      check(
+        "VitalTax other income (rows 8, 11 and 38 folded together) treats Investment Grants as ordinary other income, while SA103F reports them apart at box 75 (O204) rather than box 16 (O55)",
+        num(pl.B8) + num(pl.B11) + num(pl.B38),
+        num(seFull.O55) + otherIncomeSales,
+        0.01,
+        "warning",
+      );
     }
 
     // The form's own arithmetic, each total against the boxes it adds up.

@@ -10,8 +10,8 @@
 // one without asking -- a clash always shows a card with the choice.
 //
 // shell.js calls into the functions this file publishes on
-// window.DiyaGlBooksCloud; nothing here calls back into shell.js except
-// through the narrow surface window.DiyaGlBooksPage exposes (currentBook,
+// window.DiyaGlCloud; nothing here calls back into shell.js except
+// through the narrow surface window.DiyaGlPage exposes (currentBook,
 // loadFile, productId, isEdited, trackEvent, buildArtifact). This file
 // imports nothing else and dispatches no custom events of its own.
 (function () {
@@ -183,8 +183,8 @@
   // latter is the last line of shell.js's own eval, which finishes before
   // DOMContentLoaded, which is what calls mount().
   function sendCloudEvent(event) {
-    if (window.DiyaGlBooksPage && typeof window.DiyaGlBooksPage.trackEvent === "function") {
-      window.DiyaGlBooksPage.trackEvent(event.name, event.params);
+    if (window.DiyaGlPage && typeof window.DiyaGlPage.trackEvent === "function") {
+      window.DiyaGlPage.trackEvent(event.name, event.params);
     }
   }
 
@@ -601,7 +601,7 @@
     var sorted = (books || []).slice().sort(function (a, b) {
       return new Date(b.updatedAt) - new Date(a.updatedAt);
     });
-    var current = window.DiyaGlBooksPage && window.DiyaGlBooksPage.currentBook();
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     var rowsHtml = sorted.length
       ? sorted.map(renderBookRow).join("")
       : '<p class="account-empty">No books in your account yet.' + (current ? " Save this book to my account." : "") + "</p>";
@@ -845,7 +845,7 @@
           if (!response.ok) throw apiError(response.status, body);
           var bytes = bytesFromBase64(body.zipBase64);
           var file = new File([bytes], (body.metadata.title || "book") + ".zip", { type: "application/zip" });
-          return window.DiyaGlBooksPage.loadFile(file).then(function () {
+          return window.DiyaGlPage.loadFile(file).then(function () {
             setLink({
               bookId: body.metadata.bookId,
               latestETag: body.metadata.latestETag,
@@ -861,7 +861,7 @@
   }
 
   function requestOpen(bookId, version) {
-    if (window.DiyaGlBooksPage && window.DiyaGlBooksPage.isEdited()) {
+    if (window.DiyaGlPage && window.DiyaGlPage.isEdited()) {
       var before = panelState;
       panelState = {
         status: before.status,
@@ -905,7 +905,7 @@
 
   var toastTimer = null;
 
-  // shell.js's own showToast is not part of window.DiyaGlBooksPage's
+  // shell.js's own showToast is not part of window.DiyaGlPage's
   // surface, so this writes the same shared #toast element directly --
   // the plain-message half of shell.js's own behaviour (no action button).
   function showToastMessage(message) {
@@ -1054,7 +1054,7 @@
 
   // Journey 3.5: the save menu's "Save to my account" item.
   function saveCurrentBook() {
-    var current = window.DiyaGlBooksPage && window.DiyaGlBooksPage.currentBook();
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     if (!current) return;
     // Journey 3.1 step 4: signed out, this opens the plain sign-in prompt
     // rather than discovering the missing session deep inside the PUT call,
@@ -1064,9 +1064,9 @@
       openPanel();
       return;
     }
-    var product = window.DiyaGlBooksPage.productId();
+    var product = window.DiyaGlPage.productId();
     var editedAt = new Date().toISOString();
-    window.DiyaGlBooksPage.buildArtifact("diya-gl-zip")
+    window.DiyaGlPage.buildArtifact("diya-gl-zip")
       .then(function (artifact) {
         var link = getLink();
         if (link) {
@@ -1319,7 +1319,7 @@
     processPendingCheckoutReturn();
   }
 
-  window.DiyaGlBooksCloud = {
+  window.DiyaGlCloud = {
     isEnabled: isEnabled,
     mount: mount,
     openPanel: openPanel,
