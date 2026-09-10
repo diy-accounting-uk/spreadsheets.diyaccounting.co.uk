@@ -8,9 +8,6 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**COOL-DOWN is on since 2026-09-10T10:45:30Z.** No new board rows except a degradation. Agents commit
-and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
-
 Urgency 1 of the licensing uplift has shipped: every repository's PR is merged, the four generate
 runs and the prod deploy of 2026-09-09 19:15 UTC rebuilt every package with `LICENCE.txt` and the
 workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. Urgency 1 is closed: npm
