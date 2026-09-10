@@ -876,19 +876,22 @@
   }
 
   function performDelete(bookId) {
+    // The tab holds this book's bookId and latestETag. Once it is deleted that
+    // points at nothing, so a later save would send an If-Match for a book the
+    // account no longer has and the API would answer 412. Forget it here, in
+    // the same breath as the panel going to loading, rather than when the
+    // response lands: the panel's rows disappear now, so anything reading the
+    // stored link between now and then would read a link the screen has
+    // already stopped showing. A save after a delete that then fails creates a
+    // new book, which is recoverable; a save that 412s is not.
+    var link = getLink();
+    if (link && link.bookId === bookId) clearLink();
     panelState = { status: "loading" };
     renderPanel();
     apiFetch("/books/" + encodeURIComponent(bookId), { method: "DELETE" })
       .then(function (response) {
         return parseJsonBody(response).then(function (body) {
           if (!response.ok) throw apiError(response.status, body);
-          // The tab still holds this book's bookId and latestETag. Deleting the
-          // book leaves that pointing at nothing, so the next save sends an
-          // If-Match for a book the account no longer has and the API answers
-          // 412. Forgetting the link makes the next save create a new book,
-          // which is what deleting and saving again means.
-          var link = getLink();
-          if (link && link.bookId === bookId) clearLink();
           return fetchBooksList();
         });
       })

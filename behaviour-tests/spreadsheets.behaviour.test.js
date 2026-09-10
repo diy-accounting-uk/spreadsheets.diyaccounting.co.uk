@@ -1675,6 +1675,14 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
         panel.locator(".account-row", { hasText: bookTitle }),
         "STEP 10 failed: the book was still listed after delete",
       ).toHaveCount(0, { timeout: 15000 });
+      // The panel goes to a loading state before the request is even sent, so
+      // the rows vanish at once and the count above passes on the loading
+      // state rather than on a finished delete. Waiting for a row to come back
+      // is what proves the account was re-read and the delete really landed.
+      await expect(
+        panel.locator(".account-row, .account-empty"),
+        "STEP 10 failed: the account list never came back after the delete",
+      ).toBeVisible({ timeout: 15000 });
       await shot("13-deleted");
       console.log(" Deleted the book from the account");
 
