@@ -65,14 +65,16 @@ Three files, all three every time:
 - `/Users/antony/projects/diy-accounting-limited/INBOX.md` — the bridge for sessions that cannot
   reach `~/.claude/`: Cowork's Linux VM and Desktop chats.
 
-Act on every `[unread]` block in the same turn you read it, reply by appending to the sender's
-inbox, then change its marker to `[read]`. Do not poll on a tight loop — the two moments above are
-the cadence, and a sibling waiting on a line from you is a reason to check, not a reason to check
-constantly.
+Act on every `[unread]` block in the same turn you read it, then change its marker to `[read]`.
+Acting on it is the reply: write back only to say you made the change it asked for, or that you
+will not. Never acknowledge and never report progress. Do not poll on a tight loop.
 
-A message can change what this batch should contain: a sibling reporting a defect in what you just
-pushed, a repository asking you to hold an identifier, an operator note arriving through Cowork. Read
-before you merge, not after.
+An inbox carries exactly two things, both about a change in the recipient's repository: a change
+they must make, or a change already made that they are blocked on. A message that neither asks for
+a change nor reports one does not get sent, and another session's repository state is never yours
+to inspect, report or wait on — its commits, its plan documents and the corpus index are the
+record. What reaches you this way can change what this batch should contain: a repository asking
+you to hold an identifier, a route that now exists. Read before you merge, not after.
 
 ## The shape of a batch
 
