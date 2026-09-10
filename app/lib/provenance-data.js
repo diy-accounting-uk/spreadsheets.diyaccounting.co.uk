@@ -11,26 +11,26 @@
 // stamped by any of the three surfaces carries the same values.
 
 export const PROVENANCE_DATA = {
-  "formatVersion": "diya-gl-books/1",
-  "engineVersion": "1.1.2+0f27d99accb1",
-  "taxDataHash": "6a9c036b5f9c",
-  "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b",
-  "templates": {
-    "bst": {
-      "hash": "0d003e10e00c",
-      "scorecard": "810 passed, 0 warnings, 0 failed"
+  formatVersion: "diya-gl-books/1",
+  engineVersion: "1.1.2+0f27d99accb1",
+  taxDataHash: "6a9c036b5f9c",
+  reconciledCommit: "320b4b8a1585e16fa170c2d312c14df38d0bcf5b",
+  templates: {
+    bst: {
+      hash: "0d003e10e00c",
+      scorecard: "810 passed, 0 warnings, 0 failed",
     },
-    "taxi": {
-      "hash": "1ff69654d64d",
-      "scorecard": "686 passed, 0 warnings, 0 failed"
+    taxi: {
+      hash: "1ff69654d64d",
+      scorecard: "686 passed, 0 warnings, 0 failed",
     },
-    "se": {
-      "hash": "c6a50059cc90",
-      "scorecard": "7679 passed, 0 warnings, 0 failed"
+    se: {
+      hash: "c6a50059cc90",
+      scorecard: "7679 passed, 0 warnings, 0 failed",
     },
-    "ltd": {
-      "hash": "0c18ceeaced4",
-      "scorecard": "101279 passed, 0 warnings, 0 failed"
-    }
-  }
+    ltd: {
+      hash: "0c18ceeaced4",
+      scorecard: "101279 passed, 0 warnings, 0 failed",
+    },
+  },
 };
