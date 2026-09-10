@@ -594,6 +594,62 @@ here until their phase opens.
   parity job; then the code waves and the closing ladder, sized from section 5b's estimate.
   Fable coordinates; Sonnet and Opus workers. Does not wait on LP-13.
 
+## Donations: the sandbox and the events
+
+Moved here from `PLAN_DONATION_DOWNLOAD_TESTING.md` on 2026-09-10, when that plan was archived.
+Two of its six phases were worth keeping and both serve the launch: the site cannot be exercised
+end to end while its donation links take real money, and the events are what tell us whether any of
+the launch worked. The board carries them as `SB-1` and `SB-2`.
+
+The other four phases went with the archive. Phase 3 was already built — `deploy.yml` builds and
+syncs the zips and a behaviour case checks the PK magic bytes. Phase 2, PayPal's sandbox, needs a
+second hosted button and account for a flow that plan itself said manual testing covers. Phase 4,
+driving a Stripe hosted checkout in CI, means Playwright completing a payment on a page we do not
+control, behind bot protection, whose markup changes without notice — the most brittle class of
+test there is, for less than it costs. Phase 5 was convenience.
+
+### SB-1: Stripe sandbox switching
+
+**Problem**: `donate.html` hardcodes live `buy.stripe.com` Payment Links. CI deployments should use Stripe test mode.
+
+**Approach options**:
+
+### Option A: Environment-specific donate.html generation
+- Build script generates `donate.html` with environment-appropriate Stripe links
+- CI uses test mode Payment Links, prod uses live ones
+- Requires: template HTML + build step in deploy workflow
+
+### Option B: JavaScript-based switching
+- `donate.html` includes a small script that checks the hostname
+- If hostname starts with `ci-`, replace Payment Link URLs with test mode equivalents
+- Simpler but test links visible in source
+
+### Option C: Stripe checkout session (server-side)
+- Not applicable — the site is fully static, no server-side code
+
+**Recommended**: Option A, build-time generation, for clean separation.
+
+**Tasks**:
+1. Create test mode Stripe products and Payment Links using `scripts/stripe-spreadsheets-setup.js` with test API key
+2. Create `donate-template.html` with placeholder URLs
+3. Create `scripts/build-donate-page.cjs` that injects correct URLs based on environment
+4. Update deploy workflow to run the build step with environment context
+5. Update behaviour tests to verify the correct Stripe domain (test vs live)
+
+### SB-2: GA4 e-commerce events
+
+**Goal**: Verify analytics events fire correctly in test vs production.
+
+**Current state**:
+- `ecommerce-events.js` fires GA4 `purchase` and `begin_checkout` events
+- `download-page.js` fires `file_download` events
+- GA4 property 523400333, measurement ID on all pages
+
+**Tasks**:
+1. Verify GA4 events are blocked in behaviour tests (the `playwrightTestWithout.js` helper already blocks RUM/GA/GTM)
+2. Consider adding a test that verifies GA4 script tags are present in HTML but blocked during tests
+3. No changes needed for test vs production — GA4 filtering is done in GA4 admin (exclude CI traffic by hostname)
+
 ## The names and the notice
 
 Two operator rows moved here from `_developers/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan

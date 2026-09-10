@@ -2,6 +2,13 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Plan: Donation and Download Testing
 
+> **Archived 2026-09-10.** Two of the six phases moved to `PLAN_DIYA_GL_LAUNCH.md` and are on the
+> board as `SB-1` (the Stripe sandbox) and `SB-2` (the GA4 events). The other four did not:
+> phase 3 was already built and the plan says so itself, phase 5 was convenience, phase 2 needs a
+> second PayPal button and account for a flow this plan agreed manual testing covers, and phase 4
+> means driving a Stripe hosted checkout in CI — a page we do not control, behind bot protection,
+> whose markup changes without notice.
+
 ## User Assertions
 
 - Stripe on CI should go to Stripe sandbox

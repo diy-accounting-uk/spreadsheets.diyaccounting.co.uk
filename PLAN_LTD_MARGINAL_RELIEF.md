@@ -2,6 +2,12 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Corporation Tax marginal relief — what is still open
 
+Moved to this repository's root on 2026-09-10 and its three gaps put on the board as `MR-1`,
+`MR-2` and `MR-3`, the same ids `NEXT.md` uses. They are separate rows because they are separately
+deliverable: MR-1 is the one that produces a wrong figure for a real customer today, MR-2 shares
+its input block and formula so it follows it, and MR-3 is dormant until a financial year carries
+different rates from the one after it.
+
 The working sheet charges marginal relief. `Admin!P8`, `P9`, `P12` and `P13` carry the main
 rate, the relief fraction and the two limits from `app/data/ltd-*.toml`; `CorporationTax`
 rows 33 and 34 apportion the limits across the financial years the accounting period falls
