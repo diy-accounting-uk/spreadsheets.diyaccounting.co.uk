@@ -65,14 +65,16 @@ Three files, all three every time:
 - `/Users/antony/projects/diy-accounting-limited/INBOX.md` — the bridge for sessions that cannot
   reach `~/.claude/`: Cowork's Linux VM and Desktop chats.
 
-Act on every `[unread]` block in the same turn you read it, reply by appending to the sender's
-inbox, then change its marker to `[read]`. Do not poll on a tight loop — the two moments above are
-the cadence, and a sibling waiting on a line from you is a reason to check, not a reason to check
-constantly.
+Act on every `[unread]` block in the same turn you read it, then change its marker to `[read]`.
+Acting on it is the reply: write back only to say you made the change it asked for, or that you
+will not. Never acknowledge and never report progress. Do not poll on a tight loop.
 
-A message can change what this batch should contain: a sibling reporting a defect in what you just
-pushed, a repository asking you to hold an identifier, an operator note arriving through Cowork. Read
-before you merge, not after.
+An inbox carries exactly two things, both about a change in the recipient's repository: a change
+they must make, or a change already made that they are blocked on. A message that neither asks for
+a change nor reports one does not get sent, and another session's repository state is never yours
+to inspect, report or wait on — its commits, its plan documents and the corpus index are the
+record. What reaches you this way can change what this batch should contain: a repository asking
+you to hold an identifier, a route that now exists. Read before you merge, not after.
 
 ## The shape of a batch
 
@@ -95,15 +97,37 @@ branch point in the same commit.
 A wave is a set of concurrent workstreams grouped by area of the repository, sized so that no two
 agents own the same file.
 
+**Fill the wave until file contention stops you, not until a count stops you.** There is no target
+number of agents. Keep adding independent workstreams while independent work remains; stop when the
+next item would have to share a file with one already dispatched.
+
 1. **Sequence the board.** Take the unblocked items in board order. Group them by where they live:
    `app/products/*.js` (per-product cell mapping and reconciliation), `app/data/*.toml` (tax rate
    data, one file per year), `app/templates/**` (the xlsx templates),
    `web/spreadsheets.diyaccounting.co.uk/public/**` (site pages, including the DIYA-GL pages under
    `/diya-gl/`), `cdk-spreadsheets/**`, `.github/workflows/**`, and the root `PLAN_*.md` documents.
-2. **Two agents that need the same file are not two workstreams.** Sequence them, or scope each to
-   a region and say so in both briefs. Where a plan already fixes an order — the DIYA-GL naming
-   chain, anything paired with submit's own rows — that order is the specification, not a
-   suggestion.
+2. **Items that share a file are one workstream, so give them to one agent in one brief.** Not one
+   per wave with the rest queued behind: that turns a file boundary into three round trips and the
+   later items wait for nothing. Say "do A, then B, then C on these files, a commit per item", give
+   the order the plan fixes, and let one owner make the whole pass. This repository has files that
+   attract several rows at once — a `spreadsheet-runner.js` or a product's `CELL_MAP` can carry a
+   year's rates, a new mapping and a reconciliation fix — and those belong in one brief. A
+   four-line change that happens to touch a contended file rides along with the big item rather
+   than waiting a wave for its own turn: name it in the brief as its own separate commit and say
+   plainly that it is unrelated.
+
+   Scoping two agents to different regions of one file is the fallback, not the default, and only
+   when the regions are genuinely disjoint and both briefs say so. Where a plan already fixes an
+   order — the DIYA-GL naming chain, anything paired with submit's own rows — that order is the
+   specification.
+
+   A brief this size needs one extra instruction: if the total is more than the agent can finish,
+   commit what is done and report exactly where it stopped. A clean stopping point mid-sequence is
+   recoverable; a rushed tail is not.
+
+   You can extend a running agent rather than dispatching a second one. `SendMessage` to its id
+   continues it with its context intact, which is cheaper than a fresh agent rebuilding the same
+   understanding of the same files.
 3. **Run a design wave when the plan is not rich enough to execute.** A higher tier writes the
    design as a document at the repo root; cheaper, faster models then build from it. The test is
    whether a Sonnet or Haiku agent could pick up the document and build without asking a question.
@@ -125,9 +149,17 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   wave is nearby, name it.
 - **The evidence, not just the task.** Paste the run ids, the log lines, the timestamps. An agent
   given a diagnosis it can verify beats one given a symptom to rediscover.
-- **Commit before the turn ends.** A sub-agent that backgrounds a verification and stops leaves an
-  uncommitted tree that vanishes with the worktree. Tell it to run verification in the foreground
-  so the result reaches its report, and to commit what it has either way.
+- **Commit before verifying, not after.** This is the instruction that matters most and the one
+  that is easiest to get wrong. A long build or a full suite runs for minutes, the harness promotes
+  a long command to the background, and that ends the agent's turn — so "run verification in the
+  foreground, then commit" is not a thing an agent can actually do. Told that, it stops with the
+  work uncommitted in a worktree, which is exactly how work is lost. Tell it instead: write the
+  change, commit it, then verify, and amend or add a fixing commit if the verification fails. A
+  commit that needs amending is recoverable; an uncommitted worktree is not.
+
+  For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
+  commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
+  the products, or anything that rebuilds the templates.
 - **Blast-radius testing only**: `npm test` for the file it touched, `npm run test:browser` for
   site pages, and the matching `test:*-only` script (`test:bst-only`, `test:se-only`,
   `test:ltd-only`, `test:taxi-only`, `test:reconciliation-only`) for a product module or a data
