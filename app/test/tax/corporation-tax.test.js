@@ -67,6 +67,22 @@ describe("calculateCorporationTax", () => {
     expect(result.corporationTax).toBeCloseTo(28028.7806, 4);
     expect(result.marginalRelief).toBe(0);
   });
+
+  it("divides both limits by one plus the number of associated companies", () => {
+    // Two associates: the 50000/250000 limits become 16666.67/83333.33, so
+    // a profit that sat mid-band against the undivided limits now clears
+    // the (divided) upper limit and is charged at the main rate in full.
+    const result = calculateCorporationTax(100000, { ...CT_RATES, associated_companies: 2 });
+    expect(result.corporationTax).toBe(25000); // 100000 * 0.25, no relief
+    expect(result.marginalRelief).toBe(0);
+  });
+
+  it("leaves the limits alone when associated_companies is absent or zero", () => {
+    const withZero = calculateCorporationTax(100000, { ...CT_RATES, associated_companies: 0 });
+    const withoutField = calculateCorporationTax(100000, CT_RATES);
+    expect(withZero.corporationTax).toBe(withoutField.corporationTax);
+    expect(withZero.corporationTax).toBe(22750);
+  });
 });
 
 describe("financialYearsInPeriod", () => {
@@ -141,5 +157,24 @@ describe("apportionCorporationTax", () => {
   it("charges nothing on a loss", () => {
     const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
     expect(apportionCorporationTax(-5000, years, totalDays, RATES).tax).toBe(0);
+  });
+
+  it("divides both apportioned limits by one plus the associated companies count", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const undivided = apportionCorporationTax(120000, years, totalDays, RATES);
+    const withAssociates = apportionCorporationTax(120000, years, totalDays, { ...RATES, associatedCompanies: 3 });
+    // Four times the apportioned rate means a quarter of the relief, since
+    // the profit sits well clear of the (now much lower) upper limit.
+    expect(withAssociates.rows[0].ratePercent).toBe(25);
+    expect(withAssociates.marginalRelief).toBe(0);
+    expect(withAssociates.marginalRelief).not.toBe(undivided.marginalRelief);
+    expect(withAssociates.tax).toBeCloseTo(120000 * 0.25, 6);
+  });
+
+  it("leaves apportioned limits alone when associatedCompanies is absent", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const withoutField = apportionCorporationTax(120000, years, totalDays, RATES);
+    const withZero = apportionCorporationTax(120000, years, totalDays, { ...RATES, associatedCompanies: 0 });
+    expect(withZero.tax).toBe(withoutField.tax);
   });
 });

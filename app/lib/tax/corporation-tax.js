@@ -13,15 +13,20 @@
  * limit because there was one rate and no relief, and defaulting either of
  * those away invents a relief those years never had.
  *
+ * Both limits are divided by one plus the number of associated companies
+ * (`ctRates.associated_companies`, default 0 -- a company with no associates
+ * keeps the full limits).
+ *
  * @param {number} profit - profit chargeable to CT
- * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, main_rate_limit, marginal_relief_fraction }
+ * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, main_rate_limit, marginal_relief_fraction, associated_companies }
  * @returns {{ profitChargeable, smallProfitsRate, mainRate, corporationTax, marginalRelief }}
  */
 export function calculateCorporationTax(profit, ctRates) {
   const spr = ctRates.small_profits_rate;
   const mr = ctRates.main_rate;
-  const spl = ctRates.small_profits_limit;
-  const splu = ctRates.main_rate_limit ?? ctRates.small_profits_limit_upper ?? 250000;
+  const associatedDivisor = 1 + (ctRates.associated_companies ?? 0);
+  const spl = ctRates.small_profits_limit / associatedDivisor;
+  const splu = (ctRates.main_rate_limit ?? ctRates.small_profits_limit_upper ?? 250000) / associatedDivisor;
   const mrf = ctRates.marginal_relief_fraction ?? 0.015;
 
   if (profit <= 0) {
@@ -82,7 +87,8 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
  * working sheet charges it: the chargeable profit is split across the two
  * years by day count, each share meets its own year's rate, and marginal
  * relief applies to a share that sits between the two limits, with both
- * limits apportioned by the same day count.
+ * limits apportioned by the same day count and then divided by one plus the
+ * number of associated companies.
  *
  * @param {number} profitChargeable
  * @param {Array<{ year: number, days: number }>} financialYears - two entries, the second possibly nil
@@ -93,14 +99,16 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
  * @param {number} rates.marginalReliefFraction
  * @param {number} rates.lowerLimit
  * @param {number} rates.upperLimit
+ * @param {number} [rates.associatedCompanies] - default 0
  * @returns {{ rows: Array<{ year, days, profitShare, ratePercent, taxBeforeRelief, marginalRelief, tax }>, tax: number, marginalRelief: number, taxBeforeRelief: number }}
  */
 export function apportionCorporationTax(profitChargeable, financialYears, totalDays, rates) {
+  const associatedDivisor = 1 + (rates.associatedCompanies ?? 0);
   const rows = financialYears.map((financialYear, index) => {
     const share = totalDays > 0 ? financialYear.days / totalDays : 0;
     const profitShare = profitChargeable > 0 ? profitChargeable * share : 0;
-    const lowerLimit = rates.lowerLimit * share;
-    const upperLimit = rates.upperLimit * share;
+    const lowerLimit = (rates.lowerLimit * share) / associatedDivisor;
+    const upperLimit = (rates.upperLimit * share) / associatedDivisor;
     const ratePercent = profitShare <= lowerLimit ? rates.smallProfitsRatePercent[index] : rates.mainRatePercent;
     const taxBeforeRelief = (profitShare * ratePercent) / 100;
     const marginalRelief =

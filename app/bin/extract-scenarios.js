@@ -121,6 +121,7 @@ function businessBlock(entity, extra = {}) {
   }
   if (extra.vat_number) business.vat_number = extra.vat_number;
   if (extra.nino) business.nino = extra.nino;
+  if (extra.associated_companies) business.associated_companies = extra.associated_companies;
   return business;
 }
 
@@ -1138,7 +1139,13 @@ function writeBrickworkLtd(vatRegistered) {
       product: "ltd",
       tax_regime: "ltd",
       vat_registered: vatRegistered,
-      business: businessBlock(entity, { company_number: entity["diya-gl:companyNumber"], vat_number: entity["diya-gl:vatNumber"] }),
+      // The VAT twin carries two associated companies; the non-VAT twin
+      // carries none, so the pair proves both the divisor and its absence.
+      business: businessBlock(entity, {
+        company_number: entity["diya-gl:companyNumber"],
+        vat_number: entity["diya-gl:vatNumber"],
+        associated_companies: vatRegistered ? 2 : 0,
+      }),
       employees,
       members,
     },

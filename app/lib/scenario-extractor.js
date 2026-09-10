@@ -1002,7 +1002,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (metadata.business) {
     parts.push("[business]");
     for (const [k, v] of Object.entries(metadata.business)) {
-      parts.push(`${k} = "${escapeTomlString(String(v))}"`);
+      parts.push(typeof v === "number" ? `${k} = ${v}` : `${k} = "${escapeTomlString(String(v))}"`);
     }
     parts.push("");
   }
