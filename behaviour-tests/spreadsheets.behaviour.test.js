@@ -1489,6 +1489,13 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 8: See the row in the list");
       console.log("=".repeat(60));
 
+      // The panel was closed in step 6 and the save in step 7 ran through the
+      // save menu, not the panel, so the page never re-fetched the list --
+      // it only does that for a panel already open at save time. Reopening
+      // it here is what fetches the list that now carries the saved book.
+      await accountBtn.click();
+      await expect(panel, "STEP 8 failed: the account panel never reopened").toBeVisible({ timeout: 10000 });
+
       const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
       await expect(savedRow, "STEP 8 failed: the saved book never appeared as a row in the account list").toBeVisible({
         timeout: 15000,
