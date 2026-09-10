@@ -66,10 +66,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | — | ready-to-start | Submit's WAF fix is on prod; roughly 20KB and 500KB, Sonnet |
-| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | prod serves /diya-gl/assets/ now, verified 200; Haiku |
-| CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | ready-to-start | Submit's retry and the diya-gl spelling are both on their main |
-| CQ-5 | `setPath` in `app/lib/calculators/se-derivations.js` walks a dotted path with `node[parts[i]] ||= {}`, so a `__proto__` or `constructor` segment pollutes the prototype | none | machine | — | ready-to-start | CodeQL `js/prototype-pollution-utility`, medium; Sonnet |
+| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | — | in-flight | merged to b9; the suite runs before the batch pushes |
+| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | merged to b9; LICENSING.md carried the same URL |
+| CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | in-flight | merged to b9; pinned to 9611cb48, both scripts |
+| CQ-5 | `setPath` in `app/lib/calculators/se-derivations.js` walks a dotted path with `node[parts[i]] ||= {}`, so a `__proto__` or `constructor` segment pollutes the prototype | none | machine | — | in-flight | merged to b9; the pollution was reproduced before fixing |
 | NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | S3d is running on Submit's batch 20; not on their main yet |
 
 ## Plans not tracked here
