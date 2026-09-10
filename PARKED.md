@@ -15,7 +15,7 @@ The operator triages this list when cool-down lifts: each line becomes a board r
   dispatch or schedule. Submit hit the live version of this in their `test.yml` and fixed it by
   adding `github.workflow` to the group key. Their B93 and the `/watch` skill's fourth case.
 
-- **Every prod deploy leaves main untested, and the loop does not terminate.** The publish job
+- **A push-triggered prod deploy leaves main untested until the next scheduled run.** The publish job
   commits a version roll with the default `GITHUB_TOKEN`, which fires no workflow, so main's HEAD
   is always a bot commit with no runs after a successful prod deploy. Dispatching a deploy to close
   the gap publishes again and opens a new one. Measured: the deployed releases page reports 10
