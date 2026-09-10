@@ -57,6 +57,7 @@ convenience — gitignored, recreate with `ln -s` if missing.
 - `.claude/skills/plain-prose/SKILL.md` — writing rules for plain, human prose; follow this for all human-facing text (docs, comments, chat)
 - `.claude/skills/do-next/SKILL.md` — dispatch `NEXT.md`'s open items as worktree-isolated sub-agents
 - `.claude/skills/board/SKILL.md` — render the work board from `NEXT.md`: in-flight and open items with their source plan; invoke as `/board`
+- `.claude/skills/watch/SKILL.md` — watch GitHub CI on main and every open PR's head branch until the whole scope is green, and fix what goes red; invoke as `/watch`
 - `.claude/skills/archive-packages/SKILL.md` — take a cut of the generated packages into `diy-accounting-archive` as one reviewed commit
 
 Note: Read the relevant skill when working on that product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
