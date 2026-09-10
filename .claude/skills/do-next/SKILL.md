@@ -20,8 +20,22 @@ summary are the middle of the work, not the end of it.
 Plans of record are `PLAN_*.md` at this repo's root. `NEXT.md`'s own shape rules are in
 `../NEXT.md` and in this repo's `CLAUDE.md`.
 
-**If cool-down is on, this skill does not run.** The marker at the top of `NEXT.md` says so. Under
-cool-down the job is to settle what is already in flight, not to dispatch a wave; `/wake` lifts it.
+## If cool-down is on, wake first
+
+The operator invoking this skill is the operator lifting cool-down in their own words. "Work the
+backlog" and "stay cool" cannot both be true, and cool-down forbids exactly the dispatch this skill
+exists to do.
+
+So when `NEXT.md` carries the cool-down marker, **run `/wake` first and in full** — all seven steps
+of the cool-down skill's "Waking up" section, in order. Waking ends with a board render, so that
+render is this skill's `/board` step; do not render twice.
+
+If a wake step cannot be completed — a red branch, an unaccounted worktree, a hotfix branch that is
+neither merged nor open — say which and stay cool. That is the one case where this skill stops
+without dispatching, and settling that step is then the work. Do not dispatch around it.
+
+A session goes back into cool-down only when the operator says so, or when this skill's own judgement
+says a batch is stacking problems faster than it lands them.
 
 ## Start with `/board`
 
