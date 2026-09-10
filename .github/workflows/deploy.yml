@@ -389,8 +389,11 @@ jobs:
             @aws-sdk/client-cloudformation \
             @aws-sdk/client-cognito-identity-provider \
             otpauth
+          # Scripts from another repository are pinned to a specific commit to prevent
+          # merges there from becoming immediate, unversioned releases into our CI.
+          # To move the pin, change the SHA in all three curl URLs below.
           curl -fsSL -o ensure-cognito-test-user.js \
-            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/ensure-cognito-test-user.js
+            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/9611cb4818f4f6484ba900ccdb85e036d9b96022/scripts/ensure-cognito-test-user.js
           # The mint script purges the lane user's data through Submit's delete-user-data.js,
           # which hashes the sub with a salt this role may not read. The lane's only data is
           # the book the sign-in case deletes itself, so the purge is a no-op here.
@@ -427,7 +430,7 @@ jobs:
             @aws-sdk/client-cloudformation \
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
-            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
+            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/9611cb4818f4f6484ba900ccdb85e036d9b96022/scripts/toggle-cognito-native-auth.js
           node toggle-cognito-native-auth.js enable prod --client books
 
       - name: Run spreadsheets behaviour tests
@@ -455,7 +458,7 @@ jobs:
             @aws-sdk/client-cloudformation \
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
-            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
+            https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/9611cb4818f4f6484ba900ccdb85e036d9b96022/scripts/toggle-cognito-native-auth.js
           node toggle-cognito-native-auth.js disable prod --client books
 
       - name: Upload artifacts

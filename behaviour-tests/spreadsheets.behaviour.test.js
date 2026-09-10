@@ -1254,6 +1254,145 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     }, selector);
   }
 
+  // Grows the loaded book by cycling through its own lines -- each addition
+  // a distinct, real transaction (a new entryNumber suffix on a real line's
+  // own fields), never a field padded with filler, so the growth exercises
+  // the same serialisation a normal save does. Every addition is dated on
+  // the book's own period end: the page opens the accounting period's first
+  // month by default and only renders that open month's entry rows, so
+  // dating growth anywhere else keeps a save of tens of thousands of lines
+  // from also asking the browser to render tens of thousands of grid rows.
+  // Saves through the same menu and toast-or-duplicate race step 7 uses
+  // above, measures the artifact actually built for that save, and deletes
+  // the row afterwards so the case leaves nothing behind in the account.
+  const isBookDeleteResponse = (response) => response.request().method() === "DELETE" && /\/api\/v1\/books\//.test(response.url());
+
+  // #account-btn is a strict toggle: clicking it with the panel already open
+  // closes it. Every step that wants the list has to know which way the panel
+  // is facing, and a step that leaves it open silently disarms the next one's
+  // click.
+  async function showAccountPanel(panel, accountBtn) {
+    if (await panel.isVisible().catch(() => false)) return;
+    await accountBtn.click();
+  }
+
+  async function hideAccountPanel(panel, accountBtn) {
+    if (!(await panel.isVisible().catch(() => false))) return;
+    await accountBtn.click();
+    await expect(panel, "the account panel would not close").toBeHidden({ timeout: 10000 });
+  }
+
+  async function saveGrownBookAndClean(page, panel, accountBtn, bookTitle, exampleLines, extraCount, sizeLabel) {
+    const measured = await page.evaluate(
+      async ({ exampleLines, extraCount }) => {
+        // documentInfo carries its period as a Date, while a line's postingDate
+        // is an ISO day string. The page keys a line to its month with
+        // dateStr.slice, so handing it the Date rejects the whole edit.
+        const rawPeriodEnd = window.DiyaGlPage.currentBook().book.documentInfo.periodCoveredEnd;
+        const periodEnd = typeof rawPeriodEnd === "string" ? rawPeriodEnd.slice(0, 10) : new Date(rawPeriodEnd).toISOString().slice(0, 10);
+        const grown = exampleLines.slice();
+        let i = 0;
+        while (grown.length < exampleLines.length + extraCount) {
+          const source = exampleLines[i % exampleLines.length];
+          const duplicateIndex = Math.floor(i / exampleLines.length) + 1;
+          grown.push(
+            Object.assign({}, source, {
+              entryNumber: source.entryNumber + "-DUP-" + String(duplicateIndex).padStart(5, "0"),
+              postingDate: periodEnd,
+            }),
+          );
+          i++;
+        }
+        await window.DiyaGlPage.setLines(grown, "add " + extraCount + " transactions for a save-size case");
+        const artifact = await window.DiyaGlPage.buildArtifact("diya-gl-zip");
+        // The same byte-to-base64 conversion cloud.js's own PUT uses, so
+        // base64Bytes below is the real size of the zipBase64 field a save
+        // sends, not an estimate of it.
+        let binary = "";
+        for (let b = 0; b < artifact.bytes.length; b++) binary += String.fromCharCode(artifact.bytes[b]);
+        return { lineCount: grown.length, zipBytes: artifact.bytes.length, base64Bytes: window.btoa(binary).length };
+      },
+      { exampleLines, extraCount },
+    );
+    console.log(
+      ` Grew the book to ${measured.lineCount} lines for the ${sizeLabel} case: the diya-gl zip is ${measured.zipBytes} bytes, ` +
+        `the PUT body's zipBase64 is ${measured.base64Bytes} bytes`,
+    );
+
+    // Save with the panel closed, as a person would, so the click cannot land
+    // on the panel overlay and so the list opened below is fetched fresh.
+    await hideAccountPanel(panel, accountBtn);
+    await page.click("#save-btn");
+    const cloudMenuItem = page.getByRole("menuitem", { name: "Save to my account", exact: true });
+    await expect(cloudMenuItem, `${sizeLabel} case failed: the save menu never carried a Save to my account item`).toBeVisible({
+      timeout: 10000,
+    });
+    await cloudMenuItem.click();
+
+    const toast = page.locator("#toast");
+    const duplicateNewButton = panel.getByRole("button", { name: "New book" });
+    let saveOutcome;
+    try {
+      // The toast is a single element that persists, so it is very likely still
+      // visible carrying whatever the last step said. Waiting for it to be
+      // visible would resolve at once and report a save that never happened;
+      // what proves this save is the text CHANGING from what is there now.
+      const staleToast = (await toast.textContent().catch(() => "")) || "";
+      // An empty stale text would filter to nothing, because every string
+      // contains the empty string, so with nothing to distinguish from we wait
+      // on the toast itself.
+      const changedToast = staleToast ? toast.filter({ hasNotText: staleToast }) : toast;
+      saveOutcome = await Promise.race([
+        changedToast.waitFor({ state: "visible", timeout: 30000 }).then(() => "saved"),
+        duplicateNewButton.waitFor({ state: "visible", timeout: 30000 }).then(() => "duplicate"),
+      ]);
+    } catch (error) {
+      throw new Error(
+        `${sizeLabel} case failed: neither the save toast nor the near-duplicate prompt appeared (panel now shows: ${await panel
+          .innerText()
+          .catch(() => "<unreadable>")})`,
+        { cause: error },
+      );
+    }
+    if (saveOutcome === "duplicate") {
+      // A prior run of this case can leave a book behind with this same
+      // title, product and dates -- save as a new book rather than update it,
+      // the same choice step 7 makes.
+      await duplicateNewButton.click();
+      await expect(toast, `${sizeLabel} case failed: saving as a new book never showed the save toast`).toContainText(
+        /Saved to your account as version \d+\./,
+        { timeout: 30000 },
+      );
+    } else {
+      // The same 30s the near-duplicate branch above allows: a body this size
+      // takes longer to reach the account than step 7's small one, and the
+      // default five seconds is a window sized for that smaller save.
+      await expect(toast, `${sizeLabel} case failed: the save toast did not carry the expected wording`).toContainText(
+        /Saved to your account as version \d+\./,
+        { timeout: 30000 },
+      );
+    }
+    console.log(` Saved the ${sizeLabel} book to the account`);
+
+    await showAccountPanel(panel, accountBtn);
+    const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
+    await expect(rowToDelete, `${sizeLabel} case failed: the book was not listed to delete`).toBeVisible({ timeout: 15000 });
+    await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
+    const confirmDelete = panel.locator('[data-action="confirm-delete"]');
+    await expect(confirmDelete, `${sizeLabel} case failed: the delete confirmation never appeared`).toBeVisible({ timeout: 10000 });
+    const deleteLanded = page.waitForResponse(isBookDeleteResponse, { timeout: 20000 });
+    await confirmDelete.click();
+    const deleteResponse = await deleteLanded;
+    expect(deleteResponse.status(), `${sizeLabel} case failed: the delete answered ${deleteResponse.status()}`).toBeLessThan(300);
+    await expect(
+      panel.locator(".account-row", { hasText: bookTitle }),
+      `${sizeLabel} case failed: the book was still listed after delete`,
+    ).toHaveCount(0, { timeout: 15000 });
+    console.log(` Deleted the ${sizeLabel} book from the account`);
+
+    return measured;
+  }
+
   test("Cloud sign-in: save, list, open, delete and sign out of the DIYA-GL account", async ({ page }) => {
     // ============================================================
     // Guard: only runs against the ci host with all three TEST_AUTH_*
@@ -1290,6 +1429,11 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       apiReachable = false;
     }
     test.skip(!apiReachable, `Cloud sign-in case needs Submit's API: ${apiBase} did not answer`);
+
+    // The default test timeout covers the sign-in journey; the two grown-book
+    // saves below (steps 11 and 12) each recompute the book and rebuild its
+    // zip on top of that, so the case gets extra headroom.
+    test.setTimeout(180_000);
 
     // What the browser reported, printed when a step fails so a CI failure
     // names the request or console error behind it.
@@ -1431,7 +1575,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 6: Load an example");
       console.log("=".repeat(60));
 
-      await accountBtn.click(); // close the panel so the example button is reachable
+      await hideAccountPanel(panel, accountBtn); // the example button sits under the panel
       await page.locator('[data-example="bst-scenario-basic"]').click();
       const yearTotals = page.locator("tfoot.year-totals");
       await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
@@ -1439,6 +1583,11 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
       const bookTitle = await page.evaluate(() => window.DiyaGlPage.currentBook().book.entityInformation.organizationIdentifier);
       console.log(` Loaded the bst-scenario-basic example: "${bookTitle}"`);
+
+      // The example's own lines, read once here so steps 11 and 12 below
+      // each grow from this same untouched starting point rather than
+      // compounding on top of each other's additions.
+      const exampleLines = await page.evaluate(() => window.DiyaGlPage.currentBook().lines);
 
       // ============================================================
       // STEP 7: Save to the account through the save menu
@@ -1493,7 +1642,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       // save menu, not the panel, so the page never re-fetched the list --
       // it only does that for a panel already open at save time. Reopening
       // it here is what fetches the list that now carries the saved book.
-      await accountBtn.click();
+      await showAccountPanel(panel, accountBtn);
       await expect(panel, "STEP 8 failed: the account panel never reopened").toBeVisible({ timeout: 10000 });
 
       const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
@@ -1538,13 +1687,20 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 10: Delete it");
       console.log("=".repeat(60));
 
-      await accountBtn.click(); // reopen the panel with a fresh list
+      await showAccountPanel(panel, accountBtn); // step 9 left it closed, so this opens a fresh list
       const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
       await expect(rowToDelete, "STEP 10 failed: the book was not listed to delete").toBeVisible({ timeout: 15000 });
       await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
       const confirmDelete = panel.locator('[data-action="confirm-delete"]');
       await expect(confirmDelete, "STEP 10 failed: the delete confirmation never appeared").toBeVisible({ timeout: 10000 });
+      // The panel empties before the request is even sent, so the row count
+      // below would pass on the optimistic render rather than on a finished
+      // delete. The response itself is what proves it landed, and it has to be
+      // awaited from before the click that causes it.
+      const deleteLanded = page.waitForResponse(isBookDeleteResponse, { timeout: 20000 });
       await confirmDelete.click();
+      const deleteResponse = await deleteLanded;
+      expect(deleteResponse.status(), `STEP 10 failed: the delete answered ${deleteResponse.status()}`).toBeLessThan(300);
       await expect(
         panel.locator(".account-row", { hasText: bookTitle }),
         "STEP 10 failed: the book was still listed after delete",
@@ -1553,26 +1709,54 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log(" Deleted the book from the account");
 
       // ============================================================
-      // STEP 11: Sign out and see the signed-out panel
+      // STEP 11: Save a book sized above the WAF's body-size limit but
+      // below CloudFront's default body-inspection boundary
       // ============================================================
       console.log("\n" + "=".repeat(60));
-      console.log("STEP 11: Sign out and see the signed-out panel");
+      console.log("STEP 11: Save a ~20KB book");
+      console.log("=".repeat(60));
+
+      const smallSave = await saveGrownBookAndClean(page, panel, accountBtn, bookTitle, exampleLines, 100, "~20KB");
+      expect(smallSave.base64Bytes, "the ~20KB case should sit above the WAF's 8192-byte body limit").toBeGreaterThan(8192);
+      expect(smallSave.base64Bytes, "the ~20KB case should sit below CloudFront's 64KB body-inspection boundary").toBeLessThan(65536);
+      await shot("14-saved-small");
+
+      // ============================================================
+      // STEP 12: Save a book well beyond CloudFront's body-inspection
+      // boundary but under the storage API's own size limit
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 12: Save a ~500KB book");
+      console.log("=".repeat(60));
+
+      const largeSave = await saveGrownBookAndClean(page, panel, accountBtn, bookTitle, exampleLines, 90000, "~500KB");
+      expect(largeSave.base64Bytes, "the ~500KB case should sit well beyond CloudFront's 64KB body-inspection boundary").toBeGreaterThan(
+        65536,
+      );
+      expect(largeSave.base64Bytes, "the ~500KB case should still sit under the storage API's 2MB limit").toBeLessThan(2 * 1024 * 1024);
+      await shot("15-saved-large");
+
+      // ============================================================
+      // STEP 13: Sign out and see the signed-out panel
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 13: Sign out and see the signed-out panel");
       console.log("=".repeat(60));
 
       const signOutBtn = panel.locator('[data-action="sign-out"]');
-      await expect(signOutBtn, "STEP 11 failed: the sign-out button never appeared").toBeVisible({ timeout: 10000 });
+      await expect(signOutBtn, "STEP 13 failed: the sign-out button never appeared").toBeVisible({ timeout: 10000 });
       await signOutBtn.click();
       await page
         .waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 })
         .catch((error) => {
-          throw new Error(`STEP 11 failed: sign-out never returned to the books page (still at ${page.url()})`, { cause: error });
+          throw new Error(`STEP 13 failed: sign-out never returned to the books page (still at ${page.url()})`, { cause: error });
         });
       await accountBtn.click();
       await expect(
         panel.getByRole("button", { name: "Sign in" }),
-        "STEP 11 failed: the panel never showed the signed-out state after sign-out",
+        "STEP 13 failed: the panel never showed the signed-out state after sign-out",
       ).toBeVisible({ timeout: 15000 });
-      await shot("14-signed-out");
+      await shot("16-signed-out");
       console.log(" Signed out and saw the signed-out account panel");
 
       console.log("\n" + "=".repeat(60));
