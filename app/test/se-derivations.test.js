@@ -19,7 +19,7 @@ import { loadScenario, parseDate } from "../lib/scenario-loader.js";
 import { shiftMonths } from "../lib/period-shift.js";
 import { splitVat } from "../lib/tax/vat.js";
 import { calculateSeCells } from "../lib/calculators/se.js";
-import { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmission } from "../lib/calculators/se-derivations.js";
+import { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmission, setPath } from "../lib/calculators/se-derivations.js";
 import { parseReport, value } from "../lib/report-indicators.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -680,5 +680,32 @@ describe("breakability — every check above can fail", () => {
     expect(mutatedAnnual.adjustments.balancingChargeOther).toBeCloseTo(4360, 2);
     const otherAllowanceKeys = Object.keys(baseAnnual.allowances).filter((key) => key !== "allowanceOnSales");
     for (const key of otherAllowanceKeys) expect(mutatedAnnual.allowances[key]).toBeCloseTo(baseAnnual.allowances[key], 2);
+  });
+});
+
+describe("setPath — a mapping field name cannot reach the prototype chain", () => {
+  it("rejects a path that walks through __proto__ before assigning", () => {
+    const target = {};
+    expect(() => setPath(target, "a.__proto__.polluted", "evil")).toThrow(/__proto__/);
+    expect({}.polluted).toBeUndefined();
+  });
+
+  it("rejects __proto__ as the final segment", () => {
+    const target = {};
+    expect(() => setPath(target, "__proto__", "evil")).toThrow(/__proto__/);
+    expect({}.polluted).toBeUndefined();
+  });
+
+  it("rejects constructor and prototype segments the same way", () => {
+    const target = {};
+    expect(() => setPath(target, "constructor.prototype.polluted", "evil")).toThrow(/constructor/);
+    expect(() => setPath(target, "a.prototype.polluted", "evil")).toThrow(/prototype/);
+    expect({}.polluted).toBeUndefined();
+  });
+
+  it("still writes an ordinary nested path", () => {
+    const target = {};
+    setPath(target, "periodIncome.turnover", 123.45);
+    expect(target).toEqual({ periodIncome: { turnover: 123.45 } });
   });
 });

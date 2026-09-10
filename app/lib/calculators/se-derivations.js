@@ -58,8 +58,19 @@ function primaryField(boxes, boxNumber) {
   return fieldsOf(boxEntry(boxes, boxNumber))[0];
 }
 
-function setPath(target, path, value) {
+// "__proto__", "constructor" and "prototype" are not field names, they are
+// the prototype chain -- a path carrying one would write onto Object.prototype
+// rather than the object this call meant to build. Every path here comes from
+// sa103-mtd-mapping.json's own "field" column, so a segment like this is a
+// defect in that mapping file and must fail loudly rather than land quietly
+// on some other object.
+const UNSAFE_PATH_SEGMENTS = new Set(["__proto__", "constructor", "prototype"]);
+
+export function setPath(target, path, value) {
   const parts = path.split(".");
+  for (const part of parts) {
+    if (UNSAFE_PATH_SEGMENTS.has(part)) throw new Error(`setPath: "${part}" is not a field name, in path "${path}"`);
+  }
   let node = target;
   for (let i = 0; i < parts.length - 1; i++) node = node[parts[i]] ||= {};
   node[parts[parts.length - 1]] = value;
