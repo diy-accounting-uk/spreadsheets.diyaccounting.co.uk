@@ -35,7 +35,7 @@ describe("a template the installed engine has no local copy of", () => {
     cacheDir = resolve(scratch, "cache");
     mkdirSync(appDir, { recursive: true });
 
-    process.env.DIYA_GL_TEMPLATE_SOURCE = `http://127.0.0.1:${server.address().port}/books/assets/`;
+    process.env.DIYA_GL_TEMPLATE_SOURCE = `http://127.0.0.1:${server.address().port}/diya-gl/assets/`;
     process.env.XDG_CACHE_HOME = cacheDir;
   });
 
@@ -52,7 +52,7 @@ describe("a template the installed engine has no local copy of", () => {
 
     try {
       expect(await resources.readText("templates/meta.toml")).toBe(TEMPLATE_BODY);
-      expect(requested).toEqual(["/books/assets/templates/meta.toml"]);
+      expect(requested).toEqual(["/diya-gl/assets/templates/meta.toml"]);
       const announcements = terms.mock.calls.filter(([message]) => String(message).includes("PolyForm"));
       expect(announcements).toHaveLength(1);
       expect(existsSync(resolve(cacheDir, "diya-gl", "templates", "meta.toml"))).toBe(true);

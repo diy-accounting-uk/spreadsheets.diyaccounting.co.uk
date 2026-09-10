@@ -33,11 +33,11 @@ const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "
 // serves the templates the DIYA-GL pages use, and keeps it in a user cache so
 // every later run works with no network.
 //
-// This stays on /books/ while the site still serves the pages there. Every
-// published version fetches this URL, so it moves only once the live site
-// redirects it, and the redirect keeps the older versions working after that.
+// Both the current /diya-gl/ and legacy /books/ paths resolve — the old one
+// through a redirect — so published versions built before the path moved keep
+// working.
 const TEMPLATE_PREFIX = "templates/";
-const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/books/assets/";
+const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets/";
 
 let templateTermsAnnounced = false;
 
