@@ -16,25 +16,18 @@ and 1.1.2 with `latest` on 1.1.2. ITSA-T8 is ready; LP-24's toggle steps are rea
 the variable set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
 spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's.
 
-Both batches are green and waiting on one merge. PR #89 has 25 checks passing and PR #90, still
-draft behind it, has 38. No agent is running and no worktree has uncommitted work. The cloud case
-passes end to end on both branches, against prod, including the renamed page globals.
+Batches b7 and b8 are merged (PRs #89 and #90) and prod is deploying them. That was the naming
+sweep, the ITSA self-employed derivations, the ci native-auth toggle, the cloud case fix chain,
+the self-employed template-defect warnings, the commit-identity guard and the page globals rename.
+No worktree is open and no branch but main exists locally.
 
-Two batches are in flight. `claude/b7-board` is PR #89, carrying the naming chain, the ITSA
-derivations and the toggle; its one open defect is the cloud case's tail, LP-28, worktree `lp27`.
-`claude/b8-board` is PR #90, a draft branched off b7 and held draft until #89 merges, carrying
-TD-1, NM-9 and NM-6 in worktrees `td1`, `identity` and `nm6`.
+Six branches remain on origin and are safe to delete when the operator wants the tidy:
+`claude/b7-board`, `claude/b7-itsa`, `claude/b7-lp24`, `claude/b7-naming`, `claude/b8-board`.
 
 One ci environment serves every branch, so only one batch branch can hold the deploy slot. The
 deploy group is keyed on the environment with `cancel-in-progress: false`, so a second branch's
 push displaces the first's pending deploy rather than racing it. While two batches are live,
-push the one whose PR needs to go green and let the draft's deploys wait. A wave starts from
-the sequenced board on a branch off the previous stable one; the earlier worktrees were:
-`naming` (branch `claude/b7-naming`, the NM-3 to NM-2 chain, serial because they share
-`download.html`), `itsa` (`claude/b7-itsa`, T8's design wave on Opus) and `lp24`
-(`claude/b7-lp24`). Each forks from main and opens by merging the batch branch. The coordinator
-merges each verified commit into `claude/b7-board` and pushes in batches, so one branch deploy
-covers the wave.
+push the one whose PR needs to go green and let the draft's deploys wait.
 
 Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
 version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
@@ -71,26 +64,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-26 | The cloud case's step 8: a book saves but never appears as a row in the account list, so either the list call or the row render is wrong | operator | machine | — | in-flight | on b7; the cloud case is green end to end |
-| LP-27 | The cloud case's step 9: the donation prompt painted over the account panel at equal z-index, so every row button was a dead click | operator | machine | — | in-flight | on b7; the cloud case is green end to end |
-| LP-28 | The cloud case from step 10 to the end: delete, sign out and their assertions, none of which have ever run because the case was blocked at step 7 for its whole life | operator | machine | LP-27 | in-flight | on b7; the cloud case is green end to end |
-| CQ-3 | Two branch deploys of the one ci stack raced and CloudFormation refused the loser; the deploy group is now the target environment and deploys queue rather than cancel | none | machine | — | in-flight | on b7; the cloud case is green end to end |
-| NM-6 | Rename the `window.DiyaGl*Books*` global family: `DiyaGlBooksPage`, `DiyaGlBooksCloud`, `DiyaGlBooksEdits`, `DiyaGlBooksLoader`, `DiyaBooksAutosave` and `DIYA_BOOKS_SNAPSHOT`, across `shell.js`, `cloud.js`, `data.js`, `edits.js`, `headlines.js`, `save.js` and about 30 browser test files | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | on b8; PR #90 is green and draft behind #89 |
-| LP-24 | The ci behaviour run switches native sign-in on for the prod DIYA-GL client before the cloud case and off after it, through Submit's `toggle-cognito-native-auth.js enable|disable prod --client books` under the prod role | operator | machine | — | in-flight | on b7; the cloud case is green end to end |
-| NM-3 | Rename the `/books/*` public URL namespace to DIYA-GL: `public/books/**`, `download.html`'s hrefs, the manifest and service worker, with `redirects.toml` and CloudFront function entries for every old path | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | on b7; the cloud case is green end to end |
-| NM-4 | Rename the same-repo "books" code identifiers: `books-engine.js`, `books-interchange.js`, `build-books-bundle.mjs`, 46 test filenames, `download.html`'s DOM ids, `books-events.js`, `books.css`, and the `"diya-gl-books"` format string (decided: `diya-gl/1`, the reader keeps accepting the old stamps; needs a version bump and a back-compat reader) | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | NM-3 | in-flight | on b7; the cloud case is green end to end |
-| NM-2 | Rename "books" to "DIYA-GL" in prose: docs, comments, page copy and 46 test files' titles | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | NM-4 | in-flight | on b7; the cloud case is green end to end |
-| ITSA-T8 | The two self-employed derivations in the DIYA-GL package, `buildSelfEmploymentQuarterlyUpdates` and `buildSelfEmploymentAnnualSubmission` (Submit's ITSA phase 2, track T8): `app/lib/calculators/se-derivations.js` and its tests, proved cell by cell against the self-employed package's own report over every example | ../submit.diyaccounting.co.uk/PLAN_ITSA_PHASE_2.md | machine | — | in-flight | on b7; the cloud case is green end to end |
-| TD-1 | The four self-employed template defects the ITSA mapping proved with hand figures: the box 44 loss on disposal, VitalTax turnover excluding sales code d, grants sent to quarterly other income instead of box 75, and the small pools write-off filed as an enhanced capital allowance | PLAN_ITSA_SE_DERIVATIONS.md | machine | — | in-flight | on b8; PR #90 is green and draft behind #89 |
-| NM-9 | A pull-request check failing any commit whose author email is not on `.github/allowed-commit-identities.yml`, after 20 commits were authored `noreply@anthropic.com` by a sub-agent setting the identity inline | operator | machine | — | in-flight | on b8; PR #90 is green and draft behind #89 |
-| H1 | Merge the batch pull request for `claude/b7-board` once its checks are green | none | human | LP-24, NM-3, NM-4, NM-2, ITSA-T8 | blocked-to-start | PR #89 is green: 25 checks passed, nothing failing |
-| H2 | Decide how this repository consumes Submit's two scripts, which our runners fetch from their main by raw URL at run time: pin to a commit, have them publish the scripts, or record the contract in both repositories | operator | human | — | ready-to-start | binds both repositories; Submit leans to us pinning |
-| NM-7 | Decide what happens to the `diya-books-*` localStorage keys and the IndexedDB database name, which carry the old branding but hold customers' saved drafts | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | human | — | ready-to-start | a rename orphans saved drafts unless a migration is written |
-| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | S3a's design is done; the cloud.js change waits for S3d on prod |
-| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | LP-24 | blocked-to-start | Submit asked; runs once their WAF fix is on prod, Sonnet |
+| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | — | ready-to-start | Submit's WAF fix is on prod; roughly 20KB and 500KB, Sonnet |
+| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-resume | steps 1 to 10 on main; the cloud case is green against prod |
+| H2 | Decide how this repository consumes Submit's two scripts, which our runners fetch from their main by raw URL at run time: pin to a commit, have them publish the scripts, or record the contract in both repositories | operator | human | — | ready-to-start | put to Submit on the operator's instruction; both lean to pinning |
+| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | waits on Submit's S3d reaching prod, with its window |
+| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | blocked-to-start | waits for prod to serve /diya-gl/; the deploy is running |
 | CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | H2 | blocked-to-start | three call sites in `deploy.yml`; Haiku once the shape is chosen |
-| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | H1 | blocked-to-start | the redirect keeps published versions working either way, Haiku |
-| LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | LP-24 | blocked-to-resume | steps 1 to 10 on main; the case runs against prod after LP-24 |
 
 ## Plans not tracked here
 
