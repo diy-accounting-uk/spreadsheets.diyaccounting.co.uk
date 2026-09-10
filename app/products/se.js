@@ -2288,6 +2288,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0.01,
         "warning",
       );
+
+      // VitalTax's own other-income row sums three P&L rows together --
+      // Other Income (turnover), Investment Grants and Interest received --
+      // where SA103F keeps them apart: the grants reach box 75 (O204), not
+      // box 16 (O55). A trader reading VitalTax's other-income row as a
+      // quarterly "other business income" figure would carry the grants
+      // there too, double-counting them against the annual return. The
+      // Other Income row's own contribution is anchored on the scenario's
+      // own sales coded "d" rather than on the P&L cell it feeds, so a
+      // wrong Other Income line cannot hide inside this check.
+      const otherIncomeSales = journalTotalsByCode(expected.sales, rate, "a").net.d || 0;
+      check(
+        "VitalTax other income (rows 8, 11 and 38 folded together) treats Investment Grants as ordinary other income, while SA103F reports them apart at box 75 (O204) rather than box 16 (O55)",
+        num(pl.B8) + num(pl.B11) + num(pl.B38),
+        num(seFull.O55) + otherIncomeSales,
+        0.01,
+        "warning",
+      );
     }
 
     // The form's own arithmetic, each total against the boxes it adds up.

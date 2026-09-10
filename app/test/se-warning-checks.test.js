@@ -129,3 +129,47 @@ describe("VitalTax annual sales excludes the Other Income sales that SA103F box 
     expect(find(after, CHECK_NAME).diff).toBeCloseTo(-1000, 2);
   });
 });
+
+describe("VitalTax other income folds Investment Grants in where SA103F reports them apart", () => {
+  const CHECK_NAME =
+    "VitalTax other income (rows 8, 11 and 38 folded together) treats Investment Grants as ordinary other income, while SA103F reports them apart at box 75 (O204) rather than box 16 (O55)";
+
+  it("warns of the exact grant on the fixture that carries one, and finds no gap on the two without any", () => {
+    const advanced = loadFixture("se-scenario-advanced");
+    const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
+    expect(advancedRow.pass).toBe(false);
+    expect(advancedRow.severity).toBe("warning");
+    expect(advancedRow.actual).toBeCloseTo(5783.33, 2);
+    expect(advancedRow.expected).toBeCloseTo(3700, 2);
+    expect(advancedRow.diff).toBeCloseTo(2083.33, 2);
+
+    for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {
+      const fixture = loadFixture(name);
+      const row = find(runChecks(fixture.results, fixture.expected), CHECK_NAME);
+      expect(row.pass).toBe(true);
+      expect(row.diff).toBe(0);
+    }
+  });
+
+  it("is breakable: corrupting a copy of the cached grants figure flips it, its downstream checks, and brings in the category-netting row a nil grant carries no check for", () => {
+    const { results, expected } = loadFixture("se-brickwork-pro-nonvat");
+    const before = runChecks(results, expected);
+    const corrupted = { ...results, "Profit & Loss Account": { ...results["Profit & Loss Account"], B11: 400 } };
+    const after = runChecks(corrupted, expected);
+
+    const { flipped, appeared, disappeared } = compareChecks(before, after);
+    expect(disappeared).toEqual([]);
+    expect(appeared).toEqual(["Category netting: Investment Grants received (sales g) net reaches Profit & Loss Account!B11 with no residue"]);
+    expect(flipped).toEqual(
+      [
+        CHECK_NAME,
+        "Accounting profit to tax profit bridge closes to zero",
+        "Forecast: investment grants = P&L investment grants",
+        "P&L: Gross = Turnover + Grants - CoS",
+        "SA103F box 75 other business income (O204) = the profit and loss account",
+      ].sort(),
+    );
+    expect(find(after, CHECK_NAME).pass).toBe(false);
+    expect(find(after, CHECK_NAME).diff).toBeCloseTo(400, 2);
+  });
+});
