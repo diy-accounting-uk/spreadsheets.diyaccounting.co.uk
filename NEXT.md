@@ -70,7 +70,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | prod serves /diya-gl/assets/ now, verified 200; Haiku |
 | CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | ready-to-start | Submit's retry and the diya-gl spelling are both on their main |
 | CQ-5 | `setPath` in `app/lib/calculators/se-derivations.js` walks a dotted path with `node[parts[i]] ||= {}`, so a `__proto__` or `constructor` segment pollutes the prototype | none | machine | — | ready-to-start | CodeQL `js/prototype-pollution-utility`, medium; Sonnet |
-| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | S3d is not started; Submit sends its window per identifier |
+| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | S3d is running on Submit's batch 20; not on their main yet |
 
 ## Plans not tracked here
 
