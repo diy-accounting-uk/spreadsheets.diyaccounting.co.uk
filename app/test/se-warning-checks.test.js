@@ -94,3 +94,38 @@ describe("SA103F box 44 leaves the loss on disposal out of the disallowable tota
     expect(find(after, CHECK_NAME).diff).toBeCloseTo(-300, 2);
   });
 });
+
+describe("VitalTax annual sales excludes the Other Income sales that SA103F box 15 includes", () => {
+  const CHECK_NAME = "VitalTax annual sales (G5) excludes the Other Income sales that SA103F box 15 (D55) includes";
+
+  it("warns of the exact gap on the fixture with Other Income sales, and finds no gap on the two without any", () => {
+    const advanced = loadFixture("se-scenario-advanced");
+    const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
+    expect(advancedRow.pass).toBe(false);
+    expect(advancedRow.severity).toBe("warning");
+    expect(advancedRow.actual).toBeCloseTo(335500, 2);
+    expect(advancedRow.expected).toBeCloseTo(339200, 2);
+    expect(advancedRow.diff).toBeCloseTo(-3700, 2);
+
+    for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {
+      const fixture = loadFixture(name);
+      const row = find(runChecks(fixture.results, fixture.expected), CHECK_NAME);
+      expect(row.pass).toBe(true);
+      expect(row.diff).toBe(0);
+    }
+  });
+
+  it("is breakable: corrupting a copy of VitalTax's own cached annual sales figure flips it and its one sibling, nothing else", () => {
+    const { results, expected } = loadFixture("se-brickwork-pro-nonvat");
+    const before = runChecks(results, expected);
+    const corrupted = { ...results, VitalTax: { ...results.VitalTax, G5: results.VitalTax.G5 - 1000 } };
+    const after = runChecks(corrupted, expected);
+
+    const { flipped, appeared, disappeared } = compareChecks(before, after);
+    expect(appeared).toEqual([]);
+    expect(disappeared).toEqual([]);
+    expect(flipped).toEqual([CHECK_NAME, "VitalTax: annual product sales = P&L Products A+B+C"].sort());
+    expect(find(after, CHECK_NAME).pass).toBe(false);
+    expect(find(after, CHECK_NAME).diff).toBeCloseTo(-1000, 2);
+  });
+});

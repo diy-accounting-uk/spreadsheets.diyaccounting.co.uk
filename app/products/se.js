@@ -2273,6 +2273,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       "warning",
     );
 
+    // VitalTax pools rows 5 to 7 for its own annual sales figure; box 15
+    // pools rows 5 to 8, the extra row being sales coded "d" ("Other
+    // Income" on the P&L, despite the name a turnover line). A trader
+    // reading VitalTax as a running total of the year's turnover would
+    // undercount it by that row. The shipped template has no fix
+    // available -- this warns of the gap rather than failing, carrying
+    // the excluded row as the size of the gap.
+    if (vt) {
+      check(
+        "VitalTax annual sales (G5) excludes the Other Income sales that SA103F box 15 (D55) includes",
+        num(vt.G5),
+        num(seFull.D55),
+        0.01,
+        "warning",
+      );
+    }
+
     // The form's own arithmetic, each total against the boxes it adds up.
     check(
       "SA103F box 57 total capital allowances (O154) = boxes 49 to 56",
