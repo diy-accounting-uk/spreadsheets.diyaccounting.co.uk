@@ -21,6 +21,9 @@ on:
     paths:
       - 'infra/main/**'
       - 'web/spreadsheets.diyaccounting.co.uk/**'
+      # The smoke test runs these against the deployed site, so a change to a
+      # case has to reach the run that exercises it.
+      - 'behaviour-tests/**'
       - '**/cdk.json'
       - 'LICENSE'
       - 'package.json'
@@ -425,7 +428,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js enable prod --client diya-gl
+          node toggle-cognito-native-auth.js enable prod --client books
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
@@ -453,7 +456,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js disable prod --client diya-gl
+          node toggle-cognito-native-auth.js disable prod --client books
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}
