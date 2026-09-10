@@ -20,8 +20,10 @@ The operator triages this list when cool-down lifts: each line becomes a board r
   is always a bot commit with no runs after a successful prod deploy. Dispatching a deploy to close
   the gap publishes again and opens a new one. Measured: the deployed releases page reports 10
   releases while main records 11, so the published page trails npm by exactly one, permanently.
-  Not a CI failure. Either accepted (the next real push carries it) or the publish job stops
-  committing the roll.
+  Not a CI failure, and less bad than first recorded: the daily scheduled `test` and `codeql` runs
+  pick up whatever is on main, so a bot commit is exercised within a day without anyone dispatching
+  anything. The gap is a lag, not a hole. Either accepted or the publish job stops committing the
+  roll.
 
 - **`/watch` has a fourth not-a-failure case to add**, from Submit: a cancelled run can be a
   workflow cancelling itself, when a caller and its reusable callee share a concurrency group. The
@@ -32,3 +34,11 @@ The operator triages this list when cool-down lifts: each line becomes a board r
   `#account-btn` to the signed-in email while the visible label reads "Account". That was dropped
   as unrelated scope and it is the wrong fix, but the underlying question is real: the accessible
   name and the visible label should agree.
+
+- **Two repositories can contend on one Cognito client.** Our ci behaviour job toggles native
+  sign-in on Submit's prod DIYA-GL client, and Submit's own behaviour suites toggle the same
+  client. Cognito serialises `UpdateUserPoolClient`, so overlapping runs raise
+  `ConcurrentModificationException`. Submit hit this between two of their own parallel jobs; ours
+  are sequential within one job, so we have not. There is no concurrency group to key on, because
+  the contention is on a live AWS resource shared across repositories. Submit is adding a retry
+  with backoff to the toggle script. Unobserved here, recorded so it is not a surprise.
