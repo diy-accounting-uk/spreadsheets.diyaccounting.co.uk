@@ -2,9 +2,13 @@
 # Copyright (C) 2006-2026 DIY Accounting Limited
 name: deploy
 run-name: "deploy from ${{ github.ref_name }}"
+# Every branch deploys the one ci environment, so the group is the environment
+# being changed, not the branch changing it. Keyed per branch, two branches
+# raced and CloudFormation refused the loser mid-update. Deploys queue rather
+# than cancel: a cancelled CDK deploy leaves the stack part-applied.
 concurrency:
-  group: deploy-spreadsheets-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-spreadsheets-${{ github.ref == 'refs/heads/main' && 'prod' || 'ci' }}
+  cancel-in-progress: false
 
 on:
   schedule:
