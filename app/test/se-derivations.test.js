@@ -419,6 +419,31 @@ describe("buildSelfEmploymentAnnualSubmission — grants reach the annual submis
   });
 });
 
+describe("buildSelfEmploymentAnnualSubmission — box 55 is warned as a small pools write-off, not a genuine enhanced allowance", () => {
+  // Anchored on the mapping file itself, not on the derivation's own
+  // reading of it: a change to which field HMRC's mapping names first for
+  // box 55 would move this and the warning it checks together.
+  const mapping = JSON.parse(readFileSync(resolve(APP_DIR, "data", "hmrc", "sa103-mtd-mapping.json"), "utf8"));
+  const box55 = mapping.boxes.find((entry) => entry.form === "SA103F" && entry.box === "55");
+  const enhancedField = box55.field.split("|")[0].trim();
+
+  it("box 55's own label and first mapped field really are what the code and the warning below assume", () => {
+    expect(box55.label).toBe("100% and other enhanced capital allowances");
+    expect(enhancedField).toBe("allowances.enhancedCapitalAllowance");
+  });
+
+  for (const fixture of FIXTURES) {
+    it(`${fixture}: the field HMRC's mapping names for box 55 carries a warning that the figure is a small pools write-off`, () => {
+      const { annual } = derive(fixture, TAX_APR27);
+      expect(Object.keys(annual.allowances)).toContain("enhancedCapitalAllowance");
+      const warning = annual.warnings.find((w) => w.field === enhancedField);
+      expect(warning).toBeDefined();
+      expect(warning.reason).toMatch(/small pools/i);
+    });
+  }
+
+});
+
 describe("the derivations — unsourced fields are absent, not nil, and each carries a warning naming its box", () => {
   for (const fixture of FIXTURES) {
     it(`${fixture}: quarterly periods never carry consolidatedExpenses, businessEntertainmentCosts or a disallowable field beyond depreciation`, () => {

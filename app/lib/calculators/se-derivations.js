@@ -493,10 +493,16 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   const allowances = root.allowances || {};
   const adjustments = root.adjustments || {};
 
+  const enhancedCapitalAllowanceField = primaryField(boxes, "55");
   const warnings = [
     {
       field: ownUseField,
       reason: "Business Details!O50 is a customer input cell the book schema has no field for; the template always carries nil here.",
+    },
+    {
+      field: enhancedCapitalAllowanceField,
+      reason:
+        "SA103F box 55 is the small pools write-off (Schedule S1, once the pool balance and the writing down allowance together are under £1,000), not a genuine 100% or enhanced capital allowance; HMRC's own field mapping still files it here.",
     },
   ];
   for (const { box: boxNumber, pick } of NO_SOURCE_ANNUAL_BOXES) {
