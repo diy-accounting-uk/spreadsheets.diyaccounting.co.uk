@@ -659,7 +659,7 @@ changed from us rather than from the release.
 
 | # | Task | Gates | Owner | Where |
 | --- | --- | --- | --- | --- |
-| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Those two domains are the whole of it: both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars, github.com, npmjs.com |
+| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`. Both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service | — | operator | registrars |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 `BRIEF_OPERATOR_TASKS_2026-09-10.md` writes the HMRC note out in full — the address, what changed,
