@@ -501,6 +501,11 @@ The derivation reports box 44 as the template computes it and emits a warning ca
 It does not add the 172 into `depreciationDisallowable` on its own, because that would put a
 figure on HMRC's return that the customer's own SA103F does not show.
 
+> `PLAN_SE_TEMPLATE_GAPS.md` supersedes the framing of 8.2, 8.3, 8.7 and 8.8. Read against the
+> template XML, every disallowable box already has an empty cell in `SE Full`, so the missing
+> input is a percentage per category, not a box. That document carries the cells, the order and
+> the verification; the board rows are `SET-1` to `SET-4`.
+
 ### SED-2 (8.2) Fourteen disallowable categories have no source
 
 (Implementation note: `sa103-mtd-mapping.json`'s own box list gives fourteen field names across
