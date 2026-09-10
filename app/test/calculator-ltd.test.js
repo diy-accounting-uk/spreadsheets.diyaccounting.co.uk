@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateLtdResults } from "../lib/calculators/ltd.js";
+import { apportionCorporationTax } from "../lib/tax/corporation-tax.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
@@ -218,6 +219,49 @@ describe("the payroll year a book with no financial year data falls back on", ()
     expect(payrollAnchorFor("2026-01-31", taxData)).toBe(45388); // 2024-04-06
     expect(payrollAnchorFor("2026-03-31", taxData)).toBe(45388);
     expect(payrollAnchorFor("2026-10-31", taxData)).toBe(45388);
+  });
+});
+
+describe("the associated companies count on the derived sheets", () => {
+  const taxData = taxDataFor("ltd-2026");
+  const book = { documentInfo: { periodCoveredEnd: "2026-03-31" } };
+
+  function derivedFor(associatedCompanies) {
+    const scenario = associatedCompanies === undefined ? {} : { business: { associated_companies: associatedCompanies } };
+    return calculateLtdResults(book, [], taxData, scenario);
+  }
+
+  it("reaches Admin P14 and the two CT600 boxes from the scenario's business block", () => {
+    const results = derivedFor(3);
+    expect(results.Admin.P14).toBe(3);
+    expect(results.CT600.Y118).toBe(3);
+  });
+
+  it("is none when the business block does not state one, so a book without the figure is unchanged", () => {
+    const results = derivedFor(undefined);
+    expect(results.Admin.P14).toBe(0);
+    expect(results.CT600.Y118).toBe(0);
+  });
+
+  it("divides both marginal relief limits, so a company with associates pays more on the same profit", () => {
+    const rates = {
+      smallProfitsRatePercent: [19, 19],
+      mainRatePercent: 25,
+      marginalReliefFraction: 0.015,
+      lowerLimit: 50000,
+      upperLimit: 250000,
+    };
+    const years = [{ year: 2025, days: 365 }];
+    const alone = apportionCorporationTax(100000, years, 365, rates);
+    const withThree = apportionCorporationTax(100000, years, 365, { ...rates, associatedCompanies: 3 });
+
+    // Alone the limits are 50,000 and 250,000, so 100,000 sits in the
+    // marginal band and relief is (250,000 - 100,000) x 0.015. With three
+    // associates they become 12,500 and 62,500, so the profit is above the
+    // upper limit, no relief is due and the whole charge is at the main rate.
+    expect(alone.rows[0].marginalRelief).toBeCloseTo(2250, 2);
+    expect(withThree.rows[0].marginalRelief).toBe(0);
+    expect(withThree.rows[0].tax).toBeGreaterThan(alone.rows[0].tax);
   });
 });
 
