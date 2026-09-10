@@ -51,7 +51,7 @@ const boxes = sa103s.sections.flatMap((section) => section.boxes);
 // neither fetch nor document at load: this environment has no document at
 // all, and a layout fetch here would resolve against nothing.
 const globalsBefore = new Set(Object.keys(globalThis));
-await import(resolve(REPO_ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "books", "products", "taxi-forms.js"));
+await import(resolve(REPO_ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl", "products", "taxi-forms.js"));
 const globalsAfter = Object.keys(globalThis).filter((key) => !globalsBefore.has(key));
 const forms = globalThis.DiyaGlTaxiForms;
 

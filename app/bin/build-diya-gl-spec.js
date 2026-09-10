@@ -11,7 +11,7 @@
 //         web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-lines-v2.schema.json
 //         app/data/hmrc/form-layouts/{bst,taxi,se}.json
 //         app/data/hmrc/sa103-mtd-mapping.json
-//         app/lib/books-interchange.js (the zip entries and the format version)
+//         app/lib/diya-gl-interchange.js (the zip entries and the format version)
 //         app/lib/book-checks.js, run over one example book per product
 //         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/*.json
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
@@ -302,7 +302,7 @@ const ZIP_ENTRY_NOTES = {
 // The zip's entries, the format name and the format version, read out of the
 // module that writes them.
 function interchangeFacts() {
-  const source = readFileSync(resolve(ROOT, "app", "lib", "books-interchange.js"), "utf8");
+  const source = readFileSync(resolve(ROOT, "app", "lib", "diya-gl-interchange.js"), "utf8");
   const writer = source.slice(source.indexOf("export async function writeDiyaGlZip"));
   const entries = [...writer.matchAll(/zip\.file\("([^"]+)"/g)].map((match) => match[1]);
   if (entries.length === 0) throw new Error("No zip entries found in writeDiyaGlZip.");
@@ -310,7 +310,7 @@ function interchangeFacts() {
   if (undescribed.length > 0) throw new Error(`The zip layout has no note for: ${undescribed.join(", ")}. Add one to ZIP_ENTRY_NOTES.`);
   const format = /const JSON_FORMAT = "([^"]+)"/.exec(source);
   const version = /const JSON_VERSION = (\d+)/.exec(source);
-  if (!format || !version) throw new Error("The format name and version are no longer literals in books-interchange.js.");
+  if (!format || !version) throw new Error("The format name and version are no longer literals in diya-gl-interchange.js.");
   return { entries, format: format[1], version: version[1] };
 }
 
@@ -558,10 +558,10 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
         The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
-        <li><a href="books/bst.html">Basic Sole Trader books</a></li>
-        <li><a href="books/taxi.html">Taxi Driver books</a></li>
-        <li><a href="books/se.html">Self Employed books</a></li>
-        <li><a href="books/ltd.html">Limited Company books</a></li>
+        <li><a href="diya-gl/bst.html">Basic Sole Trader books</a></li>
+        <li><a href="diya-gl/taxi.html">Taxi Driver books</a></li>
+        <li><a href="diya-gl/se.html">Self Employed books</a></li>
+        <li><a href="diya-gl/ltd.html">Limited Company books</a></li>
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package

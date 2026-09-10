@@ -3,7 +3,7 @@
 # PLAN: diya-gl Taxi — CLI, MCP, web
 
 The Taxi Driver package on the three surfaces the BST plan built: the CLI's `--file` mode,
-the MCP server and the books page. Taxi is single-file and closest to BST, so it takes the
+the MCP server and the DIYA-GL pages. Taxi is single-file and closest to BST, so it takes the
 BST path with the product-shaped layers swapped. What it adds that BST never exercised: a
 takings sheet with one row per calendar day, grouped into weeks that end in a rental row, an
 other-income row and a subtotal; a P&L that weighs the year's vehicle running costs against

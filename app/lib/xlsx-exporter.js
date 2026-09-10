@@ -2737,7 +2737,7 @@ function transactionRegionIndex() {
  *
  * bstExtractionMap() is the BST caller's own name for this factory, kept so
  * the books page (which calls it directly, by this name, through
- * books-engine.js) does not have to change here; the four multi-file
+ * diya-gl-engine.js) does not have to change here; the four multi-file
  * extractors below build the same shape for SE and Ltd.
  * @param {string} [bookFieldProduct] - which product's bookFieldCells() the
  *   field-lookup half answers from; defaults to "bst", this factory's first

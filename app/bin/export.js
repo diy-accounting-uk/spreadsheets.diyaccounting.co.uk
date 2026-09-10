@@ -13,7 +13,7 @@
 //
 // --source-dir reads a package the pipeline already unpacked into its own
 // directory, and always needs --package to say which product's extractors
-// to run. --file takes any of the kinds books-interchange.js reads -- a
+// to run. --file takes any of the kinds diya-gl-interchange.js reads -- a
 // customer's own download, not a directory this repo laid out -- and writes
 // beside that input unless --output-dir says otherwise; --package is
 // optional there, since the file itself says which product it is (the
@@ -59,7 +59,7 @@ import {
   InvalidDiyaGlJsonError,
   PackagePartError,
   ProductNotAvailableError,
-} from "../lib/books-interchange.js";
+} from "../lib/diya-gl-interchange.js";
 import { PRODUCTS } from "../lib/products.js";
 
 // A book read through --file whose sniffed product disagrees with the
@@ -74,7 +74,7 @@ export class PackageMismatchError extends Error {
 
 // Every error a book source can refuse a read with, named rather than a
 // stack trace: --file prints the message and exits, exactly as the anchor
-// guard already did before books-interchange.js grew four more ways a file
+// guard already did before diya-gl-interchange.js grew four more ways a file
 // can be rejected.
 const NAMED_BOOK_SOURCE_ERRORS = [
   AnchorError,
@@ -192,13 +192,13 @@ async function writeBookChecksJson(outputDir, book, lines) {
   console.log(`  bookchecks.json: ${results.length} rules, ${failing} failing`);
 }
 
-// The whole --file extraction: books-interchange.js sniffs the input and
+// The whole --file extraction: diya-gl-interchange.js sniffs the input and
 // turns it into D (a workbook or a package zip runs the anchor guard and
 // the extractors over a workbook set; a diya-gl zip, a JSON file or that
 // JSON zipped validate straight against the published schemas), then this
 // builds R from that D. --source-dir's CLI path and the MCP server's
 // extract_book tool both call this rather than each reaching into
-// books-interchange.js on their own, so a change to how D or R are produced
+// diya-gl-interchange.js on their own, so a change to how D or R are produced
 // can only ever happen in one place.
 //
 // The product is whichever of the four the file sniffs as; a caller that

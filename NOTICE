@@ -18,14 +18,14 @@ http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html
 
 JSZip. Copyright (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger and
 Antonio Afonso. Taken under the MIT licence of its dual MIT or GPLv3 offer. Compiled into
-the books bundle and the single-file runner, and a runtime dependency of the diya-gl
+the DIYA-GL bundle and the single-file runner, and a runtime dependency of the diya-gl
 package.
 
-smol-toml. Copyright (c) Squirrel Chat et al. BSD-3-Clause. Compiled into the books bundle
+smol-toml. Copyright (c) Squirrel Chat et al. BSD-3-Clause. Compiled into the DIYA-GL bundle
 and the single-file runner, and a runtime dependency of the diya-gl package.
 
 Ajv and ajv-formats. Copyright (c) 2015-2021 Evgeny Poberezkin. MIT. The schema validator
-compiled into the books bundle is Ajv-generated code and carries the same licence.
+compiled into the DIYA-GL bundle is Ajv-generated code and carries the same licence.
 
 Apache Maven Wrapper (mvnw, mvnw.cmd, .mvn/wrapper/maven-wrapper.properties).
 Copyright the Apache Software Foundation. Apache License 2.0.

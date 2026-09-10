@@ -47,7 +47,7 @@ export function useSchemas(bookSchema, linesSchema) {
  * Security Policy with no `unsafe-eval` forbids the `new Function` inside
  * ajv.compile, which useSchemas() and loadSchemasFrom() both reach. The
  * books bundle takes a different route to the same result (see
- * scripts/build-books-bundle.mjs: it resolves ajv's own imports to functions
+ * scripts/build-diya-gl-bundle.mjs: it resolves ajv's own imports to functions
  * generateStandaloneValidatorSource() built ahead of time, so useSchemas()
  * and loadSchemasFrom() keep working unchanged); this function is the direct
  * seam for a caller - a test proving the two validator sources agree, or a

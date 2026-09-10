@@ -40,7 +40,7 @@ async function generateAndExtract(book, lines) {
 }
 
 // What a save-to-diya-gl-zip-then-reload does to a lines array: the zip's
-// lines.jsonl is canonicalLinesJsonl(lines) (books-interchange.js), and
+// lines.jsonl is canonicalLinesJsonl(lines) (diya-gl-interchange.js), and
 // parseDiyaGlData reads a lines.jsonl file back in plain file order, so a
 // reload hands the next generate call this canonically sorted array rather
 // than whatever order the previous extraction produced.

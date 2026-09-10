@@ -3,7 +3,7 @@
 # PLAN: diya-gl BST — CLI, MCP, web
 
 One engine, three surfaces: a CLI over the extract/recalculate loop, an MCP server exposing
-the same operations as tools, and the books page in a browser. The pipeline's own modules
+the same operations as tools, and the DIYA-GL pages in a browser. The pipeline's own modules
 carry all three end to end: xlsx → diya-gl → recalculate → checks → xlsx. BST is the
 vehicle because it is the simplest package that exercises the whole path. Three downstream
 consumers make it worth doing:
@@ -330,7 +330,7 @@ collapses it to a cut.
 | Desktop landscape | strip on top; year table left (~2/3); inspector rail right: checks, drift, helpers, save |
 | Desktop portrait | strip, then the year table full width; inspector as a bottom drawer |
 | Mobile landscape | the columnar table, horizontally scrollable, month column frozen |
-| Mobile portrait | strip as the top of the Books tab; stacked month cards that open in place; save and checks in the bottom action bar |
+| Mobile portrait | strip as the top of the DIYA-GL tab; stacked month cards that open in place; save and checks in the bottom action bar |
 
 ## Test approach
 
@@ -402,7 +402,7 @@ Infrastructure:
   in one file (`infra/main/resources/security-headers.json`) that `SpreadsheetsStack.java`
   reads at synth time and `web/browser-tests/serve.js` reads at test time, so an
   eval-dependent bundle fails in `test:browser` the way it failed in production.
-- **A production probe.** `test:spreadsheetsBehaviour-*` opens the books page, loads
+- **A production probe.** `test:spreadsheetsBehaviour-*` opens the DIYA-GL pages, loads
   `bst-scenario-basic`, and asserts the four headline tiles carry S2's figures, so a deploy
   that breaks the load is caught by the behaviour run, not a customer.
 - **Serial and teed.** Browser specs run with one worker; anything longer than a glance is

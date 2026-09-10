@@ -428,8 +428,8 @@ jobs:
       - name: Build provenance data
         run: npm run build:provenance-data
 
-      - name: Build the books engine bundle
-        run: npm run build:books-bundle
+      - name: Build the DIYA-GL engine bundle
+        run: npm run build:diya-gl-bundle
 
       - name: Symlink zips into public directory
         run: ln -sfn ../../../target/zips web/spreadsheets.diyaccounting.co.uk/public/zips

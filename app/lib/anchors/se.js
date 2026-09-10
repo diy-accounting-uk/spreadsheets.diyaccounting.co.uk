@@ -445,7 +445,7 @@ export function isSeInputCell(file, sheet, cellRef) {
  * baseline from, one per file SE_ANCHORS names. Resolved lazily: path and
  * url are Node-only, so this module only reaches them when a caller actually
  * asks for the paths, keeping SE_ANCHORS and isSeInputCell safe to import
- * under the books bundle's node-absent stubs (see build-books-bundle.mjs).
+ * under the books bundle's node-absent stubs (see build-diya-gl-bundle.mjs).
  * @returns {Promise<Object>} { [file]: templatePath }
  */
 export async function seTemplatePaths() {

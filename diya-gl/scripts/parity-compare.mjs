@@ -11,7 +11,7 @@
 // and scorecard, reconciled commit -- move on an ordinary run that changes
 // none of the figures this gate exists to check. The stamps' own
 // correctness is proven by app/test/provenance.test.js and the
-// books-equivalence specs, not by this gate. Comparing through a JSON
+// diya-gl-equivalence specs, not by this gate. Comparing through a JSON
 // parse-and-reserialise (rather than a text substitution) means a change
 // to any other value anywhere in the document -- however deeply nested,
 // however the stamps themselves are shaped -- still fails the gate.
