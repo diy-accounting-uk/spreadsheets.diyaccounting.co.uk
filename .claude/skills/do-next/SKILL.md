@@ -213,7 +213,7 @@ and its own PR to `main`.
 
 ## What not to do
 
-- Do not run this skill while cool-down is on.
+- Do not dispatch around a wake step that will not complete. Say which one and stay cool.
 - Do not let a sub-agent push, merge, open a PR or edit `NEXT.md`.
 - Do not run the behaviour tier inside a worktree.
 - Do not give a workstream a branch of its own PR when it could ride the batch.
