@@ -425,7 +425,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js enable prod --client books
+          node toggle-cognito-native-auth.js enable prod --client diya-gl
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
@@ -453,7 +453,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/main/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js disable prod --client books
+          node toggle-cognito-native-auth.js disable prod --client diya-gl
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}
