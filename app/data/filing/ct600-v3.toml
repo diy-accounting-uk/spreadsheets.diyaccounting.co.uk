@@ -682,6 +682,7 @@ format = "integer"
 notes = "Use when the AP straddles two financial years with different limits. Not for quarterly instalment payers"
 element = "FirstYear"
 xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/AssociatedCompaniesFinancialYears/FirstYear"
+sheetCell = "Financialaccounts.xlsx!CT600!Y118"
 
 [[box]]
 number = 328
@@ -691,6 +692,7 @@ format = "integer"
 notes = "As box 327"
 element = "SecondYear"
 xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/AssociatedCompaniesFinancialYears/SecondYear"
+sheetCell = "Financialaccounts.xlsx!CT600!Y120"
 
 [[box]]
 number = 329

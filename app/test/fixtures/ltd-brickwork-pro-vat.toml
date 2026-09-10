@@ -17,6 +17,7 @@ postcode = "S1 2AB"
 phone = "0114 555 0100"
 utr = "9876543210"
 vat_number = "376543219"
+associated_companies = 2
 
 [[employees]]
 employeeID = "EMP001"

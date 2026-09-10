@@ -561,6 +561,15 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     const directors = (scenario.employees || []).filter((e) => e.isDirector);
     if (directors[0]?.name) bd.E5 = directors[0].name;
     if (directors[1]?.name) bd.E6 = directors[1].name;
+
+    // The number of companies associated with this one, which divides both
+    // marginal relief limits. Left unwritten when the scenario names none,
+    // matching the template's own blank default (blank reads as 0 in the
+    // sheet's arithmetic, so an unset count changes nothing).
+    if (biz.associated_companies) {
+      if (!hubWrites.Admin) hubWrites.Admin = {};
+      hubWrites.Admin.P14 = biz.associated_companies;
+    }
   }
 
   // Opening balance sheet (OpenAccounts)
@@ -1185,6 +1194,8 @@ export const CELL_MAP = [
   ["CT600", "AJ131", "**Box 430: corporation tax**", "gl-cor:taxAmount (ct600.box430)",  "CT600 as filed", 0],
   ["CT600", "Y133",  "Box 435: marginal rate relief","gl-cor:taxAmount (ct600.box435)",  "CT600 as filed", 1],
   ["CT600", "Y135",  "**Box 440: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box440)", "CT600 as filed", 0],
+  ["CT600", "Y118",  "Box 327: associated companies, first financial year",  "gl-cor:count (ct600.box327)", "CT600 as filed", 1],
+  ["CT600", "Y120",  "Box 328: associated companies, second financial year", "gl-cor:count (ct600.box328)", "CT600 as filed", 1],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1606,6 +1617,7 @@ export function standardReads() {
   for (const cell of CT600_CELLS) add("CT600", cell);
 
   for (const [cell] of ADMIN_TAX_DATA_CELLS) add("Admin", cell);
+  add("Admin", "P14");
   add("Admin", "F21");
   add("Admin", "B9");
   add("Admin", "B32");
@@ -3957,6 +3969,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Admin ${cell}: ${label}`, num(admin[cell]), fromTaxData(taxData), 0.0001);
     }
 
+    // The associated companies count is a business fact, not a tax-year
+    // one, so it is not in ADMIN_TAX_DATA_CELLS -- it comes from the
+    // scenario's own business block, defaulting to none.
+    check("Admin P14: number of associated companies", num(admin.P14), expected.business?.associated_companies ?? 0, 0);
+
     // F21 is the year-end seed every other date in the package cascades
     // from. Its own anchor row and the three published documents that quote
     // the year end all have to land on it. The seed itself is measured
@@ -4094,6 +4111,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("CT600: second financial year profit = second tax row profit", num(ct600.N128), num(corporationTax.F34));
       check("CT600: second financial year rate = second tax row rate", num(ct600.AA128), num(corporationTax.G34), 0);
     }
+    // Boxes 327 and 328 carry the associated companies count for each
+    // financial year row. The product tracks one count for the whole
+    // period, so both boxes carry the same figure; box 328 follows box 385
+    // and the rest of the second row blank when the period does not
+    // straddle two financial years.
+    check("CT600: associated companies, first financial year = Admin P14", num(ct600.Y118), num(admin.P14));
+    if (num(corporationTax.A34) > 0) {
+      check("CT600: associated companies, second financial year = Admin P14", num(ct600.Y120), num(admin.P14));
+    }
     check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
     check("CT600: marginal rate relief = the working sheet's relief", num(ct600.Y133), num(corporationTax.L33) + num(corporationTax.L34));
     check("CT600: tax net of marginal relief = the working sheet's charge", num(ct600.Y135), num(corporationTax.K35));
@@ -4142,11 +4168,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // Each row's share of the profit is charged at the small profits rate
       // up to its share of the lower limit and at the main rate above it,
       // with marginal relief tapering the gap up to the upper limit. Both
-      // limits are shared out over the period the same way the profit is.
+      // limits are shared out over the period the same way the profit is,
+      // then divided by one plus the number of associated companies.
       const admin = results.Admin;
       if (admin && days > 0) {
-        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days;
-        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days;
+        const associatedDivisor = 1 + num(admin.P14);
+        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days / associatedDivisor;
+        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days / associatedDivisor;
         const reliefFor = (rowProfit, rowDays) =>
           rowProfit > lowerLimit(rowDays) && rowProfit < upperLimit(rowDays) ? (upperLimit(rowDays) - rowProfit) * num(admin.P9) : 0;
         const rateFor = (rowProfit, rowDays, smallProfitsRate) => (rowProfit <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
@@ -4186,7 +4214,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
       // The charge the period's profit actually bears, against the statutory
       // computation worked independently of the sheet.
-      const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
+      const statutory = calculateCorporationTax(profit, {
+        ...taxData.corporation_tax,
+        associated_companies: expected.business?.associated_companies ?? 0,
+      }).corporationTax;
       check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }
   }
