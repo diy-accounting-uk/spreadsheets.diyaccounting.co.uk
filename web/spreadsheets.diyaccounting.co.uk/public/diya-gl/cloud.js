@@ -476,15 +476,23 @@
     document.body.appendChild(backdropEl);
   }
 
+  // The accessible name (aria-label) must contain the visible label ("Sign
+  // in" or "Account") as a literal substring -- WCAG 2.5.3 Label in Name.
+  // The email goes in aria-label and title so it stays discoverable to both
+  // a screen reader and a sighted user hovering the button, but it never
+  // replaces the visible label as the name.
   function syncAccountButton() {
     if (!accountBtnEl) return;
     var session = getSession();
     var label = accountBtnEl.querySelector(".btn-label");
     if (session) {
-      accountBtnEl.title = (session.user && session.user.email) || "Account";
+      var email = session.user && session.user.email;
+      accountBtnEl.title = email || "Account";
+      accountBtnEl.setAttribute("aria-label", email ? "Account, signed in as " + email : "Account");
       if (label) label.textContent = "Account";
     } else {
       accountBtnEl.title = "Sign in to save to your account";
+      accountBtnEl.setAttribute("aria-label", "Sign in to save to your account");
       if (label) label.textContent = "Sign in";
     }
   }
