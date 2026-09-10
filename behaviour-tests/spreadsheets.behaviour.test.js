@@ -1265,6 +1265,23 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   // Saves through the same menu and toast-or-duplicate race step 7 uses
   // above, measures the artifact actually built for that save, and deletes
   // the row afterwards so the case leaves nothing behind in the account.
+  const isBookDeleteResponse = (response) => response.request().method() === "DELETE" && /\/api\/v1\/books\//.test(response.url());
+
+  // #account-btn is a strict toggle: clicking it with the panel already open
+  // closes it. Every step that wants the list has to know which way the panel
+  // is facing, and a step that leaves it open silently disarms the next one's
+  // click.
+  async function showAccountPanel(panel, accountBtn) {
+    if (await panel.isVisible().catch(() => false)) return;
+    await accountBtn.click();
+  }
+
+  async function hideAccountPanel(panel, accountBtn) {
+    if (!(await panel.isVisible().catch(() => false))) return;
+    await accountBtn.click();
+    await expect(panel, "the account panel would not close").toBeHidden({ timeout: 10000 });
+  }
+
   async function saveGrownBookAndClean(page, panel, accountBtn, bookTitle, exampleLines, extraCount, sizeLabel) {
     const measured = await page.evaluate(
       async ({ exampleLines, extraCount }) => {
@@ -1302,6 +1319,9 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
         `the PUT body's zipBase64 is ${measured.base64Bytes} bytes`,
     );
 
+    // Save with the panel closed, as a person would, so the click cannot land
+    // on the panel overlay and so the list opened below is fetched fresh.
+    await hideAccountPanel(panel, accountBtn);
     await page.click("#save-btn");
     const cloudMenuItem = page.getByRole("menuitem", { name: "Save to my account", exact: true });
     await expect(cloudMenuItem, `${sizeLabel} case failed: the save menu never carried a Save to my account item`).toBeVisible({
@@ -1354,13 +1374,16 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     }
     console.log(` Saved the ${sizeLabel} book to the account`);
 
-    await accountBtn.click();
+    await showAccountPanel(panel, accountBtn);
     const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
     await expect(rowToDelete, `${sizeLabel} case failed: the book was not listed to delete`).toBeVisible({ timeout: 15000 });
     await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
     const confirmDelete = panel.locator('[data-action="confirm-delete"]');
     await expect(confirmDelete, `${sizeLabel} case failed: the delete confirmation never appeared`).toBeVisible({ timeout: 10000 });
+    const deleteLanded = page.waitForResponse(isBookDeleteResponse, { timeout: 20000 });
     await confirmDelete.click();
+    const deleteResponse = await deleteLanded;
+    expect(deleteResponse.status(), `${sizeLabel} case failed: the delete answered ${deleteResponse.status()}`).toBeLessThan(300);
     await expect(
       panel.locator(".account-row", { hasText: bookTitle }),
       `${sizeLabel} case failed: the book was still listed after delete`,
@@ -1552,7 +1575,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 6: Load an example");
       console.log("=".repeat(60));
 
-      await accountBtn.click(); // close the panel so the example button is reachable
+      await hideAccountPanel(panel, accountBtn); // the example button sits under the panel
       await page.locator('[data-example="bst-scenario-basic"]').click();
       const yearTotals = page.locator("tfoot.year-totals");
       await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
@@ -1619,7 +1642,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       // save menu, not the panel, so the page never re-fetched the list --
       // it only does that for a panel already open at save time. Reopening
       // it here is what fetches the list that now carries the saved book.
-      await accountBtn.click();
+      await showAccountPanel(panel, accountBtn);
       await expect(panel, "STEP 8 failed: the account panel never reopened").toBeVisible({ timeout: 10000 });
 
       const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
@@ -1664,7 +1687,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 10: Delete it");
       console.log("=".repeat(60));
 
-      await accountBtn.click(); // reopen the panel with a fresh list
+      await showAccountPanel(panel, accountBtn); // step 9 left it closed, so this opens a fresh list
       const rowToDelete = panel.locator(".account-row", { hasText: bookTitle }).first();
       await expect(rowToDelete, "STEP 10 failed: the book was not listed to delete").toBeVisible({ timeout: 15000 });
       await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
@@ -1674,10 +1697,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       // below would pass on the optimistic render rather than on a finished
       // delete. The response itself is what proves it landed, and it has to be
       // awaited from before the click that causes it.
-      const deleteLanded = page.waitForResponse(
-        (response) => response.request().method() === "DELETE" && /\/api\/v1\/books\//.test(response.url()),
-        { timeout: 20000 },
-      );
+      const deleteLanded = page.waitForResponse(isBookDeleteResponse, { timeout: 20000 });
       await confirmDelete.click();
       const deleteResponse = await deleteLanded;
       expect(deleteResponse.status(), `STEP 10 failed: the delete answered ${deleteResponse.status()}`).toBeLessThan(300);
