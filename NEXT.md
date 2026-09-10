@@ -8,26 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**COOL-DOWN is on since 2026-09-10T18:35:45Z.** No new board rows except a degradation. Agents commit
-and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
-
-Urgency 1 of the licensing uplift has shipped: every repository's PR is merged, the four generate
-runs and the prod deploy of 2026-09-09 19:15 UTC rebuilt every package with `LICENCE.txt` and the
-workbook properties, and npm carries `diya-gl` 1.1.2 under Apache-2.0. Urgency 1 is closed: npm
-1.0.0 to 1.0.5 are deprecated and the pre-Apache GHCR tags are deleted, so GHCR holds 1.1.0, 1.1.1
-and 1.1.2 with `latest` on 1.1.2. ITSA-T8 is ready; LP-24's toggle steps are ready to resume with
-the variable set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
-spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's.
-
-Batches b7 and b8 are merged (PRs #89 and #90), prod is deployed and green, and `diya-gl` 1.2.1
-is on npm. That was the naming sweep, the ITSA self-employed derivations, the ci native-auth
-toggle, the cloud case fix chain, the self-employed template-defect warnings, the commit-identity
-guard and the page globals rename. No worktree is open, no branch but main exists on either side,
-no agent is running, and main carries nothing after its last push.
-
-Prod's last green deploy is `41186603`. main's HEAD is a bot version-roll commit that fires no
-workflow, which is this repository's normal state after a publish; `PARKED.md` records why chasing
-it does not terminate.
+Batch b9 is merged (PR #91), prod's last green deploy is `a5085125`, and `diya-gl` 1.2.1 is on
+npm. No worktree is open, no branch but main exists locally, no agent is running, and main carries
+nothing after its last push. The merged `origin/claude/b9-board` is still on the remote; deleting a
+branch is the operator's.
 
 One ci environment serves every branch, so only one batch branch can hold the deploy slot. The
 deploy group is keyed on the environment with `cancel-in-progress: false`, so a second branch's
