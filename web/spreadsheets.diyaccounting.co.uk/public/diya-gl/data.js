@@ -214,7 +214,7 @@
         label: c.name,
         expected: c.expected,
         actual: c.actual,
-        result: c.pass ? "pass" : "fail",
+        result: c.pass ? "pass" : c.severity === "warning" ? "warn" : "fail",
       };
     });
   }

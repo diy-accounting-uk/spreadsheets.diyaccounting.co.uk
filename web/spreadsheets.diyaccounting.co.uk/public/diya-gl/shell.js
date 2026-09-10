@@ -2546,7 +2546,9 @@
         rk("check/" + c.label) +
         '><span class="check-marker" aria-hidden="true">' +
         checkMarker(c.result) +
-        '</span><span class="check-body"><span class="check-label">' +
+        '</span><span class="check-body">' +
+        (c.result === "warn" ? '<span class="check-tier">Warning</span>' : "") +
+        '<span class="check-label">' +
         esc(c.label) +
         '</span><br/><span class="check-figures">' +
         (c.result === "pass" ? "matches" : "expected " + fmtMoney(c.expected) + " · actual " + fmtMoney(c.actual)) +
