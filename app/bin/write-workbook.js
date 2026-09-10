@@ -4,7 +4,7 @@
 //
 // write-workbook.js — diya-gl data in, an Excel package out. The other
 // direction from export.js: this takes a book.toml + lines.jsonl (or any of
-// the kinds books-interchange.js reads) and writes the workbook(s) the
+// the kinds diya-gl-interchange.js reads) and writes the workbook(s) the
 // template composes them onto, through product-workbook.js's saveWorkbook
 // path. No LibreOffice: the writes land as cached formula results the same
 // way the books page's client-side export does, never a recalculation pass.
@@ -17,7 +17,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
-import { readBookSource } from "../lib/books-interchange.js";
+import { readBookSource } from "../lib/diya-gl-interchange.js";
 import { saveWorkbook, saveWorkbookFiles, savePackageZip, productOf } from "../lib/product-workbook.js";
 import { productModule, PRODUCTS } from "../lib/products.js";
 

@@ -658,7 +658,7 @@ export function diyaGlToScenario(book, lines, product) {
  *
  * Resolves app/data's path from import.meta.url lazily, on the first call,
  * rather than at module load: this module is bundled into the books page
- * (books-engine.js re-exports diyaGlToScenario from it), where url and path
+ * (diya-gl-engine.js re-exports diyaGlToScenario from it), where url and path
  * are stubs that throw when called -- extractTaxDataFromBook itself is
  * Node-only and never reached from the bundle, but a module-scope call
  * would run for every importer, browser included.

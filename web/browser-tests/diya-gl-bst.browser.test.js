@@ -1,0 +1,582 @@
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
+
+// web/browser-tests/diya-gl-bst.browser.test.js
+// Browser tests for the DIYA-GL page (web/spreadsheets.diyaccounting.co.uk/public/diya-gl/bst.html)
+// covering the four designed layouts, the download.html entry panel, and (W1)
+// the live upload path: extraction, the as-read drift layer and its
+// breakability proof.
+
+import { test, expect } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { startStaticServer } from "./serve.js";
+import { s2 } from "./r-sources.js";
+
+const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
+fs.mkdirSync(screenshotsDir, { recursive: true });
+
+const FRESH_PACKAGE_PATH = path.join(process.cwd(), "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
+
+const VIEWPORTS = {
+  "desktop-landscape": { width: 1440, height: 900 },
+  "desktop-portrait": { width: 1024, height: 1366 },
+  "mobile-landscape": { width: 844, height: 390 },
+  "mobile-portrait": { width: 390, height: 844 },
+};
+
+// The engine's own resource loader fetches the schemas and the tax year data
+// from site-absolute paths (/schema/, /diya-gl/assets/), so the page needs a
+// real HTTP origin to load against -- a file:// navigation has no origin for
+// fetch() to resolve those against. serve.js sends production's security
+// headers, so an eval-dependent bundle fails here the way it fails in prod.
+let closeServer;
+let baseUrl;
+
+test.beforeAll(async () => {
+  const server = await startStaticServer(publicDir);
+  baseUrl = server.baseUrl;
+  closeServer = server.close;
+});
+
+test.afterAll(async () => {
+  await closeServer();
+});
+
+function bstUrl() {
+  return `${baseUrl}/diya-gl/bst.html`;
+}
+
+async function openLoadedBook(page, viewport, exampleName = /bst-scenario-basic/) {
+  await page.setViewportSize(viewport);
+  await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: exampleName }).click();
+  await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+}
+
+// The strip sits above the year table in the document regardless of which
+// of the two the current viewport actually shows -- mobile portrait hides
+// .year-table-scroll in favour of .month-cards, but both are always in the
+// DOM, so document order alone proves "above" at every layout.
+async function expectStripAboveYearTable(page) {
+  await expect(page.locator(".headlines-strip")).toBeAttached();
+  const stripPrecedesTable = await page.evaluate(() => {
+    const strip = document.querySelector(".headlines-strip");
+    const table = document.querySelector(".year-table-scroll");
+    return !!(strip && table && strip.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(stripPrecedesTable).toBe(true);
+}
+
+async function uploadFile(page, buffer, name) {
+  await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+  await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+  await page.locator("#file-picker").setInputFiles({
+    name,
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer,
+  });
+}
+
+// ── Workbook corruption helpers, for the breakability proof ────────────────
+// Mirror the OOXML mechanics diya-gl/xlsx-cells.js reads with: find a sheet's
+// XML by name through workbook.xml + its rels, then edit one cell in place.
+
+async function sheetPathByName(zip, sheetName) {
+  const workbookXml = await zip.file("xl/workbook.xml").async("string");
+  const relsXml = await zip.file("xl/_rels/workbook.xml.rels").async("string");
+  const tag = [...workbookXml.matchAll(/<sheet\b([^>]*)\/>/g)].find((m) => m[1].includes(`name="${sheetName}"`));
+  if (!tag) throw new Error(`sheet "${sheetName}" not found in the fixture workbook`);
+  const rid = /r:id="([^"]+)"/.exec(tag[1])[1];
+  const target = new RegExp(`Id="${rid}"[^>]*Target="([^"]+)"`).exec(relsXml)[1];
+  return `xl/${target}`;
+}
+
+// Corrupts exactly one cached formula value, leaving the formula and every
+// other cell untouched -- the point being that R (computed from the
+// extracted lines) never reads this cell at all, so only its own as-read
+// comparison can move.
+async function corruptedCachedValue(sourcePath, sheetName, cellRef, newValue) {
+  const zip = await JSZip.loadAsync(fs.readFileSync(sourcePath));
+  const sheetPath = await sheetPathByName(zip, sheetName);
+  const xml = await zip.file(sheetPath).async("string");
+  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"[^>]*>)([\\s\\S]*?)(</c>)`);
+  if (!cellPattern.test(xml)) throw new Error(`cell ${sheetName}!${cellRef} not found or is self-closing`);
+  const patched = xml.replace(
+    cellPattern,
+    (full, open, inner, close) => open + inner.replace(/<v>[\s\S]*?<\/v>/, `<v>${newValue}</v>`) + close,
+  );
+  zip.file(sheetPath, patched);
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+// Renames a sheet the anchor guard requires, so BstAnchorError's
+// "sheet not found" branch fires -- a customer's file that does not match
+// the current Basic Sole Trader template, not a parse failure.
+async function withRenamedSheet(sourcePath, oldName, newName) {
+  const zip = await JSZip.loadAsync(fs.readFileSync(sourcePath));
+  const workbookXml = await zip.file("xl/workbook.xml").async("string");
+  const patched = workbookXml.replace(`name="${oldName}"`, `name="${newName}"`);
+  expect(patched, "the sheet name to rename was found in workbook.xml").not.toBe(workbookXml);
+  zip.file("xl/workbook.xml", patched);
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+test.describe("DIYA-GL page — empty state", () => {
+  test("offers the picker, new book and every example as the first thing shown", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator(".empty-state h2")).toHaveText("View your books in DIYA-GL");
+    await expect(page.locator('label[for="file-picker"]')).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start a new book" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /bst-scenario-basic/ })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /bst-brickwork-pro-nonvat/ })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /bst-sp-sixty/ })).toBeEnabled();
+
+    // Sheet tabs and inspector are not shown before a book is loaded.
+    await expect(page.locator("#sheet-tabs")).toHaveClass(/hidden/);
+  });
+
+  test("rejects .xls with instructions, does not pretend to read it", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const buffer = Buffer.from("not a real xls, just bytes for the picker test");
+    await page.locator("#file-picker").setInputFiles({
+      name: "my-accounts.xls",
+      mimeType: "application/vnd.ms-excel",
+      buffer,
+    });
+
+    await expect(page.locator("#empty-state-message")).toContainText("save as .xlsx");
+  });
+
+  test("an example button leads with the business, and loading one says so in the customer's words", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const basic = page.locator('[data-example="bst-scenario-basic"]');
+    await expect(basic.locator(".example-name")).toHaveText("Precision Code Trading");
+    await expect(basic.locator(".example-id")).toContainText("bst-scenario-basic");
+
+    await basic.click();
+    await expect(page.locator("#toast")).toHaveText("Loaded Precision Code Trading (example)");
+  });
+
+  test("an uploaded file is named back by its own file name", async ({ page }) => {
+    await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "my-books.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    await expect(page.locator("#toast")).toHaveText("Loaded my-books.xlsx");
+  });
+
+  test("the other two example books load live, not just bst-scenario-basic", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"], /bst-brickwork-pro-nonvat/);
+    await expect(page.locator("#app-title")).toContainText("BrickWork");
+
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"], /bst-sp-sixty/);
+    await expect(page.locator(".year-table tbody tr.year-row")).toHaveCount(12);
+  });
+
+  test("an anchor mismatch fails by name, in the page's own error styling, not a stack trace", async ({ page }) => {
+    const corrupted = await withRenamedSheet(FRESH_PACKAGE_PATH, "Admin", "Admin (renamed)");
+    await uploadFile(page, corrupted, "renamed-sheet.xlsx");
+
+    const message = page.locator("#empty-state-message");
+    await expect(message).toHaveClass(/upload-error/);
+    // Exactly the named-anchor message and nothing else -- never a stack
+    // trace, never a generic "something went wrong".
+    await expect(message).toHaveText('This file does not match the current Basic Sole Trader template:\n  - sheet "Admin" not found');
+  });
+});
+
+test.describe("DIYA-GL page — loaded views", () => {
+  test("year table shows twelve months, category columns and an anchored totals row", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+
+    const rows = page.locator(".year-table tbody tr.year-row");
+    await expect(rows).toHaveCount(12);
+
+    const totals = page.locator("tfoot.year-totals td").first();
+    await expect(totals).toBeVisible();
+    await expect(page.locator("tfoot.year-totals")).toContainText("£409,900.00");
+  });
+
+  test("a month expands to its summary, then to its entries, one at a time", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+
+    const aprilRow = page.locator('.year-row[data-month="2025-04"]');
+    await expect(aprilRow).toHaveAttribute("aria-expanded", "true"); // April opens by default
+
+    const mayRow = page.locator('.year-row[data-month="2025-05"]');
+    await mayRow.click();
+    await expect(mayRow).toHaveAttribute("aria-expanded", "true");
+    await expect(aprilRow).toHaveAttribute("aria-expanded", "false");
+
+    // Only one month's detail panel exists at a time.
+    await expect(page.locator(".month-detail-row")).toHaveCount(1);
+
+    // Reopen April, the month the fixture carries real entries for.
+    await aprilRow.click();
+    await expect(aprilRow).toHaveAttribute("aria-expanded", "true");
+    const entriesToggle = page.locator("#entries-toggle");
+    await expect(entriesToggle).toContainText("Show entries");
+    await entriesToggle.click();
+    await expect(page.locator("table.entries-table")).toHaveCount(2);
+  });
+
+  test("SA103S and Income Tax tax-form renders show box-number chips and no HMRC branding", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+
+    await page.locator('.tab-btn[data-view="sa103s"]').click();
+    await expect(page.locator(".form-render .form-name")).toHaveText(/SA103S/);
+    await expect(page.locator(".box-chip").first()).toBeVisible();
+    await expect(page.locator(".whole-pounds-note").first()).toHaveText("whole pounds");
+    const sa103sHtml = await page.locator(".form-render").innerHTML();
+    expect(sa103sHtml.toLowerCase()).not.toContain("gov.uk");
+    expect(sa103sHtml.toLowerCase()).not.toContain("hmrc logo");
+
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+    await expect(page.locator(".form-render .form-name")).toHaveText(/Income Tax/);
+    await expect(page.locator(".form-row.total-row").first()).toBeVisible();
+
+    // Only the real form has box numbers: the Income Tax computation is the
+    // sheet's own working, so it carries no chips.
+    await expect(page.locator(".form-render .box-chip")).toHaveCount(0);
+  });
+
+  test("the Income Tax view takes CIS off the tax, not out of National Insurance", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+
+    const niSection = page.locator(".form-section", { hasText: "National Insurance" });
+    await expect(niSection).not.toContainText("CIS");
+
+    // It sits with the Total Income Tax it comes off.
+    const taxSection = page.locator(".form-section", { hasText: "Tax bands" });
+    await expect(taxSection).toContainText("Less: CIS deducted");
+  });
+
+  test("the Income Tax view carries the profit bridge, and its computed tax profit equals the sheet's own cell", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+
+    const bridgeCard = page.locator(".panel-card", { hasText: "Accounting profit to tax profit bridge" });
+    await expect(bridgeCard).toBeVisible();
+    await expect(bridgeCard).toContainText("Net profit per the profit and loss account");
+    await expect(bridgeCard).toContainText("Less annual investment allowance (box 23)");
+    await expect(bridgeCard.locator("tr.total")).toContainText("Tax profit the bridge computes");
+
+    const report = s2("examples/precision-code-ltd/bst");
+    const computed = report.get("section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes");
+    const sheetCarries = report.get("section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries");
+    expect(computed.value).toBe(sheetCarries.value); // this fixture's bridge closes with no residue
+
+    const computedText = await bridgeCard
+      .locator('[data-r-key*="section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes"]')
+      .innerText();
+    const sheetCarriesText = await bridgeCard
+      .locator('[data-r-key*="section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries"]')
+      .innerText();
+    expect(computedText).toBe(sheetCarriesText);
+    expect(Number(computedText.replace(/[£,]/g, ""))).toBeCloseTo(Number(computed.value), 2);
+  });
+
+  test("the P&L carries the tax lines the sheet prints below Taxable Profit", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+
+    for (const key of ["C30", "C32", "C33", "C35"]) {
+      await expect(page.locator(`[data-r-key*="Profit & Loss Acc!${key}"]`)).toHaveCount(1);
+    }
+    await expect(page.locator(".kv-table")).toContainText("Net Income After Tax");
+  });
+
+  test("the business name is editable, moves the header, and undo puts it back", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await expect(name).toHaveValue("Precision Code Trading");
+
+    await name.fill("Precision Code Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading Ltd");
+
+    await page.locator("#undo-btn").click();
+    await expect(page.locator("#app-title")).not.toContainText("Ltd");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading");
+  });
+
+  test("the topbar controls carry a visible label at desktop widths and a name everywhere", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeVisible();
+    await expect(page.locator("#theme-toggle .btn-label")).toBeVisible();
+    await expect(page.locator("#save-btn")).toHaveAttribute("aria-label", "Save workbook");
+
+    // On a phone the labels give way, but the accessible names do not.
+    await page.setViewportSize(VIEWPORTS["mobile-portrait"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeHidden();
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Toggle dark theme");
+  });
+
+  test("the Fixed Assets view prints a register, one row an asset", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="fixed-assets"]').click();
+
+    const register = page.locator(".register-table");
+    await expect(register).toBeVisible();
+    await expect(register.locator("thead th")).toHaveText(["Asset", "Cost", "AIA", "WDA", "Written down"]);
+    await expect(register.locator("tbody tr")).not.toHaveCount(0);
+
+    // Every asset's cost, allowance and written-down value add up the way
+    // the schedule's own total says they do.
+    const costs = await register.locator("tbody tr td:nth-child(2)").allInnerTexts();
+    const total = costs.reduce((sum, text) => sum + Number(text.replace(/[£,]/g, "")), 0);
+    const printed = Number((await register.locator("tfoot td").first().innerText()).replace(/[£,]/g, ""));
+    expect(printed).toBeCloseTo(total, 2);
+  });
+
+  test("the Debtors & Creditors view renders the sheet the template ships", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="debtors-creditors"]').click();
+
+    // One opening figure a side, then a row per month, then the column total
+    // -- no customer or supplier named, because the sheet names none.
+    const debtors = page.locator(".panel-card", { hasText: "Debtors" }).first();
+    await expect(debtors).toContainText("Owed by customers at start of year");
+    await expect(debtors).toContainText("£10,800.00");
+    await expect(debtors.locator("tr")).toHaveCount(14); // opening + twelve months + total
+    await expect(debtors).toContainText("Amount owed by customers");
+
+    const creditors = page.locator(".panel-card", { hasText: "Creditors" }).first();
+    await expect(creditors).toContainText("Owed to suppliers at start of year");
+    await expect(creditors).toContainText("£2,220.00");
+  });
+
+  test("checks panel shows live pass/fail verdicts from the engine", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expect(page.locator("#inspector .check-item")).not.toHaveCount(0);
+    await expect(page.locator("#inspector .check-item.fail")).toHaveCount(0);
+
+    // A passing check says it matches; only a failure is worth two figures.
+    const passing = page.locator("#inspector .checks-list .check-item.pass").first();
+    await expect(passing.locator(".check-figures")).toHaveText("matches");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Need attention");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Differ from workbook");
+  });
+
+  test("the Admin view names the tax year, not the file the rates came from", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="admin"]').click();
+    const provenance = page.locator(".rate-provenance");
+    await expect(provenance).toContainText("tax year");
+    await expect(provenance).not.toContainText("app/data");
+  });
+
+  test("the Admin view carries the NI Class 2 Small Profits Threshold, keyed to Admin!N17", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="admin"]').click();
+
+    const cell = page.locator('[data-r-key*="cell/Admin!N17"]');
+    await expect(cell).toHaveCount(1);
+    await expect(page.locator(".kv-table")).toContainText("NI Class 2 Small Profits Threshold");
+
+    const report = s2("examples/precision-code-ltd/bst");
+    const threshold = report.get("cell/Admin!N17");
+    const text = await cell.innerText();
+    expect(Number(text.replace(/[£,]/g, ""))).toBeCloseTo(Number(threshold.value), 2);
+  });
+});
+
+test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
+  test("a freshly generated package uploaded shows zero drift", async ({ page }) => {
+    await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Basic_Sole_Trader.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    // The whole of the snapshot's own drift collection, not just the three
+    // views this test happens to visit -- a finding on a view nobody clicked
+    // would otherwise pass silently.
+    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift);
+    expect(drift).toEqual([]);
+
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
+    await expect(page.locator(".pencil-correction")).toHaveCount(0);
+
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+    await expect(page.locator(".pencil-correction")).toHaveCount(0);
+    await expect(page.locator(".kv-table")).toContainText("£7,598.00"); // Motor Expenses, plain, no correction
+  });
+
+  test("a hand-corrupted cached value shows exactly that cell's drift, nothing else", async ({ page }) => {
+    const corrupted = await corruptedCachedValue(FRESH_PACKAGE_PATH, "Income Tax", "E11", "99999");
+    await uploadFile(page, corrupted, "corrupted-income-tax.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    // The corrupted cell's own view carries the pencil correction: the
+    // computed figure in ink, the workbook's (corrupted) cached figure struck
+    // through beneath it, signed drift beside it.
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+    const correction = page.locator(".form-row-margin .pencil-correction");
+    await expect(correction).toHaveCount(1);
+    await expect(correction.locator(".as-read")).toContainText("99,999");
+    await expect(correction.locator(".computed-value")).toContainText("88,131.60");
+    await expect(correction.locator(".drift-amount")).toContainText("11867.40");
+
+    // Nothing else on the P&L or SA103S views picked up a correction: the
+    // computed side never reads the workbook's cells at all, so corrupting
+    // one cached value moves only its own comparison.
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+    await expect(page.locator(".pencil-correction")).toHaveCount(0);
+    await page.locator('.tab-btn[data-view="sa103s"]').click();
+    await expect(page.locator(".pencil-correction")).toHaveCount(0);
+  });
+});
+
+test.describe("DIYA-GL page — four layouts", () => {
+  test("desktop landscape: inspector rail beside the year table", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expectStripAboveYearTable(page);
+
+    await expect(page.locator("#inspector")).toBeVisible();
+    await expect(page.locator("#inspector .checks-list")).toBeVisible();
+    await expect(page.locator("#mobile-tabbar")).toBeHidden();
+    await expect(page.locator("#drawer-toggle-btn")).toBeHidden();
+
+    // The strip leads, but it does not fill the screen: the first month of
+    // the year table is on the page the reader lands on, unscrolled.
+    const firstRowBottom = await page
+      .locator(".year-table tbody tr.year-row")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(firstRowBottom, "April's row sits within the first screen").toBeLessThanOrEqual(VIEWPORTS["desktop-landscape"].height);
+
+    await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-bst-desktop-landscape.png"), fullPage: false });
+  });
+
+  test("desktop portrait: inspector collapses to a bottom drawer opened by the toggle", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-portrait"]);
+    await expectStripAboveYearTable(page);
+
+    await expect(page.locator("#inspector")).toBeHidden();
+    await expect(page.locator("#drawer-toggle-btn")).toBeVisible();
+    await expect(page.locator("#inspector-drawer")).not.toHaveClass(/is-open/);
+
+    await page.locator("#drawer-toggle-btn").click();
+    await expect(page.locator("#inspector-drawer")).toHaveClass(/is-open/);
+    await expect(page.locator("#inspector-drawer .checks-list")).toBeVisible();
+
+    await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-bst-desktop-portrait.png"), fullPage: false });
+  });
+
+  test("mobile landscape: the columnar table scrolls horizontally with the month column frozen", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-landscape"]);
+    await expectStripAboveYearTable(page);
+
+    await expect(page.locator(".year-table-scroll")).toBeVisible();
+    await expect(page.locator(".month-cards")).toBeHidden();
+    await expect(page.locator("#mobile-tabbar")).toBeVisible();
+
+    const monthCellPosition = await page
+      .locator(".year-table td.month-cell")
+      .first()
+      .evaluate((el) => getComputedStyle(el).position);
+    expect(monthCellPosition).toBe("sticky");
+    const monthCellLeft = await page
+      .locator(".year-table td.month-cell")
+      .first()
+      .evaluate((el) => getComputedStyle(el).left);
+    expect(monthCellLeft).toBe("0px");
+
+    await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-bst-mobile-landscape.png"), fullPage: false });
+  });
+
+  test("mobile portrait: stacked month cards with a sticky year-totals header and a bottom action bar", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+    await expectStripAboveYearTable(page);
+
+    await expect(page.locator(".month-cards")).toBeVisible();
+    await expect(page.locator(".year-table-scroll")).toBeHidden();
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+
+    const stickyPosition = await page.locator("#year-summary-sticky").evaluate((el) => getComputedStyle(el).position);
+    expect(stickyPosition).toBe("sticky");
+    await expect(page.locator("#year-summary-sticky")).toBeVisible();
+
+    await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-bst-mobile-portrait.png"), fullPage: false });
+  });
+
+  test("mobile portrait: a month card opens in place, and an edit inside it moves the card's own figure", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+
+    // April is the month a loaded book opens on, so the first tap closes it
+    // and proves the card answers a tap; the second opens it again.
+    const april = page.locator('[data-month-card="2025-04"]');
+    const head = april.locator(".month-card-head");
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(april.locator("table.entries-table")).toHaveCount(0);
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    // The entries are inside the card, not on a page the tap navigated to.
+    const entries = april.locator("table.entries-table");
+    await expect(entries).toHaveCount(2);
+    await expect(april.locator(".month-summary-grid")).toBeVisible();
+
+    // One month open at a time.
+    await expect(page.locator(".month-card .month-detail")).toHaveCount(1);
+
+    const salesFigure = april.locator(".month-card-figures .figure-value").first();
+    const before = Number((await salesFigure.innerText()).replace(/[£,]/g, ""));
+    const amount = april.locator('.entries-table[data-journal="sales"] .entry-amount-input').first();
+    const was = Number(await amount.inputValue());
+    await amount.fill(String(was + 250));
+    await amount.press("Enter");
+
+    await expect.poll(async () => Number((await salesFigure.innerText()).replace(/[£,]/g, ""))).toBe(before + 250);
+  });
+
+  test("mobile portrait: the headlines strip leads the Books tab; the Checks tab opens the drawer without it", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+
+    const firstChildId = await page.locator("#view-root > *").first().getAttribute("id");
+    expect(firstChildId).toBe("headlines-strip-mount");
+    await expect(page.locator("#view-root .headline-tiles [data-r-key^='headline/']")).toHaveCount(4);
+
+    await page.locator('.mobile-tab[data-tab="checks"]').click();
+    await expect(page.locator("#inspector-drawer")).toHaveClass(/is-open/);
+    await expect(page.locator("#inspector-drawer .checks-list")).toBeVisible();
+    await expect(page.locator("#inspector-drawer .headlines-strip")).toHaveCount(0);
+  });
+});
+
+test.describe("Spreadsheets download.html — DIYA-GL entry panel", () => {
+  function readHtml(filename) {
+    return fs.readFileSync(path.join(publicDir, filename), "utf-8");
+  }
+
+  test("has the View your books in DIYA-GL panel linking to books/bst.html", async ({ page }) => {
+    await page.setContent(readHtml("download.html"), { waitUntil: "domcontentloaded" });
+
+    const heading = page.locator("h2", { hasText: "View your books in DIYA-GL" });
+    await expect(heading).toBeVisible();
+
+    const section = page.locator(".download-section", { has: heading });
+    await expect(section).toContainText("Nothing is uploaded");
+
+    const link = section.locator("#diya-gl-bst-link");
+    await expect(link).toHaveAttribute("href", "diya-gl/bst.html");
+    await expect(link).toHaveText("View in DIYA-GL");
+
+    // No file picker on this panel -- the DIYA-GL page owns it.
+    await expect(section.locator("input[type=file]")).toHaveCount(0);
+  });
+});

@@ -182,7 +182,7 @@ export function canonicalLinesJsonl(lines) {
 
 /**
  * One line's own fields reordered to the schema's declared order, values
- * untouched -- the shape writeBookJson (books-interchange.js) serialises a
+ * untouched -- the shape writeBookJson (diya-gl-interchange.js) serialises a
  * line as. Any field the schema does not declare is kept, after the
  * declared ones, so an unrecognised key is lost to validation rather than
  * to this reordering.
@@ -336,7 +336,7 @@ export function canonicalBookToml(book) {
 
 /**
  * The book's top-level tables reordered to the schema's declared order,
- * values untouched -- the shape writeBookJson (books-interchange.js)
+ * values untouched -- the shape writeBookJson (diya-gl-interchange.js)
  * serialises a book as. Any table the schema does not declare is kept,
  * after the declared ones.
  * @param {Object} book - parsed book.toml

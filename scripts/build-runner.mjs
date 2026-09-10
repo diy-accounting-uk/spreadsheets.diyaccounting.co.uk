@@ -7,8 +7,8 @@
 // file, so the result opens with a plain double-click (file://) and needs
 // no server, no origin and no network.
 //
-// It reads scripts/build-books-bundle.mjs's own output (the engine bundle
-// and the copied runtime assets under books/assets/) rather than
+// It reads scripts/build-diya-gl-bundle.mjs's own output (the engine bundle
+// and the copied runtime assets under diya-gl/assets/) rather than
 // duplicating that build: run that script first.
 //
 //   node scripts/build-runner.mjs
@@ -50,9 +50,9 @@ import { provenanceStamps } from "../app/lib/provenance.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
-const BOOKS_DIR = resolve(PUBLIC_DIR, "books");
+const DIYA_GL_DIR = resolve(PUBLIC_DIR, "diya-gl");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
-const ASSETS_DIR = resolve(BOOKS_DIR, "assets");
+const ASSETS_DIR = resolve(DIYA_GL_DIR, "assets");
 const OUT_DIR = resolve(ROOT, "target", "runners");
 
 // The fixed, fake origin every relative specifier and every absolute-path
@@ -60,7 +60,7 @@ const OUT_DIR = resolve(ROOT, "target", "runners");
 // file header. ".invalid" is the reserved TLD for exactly this: a name
 // that must never resolve on a real network (RFC 2606).
 const ORIGIN = "https://runner.diya-gl.invalid";
-const BASE_PATH = "/books/";
+const BASE_PATH = "/diya-gl/";
 const BASE_HREF = `${ORIGIN}${BASE_PATH}`;
 
 const PRODUCTS = {
@@ -101,7 +101,7 @@ function walkFiles(dir) {
 }
 
 // Resolves a CSS file's @import url(...) chain in place, depth-first, so
-// books.css's rules land before a product sheet's own -- the same order
+// diya-gl.css's rules land before a product sheet's own -- the same order
 // the browser would apply them in if it fetched each file itself.
 function inlineCss(cssPath, seen = new Set()) {
   const key = resolve(cssPath);
@@ -121,7 +121,7 @@ function toBase64(path) {
 // hand-written and never carry a script or style tag split across lines
 // in a way this would misparse -- and keeps this build depending on
 // nothing but the page's own bytes, the same discipline
-// build-books-bundle.mjs's own pageReferences() follows.
+// build-diya-gl-bundle.mjs's own pageReferences() follows.
 function extractTags(html) {
   const scripts = [...html.matchAll(/<script\b([^>]*)\bsrc="([^"]+)"([^>]*)>\s*<\/script>/g)].map((m) => ({
     src: m[2],
@@ -266,7 +266,7 @@ function rewriteSaveJsEngineImport(source) {
 // reaches a real page rather than a dead address.
 function rewriteSiteLinks(bodyHtml, product) {
   return bodyHtml
-    .replace(`href="${product}.html"`, `href="https://spreadsheets.diyaccounting.co.uk/books/${product}.html"`)
+    .replace(`href="${product}.html"`, `href="https://spreadsheets.diyaccounting.co.uk/diya-gl/${product}.html"`)
     .replace('href="../donate.html"', 'href="https://spreadsheets.diyaccounting.co.uk/donate.html"');
 }
 
@@ -337,11 +337,11 @@ function buildResourceMap(product) {
 }
 
 function assertBuilt() {
-  const bundle = resolve(BOOKS_DIR, "engine", "diya-gl-engine.js");
+  const bundle = resolve(DIYA_GL_DIR, "engine", "diya-gl-engine.js");
   try {
     statSync(bundle);
   } catch {
-    throw new Error(`build-runner.mjs: no engine bundle at ${bundle}. Run: node scripts/build-books-bundle.mjs`);
+    throw new Error(`build-runner.mjs: no engine bundle at ${bundle}. Run: node scripts/build-diya-gl-bundle.mjs`);
   }
 }
 
@@ -362,15 +362,15 @@ function buildProvenanceStamp(product) {
 
 function buildRunner(product) {
   const meta = PRODUCTS[product];
-  const pageHtml = readText(resolve(BOOKS_DIR, `${product}.html`));
+  const pageHtml = readText(resolve(DIYA_GL_DIR, `${product}.html`));
   const { scripts, styles } = extractTags(pageHtml);
 
-  const cssText = styles.map((s) => inlineCss(resolve(BOOKS_DIR, s.href))).join("\n");
+  const cssText = styles.map((s) => inlineCss(resolve(DIYA_GL_DIR, s.href))).join("\n");
 
   const importMapModules = [
-    ["engine/diya-gl-engine.js", readText(resolve(BOOKS_DIR, "engine", "diya-gl-engine.js"))],
-    ["bundle-resources.js", readText(resolve(BOOKS_DIR, "bundle-resources.js"))],
-    ["save.js", rewriteSaveJsEngineImport(readText(resolve(BOOKS_DIR, "save.js")))],
+    ["engine/diya-gl-engine.js", readText(resolve(DIYA_GL_DIR, "engine", "diya-gl-engine.js"))],
+    ["bundle-resources.js", readText(resolve(DIYA_GL_DIR, "bundle-resources.js"))],
+    ["save.js", rewriteSaveJsEngineImport(readText(resolve(DIYA_GL_DIR, "save.js")))],
   ];
 
   const resources = buildResourceMap(product);
@@ -379,7 +379,7 @@ function buildRunner(product) {
   const scriptTagsHtml = scripts
     .filter((s) => !SKIP_SCRIPT_SRC.has(s.src))
     .map((s) => {
-      const path = s.src.startsWith("assets/") ? resolve(ASSETS_DIR, s.src.slice("assets/".length)) : resolve(BOOKS_DIR, s.src);
+      const path = s.src.startsWith("assets/") ? resolve(ASSETS_DIR, s.src.slice("assets/".length)) : resolve(DIYA_GL_DIR, s.src);
       const source = readText(path);
       const openTag = s.module ? '<script type="module">' : "<script>";
       return `${openTag}\n${source}\n</script>`;

@@ -75,7 +75,7 @@
         },
         "diya-gl:formatVersion": {
           "type": "string",
-          "description": "diya-gl: extension — The diya-gl-books format name and version this file is written as, e.g. \"diya-gl-books/1\"."
+          "description": "diya-gl: extension — The diya-gl format name and version this file is written as, e.g. \"diya-gl/1\"."
         },
         "diya-gl:engineVersion": {
           "type": "string",

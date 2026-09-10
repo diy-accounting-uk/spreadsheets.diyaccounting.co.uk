@@ -330,7 +330,7 @@ describe("extract_book: a Taxi book, byte-for-byte with export.js --file", () =>
       .split("\n")
       .filter((line) => line.trim())
       .map((line) => JSON.parse(line));
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const jsonDir = tempDir("mcp-extract-taxi-json-src-");
     const jsonPath = resolve(jsonDir, "book-diya-gl.json");
     writeFileSync(jsonPath, writeBookJson(book, lines));
@@ -396,7 +396,7 @@ describe("extract_book: byte-for-byte with export.js --file", () => {
 });
 
 // ============================================================================
-// extract_book on the interchange formats books-interchange.js added: a
+// extract_book on the interchange formats diya-gl-interchange.js added: a
 // diya-gl zip and a diya-gl JSON file, both read from the same CLI output
 // extract_book already matches byte-for-byte above.
 // ============================================================================
@@ -426,7 +426,7 @@ describe("extract_book: the diya-gl zip and JSON formats", () => {
     const cliOutput = tempDir("mcp-extract-json-cli-out-");
     execFileSync(NODE, [EXPORT_BIN, "--package", "bst", "--file", BST_XLSX, "--output-dir", cliOutput], { cwd: ROOT });
 
-    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const { writeBookJson } = await import("../lib/diya-gl-interchange.js");
     const book = parseTOML(readFileSync(resolve(cliOutput, "book.toml"), "utf8"));
     const lines = readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8")
       .split("\n")
@@ -479,7 +479,7 @@ describe("save_workbook: the diya-gl-zip and json formats", () => {
       expect(saved.format).toBe("json");
       const text = Buffer.from(saved.base64, "base64").toString("utf8");
       const document = JSON.parse(text);
-      expect(document.format).toBe("diya-gl-books");
+      expect(document.format).toBe("diya-gl");
       expect(document.lines.length).toBe(extracted.lines.length);
     } finally {
       client.close();

@@ -961,7 +961,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-18-books-bst-empty.png` });
@@ -1021,7 +1021,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the SE books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/se.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/se.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-20-books-se-empty.png` });
@@ -1093,7 +1093,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Taxi books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/taxi.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/taxi.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-22-books-taxi-empty.png` });
@@ -1163,7 +1163,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Ltd books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/books/ltd.html`;
+    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/ltd.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-24-books-ltd-empty.png` });
@@ -1323,7 +1323,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 1: Open the books page and the account panel");
       console.log("=".repeat(60));
 
-      const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+      const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
       await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await shot("01-books-page");
 
@@ -1489,6 +1489,13 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 8: See the row in the list");
       console.log("=".repeat(60));
 
+      // The panel was closed in step 6 and the save in step 7 ran through the
+      // save menu, not the panel, so the page never re-fetched the list --
+      // it only does that for a panel already open at save time. Reopening
+      // it here is what fetches the list that now carries the saved book.
+      await accountBtn.click();
+      await expect(panel, "STEP 8 failed: the account panel never reopened").toBeVisible({ timeout: 10000 });
+
       const savedRow = panel.locator(".account-row", { hasText: bookTitle }).first();
       await expect(savedRow, "STEP 8 failed: the saved book never appeared as a row in the account list").toBeVisible({
         timeout: 15000,
@@ -1508,6 +1515,16 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       if (await openConfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
         await openConfirm.click();
       }
+      // The book being reopened is the one already on the page, so its year
+      // totals read the same before and after -- that assertion alone can
+      // pass on the old render while the GET for the fresh copy is still in
+      // flight. cloud.js only closes the account panel once that GET has
+      // resolved and the reopened book has rendered, so waiting for the
+      // panel to close is what actually proves the open finished, and it is
+      // what step 10's own accountBtn.click() needs to be true: it toggles,
+      // so a still-open panel there closes it instead of opening a fresh
+      // list.
+      await expect(panel, "STEP 9 failed: opening the book never closed the account panel").toBeHidden({ timeout: 20000 });
       await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,900.00", {
         timeout: 20000,
       });

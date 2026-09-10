@@ -89,12 +89,12 @@ describe("export.js --file mode: a Company package", () => {
   }, 30000);
 
   // The overtype sidecar (app/lib/overtype-sidecar.js) has a bst, se and
-  // taxi branch in books-interchange.js's readWorkbookSource -- no ltd
+  // taxi branch in diya-gl-interchange.js's readWorkbookSource -- no ltd
   // branch exists yet, so source.overtyped is never set for a Company
   // package and export.js's `if (overtyped) writeOvertypedJson(...)` never
   // runs. This asserts that reality rather than the sidecar's eventual
   // shape (keys of the form file!sheet!cell, empty for a pristine package),
-  // which cannot be true until books-interchange.js grows that branch.
+  // which cannot be true until diya-gl-interchange.js grows that branch.
   it("writes no overtyped.json for a Company package, since the Ltd overtype sidecar has no branch in readWorkbookSource yet", async () => {
     const zipPath = await packageZipOf(LTD_SOURCE_DIR, resolve(tempDir("export-file-ltd-overtyped-zip-"), "ltd-package.zip"));
 

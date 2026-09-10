@@ -3,10 +3,10 @@
 //
 // diya-gl-tools.js — the four MCP tools, each a thin call into a function
 // phase 1 already tests: extract_book wraps export.js's --file pipeline
-// (books-interchange.js underneath, so every kind it reads loads here too),
+// (diya-gl-interchange.js underneath, so every kind it reads loads here too),
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
 // and diya-gl-edits.js, save_workbook wraps product-workbook.js for a workbook
-// or package zip and books-interchange.js for the two diya-gl formats. No
+// or package zip and diya-gl-interchange.js for the two diya-gl formats. No
 // engine code lives here.
 //
 // extract_book and report both carry a bookChecks field alongside report --
@@ -30,7 +30,7 @@ import { resolve as resolvePath } from "path";
 import { extractBookFromFile, buildFileReportDocument, calculatedResultsFor } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
 import { stampBook } from "../provenance.js";
-import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
+import { writeDiyaGlZip, writeBookJson } from "../diya-gl-interchange.js";
 import { saveWorkbook, savePackageZip, loadTaxDataForBook, productOf } from "../product-workbook.js";
 import { productModule } from "../products.js";
 import {

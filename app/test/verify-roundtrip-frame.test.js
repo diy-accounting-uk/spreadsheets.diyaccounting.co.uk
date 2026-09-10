@@ -22,7 +22,7 @@ import { tmpdir } from "os";
 
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { applyCellWrites } from "../lib/spreadsheet-runner.js";
-import { readBookSource } from "../lib/books-interchange.js";
+import { readBookSource } from "../lib/diya-gl-interchange.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { PRODUCTS } from "../lib/products.js";
 import { scoreDataHalves, unrepresentableScope } from "../bin/verify-roundtrip.js";

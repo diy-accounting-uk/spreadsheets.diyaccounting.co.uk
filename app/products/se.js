@@ -1339,6 +1339,16 @@ export function standardReads() {
       // months that traded and tie the projected year to the actual one.
       9,
       38,
+      // Materials after the stock adjustment, wages and staff costs, bank
+      // interest paid and finance charges: the only rows an ITSA quarterly
+      // update needs a monthly split for that the netting table above does
+      // not already carry (row 14 mixes a stock movement into its own
+      // closing-month cell, row 21 mixes a payroll addback, and rows 30/31
+      // come off the bank books rather than a purchases analysis column).
+      14,
+      21,
+      30,
+      31,
     ]),
   ];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];

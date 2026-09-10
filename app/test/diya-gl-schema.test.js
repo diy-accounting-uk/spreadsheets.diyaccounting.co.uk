@@ -153,7 +153,7 @@ describe("diya-gl schema, proved breakable", () => {
 });
 
 // The browser bundle validates with functions ajv's standalone code
-// generator built ahead of time (scripts/build-books-bundle.mjs), because
+// generator built ahead of time (scripts/build-diya-gl-bundle.mjs), because
 // ajv.compile() reaches `new Function`, which the production CSP forbids.
 // This proves that path agrees with the runtime-compiled one it replaces:
 // same verdict, same errors, on a book and lines fixture that pass and on

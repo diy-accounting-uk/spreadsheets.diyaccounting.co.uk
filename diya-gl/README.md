@@ -49,8 +49,8 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
 - **read-workbook** takes an `.xlsx`, a package zip, or a diya-gl zip or JSON file
   (`--file`), and writes `book.toml`, `lines.jsonl`, `report.json` and `bookchecks.json`.
 - **write-workbook** takes a diya-gl book (`--data` or `--file`) and writes the Excel
-  package its product composes onto its template — the same client-side path the site's
-  books page uses, so it never needs LibreOffice. Add `--zip` for the package as one zip.
+  package its product composes onto its template — the same client-side path the DIYA-GL
+  pages use, so it never needs LibreOffice. Add `--zip` for the package as one zip.
 - **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with four tools:
   `extract_book`, `report`, `edit_lines`, `save_workbook`. Point an MCP client at
   `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.

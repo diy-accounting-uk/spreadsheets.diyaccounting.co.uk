@@ -18,7 +18,7 @@ import { PROVENANCE_DATA } from "./provenance-data.js";
 
 // The same schema-name-to-product-id mapping xlsx-exporter.js's
 // productIdOf() carries, kept as a small map of its own rather than an
-// import: report-serializer.js and books-interchange.js both reach this
+// import: report-serializer.js and diya-gl-interchange.js both reach this
 // module from one side of a cycle through xlsx-exporter.js (which itself
 // imports scenario-extractor.js), and a static import back into
 // xlsx-exporter.js from here closes that cycle -- a genuine circular ESM

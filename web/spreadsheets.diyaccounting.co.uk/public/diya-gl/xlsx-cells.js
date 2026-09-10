@@ -1,0 +1,303 @@
+// SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+// Copyright (C) 2006-2026 DIY Accounting Limited
+
+// diya-gl/xlsx-cells.js
+//
+// A minimal reader for one cell's cached value inside an uploaded .xlsx, and
+// for finding the .xlsx entry inside an uploaded .zip.
+//
+// This is glue, not engine logic. app/lib/xlsx-exporter.js already reads
+// cells this way (readCellValue in app/lib/spreadsheet-runner.js), but that
+// helper is internal to the pipeline and is not part of the diya-gl-engine.js
+// bundle surface the page imports (app/lib/ is read-only for this track), so
+// the as-read layer -- reading the workbook's own cached formula results for
+// the cells CELL_MAP names, to annotate drift against the diya-gl-computed
+// figures -- needs its own small copy of the same OOXML cell-value mechanics.
+// It duplicates no calculation, chart-of-accounts or extraction logic: it
+// answers exactly one question, "what value is cached at sheet!cell", the
+// same question a spreadsheet application answers when it opens the file.
+//
+// Depends on window.JSZip (vendored at diya-gl/assets/vendor/jszip.min.js,
+// loaded by bst.html as a classic script before this one).
+
+(function (global) {
+  "use strict";
+
+  function decodeXmlEntities(text) {
+    return text
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&amp;/g, "&");
+  }
+
+  // Every <si> shared-string entry, in index order. A rich-text run splits
+  // its text across several <t> children, so each entry joins all of them.
+  function parseSharedStrings(xml) {
+    const strings = [];
+    for (const si of xml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)) {
+      const text = [...si[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map((t) => t[1]).join("");
+      strings.push(decodeXmlEntities(text));
+    }
+    return strings;
+  }
+
+  // One cell's value from a sheet's raw XML, following the same <c r="..."
+  // t="..."><v>...</v></c> shape spreadsheet-runner.js's readCellValue reads:
+  // "s" is a shared-string index, "str"/"inlineStr" a formula/inline string
+  // result, "b" a boolean, and no "t" (or "n") a plain number. Returns
+  // undefined where the cell is absent -- an empty cell in a sparse row is
+  // not a zero on the sheet.
+  function cellValue(sheetXml, cellRef, sharedStrings) {
+    const re = new RegExp(`<c\\s+r="${cellRef}"([^>]*)(?:/>|>([\\s\\S]*?)</c>)`, "s");
+    const match = re.exec(sheetXml);
+    if (!match) return undefined;
+    const attrs = match[1] || "";
+    const inner = match[2] || "";
+    const typeMatch = /\bt="([^"]+)"/.exec(attrs);
+    const type = typeMatch ? typeMatch[1] : null;
+
+    if (type === "s") {
+      const index = /<v>(\d+)<\/v>/.exec(inner);
+      return index ? sharedStrings[Number(index[1])] : undefined;
+    }
+    if (type === "str" || type === "inlineStr") {
+      const text = /<t[^>]*>([\s\S]*?)<\/t>/.exec(inner) || /<v>([\s\S]*?)<\/v>/.exec(inner);
+      return text ? decodeXmlEntities(text[1]) : undefined;
+    }
+    if (type === "b") {
+      const value = /<v>([\s\S]*?)<\/v>/.exec(inner);
+      return value ? value[1] === "1" : undefined;
+    }
+    const value = /<v>([\s\S]*?)<\/v>/.exec(inner);
+    if (!value) return undefined;
+    const num = Number(value[1]);
+    return Number.isFinite(num) ? num : value[1];
+  }
+
+  /**
+   * The single .xlsx entry inside an uploaded .zip, by extension. Returns
+   * null where none is found, so the caller can name the file in its error
+   * rather than throw from inside this helper.
+   * @param {Object} zip - a loaded JSZip instance
+   */
+  function findXlsxEntryName(zip) {
+    const names = Object.keys(zip.files).filter((name) => !zip.files[name].dir && /\.xlsx$/i.test(name));
+    return names[0] || null;
+  }
+
+  /**
+   * The workbook bytes to read, from either a .xlsx directly or a .zip
+   * carrying one.
+   * @param {Uint8Array} fileBytes
+   * @param {string} fileName - for the .zip/.xlsx extension check and the error message
+   * @returns {Promise<Uint8Array>}
+   */
+  async function xlsxBytesFrom(fileBytes, fileName) {
+    if (/\.zip$/i.test(fileName)) {
+      const zip = await global.JSZip.loadAsync(fileBytes);
+      const entryName = findXlsxEntryName(zip);
+      if (!entryName) throw new Error(`No .xlsx workbook found inside ${fileName}`);
+      return zip.file(entryName).async("uint8array");
+    }
+    return fileBytes;
+  }
+
+  /**
+   * Open an .xlsx's cells for reading by sheet name and cell reference.
+   * @param {Uint8Array} xlsxBytes
+   * @returns {Promise<{hasSheet: (name: string) => boolean, readCell: (sheet: string, cellRef: string) => Promise<*>}>}
+   */
+  async function openWorkbookCells(xlsxBytes) {
+    const zip = await global.JSZip.loadAsync(xlsxBytes);
+    const workbookXml = await zip.file("xl/workbook.xml").async("string");
+    const relsFile = zip.file("xl/_rels/workbook.xml.rels");
+    const relsXml = relsFile ? await relsFile.async("string") : "";
+    const sharedStringsFile = zip.file("xl/sharedStrings.xml");
+    const sharedStrings = sharedStringsFile ? parseSharedStrings(await sharedStringsFile.async("string")) : [];
+
+    const relTargetById = new Map();
+    for (const rel of relsXml.matchAll(/<Relationship\b([^>]*)\/>/g)) {
+      const idMatch = /\bId="([^"]+)"/.exec(rel[1]);
+      const targetMatch = /\bTarget="([^"]+)"/.exec(rel[1]);
+      if (idMatch && targetMatch) relTargetById.set(idMatch[1], targetMatch[1]);
+    }
+
+    const sheetPathByName = new Map();
+    for (const sheet of workbookXml.matchAll(/<sheet\b([^>]*)\/>/g)) {
+      const nameMatch = /\bname="([^"]*)"/.exec(sheet[1]);
+      const ridMatch = /\br:id="([^"]*)"/.exec(sheet[1]);
+      if (!nameMatch || !ridMatch) continue;
+      const target = relTargetById.get(ridMatch[1]);
+      if (!target) continue;
+      const path = target.startsWith("/") ? target.slice(1) : `xl/${target}`;
+      sheetPathByName.set(decodeXmlEntities(nameMatch[1]), path);
+    }
+
+    const sheetXmlCache = new Map();
+    async function sheetXmlFor(sheetName) {
+      if (sheetXmlCache.has(sheetName)) return sheetXmlCache.get(sheetName);
+      const path = sheetPathByName.get(sheetName);
+      const file = path ? zip.file(path) : null;
+      const xml = file ? await file.async("string") : null;
+      sheetXmlCache.set(sheetName, xml);
+      return xml;
+    }
+
+    return {
+      hasSheet: (sheetName) => sheetPathByName.has(sheetName),
+      async readCell(sheetName, cellRef) {
+        const xml = await sheetXmlFor(sheetName);
+        return xml === null ? undefined : cellValue(xml, cellRef, sharedStrings);
+      },
+    };
+  }
+
+  // The same four rules app/lib/workbook-set.js keeps: a workbook is a
+  // .xlsx entry, addressed by the last segment of its path whatever case it
+  // arrived in, and a macOS re-zip's __MACOSX entries and ._ shadows are not
+  // workbooks. The page cannot import app/lib, so they are stated twice; the
+  // browser test reads one real package through both. So is the name a
+  // workbook uploaded on its own is addressed by, which the engine's
+  // uploadedWorkbookName settles the same way.
+  function workbookBaseName(entryPath) {
+    var segments = entryPath.split("/");
+    return segments[segments.length - 1];
+  }
+
+  function isWorkbookEntry(entryPath) {
+    var segments = entryPath.split("/");
+    if (segments.indexOf("__MACOSX") !== -1) return false;
+    var base = segments[segments.length - 1];
+    if (base.indexOf("._") === 0) return false;
+    return /\.xlsx$/i.test(base);
+  }
+
+  // One set over however many workbooks a source holds, in the shape
+  // app/lib/workbook-set.js keeps (names, has, bytes, zip) plus the two cell
+  // readers the drift layer needs. The engine's own sniff, anchor guard and
+  // extractors take a set, so an upload opens exactly one of these and every
+  // reader page-side and engine-side asks it the same questions. Each
+  // workbook opens on the first question asked of it and stays open, so a
+  // page that reads two cells off the hub decompresses nothing else.
+  function workbookSet(sources) {
+    var pathByName = new Map();
+    sources.forEach(function (source) {
+      pathByName.set(source.name.toLowerCase(), source);
+    });
+
+    var names = [];
+    pathByName.forEach(function (source) {
+      names.push(source.name);
+    });
+    names.sort(function (left, right) {
+      var a = left.toLowerCase();
+      var b = right.toLowerCase();
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+
+    function sourceFor(file) {
+      return pathByName.get(workbookBaseName(file).toLowerCase()) || null;
+    }
+
+    var bytesByName = new Map();
+    function bytesFor(file) {
+      var source = sourceFor(file);
+      if (!source) throw new Error("The package holds no workbook named " + file + ".");
+      if (!bytesByName.has(source.name)) bytesByName.set(source.name, source.read());
+      return bytesByName.get(source.name);
+    }
+
+    var cellsByName = new Map();
+    function cellsFor(file) {
+      var source = sourceFor(file);
+      if (!source) return null;
+      if (!cellsByName.has(source.name)) cellsByName.set(source.name, bytesFor(source.name).then(openWorkbookCells));
+      return cellsByName.get(source.name);
+    }
+
+    // The workbook's own JSZip, for the engine's extractors and link-cache
+    // readers, which take any JSZip-shaped object.
+    var zipsByName = new Map();
+    function zipFor(file) {
+      var source = sourceFor(file);
+      if (!source) throw new Error("The package holds no workbook named " + file + ".");
+      if (!zipsByName.has(source.name)) {
+        zipsByName.set(
+          source.name,
+          bytesFor(source.name).then(function (bytes) {
+            return global.JSZip.loadAsync(bytes);
+          }),
+        );
+      }
+      return zipsByName.get(source.name);
+    }
+
+    return {
+      names: function () {
+        return names.slice();
+      },
+      has: function (file) {
+        return pathByName.has(workbookBaseName(file).toLowerCase());
+      },
+      bytes: bytesFor,
+      async hasSheet(file, sheetName) {
+        var pending = cellsFor(file);
+        if (!pending) return false;
+        return (await pending).hasSheet(sheetName);
+      },
+      async readCell(file, sheetName, cellRef) {
+        var pending = cellsFor(file);
+        if (!pending) return undefined;
+        return (await pending).readCell(sheetName, cellRef);
+      },
+      zip: zipFor,
+    };
+  }
+
+  /**
+   * Every workbook in an uploaded package zip, addressed by file name.
+   * @param {Uint8Array} zipBytes
+   * @returns {Promise<Object>} a workbook set
+   */
+  async function openWorkbookSet(zipBytes) {
+    var zip = await global.JSZip.loadAsync(zipBytes);
+    var sources = Object.keys(zip.files)
+      .filter(function (entryPath) {
+        return !zip.files[entryPath].dir && isWorkbookEntry(entryPath);
+      })
+      .map(function (entryPath) {
+        return {
+          name: workbookBaseName(entryPath),
+          read: function () {
+            return zip.file(entryPath).async("uint8array");
+          },
+        };
+      });
+    return workbookSet(sources);
+  }
+
+  /**
+   * A set of one, for a workbook uploaded on its own. The name is what the
+   * engine's refusals address it by, so a file that arrived under some other
+   * extension is addressed as a workbook rather than by a name no workbook
+   * has.
+   * @param {string} fileName - the name the upload arrived under
+   * @param {Uint8Array} xlsxBytes
+   * @returns {Promise<Object>} a workbook set
+   */
+  async function openWorkbookSetFromWorkbook(fileName, xlsxBytes) {
+    var name = /\.xlsx$/i.test(fileName) ? workbookBaseName(fileName) : "workbook.xlsx";
+    return workbookSet([
+      {
+        name: name,
+        read: function () {
+          return Promise.resolve(xlsxBytes);
+        },
+      },
+    ]);
+  }
+
+  global.DiyaGlXlsxCells = { xlsxBytesFrom, openWorkbookCells, openWorkbookSet, openWorkbookSetFromWorkbook };
+})(window);
