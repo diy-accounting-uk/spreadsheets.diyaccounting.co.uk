@@ -93,7 +93,7 @@ gh api "repos/<owner>/<repo>/actions/jobs/<job-id>/logs" --allow-escape-sequence
 ```
 Tee before filtering, always: the part you need is often not the part you grepped for.
 
-## Three things that are not failures
+## Five things that are not failures
 
 Diagnose these before treating a red or a missing run as a defect.
 
@@ -118,8 +118,7 @@ Diagnose these before treating a red or a missing run as a defect.
   concurrency group, the caller fires first, then GitHub cancels it when it reaches the reusable
   workflow's jobs. The tell is a cancellation with no other run in the group, followed seconds
   later by the same jobs reappearing under a different workflow name. Check the workflow names
-  before reporting the cancellation as a failure—if the jobs landed under a different workflow,
-  the cancellation was intentional routing.
+  before calling it a failure. If the same jobs ran under another workflow, nothing failed.
 
 ## On failure
 
