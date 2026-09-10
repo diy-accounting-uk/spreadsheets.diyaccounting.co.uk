@@ -21,6 +21,9 @@ on:
     paths:
       - 'infra/main/**'
       - 'web/spreadsheets.diyaccounting.co.uk/**'
+      # The smoke test runs these against the deployed site, so a change to a
+      # case has to reach the run that exercises it.
+      - 'behaviour-tests/**'
       - '**/cdk.json'
       - 'LICENSE'
       - 'package.json'
