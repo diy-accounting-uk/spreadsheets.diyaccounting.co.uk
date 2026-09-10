@@ -405,7 +405,7 @@ test.describe("DIYA-GL Taxi books page — drift survives a re-render", () => {
     await uploadFile(page, corrupted, "corrupted-wda.xlsx");
     await waitForLoaded(page);
 
-    const driftEntry = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.find((entry) => entry.id === "Fixed Assets!J1") || null);
+    const driftEntry = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.drift.find((entry) => entry.id === "Fixed Assets!J1") || null);
     expect(driftEntry, "Fixed Assets!J1 carries a drift entry").toBeTruthy();
     expect(driftEntry.asRead).toBe(corruptedWda);
     expect(driftEntry.computed).toBe(originalWda);

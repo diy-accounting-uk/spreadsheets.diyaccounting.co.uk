@@ -120,7 +120,7 @@ function bookCheck(page, id) {
 // numbers the page itself renders from.
 async function dayTakings(page, date) {
   return page.evaluate((date) => {
-    for (const month of Object.values(window.DIYA_BOOKS_SNAPSHOT.takings.months)) {
+    for (const month of Object.values(window.DIYA_GL_SNAPSHOT.takings.months)) {
       for (const week of month.weeks) {
         const day = week.days.find((d) => d.date === date);
         if (day) return day.takings;
@@ -131,11 +131,11 @@ async function dayTakings(page, date) {
 }
 
 async function monthSales(page, monthKey) {
-  return page.evaluate((monthKey) => window.DIYA_BOOKS_SNAPSHOT.monthly[monthKey].sales, monthKey);
+  return page.evaluate((monthKey) => window.DIYA_GL_SNAPSHOT.monthly[monthKey].sales, monthKey);
 }
 
 async function annualSales(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.annual.sales);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.annual.sales);
 }
 
 test.describe("DIYA-GL Taxi books page — E1: add a fare on a day that has one", () => {
@@ -301,7 +301,7 @@ test.describe("DIYA-GL Taxi books page — E2: dates in period (purchases)", () 
     await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/pass/);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const outOfPeriod = {
         entryNumber: "E2-OFFPERIOD",
         sourceJournalID: "purchases",
@@ -311,9 +311,9 @@ test.describe("DIYA-GL Taxi books page — E2: dates in period (purchases)", () 
         documentType: "invoice",
         detailComment: "Last year's stationery",
       };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([outOfPeriod]), "test: a purchases line before the period");
+      await window.DiyaGlPage.setLines(snapshot.lines.concat([outOfPeriod]), "test: a purchases line before the period");
     });
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     const check = bookCheck(page, "book-dates-in-period");
     await expect(check).toHaveClass(/fail/);
@@ -358,7 +358,7 @@ test.describe("DIYA-GL Taxi books page — E2: a vehicle bought is not on the re
     await expect(bookCheck(page, "book-taxi-vehicle-register")).toHaveClass(/pass/);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const secondVehicle = {
         entryNumber: "E2-VEHICLE",
         sourceJournalID: "purchases",
@@ -368,9 +368,9 @@ test.describe("DIYA-GL Taxi books page — E2: a vehicle bought is not on the re
         documentType: "invoice",
         detailComment: "Second-hand runner",
       };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([secondVehicle]), "test: an unregistered vehicle");
+      await window.DiyaGlPage.setLines(snapshot.lines.concat([secondVehicle]), "test: an unregistered vehicle");
     });
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     const check = bookCheck(page, "book-taxi-vehicle-register");
     await expect(check).toHaveClass(/fail|warn/);
@@ -392,7 +392,7 @@ test.describe("DIYA-GL Taxi books page — E2: an out-of-chart account reposts t
     await expect(bookCheck(page, "book-accounts-in-chart")).toHaveClass(/pass/);
 
     await page.evaluate(async () => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const imported = {
         entryNumber: "E2-5002",
         sourceJournalID: "purchases",
@@ -402,9 +402,9 @@ test.describe("DIYA-GL Taxi books page — E2: an out-of-chart account reposts t
         documentType: "invoice",
         detailComment: "Posted against a BST-only code",
       };
-      await window.DiyaGlBooksPage.setLines(snapshot.lines.concat([imported]), "test: an out-of-chart account");
+      await window.DiyaGlPage.setLines(snapshot.lines.concat([imported]), "test: an out-of-chart account");
     });
-    await page.waitForFunction(() => window.DIYA_BOOKS_SNAPSHOT.edited === true);
+    await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
     const check = bookCheck(page, "book-accounts-in-chart");
     await expect(check).toHaveClass(/fail/);

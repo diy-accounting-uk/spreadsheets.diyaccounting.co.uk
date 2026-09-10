@@ -215,7 +215,7 @@ async function activeElementHasFocusRing(page) {
 }
 
 async function lineCount(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.lines.length);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.lines.length);
 }
 
 test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {

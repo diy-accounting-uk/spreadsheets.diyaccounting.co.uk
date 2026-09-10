@@ -195,7 +195,7 @@ async function openEveryMonth(page, running, keysByView) {
 
 async function sweepPage(page, example) {
   await openBook(page, example);
-  const viewIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
+  const viewIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((view) => view.id));
 
   const running = new Map();
   const keysByView = new Map(viewIds.map((view) => [view, new Set()]));
@@ -475,7 +475,7 @@ async function uploadPackage(page, bytes, name) {
 
 function driftFromPage(page) {
   return page.evaluate(() =>
-    window.DIYA_BOOKS_SNAPSHOT.drift.map((entry) => ({
+    window.DIYA_GL_SNAPSHOT.drift.map((entry) => ({
       id: entry.id,
       state: entry.state,
       sheet: entry.sheet,
@@ -497,7 +497,7 @@ function driftFromPage(page) {
 function engineFiguresFor(page, entries) {
   return page.evaluate(
     ({ wanted, hubFile }) => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const linkCells = snapshot.context.linkCells;
       return wanted.map((entry) => {
         if (entry.leaf === null) return snapshot.results[entry.sheet][entry.cell];
@@ -524,12 +524,12 @@ test.describe("DIYA-GL page — a true package upload (A7)", () => {
     await uploadPackage(page, await seLatestZipBytes(), "se-latest-package.zip");
 
     const loaded = await page.evaluate(() => ({
-      product: window.DiyaGlBooksPage.manifest.id,
-      declared: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"],
-      lines: window.DIYA_BOOKS_SNAPSHOT.lines.length,
-      bookValidation: window.DIYA_BOOKS_SNAPSHOT.bookValidation,
-      linesValidation: window.DIYA_BOOKS_SNAPSHOT.linesValidation,
-      period: window.DIYA_BOOKS_SNAPSHOT.period,
+      product: window.DiyaGlPage.manifest.id,
+      declared: window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:product"],
+      lines: window.DIYA_GL_SNAPSHOT.lines.length,
+      bookValidation: window.DIYA_GL_SNAPSHOT.bookValidation,
+      linesValidation: window.DIYA_GL_SNAPSHOT.linesValidation,
+      period: window.DIYA_GL_SNAPSHOT.period,
     }));
 
     expect(loaded.product).toBe("se");
@@ -615,7 +615,7 @@ test.describe("DIYA-GL page — a true package upload (A7)", () => {
     const was = Number(await amountField.inputValue());
     await amountField.fill(String(was + 250));
     await amountField.blur();
-    await expect.poll(() => page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.edited), { timeout: 30_000 }).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.DIYA_GL_SNAPSHOT.edited), { timeout: 30_000 }).toBe(true);
 
     await page.locator('.tab-btn[data-view="sa103s"]').click();
     await expect(marked, "an edit moves the calculated side, it does not clear the marks").toHaveCount(1);

@@ -443,7 +443,7 @@ test.describe("DIYA-GL Taxi books page — no drift on a true upload (A7)", () =
     await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Taxi_Driver.xlsx");
     await waitForLoaded(page);
 
-    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
+    const drift = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.drift.map((d) => d.id));
     expect(drift.slice().sort()).toEqual(KNOWN_STALE_DRIFT_IDS);
   });
 
@@ -458,7 +458,7 @@ test.describe("DIYA-GL Taxi books page — no drift on a true upload (A7)", () =
     await uploadFile(page, corrupted, "corrupted-may-takings.xlsx");
     await waitForLoaded(page);
 
-    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
+    const drift = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.drift.map((d) => d.id));
     expect(drift.slice().sort()).toEqual([...KNOWN_STALE_DRIFT_IDS, "Profit & Loss Acc!D5"].sort());
 
     // examples/taxi-latest's own period runs 2026-04-06 to 2027-04-05 (its
@@ -482,7 +482,7 @@ test.describe("DIYA-GL Taxi books page — no drift on a true upload (A7)", () =
     await uploadFile(page, corrupted, "corrupted-written-down.xlsx");
     await waitForLoaded(page);
 
-    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift.map((d) => d.id));
+    const drift = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.drift.map((d) => d.id));
     expect(drift.slice().sort()).toEqual([...KNOWN_STALE_DRIFT_IDS, "Fixed Assets!K1"].sort());
 
     await page.locator('.tab-btn[data-view="fixed-assets"]').click();

@@ -59,7 +59,7 @@ async function openLoadedBook(page) {
 }
 
 function businessName(page) {
-  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.businessDetails.organizationIdentifier);
+  return page.evaluate(() => window.DIYA_GL_SNAPSHOT.businessDetails.organizationIdentifier);
 }
 
 function parseMoney(text) {
@@ -70,16 +70,16 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
   test("the tab strip lists the mounted manifest's views in order", async ({ page }) => {
     await openLoadedBook(page);
     const tabIds = await page.locator(".tab-btn[data-view]").evaluateAll((tabs) => tabs.map((tab) => tab.getAttribute("data-view")));
-    const manifestIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((v) => v.id));
+    const manifestIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((v) => v.id));
     expect(tabIds).toEqual(manifestIds);
     expect(manifestIds).toHaveLength(10);
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("bst");
+    expect(await page.evaluate(() => window.DiyaGlPage.manifest.id)).toBe("bst");
   });
 
   test("the empty state's example buttons and the unknown-example message come from the product's example list", async ({ page }) => {
     await openEmptyPage(page);
     const buttonKeys = await page.locator("[data-example]").evaluateAll((buttons) => buttons.map((b) => b.getAttribute("data-example")));
-    const manifestKeys = await page.evaluate(() => window.DiyaGlExamples[window.DiyaGlBooksPage.manifest.id].map((e) => e.key));
+    const manifestKeys = await page.evaluate(() => window.DiyaGlExamples[window.DiyaGlPage.manifest.id].map((e) => e.key));
     expect(buttonKeys).toEqual(manifestKeys);
 
     await page.goto(bstUrl("?example=nope"), { waitUntil: "domcontentloaded" });
@@ -94,7 +94,7 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     await expect(page.locator("#new-book-form")).toBeVisible();
 
     const fields = await page.evaluate(() =>
-      window.DiyaGlBooksPage.manifest.newBook.fields.map((f) => ({ id: f.id, label: f.label, name: f.name })),
+      window.DiyaGlPage.manifest.newBook.fields.map((f) => ({ id: f.id, label: f.label, name: f.name })),
     );
     const inputIds = await page.locator("#new-book-form input").evaluateAll((inputs) => inputs.map((input) => input.id));
     expect(inputIds).toEqual(fields.map((f) => f.id));
@@ -108,9 +108,9 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
     const built = await page.evaluate(() => ({
-      product: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation["diya-gl:product"],
-      schemaName: window.DiyaGlBooksPage.manifest.schemaName,
-      name: window.DIYA_BOOKS_SNAPSHOT.book.entityInformation.organizationIdentifier,
+      product: window.DIYA_GL_SNAPSHOT.book.entityInformation["diya-gl:product"],
+      schemaName: window.DiyaGlPage.manifest.schemaName,
+      name: window.DIYA_GL_SNAPSHOT.book.entityInformation.organizationIdentifier,
     }));
     expect(built.product).toBe(built.schemaName);
     expect(built.name).toBe("Acorn Trading");
@@ -126,7 +126,7 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
           // rkFor returns the attribute as markup, so it is read back off an
           // element the way a view's own figure carries it.
           const holder = document.createElement("span");
-          holder.innerHTML = "<i" + window.DiyaGlBooksPage.helpers.rkFor(sheet, cell) + "></i>";
+          holder.innerHTML = "<i" + window.DiyaGlPage.helpers.rkFor(sheet, cell) + "></i>";
           const raw = holder.firstChild.getAttribute("data-r-key");
           return { sheet, cell, keys: raw ? raw.split(" || ") : [] };
         }),
@@ -156,15 +156,15 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     expect([...derivedSections].sort()).toEqual(s2Sections.sort());
 
     // A cell CELL_MAP does not name gives no key at all.
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.helpers.rkFor("Profit & Loss Acc", "Z99"))).toBe("");
+    expect(await page.evaluate(() => window.DiyaGlPage.helpers.rkFor("Profit & Loss Acc", "Z99"))).toBe("");
   });
 
   test("a manifest view without a renderer is refused at mount", async ({ page }) => {
     await openLoadedBook(page);
     const outcome = await page.evaluate(() =>
-      window.DiyaGlBooksPage.mount({ id: "broken", views: [{ id: "x", label: "X" }] }).then(
+      window.DiyaGlPage.mount({ id: "broken", views: [{ id: "x", label: "X" }] }).then(
         () => ({ rejected: false }),
-        (error) => ({ rejected: true, message: error.message, stillMounted: window.DiyaGlBooksPage.manifest.id }),
+        (error) => ({ rejected: true, message: error.message, stillMounted: window.DiyaGlPage.manifest.id }),
       ),
     );
     expect(outcome.rejected).toBe(true);
@@ -176,20 +176,20 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
   test("loadManifest rejects for a product the site has no manifest for", async ({ page }) => {
     await openEmptyPage(page);
     const outcome = await page.evaluate(() =>
-      window.DiyaGlBooksPage.loadManifest("nope").then(
+      window.DiyaGlPage.loadManifest("nope").then(
         () => ({ rejected: false }),
         (error) => ({ rejected: true, message: error.message }),
       ),
     );
     expect(outcome.rejected).toBe(true);
     expect(outcome.message).toContain("products/nope.js");
-    expect(await page.evaluate(() => window.DiyaGlBooksPage.manifest.id)).toBe("bst");
+    expect(await page.evaluate(() => window.DiyaGlPage.manifest.id)).toBe("bst");
   });
 
   test("the headlines strip is fed the snapshot's own report", async ({ page }) => {
     await openLoadedBook(page);
     const fromReport = await page.evaluate(() => {
-      const snapshot = window.DIYA_BOOKS_SNAPSHOT;
+      const snapshot = window.DIYA_GL_SNAPSHOT;
       const headlines = snapshot.context.engine.headlinesFromReport(snapshot.report, snapshot.context.productMod.HEADLINES);
       return headlines.tiles.turnover.value;
     });
@@ -284,7 +284,7 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     await page.goto(bstUrl(`?example=${EXAMPLE_KEY}&view=year`), { waitUntil: "domcontentloaded" });
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
     const loadedName = await businessName(page);
-    expect(await page.evaluate(() => window.DiyaBooksAutosave.loadWorkingBook())).toBeFalsy();
+    expect(await page.evaluate(() => window.DiyaGlAutosave.loadWorkingBook())).toBeFalsy();
 
     await page.locator("#new-btn").click();
     await expect(page.locator(".empty-state")).toBeVisible();
@@ -338,7 +338,7 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     // Continue restores the edited book with an empty undo stack, and the
     // address bar still knows it is not the example.
     expect(await businessName(page)).toBe("Precision Code Trading Ltd");
-    expect(await page.evaluate(() => window.DiyaGlBooksEdits.undo.depth())).toBe(0);
+    expect(await page.evaluate(() => window.DiyaGlEdits.undo.depth())).toBe(0);
     expect(new URL(page.url()).search).toBe("");
   });
 

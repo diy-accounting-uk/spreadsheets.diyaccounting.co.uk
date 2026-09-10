@@ -401,7 +401,7 @@ test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
     // The whole of the snapshot's own drift collection, not just the three
     // views this test happens to visit -- a finding on a view nobody clicked
     // would otherwise pass silently.
-    const drift = await page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.drift);
+    const drift = await page.evaluate(() => window.DIYA_GL_SNAPSHOT.drift);
     expect(drift).toEqual([]);
 
     await expect(page.locator("#app-title")).toContainText("Precision Code Trading");

@@ -225,7 +225,7 @@
     var script = global.document.createElement("script");
     script.src = "products/" + SIBLING_MODULES[name] + ".js";
     script.addEventListener("load", function () {
-      global.DiyaGlBooksPage.helpers.render();
+      global.DiyaGlPage.helpers.render();
     });
     global.document.head.appendChild(script);
   }

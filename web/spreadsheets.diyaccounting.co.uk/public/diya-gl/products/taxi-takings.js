@@ -60,7 +60,7 @@
   var MILES_MESSAGE = "Miles must be a whole number.";
 
   function snapshot() {
-    return global.DIYA_BOOKS_SNAPSHOT;
+    return global.DIYA_GL_SNAPSHOT;
   }
 
   function bagFor(helpers) {
@@ -938,7 +938,7 @@
         state.focusField = "detail";
         helpers.commit(
           function () {
-            return global.DiyaGlBooksEdits.changeDetail(state.book, state.lines, entryNumber, value);
+            return global.DiyaGlEdits.changeDetail(state.book, state.lines, entryNumber, value);
           },
           "rename " + entryNumber + " to " + value,
           "Renamed " + entryNumber + ".",
@@ -965,7 +965,7 @@
         state.focusField = "miles";
         helpers.commit(
           function () {
-            return global.DiyaGlBooksEdits.changeMiles(state.book, state.lines, entryNumber, miles);
+            return global.DiyaGlEdits.changeMiles(state.book, state.lines, entryNumber, miles);
           },
           miles === null ? "clear " + entryNumber + "'s miles" : "set " + entryNumber + " to " + fmtCount(miles) + " miles",
           miles === null ? "Cleared " + entryNumber + "'s miles." : "Set " + entryNumber + " to " + fmtCount(miles) + " miles.",
@@ -1015,7 +1015,7 @@
       bag.draft = null;
       helpers.commit(
         function () {
-          return global.DiyaGlBooksEdits.addEntry(state.book, state.lines, entry);
+          return global.DiyaGlEdits.addEntry(state.book, state.lines, entry);
         },
         "add " + where,
         "Added " + where + ".",
@@ -1050,7 +1050,7 @@
         var count = n + (n === 1 ? " entry" : " entries");
         helpers.commit(
           function () {
-            return global.DiyaGlBooksEdits.applyHelper({ book: state.book, lines: state.lines }, DATES_IN_PERIOD_CHECK);
+            return global.DiyaGlEdits.applyHelper({ book: state.book, lines: state.lines }, DATES_IN_PERIOD_CHECK);
           },
           "move " + count + " into the period",
           "Moved " + count + " into the period.",

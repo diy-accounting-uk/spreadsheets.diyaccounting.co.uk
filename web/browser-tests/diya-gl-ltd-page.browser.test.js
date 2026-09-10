@@ -108,7 +108,7 @@ function money(text) {
 // half rendered anywhere on the page (a joined "cell/... || section/..."
 // attribute counts as two).
 async function sweepEveryView(page) {
-  const viewIds = await page.evaluate(() => window.DiyaGlBooksPage.manifest.views.map((view) => view.id));
+  const viewIds = await page.evaluate(() => window.DiyaGlPage.manifest.views.map((view) => view.id));
   const rKeys = new Set();
   const rootHtmlByView = {};
 

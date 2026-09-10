@@ -274,7 +274,7 @@
     },
   };
 
-  global.DiyaGlBooksEdits = {
+  global.DiyaGlEdits = {
     bookChecks: bookChecks,
     previewHelper: previewHelper,
     applyHelper: applyHelper,
