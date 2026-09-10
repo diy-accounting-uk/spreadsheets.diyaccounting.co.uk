@@ -1670,19 +1670,21 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await rowToDelete.getByRole("button", { name: "Delete", exact: true }).click();
       const confirmDelete = panel.locator('[data-action="confirm-delete"]');
       await expect(confirmDelete, "STEP 10 failed: the delete confirmation never appeared").toBeVisible({ timeout: 10000 });
+      // The panel empties before the request is even sent, so the row count
+      // below would pass on the optimistic render rather than on a finished
+      // delete. The response itself is what proves it landed, and it has to be
+      // awaited from before the click that causes it.
+      const deleteLanded = page.waitForResponse(
+        (response) => response.request().method() === "DELETE" && /\/api\/v1\/books\//.test(response.url()),
+        { timeout: 20000 },
+      );
       await confirmDelete.click();
+      const deleteResponse = await deleteLanded;
+      expect(deleteResponse.status(), `STEP 10 failed: the delete answered ${deleteResponse.status()}`).toBeLessThan(300);
       await expect(
         panel.locator(".account-row", { hasText: bookTitle }),
         "STEP 10 failed: the book was still listed after delete",
       ).toHaveCount(0, { timeout: 15000 });
-      // The panel goes to a loading state before the request is even sent, so
-      // the rows vanish at once and the count above passes on the loading
-      // state rather than on a finished delete. Waiting for a row to come back
-      // is what proves the account was re-read and the delete really landed.
-      await expect(
-        panel.locator(".account-row, .account-empty"),
-        "STEP 10 failed: the account list never came back after the delete",
-      ).toBeVisible({ timeout: 15000 });
       await shot("13-deleted");
       console.log(" Deleted the book from the account");
 
