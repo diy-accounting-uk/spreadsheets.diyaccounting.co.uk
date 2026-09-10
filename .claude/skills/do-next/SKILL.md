@@ -1,114 +1,182 @@
 ---
 name: do-next
-description: Dispatch NEXT.md's open items as worktree-isolated coordinator sub-agents and land each one as it lands. Invoke when the operator says "do next", "work the backlog", "clear NEXT.md", or when a landed batch leaves items still open.
+description: Work NEXT.md top to bottom as waves of concurrent worktree sub-agents, land them on one branch, push in batches, raise one PR, and hand over to /watch. Invoke when the operator says "do next", "work the backlog", "clear NEXT.md", or when a landed batch leaves items still open.
 ---
+
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
-# do-next — work `NEXT.md`'s open items with the coordinator model
+# do-next — work `NEXT.md` with the coordinator model
 
-This skill turns this repo's `NEXT.md` **Open items** section into a dispatched batch of
-worktree-isolated sub-agents, keeps `NEXT.md` itself as the live tracking surface while they run,
-and lands each one's work the moment it's ready rather than waiting for the whole batch.
+You are the coordinator. You plan, dispatch, merge, push and answer the operator. You do not
+write the code. **Keep the main chat free for chat**: anything long-running goes to a sub-agent
+or a background task.
 
-This repo's `NEXT.md` points at the workspace root's `../NEXT.md` for the rules governing its own
-shape (DONE-or-OPEN only, nothing deferred; a bug found fixing item A is A's remainder, not a new
-item; `NEXT.md` holds only what to do next — completed work lives in `git log`). Plans of record
-are `PLAN_*.md` files at this repo's root.
+Work `NEXT.md` top to bottom, taking the unblocked items. As an item's blocker clears, promote it
+to ready and resequence the board. Then keep going, top to bottom, until the board is empty or the
+operator stops you. An approved plan is the authorisation: a green suite, a landed wave and a tidy
+summary are the middle of the work, not the end of it.
 
-> **Invoke it by telling a session:** *"Follow the `do-next` skill"*, or "work the open items in
-> NEXT.md", or "do NEXT".
+Plans of record are `PLAN_*.md` at this repo's root. `NEXT.md`'s own shape rules are in
+`../NEXT.md` and in this repo's `CLAUDE.md`.
 
-## When to run this
+**If cool-down is on, this skill does not run.** The marker at the top of `NEXT.md` says so. Under
+cool-down the job is to settle what is already in flight, not to dispatch a wave; `/wake` lifts it.
 
-- `NEXT.md`'s **Open items** section has one or more entries and nobody is actively working them.
-- A prior batch just landed and items remain — dispatch the next batch rather than stopping (see
-  the workspace `CLAUDE.md`'s "an approved plan is authorization" rule).
-- The operator asks to "work the backlog", "clear NEXT.md", or names this skill directly.
+## Start with `/board`
 
-## Procedure
+**Invoke `/board` before dispatching anything.** It reads `NEXT.md` fresh, puts the rows in order,
+and reports the things that decide what this batch should contain: the GitHub scan, the live ci and
+prod deployments, and a branch audit. It also writes the sequenced board back, so the order you then
+work is the order on disk rather than one you hold in your head.
 
-1. **Read `NEXT.md`'s Open items fresh, don't work from memory of a prior run.** The list changes
-   shape every time a batch lands.
-2. **Filter before dispatching.** Not every open item is actionable code work. A gotcha note
-   documenting something already correct stays in `NEXT.md` as reference; it doesn't get a track.
-   Only dispatch items that describe a real, boundable change.
-3. **Decompose into tracks with clear file-ownership boundaries.** This repo's natural
-   boundaries: `app/products/*.js` (per-product cell mapping and reconciliation logic),
-   `app/data/*.toml` (tax rate data, one file per year), `app/templates/**` (xlsx templates),
-   `web/spreadsheets.diyaccounting.co.uk/public/**` (site pages), `cdk-spreadsheets/**` (CDK
-   infrastructure), `.github/workflows/**` (generation/deploy pipelines). Two tracks that both
-   need to touch the same file are a merge-collision risk, not two independent tracks — either
-   sequence them or scope each to non-overlapping regions and say so in both briefs.
-4. **Pick each track's model tier deliberately**, per the workspace `CLAUDE.md`'s coordinator
-   ladder — group tracks needing similar depth so one hard track doesn't price a whole batch at
-   the top tier:
-   - **Opus** — novel design work: a new reconciliation approach, a decision with real
-     architectural weight, anything in a large or subtle pipeline file (`spreadsheet-runner.js`,
-     `generate.js`).
-   - **Sonnet** — a bounded decision plus mechanical implementation against an existing pattern
-     (adding a tax year's TOML data, extending a CELL_MAP, porting a site page pattern).
-   - **Haiku** — pure mechanical sweeps: renames, manifest updates, format-only edits.
-5. **Write `NEXT.md`'s in-flight tracking block before dispatching**, one line per track naming
-   what it covers and its status (`started`). Commit this alone, docs-only — it's the record that
-   a batch is running even if the session dispatching it ends before any track lands.
-6. **Dispatch each track as an isolated-worktree agent**, self-contained (fresh agents carry no
-   conversation context — the brief must stand alone). Every brief needs:
-   - Enough project background to work without asking (spreadsheets AWS account, S3 + CloudFront
-     static site, Excel workbook pipeline in `packages/` — see this repo's `CLAUDE.md`).
-   - The exact file-ownership list — what it owns, what it must not touch and why.
-   - **Testing**: `npm test` for the file it touched at minimum; `npm run test:browser` for site
-     pages; the relevant `test:*-only` script (`test:bst-only`, `test:se-only`, `test:ltd-only`,
-     `test:taxi-only`, `test:reconciliation-only`) for product-module or data changes. No full
-     behaviour-test suite (`test:spreadsheetsBehaviour-*`) inside a track — that's the
-     coordinator's job at the actual push/deploy moment.
-   - **Git discipline**: confirm repo-local identity, commit early and often with clean messages,
-     never `git stash`/`reset --hard`/`checkout --`/`clean`, never push, never merge to `main`,
-     never edit `NEXT.md` (the coordinator owns it).
-   - **For any item whose result is visual** (a site page, a generated PDF guide layout), a
-     screenshot the agent actually looks at. Drive the page with Playwright, save a PNG under
-     `reports/screenshots/`, **open that PNG with the Read tool**, and describe what it shows
-     against what the item asked for.
-   - **A report-back contract**: what it implemented and why, any bugs found along the way even
-     if unrelated to the task (name file/line), exact test commands run with pass/fail counts,
-     screenshot paths if any, and anything deliberately left out of scope and why.
-7. **As each track's completion notification arrives**, land it immediately — don't wait for
-   siblings:
-   - `git status --short` inside the agent's worktree first. Uncommitted work is a real loss if
-     skipped.
-   - `cd` to the actual repo root and confirm (`pwd`, `git branch --show-current`) before merging.
-   - `git merge --no-ff` with a message naming the track and what it covers.
-   - Run that track's blast-radius tests on the merged `main`, not just trust the agent's own
-     report.
-   - Green: `git push`. Then `git worktree remove` and `git branch -d` the merged branch.
-   - Red: don't push through it. Diagnose before merging the next track.
-8. **Update `NEXT.md` in the same breath as each landing**, not batched at the end. Move the
-   track's in-flight line to a landed note (commit SHA, test counts), and remove the item it
-   resolved from Open items — but only once nothing that item's own track surfaced is still
-   outstanding. Narrow the item's text instead of removing it, if the track only closed part of a
-   multi-part item.
-   **A bug the track's report surfaces is that item's remainder, not a new item.**
-   **A failing test a track reports is an open item and a job for this batch**, whether or not the
-   track caused it.
-9. **Before a push to `main` or a branch with a remote, run the full suite** (`npm test`, plus
-   `npm run test:browser` and the relevant behaviour-test target when the change reaches the site
-   or a package) — the one moment the full suite is mandatory, regardless of how narrow every
-   track's own testing was.
-10. **Loop.** Anything still open — an item no track picked up, a bug logged during landing, a
-    track that failed and needs a retry — becomes the next batch. Dispatch it the same way, don't
-    stop to ask permission if the operator's own instruction already covers "keep going" for this
-    kind of batch.
+Do not skip it because you rendered a board earlier in the session. Deploys finish, alerts arrive
+and PRs merge between renders, and the board is how you find out.
 
-## What NOT to do
+## The shape of a batch
 
-- Don't dispatch a track for an item that's a documentation note, not a task — check first.
-- Don't let a sub-agent push, merge to `main`, or edit `NEXT.md` — those are the coordinator's own
-  integration work.
-- Don't run the full behaviour-test suite inside a sub-agent — the targeted `npm test` /
-  `test:*-only` rung replaces it for worktree work.
-- Don't batch every track's merge for the end of the session — merge, test, and push each one as
-  it lands, so a slow track doesn't hold back four fast ones.
-- Don't silently drop a bug a sub-agent surfaces because it's outside the current track's scope —
-  track it in `NEXT.md` as a sub-clause of the item that surfaced it.
-- Don't leave a merged worktree or its branch behind — remove both in the same breath as the
-  merge.
+**One branch. One PR. Waves inside it.**
+
+A branch deployment is expensive and slow, so everything that can share a deploy should. The batch
+branch is `claude/b<n>-board`, taken from `main`. Every sub-agent worktree branches from **the
+batch branch**, not from `main`, so each wave builds on what the last one landed.
+
+Give the batch branch its own worktree and leave the primary checkout on `main`. You merge into the
+batch worktree; you edit `NEXT.md` on `main`.
+
+**`NEXT.md` never travels on the batch branch.** The board is maintained on `main` under the docs
+exception. A second copy on the branch guarantees a conflict at merge time, and two sub-agents
+editing it guarantees a lost row. If a merge drags `NEXT.md` onto the batch, restore it to the
+branch point in the same commit.
+
+## Waves
+
+A wave is a set of concurrent workstreams grouped by area of the repository, sized so that no two
+agents own the same file.
+
+1. **Sequence the board.** Take the unblocked items in board order. Group them by where they live:
+   `app/products/*.js` (per-product cell mapping and reconciliation), `app/data/*.toml` (tax rate
+   data, one file per year), `app/templates/**` (the xlsx templates),
+   `web/spreadsheets.diyaccounting.co.uk/public/**` (site pages, including the DIYA-GL pages under
+   `/diya-gl/`), `cdk-spreadsheets/**`, `.github/workflows/**`, and the root `PLAN_*.md` documents.
+2. **Two agents that need the same file are not two workstreams.** Sequence them, or scope each to
+   a region and say so in both briefs. Where a plan already fixes an order — the DIYA-GL naming
+   chain, anything paired with submit's own rows — that order is the specification, not a
+   suggestion.
+3. **Run a design wave when the plan is not rich enough to execute.** A higher tier writes the
+   design as a document at the repo root; cheaper, faster models then build from it. The test is
+   whether a Sonnet or Haiku agent could pick up the document and build without asking a question.
+   Do not put a design task and a mechanical sweep in one wave: the hard one prices the batch.
+4. **Pick each workstream's tier deliberately**, lowest that fits — Fable, Opus, Sonnet, Haiku.
+   Opus for a decision with architectural weight, a new reconciliation approach, or anything in a
+   large and subtle pipeline file (`spreadsheet-runner.js`, `generate.js`). Sonnet for a bounded
+   change against an existing pattern — a tax year's TOML, a CELL_MAP extension, a site page
+   following an existing one. Haiku for renames, sweeps and one-file mechanical edits.
+
+## Briefing a sub-agent
+
+A fresh agent carries none of your context, so the brief stands alone. Every brief says:
+
+- **Its worktree path and branch**, and that it works only there. It may `git add` its own files
+  and commit. Never `git stash`, `git reset`, `git checkout --` or `git clean`. Never push, never
+  open a PR, never edit `NEXT.md`.
+- **What it owns and what it must not touch**, with the reason. Where another agent in the same
+  wave is nearby, name it.
+- **The evidence, not just the task.** Paste the run ids, the log lines, the timestamps. An agent
+  given a diagnosis it can verify beats one given a symptom to rediscover.
+- **Commit before the turn ends.** A sub-agent that backgrounds a verification and stops leaves an
+  uncommitted tree that vanishes with the worktree. Tell it to run verification in the foreground
+  so the result reaches its report, and to commit what it has either way.
+- **Blast-radius testing only**: `npm test` for the file it touched, `npm run test:browser` for
+  site pages, and the matching `test:*-only` script (`test:bst-only`, `test:se-only`,
+  `test:ltd-only`, `test:taxi-only`, `test:reconciliation-only`) for a product module or a data
+  change. No behaviour tier inside a worktree: that needs a live environment and belongs to the
+  deploy.
+- **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
+  `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
+  item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
+- **A report-back contract**: what it changed and why, what it deliberately did not do, any
+  adjacent bug it found with file and line, the exact commands run with counts, and its commit
+  SHAs.
+- **Say what would change your mind.** For a design or a judgement call, ask for the rejected
+  options and the reasons, not just the chosen one.
+
+## Landing a wave
+
+Merge each workstream as its notification arrives. Do not hold them for the end.
+
+- **A sub-agent's "done" is not proof.** Run `git status --short` in its worktree before anything
+  else. Uncommitted work is real and you get one look at it.
+- `git merge --no-ff` into the batch worktree, with a message naming the item.
+- Run that change's blast radius on the merged tree, not the agent's own report.
+- Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
+  once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless
+  it is genuinely separate work — then say so explicitly rather than deciding quietly.
+- Remove the worktree and delete its branch as the merge lands, not in a later sweep.
+
+**Editing `NEXT.md` is where rows get lost.** Never replace the slice between two markers unless
+you have checked they are adjacent — an edit that removes what it did not name is invisible until
+someone counts the rows. Split on the row boundary, filter by row key, and rejoin.
+
+## Pushing
+
+**Push once per wave, not once per workstream.** Gather what has landed and push it together.
+
+Before any push, check **every** deploy workflow for that branch — `deploy` and `deploy-holding`
+here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
+by reading the runs, not by assuming elapsed time.
+
+Before the first push of a batch, run the full local suite once: `npm test`, plus
+`npm run test:browser` and the relevant behaviour target when the change reaches the site or a
+package. That is the moment the change becomes someone else's problem.
+
+Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
+together. Keep the description honest about what each item actually turned out to be — a row's
+premise is often wrong, and the PR is where that gets recorded.
+
+**Then invoke `/watch`.** Every push hands over to it: it holds the scope, reports every terminal
+state, and drives the branch and `main` green. Do not go back to checking runs by hand.
+
+## When something goes red
+
+**Gather the whole run's failures before fixing anything.** One run's worth, diagnosed together,
+fixed together, pushed once. A workflow costs minutes per cycle; three pushes for three failures
+from one run wastes two of them.
+
+Read the failing job's log, not the check summary. Count the distinct causes: a page of failing
+cases behind one failed earlier step is one failure, not a page of them.
+
+**Name the layer you fixed, not the symptom you saw.** If a fix moves the failure from step 7 to
+step 10, the fix worked and a second layer was behind it. Called "the cloud case fix" the next
+failure reads as a fix that did not take; called "the panel-reopen fix" it reads as progress. When
+a whole tail has never executed, read it against the code in one pass rather than one layer per CI
+cycle.
+
+**Check what changed underneath you.** A run can fail because a registry returned 403, because the
+sibling repository's `main` moved, or because a live endpoint changed. This repository is not the
+only variable — and a file fetched from another repository's `main` at run time changes without any
+commit here.
+
+**Fix the right layer.** If a test asserts something the product genuinely does wrong, fix the
+product. A test taught to work around a defect hides it from every user.
+
+**Pipeline fixes ride on top of the next ready batch** rather than getting a branch of their own.
+
+## Merging the PR
+
+The operator merges. Before they do, **compare the PR's head with the branch tip**: a merge takes
+the head it was opened or last updated against, and anything pushed after that is left behind.
+
+Anything orphaned goes into the next batch immediately, with its own branch off the batch branch
+and its own PR to `main`.
+
+## What not to do
+
+- Do not run this skill while cool-down is on.
+- Do not let a sub-agent push, merge, open a PR or edit `NEXT.md`.
+- Do not run the behaviour tier inside a worktree.
+- Do not give a workstream a branch of its own PR when it could ride the batch.
+- Do not push while any deploy workflow for that branch is in flight.
+- Do not report a run's state from memory or from `gh pr checks`. Open the run.
+- Do not stop at a green suite or a landed wave to ask whether to continue. The board says what is
+  next; work it.
