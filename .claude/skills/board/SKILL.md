@@ -1,6 +1,6 @@
 ---
 name: board
-description: Render the work board — the table in NEXT.md of every open task with its source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
+description: Render the work board — whether cool-down is on and whether a watch monitor is running, then the table in NEXT.md of every open task with its source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
 ---
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
@@ -15,8 +15,36 @@ row's detail lives; the board carries enough to act on without opening it.
 
 ## Output shape
 
-Exactly four parts, in this order: the board table, the GitHub scan, the deployments,
-the branch audit.
+A one-line mode header, then exactly four parts in this order: the board table, the GitHub
+scan, the deployments, the branch audit.
+
+## The mode header
+
+One line, before the table, saying two things. Both are read, never assumed.
+
+**Is cool-down on?** It writes a marker into `NEXT.md`'s `## In flight` section, so the file
+you are already reading answers it:
+
+```bash
+grep -c "COOL-DOWN is on since" NEXT.md
+```
+
+Report it as on with its timestamp, or off. **If it is on, it changes this skill's own
+behaviour**: the rule below that every `fix`, `bump` or `investigate` finding gets a board row
+does not apply, because cool-down's first rule closes the board to everything but a
+degradation. A finding that is not a degradation goes to `PARKED.md` with its evidence, and the
+GitHub scan's `Board row` column says `parked` rather than `new`. Say so in the header, so the
+operator can see why a finding did not become a row.
+
+**Is a watch monitor running?** A `/watch` monitor is a background task of this session, not a
+mark on disk, so the session's own task state is the only honest source. Report it as running
+with what it watches, stopped, or **unknown** — and never infer it from a quiet chat. A monitor
+that has been killed and one that has simply had nothing to report look identical from the
+outside, which is the whole reason to say which.
+
+Where the session cannot tell, `unknown` is the right answer and the operator can restart one
+with `/watch`. Do not claim a monitor is running because you started one earlier in the session;
+a task can be stopped, and a completed one stops notifying.
 
 ## Part 1 — the board table
 
@@ -112,7 +140,9 @@ Dependabot alert, and per code-scanning rule family (one row per rule id, files 
   and watch` (real signal, action pending elsewhere), `investigate` (say what is needed).
 - `Board row`: the id of the row that carries the action, or `new` when this render
   creates one.
-- **Every finding has a home on the board.** A finding whose action is `fix`, `bump` or
+- **Every finding has a home on the board, unless cool-down is on.** Under cool-down the board
+  is closed to everything but a degradation: the finding goes to `PARKED.md` instead and its
+  `Board row` reads `parked`. Otherwise, a finding whose action is `fix`, `bump` or
   `investigate` belongs to an existing row (a row whose worktree already touches that
   file, or a plan task that covers it) or gets a new `CQ-n` row (`Source` `none`,
   `Owner` `machine`, the model tier in `Status`). `keep open and watch` and `close as
