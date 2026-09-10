@@ -19,13 +19,15 @@ and 1.1.2 with `latest` on 1.1.2. ITSA-T8 is ready; LP-24's toggle steps are rea
 the variable set. The naming sweep is written up in `../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md`; its
 spreadsheets rows NM-2 to NM-5 are on the board and Submit's NM-S1 to NM-S3 on Submit's.
 
-Batches b7 and b8 are merged (PRs #89 and #90) and prod is deploying them. That was the naming
-sweep, the ITSA self-employed derivations, the ci native-auth toggle, the cloud case fix chain,
-the self-employed template-defect warnings, the commit-identity guard and the page globals rename.
-No worktree is open and no branch but main exists locally.
+Batches b7 and b8 are merged (PRs #89 and #90), prod is deployed and green, and `diya-gl` 1.2.1
+is on npm. That was the naming sweep, the ITSA self-employed derivations, the ci native-auth
+toggle, the cloud case fix chain, the self-employed template-defect warnings, the commit-identity
+guard and the page globals rename. No worktree is open, no branch but main exists on either side,
+no agent is running, and main carries nothing after its last push.
 
-Six branches remain on origin and are safe to delete when the operator wants the tidy:
-`claude/b7-board`, `claude/b7-itsa`, `claude/b7-lp24`, `claude/b7-naming`, `claude/b8-board`.
+Prod's last green deploy is `41186603`. main's HEAD is a bot version-roll commit that fires no
+workflow, which is this repository's normal state after a publish; `PARKED.md` records why chasing
+it does not terminate.
 
 One ci environment serves every branch, so only one batch branch can hold the deploy slot. The
 deploy group is keyed on the environment with `cancel-in-progress: false`, so a second branch's
@@ -67,12 +69,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | — | ready-to-start | Submit's WAF fix is on prod; roughly 20KB and 500KB, Sonnet |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages: hosted-UI redirect, token held in session, the book list, put and get through the storage API, conflict shown not merged; the same page on mobile | PLAN_DIYA_GL_LAUNCH.md | machine | — | ready-to-resume | steps 1 to 10 on main; the cloud case is green against prod |
-| H2 | Decide how this repository consumes Submit's two scripts, which our runners fetch from their main by raw URL at run time: pin to a commit, have them publish the scripts, or record the contract in both repositories | operator | human | — | ready-to-start | put to Submit on the operator's instruction; both lean to pinning |
-| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | waits on Submit's S3d reaching prod, with its window |
-| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | blocked-to-start | waits for prod to serve /diya-gl/; the deploy is running |
-| CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | H2 | blocked-to-start | three call sites in `deploy.yml`; Haiku once the shape is chosen |
+| LP-25 | The cloud behaviour case saves a book at roughly 20KB and one at roughly 500KB, two bands above CloudFront's 8KB inspection boundary, as end-to-end evidence for Submit's WAF body-size fix | operator | machine | — | ready-to-start | Submit's WAF fix is on prod; roughly 20KB and 500KB, Sonnet |
+| NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | ready-to-start | prod serves /diya-gl/assets/ now, verified 200; Haiku |
+| CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | ready-to-start | Submit answered pin; three call sites in `deploy.yml`, Haiku |
+| NM-5 | Design and rename the cross-repository "books" identifiers this side touches: `public/books/cloud.js`'s API calls, the Cognito client naming, `PLAN_DIYA_GL_CLOUD_PAGE.md`, against Submit's `BooksStack` and the shared route table | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | S3d | blocked-to-start | Submit's PR #175 is red; their main still serves `books` |
 
 ## Plans not tracked here
 
