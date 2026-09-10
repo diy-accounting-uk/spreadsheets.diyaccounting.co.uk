@@ -101,6 +101,9 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build the donate page
+        run: npm run build:donate-page
+
       - uses: actions/setup-java@v6
         with:
           distribution: 'corretto'
@@ -429,6 +432,9 @@ jobs:
 
       - name: Build sitemaps
         run: npm run build:sitemaps
+
+      - name: Build the donate page
+        run: npm run build:donate-page
 
       - name: Build provenance data
         run: npm run build:provenance-data

@@ -252,6 +252,11 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build the donate page
+        run: npm run build:donate-page
+        env:
+          ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+
       - name: Build provenance data
         run: npm run build:provenance-data
 
