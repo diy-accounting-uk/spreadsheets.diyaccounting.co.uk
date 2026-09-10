@@ -119,8 +119,8 @@ checks, fixtures, or the judge.
 - **Fixture changes are source-derived.** Edit the master data (`examples/precision-code-ltd/`)
   or the extractor build sections, then `node app/bin/extract-scenarios.js`; the CI sync gate
   reverts hand-edited generated TOMLs. Every new transaction carries its counter-leg so
-  `TrialBalance!EJ91` stays 0. Hand-written fixtures (the brickwork TOMLs) may be edited
-  directly — verify with the sync gate either way.
+  `TrialBalance!EJ91` stays 0. The brickwork TOMLs are source-derived too
+  (`app/bin/extract-scenarios.js` writes them), so nothing here is safe to hand-edit.
 - **Runner conventions.** `additionalReads` results are keyed `<filename>!<sheetName>`.
   Month-keyed expectations follow the period-frame shift in `ltd.js` (dates shift by the gap
   between the book's declared period and the package's, with end-of-month clamping).
