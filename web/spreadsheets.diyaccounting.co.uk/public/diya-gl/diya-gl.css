@@ -2001,13 +2001,15 @@ table.kv-table tr.total td {
 /* ============================== Account panel ============================== */
 
 /* books/cloud.js's sign-in and "save to my account" panel: a card anchored
-   under the topbar on the right at 900px and up, over the same surface the
-   donation prompt and the inspector drawer already use. */
+   under the topbar on the right at 900px and up, over the same corner the
+   donation prompt uses. It carries a higher z-index than that prompt so an
+   open panel's buttons stay clickable instead of sitting under the prompt's
+   own actions. */
 .account-panel {
   position: fixed;
   top: calc(var(--topbar-h) + var(--tabstrip-h) + 0.75rem);
   right: 1rem;
-  z-index: 60;
+  z-index: 61;
   width: min(360px, calc(100vw - 2rem));
   max-height: calc(100vh - var(--topbar-h) - 2rem);
   overflow-y: auto;
