@@ -70,10 +70,16 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | NM-8 | Move the packaged engine's `DEFAULT_TEMPLATE_SOURCE` from `/books/assets/` to `/diya-gl/assets/` once the live site serves the new path, and update the fetch test's expected URL with it | ../submit.diyaccounting.co.uk/PLAN_DIYA_GL_NAMING.md | machine | — | in-flight | PR #91; every check but the smoke test is green |
 | CQ-4 | Pin the raw-URL fetches of `ensure-cognito-test-user.js` and `toggle-cognito-native-auth.js` so a merge to Submit's main stops being a release to our runners | none | machine | — | in-flight | PR #91; every check but the smoke test is green |
 | CQ-5 | `setPath` in `app/lib/calculators/se-derivations.js` walks a dotted path with `node[parts[i]] ||= {}`, so a `__proto__` or `constructor` segment pollutes the prototype | none | machine | — | in-flight | PR #91; the alert clears when it merges |
+| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`, and the GitHub and npm organisations. Both were available in Route 53 on 2026-09-10 at USD 9 and USD 16 a year. Delete the hosted zone Route 53 creates within twelve hours and it costs nothing; neither name has to resolve | PLAN_LICENSING_UPLIFT.md | human | — | ready-to-start | USD 25 a year; `diyaccounting.com` is what not doing it costs |
 
 ## Plans not tracked here
 
-- `PLAN_LICENSING_UPLIFT.md`: the urgency 2 filings (H-LU-4, H-LU-5) and the brand repository
+- `PLAN_LICENSING_UPLIFT.md`: H-LU-5 is on the board; H-LU-4's filings and the brand repository
+  (urgency 3) stay in the plan until their turn. `BRIEF_OPERATOR_TASKS_2026-09-10.md` writes out
+  the two tasks that need drafting rather than doing: the HMRC licence note (H-LU-9) and the
+  question in `PLAN_DIYACCOUNTING_COM.md`.
+- `PLAN_DIYACCOUNTING_COM.md`: what recovering `diyaccounting.com` would take, split out of the
+  uplift plan because it is a name we do not hold rather than one we do.
   (urgency 3) stay in the plan until their turn.
   Submit's share is `../submit.diyaccounting.co.uk/PLAN_LICENSING_UPLIFT_SUBMIT.md`, tracked on
   Submit's own board as B70.

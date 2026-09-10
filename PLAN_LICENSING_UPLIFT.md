@@ -4,6 +4,8 @@
 
 Status: approved, go given 2026-09-09. Urgency 1 is code complete on PR #86 and the four
 sibling-repository PRs (tap #1, root #28, www #27, archive #31); LU-9 follows the merges.
+`diyaccounting.com`, the name we do not hold, is `PLAN_DIYACCOUNTING_COM.md`: a different question
+from this plan's, so it is a separate document rather than a row at the end of this one.
 LU-20, the tap rename, is done: the repository is `diy-accounting-uk/homebrew-diya-gl`, its README
 carries the new name, and no reference to the old one survives in this repository or in Submit.
 The cross-repository section is filled from a read-only audit of all six repositories; the review
@@ -208,7 +210,6 @@ generate dispatches rebuilding every package.
 
 | Group | Rows | Area and files | Sweeps up | Model |
 | --- | --- | --- | --- | --- |
-| 3C the squatted name | H-LU-8 | the holder's listing, UKIPO | — | operator |
 | 3A the baseline and the repository | LU-12, LU-13, LU-14, H-LU-6, H-LU-7 | the new `diy-accounting-uk/brand` repository | the two favicon identities resolved to one; the blue token matched to its mark; the teal leftovers in www | Opus for the guidelines and words; Sonnet for tokens and the package |
 | 3B consumption | LU-15, LU-16 | spreadsheets, submit, www: `package.json`, build scripts, stylesheets, `public/`; www's `/brand` page | every local logo, favicon and token copy deleted | Sonnet, one agent per repository |
 
@@ -316,7 +317,6 @@ replace.
 | LU-16 | The guidelines page: www builds `/brand` from the package's guidelines document and publishes the SVG marks for download under the trademark rules | LU-14 | Sonnet | `www.diyaccounting.co.uk` |
 | H-LU-6 | Create the `diy-accounting-uk/brand` repository (public, empty) | — | operator, or the session on the operator's word | github.com |
 | H-LU-7 | Review the guidelines and the marks on sight before LU-15 pins them | LU-13 | operator | the brand repository |
-| H-LU-8 | Find out what it would take to get `diyaccounting.com` back, and at what price. It is held and listed at USD 5,000, which is far beyond what the name is worth to us — even USD 1,000 would be too much. So this is a question, not a purchase: whether the holding is a parked listing or a used site, whether any UKIPO registration we obtain under H-LU-4 gives a cheaper route than paying the asking price, and what a UDRP complaint costs and needs. Answer it, record the answer, and only then decide whether anything follows | H-LU-4 | operator | uspto/UKIPO, the holder's listing |
 
 ## Across the repositories
 
