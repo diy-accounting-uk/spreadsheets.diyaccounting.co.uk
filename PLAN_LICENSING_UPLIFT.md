@@ -4,6 +4,8 @@
 
 Status: approved, go given 2026-09-09. Urgency 1 is code complete on PR #86 and the four
 sibling-repository PRs (tap #1, root #28, www #27, archive #31); LU-9 follows the merges.
+LU-20, the tap rename, is done: the repository is `diy-accounting-uk/homebrew-diya-gl`, its README
+carries the new name, and no reference to the old one survives in this repository or in Submit.
 The cross-repository section is filled from a read-only audit of all six repositories; the review
 of 2026-09-08 (section "Review") re-checked every row against the trees with eight search agents
 and corrected what it found.
@@ -236,7 +238,6 @@ The rows in full. Machine rows are Sonnet unless the group table says otherwise.
 | LU-18 | Third-party lines in `NOTICE` and `LICENSING.md`, spreadsheets and Submit: the XBRL International GL Framework adaptation (`schema/diya-gl-docs.md:1-10`, both schemas' descriptions; CC BY layer, attribution kept verbatim); jszip (MIT, taken under MIT of its dual licence), smol-toml (BSD-3-Clause) and ajv's generated validator (MIT) compiled into the DIYA-GL bundle and the runners; one consolidated Crown copyright and Open Government Licence v3.0 line for the HMRC-derived data (`app/data/*.toml`, `app/data/filing/`, `app/data/hmrc/sa103f_mapping_v3.csv`, the 40 `ref-additions/*.toml`, Submit's `web/public/docs/hmrc-form-field-standards/README.md`); the Apache Maven Wrapper in every repository that has one; the PolicyBee logo in spreadsheets and Submit (used under the partner arrangement, `?partner=35`, not licensed onward); Submit's Google "G" logo on `auth/login.html` (Google brand guidelines); Submit's `web/public/lib/qrcode.min.js` (node-qrcode, MIT; its notice is stripped today and is restored at the top of the file); the Lighthouse (Apache-2.0), Playwright and React (Apache-2.0, MIT) and OWASP ZAP reports committed under Submit's `web/public/tests/`; the runtime dependency tables from each `package.json` | LU-1 | Sonnet | `NOTICE`, `LICENSING.md`, `diya-gl/NOTICE`; submit: `NOTICE`, `LICENSING.md`, `web/public/lib/qrcode.min.js` |
 | LU-19 | The engine announces its terms: `diya-gl --version` prints the version, `Apache-2.0` and the copyright line; the MCP server's `serverInfo` version stops reading `0.1.0` and its `instructions` string names the licence and the source address, since the MCP `Implementation` object has no licence field; the templates fetched under decision 7(a) print the PolyForm terms once on first fetch | LU-1 | Sonnet | `diya-gl/bin/diya-gl.js`, `app/lib/mcp/server.js`, `app/lib/app-resources.js` |
 | H-LU-3 | Dispatch the four `generate-*` workflows after LU-5 merges, then the prod deploy | LU-5 | operator | GitHub Actions |
-| LU-20 | Rename the tap repository to `homebrew-diya-gl` on GitHub (GitHub redirects the old name) and follow the name through the tap's README and workflow, the spec page builder's install line, the package README and any Submit reference a search finds, each by PR in its repository | — | Haiku; the rename is the session's on the go | github.com, `homebrew-tap/README.md`, `.github/workflows/update-formula.yml`, `app/bin/build-diya-gl-spec.js`, `diya-gl/README.md` |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 ## Trade marks
