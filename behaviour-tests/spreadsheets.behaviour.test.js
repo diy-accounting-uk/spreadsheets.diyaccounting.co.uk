@@ -1515,6 +1515,16 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       if (await openConfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
         await openConfirm.click();
       }
+      // The book being reopened is the one already on the page, so its year
+      // totals read the same before and after -- that assertion alone can
+      // pass on the old render while the GET for the fresh copy is still in
+      // flight. cloud.js only closes the account panel once that GET has
+      // resolved and the reopened book has rendered, so waiting for the
+      // panel to close is what actually proves the open finished, and it is
+      // what step 10's own accountBtn.click() needs to be true: it toggles,
+      // so a still-open panel there closes it instead of opening a fresh
+      // list.
+      await expect(panel, "STEP 9 failed: opening the book never closed the account panel").toBeHidden({ timeout: 20000 });
       await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,900.00", {
         timeout: 20000,
       });
