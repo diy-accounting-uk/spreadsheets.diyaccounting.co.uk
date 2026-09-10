@@ -1335,8 +1335,12 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
         { timeout: 30000 },
       );
     } else {
+      // The same 30s the near-duplicate branch above allows: a body this size
+      // takes longer to reach the account than step 7's small one, and the
+      // default five seconds is a window sized for that smaller save.
       await expect(toast, `${sizeLabel} case failed: the save toast did not carry the expected wording`).toContainText(
         /Saved to your account as version \d+\./,
+        { timeout: 30000 },
       );
     }
     console.log(` Saved the ${sizeLabel} book to the account`);
