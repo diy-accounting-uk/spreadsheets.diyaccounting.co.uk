@@ -1,6 +1,8 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
+<!-- Template for public/donate.html, built by scripts/build-donate-page.mjs. -->
+<!-- Do not edit public/donate.html directly -- it is generated and gitignored. -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -64,18 +66,10 @@
         <div class="donate-amounts">
           <p class="donate-suggested">Choose a donation amount:</p>
           <div class="amount-options">
-            <a href="https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200" class="btn-stripe-amount stripe-donate-link" data-amount="10"
-              >&pound;10</a
-            >
-            <a href="https://buy.stripe.com/3cI7sK7m94V24qd8Ij4F201" class="btn-stripe-amount stripe-donate-link" data-amount="20"
-              >&pound;20</a
-            >
-            <a href="https://buy.stripe.com/8x23cueOB0EM4qdaQr4F202" class="btn-stripe-amount stripe-donate-link" data-amount="45"
-              >&pound;45</a
-            >
-            <a href="https://buy.stripe.com/3cI28qbCpfzGf4RcYz4F204" class="btn-stripe-amount stripe-donate-link" data-amount="custom"
-              >Any amount</a
-            >
+            <a href="{{DONATE_LINK_10}}" class="btn-stripe-amount stripe-donate-link" data-amount="10">&pound;10</a>
+            <a href="{{DONATE_LINK_20}}" class="btn-stripe-amount stripe-donate-link" data-amount="20">&pound;20</a>
+            <a href="{{DONATE_LINK_45}}" class="btn-stripe-amount stripe-donate-link" data-amount="45">&pound;45</a>
+            <a href="{{DONATE_LINK_CUSTOM}}" class="btn-stripe-amount stripe-donate-link" data-amount="custom">Any amount</a>
           </div>
           <p class="donate-hint">Secure payment via Stripe</p>
         </div>
