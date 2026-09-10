@@ -67,6 +67,11 @@ Diagnose these before treating a red or a missing run as a defect.
 - **A cancelled run is usually a supersession.** With a concurrency group, a newer run
   cancels or displaces an older one. Check whether a later run exists for the same group
   before calling it a failure.
+- **A bot push fires nothing at all.** A job that commits with the default `GITHUB_TOKEN` pushes
+  without triggering any workflow, whatever the `paths:` filter says. A release job that rolls a
+  version, or a generator that commits its output, therefore leaves code on main that nothing has
+  tested or deployed, and the branch looks green because the last commit anyone ran against was
+  the one before it. Check whether main's HEAD has runs, not just whether the newest run passed.
 - **A commit can legitimately trigger nothing.** Workflows have `paths:` filters. A docs-only
   commit that starts no run is correct behaviour, not a stuck queue. Read the filter before
   concluding a run is missing — and if a change genuinely should have triggered a workflow
@@ -127,9 +132,11 @@ Two honest qualifications on (2), which the naive form gets wrong:
 
 - **Enumerate this repository's actual workflows** rather than assuming a set. `gh workflow list`
   tells you. Do not report on a workflow that does not exist here, and do not miss one that does.
-- **The latest commit may run nothing** (a docs-only push under a `paths:` filter). Judge against
-  the latest commit that triggers the workflows, and say which commit that is, rather than
-  claiming green on a commit nothing ran against.
+- **The latest commit may run nothing**, either because a `paths:` filter excludes it or because
+  a bot pushed it with the default token. Those differ: the first is correct and the second leaves
+  untested code on main. Diff the latest commit against the last one with runs and look at what
+  actually changed. If it is only documentation, say so and judge against the earlier commit. If
+  it is code, the scope is not green, and closing it means dispatching the workflow by hand.
 
 If blocked — an expired SSO session, a permission, something only the operator can do — say so in
 one line, name exactly what is needed, show the whole command if there is one, and **keep
