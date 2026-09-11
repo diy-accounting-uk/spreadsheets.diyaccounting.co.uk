@@ -282,7 +282,13 @@ function cacheRoot() {
 let cachedVersion = null;
 function libreOfficeVersion() {
   if (cachedVersion === null) {
-    cachedVersion = execSync(`"${getLibreOffice()}" --version`, { stdio: "pipe" }).toString().trim();
+    try {
+      cachedVersion = execSync(`"${getLibreOffice()}" --version`, { stdio: "pipe" }).toString().trim();
+    } catch {
+      // No LibreOffice means no recalculation can reach the cache at all, and
+      // an install later changes this string, which changes every key with it.
+      cachedVersion = "absent";
+    }
   }
   return cachedVersion;
 }
@@ -824,4 +830,13 @@ async function recalculatePackage(fileBuffers, fileWrites, readFile, options, de
   }
 }
 
-export { toExcelSerial, buildSheetMap, readCellValue, loadSharedStrings, getLibreOffice, hasLibreOffice, refreshExternalLinkCaches };
+export {
+  toExcelSerial,
+  buildSheetMap,
+  readCellValue,
+  loadSharedStrings,
+  getLibreOffice,
+  hasLibreOffice,
+  refreshExternalLinkCaches,
+  withRecalculatedFiles,
+};
