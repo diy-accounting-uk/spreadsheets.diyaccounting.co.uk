@@ -969,7 +969,43 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.D118 = pl.B32;
   seFull.D122 = pl.B17 + pl.B35;
   seFull.O114 = pl.B34;
-  seFull.O122 = pl.B34;
+  // Boxes 32 to 45, the disallowable side of each expense category. None has
+  // a source yet -- a later change gives each one a book field -- so every
+  // cell but box 44's depreciation stays the blank the sheet prints today.
+  seFull.O66 = SHEET_BLANK;
+  seFull.O70 = SHEET_BLANK;
+  seFull.O74 = SHEET_BLANK;
+  seFull.O78 = SHEET_BLANK;
+  seFull.O82 = SHEET_BLANK;
+  seFull.O86 = SHEET_BLANK;
+  seFull.O90 = SHEET_BLANK;
+  seFull.O94 = SHEET_BLANK;
+  seFull.O98 = SHEET_BLANK;
+  seFull.O102 = SHEET_BLANK;
+  seFull.O106 = SHEET_BLANK;
+  seFull.O110 = SHEET_BLANK;
+  seFull.O118 = SHEET_BLANK;
+  // Box 46's own caption calls it the total of boxes 32 to 45, not a second
+  // read of the depreciation figure box 44 already carries. The sum stays
+  // equal to box 44 alone until the boxes above gain a source.
+  seFull.O122 = carry([seFull.O114], () =>
+    sheetSum([
+      seFull.O66,
+      seFull.O70,
+      seFull.O74,
+      seFull.O78,
+      seFull.O82,
+      seFull.O86,
+      seFull.O90,
+      seFull.O94,
+      seFull.O98,
+      seFull.O102,
+      seFull.O106,
+      seFull.O110,
+      seFull.O114,
+      seFull.O118,
+    ]),
+  );
   const fullNetProfit = seFull.D55 + seFull.O55 - seFull.D122;
   seFull.D129 = fullNetProfit >= 0 ? fullNetProfit : 0;
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
