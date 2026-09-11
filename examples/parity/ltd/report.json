@@ -269,10 +269,12 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!P6",
+      "unit": "rate",
       "value": "19"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!P7",
+      "unit": "rate",
       "value": "19"
     },
     {
