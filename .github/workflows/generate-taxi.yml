@@ -117,6 +117,9 @@ jobs:
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
       - run: npm test
+        env:
+          # This job has node alone, so the router covers the app tiers here.
+          TEST_SCOPE_TIERS: unit,calc
 
   generate:
     runs-on: ubuntu-24.04

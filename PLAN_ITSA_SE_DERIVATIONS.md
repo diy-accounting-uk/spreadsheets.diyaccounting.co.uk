@@ -746,4 +746,4 @@ not a check.
   piece of work from the derivations and does not block them.
 - Blast radius for the mid-task runs: `app/test/se-derivations.test.js`,
   `app/test/calculator-se.test.js`, `app/test/diya-gl-calculator.test.js` and the report
-  regeneration. `npm run test:fast` before any push.
+  regeneration. `npm test` routes the rest, and the pre-push hook routes the whole branch diff.

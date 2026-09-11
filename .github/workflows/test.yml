@@ -182,6 +182,10 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          # The gate, browser and infra tiers have their own jobs, so this one
+          # routes the app tiers. Anything it delegates prints as DELEGATED.
+          TEST_SCOPE_TIERS: unit,calc
 
   roundtrip-bst:
     name: 'roundtrip fidelity (BST)'

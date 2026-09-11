@@ -108,13 +108,15 @@ describe("financialYearsInPeriod", () => {
 });
 
 describe("apportionCorporationTax", () => {
-  const RATES = {
-    smallProfitsRatePercent: [19, 19],
+  // What FY2023 onwards charge, on both financial year rows.
+  const FY2023_RATES = {
+    smallProfitsRatePercent: 19,
     mainRatePercent: 25,
     marginalReliefFraction: 0.015,
     lowerLimit: 50000,
     upperLimit: 250000,
   };
+  const RATES = { perYear: [FY2023_RATES, FY2023_RATES] };
 
   it("charges the main rate less marginal relief on a year inside one financial year", () => {
     const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
@@ -215,6 +217,41 @@ describe("apportionCorporationTax", () => {
     const withoutField = apportionCorporationTax(120000, years, totalDays, RATES);
     const withZero = apportionCorporationTax(120000, years, totalDays, { ...RATES, frankedInvestmentIncome: 0 });
     expect(withZero.tax).toBe(withoutField.tax);
+  });
+});
+
+describe("apportionCorporationTax across a change in the rates themselves", () => {
+  // FY2022 charged 19% flat with no relief; FY2023 charges 25% with relief
+  // between 50,000 and 250,000. A period ending 31 July 2023 has 243 days in
+  // the first and 122 in the second.
+  const FY2022 = { smallProfitsRatePercent: 19, mainRatePercent: 19, marginalReliefFraction: 0, lowerLimit: 0, upperLimit: 0 };
+  const FY2023 = { smallProfitsRatePercent: 19, mainRatePercent: 25, marginalReliefFraction: 0.015, lowerLimit: 50000, upperLimit: 250000 };
+  const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2022, 7, 1)), new Date(Date.UTC(2023, 6, 31)));
+
+  it("charges each row at its own year's main rate", () => {
+    const charge = apportionCorporationTax(124419.897839506, years, totalDays, { perYear: [FY2022, FY2023] });
+    expect(charge.rows[0].days).toBe(243);
+    expect(charge.rows[1].days).toBe(122);
+    expect(charge.rows[0].ratePercent).toBe(19);
+    expect(charge.rows[1].ratePercent).toBe(25);
+    expect(charge.rows[0].ratePercent).not.toBe(charge.rows[1].ratePercent);
+  });
+
+  it("gives no relief on a year that had none, whatever the profit", () => {
+    const charge = apportionCorporationTax(124419.897839506, years, totalDays, { perYear: [FY2022, FY2023] });
+    expect(charge.rows[0].marginalRelief).toBe(0);
+    expect(charge.rows[1].marginalRelief).toBeGreaterThan(0);
+  });
+
+  it("charges the first row its whole share at 19%, where the year end's figures would tax it at 25% less relief", () => {
+    const profit = 124419.897839506;
+    const charge = apportionCorporationTax(profit, years, totalDays, { perYear: [FY2022, FY2023] });
+    const firstRowShare = (profit * 243) / 365;
+    expect(charge.rows[0].tax).toBeCloseTo(firstRowShare * 0.19, 6);
+
+    const yearEndOnly = apportionCorporationTax(profit, years, totalDays, { perYear: [FY2023, FY2023] });
+    expect(yearEndOnly.rows[0].ratePercent).toBe(25);
+    expect(yearEndOnly.rows[0].tax).toBeGreaterThan(charge.rows[0].tax);
   });
 });
 

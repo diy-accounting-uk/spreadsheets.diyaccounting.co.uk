@@ -25,12 +25,7 @@
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
-import {
-  apportionCorporationTax,
-  financialYearsInPeriod,
-  financialYearNumber,
-  smallProfitsRatePercentFor,
-} from "../tax/corporation-tax.js";
+import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
@@ -878,7 +873,6 @@ export function calculateLtdCells(book, lines, taxData, scenario) {
 // at 31 March: L6 is the period start, N6 the earlier of the first financial
 // year's end and the period end, L7 the day after and N7 the period end.
 function buildAdmin(taxData, period, associatedCompanies) {
-  const corporationTax = taxData.corporation_tax || {};
   const capitalAllowances = taxData.capital_allowances || {};
   const depreciation = taxData.depreciation || {};
   const mileage = taxData.mileage || {};
@@ -889,19 +883,27 @@ function buildAdmin(taxData, period, associatedCompanies) {
   const financialYears = financialYearsInPeriod(period.start, period.yearEnd);
   const fileFinancialYear = financialYearNumber(period.yearEnd);
 
+  // What each tax row's own financial year charges by. The two rows differ
+  // whenever the period reaches back over 1 April into a year that charged
+  // differently.
+  const rowRates = financialYears.years.map((financialYear) =>
+    financialYearRatesFor(taxData, financialYear.year, fileFinancialYear, financialYear.days),
+  );
+
   return {
     B9: periodStartSerial,
     B32: yearEndSerial,
     F21: yearEndSerial,
-    // Each tax row's own financial year's small profits rate. The two differ
-    // whenever the period reaches back over 1 April into a year that charged
-    // a different rate.
-    P6: smallProfitsRatePercentFor(taxData, financialYears.years[0].year, fileFinancialYear, financialYears.years[0].days),
-    P7: smallProfitsRatePercentFor(taxData, financialYears.years[1].year, fileFinancialYear, financialYears.years[1].days),
-    P8: Math.round(corporationTax.main_rate * 100),
-    P9: corporationTax.marginal_relief_fraction,
-    P12: corporationTax.small_profits_limit,
-    P13: corporationTax.main_rate_limit,
+    P6: rowRates[0].smallProfitsRatePercent,
+    R6: rowRates[0].mainRatePercent,
+    S6: rowRates[0].marginalReliefFraction,
+    T6: rowRates[0].lowerLimit,
+    U6: rowRates[0].upperLimit,
+    P7: rowRates[1].smallProfitsRatePercent,
+    R7: rowRates[1].mainRatePercent,
+    S7: rowRates[1].marginalReliefFraction,
+    T7: rowRates[1].lowerLimit,
+    U7: rowRates[1].upperLimit,
     P14: associatedCompanies,
     G5: Math.round(capitalAllowances.annual_investment_allowance * 100),
     G6: Math.round(capitalAllowances.writing_down_allowance_main * 100),
@@ -1804,11 +1806,13 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAcc
 
   const financialYears = financialYearsInPeriod(fromSerial(admin.L6), fromSerial(admin.N7));
   const charge = apportionCorporationTax(sheet.K28, financialYears.years, financialYears.totalDays, {
-    smallProfitsRatePercent: [admin.P6, admin.P7],
-    mainRatePercent: admin.P8,
-    marginalReliefFraction: admin.P9,
-    lowerLimit: admin.P12,
-    upperLimit: admin.P13,
+    perYear: [6, 7].map((adminRow) => ({
+      smallProfitsRatePercent: admin[`P${adminRow}`],
+      mainRatePercent: admin[`R${adminRow}`],
+      marginalReliefFraction: admin[`S${adminRow}`],
+      lowerLimit: admin[`T${adminRow}`],
+      upperLimit: admin[`U${adminRow}`],
+    })),
     associatedCompanies: admin.P14,
     frankedInvestmentIncome: sheet.K29,
   });

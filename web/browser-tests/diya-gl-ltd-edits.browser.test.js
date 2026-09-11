@@ -187,8 +187,14 @@ async function allChecksPassExcept(page, expectedFailingLabels) {
   expect(await engineFailingLabels(page)).toEqual(expectedFailingLabels.slice().sort());
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
 async function undo(page) {
-  await page.locator("#undo-btn").click();
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
 }
 
 // ── Reading a rendered figure back off the page ────────────────────────────
@@ -634,7 +640,7 @@ test.describe("DIYA-GL Ltd page — finding (c): the Fixed assets Class column r
 });
 
 // ============================== finding: the Admin view's rate cells ==============================
-// LT-T8's own remainder: Admin!P6/P7/P8 (corporation tax rates), M19 (VAT
+// LT-T8's own remainder: Admin!P6/P7/R6/R7 (corporation tax rates), M19 (VAT
 // rate) and G5-G8 (capital allowances) all hold a whole percent already
 // (the calculator's own Math.round(rate * 100), the same fact
 // ltd-forms.js's own "percent" format documents), but the Admin view's
@@ -643,7 +649,7 @@ test.describe("DIYA-GL Ltd page — finding (c): the Fixed assets Class column r
 // mileage rate, held in pounds per mile) printed as a bogus percent the
 // same way. Fixed in ltd-ledger.js's own row() with a small per-cell
 // override (adminCellText) rather than widening what the shared "rate"
-// unit means for every other view, which still needs it for P9 and
+// unit means for every other view, which still needs it for S6 and
 // G15-G19 -- genuine fractions.
 
 test.describe("DIYA-GL Ltd page — finding: the Admin view's whole-percent and mileage cells", () => {
@@ -658,14 +664,14 @@ test.describe("DIYA-GL Ltd page — finding: the Admin view's whole-percent and 
     // Precision Code Ltd's own 2025/26 rates: small profits 19%, main 25%,
     // standard VAT 20%, 100% annual investment allowance, 18% writing-down.
     expect(await cellText("P6")).toBe("19%");
-    expect(await cellText("P8")).toBe("25%");
+    expect(await cellText("R6")).toBe("25%");
     expect(await cellText("M19")).toBe("20%");
     expect(await cellText("G5")).toBe("100%");
     expect(await cellText("G6")).toBe("18%");
 
     // A genuine fraction (marginal relief, and a depreciation rate) still
     // goes through the shared rate formatter unchanged.
-    expect(await cellText("P9")).toBe("1.5%");
+    expect(await cellText("S6")).toBe("1.5%");
     expect(await cellText("G17")).toBe("20%");
 
     // The mileage rate is pence per mile, not a percent at all.

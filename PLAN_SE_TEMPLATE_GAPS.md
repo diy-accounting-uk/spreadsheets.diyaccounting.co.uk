@@ -310,9 +310,8 @@ Four commits. A builder can take step 1 and start.
 
 **Step 1. Make box 46 a real total.** `SE Full!O122` becomes the sum of the fourteen O-cells plus
 O114. Update `app/lib/calculators/se.js:972` and the check at `app/products/se.js:2254`.
-_Verification:_ value-neutral, because every other cell is still empty. Run the three fixtures
-serially (`npx vitest run --fileParallelism=false`) and confirm no figure in any committed Apr27
-report moves.
+_Verification:_ value-neutral, because every other cell is still empty. Run the three fixtures and
+confirm no figure in any committed Apr27 report moves.
 
 **Step 2. The entertainment column.** Everything in 3.2, plus the master data change and the
 extractor mapping in section 4. _Verification:_ A1 is nil on all twelve `Purchases.xlsx` month
