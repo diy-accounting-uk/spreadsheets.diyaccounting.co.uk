@@ -4,11 +4,12 @@
   "scenario": "Exported from ltd package",
   "yearEnd": "2027-10-31",
   "provenance": {
-    "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.3+cda844f81ec6",
+    "formatVersion": "diya-gl-books/1",
+    "engineVersion": "1.1.2+0f27d99accb1",
     "taxDataHash": "6a9c036b5f9c",
-    "templateHash": "d95b3df1e439",
-    "templateScorecard": "101279 passed, 0 warnings, 0 failed"
+    "templateHash": "0c18ceeaced4",
+    "templateScorecard": "101279 passed, 0 warnings, 0 failed",
+    "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b"
   },
   "values": [
     {
@@ -268,12 +269,10 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!P6",
-      "unit": "rate",
       "value": "19"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!P7",
-      "unit": "rate",
       "value": "19"
     },
     {
@@ -410,6 +409,11 @@
       "key": "cell/Financialaccounts.xlsx!CT600!Y135",
       "unit": "money",
       "value": "29221.2729274691"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!CT600!Z114",
+      "unit": "money",
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Z70",
@@ -553,6 +557,16 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K28",
+      "unit": "money",
+      "value": "124419.897839506"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!CorporationTax!K29",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!CorporationTax!K30",
       "unit": "money",
       "value": "124419.897839506"
     },
@@ -2440,6 +2454,11 @@
       "key": "cell/Financialaccounts.xlsx!OpenAccounts!O3",
       "unit": "identifier",
       "value": "1234567890"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!OpenAccounts!Q6",
+      "unit": "money",
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!D2",
@@ -7679,22 +7698,6 @@
       "tolerance": "0"
     },
     {
-      "key": "check/Admin P6: corporation tax small profits rate",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "19",
-      "actual": "19",
-      "tolerance": "0.0001"
-    },
-    {
-      "key": "check/Admin P7: corporation tax small profits rate (second year)",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "19",
-      "actual": "19",
-      "tolerance": "0.0001"
-    },
-    {
       "key": "check/Admin P8: corporation tax main rate",
       "unit": "verdict",
       "value": "pass",
@@ -7821,6 +7824,14 @@
       "expected": "2026",
       "actual": "2026",
       "tolerance": "0"
+    },
+    {
+      "key": "check/CT600: franked investment income = the working sheet's figure",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
     },
     {
       "key": "check/CT600: interest received = CT interest received",
@@ -7999,20 +8010,20 @@
       "tolerance": "1"
     },
     {
+      "key": "check/CT: augmented profits = the chargeable profit and the franked investment income",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "124419.897839506",
+      "actual": "124419.897839506",
+      "tolerance": "1"
+    },
+    {
       "key": "check/CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge",
       "unit": "verdict",
       "value": "pass",
       "expected": "8140",
       "actual": "8140",
       "tolerance": "1"
-    },
-    {
-      "key": "check/CT: both financial year rows carry the same small profits rate",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "19",
-      "actual": "19",
-      "tolerance": "0"
     },
     {
       "key": "check/CT: capital allowances = the allowance lines",
@@ -8071,7 +8082,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      "key": "check/CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
       "expected": "779.284743543887",
@@ -8087,11 +8098,19 @@
       "tolerance": "1"
     },
     {
-      "key": "check/CT: first tax row rate = the rate its share of the profit falls in",
+      "key": "check/CT: first tax row rate = the rate its share of the augmented profits falls in",
       "unit": "verdict",
       "value": "pass",
       "expected": "25",
       "actual": "25",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: first tax row small profits rate = the rate its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "19",
+      "actual": "19",
       "tolerance": "0"
     },
     {
@@ -8100,6 +8119,14 @@
       "value": "pass",
       "expected": "12088.800580953",
       "actual": "12088.800580953",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/CT: franked investment income = the exempt distributions entered on the opening accounts",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -8143,7 +8170,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/CT: second tax row marginal relief = its share of the profit against its share of the limits",
+      "key": "check/CT: second tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
       "expected": "1104.41678886352",
@@ -8159,11 +8186,19 @@
       "tolerance": "1"
     },
     {
-      "key": "check/CT: second tax row rate = the rate its share of the profit falls in",
+      "key": "check/CT: second tax row rate = the rate its share of the augmented profits falls in",
       "unit": "verdict",
       "value": "pass",
       "expected": "25",
       "actual": "25",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: second tax row small profits rate = the rate its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "19",
+      "actual": "19",
       "tolerance": "0"
     },
     {
@@ -9311,6 +9346,14 @@
       "value": "pass",
       "expected": "69066.67",
       "actual": "69066.6666666667",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Opening accounts: franked investment income = the distributions the scenario received",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -16107,6 +16150,12 @@
       "source": "cell/Financialaccounts.xlsx!OpenAccounts!E5"
     },
     {
+      "key": "section/business-details/franked-investment-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!OpenAccounts!Q6"
+    },
+    {
       "key": "section/business-details/postcode",
       "unit": "identifier",
       "value": "M1 1AA",
@@ -16161,10 +16210,22 @@
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K10"
     },
     {
+      "key": "section/corporation-tax-working-sheet/add-franked-investment-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!CorporationTax!K29"
+    },
+    {
       "key": "section/corporation-tax-working-sheet/add-gross-bank-interest",
       "unit": "money",
       "value": "339.506172839506",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K24"
+    },
+    {
+      "key": "section/corporation-tax-working-sheet/augmented-profits",
+      "unit": "money",
+      "value": "124419.897839506",
+      "source": "cell/Financialaccounts.xlsx!CorporationTax!K30"
     },
     {
       "key": "section/corporation-tax-working-sheet/corporation-tax",
@@ -16289,6 +16350,12 @@
       "unit": "money",
       "value": "29221.2729274691",
       "source": "cell/Financialaccounts.xlsx!CT600!Y135"
+    },
+    {
+      "key": "section/ct600-as-filed/box-620-franked-investment-income",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!CT600!Z114"
     },
     {
       "key": "section/directors-report/dividend-declared",
