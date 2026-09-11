@@ -111,6 +111,16 @@ async function engineFailingSet(page) {
   return labels.sort();
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
+async function undo(page) {
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
+}
+
 async function readDownload(download) {
   const stream = await download.createReadStream();
   const chunks = [];
@@ -146,7 +156,7 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
     await check.locator("[data-helper-apply]").click();
     await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/pass/);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/fail/);
   });
 
@@ -180,7 +190,7 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
     await check.locator("[data-helper-apply]").click();
     await expect(bookCheck(page, "book-accounts-in-chart")).toHaveClass(/pass/);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(bookCheck(page, "book-accounts-in-chart")).toHaveClass(/fail/);
   });
 
@@ -237,7 +247,7 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
       "SA103S: Net profit close to P&L Net",
     ]);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(bookCheck(page, "book-amounts-whole-pence")).toHaveClass(/fail/);
     expect(await engineFailingSet(page)).toEqual([
       "Accounting profit to tax profit bridge closes to zero",
