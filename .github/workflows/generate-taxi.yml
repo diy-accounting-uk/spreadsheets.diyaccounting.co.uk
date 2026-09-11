@@ -297,6 +297,10 @@ jobs:
         run: |
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
           node app/bin/build-sitemaps.js
+          # donate.html is generated and gitignored, and this step runs vitest
+          # directly rather than through npm test, so the smoke test that fetches
+          # the page 404s without this line.
+          node scripts/build-donate-page.mjs
           # This product's own and the shared unit tests; the other products' files read their own committed
           # examples, which only their own refresh renews. The branch's test workflow runs every file.
           npx vitest run --project unit-tests $(ls app/test/*.test.js web/unit-tests/*.test.js | grep -v -E "(^|/|-)(bst|se|ltd)(-|\.)")
