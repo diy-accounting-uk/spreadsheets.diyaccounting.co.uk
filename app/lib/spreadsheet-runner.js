@@ -336,21 +336,20 @@ function recalculationKey(material) {
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
 }
 
-// Every recalculation this process actually runs, appended where a later run
-// can count them. This is the cache's own evidence that sharing happened.
-function noteRecalculation(key, label) {
+// Every hit and every recalculation, appended where a later run can count
+// them. Vitest swallows a worker's console output, so a file is the only place
+// this evidence survives. CALC_CACHE_LOG turns it on with the cache off, which
+// is how a before-and-after comparison counts the recalculations it saved.
+function noteCacheEvent(outcome, key, label) {
+  if (!cacheEnabled() && !process.env.CALC_CACHE_LOG) return;
   try {
     const root = cacheRoot();
     mkdirSync(root, { recursive: true });
-    appendFileSync(resolve(root, "recalculations.log"), `${new Date().toISOString()} pid=${process.pid} ${key.slice(0, 12)} ${label}\n`);
+    const line = `${new Date().toISOString()} pid=${process.pid} ${outcome} ${key.slice(0, 12)} ${label}\n`;
+    appendFileSync(resolve(root, "recalculations.log"), line);
   } catch {
     // bookkeeping only
   }
-  if (process.env.CALC_CACHE_LOG) console.error(`[calc-cache] miss ${key.slice(0, 12)} ${label}`);
-}
-
-function noteCacheHit(key, label) {
-  if (process.env.CALC_CACHE_LOG) console.error(`[calc-cache] hit ${key.slice(0, 12)} ${label}`);
 }
 
 let sweptThisProcess = false;
@@ -387,7 +386,7 @@ function lockIsAbandoned(lock) {
 async function recalculateIntoTemporary(label, produce) {
   const dir = resolve(tmpdir(), `recalculated-${randomBytes(6).toString("hex")}`);
   mkdirSync(dir, { recursive: true });
-  if (cacheEnabled()) noteRecalculation("uncached", label);
+  noteCacheEvent("miss", "uncached", label);
   try {
     await produce(dir);
   } catch (error) {
@@ -413,7 +412,7 @@ async function withRecalculatedFiles(material, label, produce) {
   const deadline = Date.now() + CACHE_WAIT_MS;
   for (;;) {
     if (existsSync(resolve(entry, CACHE_READY))) {
-      noteCacheHit(key, label);
+      noteCacheEvent("hit", key, label);
       return { dir: entry, fromCache: true, release: () => {} };
     }
 
@@ -440,11 +439,11 @@ async function withRecalculatedFiles(material, label, produce) {
         // the lock: an entry already complete is never rebuilt or replaced,
         // so nothing can pull the files out from under a reader.
         if (existsSync(resolve(entry, CACHE_READY))) {
-          noteCacheHit(key, label);
+          noteCacheEvent("hit", key, label);
           return { dir: entry, fromCache: true, release: () => {} };
         }
         mkdirSync(building, { recursive: true });
-        noteRecalculation(key, label);
+        noteCacheEvent("miss", key, label);
         await produce(building);
         writeFileSync(resolve(building, CACHE_READY), `${label}\n`);
         rmSync(entry, { recursive: true, force: true });
