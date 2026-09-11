@@ -208,8 +208,16 @@ async function downloadBookChecksJson(page) {
   return JSON.parse(await zip.file("bookchecks.json").async("string"));
 }
 
+// Calls window.DiyaGlPage.undo() directly, the same seam the other
+// mutation helpers above use, rather than clicking #undo-btn: the button's
+// click handler fires undoLastEdit and returns immediately, so a plain
+// click resolves before the recalculation it starts has landed in the DOM.
+// Awaiting the API call itself waits for the actual recalculation promise
+// the same undo goes through, not a fixed delay around it.
 async function undo(page) {
-  await page.locator("#undo-btn").click();
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
 }
 
 // ============================== E2: each of T5's eight Ltd rules ==============================

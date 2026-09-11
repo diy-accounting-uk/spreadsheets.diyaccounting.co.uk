@@ -1338,17 +1338,21 @@
       });
   }
 
+  // Returns the recalculation promise, the same as commit and commitBook,
+  // so a caller reaching this through window.DiyaGlPage.undo() (the topbar
+  // button and Ctrl+Z fire it and walk away) can await the DOM actually
+  // reflecting the undo rather than just the call having been made.
   function undoLastEdit() {
     var previous = window.DiyaGlEdits.undo.pop();
     if (!previous) {
       showToast("Nothing to undo.");
-      return;
+      return Promise.resolve();
     }
     state.committing = true;
     // recalculateWithBook, not recalculate: undoing a year-end change has to
     // put back the tax year the restored book declares, not keep the one the
     // change brought in.
-    window.DiyaGlLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlEdits.undo.depth() > 0)
+    return window.DiyaGlLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlEdits.undo.depth() > 0)
       .then(function (snapshot) {
         applySnapshot(snapshot);
         state.committing = false;
