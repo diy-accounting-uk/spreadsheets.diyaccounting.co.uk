@@ -238,13 +238,19 @@ function importClosure(changed, files) {
   return { tests, unresolved };
 }
 
-// Non-JS changes show up in tests as literal strings: fixture names,
-// template basenames, data files.
+// What the import graph cannot see: fixtures, templates and data files named
+// by basename, and the classic browser scripts the web unit tests pull in with
+// readFileSync on a literal repo-relative path rather than an import.
 function literalMatches(changed, testFiles) {
-  const names = changed
-    .filter((p) => !SOURCE_EXT.test(p))
-    .map((p) => p.split("/").pop())
-    .filter((n) => n.length > 4);
+  const names = [];
+  for (const p of changed) {
+    if (SOURCE_EXT.test(p)) names.push(p);
+    else {
+      names.push(p);
+      const base = p.split("/").pop();
+      if (base.length > 4) names.push(base);
+    }
+  }
   if (names.length === 0) return [];
   const hits = new Set();
   for (const file of testFiles) {
@@ -296,6 +302,7 @@ function select(changed) {
     browserDiyaGl: false,
     browserContent: false,
     browserPages: new Set(),
+    browserPageDirs: new Set(),
     infra: false,
     extras: new Set(),
     why: new Map(),
@@ -324,14 +331,18 @@ function select(changed) {
         if (adds.browser === "all") sel.browserAll = true;
         else if (adds.browser === "diya-gl") sel.browserDiyaGl = true;
         else if (adds.browser === "content") sel.browserContent = true;
-        else if (adds.browser === "page")
+        else if (adds.browser === "page") {
           sel.browserPages.add(
             path
               .split("/")
               .pop()
               .replace(/\.(js|css)$/, ""),
           );
-        else {
+          // A script under public/<page>/ is loaded by the whole page, not
+          // just by the spec that happens to share its name.
+          const dir = path.match(/\/public\/([^/]+)\//);
+          if (dir) sel.browserPageDirs.add(dir[1]);
+        } else {
           const list = productsIn(path);
           if (list.length) for (const p of list) sel.browserProducts.add(p);
           else sel.browserAll = true;
@@ -362,9 +373,14 @@ function chooseBrowserSpecs(sel, specs) {
     for (const page of sel.browserPages) {
       if (name.includes(page)) chosen.add(spec);
     }
+    // The page's own specs, the ones no product name narrows, exercise
+    // whatever shared script changed under that page's directory.
+    for (const dir of sel.browserPageDirs) {
+      if (name.startsWith(`${dir}-`) && tokens.length === 0) chosen.add(spec);
+    }
   }
-  // A page asset with no spec named after it still reaches the shared specs.
-  if (chosen.size === 0 && sel.browserPages.size) return specs.filter((s) => s.includes("diya-gl-") || s.includes("spreadsheets-content"));
+  // A page asset outside any page directory still reaches the site content spec.
+  if (chosen.size === 0 && sel.browserPages.size) return specs.filter((s) => s.includes("spreadsheets-content"));
   return [...chosen].sort();
 }
 
@@ -478,9 +494,14 @@ if (escalated) {
   const literal = literalMatches(changed, everyTest);
   const changedTests = changed.filter((p) => TEST_FILE.test(p));
   const reached = new Set([...tests, ...literal, ...changedTests]);
+  const changedSource = changed.filter((p) => SOURCE_EXT.test(p));
+  const orphan = changedSource.length > 0 && reached.size === 0;
   if (unresolved > 0) {
     unitFiles = plainFiles;
     unitReason = `every unit file, because ${unresolved} changed source file(s) are outside the import graph`;
+  } else if (orphan) {
+    unitFiles = plainFiles;
+    unitReason = "every unit file, because no test reaches the changed source at all";
   } else {
     unitFiles = plainFiles.filter((f) => reached.has(f));
     unitReason = `${unitFiles.length} file(s) reached through the import graph and fixture names`;
