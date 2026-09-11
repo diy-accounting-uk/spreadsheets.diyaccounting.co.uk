@@ -137,6 +137,7 @@ const TOTAL_TAXABLE_PROFITS = "SA103F box 76 total taxable profits (O210) = box 
 const SHORT_TOTAL_EXPENSES =
   "SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back";
 const SHORT_NET_PROFIT = "SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation";
+const SHORT_ALLOWABLE_EXPENSES = "SA103S: total expenses = cost of sales + admin expenses less depreciation";
 
 // Each corruption and the exact set of checks it must flip.
 const SA103F_CORRUPTIONS = [
@@ -165,7 +166,7 @@ const SA103F_CORRUPTIONS = [
     93735.7333333333,
     [
       "SA103F box 19 wages, salaries and staff costs (D74) = the profit and loss account",
-      "SA103F box 19 wages, salaries and staff costs: full return (D74) = short return (D55)",
+      "SA103F box 19 wages, salaries and staff costs: short return (D55) = full return (D74) less its own disallowable share (O74)",
     ],
   ],
   [
@@ -173,7 +174,7 @@ const SA103F_CORRUPTIONS = [
     8881.875,
     [
       "SA103F box 20 car, van and travel expenses (D78) = the profit and loss account",
-      "SA103F box 20 car, van and travel expenses: full return (D78) = short return (D51)",
+      "SA103F box 20 car, van and travel expenses: short return (D51) = full return (D78) less its own disallowable share (O78)",
     ],
   ],
   [
@@ -181,7 +182,7 @@ const SA103F_CORRUPTIONS = [
     14200,
     [
       "SA103F box 21 rent, rates, power and insurance (D82) = the profit and loss account",
-      "SA103F box 21 rent, rates, power and insurance: full return (D82) = short return (D60)",
+      "SA103F box 21 rent, rates, power and insurance: short return (D60) = full return (D82) less its own disallowable share (O82)",
     ],
   ],
   [
@@ -189,7 +190,7 @@ const SA103F_CORRUPTIONS = [
     1950,
     [
       "SA103F box 22 repairs and maintenance (D86) = the profit and loss account",
-      "SA103F box 22 repairs and maintenance: full return (D86) = short return (D64)",
+      "SA103F box 22 repairs and maintenance: short return (D64) = full return (D86) less its own disallowable share (O86)",
     ],
   ],
   [
@@ -197,7 +198,7 @@ const SA103F_CORRUPTIONS = [
     4035,
     [
       "SA103F box 23 phone, stationery and office costs (D90) = the profit and loss account",
-      "SA103F box 23 phone, stationery and office costs: full return (D90) = short return (O55)",
+      "SA103F box 23 phone, stationery and office costs: short return (O55) = full return (D90) less its own disallowable share (O90)",
     ],
   ],
   ["D94", 4800, ["SA103F box 24 advertising and entertainment (D94) = the profit and loss account"]],
@@ -209,7 +210,7 @@ const SA103F_CORRUPTIONS = [
     7925,
     [
       "SA103F box 28 accountancy, legal and professional fees (D110) = the profit and loss account",
-      "SA103F box 28 accountancy, legal and professional fees: full return (D110) = short return (O46)",
+      "SA103F box 28 accountancy, legal and professional fees: short return (O46) = full return (D110) less its own disallowable share (O110)",
     ],
   ],
   ["D114", 12912, ["SA103F box 29 depreciation and loss on sale of assets (D114) = the profit and loss account"]],
@@ -223,10 +224,19 @@ const SA103F_CORRUPTIONS = [
       "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
     ],
   ],
+  // The short return's box 20 now reads box 46 too, so its own total and the
+  // bridge that ends on it move with this cell as well.
   [
     "O122",
     12740,
-    ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45", TOTAL_ADDITIONS, SHORT_TOTAL_EXPENSES, SHORT_NET_PROFIT],
+    [
+      SHORT_ALLOWABLE_EXPENSES,
+      "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+      TOTAL_ADDITIONS,
+      SHORT_TOTAL_EXPENSES,
+      SHORT_NET_PROFIT,
+      "Accounting profit to tax profit bridge closes to zero",
+    ],
   ],
   // Boxes 32 to 45 carry no figure of their own on this scenario -- a
   // corruption gives one of them a value, proving box 46's total moves

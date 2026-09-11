@@ -110,15 +110,15 @@ describeCalc(
 
     it("CorporationTax: charges the statutory tax on the full fixture profit", () => {
       const ct = results["CorporationTax"];
-      expect(ct.K28).toBeCloseTo(124419.897839506, 4);
+      expect(ct.K28).toBeCloseTo(124128.231172839, 4);
       expect(ct.G33).toBe(25);
-      expect(ct.J33).toBeCloseTo(31104.97446, 4);
+      expect(ct.J33).toBeCloseTo(31032.057793209, 4);
       // The fixture receives 20,000 of franked investment income, so the
       // relief is tested against augmented profits: (250,000 - A) x N/A x F,
       // not (250,000 - N) x F. Augmented profits raise A and the ratio pulls
       // the relief down, which is the degeneration the ratio exists to stop.
-      expect(ct.L33).toBeCloseTo(1364.382511, 4);
-      expect(ct.K35).toBeCloseTo(29740.591949, 4);
+      expect(ct.L33).toBeCloseTo(1367.706585522, 4);
+      expect(ct.K35).toBeCloseTo(29664.351207686, 4);
     });
 
     it("CorporationTax: tax outstanding = CT less tax deducted at source", () => {
