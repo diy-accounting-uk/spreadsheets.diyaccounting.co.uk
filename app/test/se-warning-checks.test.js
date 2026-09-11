@@ -89,7 +89,13 @@ describe("SA103F box 44 leaves the loss on disposal out of the disallowable tota
     const { flipped, appeared, disappeared } = compareChecks(before, after);
     expect(appeared).toEqual([]);
     expect(disappeared).toEqual([]);
-    expect(flipped).toEqual([CHECK_NAME, "SA103F box 44 disallowable depreciation (O114) = the profit and loss account"].sort());
+    expect(flipped).toEqual(
+      [
+        CHECK_NAME,
+        "SA103F box 44 disallowable depreciation (O114) = the profit and loss account",
+        "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+      ].sort(),
+    );
     expect(find(after, CHECK_NAME).pass).toBe(false);
     expect(find(after, CHECK_NAME).diff).toBeCloseTo(-300, 2);
   });
