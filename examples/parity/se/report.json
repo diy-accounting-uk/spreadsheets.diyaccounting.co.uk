@@ -10226,7 +10226,7 @@
       "tolerance": "0.01"
     },
     {
-      "key": "check/SA103F box 46 total disallowable expenses (O122) = the profit and loss account",
+      "key": "check/SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
       "unit": "verdict",
       "value": "pass",
       "expected": "13740",
