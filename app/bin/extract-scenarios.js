@@ -1088,7 +1088,12 @@ const brickSeVatDiya = writeBrickworkSe(true);
 
 // --- Company, both sizes ----------------------------------------------------
 
+// The VAT twin carries two associated companies and the non-VAT twin none,
+// so the pair proves both the marginal relief divisor and its absence. The
+// subset book and the scenario fixture take the count from the same constant,
+// so the book path and the fixture path charge the same tax.
 function writeBrickworkLtd(vatRegistered) {
+  const associatedCompanies = vatRegistered ? 2 : 0;
   const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines, brickBook) : brickMasterLines);
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
@@ -1139,12 +1144,10 @@ function writeBrickworkLtd(vatRegistered) {
       product: "ltd",
       tax_regime: "ltd",
       vat_registered: vatRegistered,
-      // The VAT twin carries two associated companies; the non-VAT twin
-      // carries none, so the pair proves both the divisor and its absence.
       business: businessBlock(entity, {
         company_number: entity["diya-gl:companyNumber"],
         vat_number: entity["diya-gl:vatNumber"],
-        associated_companies: vatRegistered ? 2 : 0,
+        associated_companies: associatedCompanies,
       }),
       employees,
       members,
@@ -1161,6 +1164,7 @@ function writeBrickworkLtd(vatRegistered) {
     {
       entity,
       taxSections: ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "mileage", "incomeTax"],
+      taxOverrides: { corporationTax: { associatedCompanies } },
       accountFilter: fullAccountFilter,
       directors: brickBook.directors,
       employees,

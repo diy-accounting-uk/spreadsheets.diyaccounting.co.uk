@@ -15,6 +15,7 @@ const BST_DATA = resolve(ROOT, "examples", "precision-code-ltd", "bst");
 const ADV_DATA = resolve(ROOT, "examples", "precision-code-ltd", "advanced");
 const FULL_DATA = resolve(ROOT, "examples", "precision-code-ltd", "full");
 const BRICKWORK_LTD_NONVAT = resolve(ROOT, "examples", "brickwork-pro", "ltd-nonvat");
+const BRICKWORK_LTD_VAT = resolve(ROOT, "examples", "brickwork-pro", "ltd-vat");
 
 describe("loadDiyaGlData", () => {
   it("loads book.toml and lines.jsonl from BST subset", () => {
@@ -165,6 +166,19 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
   it("maps the book's diya-gl:vatNumber onto business.vat_number, matching the extractor's own fixture", () => {
     expect(fullScenario.business.vat_number).toBe(fullFixture.business.vat_number);
     expect(fullFixture.business.vat_number).toBe("123456789");
+  });
+
+  it("takes the associated companies count from the book, matching the extractor's own fixture", () => {
+    const vatScenario = ltdScenarioFor(BRICKWORK_LTD_VAT);
+    const vatFixture = parseTOML(readFileSync(resolve(fixturesDir, "ltd-brickwork-pro-vat.toml"), "utf-8"));
+    expect(vatScenario.business.associated_companies).toBe(vatFixture.business.associated_companies);
+    expect(vatFixture.business.associated_companies).toBe(2);
+  });
+
+  it("leaves the associated companies count unset for a book that has none, as the fixture does", () => {
+    expect(brickScenario.business.associated_companies).toBeUndefined();
+    expect(brickFixture.business.associated_companies).toBeUndefined();
+    expect(fullScenario.business.associated_companies).toBeUndefined();
   });
 
   it("leaves business.vat_number unset for a book that declares no VAT number", () => {

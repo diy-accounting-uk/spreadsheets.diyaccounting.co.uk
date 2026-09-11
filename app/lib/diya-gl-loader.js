@@ -344,6 +344,15 @@ export function diyaGlToScenario(book, lines, product) {
   if (entity["diya-gl:vatNumber"]) business.vat_number = entity["diya-gl:vatNumber"];
   if (entity["diya-gl:companyNumber"]) business.company_number = entity["diya-gl:companyNumber"];
   if (entity.organizationTelephone) business.phone = entity.organizationTelephone;
+  // The number of companies associated with this one divides both marginal
+  // relief limits, so a company that has associates and whose book cannot
+  // say so is charged too little tax. The book states the count beside the
+  // corporation tax rates it divides, which is where the published v2 schema
+  // declares it. A count of none is left out of the block here because the
+  // extractor leaves it out of its fixtures too, and Admin!P14 carries a
+  // missing count as zero either way.
+  const associatedCompanies = book.tax?.corporationTax?.associatedCompanies;
+  if (associatedCompanies) business.associated_companies = associatedCompanies;
 
   // Build expected values
   const expected = { total_sales: totalSales };
