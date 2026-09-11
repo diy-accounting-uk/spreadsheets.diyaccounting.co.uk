@@ -209,13 +209,28 @@ All of these at once, each verified by reading:
 
 Anything less is not done. A green PR whose deploy has not started is not done.
 
-**A draft this session raised comes out of draft here.** Drafting a PR because its branch was red
-is a note about the branch, not about the work, and the note expires the moment the scope goes
-green. Leaving it set strands the PR: `/auto-merge` treats draft as a deliberate stop and will not
-route around it, which is correct, so nothing merges and nothing says why. Before reporting green,
-check each PR in scope with `gh pr view <n> --json isDraft`, and for any this session drafted whose
-reason has cleared, `gh pr ready <n>` and say so. A draft the operator set stays set; theirs is a
-decision, ours was a status.
+**Take a draft PR out of draft once its branch's workflows are settled and passing.** A draft
+strands the PR: `/auto-merge` treats it as a deliberate stop and will not route around it, which is
+correct, so nothing merges and nothing says why. The condition is mechanical, not a judgement about
+why the draft was set. Group the branch's runs by workflow, keep the latest of each, and mark the PR
+ready when **none of those latest runs is still incomplete and none of them failed**:
+
+```bash
+for n in $(gh pr list --state open --json number,isDraft --jq '.[]|select(.isDraft)|.number'); do
+  ref=$(gh pr view "$n" --json headRefName --jq .headRefName)
+  latest=$(gh run list --branch "$ref" --limit 60 \
+    --json workflowName,status,conclusion,databaseId \
+    --jq '[group_by(.workflowName)[] | max_by(.databaseId)]')
+  rows=$(echo "$latest" | jq 'length')
+  busy=$(echo "$latest" | jq '[.[]|select(.status!="completed")]|length')
+  bad=$(echo "$latest" | jq '[.[]|select(.conclusion=="failure" or .conclusion=="timed_out")]|length')
+  if [ "$rows" -gt 0 ] && [ "$busy" = "0" ] && [ "$bad" = "0" ]; then gh pr ready "$n"; fi
+done
+```
+
+`rows` is checked first because an empty set is not a pass: a branch with no runs at all has proved
+nothing, and marking it ready on that basis is the same mistake as reading a silent monitor as
+green. Say which PRs you readied and on what evidence.
 
 Two honest qualifications on (2), which the naive form gets wrong:
 
