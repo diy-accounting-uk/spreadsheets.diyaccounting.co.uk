@@ -392,9 +392,7 @@ describeCalc("SA103F checks catch a broken full return", () => {
   });
 
   it("raises only the SA103F warnings the shipped template cannot resolve", () => {
-    const raised = checks
-      .filter((c) => c.name.startsWith("SA103F") && c.severity === "warning" && !c.pass)
-      .map((c) => c.name);
+    const raised = checks.filter((c) => c.name.startsWith("SA103F") && c.severity === "warning" && !c.pass).map((c) => c.name);
     expect(raised).toEqual([
       "SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries",
     ]);

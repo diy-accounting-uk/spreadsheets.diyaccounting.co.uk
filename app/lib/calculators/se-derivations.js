@@ -416,7 +416,8 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
   const box24 = boxEntry(boxes, "24");
   warnings.push({
     field: fieldsOf(box24)[1],
-    reason: "SA103F box 24 combines advertising and business entertainment in one Profit & Loss Account row; the template cannot separate them.",
+    reason:
+      "SA103F box 24 combines advertising and business entertainment in one Profit & Loss Account row; the template cannot separate them.",
   });
   warnings.push({
     field: "periodExpenses.consolidatedExpenses",
@@ -425,7 +426,7 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
   warnings.push({
     field: disallowableField,
     reason:
-      'SA103F box 44 is Profit & Loss Account row 34 alone; a loss on disposal (row 33) stays inside box 29\'s allowable total, ' +
+      "SA103F box 44 is Profit & Loss Account row 34 alone; a loss on disposal (row 33) stays inside box 29's allowable total, " +
       "which is not an allowable deduction, with nothing moved to a disallowable box.",
     handComputed: round2(pl.B33 || 0),
   });

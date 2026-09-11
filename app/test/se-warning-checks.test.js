@@ -159,7 +159,9 @@ describe("VitalTax other income folds Investment Grants in where SA103F reports 
 
     const { flipped, appeared, disappeared } = compareChecks(before, after);
     expect(disappeared).toEqual([]);
-    expect(appeared).toEqual(["Category netting: Investment Grants received (sales g) net reaches Profit & Loss Account!B11 with no residue"]);
+    expect(appeared).toEqual([
+      "Category netting: Investment Grants received (sales g) net reaches Profit & Loss Account!B11 with no residue",
+    ]);
     expect(flipped).toEqual(
       [
         CHECK_NAME,

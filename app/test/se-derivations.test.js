@@ -389,12 +389,18 @@ describe("buildSelfEmploymentAnnualSubmission — allowances against the schedul
       value(rpt, "Self Assessment (SA103F)", "Annual investment allowance (box 49)"),
       2,
     );
-    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(value(rpt, "Self Assessment (SA103F)", "Capital allowances at 18% (box 50)"), 2);
+    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(
+      value(rpt, "Self Assessment (SA103F)", "Capital allowances at 18% (box 50)"),
+      2,
+    );
     expect(annual.allowances.enhancedCapitalAllowance).toBeCloseTo(
       value(rpt, "Self Assessment (SA103F)", "100% and other enhanced capital allowances (box 55)"),
       2,
     );
-    expect(annual.allowances.allowanceOnSales).toBeCloseTo(value(rpt, "Self Assessment (SA103F)", "Allowances on sale or cessation (box 56)"), 2);
+    expect(annual.allowances.allowanceOnSales).toBeCloseTo(
+      value(rpt, "Self Assessment (SA103F)", "Allowances on sale or cessation (box 56)"),
+      2,
+    );
     expect(annual.adjustments.balancingChargeOther).toBeCloseTo(value(rpt, "Self Assessment (SA103F)", "Balancing charge (box 59)"), 2);
 
     // Independent of the schedule cell: the opening tax written down value
@@ -441,7 +447,6 @@ describe("buildSelfEmploymentAnnualSubmission — box 55 is warned as a small po
       expect(warning.reason).toMatch(/small pools/i);
     });
   }
-
 });
 
 describe("the derivations — unsourced fields are absent, not nil, and each carries a warning naming its box", () => {
@@ -487,7 +492,9 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       expect(Object.keys(annual.allowances).sort()).toEqual(
         ["annualInvestmentAllowance", "allowanceOnSales", "capitalAllowanceMainPool", "enhancedCapitalAllowance"].sort(),
       );
-      expect(Object.keys(annual.adjustments).sort()).toEqual(["balancingChargeOther", "goodsAndServicesOwnUse", "outstandingBusinessIncome"].sort());
+      expect(Object.keys(annual.adjustments).sort()).toEqual(
+        ["balancingChargeOther", "goodsAndServicesOwnUse", "outstandingBusinessIncome"].sort(),
+      );
       const warningFields = annual.warnings.map((w) => w.field);
       for (const field of [
         "allowances.capitalAllowanceSpecialRatePool",
