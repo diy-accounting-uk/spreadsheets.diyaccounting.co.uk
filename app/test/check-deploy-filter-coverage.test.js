@@ -18,7 +18,13 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { checkCoverage, extractSources, isCovered, matchesPattern, parseDeployPushPaths } from "../../scripts/check-deploy-filter-coverage.mjs";
+import {
+  checkCoverage,
+  extractSources,
+  isCovered,
+  matchesPattern,
+  parseDeployPushPaths,
+} from "../../scripts/check-deploy-filter-coverage.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -145,7 +151,11 @@ describe("checkCoverage proves it actually fails", () => {
   });
 
   it("names the vendored jszip call site when package-lock.json is removed", () => {
-    const { gaps } = checkCoverage({ deployYmlText: withPatternRemoved("package-lock.json"), bundleScriptPath: BUNDLE_SCRIPT, repoRoot: ROOT });
+    const { gaps } = checkCoverage({
+      deployYmlText: withPatternRemoved("package-lock.json"),
+      bundleScriptPath: BUNDLE_SCRIPT,
+      repoRoot: ROOT,
+    });
     expect(gaps).toHaveLength(1);
     expect(gaps[0].label).toContain("jszip");
     expect(gaps[0].note).toContain("package-lock.json");

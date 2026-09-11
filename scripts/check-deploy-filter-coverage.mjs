@@ -273,7 +273,10 @@ function isNodeModulesPath(pathStr) {
 function buildProbe(resolved, kind) {
   const base = resolved.segments.join("/");
   if (isNodeModulesPath(base)) {
-    return { probe: "package-lock.json", note: `${base} is a vendored dependency file; its pin in package-lock.json is what a diff can see` };
+    return {
+      probe: "package-lock.json",
+      note: `${base} is a vendored dependency file; its pin in package-lock.json is what a diff can see`,
+    };
   }
   if (!resolved.truncated) {
     if (kind === "readdir") return { probe: `${base}/__cq17_probe__.ext` };
@@ -402,7 +405,10 @@ function importClosure(repoRoot, entryRelPaths) {
 // ───────────────────────────────────────────────────────────────── CLI
 
 function parseArgs(argv) {
-  const args = { deployYml: resolve(ROOT, ".github", "workflows", "deploy.yml"), bundleScript: resolve(ROOT, "scripts", "build-diya-gl-bundle.mjs") };
+  const args = {
+    deployYml: resolve(ROOT, ".github", "workflows", "deploy.yml"),
+    bundleScript: resolve(ROOT, "scripts", "build-diya-gl-bundle.mjs"),
+  };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--deploy-yml") args.deployYml = resolve(argv[++i]);
     else if (argv[i] === "--bundle-script") args.bundleScript = resolve(argv[++i]);

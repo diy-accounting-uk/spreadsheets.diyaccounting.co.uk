@@ -529,7 +529,7 @@ const chosenCalc = calcProducts.length
   : [];
 
 const plan = [];
-plan.push({ tier: "gates", run: true, what: "fixture sync, diya-gl parity, prettier", est: "~2m" });
+plan.push({ tier: "gates", run: true, what: "fixture sync, diya-gl parity, deploy filter coverage, prettier", est: "~2m" });
 plan.push({ tier: "unit", run: true, what: unitReason, est: unitFiles.length > 60 ? "~3m" : "seconds" });
 plan.push({
   tier: "calc",
@@ -597,6 +597,7 @@ if (willRun("gates", true)) {
     ["fixture sync", "node", ["app/bin/extract-scenarios.js"]],
     ["fixture sync diff", "git", ["diff", "--exit-code", "app/test/fixtures/", "examples/"]],
     ["diya-gl parity", "diya-gl/parity.sh", []],
+    ["deploy filter coverage", "node", ["scripts/check-deploy-filter-coverage.mjs"]],
     ["prettier", "npx", ["prettier", "--check", "."]],
   ];
   for (const extra of sel.extras) steps.push([extra, "npm", ["run", extra]]);
