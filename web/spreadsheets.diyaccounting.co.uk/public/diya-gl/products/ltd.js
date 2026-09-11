@@ -243,7 +243,7 @@
     { year: "K6", start: "L6", end: "N6" },
     { year: "K7", start: "L7", end: "N7" },
   ];
-  var ADMIN_RATE_CELLS = ["P6", "P7", "P8", "P9", "P12", "P13"];
+  var ADMIN_RATE_CELLS = ["P6", "R6", "S6", "T6", "U6", "P7", "R7", "S7", "T7", "U7"];
   var ADMIN_CAPITAL_ALLOWANCE_CELLS = ["G5", "G6", "G7", "G8"];
   var ADMIN_DEPRECIATION_CELLS = ["G15", "G16", "G17", "G18", "G19"];
   var ADMIN_MILEAGE_CELLS = ["N16", "O16", "N17", "O17"];
