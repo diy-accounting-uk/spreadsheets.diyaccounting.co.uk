@@ -34,7 +34,7 @@ const FIXTURE_PROFIT = 147519.897839506;
 const READS = {
   CorporationTax: ["A33", "A34", "A35", "E33", "E34", "F33", "F34", "G33", "G34", "J33", "J34", "L33", "L34", "I33", "I34", "K28", "K35"],
   CT600: ["C126", "N126", "AA126", "AJ126", "C128", "N128", "AA128", "AJ128", "AJ131", "Y133", "Y135", "AJ145"],
-  Admin: ["F21", "B9", "K6", "K7", "P6", "P7", "P8", "P9", "P12", "P13"],
+  Admin: ["F21", "B9", "K6", "K7", "P6", "R6", "S6", "T6", "U6", "P7", "R7", "S7", "T7", "U7"],
 };
 
 const CASES = {
@@ -121,8 +121,10 @@ describeCalc(
       const ct = runs.leapApril.CorporationTax;
       // FY2019 and FY2020 were a single 19% rate with no limits, so nothing
       // in the relief step fires and the whole profit is charged at 19%.
-      expect(runs.leapApril.Admin.P12).toBe(0);
-      expect(runs.leapApril.Admin.P9).toBe(0);
+      expect(runs.leapApril.Admin.T6).toBe(0);
+      expect(runs.leapApril.Admin.T7).toBe(0);
+      expect(runs.leapApril.Admin.S6).toBe(0);
+      expect(runs.leapApril.Admin.S7).toBe(0);
       expect(ct.G33).toBe(19);
       expect(ct.G34).toBe(19);
       expect(ct.L33).toBe(0);

@@ -92,56 +92,87 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
 }
 
 /**
- * The small profits rate one of the working sheet's two tax rows charges, as
- * the whole-number percentage Admin P6 and P7 carry.
+ * The five figures a financial year charges corporation tax by, as the
+ * working sheet's rate rows carry them: whole-number percentages for the two
+ * rates, a fraction for the relief and pounds for the two limits.
+ *
+ * @param {Object} table - a corporation_tax table out of an ltd-<FY>.toml
+ * @returns {{ smallProfitsRatePercent: number, mainRatePercent: number, marginalReliefFraction: number, lowerLimit: number, upperLimit: number }}
+ */
+function ratesFromTable(table) {
+  return {
+    smallProfitsRatePercent: Math.round(table.small_profits_rate * 100),
+    mainRatePercent: Math.round(table.main_rate * 100),
+    marginalReliefFraction: table.marginal_relief_fraction,
+    lowerLimit: table.small_profits_limit,
+    upperLimit: table.main_rate_limit,
+  };
+}
+
+// The fields a tax year file's previous financial year table has to state, so
+// a row charging that year has every figure it needs from the one file.
+const PREVIOUS_FINANCIAL_YEAR_FIELDS = [
+  "small_profits_rate",
+  "main_rate",
+  "marginal_relief_fraction",
+  "small_profits_limit",
+  "main_rate_limit",
+];
+
+/**
+ * What one of the working sheet's two tax rows charges: its own financial
+ * year's small profits rate, main rate, relief fraction and two limits, the
+ * figures Admin rows 6 and 7 carry a cell each for.
  *
  * A package is generated from one app/data/ltd-<FY>.toml, named for the
  * financial year its own year end falls in. An accounting period that reaches
- * back over 1 April charges its earlier days at the year before's rate, and
- * that file states it as corporation_tax_previous_financial_year. A row with
- * no days charges nothing, so it takes the file's own rate rather than a rate
- * no file has.
- *
- * Only the small profits rate has a cell per financial year. The main rate,
- * the relief fraction and the two limits are one figure each for the whole
- * period, so a period straddling a change in those still charges both rows at
- * the year end's figures.
+ * back over 1 April charges its earlier days at the year before's figures,
+ * and that file states them as corporation_tax_previous_financial_year. A row
+ * with no days charges nothing, so it takes the file's own figures rather
+ * than figures no file has.
  *
  * @param {Object} taxData - the parsed ltd-<FY>.toml
  * @param {number} rowFinancialYear - the financial year this row charges
  * @param {number} fileFinancialYear - the financial year taxData is named for
  * @param {number} rowDays - days the row charges
- * @returns {number} whole-number percentage
+ * @returns {{ smallProfitsRatePercent: number, mainRatePercent: number, marginalReliefFraction: number, lowerLimit: number, upperLimit: number }}
  */
-export function smallProfitsRatePercentFor(taxData, rowFinancialYear, fileFinancialYear, rowDays) {
+export function financialYearRatesFor(taxData, rowFinancialYear, fileFinancialYear, rowDays) {
   // Tax data with no corporation tax table at all reaches here from callers
   // that want the period dates off the Admin sheet and nothing else. Every
-  // other rate cell comes out NaN for them, so this one does too rather than
-  // demanding a rate the caller never had.
-  if (!taxData.corporation_tax) return NaN;
-  const own = Math.round(taxData.corporation_tax.small_profits_rate * 100);
-  if (rowDays <= 0 || rowFinancialYear === fileFinancialYear) return own;
+  // other rate cell comes out NaN for them, so these do too rather than
+  // demanding rates the caller never had.
+  if (!taxData.corporation_tax) {
+    return { smallProfitsRatePercent: NaN, mainRatePercent: NaN, marginalReliefFraction: NaN, lowerLimit: NaN, upperLimit: NaN };
+  }
+  if (rowDays <= 0 || rowFinancialYear === fileFinancialYear) return ratesFromTable(taxData.corporation_tax);
   if (rowFinancialYear !== fileFinancialYear - 1) {
     throw new Error(
-      `financial year ${rowFinancialYear} is neither ${fileFinancialYear} nor the year before it, so no tax year file states its small profits rate`,
+      `financial year ${rowFinancialYear} is neither ${fileFinancialYear} nor the year before it, so no tax year file states what it charged`,
     );
   }
   const previous = taxData.corporation_tax_previous_financial_year;
-  if (previous?.small_profits_rate === undefined) {
+  const missing = PREVIOUS_FINANCIAL_YEAR_FIELDS.filter((field) => previous?.[field] === undefined);
+  if (missing.length > 0) {
     throw new Error(
-      `the financial year ${fileFinancialYear} tax data states no corporation_tax_previous_financial_year.small_profits_rate, so the ${rowDays} days in financial year ${rowFinancialYear} have no rate of their own`,
+      `the financial year ${fileFinancialYear} tax data states no corporation_tax_previous_financial_year.${missing.join(", no corporation_tax_previous_financial_year.")}, so the ${rowDays} days in financial year ${rowFinancialYear} have no figures of their own`,
     );
   }
-  return Math.round(previous.small_profits_rate * 100);
+  return ratesFromTable(previous);
 }
 
 /**
  * Corporation tax charged financial year by financial year, the way the
  * working sheet charges it: the chargeable profit is split across the two
- * years by day count, each share meets its own year's rate, and marginal
- * relief applies to a share that sits between the two limits, with both
- * limits apportioned by the same day count and then divided by one plus the
- * number of associated companies.
+ * years by day count, each share meets its own year's rates, and marginal
+ * relief applies to a share that sits between that year's two limits, with
+ * both limits apportioned by the same day count and then divided by one plus
+ * the number of associated companies.
+ *
+ * Every figure the charge turns on belongs to the row's own financial year,
+ * so a period straddling 1 April into a year that charged differently -- as
+ * FY2022 and FY2023 did, 19% flat against 25% with relief between 50,000 and
+ * 250,000 -- charges each part at what that part's year charged.
  *
  * Which band a row falls in is decided on its share of augmented profits --
  * the chargeable profit plus the exempt distributions received
@@ -154,11 +185,7 @@ export function smallProfitsRatePercentFor(taxData, rowFinancialYear, fileFinanc
  * @param {Array<{ year: number, days: number }>} financialYears - two entries, the second possibly nil
  * @param {number} totalDays
  * @param {Object} rates
- * @param {number[]} rates.smallProfitsRatePercent - one whole-number rate per financial year
- * @param {number} rates.mainRatePercent
- * @param {number} rates.marginalReliefFraction
- * @param {number} rates.lowerLimit
- * @param {number} rates.upperLimit
+ * @param {Array<{ smallProfitsRatePercent: number, mainRatePercent: number, marginalReliefFraction: number, lowerLimit: number, upperLimit: number }>} rates.perYear - what each financial year charges, in the same order as financialYears
  * @param {number} [rates.associatedCompanies] - default 0
  * @param {number} [rates.frankedInvestmentIncome] - default 0
  * @returns {{ rows: Array<{ year, days, profitShare, augmentedShare, ratePercent, taxBeforeRelief, marginalRelief, tax }>, tax: number, marginalRelief: number, taxBeforeRelief: number, augmentedProfits: number }}
@@ -167,16 +194,17 @@ export function apportionCorporationTax(profitChargeable, financialYears, totalD
   const associatedDivisor = 1 + (rates.associatedCompanies ?? 0);
   const augmentedProfits = profitChargeable + (rates.frankedInvestmentIncome ?? 0);
   const rows = financialYears.map((financialYear, index) => {
+    const yearRates = rates.perYear[index];
     const share = totalDays > 0 ? financialYear.days / totalDays : 0;
     const profitShare = profitChargeable > 0 ? profitChargeable * share : 0;
     const augmentedShare = augmentedProfits * share;
-    const lowerLimit = (rates.lowerLimit * share) / associatedDivisor;
-    const upperLimit = (rates.upperLimit * share) / associatedDivisor;
-    const ratePercent = augmentedShare <= lowerLimit ? rates.smallProfitsRatePercent[index] : rates.mainRatePercent;
+    const lowerLimit = (yearRates.lowerLimit * share) / associatedDivisor;
+    const upperLimit = (yearRates.upperLimit * share) / associatedDivisor;
+    const ratePercent = augmentedShare <= lowerLimit ? yearRates.smallProfitsRatePercent : yearRates.mainRatePercent;
     const taxBeforeRelief = (profitShare * ratePercent) / 100;
     const marginalRelief =
       augmentedShare > lowerLimit && augmentedShare < upperLimit
-        ? ((upperLimit - augmentedShare) * profitShare * rates.marginalReliefFraction) / augmentedShare
+        ? ((upperLimit - augmentedShare) * profitShare * yearRates.marginalReliefFraction) / augmentedShare
         : 0;
     return {
       year: financialYear.year,

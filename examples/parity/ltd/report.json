@@ -4,10 +4,10 @@
   "scenario": "Exported from ltd package",
   "yearEnd": "2027-10-31",
   "provenance": {
-    "formatVersion": "diya-gl-books/1",
-    "engineVersion": "1.1.2+0f27d99accb1",
+    "formatVersion": "diya-gl/1",
+    "engineVersion": "1.2.3+7dc0d3b8",
     "taxDataHash": "6a9c036b5f9c",
-    "templateHash": "0c18ceeaced4",
+    "templateHash": "d95b3df1e439",
     "templateScorecard": "101279 passed, 0 warnings, 0 failed",
     "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b"
   },
@@ -253,16 +253,6 @@
       "value": "0.25"
     },
     {
-      "key": "cell/Financialaccounts.xlsx!Admin!P12",
-      "unit": "money",
-      "value": "50000"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!Admin!P13",
-      "unit": "money",
-      "value": "250000"
-    },
-    {
       "key": "cell/Financialaccounts.xlsx!Admin!P14",
       "unit": "count",
       "value": "0"
@@ -278,14 +268,44 @@
       "value": "19"
     },
     {
-      "key": "cell/Financialaccounts.xlsx!Admin!P8",
+      "key": "cell/Financialaccounts.xlsx!Admin!R6",
       "unit": "rate",
       "value": "25"
     },
     {
-      "key": "cell/Financialaccounts.xlsx!Admin!P9",
+      "key": "cell/Financialaccounts.xlsx!Admin!R7",
+      "unit": "rate",
+      "value": "25"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!S6",
       "unit": "rate",
       "value": "0.015"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!S7",
+      "unit": "rate",
+      "value": "0.015"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!T6",
+      "unit": "money",
+      "value": "50000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!T7",
+      "unit": "money",
+      "value": "50000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!U6",
+      "unit": "money",
+      "value": "250000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!U7",
+      "unit": "money",
+      "value": "250000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AA126",
@@ -7676,44 +7696,12 @@
       "tolerance": "0.0001"
     },
     {
-      "key": "check/Admin P12: marginal relief lower limit",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "50000",
-      "actual": "50000",
-      "tolerance": "0.0001"
-    },
-    {
-      "key": "check/Admin P13: marginal relief upper limit",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "250000",
-      "actual": "250000",
-      "tolerance": "0.0001"
-    },
-    {
       "key": "check/Admin P14: number of associated companies",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
       "actual": "0",
       "tolerance": "0"
-    },
-    {
-      "key": "check/Admin P8: corporation tax main rate",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "25",
-      "actual": "25",
-      "tolerance": "0.0001"
-    },
-    {
-      "key": "check/Admin P9: marginal relief fraction",
-      "unit": "verdict",
-      "value": "pass",
-      "expected": "0.015",
-      "actual": "0.015",
-      "tolerance": "0.0001"
     },
     {
       "key": "check/Admin: accounting period is twelve months",
@@ -8084,12 +8072,44 @@
       "tolerance": "1"
     },
     {
+      "key": "check/CT: first tax row main rate = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "25",
+      "actual": "25",
+      "tolerance": "0"
+    },
+    {
       "key": "check/CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
       "expected": "779.284743543887",
       "actual": "779.284743543887",
       "tolerance": "1"
+    },
+    {
+      "key": "check/CT: first tax row marginal relief fraction = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.015",
+      "actual": "0.015",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: first tax row marginal relief lower limit = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "50000",
+      "actual": "50000",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: first tax row marginal relief upper limit = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "250000",
+      "actual": "250000",
+      "tolerance": "0"
     },
     {
       "key": "check/CT: first tax row profit = chargeable profit by its share of those days",
@@ -8108,7 +8128,7 @@
       "tolerance": "0"
     },
     {
-      "key": "check/CT: first tax row small profits rate = the rate its own financial year charged",
+      "key": "check/CT: first tax row small profits rate = what its own financial year charged",
       "unit": "verdict",
       "value": "pass",
       "expected": "19",
@@ -8172,12 +8192,44 @@
       "tolerance": "1"
     },
     {
+      "key": "check/CT: second tax row main rate = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "25",
+      "actual": "25",
+      "tolerance": "0"
+    },
+    {
       "key": "check/CT: second tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
       "expected": "1104.41678886352",
       "actual": "1104.41678886352",
       "tolerance": "1"
+    },
+    {
+      "key": "check/CT: second tax row marginal relief fraction = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.015",
+      "actual": "0.015",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: second tax row marginal relief lower limit = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "50000",
+      "actual": "50000",
+      "tolerance": "0"
+    },
+    {
+      "key": "check/CT: second tax row marginal relief upper limit = what its own financial year charged",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "250000",
+      "actual": "250000",
+      "tolerance": "0"
     },
     {
       "key": "check/CT: second tax row profit = chargeable profit by its share of those days",
@@ -8196,7 +8248,7 @@
       "tolerance": "0"
     },
     {
-      "key": "check/CT: second tax row small profits rate = the rate its own financial year charged",
+      "key": "check/CT: second tax row small profits rate = what its own financial year charged",
       "unit": "verdict",
       "value": "pass",
       "expected": "19",

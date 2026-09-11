@@ -485,7 +485,7 @@
                   {
                     "cell": "Financialaccounts.xlsx!CT600!AA126",
                     "test": "lt",
-                    "against": "Financialaccounts.xlsx!Admin!P8"
+                    "against": "Financialaccounts.xlsx!Admin!R6"
                   }
                 ],
                 "why": "the form ticks 329 for marginal relief or the small profits rate; the sheet prints neither tick"
