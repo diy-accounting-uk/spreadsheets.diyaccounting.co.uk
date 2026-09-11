@@ -124,8 +124,14 @@ checks, fixtures, or the judge.
 - **Runner conventions.** `additionalReads` results are keyed `<filename>!<sheetName>`.
   Month-keyed expectations follow the period-frame shift in `ltd.js` (dates shift by the gap
   between the book's declared period and the package's, with end-of-month clamping).
-- **Run LibreOffice tests serially.** Parallel vitest workers contend for soffice and
-  deadlock or time out: `npx vitest run --fileParallelism=false`. Tee anything long.
+- **Run LibreOffice tests serially, and put a progress signal on it.** Parallel vitest workers
+  contend for soffice and deadlock or time out: `npx vitest run --fileParallelism=false`. Serial
+  means slow — around 35 gated files, each spawning its own soffice — so arm something that says
+  it is alive before you start, not after you begin to doubt it. A fresh `soffice` in `ps` is the
+  honest progress signal; the log is not, because vitest's reporter is non-interactive once it is
+  piped to a file and buffers its per-file lines to the end. **An empty log is therefore evidence
+  of nothing.** Read the process table before concluding a long run is stuck: parents at 0% CPU in
+  state `S` with a child soffice seconds old is what healthy looks like here.
 - **Judge triage discipline.** When the LLM judge fails a run, classify each concern: a real
   defect is fixed at source with a new deterministic check (so its class stops needing the
   judge); a context gap gets a new indicator in `app/lib/report-indicators.js` or a per-product
