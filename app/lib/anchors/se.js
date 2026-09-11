@@ -26,6 +26,7 @@ import {
   STOCK_OPENING_COUNT_CELL,
   STOCK_CLOSING_COUNT_CELL,
   BUSINESS_DESCRIPTION_CELL,
+  DISALLOWABLE_PERCENT_CELLS,
   SALESINVOICE_VAT_REG_CELL,
   SALESINVOICE_TELEPHONE_CELL,
   SALESINVOICE_PRODUCT_DETAILS_COLUMNS,
@@ -392,6 +393,7 @@ function isVatInputCell(sheet, cellRef) {
 function isHubInputCell(sheet, cellRef) {
   if (sheet === "Business Details") return cellRef === "C5" || cellRef === BUSINESS_DESCRIPTION_CELL;
   if (sheet === "StockControl") return cellRef === STOCK_OPENING_COUNT_CELL || cellRef === STOCK_CLOSING_COUNT_CELL;
+  if (sheet === "VitalTax") return Object.values(DISALLOWABLE_PERCENT_CELLS).includes(cellRef);
   return false;
 }
 

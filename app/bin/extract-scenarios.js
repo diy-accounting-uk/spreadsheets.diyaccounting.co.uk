@@ -451,6 +451,23 @@ const advToml = formatScenarioToml(
     total_mileage: advBusinessMiles,
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
+    // A different percentage per category, so a disallowable formula wired to
+    // the wrong row fails.
+    disallowable: {
+      costOfGoods: 0.02,
+      paymentsToSubcontractors: 0.03,
+      wagesAndStaffCosts: 0.04,
+      carVanTravelExpenses: 0.25,
+      premisesRunningCosts: 0.05,
+      maintenanceCosts: 0.06,
+      adminCosts: 0.07,
+      advertisingCosts: 0.08,
+      interestOnBankOtherLoans: 0.09,
+      financeCharges: 0.1,
+      irrecoverableDebts: 0.11,
+      professionalFees: 0.12,
+      otherExpenses: 0.13,
+    },
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: seOpeningFixedAssets,
@@ -1049,6 +1066,9 @@ function writeBrickworkSe(vatRegistered) {
     ...brickworkLedgers(vatRegistered),
     opening_stock: brickBook.stock.openingValue,
     closing_stock: brickBook.stock.closingValue,
+    // A real sole trader with a van has a private-use motor percentage and
+    // nothing else disallowable.
+    disallowable: { carVanTravelExpenses: vatRegistered ? 0.15 : 0.2 },
   };
   if (byCode.v) expected.total_motor_net = Math.round(byCode.v / vatDivisor);
   if (byCode.l) expected.total_legal_net = Math.round(byCode.l / vatDivisor);

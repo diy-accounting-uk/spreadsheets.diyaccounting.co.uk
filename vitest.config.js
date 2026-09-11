@@ -9,6 +9,12 @@ const env = process.env;
 export default defineConfig({
   test: {
     env,
+    // Measured on the LibreOffice-gated files: serial 272s, two workers 150s,
+    // four 145s, eight 146s, all green at every setting. Four sits above CI's
+    // effective three and inside the six concurrent recalculations the
+    // experiment actually proved. Setting it here means nobody has to pass a
+    // flag and CI and local agree instead of each inheriting its own core count.
+    maxWorkers: Number(process.env.VITEST_MAX_WORKERS || 4),
     projects: [
       {
         test: {

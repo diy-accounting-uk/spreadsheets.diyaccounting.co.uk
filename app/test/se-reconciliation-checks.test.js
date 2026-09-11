@@ -604,10 +604,12 @@ describeCalc(
     it("walks the profit before tax to the profit the income tax sheet charges with nothing left over", () => {
       const bridge = seProfitBridge(results);
 
-      // Depreciation is added back and the grants move to box 29, which is
-      // the whole of the distance to the return's own net profit.
+      // Every disallowable expense is added back and the grants move to box
+      // 29, which is the whole of the distance to the return's own net
+      // profit. The add-back is box 46, the whole of boxes 32 to 45, not the
+      // depreciation row alone.
       expect(bridge.rows[0].value).toBe(results["Profit & Loss Account"].B39);
-      expect(bridge.rows[1].value).toBe(results["Profit & Loss Account"].B34);
+      expect(bridge.rows[1].value).toBe(results["SE Full"].O122);
       expect(bridge.computed).toBeCloseTo(results["Income Tax"].E5, 6);
       expect(bridge.residue).toBeCloseTo(0, 6);
     });

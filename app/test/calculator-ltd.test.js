@@ -104,14 +104,14 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   const pl = run.results["MnthP&L"];
 
   it("charges the year on the operating profit plus the non-deductible add-backs", () => {
-    expect(pl.B43).toBeCloseTo(171840.39, 2);
-    expect(ct.K5).toBeCloseTo(171840.39, 2);
+    expect(pl.B43).toBeCloseTo(171548.725, 2);
+    expect(ct.K5).toBeCloseTo(171548.725, 2);
     // Goodwill written off 2,500 and depreciation 13,740, the schedule's
     // charge on the van and the laptop brought forward plus the new plant.
     expect(ct.I7).toBeCloseTo(2500, 2);
     expect(ct.I8).toBeCloseTo(13740, 2);
     expect(ct.K10).toBeCloseTo(16240, 2);
-    expect(ct.K12).toBeCloseTo(188080.39, 2);
+    expect(ct.K12).toBeCloseTo(187788.725, 2);
   });
 
   it("deducts the capital allowances, netting the van's disposal against its own pool", () => {
@@ -123,7 +123,7 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct.I15).toBeCloseTo(52500, 2);
     expect(ct.I18).toBeCloseTo(7180, 2);
     expect(ct.K20).toBeCloseTo(64000, 2);
-    expect(ct.K22).toBeCloseTo(124080.39, 2);
+    expect(ct.K22).toBeCloseTo(123788.725, 2);
   });
 
   it("charges the gross bank interest and credits the tax deducted at source", () => {
@@ -134,10 +134,10 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   });
 
   it("reaches the chargeable profit the CT600 files", () => {
-    expect(ct.K28).toBeCloseTo(124419.9, 2);
-    expect(ct600.AJ92).toBeCloseTo(124419.9, 2);
-    expect(ct600.AJ110).toBeCloseTo(124419.9, 2);
-    expect(ct600.N126).toBeCloseTo(124419.9, 2);
+    expect(ct.K28).toBeCloseTo(124128.23, 2);
+    expect(ct600.AJ92).toBeCloseTo(124128.23, 2);
+    expect(ct600.AJ110).toBeCloseTo(124128.23, 2);
+    expect(ct600.N126).toBeCloseTo(124128.23, 2);
   });
 
   it("charges one financial year at the main rate less marginal relief", () => {
@@ -146,16 +146,16 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct.E33).toBe(2024);
     expect(ct.G33).toBe(25);
     // The company received 20,000 of exempt distributions, so augmented
-    // profits are 144,419.90 against a chargeable 124,419.90. 124,419.90 at
-    // 25% is 31,104.97; relief is (250,000 - 144,419.90) x 3/200, scaled by
-    // 124,419.90 / 144,419.90. Both figures are inside the band, so the
+    // profits are 144,128.23 against a chargeable 124,128.23. 124,128.23 at
+    // 25% is 31,032.06; relief is (250,000 - 144,128.23) x 3/200, scaled by
+    // 124,128.23 / 144,128.23. Both figures are inside the band, so the
     // distributions take relief away without being taxed.
     expect(ct.K29).toBeCloseTo(20000, 2);
-    expect(ct.K30).toBeCloseTo(144419.9, 2);
-    expect(ct.J33).toBeCloseTo(31104.97, 2);
-    expect(ct.L33).toBeCloseTo(1364.38, 2);
-    expect(ct.K35).toBeCloseTo(29740.59, 2);
-    expect(ct.K39).toBeCloseTo(29676.09, 2);
+    expect(ct.K30).toBeCloseTo(144128.23, 2);
+    expect(ct.J33).toBeCloseTo(31032.06, 2);
+    expect(ct.L33).toBeCloseTo(1367.71, 2);
+    expect(ct.K35).toBeCloseTo(29664.35, 2);
+    expect(ct.K39).toBeCloseTo(29599.845, 2);
   });
 
   it("files the same charge on the CT600 boxes", () => {
@@ -164,11 +164,11 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
     expect(ct600.AJ131).toBeCloseTo(ct.J33 + ct.J34, 6);
     expect(ct600.Y133).toBeCloseTo(ct.L33 + ct.L34, 6);
-    expect(ct600.Y135).toBeCloseTo(29740.59, 2);
+    expect(ct600.Y135).toBeCloseTo(29664.35, 2);
     expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
     expect(ct600.AJ154).toBeCloseTo(ct.K37, 6);
-    expect(ct600.AJ159).toBeCloseTo(29676.09, 2);
-    expect(ct600.AJ166).toBeCloseTo(29676.09, 2);
+    expect(ct600.AJ159).toBeCloseTo(29599.845, 2);
+    expect(ct600.AJ166).toBeCloseTo(29599.845, 2);
     expect(ct600.AK66).toBeCloseTo(341283.33, 2);
     expect(ct600.Z114).toBeCloseTo(20000, 2);
     // The effective rate the form states: the charge over the profit.
@@ -179,8 +179,8 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     const pubPl = run.results["PubP&L"];
     const balanceSheet = run.results.PubBalSht;
     expect(pubPl.F9).toBeCloseTo(341283.33, 2);
-    expect(pubPl.F50).toBeCloseTo(29740.59, 2);
-    expect(pubPl.F54).toBeCloseTo(127439.31, 2);
+    expect(pubPl.F50).toBeCloseTo(29664.35, 2);
+    expect(pubPl.F54).toBeCloseTo(127223.88, 2);
     // The land & buildings asset (cost 200,000, depreciation 40,000 brought
     // forward) sits in opening_fixed_assets rather than the year's additions
     // or disposals, and its class depreciates at 0% (ltd-2024.toml), so it
@@ -463,7 +463,7 @@ describe("a period straddling the FY2022 rate change", () => {
     });
 
     const asDue = charged(() => {});
-    expect(asShipped.charge - asDue.charge).toBeCloseTo(4061.63606, 4);
+    expect(asShipped.charge - asDue.charge).toBeCloseTo(4047.77236, 4);
     expect(asShipped.failed).toEqual([
       "CT600: corporation tax = first tax row gross tax",
       "CT600: marginal rate relief = the working sheet's relief",
@@ -632,7 +632,15 @@ describe("the straddling VAT periods reach the return forms from the book", () =
     );
     for (let quarter = 1; quarter <= 5; quarter++) {
       const sheet = `Vatreturns.xlsx!VATQtr${quarter}`;
-      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+      // The two sides total the same lines in a different order, so a figure
+      // whose parts do not land on a penny (a gross amount divided by six)
+      // can differ in its last bits. Cell for cell to six decimals, not bit
+      // for bit.
+      expect(Object.keys(fromBook[sheet]).sort(), sheet).toEqual(Object.keys(fromFixture[sheet]).sort());
+      for (const [cell, value] of Object.entries(fromBook[sheet])) {
+        if (typeof value === "number") expect(value, `${sheet}!${cell}`).toBeCloseTo(fromFixture[sheet][cell], 6);
+        else expect(value, `${sheet}!${cell}`).toEqual(fromFixture[sheet][cell]);
+      }
     }
     // The fifth quarter falls wholly outside the accounting year, so the
     // straddling entries are the only thing that puts a figure on it.

@@ -79,11 +79,11 @@ describe("the settlements the Precision Code Ltd book is missing", () => {
       "sale-from-receipt": 25,
       "purchase-from-payment": 19,
       "receipt-for-sale": 96,
-      "payment-for-purchase": 367,
+      "payment-for-purchase": 368,
     });
   });
 
-  // The bulk of these 507 are not a matching defect: "Various suppliers" and
+  // The bulk of these 508 are not a matching defect: "Various suppliers" and
   // "Various customers" bank lines settle many invoices in one lump the
   // counterparty+amount key cannot decompose, payroll (W), HMRC (RP), the
   // director's loan (DL) and card/cash transfers (X, BC, BB, K) never carry

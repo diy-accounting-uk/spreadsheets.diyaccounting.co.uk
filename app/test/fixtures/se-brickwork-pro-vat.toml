@@ -1600,6 +1600,9 @@ taxCode = "1257L"
 opening = 3000
 closing = 2500
 
+[disallowable]
+carVanTravelExpenses = 0.15
+
 [[opening_debtors]]
 customer = "Acme Developments"
 invoice = "INV-0310"

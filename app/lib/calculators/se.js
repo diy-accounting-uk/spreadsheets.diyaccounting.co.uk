@@ -83,6 +83,7 @@ export const PURCHASES_ANALYSIS_COLUMNS = {
   l: "Z",
   y: "AA",
   fa: "AB",
+  e: "AC",
 };
 
 // Bank.xlsx and Cash.xlsx analyse a receipt and a payment under different code
@@ -803,7 +804,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     pl[`${col}24`] = purchasesCode(index, "g");
     pl[`${col}25`] = purchasesCode(index, "v");
     pl[`${col}26`] = purchasesCode(index, "h");
-    pl[`${col}27`] = purchasesCode(index, "a");
+    // Advertising and business entertainment share one Purchases analysis
+    // column each, but the same Purchases row: box 24 is the combined figure.
+    pl[`${col}27`] = purchasesCode(index, "a") + purchasesCode(index, "e");
     pl[`${col}28`] = purchasesCode(index, "l");
     pl[`${col}29`] = -salesCode(index, "o");
     pl[`${col}30`] = bankPayments(bank, index, "J");
@@ -815,9 +818,12 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     pl[`${col}37`] = pl[`${col}19`] - pl[`${col}35`];
     pl[`${col}38`] = bankReceipts(bank, index, "K");
     pl[`${col}39`] = pl[`${col}37`] + pl[`${col}38`];
+    // Row 49: a memo of the entertainment share of row 27, outside the B35
+    // administrative-expenses total the way the template's own row 49 is.
+    pl[`${col}49`] = purchasesCode(index, "e");
   });
   const yearTotal = (row) => sheetSum(MONTH_COLS.map((col) => pl[`${col}${row}`]));
-  for (const row of [5, 6, 7, 8, 11, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 38]) {
+  for (const row of [5, 6, 7, 8, 11, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 38, 49]) {
     pl[`B${row}`] = yearTotal(row);
   }
   pl.B9 = pl.B5 + pl.B6 + pl.B7 + pl.B8;
@@ -826,6 +832,119 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   pl.B35 = sheetSum([21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].map((row) => pl[`B${row}`]));
   pl.B37 = pl.B19 - pl.B35;
   pl.B39 = pl.B37 + pl.B38;
+
+  // ── VitalTax ──
+  // The summary quotes the three product sales rows and the two direct cost
+  // rows, then a quarterly grid of fifteen expense categories: an allowable
+  // row read straight off the P&L beside a disallowable row that is a
+  // customer-set percentage of that same allowable row -- the source boxes
+  // 32 to 45 (SE Full's O66 to O118) read. Built ahead of the two self
+  // assessment returns because both read it.
+  const quarterSum = (row, quarter) => sheetSum(MONTH_COLS.slice(quarter * 3, quarter * 3 + 3).map((col) => pl[`${col}${row}`]));
+  const quarterSumRows = (rows, quarter) => sheetSum(rows.map((row) => quarterSum(row, quarter)));
+  const productSales = (quarter) => quarterSum(5, quarter) + quarterSum(6, quarter) + quarterSum(7, quarter);
+  const directCosts = (quarter) => quarterSum(14, quarter) + quarterSum(16, quarter);
+  const vitalTax = {
+    C5: productSales(0),
+    D5: productSales(1),
+    E5: productSales(2),
+    F5: productSales(3),
+    C7: directCosts(0),
+    D7: directCosts(1),
+    E7: directCosts(2),
+    F7: directCosts(3),
+  };
+  vitalTax.G5 = vitalTax.C5 + vitalTax.D5 + vitalTax.E5 + vitalTax.F5;
+  vitalTax.G7 = vitalTax.C7 + vitalTax.D7 + vitalTax.E7 + vitalTax.F7;
+
+  const QUARTER_COLS = [
+    ["C", 0],
+    ["D", 1],
+    ["E", 2],
+    ["F", 3],
+  ];
+
+  // Every allowable row the disallowable percentages multiply, keyed by its
+  // own row number, reading the P&L row (or rows) its caption names.
+  const ALLOWABLE_PL_ROWS = {
+    12: [21], // Wages and staff costs
+    13: [22], // Premises running costs
+    14: [23], // Repairs and renewals
+    15: [24], // General administrative expenses
+    16: [31], // Finance charges (HP interest, lease, bank charges)
+    17: [25, 26], // Car, van and travel expenses
+    18: [27], // Advertising (now the combined advertising + entertainment row)
+    19: [28], // Professional fees
+    20: [29], // Bad debts
+    21: [30], // Interest on bank and other loans
+    22: [32], // Other expenses
+    24: [15], // Payments to subcontractors
+    25: [49], // Business entertainment (the memo row)
+    26: [33, 34], // Loss on disposal + depreciation
+  };
+  for (const [row, plRows] of Object.entries(ALLOWABLE_PL_ROWS)) {
+    for (const [col, quarter] of QUARTER_COLS) vitalTax[`${col}${row}`] = quarterSumRows(plRows, quarter);
+    vitalTax[`G${row}`] = vitalTax[`C${row}`] + vitalTax[`D${row}`] + vitalTax[`E${row}`] + vitalTax[`F${row}`];
+  }
+
+  // The fifteen disallowable rows behind boxes 32 to 45. Thirteen are a
+  // customer-set percentage of the allowable row beside them; business
+  // entertainment (row 44) is wholly disallowable, so it echoes row 25
+  // outright, and depreciation (row 49) already has its own source on SE
+  // Full (O114 = P&L row 34), so it echoes that P&L row rather than taking a
+  // percentage of anything.
+  const DISALLOWABLE_ROWS = {
+    36: { allowableRow: 7, key: "costOfGoods" },
+    37: { allowableRow: 24, key: "paymentsToSubcontractors" },
+    38: { allowableRow: 12, key: "wagesAndStaffCosts" },
+    39: { allowableRow: 17, key: "carVanTravelExpenses" },
+    40: { allowableRow: 13, key: "premisesRunningCosts" },
+    41: { allowableRow: 14, key: "maintenanceCosts" },
+    42: { allowableRow: 15, key: "adminCosts" },
+    43: { allowableRow: 18, key: "advertisingCosts" },
+    45: { allowableRow: 21, key: "interestOnBankOtherLoans" },
+    46: { allowableRow: 16, key: "financeCharges" },
+    47: { allowableRow: 20, key: "irrecoverableDebts" },
+    48: { allowableRow: 19, key: "professionalFees" },
+    50: { allowableRow: 22, key: "otherExpenses" },
+  };
+  const disallowablePercent = scenario.disallowable || {};
+  for (const [row, { allowableRow, key }] of Object.entries(DISALLOWABLE_ROWS)) {
+    const percent = disallowablePercent[key] || 0;
+    for (const [col] of QUARTER_COLS) vitalTax[`${col}${row}`] = vitalTax[`${col}${allowableRow}`] * percent;
+    vitalTax[`G${row}`] = vitalTax[`C${row}`] + vitalTax[`D${row}`] + vitalTax[`E${row}`] + vitalTax[`F${row}`];
+  }
+  for (const [col] of QUARTER_COLS) vitalTax[`${col}44`] = vitalTax[`${col}25`];
+  vitalTax.G44 = vitalTax.C44 + vitalTax.D44 + vitalTax.E44 + vitalTax.F44;
+  for (const [col, quarter] of QUARTER_COLS) vitalTax[`${col}49`] = quarterSum(34, quarter);
+  vitalTax.G49 = vitalTax.C49 + vitalTax.D49 + vitalTax.E49 + vitalTax.F49;
+
+  // Row 29: the grand total of allowable expenses. Entertainment (row 25) is
+  // left out -- it is already inside row 18's P&L!C27:E27 read, which now
+  // carries the combined advertising-and-entertainment figure.
+  const ROW29_ROWS = [7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26];
+  for (const [col] of QUARTER_COLS) vitalTax[`${col}29`] = sheetSum(ROW29_ROWS.map((row) => vitalTax[`${col}${row}`]));
+  vitalTax.G29 = sheetSum(ROW29_ROWS.map((row) => vitalTax[`G${row}`]));
+
+  // The thirteen SE Full disallowable boxes (32 to 45 minus 44, which shares
+  // box 39 with advertising) read straight off VitalTax's annual column.
+  const seFullDisallowable = {
+    O66: vitalTax.G36,
+    O70: vitalTax.G37,
+    O74: vitalTax.G38,
+    O78: vitalTax.G39,
+    O82: vitalTax.G40,
+    O86: vitalTax.G41,
+    O90: vitalTax.G42,
+    O94: vitalTax.G43 + vitalTax.G44,
+    O98: vitalTax.G45,
+    O102: vitalTax.G46,
+    O106: vitalTax.G47,
+    O110: vitalTax.G48,
+    O118: vitalTax.G50,
+  };
+  // Box 46, boxes 32 to 45 summed. seShort.O64 (box 20) reads the same total.
+  const boxes32to45Total = sheetSum(Object.values(seFullDisallowable)) + pl.B34;
 
   // ── The fixed asset workbook ──
   const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E };
@@ -907,16 +1026,27 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     seShort.D38 > admin.F26
       ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
       : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
-  seShort.D46 = analysed(pl.B17);
-  seShort.O46 = analysed(pl.B28);
-  seShort.D51 = analysed(pl.B25 + pl.B26);
-  seShort.O51 = analysed(pl.B30 + pl.B31);
-  seShort.D55 = analysed(pl.B21);
-  seShort.O55 = analysed(pl.B24);
-  seShort.D60 = analysed(pl.B22);
-  seShort.O60 = analysed(pl.B27 + pl.B29 + pl.B32 + pl.B33);
-  seShort.D64 = analysed(pl.B23);
-  seShort.O64 = pl.B17 + pl.B35 - pl.B34;
+  // Boxes 11 to 19 go net of their own share of boxes 32 to 45: SA103S has no
+  // disallowable column of its own, so each allowable figure drops the
+  // matching SE Full box before it reaches the short return. Box 33
+  // (subcontractor payments) has no short-return box of its own -- SA103S
+  // folds it into box 11 -- so D46 drops both box 32's and box 33's shares.
+  seShort.D46 = analysed(pl.B17 - seFullDisallowable.O66 - seFullDisallowable.O70);
+  seShort.O46 = analysed(pl.B28 - seFullDisallowable.O110);
+  seShort.D51 = analysed(pl.B25 + pl.B26 - seFullDisallowable.O78);
+  seShort.O51 = analysed(pl.B30 + pl.B31 - seFullDisallowable.O98 - seFullDisallowable.O102);
+  seShort.D55 = analysed(pl.B21 - seFullDisallowable.O74);
+  seShort.O55 = analysed(pl.B24 - seFullDisallowable.O90);
+  seShort.D60 = analysed(pl.B22 - seFullDisallowable.O82);
+  // Box 19's base (B27+B29+B32+B33) never includes depreciation (P&L row 34
+  // sits outside it, in row 33's disposal loss instead), so nothing here
+  // reads box 44's O114 -- box 20 (O64) is where depreciation's disallowable
+  // share leaves the total. O94 already carries the whole of box 39's
+  // entertainment share (VitalTax row 44 echoes row 25, the entertainment
+  // memo's own annual total), so box 19 does not also subtract P&L!B49.
+  seShort.O60 = analysed(pl.B27 + pl.B29 + pl.B32 + pl.B33 - seFullDisallowable.O94 - seFullDisallowable.O106 - seFullDisallowable.O118);
+  seShort.D64 = analysed(pl.B23 - seFullDisallowable.O86);
+  seShort.O64 = pl.B17 + pl.B35 - boxes32to45Total;
   const shortNetProfit = seShort.D38 + seShort.O38 - seShort.O64;
   seShort.D71 = shortNetProfit >= 0 ? shortNetProfit : 0;
   seShort.O71 = shortNetProfit < 0 ? -shortNetProfit : 0;
@@ -969,43 +1099,23 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.D118 = pl.B32;
   seFull.D122 = pl.B17 + pl.B35;
   seFull.O114 = pl.B34;
-  // Boxes 32 to 45, the disallowable side of each expense category. None has
-  // a source yet -- a later change gives each one a book field -- so every
-  // cell but box 44's depreciation stays the blank the sheet prints today.
-  seFull.O66 = SHEET_BLANK;
-  seFull.O70 = SHEET_BLANK;
-  seFull.O74 = SHEET_BLANK;
-  seFull.O78 = SHEET_BLANK;
-  seFull.O82 = SHEET_BLANK;
-  seFull.O86 = SHEET_BLANK;
-  seFull.O90 = SHEET_BLANK;
-  seFull.O94 = SHEET_BLANK;
-  seFull.O98 = SHEET_BLANK;
-  seFull.O102 = SHEET_BLANK;
-  seFull.O106 = SHEET_BLANK;
-  seFull.O110 = SHEET_BLANK;
-  seFull.O118 = SHEET_BLANK;
-  // Box 46's own caption calls it the total of boxes 32 to 45, not a second
-  // read of the depreciation figure box 44 already carries. The sum stays
-  // equal to box 44 alone until the boxes above gain a source.
-  seFull.O122 = carry([seFull.O114], () =>
-    sheetSum([
-      seFull.O66,
-      seFull.O70,
-      seFull.O74,
-      seFull.O78,
-      seFull.O82,
-      seFull.O86,
-      seFull.O90,
-      seFull.O94,
-      seFull.O98,
-      seFull.O102,
-      seFull.O106,
-      seFull.O110,
-      seFull.O114,
-      seFull.O118,
-    ]),
-  );
+  // Boxes 32 to 45, the disallowable side of each expense category, sourced
+  // from the VitalTax percentages built earlier.
+  seFull.O66 = seFullDisallowable.O66;
+  seFull.O70 = seFullDisallowable.O70;
+  seFull.O74 = seFullDisallowable.O74;
+  seFull.O78 = seFullDisallowable.O78;
+  seFull.O82 = seFullDisallowable.O82;
+  seFull.O86 = seFullDisallowable.O86;
+  seFull.O90 = seFullDisallowable.O90;
+  seFull.O94 = seFullDisallowable.O94;
+  seFull.O98 = seFullDisallowable.O98;
+  seFull.O102 = seFullDisallowable.O102;
+  seFull.O106 = seFullDisallowable.O106;
+  seFull.O110 = seFullDisallowable.O110;
+  seFull.O118 = seFullDisallowable.O118;
+  // Box 46's own caption calls it the total of boxes 32 to 45.
+  seFull.O122 = carry([seFull.O114], () => boxes32to45Total);
   const fullNetProfit = seFull.D55 + seFull.O55 - seFull.D122;
   seFull.D129 = fullNetProfit >= 0 ? fullNetProfit : 0;
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
@@ -1126,25 +1236,6 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   forecast.C46 = carry([forecast.C42, forecast.C43, forecast.C44, forecast.C45], () =>
     sheetSum([forecast.C42, forecast.C43, forecast.C44, forecast.C45]),
   );
-
-  // ── VitalTax ──
-  // The summary quotes the three product sales rows and the two direct cost
-  // rows, nothing else.
-  const quarterSum = (row, quarter) => sheetSum(MONTH_COLS.slice(quarter * 3, quarter * 3 + 3).map((col) => pl[`${col}${row}`]));
-  const productSales = (quarter) => quarterSum(5, quarter) + quarterSum(6, quarter) + quarterSum(7, quarter);
-  const directCosts = (quarter) => quarterSum(14, quarter) + quarterSum(16, quarter);
-  const vitalTax = {
-    C5: productSales(0),
-    D5: productSales(1),
-    E5: productSales(2),
-    F5: productSales(3),
-    C7: directCosts(0),
-    D7: directCosts(1),
-    E7: directCosts(2),
-    F7: directCosts(3),
-  };
-  vitalTax.G5 = vitalTax.C5 + vitalTax.D5 + vitalTax.E5 + vitalTax.F5;
-  vitalTax.G7 = vitalTax.C7 + vitalTax.D7 + vitalTax.E7 + vitalTax.F7;
 
   // ── The results, keyed the way the reconciliation reads them ──
   const results = {

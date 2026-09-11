@@ -131,10 +131,10 @@ describe("scoreDataHalves against a package built for a year end the fixture doe
       expect(score.exportedLines).toBe(score.fixtureLines);
       expect(score.groupedFixtureLines - score.coarseMatches).toBe(0);
       expect(score.coarseMatches - score.accountMatches).toBe(0);
-      // 11 of the 697 fixture lines carry a field the inventory does not yet
-      // excuse (a structural gap unrelated to the date shift: the same 686
+      // 11 of the 698 fixture lines carry a field the inventory does not yet
+      // excuse (a structural gap unrelated to the date shift: the same 687
       // holds at zero shift too) -- held steady here rather than papered over.
-      expect(score.wholeLineMatches).toBe(686);
+      expect(score.wholeLineMatches).toBe(687);
     } finally {
       rmSync(scratchDir, { recursive: true, force: true });
     }

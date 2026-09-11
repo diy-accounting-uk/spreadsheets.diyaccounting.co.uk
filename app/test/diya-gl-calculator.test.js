@@ -278,8 +278,8 @@ describe("calculateFromDiyaGl — SE", () => {
 
   it("B39: profit before tax is gross profit less the administrative expenses", () => {
     const pl = seResults()["Profit & Loss Account"];
-    expect(pl.B35).toBeCloseTo(149373.65, 3);
-    expect(pl.B39).toBeCloseTo(171773.02, 2);
+    expect(pl.B35).toBeCloseTo(149665.317, 3);
+    expect(pl.B39).toBeCloseTo(171481.35, 2);
   });
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {

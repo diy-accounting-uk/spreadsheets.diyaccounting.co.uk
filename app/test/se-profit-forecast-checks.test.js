@@ -59,44 +59,45 @@ const sePackageYearEnd = (taxData) => `${seTaxYearStart(taxData) + 1}-04-05`;
 
 const FORECAST_SHEET = "Profit Forecast";
 
-// The taxable profit is the same in both years: the forecast's 171,875.39
+// The taxable profit is the same in both years: the forecast's 171,481.35
 // accounting profit, plus 13,912 of disposal loss and depreciation added back,
-// less 64,000 of capital allowances. So is every income tax figure, because
-// the allowance, the taper threshold and the bands have not moved between
-// them: the allowance is 12,570 less half of the 21,787.39 above the 100,000
-// taper threshold, so 1,676.30; 37,700 at 20% is 7,540; the remaining
-// 82,411.09 at 40% is 32,964.44; nothing reaches the additional rate.
+// less 64,000 of capital allowances, so 121,393.35. So is every income tax
+// figure, because the allowance, the taper threshold and the bands have not
+// moved between them: the allowance is 12,570 less half of the 21,393.35 above
+// the 100,000 taper threshold, so 1,873.33; that leaves 119,520.03 taxable;
+// 37,700 at 20% is 7,540; the remaining 81,820.03 at 40% is 32,728.01; nothing
+// reaches the additional rate.
 //
 // Class 4 is what separates the two. On the 2025-26 rates it is 6% between
-// 12,570 and 50,270 (2,262) plus 2% on the 71,517.39 above (1,430.35). On the
+// 12,570 and 50,270 (2,262) plus 2% on the 71,123.35 above (1,422.47). On the
 // 2023-24 rates the main rate is still 9%, so the same band gives 3,393.
 const RATE_YEARS = [
   {
     label: "2025-26",
     taxDataFile: "se-2025-2026.toml",
     forecast: {
-      C39: 121685.016666666,
-      C40: 1727.491666666,
-      C41: 119957.525,
+      C39: 121393.35,
+      C40: 1873.325,
+      C41: 119520.025,
       C42: 7540,
-      C43: 32903.01,
+      C43: 32728.01,
       C44: 0,
-      C45: 3690.300333333,
-      C46: 44133.310333333,
+      C45: 3684.467,
+      C46: 43952.477,
     },
   },
   {
     label: "2023-24",
     taxDataFile: "se-2023-2024.toml",
     forecast: {
-      C39: 121685.016666666,
-      C40: 1727.491666666,
-      C41: 119957.525,
+      C39: 121393.35,
+      C40: 1873.325,
+      C41: 119520.025,
       C42: 7540,
-      C43: 32903.01,
+      C43: 32728.01,
       C44: 0,
-      C45: 4821.300333333,
-      C46: 45264.310333333,
+      C45: 4815.467,
+      C46: 45083.477,
     },
   },
 ];

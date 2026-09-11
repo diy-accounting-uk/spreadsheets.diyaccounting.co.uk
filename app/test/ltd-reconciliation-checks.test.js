@@ -800,7 +800,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(29740.591949, 4);
+      expect(ct.K35).toBeCloseTo(29664.351207686, 4);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -809,8 +809,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(31104.97446, 4);
-      expect(ct600.Y133).toBeCloseTo(1364.382511, 4);
+      expect(ct600.AJ131).toBeCloseTo(31032.057793209, 4);
+      expect(ct600.Y133).toBeCloseTo(1367.706585522, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank
@@ -1330,24 +1330,24 @@ describeCalc(
 
     it("settles each creditor on the row its bank code names", () => {
       const tb = results.TrialBalance;
-      // Trade creditors: 2,400 brought forward plus 134,992.25 invoiced, less
+      // Trade creditors: 2,400 brought forward plus 135,342.25 invoiced, less
       // 104,960 paid under CR, the 1,600 of CIS the journal's certificates
       // withheld and the 20,000 the two hire purchase agreements finance,
       // which EH28 moves onto the long-term row.
-      expect(tb.EJ28).toBeCloseTo(-10832.25, 2);
+      expect(tb.EJ28).toBeCloseTo(-11182.25, 2);
       // CIS: 1,600 withheld on the two sub-contractor invoices and all of it
       // remitted under RC by the year end.
       expect(tb.EJ32).toBeCloseTo(0, 2);
-      // VAT: 1,500 brought forward, 70,816.67 of output VAT less 22,498.71 of
+      // VAT: 1,500 brought forward, 70,816.67 of output VAT less 22,557.05 of
       // input, against 40,682.17 paid under RV. What is left is the fourth
       // quarter, still to pay.
-      expect(tb.EJ33).toBeCloseTo(-9135.79, 2);
+      expect(tb.EJ33).toBeCloseTo(-9077.455, 2);
       // PAYE: 20,078.40 deducted by the payroll and the same paid over under
       // RP, month by month.
       expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
-      expect(tb.EJ35).toBeCloseTo(-29676.09, 2);
+      expect(tb.EJ35).toBeCloseTo(-29599.85, 2);
     });
 
     it("writes each CIS certificate into the purchase journal's own column", () => {
