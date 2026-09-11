@@ -10,8 +10,9 @@
 
 import JSZip from "jszip";
 import { execSync } from "child_process";
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, cpSync } from "fs";
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync, rmSync, existsSync, cpSync, renameSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, basename } from "path";
+import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 import { randomBytes, createHash } from "crypto";
 import { buildSheetMap, loadSharedStrings, readCellValue, escapeXml } from "./xlsx-parts.js";
@@ -180,54 +181,46 @@ export async function applyCellWrites(xlsxBuffer, cellWrites) {
   });
 }
 
-export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options = {}) {
+// Writes the scenario data into the workbook, recalculates it, and leaves the
+// finished xlsx in `destination`.
+async function recalculateWorkbook(xlsxBuffer, cellWrites, destination) {
   const soffice = getLibreOffice();
   const workDir = resolve(tmpdir(), `spreadsheet-test-${randomBytes(4).toString("hex")}`);
   mkdirSync(workDir, { recursive: true });
 
   try {
-    // 1. Write data into the xlsx
-    const inputPath = resolve(workDir, "input.xlsx");
+    const inputPath = resolve(workDir, CACHE_WORKBOOK);
     writeFileSync(inputPath, await applyCellWrites(xlsxBuffer, cellWrites));
 
-    // 2. Recalculate via LibreOffice headless
     // Direct xlsx→xlsx doesn't recalculate. Roundtrip through xls forces recalc.
     // Use a unique UserInstallation per invocation to avoid profile lock conflicts.
     const userProfile = `file://${resolve(workDir, "lo_profile")}`;
     xslRoundtrip(soffice, userProfile, workDir, inputPath);
 
-    // 3. Read back computed values
-    const recalcPath = resolve(workDir, "input.xlsx");
-    const recalcBuffer = readFileSync(recalcPath);
-    const recalcZip = await JSZip.loadAsync(recalcBuffer);
-    const recalcSheetMap = await buildSheetMap(recalcZip);
+    mkdirSync(destination, { recursive: true });
+    cpSync(inputPath, resolve(destination, CACHE_WORKBOOK));
+  } finally {
+    rmSync(workDir, { recursive: true, force: true });
+  }
+}
 
-    const sharedStrings = await loadSharedStrings(recalcZip);
+export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options = {}) {
+  const material = { kind: "single-file", workbook: bufferDigest(xlsxBuffer), writes: cellWrites };
+  const handle = await withRecalculatedFiles(material, CACHE_WORKBOOK, (destination) =>
+    recalculateWorkbook(xlsxBuffer, cellWrites, destination),
+  );
 
-    const results = {};
-    for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
-      const sheetPath = recalcSheetMap.get(sheetName);
-      if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in recalculated workbook`);
+  try {
+    const recalcPath = resolve(handle.dir, CACHE_WORKBOOK);
 
-      const xml = await recalcZip.file(sheetPath).async("string");
-      results[sheetName] = {};
-
-      for (const cellRef of cellRefs) {
-        results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
-      }
-    }
-
-    // Optionally save the recalculated xlsx
     if (options.saveRecalculatedTo) {
-      const saveDir = dirname(options.saveRecalculatedTo);
-      mkdirSync(saveDir, { recursive: true });
+      mkdirSync(dirname(options.saveRecalculatedTo), { recursive: true });
       cpSync(recalcPath, options.saveRecalculatedTo);
     }
 
-    return results;
+    return await readWorkbookCells(recalcPath, cellReads, (sheetName) => `Sheet "${sheetName}" not found in recalculated workbook`);
   } finally {
-    // Clean up
-    rmSync(workDir, { recursive: true, force: true });
+    handle.release();
   }
 }
 
@@ -239,6 +232,290 @@ function hasLibreOffice() {
   } catch {
     return false;
   }
+}
+
+// ── Recalculation cache ─────────────────────────────────────────────────────
+//
+// Test files recalculate the same fixture over and over and then only read the
+// result: nine of them recalculate the SE advanced scenario, six the Ltd full
+// scenario. The recalculation is a pure function of its inputs, so the first
+// caller pays for it and the rest read the files it produced.
+//
+// The cache is content addressed. Its key is a digest of everything the
+// recalculation reads: the workbook bytes handed in (which already carry the
+// template, the tax data, the generator's output and the year end), the cell
+// writes (the fixture and its period shift), the recalculation order, the
+// driving code in this module and the two it recalculates through, the
+// LibreOffice build, the host, and the calendar day, because the templates
+// carry TODAY() and a workbook recalculated yesterday holds yesterday's dates.
+// Change any of those and the key changes with them.
+//
+// A miss always recalculates. Nothing here can make a test skip or fail: if
+// the entry is absent the work happens, if another worker holds the lock this
+// one waits, and if that wait runs out or the lock goes stale it recalculates
+// on its own into a temporary directory. Callers only ever read the directory
+// they are handed, and anything that mutates a package copies it out first.
+
+const CACHE_FORMAT = "v1";
+const CACHE_WORKBOOK = "input.xlsx";
+const CACHE_READY = ".complete";
+const CACHE_HEARTBEAT = "heartbeat";
+const CACHE_WAIT_MS = Number(process.env.CALC_CACHE_WAIT_MS || 20 * 60 * 1000);
+const CACHE_POLL_MS = 250;
+const CACHE_HEARTBEAT_MS = 2000;
+const CACHE_LOCK_STALE_MS = 30000;
+const CACHE_ENTRY_TTL_MS = 24 * 60 * 60 * 1000;
+
+// On under vitest, off everywhere else. The product pipeline recalculates once
+// per package and has nothing to share, so it keeps the behaviour it had.
+function cacheEnabled() {
+  const flag = process.env.CALC_CACHE;
+  if (flag === "off" || flag === "0") return false;
+  if (flag === "on" || flag === "1") return true;
+  return Boolean(process.env.VITEST || process.env.VITEST_WORKER_ID);
+}
+
+function cacheRoot() {
+  return process.env.CALC_CACHE_DIR || resolve(tmpdir(), "diya-recalculation-cache", CACHE_FORMAT);
+}
+
+let cachedVersion = null;
+function libreOfficeVersion() {
+  if (cachedVersion === null) {
+    cachedVersion = execSync(`"${getLibreOffice()}" --version`, { stdio: "pipe" }).toString().trim();
+  }
+  return cachedVersion;
+}
+
+// The code that decides how a workbook is recalculated: this module drives the
+// roundtrip and the settling sweep, xlsx-parts reads and writes the cells, and
+// link-caches rewrites what each workbook believes about its siblings.
+let cachedDriverDigest = null;
+function driverDigest() {
+  if (cachedDriverDigest === null) {
+    const libDir = dirname(fileURLToPath(import.meta.url));
+    const hash = createHash("sha256");
+    for (const file of ["spreadsheet-runner.js", "xlsx-parts.js", "link-caches.js"]) {
+      hash.update(file);
+      hash.update(readFileSync(resolve(libDir, file)));
+    }
+    cachedDriverDigest = hash.digest("hex");
+  }
+  return cachedDriverDigest;
+}
+
+// Object key order carries no meaning in a write map -- no two keys address
+// the same cell -- so sorting it keeps two call sites that build the same
+// writes in a different order on the same cache entry.
+function canonical(value) {
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonical(value[key])]),
+    );
+  }
+  return value;
+}
+
+function bufferDigest(buffer) {
+  return createHash("sha256").update(Buffer.from(buffer)).digest("hex");
+}
+
+function recalculationKey(material) {
+  const payload = {
+    format: CACHE_FORMAT,
+    inputs: canonical(material),
+    engine: libreOfficeVersion(),
+    driver: driverDigest(),
+    host: `${process.platform}-${process.arch}-node${process.versions.node.split(".")[0]}`,
+    day: new Date().toISOString().slice(0, 10),
+  };
+  return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+}
+
+// Every recalculation this process actually runs, appended where a later run
+// can count them. This is the cache's own evidence that sharing happened.
+function noteRecalculation(key, label) {
+  try {
+    const root = cacheRoot();
+    mkdirSync(root, { recursive: true });
+    appendFileSync(resolve(root, "recalculations.log"), `${new Date().toISOString()} pid=${process.pid} ${key.slice(0, 12)} ${label}\n`);
+  } catch {
+    // bookkeeping only
+  }
+  if (process.env.CALC_CACHE_LOG) console.error(`[calc-cache] miss ${key.slice(0, 12)} ${label}`);
+}
+
+function noteCacheHit(key, label) {
+  if (process.env.CALC_CACHE_LOG) console.error(`[calc-cache] hit ${key.slice(0, 12)} ${label}`);
+}
+
+let sweptThisProcess = false;
+function sweepStaleEntries(root) {
+  if (sweptThisProcess) return;
+  sweptThisProcess = true;
+  try {
+    const cutoff = Date.now() - CACHE_ENTRY_TTL_MS;
+    for (const name of readdirSync(root)) {
+      if (name === "recalculations.log") continue;
+      const path = resolve(root, name);
+      if (statSync(path).mtimeMs < cutoff) rmSync(path, { recursive: true, force: true });
+    }
+  } catch {
+    // a cache that cannot be swept still works
+  }
+}
+
+function sleep(ms) {
+  return new Promise((done) => setTimeout(done, ms));
+}
+
+// A lock whose holder died leaves a directory nothing will ever complete. The
+// holder touches a heartbeat while it works, so a waiter can tell the two
+// apart instead of waiting out the whole timeout on a corpse.
+function lockIsAbandoned(lock) {
+  try {
+    return Date.now() - statSync(resolve(lock, CACHE_HEARTBEAT)).mtimeMs > CACHE_LOCK_STALE_MS;
+  } catch {
+    return !existsSync(lock);
+  }
+}
+
+async function recalculateIntoTemporary(label, produce) {
+  const dir = resolve(tmpdir(), `recalculated-${randomBytes(6).toString("hex")}`);
+  mkdirSync(dir, { recursive: true });
+  noteRecalculation("uncached", label);
+  try {
+    await produce(dir);
+  } catch (error) {
+    rmSync(dir, { recursive: true, force: true });
+    throw error;
+  }
+  return { dir, fromCache: false, release: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+// Hands back a directory holding the recalculated files, either from the cache
+// or freshly produced. `produce(destination)` must write the finished files
+// into the directory it is given.
+async function withRecalculatedFiles(material, label, produce) {
+  if (!cacheEnabled()) return recalculateIntoTemporary(label, produce);
+
+  const root = cacheRoot();
+  const key = recalculationKey(material);
+  const entry = resolve(root, key);
+  const lock = resolve(root, `${key}.lock`);
+  mkdirSync(root, { recursive: true });
+  sweepStaleEntries(root);
+
+  const deadline = Date.now() + CACHE_WAIT_MS;
+  for (;;) {
+    if (existsSync(resolve(entry, CACHE_READY))) {
+      noteCacheHit(key, label);
+      return { dir: entry, fromCache: true, release: () => {} };
+    }
+
+    let held = true;
+    try {
+      mkdirSync(lock);
+    } catch {
+      held = false;
+    }
+
+    if (held) {
+      const building = resolve(root, `${key}.building-${randomBytes(4).toString("hex")}`);
+      const beat = setInterval(() => {
+        try {
+          writeFileSync(resolve(lock, CACHE_HEARTBEAT), `${Date.now()}`);
+        } catch {
+          // the lock is gone; the build still finishes
+        }
+      }, CACHE_HEARTBEAT_MS);
+      beat.unref();
+      writeFileSync(resolve(lock, CACHE_HEARTBEAT), `${Date.now()}`);
+      try {
+        mkdirSync(building, { recursive: true });
+        noteRecalculation(key, label);
+        await produce(building);
+        writeFileSync(resolve(building, CACHE_READY), `${label}\n`);
+        rmSync(entry, { recursive: true, force: true });
+        renameSync(building, entry);
+        return { dir: entry, fromCache: false, release: () => {} };
+      } catch (error) {
+        rmSync(building, { recursive: true, force: true });
+        throw error;
+      } finally {
+        clearInterval(beat);
+        rmSync(lock, { recursive: true, force: true });
+      }
+    }
+
+    if (lockIsAbandoned(lock)) {
+      rmSync(lock, { recursive: true, force: true });
+      continue;
+    }
+    if (Date.now() > deadline) return recalculateIntoTemporary(label, produce);
+    await sleep(CACHE_POLL_MS);
+  }
+}
+
+// ── Reading computed values back ────────────────────────────────────────────
+
+async function readWorkbookCells(filePath, cellReads, missingSheet) {
+  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+
+  const results = {};
+  for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
+    const sheetPath = sheetMap.get(sheetName);
+    if (!sheetPath) throw new Error(missingSheet(sheetName));
+
+    const xml = await zip.file(sheetPath).async("string");
+    results[sheetName] = {};
+    for (const cellRef of cellRefs) {
+      results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
+    }
+  }
+  return results;
+}
+
+// Reads from additional recalculated files (e.g. Vat.xlsx, Bank.xlsx).
+// additionalReads = { "Vat.xlsx": { "VATQtr1": ["G7","G15","G17"] }, "Bank.xlsx": { "Mar": ["A2"] } }
+// Results are keyed "<filename>!<sheetName>" -- several leaf files carry
+// identically named sheets (Bank.xlsx Mar, Cash.xlsx Mar, every month tab in
+// Sales.xlsx and Purchases.xlsx), and a bare sheet-name key would silently
+// merge them.
+async function readPackageResults(packageDir, cellReads, readFile, additionalReads) {
+  const results = await readWorkbookCells(
+    resolve(packageDir, readFile),
+    cellReads,
+    (sheetName) => `Sheet "${sheetName}" not found in recalculated ${readFile}`,
+  );
+
+  if (!additionalReads) return results;
+
+  for (const [filename, sheetReads] of Object.entries(additionalReads)) {
+    const filePath = resolve(packageDir, filename);
+    if (!existsSync(filePath)) continue;
+    const fileZip = await JSZip.loadAsync(readFileSync(filePath));
+    const fileSheetMap = await buildSheetMap(fileZip);
+    const fileSharedStrings = await loadSharedStrings(fileZip);
+
+    for (const [sheetName, cellRefs] of Object.entries(sheetReads)) {
+      const sheetPath = fileSheetMap.get(sheetName);
+      if (!sheetPath) continue;
+      const xml = await fileZip.file(sheetPath).async("string");
+      const resultKey = `${filename}!${sheetName}`;
+      if (!results[resultKey]) results[resultKey] = {};
+      for (const cellRef of cellRefs) {
+        results[resultKey][cellRef] = readCellValue(xml, cellRef, fileSharedStrings);
+      }
+    }
+  }
+  return results;
 }
 
 // ── Helpers for multi-file recalculation ────────────────────────────────────
@@ -382,6 +659,36 @@ const MAX_SETTLE_ROUNDS = 4;
 // @returns {Object} - { "SheetName": { "A1": value, ... }, ... }
 
 export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads, readFile, options = {}) {
+  const material = {
+    kind: "multi-file",
+    readFile,
+    postHubRecalc: options.postHubRecalc || [],
+    files: Object.keys(fileBuffers)
+      .sort()
+      .map((filename) => [filename, bufferDigest(fileBuffers[filename])]),
+    writes: fileWrites,
+  };
+
+  const handle = await withRecalculatedFiles(material, readFile, (destination) =>
+    recalculatePackage(fileBuffers, fileWrites, readFile, options, destination),
+  );
+
+  try {
+    if (options.saveRecalculatedTo) {
+      mkdirSync(options.saveRecalculatedTo, { recursive: true });
+      for (const filename of Object.keys(fileBuffers)) {
+        cpSync(resolve(handle.dir, filename), resolve(options.saveRecalculatedTo, filename));
+      }
+    }
+    return await readPackageResults(handle.dir, cellReads, readFile, options.additionalReads);
+  } finally {
+    handle.release();
+  }
+}
+
+// Writes the scenario data across the package, recalculates it until the
+// cross-file links settle, and leaves the finished workbooks in `destination`.
+async function recalculatePackage(fileBuffers, fileWrites, readFile, options, destination) {
   const soffice = getLibreOffice();
   const workDir = resolve(tmpdir(), `spreadsheet-multi-${randomBytes(4).toString("hex")}`);
   const sourceDir = resolve(workDir, "source");
@@ -501,63 +808,11 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
       await recalculate(filename);
     }
 
-    // 3. Read results from the specified readFile
-    const recalcPath = resolve(workDir, readFile);
-    const recalcBuffer = readFileSync(recalcPath);
-    const recalcZip = await JSZip.loadAsync(recalcBuffer);
-    const recalcSheetMap = await buildSheetMap(recalcZip);
-
-    const sharedStrings = await loadSharedStrings(recalcZip);
-
-    const results = {};
-    for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
-      const sheetPath = recalcSheetMap.get(sheetName);
-      if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in recalculated ${readFile}`);
-
-      const xml = await recalcZip.file(sheetPath).async("string");
-      results[sheetName] = {};
-
-      for (const cellRef of cellRefs) {
-        results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
-      }
+    // 3. Hand the finished package over
+    mkdirSync(destination, { recursive: true });
+    for (const filename of filenames) {
+      cpSync(resolve(workDir, filename), resolve(destination, filename));
     }
-
-    // Read from additional recalculated files (e.g. Vat.xlsx, Bank.xlsx).
-    // options.additionalReads = { "Vat.xlsx": { "VATQtr1": ["G7","G15","G17"] }, "Bank.xlsx": { "Mar": ["A2"] } }
-    // Results are keyed "<filename>!<sheetName>" — several leaf files carry
-    // identically named sheets (Bank.xlsx Mar, Cash.xlsx Mar, every month
-    // tab in Sales.xlsx and Purchases.xlsx), and a bare sheet-name key would
-    // silently merge them.
-    if (options.additionalReads) {
-      for (const [filename, sheetReads] of Object.entries(options.additionalReads)) {
-        const filePath = resolve(workDir, filename);
-        if (!existsSync(filePath)) continue;
-        const fileZip = await JSZip.loadAsync(readFileSync(filePath));
-        const fileSheetMap = await buildSheetMap(fileZip);
-        const fileSharedStrings = await loadSharedStrings(fileZip);
-
-        for (const [sheetName, cellRefs] of Object.entries(sheetReads)) {
-          const sheetPath = fileSheetMap.get(sheetName);
-          if (!sheetPath) continue;
-          const xml = await fileZip.file(sheetPath).async("string");
-          const resultKey = `${filename}!${sheetName}`;
-          if (!results[resultKey]) results[resultKey] = {};
-          for (const cellRef of cellRefs) {
-            results[resultKey][cellRef] = readCellValue(xml, cellRef, fileSharedStrings);
-          }
-        }
-      }
-    }
-
-    // Optionally save recalculated files
-    if (options.saveRecalculatedTo) {
-      mkdirSync(options.saveRecalculatedTo, { recursive: true });
-      for (const filename of filenames) {
-        cpSync(resolve(workDir, filename), resolve(options.saveRecalculatedTo, filename));
-      }
-    }
-
-    return results;
   } finally {
     rmSync(workDir, { recursive: true, force: true });
   }
