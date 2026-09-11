@@ -6,11 +6,11 @@
 // would round on its own.
 //
 // The Self Employed engine's own Profit Forecast!C41 (forecast.taxableIncome,
-// the advanced fixture) lands on 119957.52499999986: close enough to the
-// exact 119957.525 that Excel's own recalculation prints that a naive
+// the advanced fixture) lands on 119520.02499999988: close enough to the
+// exact 119520.025 that Excel's own recalculation prints that a naive
 // Intl.NumberFormat rounds it down to the penny below, while canonicalForUnit
 // (which every reconciliation comparison already goes through) rounds it up
-// to 119957.53, matching the sheet. shell.js's fmtMoney calls canonicalForUnit
+// to 119520.03, matching the sheet. shell.js's fmtMoney calls canonicalForUnit
 // before formatting for exactly this reason; this test proves the gap it
 // closes and pins the value it must resolve to.
 
@@ -40,14 +40,14 @@ describe("the DIYA-GL page formats a money figure at the reconciliation's own pr
     const scenario = loadScenario(resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml"));
     const c41 = calculateSeCells({}, [], TAX_DATA, scenario)["Profit Forecast"].C41;
 
-    expect(c41).toBe(119957.52499999986);
+    expect(c41).toBe(119520.02499999988);
     // A naive Intl.NumberFormat reads that noise as a genuine value just
     // below the half-penny boundary and rounds down.
-    expect(moneyFmt.format(c41)).toBe("£119,957.52");
+    expect(moneyFmt.format(c41)).toBe("£119,520.02");
     // canonicalForUnit absorbs the noise at a working precision first, so it
     // rounds the same way the reconciliation's own Excel-side figure does.
-    expect(canonicalForUnit(String(c41), "money")).toBe("119957.53");
-    expect(fmtMoney(c41)).toBe("£119,957.53");
+    expect(canonicalForUnit(String(c41), "money")).toBe("119520.03");
+    expect(fmtMoney(c41)).toBe("£119,520.03");
   });
 
   it("still resolves a clean value the same way with or without the working-precision pass", () => {

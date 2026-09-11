@@ -2401,6 +2401,14 @@ code = "l"
 amount = 300
 account = "5800"
 
+[[purchases.aug]]
+date = 2025-08-12
+supplier = "The Ivy"
+description = "Client dinner, project kickoff"
+code = "a"
+amount = 350
+account = "5502"
+
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"

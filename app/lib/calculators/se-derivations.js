@@ -205,7 +205,9 @@ function quarterlyFromMonthlyGrid(pl) {
 // adjustment mixed in, read off app/lib/scenario-extractor.js's own account
 // maps by way of the code letters scenario transactions already carry.
 const SALES_QUARTERLY_ROW = { a: 5, b: 6, c: 7, d: 8 };
-const PURCHASES_QUARTERLY_ROW = { s: 14, c: 15, o: 16, w: 21, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32 };
+// Codes a (advertising) and e (business entertainment) both feed row 27 --
+// box 24's own combined figure -- so both land on it here too.
+const PURCHASES_QUARTERLY_ROW = { s: 14, c: 15, o: 16, w: 21, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, e: 27, l: 28, y: 32 };
 
 const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 const MONTH_SHEET_NAMES = {

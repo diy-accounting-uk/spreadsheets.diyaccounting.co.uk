@@ -206,6 +206,27 @@ export const BUSINESS_DESCRIPTION_CELL = "C17";
 export const STOCK_OPENING_COUNT_CELL = "AB6";
 export const STOCK_CLOSING_COUNT_CELL = "AB30";
 
+// VitalTax column I, rows 36 to 50: the customer's own percentage of each
+// expense category that is private use or otherwise disallowable, the input
+// behind SE Full's boxes 32 to 45. Verified against the template -- row 44
+// (business entertainment) and row 49 (depreciation) take no percentage, so
+// they carry no key here. See PLAN_SE_TEMPLATE_GAPS.md section 3.1.
+export const DISALLOWABLE_PERCENT_CELLS = {
+  costOfGoods: "I36",
+  paymentsToSubcontractors: "I37",
+  wagesAndStaffCosts: "I38",
+  carVanTravelExpenses: "I39",
+  premisesRunningCosts: "I40",
+  maintenanceCosts: "I41",
+  adminCosts: "I42",
+  advertisingCosts: "I43",
+  interestOnBankOtherLoans: "I45",
+  financeCharges: "I46",
+  irrecoverableDebts: "I47",
+  professionalFees: "I48",
+  otherExpenses: "I50",
+};
+
 // Fixedassets.xlsx Schedule sheet -- verified against the template:
 //   Existing assets (bought before the year start): rows 8-10 land,
 //   14-18 plant, 22-26 fixtures, 30-34 computers, 38-54 motor. Each row:
@@ -471,6 +492,14 @@ function composeWrites(scenario, targetStartYear) {
     hubWrites.StockControl = {};
     if (scenario.stock.opening !== undefined) hubWrites.StockControl[STOCK_OPENING_COUNT_CELL] = scenario.stock.opening;
     if (scenario.stock.closing !== undefined) hubWrites.StockControl[STOCK_CLOSING_COUNT_CELL] = scenario.stock.closing;
+  }
+  // VitalTax's disallowable percentages: a book setting per category, not a
+  // transaction, so nothing here moves the trial balance.
+  if (scenario.disallowable) {
+    hubWrites.VitalTax = {};
+    for (const [key, cell] of Object.entries(DISALLOWABLE_PERCENT_CELLS)) {
+      if (scenario.disallowable[key] !== undefined) hubWrites.VitalTax[cell] = scenario.disallowable[key];
+    }
   }
   if (scenario.business || scenario.metadata) {
     hubWrites["Business Details"] = {};
@@ -1250,7 +1279,11 @@ const SALES_MONTHLY_TIE_ROWS = { a: 5, b: 6, c: 7, d: 8, g: 11 };
 // negated -- a template quirk, not a naming error; verified against the
 // formula (`C29 = -[2]Apr!$U$1`).
 const SALES_BAD_DEBT_ROW = 29;
-const PURCHASES_MONTHLY_TIE_ROWS = { c: 15, o: 16, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32 };
+// Row 27 combines codes a (advertising) and e (business entertainment) -- box
+// 24's own caption -- so both places below that read this map special-case
+// code a to add code e's figure, rather than the map carrying two codes on
+// one row.
+const PURCHASES_MONTHLY_TIE_ROWS = { c: 15, o: 16, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32, e: 49 };
 
 // The P&L's own caption for each tied row, taken from column A of the
 // template. The netting table names a category the way the statement it
@@ -1269,10 +1302,11 @@ const PL_ROW_CAPTIONS = {
   24: "General Administrative Expenses",
   25: "Motor Expenses",
   26: "Travel Hotel & Subsistence",
-  27: "Advertising & Promotion",
+  27: "Advertising Promotion & Entertainment",
   28: "Legal & Professional Fees",
   29: "Bad Debts written off",
   32: "Other Expenses",
+  49: "Business Entertainment (memo)",
 };
 
 // Wagesinterface and Payslips!Payment both hold one row per month, Apr at
@@ -1720,7 +1754,11 @@ export function profitBridge(results) {
   // figures free to diverge from it if one of them is wrong.
   const rows = [
     { label: "Profit before tax per the profit and loss account", cell: "Profit & Loss Account!B39", value: num(pl.B39) },
-    { label: "Add depreciation charged in the accounts", cell: "Profit & Loss Account!B34", value: num(pl.B34) },
+    // Depreciation was the only disallowable expense while every other
+    // category's percentage sat at nil; now the whole of box 46 (boxes 32
+    // to 45, disallowable percentages included) is added back, not
+    // depreciation alone.
+    { label: "Add disallowable expenses added back (box 46)", cell: "SE Full!O122", value: num(seFull?.O122) },
     { label: "Less grants, taxed as other business income below", cell: "Profit & Loss Account!B11", value: -num(pl.B11) },
     { label: "Less annual investment allowance (box 23)", cell: "SE Short!D80", value: -num(seShort.D80) },
     { label: "Less small-balance allowance (box 24)", cell: "SE Short!D85", value: -num(seShort.D85) },
@@ -1850,7 +1888,14 @@ export function categoryNetting(results, scenario) {
 
   for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) plRow("sales", sales, code, row);
   plRow("sales", sales, "o", SALES_BAD_DEBT_ROW, -1);
-  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) plRow("purchases", purchases, code, row);
+  // Box 24 combines advertising and business entertainment in one row, so
+  // the "a" netting row carries both codes' combined gross and net.
+  const purchasesRow27 = {
+    gross: { a: (purchases.gross.a || 0) + (purchases.gross.e || 0) },
+    net: { a: (purchases.net.a || 0) + (purchases.net.e || 0) },
+  };
+  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS))
+    plRow("purchases", code === "a" ? purchasesRow27 : purchases, code, row);
 
   // Stock-coded purchases reach the materials line together with the year's
   // stock movement, so the movement comes off the line before the two sides
@@ -2127,11 +2172,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // the whole of the difference between the two profits. Both are exact
       // identities; the profit was previously compared to a rebuilt figure
       // with a one per cent tolerance.
-      const plDepreciation = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+      // Box 20 (O64) reads 'SE Full'!O122 now, boxes 32 to 45 summed -- the
+      // depreciation charge plus every other disallowable category's own
+      // percentage. Depreciation alone was the whole of that total before
+      // any category had a percentage.
+      const sa103fBoxesTotal = num(results["SE Full"]?.O122);
       check(
         "SA103S: total expenses = cost of sales + admin expenses less depreciation",
         num(seShort.O64),
-        num(pl.B17) + num(pl.B35) - plDepreciation,
+        num(pl.B17) + num(pl.B35) - sa103fBoxesTotal,
       );
       // D71 only ever carries a profit (verified against the template: D71 =
       // IF((D38+O38-O64)>=0,D38+O38-O64,0)) -- a loss-making year floors it
@@ -2417,12 +2466,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const sa103fCounterparts = [
         ["D55", "D38", "box 15 turnover"],
         ["O55", "O38", "box 16 other business income"],
-        ["D74", "D55", "box 19 wages, salaries and staff costs"],
-        ["D78", "D51", "box 20 car, van and travel expenses"],
-        ["D82", "D60", "box 21 rent, rates, power and insurance"],
-        ["D86", "D64", "box 22 repairs and maintenance"],
-        ["D90", "O55", "box 23 phone, stationery and office costs"],
-        ["D110", "O46", "box 28 accountancy, legal and professional fees"],
         ["O129", "O71", "box 48 net loss"],
         ["D139", "D80", "box 49 annual investment allowance"],
         ["O144", "D85", "box 55 100% and other enhanced capital allowances"],
@@ -2443,6 +2486,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const [fullCell, shortCell, caption] of sa103fCounterparts) {
         if (!shortAnalysisShown && shortExpenseBoxes.has(shortCell)) continue;
         check(`SA103F ${caption}: full return (${fullCell}) = short return (${shortCell})`, num(seFull[fullCell]), num(sa103s[shortCell]));
+      }
+
+      // Boxes 19 to 23 and 28: SA103S has no disallowable column, so each of
+      // these six drops its own share of boxes 32 to 45 before it reaches
+      // the short return.
+      const sa103fNetOfDisallowable = [
+        ["D74", "D55", "O74", "box 19 wages, salaries and staff costs"],
+        ["D78", "D51", "O78", "box 20 car, van and travel expenses"],
+        ["D82", "D60", "O82", "box 21 rent, rates, power and insurance"],
+        ["D86", "D64", "O86", "box 22 repairs and maintenance"],
+        ["D90", "O55", "O90", "box 23 phone, stationery and office costs"],
+        ["D110", "O46", "O110", "box 28 accountancy, legal and professional fees"],
+      ];
+      for (const [fullCell, shortCell, disallowableCell, caption] of sa103fNetOfDisallowable) {
+        if (!shortAnalysisShown) continue;
+        check(
+          `SA103F ${caption}: short return (${shortCell}) = full return (${fullCell}) less its own disallowable share (${disallowableCell})`,
+          num(sa103s[shortCell]),
+          num(seFull[fullCell]) - num(seFull[disallowableCell]),
+        );
       }
 
       // Where the two forms differ by design. The full return has a
@@ -2695,7 +2758,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       }
 
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        const net = netOfVat(byCode[code] || 0, rate) + (code === "v" ? monthlyMileageClaims[MONTH_KEYS[i]] || 0 : 0);
+        let net = netOfVat(byCode[code] || 0, rate) + (code === "v" ? monthlyMileageClaims[MONTH_KEYS[i]] || 0 : 0);
+        // Box 24 combines advertising and business entertainment in one row.
+        if (code === "a") net += netOfVat(byCode.e || 0, rate);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }

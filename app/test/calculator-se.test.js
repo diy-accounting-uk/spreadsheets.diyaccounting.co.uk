@@ -48,9 +48,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 873 },
-  { name: "se-brickwork-pro-vat", checkCount: 807 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 796 },
+  { name: "se-scenario-advanced", checkCount: 886 },
+  { name: "se-brickwork-pro-vat", checkCount: 819 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 808 },
 ];
 
 function loadFixture(name) {
@@ -490,20 +490,7 @@ describe("Self Employed engine: the read scope", () => {
         "SE Full!D156",
         "SE Full!D160",
         "SE Full!D179",
-        "SE Full!O102",
-        "SE Full!O106",
-        "SE Full!O110",
-        "SE Full!O118",
         "SE Full!O139",
-        "SE Full!O66",
-        "SE Full!O70",
-        "SE Full!O74",
-        "SE Full!O78",
-        "SE Full!O82",
-        "SE Full!O86",
-        "SE Full!O90",
-        "SE Full!O94",
-        "SE Full!O98",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",
         "Vat.xlsx!Vatinterface!G4",
@@ -658,7 +645,14 @@ describe("Self Employed engine: from the diya-gl book", () => {
     const fromFixture = calculateFromDiyaGl(book, lines, "se", TAX_DATA, loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml")));
     for (let quarter = 1; quarter <= 5; quarter++) {
       const sheet = `Vat.xlsx!VATQtr${quarter}`;
-      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+      // A TOML round trip re-parses a repeating-decimal net-of-VAT amount to
+      // a float that agrees with the live figure to the penny but not
+      // always to the last bit, so this compares each cell to six decimal
+      // places rather than requiring bit-identical objects.
+      expect(Object.keys(fromBook[sheet] || {}).sort(), sheet).toEqual(Object.keys(fromFixture[sheet] || {}).sort());
+      for (const cell of Object.keys(fromBook[sheet] || {})) {
+        expect(fromBook[sheet][cell], `${sheet}!${cell}`).toBeCloseTo(fromFixture[sheet][cell], 6);
+      }
     }
     // The fifth quarter falls wholly outside the accounting year, so the
     // straddling entries are the only thing that puts a figure on it.
