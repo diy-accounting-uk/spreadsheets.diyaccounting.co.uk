@@ -35,7 +35,7 @@ import {
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
-import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
+import { apportionCorporationTax, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
   buildProfitBridge,
@@ -4277,44 +4277,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           lowerLimit: "marginal relief lower limit",
           upperLimit: "marginal relief upper limit",
         };
-        for (const adminRow of ADMIN_FINANCIAL_YEAR_ROWS) {
-          const rowDays = num(ct[`A${adminRow === 6 ? 33 : 34}`]);
-          const stated = financialYearRatesFor(taxData, num(admin[`K${adminRow}`]), packageFinancialYear, rowDays);
+        const statedRates = ADMIN_FINANCIAL_YEAR_ROWS.map((adminRow, index) =>
+          financialYearRatesFor(taxData, num(admin[`K${adminRow}`]), packageFinancialYear, num(index === 0 ? ct.A33 : ct.A34)),
+        );
+        for (const [index, adminRow] of ADMIN_FINANCIAL_YEAR_ROWS.entries()) {
           for (const [figure, column] of Object.entries(ADMIN_RATE_COLUMNS)) {
             check(
               `CT: ${ROW_NAMES[adminRow]} tax row ${FIGURE_NAMES[figure]} = what its own financial year charged`,
               num(admin[`${column}${adminRow}`]),
-              stated[figure],
+              statedRates[index][figure],
               0,
             );
           }
         }
+
+        // The charge the period's profit actually bears, against the
+        // statutory computation worked from the tax year file rather than
+        // from the rate cells the sheet charged by: each financial year's
+        // share of the profit at the figures that year's own table states.
+        const statutory = apportionCorporationTax(
+          profit,
+          [
+            { year: num(admin.K6), days: num(ct.A33) },
+            { year: num(admin.K7), days: num(ct.A34) },
+          ],
+          days,
+          {
+            perYear: statedRates,
+            associatedCompanies: expected.business?.associated_companies ?? 0,
+            frankedInvestmentIncome: expected.business?.franked_investment_income ?? 0,
+          },
+        ).tax;
+        check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
       }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
-
-      // The charge the period's profit actually bears, against the statutory
-      // computation worked independently of the sheet: the accounting period
-      // off the package's own year end, split at 1 April, each part at the
-      // figures its own financial year charged.
-      if (packageYearEnd) {
-        const periodEnd = new Date(`${packageYearEnd}T00:00:00Z`);
-        // A Ltd year end is a month end, so the period opens on the first of
-        // the month after it, a year back.
-        const periodStart = new Date(Date.UTC(periodEnd.getUTCFullYear() - 1, periodEnd.getUTCMonth() + 1, 1));
-        const { years, totalDays } = financialYearsInPeriod(periodStart, periodEnd);
-        const packageFinancialYear = financialYearNumber(periodEnd);
-        const statutory = apportionCorporationTax(profit, years, totalDays, {
-          perYear: years.map((financialYear) =>
-            financialYearRatesFor(taxData, financialYear.year, packageFinancialYear, financialYear.days),
-          ),
-          associatedCompanies: expected.business?.associated_companies ?? 0,
-          frankedInvestmentIncome: expected.business?.franked_investment_income ?? 0,
-        }).tax;
-        check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
-      }
     }
   }
 
