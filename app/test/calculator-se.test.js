@@ -360,14 +360,35 @@ describe("Self Employed engine: the checks are breakable", () => {
       failing: ["P&L: Depreciation (row 34, summed) = Schedule I1"],
     },
     {
-      // Every box in the 32-to-45 block sits at nil on this fixture, so this
-      // gives one a figure rather than moving one that already carries one --
-      // the same shape of change a later book field will make for real.
-      what: "box 32's own cell, blank on this fixture",
+      // Box 32 carries a real, nonzero percentage on this fixture; this
+      // moves the figure rather than giving a blank one its first value.
+      what: "box 32's own cell",
       corrupt: (results) => {
         results["SE Full"].O66 = 500;
       },
       failing: ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45"],
+    },
+    {
+      // Box 35's disallowable share is read twice: once into box 46's total,
+      // once out of box 20 (D51) on the short return. A cell that feeds two
+      // checks has to fail both, or one of them is reading a stale copy.
+      what: "box 35's disallowable share",
+      corrupt: (results) => {
+        results["SE Full"].O78 = 500;
+      },
+      failing: [
+        "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+        "SA103F box 20 car, van and travel expenses: short return (D51) = full return (D78) less its own disallowable share (O78)",
+      ],
+    },
+    {
+      // August's own entertainment figure, the one month this fixture's
+      // transaction falls in.
+      what: "August's entertainment column on the profit and loss account",
+      corrupt: (results) => {
+        results["Profit & Loss Account"].G49 += 100;
+      },
+      failing: ["P&L aug col G49 = Purchases.xlsx e-coded net"],
     },
   ];
 
