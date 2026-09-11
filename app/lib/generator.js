@@ -21,6 +21,7 @@ import {
   payrollYearStart,
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
+import { smallProfitsRatePercentFor, financialYearNumber } from "./tax/corporation-tax.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -505,9 +506,24 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   // Year-end date — the ONE date cell. All others are formula-driven from F21.
   numericEdits.F21 = yearEndSerial;
 
-  // Corporation Tax rates (stored as whole-number percentages in the spreadsheet)
-  numericEdits.P6 = Math.round(ct.small_profits_rate * 100);
-  numericEdits.P7 = Math.round(ct.small_profits_rate * 100);
+  // Corporation Tax rates (stored as whole-number percentages in the
+  // spreadsheet). P6 and P7 are the two tax rows' own financial years, which
+  // carry different small profits rates whenever the period reaches back over
+  // 1 April into a year that charged a different one.
+  const financialYearRows = ltdAdminFinancialYearRows(yearEndSerial);
+  const fileFinancialYear = financialYearNumber(fromExcelSerial(yearEndSerial));
+  numericEdits.P6 = smallProfitsRatePercentFor(
+    taxData,
+    financialYearRows.K6,
+    fileFinancialYear,
+    financialYearRows.N6 - financialYearRows.L6 + 1,
+  );
+  numericEdits.P7 = smallProfitsRatePercentFor(
+    taxData,
+    financialYearRows.K7,
+    fileFinancialYear,
+    financialYearRows.N7 - financialYearRows.L7 + 1,
+  );
   numericEdits.P8 = Math.round(ct.main_rate * 100);
 
   // Marginal relief: the fraction and the two profit limits it tapers between

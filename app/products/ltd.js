@@ -35,7 +35,7 @@ import {
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
-import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
+import { calculateCorporationTax, smallProfitsRatePercentFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
   buildProfitBridge,
@@ -263,6 +263,13 @@ export const ADMIN_ASSOCIATED_COMPANIES_CELL = "P14";
 // Everything else is a single figure in column E. The sheet's own audit
 // checks (B13, B18, B26) compare each total against its parts, and E37
 // checks the whole opening balance sheet balances.
+//
+// Column Q beside the directors' names carries the two corporation tax
+// figures the journals cannot produce: Q5 the loss brought forward from the
+// previous year, and Q6 the exempt distributions the company received, which
+// the computation adds to taxable profits to reach augmented profits.
+
+export const OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL = "Q6";
 
 export const OPENING_BANK_COLUMNS = {
   current_account: "G",
@@ -562,6 +569,10 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     if (biz.town) bd.J4 = biz.town;
     if (biz.postcode) bd.N6 = biz.postcode;
     if (biz.utr) bd.O3 = biz.utr;
+    // The exempt distributions received, which the corporation tax
+    // computation adds to taxable profits before it tests the marginal relief
+    // limits. Written even when it is none, for the same reason Admin P14 is.
+    bd[OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL] = biz.franked_investment_income ?? 0;
 
     const directors = (scenario.employees || []).filter((e) => e.isDirector);
     if (directors[0]?.name) bd.E5 = directors[0].name;
@@ -1117,6 +1128,7 @@ export const CELL_MAP = [
   ["OpenAccounts", "J4",  "Registered Office Town",            "gl-bus:organizationAddress",                "Business Details", 0],
   ["OpenAccounts", "N6",  "Postcode",                          "gl-bus:organizationAddress",                "Business Details", 0],
   ["OpenAccounts", "O3",  "Tax Reference per CT603 Notice",    "gl-taf:taxRegistrationNumber",              "Business Details", 0],
+  ["OpenAccounts", "Q6",  "Franked investment income",         "gl-cor:amount (ct600.box620)",              "Business Details", 1],
   // ── Opening Balance Sheet (OpenAccounts sheet) ──
   ["OpenAccounts", "E13", "Tangible assets (net book value)",  "gl-cor:amount (opening.fixedAssets)",  "Opening Balance Sheet", 1],
   ["OpenAccounts", "E15", "Stock at cost",                     "accounts.assets.1100 (opening)",       "Opening Balance Sheet", 1],
@@ -1180,6 +1192,8 @@ export const CELL_MAP = [
   [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K29", "Add: franked investment income", "gl-cor:amount (ct600.box620)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K30", "**Augmented profits**",       "gl-cor:amount (ct600.augmentedProfits)", "Corporation Tax working sheet", 0],
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box600)","Corporation Tax working sheet", 0],
   // ── The CT600's own tax boxes, Version 3 (2026) numbering, so the report
@@ -1201,6 +1215,7 @@ export const CELL_MAP = [
   ["CT600", "Y135",  "**Box 440: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box440)", "CT600 as filed", 0],
   ["CT600", "Y118",  "Box 327: associated companies, first financial year",  "gl-cor:count (ct600.box327)", "CT600 as filed", 1],
   ["CT600", "Y120",  "Box 328: associated companies, second financial year", "gl-cor:count (ct600.box328)", "CT600 as filed", 1],
+  ["CT600", "Z114",  "Box 620: franked investment income",                  "gl-cor:amount (ct600.box620)", "CT600 as filed", 1],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1460,9 +1475,10 @@ const PL_ROW_CAPTIONS = {
 // Admin cells the generator injects from the tax-year TOML, and the TOML
 // path each one carries. Whole-number percentages where the sheet holds a
 // percentage, fractions where it holds a fraction.
+// P6 and P7, the two tax rows' small profits rates, are not here: each row
+// takes the rate of the financial year it names, so they are checked against
+// their own year rather than against one figure from the file.
 const ADMIN_TAX_DATA_CELLS = [
-  ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
-  ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
   ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
   ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
   ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
@@ -1622,6 +1638,10 @@ export function standardReads() {
   for (const cell of CT600_CELLS) add("CT600", cell);
 
   for (const [cell] of ADMIN_TAX_DATA_CELLS) add("Admin", cell);
+  // The two tax rows' small profits rates, which are not in that table
+  // because each row takes its own financial year's rate.
+  add("Admin", "P6");
+  add("Admin", "P7");
   add("Admin", "P14");
   add("Admin", "F21");
   add("Admin", "B9");
@@ -3979,6 +3999,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // scenario's own business block, defaulting to none.
     check("Admin P14: number of associated companies", num(admin.P14), expected.business?.associated_companies ?? 0, 0);
 
+    // The exempt distributions received are a business fact too, entered on
+    // the opening accounts beside the loss brought forward.
+    check(
+      "Opening accounts: franked investment income = the distributions the scenario received",
+      num(results.OpenAccounts?.[OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL]),
+      expected.business?.franked_investment_income ?? 0,
+    );
+
     // F21 is the year-end seed every other date in the package cascades
     // from. Its own anchor row and the three published documents that quote
     // the year end all have to land on it. The seed itself is measured
@@ -4121,6 +4149,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // period, so both boxes carry the same figure; box 328 follows box 385
     // and the rest of the second row blank when the period does not
     // straddle two financial years.
+    check("CT600: franked investment income = the working sheet's figure", num(ct600.Z114), num(corporationTax.K29));
     check("CT600: associated companies, first financial year = Admin P14", num(ct600.Y118), num(admin.P14));
     if (num(corporationTax.A34) > 0) {
       check("CT600: associated companies, second financial year = Admin P14", num(ct600.Y120), num(admin.P14));
@@ -4159,6 +4188,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // row takes its share of the chargeable profit (F33 =
       // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate.
       const days = num(ct.A35);
+      check(
+        "CT: franked investment income = the exempt distributions entered on the opening accounts",
+        num(ct.K29),
+        num(results.OpenAccounts?.[OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL]),
+      );
+      check("CT: augmented profits = the chargeable profit and the franked investment income", num(ct.K30), profit + num(ct.K29));
       check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
       if (days > 0) {
         check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
@@ -4170,47 +4205,70 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("CT: second tax row tax = its gross tax less its marginal relief", num(ct.I34), num(ct.J34) - num(ct.L34));
       check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
-      // Each row's share of the profit is charged at the small profits rate
-      // up to its share of the lower limit and at the main rate above it,
-      // with marginal relief tapering the gap up to the upper limit. Both
-      // limits are shared out over the period the same way the profit is,
-      // then divided by one plus the number of associated companies.
+      // Which band a row falls in is decided on augmented profits: the
+      // chargeable profit plus the exempt distributions received. Both limits
+      // are shared out over the period the same way the profit is, then
+      // divided by one plus the number of associated companies. Relief
+      // tapers the gap up to the upper limit and is then scaled by the row's
+      // taxable share over its augmented share, so distributions take relief
+      // away without ever being taxed.
       const admin = results.Admin;
       if (admin && days > 0) {
         const associatedDivisor = 1 + num(admin.P14);
         const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days / associatedDivisor;
         const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days / associatedDivisor;
-        const reliefFor = (rowProfit, rowDays) =>
-          rowProfit > lowerLimit(rowDays) && rowProfit < upperLimit(rowDays) ? (upperLimit(rowDays) - rowProfit) * num(admin.P9) : 0;
-        const rateFor = (rowProfit, rowDays, smallProfitsRate) => (rowProfit <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
+        const augmentedShare = (rowDays) => (num(ct.K30) * rowDays) / days;
+        const reliefFor = (rowProfit, rowDays) => {
+          const augmented = augmentedShare(rowDays);
+          if (!(augmented > lowerLimit(rowDays) && augmented < upperLimit(rowDays))) return 0;
+          return ((upperLimit(rowDays) - augmented) * rowProfit * num(admin.P9)) / augmented;
+        };
+        const rateFor = (rowDays, smallProfitsRate) => (augmentedShare(rowDays) <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
 
         check(
-          "CT: first tax row rate = the rate its share of the profit falls in",
+          "CT: first tax row rate = the rate its share of the augmented profits falls in",
           num(ct.G33),
-          rateFor(num(ct.F33), num(ct.A33), num(admin.P6)),
+          rateFor(num(ct.A33), num(admin.P6)),
           0,
         );
         check(
-          "CT: second tax row rate = the rate its share of the profit falls in",
+          "CT: second tax row rate = the rate its share of the augmented profits falls in",
           num(ct.G34),
-          rateFor(num(ct.F34), num(ct.A34), num(admin.P7)),
+          rateFor(num(ct.A34), num(admin.P7)),
           0,
         );
         check(
-          "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+          "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
           num(ct.L33),
           reliefFor(num(ct.F33), num(ct.A33)),
         );
         check(
-          "CT: second tax row marginal relief = its share of the profit against its share of the limits",
+          "CT: second tax row marginal relief = its share of the augmented profits against its share of the limits",
           num(ct.L34),
           reliefFor(num(ct.F34), num(ct.A34)),
         );
 
-        // One tax-year TOML feeds both rows, so a period straddling a rate
-        // change would need two. Every financial year in the data set from
-        // 2020 on carries the same rates as the one after it.
-        check("CT: both financial year rows carry the same small profits rate", num(admin.P6), num(admin.P7), 0);
+        // Each row's small profits rate is its own financial year's. The
+        // year the package was generated for supplies its own; a row whose
+        // year is the one before it takes that year's rate from the same
+        // file, and a row with no days charges nothing either way.
+        // The package is generated from the tax year file named for the
+        // financial year its year end falls in: the second row's year when
+        // the period straddles 1 April, and the first row's when the year
+        // ends on 31 March and the period lies wholly inside one.
+        const packageFinancialYear = num(ct.A34) > 0 ? num(admin.K7) : num(admin.K6);
+        check(
+          "CT: first tax row small profits rate = the rate its own financial year charged",
+          num(admin.P6),
+          smallProfitsRatePercentFor(taxData, num(admin.K6), packageFinancialYear, num(ct.A33)),
+          0,
+        );
+        check(
+          "CT: second tax row small profits rate = the rate its own financial year charged",
+          num(admin.P7),
+          smallProfitsRatePercentFor(taxData, num(admin.K7), packageFinancialYear, num(ct.A34)),
+          0,
+        );
       }
 
       // Tax outstanding is the charge less any income tax already deducted
@@ -4222,6 +4280,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const statutory = calculateCorporationTax(profit, {
         ...taxData.corporation_tax,
         associated_companies: expected.business?.associated_companies ?? 0,
+        franked_investment_income: expected.business?.franked_investment_income ?? 0,
       }).corporationTax;
       check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }

@@ -482,6 +482,7 @@ smallProfitsLimit = 50000.00
 mainRate = 0.2500
 mainRateThreshold = 250000.00
 associatedCompanies = 0
+frankedInvestmentIncome = 20000.00
 
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000.00

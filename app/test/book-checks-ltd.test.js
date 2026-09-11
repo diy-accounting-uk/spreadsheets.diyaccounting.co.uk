@@ -360,11 +360,19 @@ describe("the engine checks a book field can fail", () => {
     return document.values.filter((v) => v.key.startsWith("check/") && v.value !== "pass").map((v) => v.key.slice("check/".length));
   }
 
-  it("an opening balance sheet entry a pound out fails the trial balance's own audit check", () => {
+  it("an opening stock entry out by ten pounds fails every check that reads the opening balance sheet", () => {
     expect(engineChecksFailing(FULL.lines)).toEqual([]);
 
+    // Each of these checks allows a pound either way, so the corruption has
+    // to clear that: a one-pound change lands on the tolerance itself and
+    // turns on the last bit of the residue.
     const lines = clone(FULL.lines);
-    lines.find((l) => l.documentReference === "OB-001" && l.accountMainID === "1100").amount = 10001;
-    expect(engineChecksFailing(lines)).toEqual(["Trial Balance: audit accuracy (EJ91)"]);
+    lines.find((l) => l.documentReference === "OB-001" && l.accountMainID === "1100").amount = 10010;
+    expect(engineChecksFailing(lines)).toEqual([
+      "Opening balance sheet: accuracy check (E37)",
+      "Stock: opening carried in from the opening balance sheet",
+      "Trial Balance: audit accuracy (EJ91)",
+      "Trial Balance: opening balances audit check (D91)",
+    ]);
   });
 });

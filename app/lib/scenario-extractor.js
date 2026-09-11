@@ -1360,11 +1360,19 @@ export function fullAccountFilter(accounts) {
  * field order and its money formatting then come from the published schema
  * rather than from this module.
  *
+ * taxOverrides carries the tax facts that belong to the subset rather than to
+ * the master: two subsets of one master can trade under different identities
+ * and hold different numbers of associated companies, and each one's book has
+ * to state its own.
+ *
  * @param {Object} book - the parsed master book.toml
- * @param {Object} subset - subsetName, entity, taxSections, accountFilter, and the registers the product carries
+ * @param {Object} subset - subsetName, entity, taxSections, taxOverrides, accountFilter, and the registers the product carries
  * @returns {Object} a book in the diya-gl v2 shape
  */
-export function buildSubsetBook(book, { subsetName, entity, taxSections, accountFilter, directors, employees, tables = {} }) {
+export function buildSubsetBook(
+  book,
+  { subsetName, entity, taxSections, taxOverrides = {}, accountFilter, directors, employees, tables = {} },
+) {
   const subsetBook = {
     documentInfo: {
       ...book.documentInfo,
@@ -1372,7 +1380,9 @@ export function buildSubsetBook(book, { subsetName, entity, taxSections, account
     },
     entityInformation: entity,
     accounts: accountFilter(book.accounts),
-    tax: Object.fromEntries(taxSections.filter((section) => book.tax[section]).map((section) => [section, book.tax[section]])),
+    tax: Object.fromEntries(
+      taxSections.filter((section) => book.tax[section]).map((section) => [section, { ...book.tax[section], ...taxOverrides[section] }]),
+    ),
   };
   if (directors) subsetBook.directors = directors;
   if (employees) subsetBook.employees = employees;

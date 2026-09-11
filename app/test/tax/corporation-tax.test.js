@@ -177,4 +177,65 @@ describe("apportionCorporationTax", () => {
     const withZero = apportionCorporationTax(120000, years, totalDays, { ...RATES, associatedCompanies: 0 });
     expect(withZero.tax).toBe(withoutField.tax);
   });
+
+  it("scales the relief by taxable profits over augmented profits", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const noDistributions = apportionCorporationTax(120000, years, totalDays, RATES);
+    const withDistributions = apportionCorporationTax(120000, years, totalDays, { ...RATES, frankedInvestmentIncome: 30000 });
+
+    // Without distributions the relief is (250,000 - 120,000) x 3/200. With
+    // 30,000 of them augmented profits are 150,000, so the gap narrows to
+    // 100,000 and the relief keeps only 120,000/150,000 of it.
+    expect(noDistributions.marginalRelief).toBeCloseTo(1950, 6);
+    expect(withDistributions.marginalRelief).toBeCloseTo(1200, 6);
+    // The tax is still charged on the 120,000, never on the augmented figure.
+    expect(withDistributions.rows[0].taxBeforeRelief).toBeCloseTo(30000, 6);
+    expect(withDistributions.augmentedProfits).toBe(150000);
+  });
+
+  it("charges the main rate when distributions carry augmented profits over the lower limit", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const smallProfits = apportionCorporationTax(40000, years, totalDays, RATES);
+    const carriedOver = apportionCorporationTax(40000, years, totalDays, { ...RATES, frankedInvestmentIncome: 20000 });
+    expect(smallProfits.rows[0].ratePercent).toBe(19);
+    expect(smallProfits.marginalRelief).toBe(0);
+    expect(carriedOver.rows[0].ratePercent).toBe(25);
+    expect(carriedOver.marginalRelief).toBeCloseTo(((250000 - 60000) * 40000 * 0.015) / 60000, 6);
+  });
+
+  it("charges no relief when distributions carry augmented profits over the upper limit", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const charge = apportionCorporationTax(120000, years, totalDays, { ...RATES, frankedInvestmentIncome: 200000 });
+    expect(charge.marginalRelief).toBe(0);
+    expect(charge.tax).toBeCloseTo(30000, 6);
+  });
+
+  it("leaves the charge alone when frankedInvestmentIncome is absent", () => {
+    const { years, totalDays } = financialYearsInPeriod(new Date(Date.UTC(2024, 3, 1)), new Date(Date.UTC(2025, 2, 31)));
+    const withoutField = apportionCorporationTax(120000, years, totalDays, RATES);
+    const withZero = apportionCorporationTax(120000, years, totalDays, { ...RATES, frankedInvestmentIncome: 0 });
+    expect(withZero.tax).toBe(withoutField.tax);
+  });
+});
+
+describe("calculateCorporationTax with franked investment income", () => {
+  it("scales the relief the same way the apportioned computation does", () => {
+    const plain = calculateCorporationTax(120000, CT_RATES);
+    const withDistributions = calculateCorporationTax(120000, { ...CT_RATES, franked_investment_income: 30000 });
+    expect(plain.marginalRelief).toBeCloseTo(1950, 6);
+    expect(withDistributions.marginalRelief).toBeCloseTo(1200, 6);
+    expect(withDistributions.corporationTax).toBeCloseTo(120000 * 0.25 - 1200, 6);
+  });
+
+  it("tests the bands on augmented profits, and taxes only the chargeable profit", () => {
+    const carriedOver = calculateCorporationTax(40000, { ...CT_RATES, franked_investment_income: 20000 });
+    expect(carriedOver.corporationTax).toBeCloseTo(40000 * 0.25 - ((250000 - 60000) * 40000 * 0.015) / 60000, 6);
+    const overTheTop = calculateCorporationTax(120000, { ...CT_RATES, franked_investment_income: 200000 });
+    expect(overTheTop.marginalRelief).toBe(0);
+    expect(overTheTop.corporationTax).toBeCloseTo(30000, 6);
+  });
+
+  it("charges nothing on a loss, whatever distributions came in", () => {
+    expect(calculateCorporationTax(-5000, { ...CT_RATES, franked_investment_income: 100000 }).corporationTax).toBe(0);
+  });
 });

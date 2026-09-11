@@ -17,6 +17,7 @@ postcode = "M1 1AA"
 phone = "0161 555 0100"
 utr = "1234567890"
 vat_number = "123456789"
+franked_investment_income = 20000
 
 [[employees]]
 employeeID = "EMP001"

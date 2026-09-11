@@ -20,6 +20,12 @@ small_profits_limit = 50000
 main_rate_limit = 250000
 marginal_relief_fraction = 0.015   # 3/200
 
+# Financial year 2025, the year before this one. An accounting period that
+# reaches back over 1 April charges its earlier days at that year's small
+# profits rate, which the working sheet's first tax row carries in Admin P6.
+[corporation_tax_previous_financial_year]
+small_profits_rate = 0.19
+
 [capital_allowances]
 annual_investment_allowance = 1.00
 writing_down_allowance_main = 0.14
