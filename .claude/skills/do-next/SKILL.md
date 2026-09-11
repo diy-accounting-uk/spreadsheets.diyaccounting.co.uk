@@ -160,11 +160,19 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
-- **Blast-radius testing only**: `npm test` for the file it touched, `npm run test:browser` for
-  site pages, and the matching `test:*-only` script (`test:bst-only`, `test:se-only`,
-  `test:ltd-only`, `test:taxi-only`, `test:reconciliation-only`) for a product module or a data
-  change. No behaviour tier inside a worktree: that needs a live environment and belongs to the
-  deploy.
+- **Blast-radius testing only, and derive the radius rather than guessing it.** `grep -rl` for what
+  imports or reads the thing being changed, then run that set. Guessing gives two files; the grep
+  gives the fifteen that actually read it, and the difference is a fix landing three times.
+  `npm run test:browser` for site pages. No behaviour tier inside a worktree: that needs a live
+  environment and belongs to the deploy.
+- **A product's writer reaches further than its own tests.** Changing what `cellWrites()` emits, or
+  adding a cell to a `CELL_MAP`, changes the committed fixtures and the gates that read the writer's
+  output, none of which a `test:*-only` script covers: `examples/parity/<product>/report.json`
+  (refresh with `npm run parity:refresh`, commit only the product that really changed — the others
+  differ in provenance alone, which the gate excepts), `isLtdInputCell` and its `*-anchors` test,
+  the roundtrip budget in `app/data/roundtrip-budget.json`, and the product page's own render-key
+  coverage. Name those in the brief for any such change. A brief that asks only for `npm test` and
+  `test:ltd-only` will pass and the branch will still go red three times.
 - **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
   `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
   item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
