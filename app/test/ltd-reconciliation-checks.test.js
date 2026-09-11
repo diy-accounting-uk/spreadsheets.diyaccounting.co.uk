@@ -774,17 +774,32 @@ describeCalc(
 
     it("charges the main rate less marginal relief on a profit inside the relief band", () => {
       const ct = results.CorporationTax;
-      const statutory = calculateCorporationTax(ct.K28, taxData.corporation_tax).corporationTax;
+      // The year file carries the rates; the franked investment income is a
+      // fact about this company, so it comes from the scenario. Passing it
+      // keeps the independent computation on the same footing as the sheet
+      // instead of comparing a relief that saw the income with one that did
+      // not.
+      const statutory = calculateCorporationTax(ct.K28, {
+        ...taxData.corporation_tax,
+        franked_investment_income: scenario.business.franked_investment_income,
+      }).corporationTax;
       // The profit sits between the £50,000 and £250,000 limits, so the
       // charge is the main rate on the whole profit less the relief that
-      // tapers it back towards the small profits rate.
+      // tapers it back towards the small profits rate. The fixture also
+      // receives franked investment income, so the relief is tested against
+      // augmented profits: (U - A) x N/A x F, where A is the augmented
+      // profits and N the taxable total profits. With no such income the
+      // ratio is 1 and this is the plain (U - N) x F.
+      const augmented = ct.K30;
+      expect(augmented).toBeCloseTo(ct.K28 + ct.K29, 6);
+      expect(ct.K29).toBeGreaterThan(0);
       expect(ct.K28).toBeGreaterThan(taxData.corporation_tax.small_profits_limit);
       expect(ct.K28).toBeLessThan(taxData.corporation_tax.main_rate_limit);
       expect(ct.G33).toBe(25);
       expect(ct.J33).toBeCloseTo(ct.K28 * 0.25, 6);
-      expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
+      expect(ct.L33).toBeCloseTo((250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
-      expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
+      expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(29740.591949, 4);
     });
 
@@ -867,8 +882,7 @@ describeCalc(
         "CT600: amount of profit = first tax row profit",
         "CT: first tax row profit = chargeable profit by its share of those days",
         "CT: first tax row gross tax = its profit at its rate",
-        "CT: first tax row rate = the rate its share of the profit falls in",
-        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+        "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       ]);
     });
 
@@ -879,7 +893,7 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([
         "CT600: marginal rate relief = the working sheet's relief",
         "CT: first tax row tax = its gross tax less its marginal relief",
-        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+        "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       ]);
     });
 
@@ -900,7 +914,7 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("Admin", "P8", value);
       expect(failureNames(corrupted)).toEqual([
         "Admin P8: corporation tax main rate",
-        "CT: first tax row rate = the rate its share of the profit falls in",
+        "CT: first tax row rate = the rate its share of the augmented profits falls in",
       ]);
     });
 
@@ -910,7 +924,7 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("Admin", "P9", value);
       expect(failureNames(corrupted)).toEqual([
         "Admin P9: marginal relief fraction",
-        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+        "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       ]);
     });
 
@@ -925,6 +939,7 @@ describeCalc(
         "CT600: second financial year rate = second tax row rate",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
+        "CT: second tax row rate = the rate its share of the augmented profits falls in",
       ]);
     });
 
@@ -936,7 +951,6 @@ describeCalc(
         "CT: the two tax rows span the accounting period",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: first tax row profit = chargeable profit by its share of those days",
-        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
       ]);
     });
 
@@ -1321,7 +1335,7 @@ describeCalc(
       expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
-      expect(tb.EJ35).toBeCloseTo(-29156.77, 2);
+      expect(tb.EJ35).toBeCloseTo(-29676.09, 2);
     });
 
     it("writes each CIS certificate into the purchase journal's own column", () => {
