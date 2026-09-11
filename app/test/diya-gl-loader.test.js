@@ -175,6 +175,16 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
     expect(vatFixture.business.associated_companies).toBe(2);
   });
 
+  it("takes the franked investment income from the book, matching the extractor's own fixture", () => {
+    expect(fullScenario.business.franked_investment_income).toBe(fullFixture.business.franked_investment_income);
+    expect(fullFixture.business.franked_investment_income).toBe(20000);
+  });
+
+  it("leaves the franked investment income unset for a book that received none, as the fixture does", () => {
+    expect(brickScenario.business.franked_investment_income).toBeUndefined();
+    expect(brickFixture.business.franked_investment_income).toBeUndefined();
+  });
+
   it("leaves the associated companies count unset for a book that has none, as the fixture does", () => {
     expect(brickScenario.business.associated_companies).toBeUndefined();
     expect(brickFixture.business.associated_companies).toBeUndefined();

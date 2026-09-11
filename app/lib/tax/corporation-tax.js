@@ -17,8 +17,16 @@
  * (`ctRates.associated_companies`, default 0 -- a company with no associates
  * keeps the full limits).
  *
+ * The limits are tested against augmented profits: the taxable total profits
+ * plus the exempt distributions the company received
+ * (`ctRates.franked_investment_income`, default 0). Relief is
+ * (upper limit - augmented profits) x taxable / augmented x the fraction, so
+ * a company whose distributions push it up the band keeps only the share of
+ * the relief its taxable profits earn. Tax itself is still charged on the
+ * taxable total profits, never on the augmented figure.
+ *
  * @param {number} profit - profit chargeable to CT
- * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, main_rate_limit, marginal_relief_fraction, associated_companies }
+ * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, main_rate_limit, marginal_relief_fraction, associated_companies, franked_investment_income }
  * @returns {{ profitChargeable, smallProfitsRate, mainRate, corporationTax, marginalRelief }}
  */
 export function calculateCorporationTax(profit, ctRates) {
@@ -28,24 +36,25 @@ export function calculateCorporationTax(profit, ctRates) {
   const spl = ctRates.small_profits_limit / associatedDivisor;
   const splu = (ctRates.main_rate_limit ?? ctRates.small_profits_limit_upper ?? 250000) / associatedDivisor;
   const mrf = ctRates.marginal_relief_fraction ?? 0.015;
+  const augmented = profit + (ctRates.franked_investment_income ?? 0);
 
   if (profit <= 0) {
     return { profitChargeable: profit, smallProfitsRate: spr, mainRate: mr, corporationTax: 0, marginalRelief: 0 };
   }
 
-  if (profit <= spl) {
+  if (augmented <= spl) {
     // Small profits rate
     return { profitChargeable: profit, smallProfitsRate: spr, mainRate: mr, corporationTax: profit * spr, marginalRelief: 0 };
   }
 
-  if (profit > splu) {
+  if (augmented > splu) {
     // Main rate
     return { profitChargeable: profit, smallProfitsRate: spr, mainRate: mr, corporationTax: profit * mr, marginalRelief: 0 };
   }
 
   // Marginal relief band
   const mainTax = profit * mr;
-  const relief = (splu - profit) * mrf;
+  const relief = ((splu - augmented) * profit * mrf) / augmented;
   const corporationTax = mainTax - relief;
 
   return { profitChargeable: profit, smallProfitsRate: spr, mainRate: mr, corporationTax, marginalRelief: relief };
@@ -90,6 +99,13 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
  * limits apportioned by the same day count and then divided by one plus the
  * number of associated companies.
  *
+ * Which band a row falls in is decided on its share of augmented profits --
+ * the chargeable profit plus the exempt distributions received
+ * (`rates.frankedInvestmentIncome`) -- and the relief is scaled by the row's
+ * taxable share over its augmented share. Tax is still charged on the
+ * taxable share alone. The sheet takes the augmented figure from
+ * CorporationTax!K30 and spreads it over the rows the same way as the profit.
+ *
  * @param {number} profitChargeable
  * @param {Array<{ year: number, days: number }>} financialYears - two entries, the second possibly nil
  * @param {number} totalDays
@@ -100,23 +116,29 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
  * @param {number} rates.lowerLimit
  * @param {number} rates.upperLimit
  * @param {number} [rates.associatedCompanies] - default 0
- * @returns {{ rows: Array<{ year, days, profitShare, ratePercent, taxBeforeRelief, marginalRelief, tax }>, tax: number, marginalRelief: number, taxBeforeRelief: number }}
+ * @param {number} [rates.frankedInvestmentIncome] - default 0
+ * @returns {{ rows: Array<{ year, days, profitShare, augmentedShare, ratePercent, taxBeforeRelief, marginalRelief, tax }>, tax: number, marginalRelief: number, taxBeforeRelief: number, augmentedProfits: number }}
  */
 export function apportionCorporationTax(profitChargeable, financialYears, totalDays, rates) {
   const associatedDivisor = 1 + (rates.associatedCompanies ?? 0);
+  const augmentedProfits = profitChargeable + (rates.frankedInvestmentIncome ?? 0);
   const rows = financialYears.map((financialYear, index) => {
     const share = totalDays > 0 ? financialYear.days / totalDays : 0;
     const profitShare = profitChargeable > 0 ? profitChargeable * share : 0;
+    const augmentedShare = augmentedProfits * share;
     const lowerLimit = (rates.lowerLimit * share) / associatedDivisor;
     const upperLimit = (rates.upperLimit * share) / associatedDivisor;
-    const ratePercent = profitShare <= lowerLimit ? rates.smallProfitsRatePercent[index] : rates.mainRatePercent;
+    const ratePercent = augmentedShare <= lowerLimit ? rates.smallProfitsRatePercent[index] : rates.mainRatePercent;
     const taxBeforeRelief = (profitShare * ratePercent) / 100;
     const marginalRelief =
-      profitShare > lowerLimit && profitShare < upperLimit ? (upperLimit - profitShare) * rates.marginalReliefFraction : 0;
+      augmentedShare > lowerLimit && augmentedShare < upperLimit
+        ? ((upperLimit - augmentedShare) * profitShare * rates.marginalReliefFraction) / augmentedShare
+        : 0;
     return {
       year: financialYear.year,
       days: financialYear.days,
       profitShare,
+      augmentedShare,
       ratePercent,
       taxBeforeRelief,
       marginalRelief,
@@ -126,6 +148,7 @@ export function apportionCorporationTax(profitChargeable, financialYears, totalD
 
   return {
     rows,
+    augmentedProfits,
     taxBeforeRelief: rows.reduce((total, row) => total + row.taxBeforeRelief, 0),
     marginalRelief: rows.reduce((total, row) => total + row.marginalRelief, 0),
     tax: rows.reduce((total, row) => total + row.tax, 0),

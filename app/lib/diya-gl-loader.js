@@ -353,6 +353,12 @@ export function diyaGlToScenario(book, lines, product) {
   // missing count as zero either way.
   const associatedCompanies = book.tax?.corporationTax?.associatedCompanies;
   if (associatedCompanies) business.associated_companies = associatedCompanies;
+  // The exempt distributions the company received. They are never taxed, but
+  // they raise augmented profits, which is what the marginal relief limits
+  // are tested against, so a book that receives them and cannot say so claims
+  // relief it is not due. Left out when there are none, for the same reason.
+  const frankedInvestmentIncome = book.tax?.corporationTax?.frankedInvestmentIncome;
+  if (frankedInvestmentIncome) business.franked_investment_income = frankedInvestmentIncome;
 
   // Build expected values
   const expected = { total_sales: totalSales };

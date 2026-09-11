@@ -546,6 +546,13 @@ if (hpFinanced !== hpPurchasedNet) {
   throw new Error(`Hire purchase agreements finance ${hpFinanced}, against ${hpPurchasedNet} of purchases net of VAT bought under them`);
 }
 
+// Precision Code holds shares in a supplier and takes a dividend from it.
+// The distribution is exempt, so it is never taxed and reaches no journal,
+// but it raises augmented profits, which is what the marginal relief limits
+// are tested against. The year's chargeable profit sits inside the band, so
+// the scenario charges relief scaled by taxable profits over augmented.
+const PRECISION_FRANKED_INVESTMENT_INCOME = 20000;
+
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",
@@ -563,6 +570,7 @@ const fullToml = formatScenarioToml(
       phone: "0161 555 0100",
       utr: "1234567890",
       vat_number: "123456789",
+      franked_investment_income: PRECISION_FRANKED_INVESTMENT_INCOME,
     },
     employees: book.employees || [],
     members: fullMembers,
@@ -615,6 +623,7 @@ const fullDiya = writeSubset(
   {
     entity: precisionEntity,
     taxSections: ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"],
+    taxOverrides: { corporationTax: { frankedInvestmentIncome: PRECISION_FRANKED_INVESTMENT_INCOME } },
     accountFilter: fullAccountFilter,
     directors: book.directors,
     employees: book.employees,
