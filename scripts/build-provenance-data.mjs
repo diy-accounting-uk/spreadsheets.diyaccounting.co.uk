@@ -11,6 +11,16 @@
 // same values by construction: there is only one place the values come
 // from, and every surface reads the same generated file.
 //
+// engineVersion's commit is the last commit that touched a file the shipped
+// engine (diya-gl's own packaged closure, see engine-closure.mjs) is built
+// from, not literally HEAD. A tracked file that stamped live HEAD would
+// change on every unrelated commit in the repository -- including the
+// commit that carries the stamped file itself -- so it could never settle;
+// every build step that ran this script would dirty it again for no
+// engine-relevant reason. Pinning the commit to the closure's own history
+// means two runs against the same engine code produce byte-identical
+// output regardless of what else happened in between.
+//
 // Usage:
 //   node scripts/build-provenance-data.mjs
 //   node scripts/build-provenance-data.mjs --reconciled-commit <sha>
@@ -26,6 +36,10 @@ import { execFileSync } from "child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+
+import prettier from "prettier";
+
+import { engineClosure } from "../diya-gl/scripts/engine-closure.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_FILE = resolve(ROOT, "app", "lib", "provenance-data.js");
@@ -104,9 +118,21 @@ function templateScorecard(product) {
   return `${passed} passed, ${warnings} warnings, ${failed} failed`;
 }
 
+// The path this script writes, relative to ROOT and slash-separated the
+// same way engineClosure() returns its paths -- excluded from the commit
+// lookup below so the stamp never has to reference the commit that carries
+// itself.
+const OUT_FILE_RELATIVE = "app/lib/provenance-data.js";
+
+// The commit that last touched the shipped engine's own code -- the four
+// diya-gl entry points and every file they import, per engine-closure.mjs,
+// other than this generated file itself -- not literally HEAD. Stable
+// across any commit that doesn't change what the engine does, including
+// the commit that carries this file's own regenerated content.
 function gitCommit() {
   try {
-    return execFileSync("git", ["rev-parse", "--short=12", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+    const closure = engineClosure(ROOT).filter((file) => file !== OUT_FILE_RELATIVE);
+    return execFileSync("git", ["log", "-1", "--format=%h", "--", ...closure], { cwd: ROOT, encoding: "utf8" }).trim() || "unknown";
   } catch {
     return "unknown";
   }
@@ -122,7 +148,10 @@ function packageVersion() {
 // own commit job can set.
 function existingReconciledCommit() {
   if (!existsSync(OUT_FILE)) return "";
-  const match = /reconciledCommit:\s*"([^"]*)"/.exec(readFileSync(OUT_FILE, "utf8"));
+  // Tolerates both prettier's unquoted key and JSON.stringify's quoted one,
+  // since the file on disk can be in either shape between the write below
+  // and the next prettier pass.
+  const match = /"?reconciledCommit"?:\s*"([^"]*)"/.exec(readFileSync(OUT_FILE, "utf8"));
   return match ? match[1] : "";
 }
 
@@ -131,7 +160,7 @@ function parseArgs(argv) {
   return { reconciledCommit: idx !== -1 ? argv[idx + 1] : null };
 }
 
-function main() {
+async function main() {
   const { reconciledCommit } = parseArgs(process.argv.slice(2));
   const data = {
     formatVersion: FORMAT_VERSION,
@@ -157,7 +186,12 @@ function main() {
 
 export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
 `;
-  writeFileSync(OUT_FILE, body);
+  // Formatted with this repo's own prettier config, not just JSON.stringify's
+  // shape -- so the committed file always matches what "npx prettier --check"
+  // expects, and a plain re-run never leaves a formatting-only diff behind.
+  const config = await prettier.resolveConfig(OUT_FILE);
+  const formatted = await prettier.format(body, { ...config, filepath: OUT_FILE });
+  writeFileSync(OUT_FILE, formatted);
   console.log(`provenance data: ${OUT_FILE.replace(ROOT + "/", "")}`);
   console.log(`  engineVersion: ${data.engineVersion}`);
   console.log(`  taxDataHash:   ${data.taxDataHash}`);
@@ -167,4 +201,7 @@ export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
   console.log(`  reconciledCommit: ${data.reconciledCommit || "(none yet)"}`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
