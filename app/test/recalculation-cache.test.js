@@ -9,8 +9,9 @@
 // The work itself is a stub here, so this test needs no LibreOffice.
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
+import { spawnSync } from "child_process";
 import { tmpdir } from "os";
 import { withRecalculatedFiles } from "../lib/spreadsheet-runner.js";
 
@@ -30,7 +31,7 @@ describe("the recalculation cache", () => {
 
   beforeEach(() => {
     cacheDir = mkdtempSync(join(tmpdir(), "recalculation-cache-"));
-    previous = { flag: process.env.CALC_CACHE, dir: process.env.CALC_CACHE_DIR };
+    previous = { flag: process.env.CALC_CACHE, dir: process.env.CALC_CACHE_DIR, wait: process.env.CALC_CACHE_WAIT_MS };
     process.env.CALC_CACHE = "on";
     process.env.CALC_CACHE_DIR = cacheDir;
   });
@@ -40,6 +41,8 @@ describe("the recalculation cache", () => {
     else process.env.CALC_CACHE = previous.flag;
     if (previous.dir === undefined) delete process.env.CALC_CACHE_DIR;
     else process.env.CALC_CACHE_DIR = previous.dir;
+    if (previous.wait === undefined) delete process.env.CALC_CACHE_WAIT_MS;
+    else process.env.CALC_CACHE_WAIT_MS = previous.wait;
     rmSync(cacheDir, { recursive: true, force: true });
   });
 
@@ -94,6 +97,51 @@ describe("the recalculation cache", () => {
     const retried = await withRecalculatedFiles({ fixture: "broken" }, "package.txt", work);
     expect(work.runs).toBe(1);
     expect(retried.fromCache).toBe(false);
+  });
+
+  // Replaces the entry a first call built with a lock naming `owner`, which
+  // is how a holder part way through its work looks from another process.
+  async function lockHeldBy(material, owner, work) {
+    const first = await withRecalculatedFiles(material, "package.txt", work);
+    const key = first.dir.split("/").pop();
+    rmSync(first.dir, { recursive: true, force: true });
+    const lock = join(cacheDir, `${key}.lock`);
+    mkdirSync(lock);
+    writeFileSync(join(lock, "owner"), `${owner}`);
+    return lock;
+  }
+
+  it("never takes a lock off a holder that is still alive", async () => {
+    // A recalculation is a blocking execSync, so a live holder can run for
+    // minutes without writing anything. Waiting it out is right. Taking its
+    // lock means the same package gets recalculated twice and one of the two
+    // renamed over the other, possibly under a reader.
+    const work = counter();
+    const lock = await lockHeldBy({ fixture: "held" }, process.pid, work);
+    process.env.CALC_CACHE_WAIT_MS = "600";
+
+    const waited = await withRecalculatedFiles({ fixture: "held" }, "package.txt", work);
+
+    expect(existsSync(lock)).toBe(true);
+    expect(work.runs).toBe(2);
+    expect(waited.fromCache).toBe(false);
+    expect(waited.dir.startsWith(cacheDir)).toBe(false);
+    expect(readFileSync(join(waited.dir, "package.txt"), "utf8")).toBe("recalculated");
+    waited.release();
+    rmSync(lock, { recursive: true, force: true });
+  });
+
+  it("takes over a lock whose holder has gone", async () => {
+    const work = counter();
+    const gone = spawnSync("true").pid;
+    const lock = await lockHeldBy({ fixture: "orphaned" }, gone, work);
+
+    const taken = await withRecalculatedFiles({ fixture: "orphaned" }, "package.txt", work);
+
+    expect(work.runs).toBe(2);
+    expect(taken.fromCache).toBe(false);
+    expect(taken.dir.startsWith(cacheDir)).toBe(true);
+    expect(existsSync(lock)).toBe(false);
   });
 
   it("runs the work for every caller with the cache off, and clears up after each", async () => {

@@ -258,11 +258,9 @@ function hasLibreOffice() {
 const CACHE_FORMAT = "v1";
 const CACHE_WORKBOOK = "input.xlsx";
 const CACHE_READY = ".complete";
-const CACHE_HEARTBEAT = "heartbeat";
-const CACHE_WAIT_MS = Number(process.env.CALC_CACHE_WAIT_MS || 20 * 60 * 1000);
+const CACHE_OWNER = "owner";
 const CACHE_POLL_MS = 250;
-const CACHE_HEARTBEAT_MS = 2000;
-const CACHE_LOCK_STALE_MS = 30000;
+const CACHE_LOCK_CLAIM_MS = 10000;
 const CACHE_ENTRY_TTL_MS = 24 * 60 * 60 * 1000;
 
 // On under vitest, off everywhere else. The product pipeline recalculates once
@@ -272,6 +270,10 @@ function cacheEnabled() {
   if (flag === "off" || flag === "0") return false;
   if (flag === "on" || flag === "1") return true;
   return Boolean(process.env.VITEST || process.env.VITEST_WORKER_ID);
+}
+
+function cacheWaitMs() {
+  return Number(process.env.CALC_CACHE_WAIT_MS || 20 * 60 * 1000);
 }
 
 function cacheRoot() {
@@ -378,13 +380,31 @@ function sleep(ms) {
 }
 
 // A lock whose holder died leaves a directory nothing will ever complete. The
-// holder touches a heartbeat while it works, so a waiter can tell the two
-// apart instead of waiting out the whole timeout on a corpse.
+// holder names itself in the lock, so a waiter can ask whether that process is
+// still alive rather than waiting out the whole timeout on a corpse.
+//
+// It has to be the process, not a timestamp the holder refreshes: a
+// recalculation is a blocking execSync, so no timer of the holder's can fire
+// while it runs and any heartbeat would look stale within seconds.
 function lockIsAbandoned(lock) {
+  let owner;
   try {
-    return Date.now() - statSync(resolve(lock, CACHE_HEARTBEAT)).mtimeMs > CACHE_LOCK_STALE_MS;
+    owner = Number(readFileSync(resolve(lock, CACHE_OWNER), "utf8"));
   } catch {
-    return !existsSync(lock);
+    // Either the lock has gone, or its holder has not named itself yet. Give
+    // that a moment before treating the lock as a corpse.
+    if (!existsSync(lock)) return true;
+    try {
+      return Date.now() - statSync(lock).mtimeMs > CACHE_LOCK_CLAIM_MS;
+    } catch {
+      return true;
+    }
+  }
+  try {
+    process.kill(owner, 0);
+    return false;
+  } catch (error) {
+    return error.code !== "EPERM";
   }
 }
 
@@ -414,7 +434,7 @@ async function withRecalculatedFiles(material, label, produce) {
   mkdirSync(root, { recursive: true });
   sweepStaleEntries(root);
 
-  const deadline = Date.now() + CACHE_WAIT_MS;
+  const deadline = Date.now() + cacheWaitMs();
   for (;;) {
     if (existsSync(resolve(entry, CACHE_READY))) {
       noteCacheEvent("hit", key, label);
@@ -430,15 +450,7 @@ async function withRecalculatedFiles(material, label, produce) {
 
     if (held) {
       const building = resolve(root, `${key}.building-${randomBytes(4).toString("hex")}`);
-      const beat = setInterval(() => {
-        try {
-          writeFileSync(resolve(lock, CACHE_HEARTBEAT), `${Date.now()}`);
-        } catch {
-          // the lock is gone; the build still finishes
-        }
-      }, CACHE_HEARTBEAT_MS);
-      beat.unref();
-      writeFileSync(resolve(lock, CACHE_HEARTBEAT), `${Date.now()}`);
+      writeFileSync(resolve(lock, CACHE_OWNER), `${process.pid}`);
       try {
         // The holder before us may have finished between the check above and
         // the lock: an entry already complete is never rebuilt or replaced,
@@ -451,14 +463,20 @@ async function withRecalculatedFiles(material, label, produce) {
         noteCacheEvent("miss", key, label);
         await produce(building);
         writeFileSync(resolve(building, CACHE_READY), `${label}\n`);
-        rmSync(entry, { recursive: true, force: true });
+        // Only an unfinished entry is ever displaced, and it moves aside
+        // rather than being deleted in place, so no reader loses a file it is
+        // part way through opening.
+        if (existsSync(entry)) {
+          const displaced = `${entry}.displaced-${randomBytes(4).toString("hex")}`;
+          renameSync(entry, displaced);
+          rmSync(displaced, { recursive: true, force: true });
+        }
         renameSync(building, entry);
         return { dir: entry, fromCache: false, release: () => {} };
       } catch (error) {
         rmSync(building, { recursive: true, force: true });
         throw error;
       } finally {
-        clearInterval(beat);
         rmSync(lock, { recursive: true, force: true });
       }
     }
