@@ -950,6 +950,7 @@ describeCalc(
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
         "CT: second tax row rate = the rate its share of the augmented profits falls in",
+        "CT: charge for the year = the statutory computation with marginal relief",
       ]);
     });
 
@@ -961,6 +962,7 @@ describeCalc(
         "CT: the two tax rows span the accounting period",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: first tax row profit = chargeable profit by its share of those days",
+        "CT: charge for the year = the statutory computation with marginal relief",
       ]);
     });
 
