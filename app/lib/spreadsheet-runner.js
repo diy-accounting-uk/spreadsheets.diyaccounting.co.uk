@@ -387,7 +387,7 @@ function lockIsAbandoned(lock) {
 async function recalculateIntoTemporary(label, produce) {
   const dir = resolve(tmpdir(), `recalculated-${randomBytes(6).toString("hex")}`);
   mkdirSync(dir, { recursive: true });
-  noteRecalculation("uncached", label);
+  if (cacheEnabled()) noteRecalculation("uncached", label);
   try {
     await produce(dir);
   } catch (error) {
@@ -436,6 +436,13 @@ async function withRecalculatedFiles(material, label, produce) {
       beat.unref();
       writeFileSync(resolve(lock, CACHE_HEARTBEAT), `${Date.now()}`);
       try {
+        // The holder before us may have finished between the check above and
+        // the lock: an entry already complete is never rebuilt or replaced,
+        // so nothing can pull the files out from under a reader.
+        if (existsSync(resolve(entry, CACHE_READY))) {
+          noteCacheHit(key, label);
+          return { dir: entry, fromCache: true, release: () => {} };
+        }
         mkdirSync(building, { recursive: true });
         noteRecalculation(key, label);
         await produce(building);
