@@ -553,6 +553,26 @@ test.describe("DIYA-GL page — undo", () => {
     await expect(page.locator("#undo-btn")).toHaveClass(/hidden/);
     await expectYearTotal(page, "netProfit", start);
   });
+
+  test("a second undo fired before the first settles does not corrupt the undo stack", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const start = await yearTotal(page, "netProfit");
+    await addEntry(page, "purchases", { date: "2025-04-15", account: "5500", detail: "First", amount: 100 });
+    await addEntry(page, "purchases", { date: "2025-04-16", account: "5500", detail: "Second", amount: 200 });
+    expect(await yearTotal(page, "netProfit")).toBe(start - 300);
+
+    // Both calls fire in the same tick, so the second reaches undoLastEdit
+    // while state.committing is still true from the first and the guard
+    // turns it into a no-op -- proving the stack survives even when nothing
+    // paces the two calls apart.
+    await page.evaluate(() => Promise.all([window.DiyaGlPage.undo(), window.DiyaGlPage.undo()]));
+
+    await expectYearTotal(page, "netProfit", start - 100);
+    expect(await page.evaluate(() => window.DiyaGlEdits.undo.depth())).toBe(1);
+    await expect(page.locator("#undo-btn")).not.toHaveClass(/hidden/);
+  });
 });
 
 test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book", () => {
