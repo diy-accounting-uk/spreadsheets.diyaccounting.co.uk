@@ -143,9 +143,12 @@ describe("checkCoverage proves it actually fails", () => {
   it("names exactly the app/data call sites when app/data/** is removed", () => {
     const { gaps } = checkCoverage({ deployYmlText: withPatternRemoved("app/data/**"), bundleScriptPath: BUNDLE_SCRIPT, repoRoot: ROOT });
     const gapLines = gaps.map((g) => g.label);
-    expect(gapLines.some((l) => l.includes(":165 readdirSync(app/data)"))).toBe(true);
-    expect(gapLines.some((l) => l.includes(":174 cpSync(app/data/hmrc/form-layouts)"))).toBe(true);
-    expect(gapLines.some((l) => l.includes(":180 cpSync(app/data/filing)"))).toBe(true);
+    // Matched on the call, not on its line: the line number moves whenever
+    // anything above it in the bundle script grows, which says nothing about
+    // whether the gap was found.
+    expect(gapLines.some((l) => l.includes("readdirSync(app/data)"))).toBe(true);
+    expect(gapLines.some((l) => l.includes("cpSync(app/data/hmrc/form-layouts)"))).toBe(true);
+    expect(gapLines.some((l) => l.includes("cpSync(app/data/filing)"))).toBe(true);
     // nothing outside app/data should have broken
     expect(gaps.every((g) => g.probe.startsWith("app/data/"))).toBe(true);
   });
