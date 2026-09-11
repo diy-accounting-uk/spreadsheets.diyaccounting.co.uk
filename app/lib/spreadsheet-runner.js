@@ -237,8 +237,7 @@ function hasLibreOffice() {
 // ── Recalculation cache ─────────────────────────────────────────────────────
 //
 // Test files recalculate the same fixture over and over and then only read the
-// result: nine of them recalculate the SE advanced scenario, six the Ltd full
-// scenario. The recalculation is a pure function of its inputs, so the first
+// result. The recalculation is a pure function of its inputs, so the first
 // caller pays for it and the rest read the files it produced.
 //
 // The cache is content addressed. Its key is a digest of everything the
