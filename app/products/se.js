@@ -1382,6 +1382,14 @@ export function standardReads() {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
+  // Boxes 32 to 45, the cells box 46 (O122) totals. Every one is empty
+  // until a later change gives it a source; reading them now lets the
+  // box 46 total be checked as the exact sum the sheet computes rather
+  // than a sum with terms left out.
+  for (const cell of ["O66", "O70", "O74", "O78", "O82", "O86", "O90", "O94", "O98", "O102", "O106", "O110", "O118"]) {
+    if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
+  }
+
   // The Admin sheet's tax year start, end and filing deadline. Everything
   // else the Admin echo checks compares is a rate or a threshold already in
   // CELL_MAP; these are dates, and they anchor the SA103F period, the online
@@ -2251,12 +2259,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       ["D118", "box 30 other business expenses", num(pl.B32)],
       ["D122", "box 31 total expenses", num(pl.B17) + num(pl.B35)],
       ["O114", "box 44 disallowable depreciation", num(pl.B34)],
-      ["O122", "box 46 total disallowable expenses", num(pl.B34)],
       ["O204", "box 75 other business income", num(pl.B11)],
     ];
     for (const [cell, caption, plFigure] of sa103fPlSources) {
       check(`SA103F ${caption} (${cell}) = the profit and loss account`, num(seFull[cell]), plFigure);
     }
+
+    // Box 46's own caption calls it the total of boxes 32 to 45, not a
+    // second read of the depreciation figure box 44 already carries.
+    check(
+      "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+      num(seFull.O122),
+      num(seFull.O66) +
+        num(seFull.O70) +
+        num(seFull.O74) +
+        num(seFull.O78) +
+        num(seFull.O82) +
+        num(seFull.O86) +
+        num(seFull.O90) +
+        num(seFull.O94) +
+        num(seFull.O98) +
+        num(seFull.O102) +
+        num(seFull.O106) +
+        num(seFull.O110) +
+        num(seFull.O114) +
+        num(seFull.O118),
+    );
 
     // Box 44 is row 34 alone, so a loss on the disposal of an asset (row 33)
     // stays inside box 29's allowable total with nothing moved to a

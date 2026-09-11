@@ -32,6 +32,7 @@ import {
   STOCK_MATERIALS_PERCENT_CELL,
   STOCK_FINAL_COUNT_CELL,
   ADMIN_ASSOCIATED_COMPANIES_CELL,
+  OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL,
   SCHEDULE_ASSET_CLASSES,
   SCHEDULE_NEW_ASSET_ROWS,
   CHARGE_REGISTER_ROWS,
@@ -555,7 +556,19 @@ function isCompanysecretaryInputCell(sheet, cellRef) {
 // OpenAccounts (Financialaccounts.xlsx): the business-details block, the
 // named opening-balance cells, and the fixed-asset/bank/tax column blocks at
 // their own rows (13, 18, 26 -- see cellWrites()'s writeOpeningBalance()).
-const OPEN_ACCOUNTS_BUSINESS_CELLS = ["E2", "E3", "E4", "E5", "E6", "E8", "J3", "J4", "N6", "O3"];
+const OPEN_ACCOUNTS_BUSINESS_CELLS = [
+  "E2",
+  "E3",
+  "E4",
+  "E5",
+  "E6",
+  "E8",
+  "J3",
+  "J4",
+  "N6",
+  "O3",
+  OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL,
+];
 const OPENING_BALANCE_ROW_CELLS = new Set(Object.values(OPENING_BALANCE_CELLS));
 
 function isOpenAccountsInputCell(cellRef) {

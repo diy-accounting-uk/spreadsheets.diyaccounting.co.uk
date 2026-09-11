@@ -245,6 +245,22 @@ const SAVED_MODE_CANNOT_CARRY = ["check/", "section/journal-category-vat-netting
 // this does not close when generate-ltd.yml next refreshes the package --
 // it tracks the fixture's own associated-companies count, not its
 // generation date.
+// The committed examples/ltd-latest package predates the cells the working
+// sheet gained for franked investment income, so a saved read of it has no
+// value to carry for any of them. Unlike the associated-companies list
+// below, this one does close: the next generate-ltd.yml refresh rebuilds the
+// package from the current template and every key here starts arriving.
+const FRANKED_INVESTMENT_INCOME_NOT_IN_SAVED_PACKAGE = [
+  "cell/Financialaccounts.xlsx!CT600!Z114",
+  "cell/Financialaccounts.xlsx!CorporationTax!K29",
+  "cell/Financialaccounts.xlsx!CorporationTax!K30",
+  "cell/Financialaccounts.xlsx!OpenAccounts!Q6",
+  "section/business-details/franked-investment-income",
+  "section/corporation-tax-working-sheet/add-franked-investment-income",
+  "section/corporation-tax-working-sheet/augmented-profits",
+  "section/ct600-as-filed/box-620-franked-investment-income",
+];
+
 const ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2 = [
   "cell/Financialaccounts.xlsx!Admin!P14",
   "cell/Financialaccounts.xlsx!CT600!Y118",
@@ -315,6 +331,7 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
         !SAVED_MODE_CANNOT_CARRY.some((prefix) => key.startsWith(prefix)) &&
         !OFFICER_REGISTER_ONLY_IN_S2.includes(key) &&
         !ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2.includes(key) &&
+        !FRANKED_INVESTMENT_INCOME_NOT_IN_SAVED_PACKAGE.includes(key) &&
         !DATED_SLUG.test(key),
     );
     const onlyS3Unexplained = onlyS3.filter((key) => !DATED_SLUG.test(key) && !OFFICER_REGISTER_ONLY_IN_S3.includes(key));

@@ -215,17 +215,23 @@ const SA103F_CORRUPTIONS = [
   ["D114", 12912, ["SA103F box 29 depreciation and loss on sale of assets (D114) = the profit and loss account"]],
   ["D118", 4231.666666666661, ["SA103F box 30 other business expenses (D118) = the profit and loss account"]],
   ["D122", 165307.941666667, ["SA103F box 31 total expenses (D122) = the profit and loss account", NET_PROFIT, SHORT_TOTAL_EXPENSES]],
-  ["O114", 12740, ["SA103F box 44 disallowable depreciation (O114) = the profit and loss account"]],
+  [
+    "O114",
+    12740,
+    [
+      "SA103F box 44 disallowable depreciation (O114) = the profit and loss account",
+      "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+    ],
+  ],
   [
     "O122",
     12740,
-    [
-      "SA103F box 46 total disallowable expenses (O122) = the profit and loss account",
-      TOTAL_ADDITIONS,
-      SHORT_TOTAL_EXPENSES,
-      SHORT_NET_PROFIT,
-    ],
+    ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45", TOTAL_ADDITIONS, SHORT_TOTAL_EXPENSES, SHORT_NET_PROFIT],
   ],
+  // Boxes 32 to 45 carry no figure of their own on this scenario -- a
+  // corruption gives one of them a value, proving box 46's total moves
+  // with a term that today sits at nil rather than only with box 44.
+  ["O66", 500, ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45"]],
   [
     "O204",
     3083.33333333333,

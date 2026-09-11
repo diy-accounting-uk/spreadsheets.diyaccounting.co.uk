@@ -145,11 +145,17 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct.A34).toBe(0);
     expect(ct.E33).toBe(2024);
     expect(ct.G33).toBe(25);
-    // 124,419.90 at 25% is 31,104.97; relief is (250,000 - 124,419.90) x 3/200.
+    // The company received 20,000 of exempt distributions, so augmented
+    // profits are 144,419.90 against a chargeable 124,419.90. 124,419.90 at
+    // 25% is 31,104.97; relief is (250,000 - 144,419.90) x 3/200, scaled by
+    // 124,419.90 / 144,419.90. Both figures are inside the band, so the
+    // distributions take relief away without being taxed.
+    expect(ct.K29).toBeCloseTo(20000, 2);
+    expect(ct.K30).toBeCloseTo(144419.9, 2);
     expect(ct.J33).toBeCloseTo(31104.97, 2);
-    expect(ct.L33).toBeCloseTo(1883.7, 2);
-    expect(ct.K35).toBeCloseTo(29221.27, 2);
-    expect(ct.K39).toBeCloseTo(29156.77, 2);
+    expect(ct.L33).toBeCloseTo(1364.38, 2);
+    expect(ct.K35).toBeCloseTo(29740.59, 2);
+    expect(ct.K39).toBeCloseTo(29676.09, 2);
   });
 
   it("files the same charge on the CT600 boxes", () => {
@@ -158,22 +164,23 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
     expect(ct600.AJ131).toBeCloseTo(ct.J33 + ct.J34, 6);
     expect(ct600.Y133).toBeCloseTo(ct.L33 + ct.L34, 6);
-    expect(ct600.Y135).toBeCloseTo(29221.27, 2);
+    expect(ct600.Y135).toBeCloseTo(29740.59, 2);
     expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
     expect(ct600.AJ154).toBeCloseTo(ct.K37, 6);
-    expect(ct600.AJ159).toBeCloseTo(29156.77, 2);
-    expect(ct600.AJ166).toBeCloseTo(29156.77, 2);
+    expect(ct600.AJ159).toBeCloseTo(29676.09, 2);
+    expect(ct600.AJ166).toBeCloseTo(29676.09, 2);
     expect(ct600.AK66).toBeCloseTo(341283.33, 2);
+    expect(ct600.Z114).toBeCloseTo(20000, 2);
     // The effective rate the form states: the charge over the profit.
-    expect(ct600.W137).toBeCloseTo(23.49, 2);
+    expect(ct600.W137).toBeCloseTo(23.9, 2);
   });
 
   it("publishes the statutory accounts the working sheet feeds", () => {
     const pubPl = run.results["PubP&L"];
     const balanceSheet = run.results.PubBalSht;
     expect(pubPl.F9).toBeCloseTo(341283.33, 2);
-    expect(pubPl.F50).toBeCloseTo(29221.27, 2);
-    expect(pubPl.F54).toBeCloseTo(127958.62, 2);
+    expect(pubPl.F50).toBeCloseTo(29740.59, 2);
+    expect(pubPl.F54).toBeCloseTo(127439.31, 2);
     // The land & buildings asset (cost 200,000, depreciation 40,000 brought
     // forward) sits in opening_fixed_assets rather than the year's additions
     // or disposals, and its class depreciates at 0% (ltd-2024.toml), so it
@@ -265,6 +272,70 @@ describe("the associated companies count on the derived sheets", () => {
   });
 });
 
+// ── A period straddling a small profits rate change ────────────────────────
+//
+// Every financial year from 2019 to 2027 charged 19%, so the two Admin rate
+// cells hold the same figure on every shipped package. This builds a year
+// whose predecessor charged 16% and follows it from the tax data to the two
+// tax rows and the checks that hold each row to its own year.
+
+describe("a period straddling a small profits rate change", () => {
+  const book = { documentInfo: { periodCoveredEnd: "2026-10-31" } };
+  function twoRateTaxData() {
+    const taxData = taxDataFor("ltd-2026");
+    taxData.corporation_tax_previous_financial_year = { small_profits_rate: 0.16 };
+    return taxData;
+  }
+
+  it("gives the first tax row the year before's rate and the second the year end's", () => {
+    const results = calculateLtdResults(book, [], twoRateTaxData(), {});
+    expect(results.Admin.K6).toBe(2025);
+    expect(results.Admin.K7).toBe(2026);
+    expect(results.Admin.P6).toBe(16);
+    expect(results.Admin.P7).toBe(19);
+  });
+
+  it("holds both rows to the same figure when the two years charged the same rate", () => {
+    const results = calculateLtdResults(book, [], taxDataFor("ltd-2026"), {});
+    expect(results.Admin.P6).toBe(19);
+    expect(results.Admin.P7).toBe(19);
+  });
+
+  // BrickWork Pro Ltd VAT read seven months on, so its year ends on
+  // 31 October 2026 and its period straddles 1 April with a profit to charge
+  // on both rows.
+  it("charges each row at its own year's rate, and names the row that carries the wrong one", () => {
+    const taxData = twoRateTaxData();
+    const { book: brick, lines } = loadDiyaGlData(resolve(ROOT, "examples", "brickwork-pro", "ltd-vat"), "+P7M");
+    const scenario = diyaGlToScenario(brick, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const failuresFor = (mutate) => {
+      const results = calculateFromDiyaGl(brick, lines, "ltd", taxData, scenario);
+      mutate(results);
+      return ltd
+        .checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, "2026-10-31")
+        .filter((check) => !check.pass)
+        .map((check) => check.name)
+        .sort();
+    };
+
+    const intact = calculateFromDiyaGl(brick, lines, "ltd", taxData, scenario);
+    expect(intact.CorporationTax.G33).toBe(16);
+    expect(intact.CorporationTax.G34).toBe(19);
+
+    const clean = new Set(failuresFor(() => {}));
+    expect(clean.has("CT: first tax row small profits rate = the rate its own financial year charged")).toBe(false);
+
+    const flipped = failuresFor((results) => {
+      results.Admin.P6 = 19;
+    }).filter((name) => !clean.has(name));
+    expect(flipped).toEqual([
+      "CT: first tax row rate = the rate its share of the augmented profits falls in",
+      "CT: first tax row small profits rate = the rate its own financial year charged",
+    ]);
+  });
+});
+
 // ── Every check is breakable ───────────────────────────────────────────────
 //
 // A check that cannot fail is not a check. Each case below corrupts one
@@ -312,6 +383,40 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
       "CT: charge for the year = the two tax rows",
       "Fixed asset note: corporation tax for the year = CT charge",
       "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
+    ]);
+  });
+
+  it("names the augmented profits chain when the franked investment income moves", () => {
+    expect(
+      flippedBy((results) => {
+        results.CorporationTax.K29 += 1000;
+      }),
+    ).toEqual([
+      "CT600: franked investment income = the working sheet's figure",
+      "CT: augmented profits = the chargeable profit and the franked investment income",
+      "CT: franked investment income = the exempt distributions entered on the opening accounts",
+    ]);
+  });
+
+  it("names the entered figure and everything downstream when the opening accounts entry moves", () => {
+    expect(
+      flippedBy((results) => {
+        results.OpenAccounts.Q6 += 1000;
+      }),
+    ).toEqual([
+      "CT: franked investment income = the exempt distributions entered on the opening accounts",
+      "Opening accounts: franked investment income = the distributions the scenario received",
+    ]);
+  });
+
+  it("names the band and the relief when the augmented profits move", () => {
+    expect(
+      flippedBy((results) => {
+        results.CorporationTax.K30 += 1000;
+      }),
+    ).toEqual([
+      "CT: augmented profits = the chargeable profit and the franked investment income",
+      "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
     ]);
   });
 

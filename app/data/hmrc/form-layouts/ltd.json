@@ -35,17 +35,48 @@
           "twoYear": true,
           "priorYearNote": "The prior-year column stays blank until the comparatives are entered on the opening balance sheet.",
           "rows": [
-            { "heading": "balance-sheet/1/A", "empty": true, "note": "The template carries no figure for this heading." },
-            { "heading": "balance-sheet/1/B" },
-            { "heading": "balance-sheet/1/C" },
-            { "heading": "balance-sheet/1/D", "empty": true, "note": "The template carries no figure for this heading." },
-            { "heading": "balance-sheet/1/E" },
-            { "heading": "balance-sheet/1/F" },
-            { "heading": "balance-sheet/1/G" },
-            { "heading": "balance-sheet/1/H" },
-            { "heading": "balance-sheet/1/I", "empty": true, "note": "The template carries no figure for this heading." },
-            { "heading": "balance-sheet/1/J", "empty": true, "note": "The template carries no figure for this heading." },
-            { "heading": "balance-sheet/1/K", "total": true }
+            {
+              "heading": "balance-sheet/1/A",
+              "empty": true,
+              "note": "The template carries no figure for this heading."
+            },
+            {
+              "heading": "balance-sheet/1/B"
+            },
+            {
+              "heading": "balance-sheet/1/C"
+            },
+            {
+              "heading": "balance-sheet/1/D",
+              "empty": true,
+              "note": "The template carries no figure for this heading."
+            },
+            {
+              "heading": "balance-sheet/1/E"
+            },
+            {
+              "heading": "balance-sheet/1/F"
+            },
+            {
+              "heading": "balance-sheet/1/G"
+            },
+            {
+              "heading": "balance-sheet/1/H"
+            },
+            {
+              "heading": "balance-sheet/1/I",
+              "empty": true,
+              "note": "The template carries no figure for this heading."
+            },
+            {
+              "heading": "balance-sheet/1/J",
+              "empty": true,
+              "note": "The template carries no figure for this heading."
+            },
+            {
+              "heading": "balance-sheet/1/K",
+              "total": true
+            }
           ]
         },
         {
@@ -53,7 +84,10 @@
           "twoYear": true,
           "priorYearNote": "Only turnover carries a prior-year figure. The sheet's prior-year cost of sales holds the materials line alone and its subcontractors line is not read, so that column stays blank rather than showing a short total.",
           "rows": [
-            { "heading": "profit-and-loss/-/A", "priorCell": "Financialaccounts.xlsx!PubP&L!B9" },
+            {
+              "heading": "profit-and-loss/-/A",
+              "priorCell": "Financialaccounts.xlsx!PubP&L!B9"
+            },
             {
               "heading": "profit-and-loss/-/B",
               "rule": {
@@ -62,7 +96,9 @@
                 "why": "other income is the gross bank interest; PubP&L!F48 holds the same figure but is not a read, and the working sheet's K24 is"
               }
             },
-            { "heading": "profit-and-loss/-/C" },
+            {
+              "heading": "profit-and-loss/-/C"
+            },
             {
               "heading": "profit-and-loss/-/D",
               "rule": {
@@ -94,8 +130,13 @@
                 "why": "administrative expenses less the staff costs and the amounts written off assets already printed above; goodwill written off stays here"
               }
             },
-            { "heading": "profit-and-loss/-/G" },
-            { "heading": "profit-and-loss/-/H", "total": true }
+            {
+              "heading": "profit-and-loss/-/G"
+            },
+            {
+              "heading": "profit-and-loss/-/H",
+              "total": true
+            }
           ]
         },
         {
@@ -118,17 +159,30 @@
       "sections": [
         {
           "heading": "Profit before tax",
-          "rows": [{ "line": "1.1/Profit/(loss) before tax per statutory accounts" }]
+          "rows": [
+            {
+              "line": "1.1/Profit/(loss) before tax per statutory accounts"
+            }
+          ]
         },
         {
           "heading": "Income deducted that is not trading income",
-          "rows": [{ "line": "1.2/Non-trading loan relationship credit", "deduct": true }]
+          "rows": [
+            {
+              "line": "1.2/Non-trading loan relationship credit",
+              "deduct": true
+            }
+          ]
         },
         {
           "heading": "Disallowable expenditure added back",
           "rows": [
-            { "line": "1.3/Depreciation" },
-            { "line": "1.3/Trading debits in respect of intangible fixed assets" },
+            {
+              "line": "1.3/Depreciation"
+            },
+            {
+              "line": "1.3/Trading debits in respect of intangible fixed assets"
+            },
             {
               "line": "1.3/Donations",
               "outsideTotal": true,
@@ -138,12 +192,20 @@
         },
         {
           "heading": "Adjusted profit",
-          "rows": [{ "line": "1.1/Adjusted Profit/(Loss)", "total": true }]
+          "rows": [
+            {
+              "line": "1.1/Adjusted Profit/(Loss)",
+              "total": true
+            }
+          ]
         },
         {
           "heading": "Capital allowances, main pool",
           "rows": [
-            { "line": "2.2d/AIA claimed", "cell": "Financialaccounts.xlsx!CorporationTax!I15" },
+            {
+              "line": "2.2d/AIA claimed",
+              "cell": "Financialaccounts.xlsx!CorporationTax!I15"
+            },
             {
               "line": "2.2d/WDA claimed",
               "rule": {
@@ -168,7 +230,11 @@
                 "why": "below nil the same line is a balancing charge, carried as a negative allowance so the allowances total nets it off"
               }
             },
-            { "line": "2.1/Total Capital Allowances", "deduct": true, "total": true }
+            {
+              "line": "2.1/Total Capital Allowances",
+              "deduct": true,
+              "total": true
+            }
           ]
         },
         {
@@ -207,12 +273,36 @@
               "group": "financial-year",
               "caption": "First financial year",
               "rows": [
-                { "label": "Financial year", "format": "year", "cell": "Financialaccounts.xlsx!CorporationTax!E33", "ct600Box": 330 },
-                { "label": "Profit", "cell": "Financialaccounts.xlsx!CorporationTax!F33", "ct600Box": 335 },
-                { "label": "Rate of tax", "format": "percent", "cell": "Financialaccounts.xlsx!CorporationTax!G33", "ct600Box": 340 },
-                { "label": "Tax", "cell": "Financialaccounts.xlsx!CorporationTax!J33", "ct600Box": 345 },
-                { "label": "Marginal relief", "cell": "Financialaccounts.xlsx!CorporationTax!L33" },
-                { "label": "Tax after marginal relief", "cell": "Financialaccounts.xlsx!CorporationTax!I33" }
+                {
+                  "label": "Financial year",
+                  "format": "year",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!E33",
+                  "ct600Box": 330
+                },
+                {
+                  "label": "Profit",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!F33",
+                  "ct600Box": 335
+                },
+                {
+                  "label": "Rate of tax",
+                  "format": "percent",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!G33",
+                  "ct600Box": 340
+                },
+                {
+                  "label": "Tax",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!J33",
+                  "ct600Box": 345
+                },
+                {
+                  "label": "Marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!L33"
+                },
+                {
+                  "label": "Tax after marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!I33"
+                }
               ]
             },
             {
@@ -221,12 +311,36 @@
               "blankWhen": "Financialaccounts.xlsx!CorporationTax!A34",
               "blankNote": "The period sits inside one financial year, so this group stays blank.",
               "rows": [
-                { "label": "Financial year", "format": "year", "cell": "Financialaccounts.xlsx!CorporationTax!E34", "ct600Box": 380 },
-                { "label": "Profit", "cell": "Financialaccounts.xlsx!CorporationTax!F34", "ct600Box": 385 },
-                { "label": "Rate of tax", "format": "percent", "cell": "Financialaccounts.xlsx!CorporationTax!G34", "ct600Box": 390 },
-                { "label": "Tax", "cell": "Financialaccounts.xlsx!CorporationTax!J34", "ct600Box": 395 },
-                { "label": "Marginal relief", "cell": "Financialaccounts.xlsx!CorporationTax!L34" },
-                { "label": "Tax after marginal relief", "cell": "Financialaccounts.xlsx!CorporationTax!I34" }
+                {
+                  "label": "Financial year",
+                  "format": "year",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!E34",
+                  "ct600Box": 380
+                },
+                {
+                  "label": "Profit",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!F34",
+                  "ct600Box": 385
+                },
+                {
+                  "label": "Rate of tax",
+                  "format": "percent",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!G34",
+                  "ct600Box": 390
+                },
+                {
+                  "label": "Tax",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!J34",
+                  "ct600Box": 395
+                },
+                {
+                  "label": "Marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!L34"
+                },
+                {
+                  "label": "Tax after marginal relief",
+                  "cell": "Financialaccounts.xlsx!CorporationTax!I34"
+                }
               ]
             },
             {
@@ -247,41 +361,99 @@
         {
           "heading": "Company information",
           "rows": [
-            { "box": 1, "from": "book", "path": "entityInformation.organizationIdentifier" },
-            { "box": 2, "from": "book", "path": "entityInformation.diya-gl:companyNumber" },
-            { "box": 3, "from": "book", "path": "entityInformation.taxRegistrationNumber" }
+            {
+              "box": 1,
+              "from": "book",
+              "path": "entityInformation.organizationIdentifier"
+            },
+            {
+              "box": 2,
+              "from": "book",
+              "path": "entityInformation.diya-gl:companyNumber"
+            },
+            {
+              "box": 3,
+              "from": "book",
+              "path": "entityInformation.taxRegistrationNumber"
+            }
           ]
         },
         {
           "heading": "About this return",
           "rows": [
-            { "box": 30 },
-            { "box": 35 },
+            {
+              "box": 30
+            },
+            {
+              "box": 35
+            },
             {
               "box": 80,
-              "rule": { "op": "fixed", "value": "X", "why": "the page always shows accounts and a computation beside the return" }
+              "rule": {
+                "op": "fixed",
+                "value": "X",
+                "why": "the page always shows accounts and a computation beside the return"
+              }
             }
           ]
         },
         {
           "heading": "Turnover",
-          "rows": [{ "box": 145 }]
+          "rows": [
+            {
+              "box": 145
+            }
+          ]
         },
         {
           "heading": "Income",
-          "rows": [{ "box": 155 }, { "box": 160 }, { "box": 165, "total": true }, { "box": 170 }]
+          "rows": [
+            {
+              "box": 155
+            },
+            {
+              "box": 160
+            },
+            {
+              "box": 165,
+              "total": true
+            },
+            {
+              "box": 170
+            }
+          ]
         },
         {
           "heading": "Profits before deductions and reliefs",
-          "rows": [{ "box": 235, "total": true }]
+          "rows": [
+            {
+              "box": 235,
+              "total": true
+            }
+          ]
         },
         {
           "heading": "Deductions and reliefs",
           "rows": [
-            { "box": 295, "empty": true, "note": "The sheet carries no deductions or reliefs." },
-            { "box": 300, "empty": true, "note": "The sheet carries no deductions or reliefs." },
-            { "box": 305, "empty": true, "note": "The sheet carries no qualifying donations." },
-            { "box": 315, "total": true }
+            {
+              "box": 295,
+              "empty": true,
+              "note": "The sheet carries no deductions or reliefs."
+            },
+            {
+              "box": 300,
+              "empty": true,
+              "note": "The sheet carries no deductions or reliefs."
+            },
+            {
+              "box": 305,
+              "empty": true,
+              "note": "The sheet carries no qualifying donations."
+            },
+            {
+              "box": 315,
+              "total": true
+            }
           ]
         },
         {
@@ -295,15 +467,26 @@
                 "why": "the sheet reports associated companies by financial year in boxes 327 and 328, not as a whole-period count"
               }
             },
-            { "box": 327 },
-            { "box": 328 },
+            {
+              "box": 327
+            },
+            {
+              "box": 328
+            },
             {
               "box": 329,
               "rule": {
                 "op": "tickIfAny",
                 "tests": [
-                  { "cell": "Financialaccounts.xlsx!CT600!Y133", "test": "gt0" },
-                  { "cell": "Financialaccounts.xlsx!CT600!AA126", "test": "lt", "against": "Financialaccounts.xlsx!Admin!P8" }
+                  {
+                    "cell": "Financialaccounts.xlsx!CT600!Y133",
+                    "test": "gt0"
+                  },
+                  {
+                    "cell": "Financialaccounts.xlsx!CT600!AA126",
+                    "test": "lt",
+                    "against": "Financialaccounts.xlsx!Admin!P8"
+                  }
                 ],
                 "why": "the form ticks 329 for marginal relief or the small profits rate; the sheet prints neither tick"
               }
@@ -311,29 +494,83 @@
             {
               "group": "financial-year",
               "caption": "First financial year",
-              "rows": [{ "box": 330 }, { "box": 335 }, { "box": 340 }, { "box": 345 }]
+              "rows": [
+                {
+                  "box": 330
+                },
+                {
+                  "box": 335
+                },
+                {
+                  "box": 340
+                },
+                {
+                  "box": 345
+                }
+              ]
             },
             {
               "group": "financial-year",
               "caption": "Second financial year",
               "blankWhen": "Financialaccounts.xlsx!CorporationTax!A34",
               "blankNote": "The period sits inside one financial year, so this group stays blank.",
-              "rows": [{ "box": 380 }, { "box": 385 }, { "box": 390 }, { "box": 395 }]
+              "rows": [
+                {
+                  "box": 380
+                },
+                {
+                  "box": 385
+                },
+                {
+                  "box": 390
+                },
+                {
+                  "box": 395
+                }
+              ]
             },
-            { "box": 430 },
-            { "box": 435 },
-            { "box": 440, "total": true }
+            {
+              "box": 430
+            },
+            {
+              "box": 435
+            },
+            {
+              "box": 440,
+              "total": true
+            }
           ]
         },
         {
           "heading": "Tax outstanding or overpaid",
-          "rows": [{ "box": 475 }, { "box": 510 }, { "box": 515 }, { "box": 525 }, { "box": 528 }]
+          "rows": [
+            {
+              "box": 475
+            },
+            {
+              "box": 510
+            },
+            {
+              "box": 515
+            },
+            {
+              "box": 525
+            },
+            {
+              "box": 528
+            }
+          ]
         },
         {
           "heading": "Tax reconciliation",
           "rows": [
-            { "box": 595, "note": "The sheet leaves this an input. Enter what you have already paid." },
-            { "box": 600 },
+            {
+              "box": 595,
+              "note": "The sheet leaves this an input. Enter what you have already paid."
+            },
+            {
+              "box": 600
+            },
             {
               "box": 605,
               "rule": {
@@ -345,11 +582,30 @@
           ]
         },
         {
+          "heading": "Indicators and information",
+          "rows": [
+            {
+              "box": 620
+            }
+          ]
+        },
+        {
           "heading": "Capital allowances and balancing charges",
           "rows": [
-            { "box": 690, "cell": "Financialaccounts.xlsx!CorporationTax!I15" },
-            { "box": 695, "empty": true, "note": "The working sheet has no special rate pool." },
-            { "box": 700, "empty": true, "note": "The working sheet has no special rate pool." },
+            {
+              "box": 690,
+              "cell": "Financialaccounts.xlsx!CorporationTax!I15"
+            },
+            {
+              "box": 695,
+              "empty": true,
+              "note": "The working sheet has no special rate pool."
+            },
+            {
+              "box": 700,
+              "empty": true,
+              "note": "The working sheet has no special rate pool."
+            },
             {
               "box": 705,
               "rule": {
@@ -382,11 +638,22 @@
         {
           "heading": "Declaration",
           "rows": [
-            { "box": 975, "cell": "Financialaccounts.xlsx!OpenAccounts!E5" },
-            { "box": 980, "empty": true, "note": "Enter the date you sign the return." },
+            {
+              "box": 975,
+              "cell": "Financialaccounts.xlsx!OpenAccounts!E5"
+            },
+            {
+              "box": 980,
+              "empty": true,
+              "note": "Enter the date you sign the return."
+            },
             {
               "box": 985,
-              "rule": { "op": "fixed", "value": "Director", "why": "the CT600 sheet prints DIRECTOR as the signing status" }
+              "rule": {
+                "op": "fixed",
+                "value": "Director",
+                "why": "the CT600 sheet prints DIRECTOR as the signing status"
+              }
             }
           ]
         }
@@ -399,8 +666,14 @@
       "sheetPrefix": "VATQtr",
       "quarters": [1, 2, 3, 4, 5],
       "lastQuarterNote": "the quarter after the year end",
-      "period": { "endCell": "G5", "dueCell": "G7" },
-      "flatRate": { "sheet": "Vatreturns.xlsx!Vatinterface", "column": "M" },
+      "period": {
+        "endCell": "G5",
+        "dueCell": "G7"
+      },
+      "flatRate": {
+        "sheet": "Vatreturns.xlsx!Vatinterface",
+        "column": "M"
+      },
       "coverage": {
         "sheet": "Vatreturns.xlsx!Vatinterface",
         "endColumn": "B",
@@ -411,17 +684,43 @@
         "firstAccountingRow": 6
       },
       "boxes": [
-        { "box": 1, "label": "VAT due in this period on sales and other outputs", "cell": "G9", "format": "pence" },
+        {
+          "box": 1,
+          "label": "VAT due in this period on sales and other outputs",
+          "cell": "G9",
+          "format": "pence"
+        },
         {
           "box": 2,
           "label": "VAT due in this period on acquisitions from Northern Ireland from EU member states",
           "format": "pence",
-          "rule": { "op": "fixed", "value": 0, "why": "the sheet fixes G11 at nil and never reads it, so there is no cell behind box 2" },
+          "rule": {
+            "op": "fixed",
+            "value": 0,
+            "why": "the sheet fixes G11 at nil and never reads it, so there is no cell behind box 2"
+          },
           "note": "The sheet sets box 2 to zero. Work out any amount due and enter it yourself."
         },
-        { "box": 3, "label": "Total VAT due", "cell": "G13", "format": "pence", "total": true },
-        { "box": 4, "label": "VAT reclaimed on purchases and other inputs", "cell": "G15", "format": "pence" },
-        { "box": 5, "label": "Net VAT to pay or reclaim", "cell": "G17", "format": "pence", "total": true },
+        {
+          "box": 3,
+          "label": "Total VAT due",
+          "cell": "G13",
+          "format": "pence",
+          "total": true
+        },
+        {
+          "box": 4,
+          "label": "VAT reclaimed on purchases and other inputs",
+          "cell": "G15",
+          "format": "pence"
+        },
+        {
+          "box": 5,
+          "label": "Net VAT to pay or reclaim",
+          "cell": "G17",
+          "format": "pence",
+          "total": true
+        },
         {
           "box": 6,
           "label": "Total value of sales excluding VAT",
@@ -429,7 +728,12 @@
           "cell": "G21",
           "format": "whole"
         },
-        { "box": 7, "label": "Total value of purchases excluding VAT", "cell": "G23", "format": "whole" },
+        {
+          "box": 7,
+          "label": "Total value of purchases excluding VAT",
+          "cell": "G23",
+          "format": "whole"
+        },
         {
           "box": 8,
           "label": "Total value of dispatches of goods to Northern Ireland",

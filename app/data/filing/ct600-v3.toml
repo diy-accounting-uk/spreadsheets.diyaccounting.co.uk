@@ -1363,6 +1363,7 @@ format = "whole"
 notes = "Guide notes franked investment income was repealed on 6 April 2016; enter exempt ABGH distributions per CTA 2010 s.1000(1), excluding certain intra-group distributions. Feeds augmented profits for marginal relief"
 element = "FrankedInvestmentIncome"
 xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/FrankedInvestmentIncome"
+sheetCell = "Financialaccounts.xlsx!CT600!Z114"
 
 [[box]]
 number = 625

@@ -264,7 +264,7 @@ smallProfitsRate = 0.1900
 smallProfitsLimit = 50000.00
 mainRate = 0.2500
 mainRateThreshold = 250000.00
-associatedCompanies = 0
+associatedCompanies = 2
 
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000.00

@@ -25,7 +25,12 @@
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
-import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
+import {
+  apportionCorporationTax,
+  financialYearsInPeriod,
+  financialYearNumber,
+  smallProfitsRatePercentFor,
+} from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
@@ -817,7 +822,7 @@ function computeLtd(book, lines, taxData, scenario) {
 
   const monthlyPl = buildMonthlyProfitAndLoss(trialBalance, tabs);
   const publishedPl = buildPublishedProfitAndLoss(trialBalance, monthlyPl, admin);
-  const corporationTax = buildCorporationTax({ admin, trialBalance, blocks, publishedPl });
+  const corporationTax = buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAccounts: results.OpenAccounts });
 
   // The tax charge closes the books: the trial balance's corporation tax rows
   // read it, the published P&L reads those rows back, and the retained profit
@@ -882,13 +887,17 @@ function buildAdmin(taxData, period, associatedCompanies) {
   const yearEndSerial = serialOf(period.yearEnd);
   const periodStartSerial = serialOf(period.start);
   const financialYears = financialYearsInPeriod(period.start, period.yearEnd);
+  const fileFinancialYear = financialYearNumber(period.yearEnd);
 
   return {
     B9: periodStartSerial,
     B32: yearEndSerial,
     F21: yearEndSerial,
-    P6: Math.round(corporationTax.small_profits_rate * 100),
-    P7: Math.round(corporationTax.small_profits_rate * 100),
+    // Each tax row's own financial year's small profits rate. The two differ
+    // whenever the period reaches back over 1 April into a year that charged
+    // a different rate.
+    P6: smallProfitsRatePercentFor(taxData, financialYears.years[0].year, fileFinancialYear, financialYears.years[0].days),
+    P7: smallProfitsRatePercentFor(taxData, financialYears.years[1].year, fileFinancialYear, financialYears.years[1].days),
     P8: Math.round(corporationTax.main_rate * 100),
     P9: corporationTax.marginal_relief_fraction,
     P12: corporationTax.small_profits_limit,
@@ -1393,6 +1402,12 @@ function buildOpenAccounts(book, scenario, openingBalance) {
     E34: openingBalance.retained_earnings || 0,
     E37: assets - liabilities,
     E48: 0,
+    // The exempt distributions the company received. The accounts carry no
+    // account for them -- they are not income the company is taxed on -- so
+    // the figure is entered here, beside the loss brought forward, and the
+    // corporation tax computation reads it for augmented profits and for the
+    // return's own box.
+    Q6: business.franked_investment_income ?? 0,
   };
   if (business.company_number) sheet.E3 = business.company_number;
   if (business.phone) sheet.E4 = business.phone;
@@ -1761,7 +1776,7 @@ function buildDirectorsReport(publishedPl, publishedBalanceSheet, companySecreta
 
 // ── Corporation tax working sheet and CT600 ────────────────────────────────
 
-function buildCorporationTax({ admin, trialBalance, blocks, publishedPl }) {
+function buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAccounts }) {
   const goodwill = trialBalance.EJ85 > 0 ? trialBalance.EJ85 : 0;
   const depreciation = trialBalance.EJ87 > 0 ? trialBalance.EJ87 : 0;
   const netBalancingCharge = blocks.whole.W > 0 ? blocks.whole.Z - blocks.whole.Y : 0;
@@ -1784,6 +1799,8 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl }) {
   sheet.K24 = -trialBalance.EJ58;
   sheet.K26 = 0;
   sheet.K28 = sheet.K22 + sheet.K24 - sheet.K26;
+  sheet.K29 = openAccounts.Q6;
+  sheet.K30 = sheet.K28 + sheet.K29;
 
   const financialYears = financialYearsInPeriod(fromSerial(admin.L6), fromSerial(admin.N7));
   const charge = apportionCorporationTax(sheet.K28, financialYears.years, financialYears.totalDays, {
@@ -1793,6 +1810,7 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl }) {
     lowerLimit: admin.P12,
     upperLimit: admin.P13,
     associatedCompanies: admin.P14,
+    frankedInvestmentIncome: sheet.K29,
   });
 
   sheet.A33 = financialYears.years[0].days;
@@ -1836,6 +1854,7 @@ function buildCt600(corporationTax, pl, admin) {
     AJ126: corporationTax.J33,
     AJ128: corporationTax.J34,
     Y118: admin.P14,
+    Z114: corporationTax.K29,
   };
   // The second financial year's row is stated only when the period reaches
   // into it.

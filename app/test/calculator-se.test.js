@@ -359,6 +359,16 @@ describe("Self Employed engine: the checks are breakable", () => {
       },
       failing: ["P&L: Depreciation (row 34, summed) = Schedule I1"],
     },
+    {
+      // Every box in the 32-to-45 block sits at nil on this fixture, so this
+      // gives one a figure rather than moving one that already carries one --
+      // the same shape of change a later book field will make for real.
+      what: "box 32's own cell, blank on this fixture",
+      corrupt: (results) => {
+        results["SE Full"].O66 = 500;
+      },
+      failing: ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45"],
+    },
   ];
 
   for (const corruption of CORRUPTIONS) {
@@ -480,7 +490,20 @@ describe("Self Employed engine: the read scope", () => {
         "SE Full!D156",
         "SE Full!D160",
         "SE Full!D179",
+        "SE Full!O102",
+        "SE Full!O106",
+        "SE Full!O110",
+        "SE Full!O118",
         "SE Full!O139",
+        "SE Full!O66",
+        "SE Full!O70",
+        "SE Full!O74",
+        "SE Full!O78",
+        "SE Full!O82",
+        "SE Full!O86",
+        "SE Full!O90",
+        "SE Full!O94",
+        "SE Full!O98",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",
         "Vat.xlsx!Vatinterface!G4",
