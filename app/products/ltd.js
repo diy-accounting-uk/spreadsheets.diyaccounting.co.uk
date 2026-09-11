@@ -250,6 +250,11 @@ const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
 // N4 and T4 are all zero.
 export const STOCK_MATERIALS_PERCENT_CELL = "H4";
 
+// The number of companies associated with this one, entered beside the
+// corporation tax rates it divides. The only Admin cell cellWrites() fills;
+// the rates beside it come from the tax data, not the book.
+export const ADMIN_ASSOCIATED_COMPANIES_CELL = "P14";
+
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
 // depreciation (M:Q), one column per asset class, with net book value in E13.
