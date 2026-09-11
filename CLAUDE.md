@@ -88,13 +88,37 @@ npm run cdk:synth
 ## Testing
 
 ```bash
-npm test                                    # Unit tests (vitest), including the LibreOffice recalculation tests when soffice is installed (many minutes)
-npm run test:fast                           # The same suite with SKIP_LIBREOFFICE=1, so the recalculation tests skip themselves (about 3 minutes); the pre-push check for any change outside the generator, templates or tax data
-npm run test:browser                        # Browser tests (Playwright) — HTML content validation
+npm test                                    # The router: it reads the diff and runs the tiers that diff reaches
+npm test -- --plan                          # Print the tier selection and the estimate, run nothing
+npm test -- --all                           # Every tier, every product, the full browser suite
+npm test -- --base HEAD~1                   # Route against a different comparison point
+npm run test:browser                        # The whole Playwright browser suite
 npm run test:spreadsheetsBehaviour-local    # Behaviour tests against local server (localhost:3000)
 npm run test:spreadsheetsBehaviour-ci       # Behaviour tests against CI environment
 npm run test:spreadsheetsBehaviour-prod     # Behaviour tests against production
 ```
+
+`npm test` is `scripts/test-scope.mjs`. It diffs against the merge base with `origin/main`, maps
+the changed paths through the routing table in that file, and runs five tiers in cost order:
+gates (fixture sync, diya-gl parity, prettier) and unit always, then calc (the LibreOffice
+recalculations), browser and infra only when the diff reaches them. It prints the tiers it picked
+and the paths that picked them before it runs anything, and ends on one `VERDICT:` line built from
+exit codes. **Name `npm test` in a brief and nothing else** — a brief that names a narrower command
+caps the scope at whatever its author imagined, which is the mistake the router exists to remove.
+
+When the router cannot work out what changed, it runs more, not less: a detached HEAD, a missing
+`origin/main`, a shallow clone or an empty diff all escalate to the full set and say so.
+
+`SKIP_LIBREOFFICE=1` still works for a debug loop and can no longer lie: the verdict comes back
+`PARTIAL (libreoffice skipped)`, and `.githooks/pre-push` clears the variable so it cannot reach the
+push gate. `TEST_SCOPE_TIERS` narrows the router to the tiers one environment owns, for CI jobs that
+split the tiers between them; anything it excludes prints as `DELEGATED` and the verdict is
+`PARTIAL`.
+
+A tracked `.githooks/pre-push` routes the tests over everything the push adds to the remote.
+`npm install` points `core.hooksPath` at `.githooks` through `.githooks/install.mjs`, so a fresh
+clone and every new worktree inherit it. In a real hurry, `SKIP_PUSH_TESTS=1 git push` runs the
+gates tier alone and prints what it did not run, which beats `--no-verify` running nothing silently.
 
 Behaviour tests use the `SPREADSHEETS_BASE_URL` environment variable to target different environments. Output is automatically teed to `spreadsheetsBehaviour.log` in the project root.
 
@@ -124,21 +148,25 @@ checks, fixtures, or the judge.
 - **Runner conventions.** `additionalReads` results are keyed `<filename>!<sheetName>`.
   Month-keyed expectations follow the period-frame shift in `ltd.js` (dates shift by the gap
   between the book's declared period and the package's, with end-of-month clamping).
-- **Run LibreOffice tests serially, and put a progress signal on it.** Parallel vitest workers
-  contend for soffice and deadlock or time out: `npx vitest run --fileParallelism=false`. Serial
-  means slow — around 35 gated files, each spawning its own soffice — so arm something that says
-  it is alive before you start, not after you begin to doubt it. A fresh `soffice` in `ps` is the
-  honest progress signal; the log is not, because vitest's reporter is non-interactive once it is
-  piped to a file and buffers its per-file lines to the end. **An empty log is therefore evidence
-  of nothing.** Read the process table before concluding a long run is stuck: parents at 0% CPU in
-  state `S` with a child soffice seconds old is what healthy looks like here.
+- **Run LibreOffice tests in parallel, and put a progress signal on it.** `vitest.config.js` caps
+  vitest at four workers, so pass no concurrency flag at all. The profile-lock hazard that the old
+  serial rule was written for is fixed in `app/lib/spreadsheet-runner.js`: every soffice call gets
+  a random work directory and its own `-env:UserInstallation`, so concurrent instances share
+  nothing. Measured on the gated files, all 92 tests green at every setting: serial 272s, two
+  workers 150s, four 145s, eight 146s. Long runs still need a liveness signal armed before you
+  start, not after you begin to doubt it. A fresh `soffice` in `ps` is the honest one; the log is
+  not, because vitest's reporter buffers its per-file lines to the end once it is piped to a file.
+  **An empty log is therefore evidence of nothing.** Use `--reporter=tap-flat`, which the router
+  already passes, for a log that grows while the run is alive. Read the process table before
+  concluding a long run is stuck: parents at 0% CPU in state `S` with a child soffice seconds old
+  is what healthy looks like here.
 - **Judge triage discipline.** When the LLM judge fails a run, classify each concern: a real
   defect is fixed at source with a new deterministic check (so its class stops needing the
   judge); a context gap gets a new indicator in `app/lib/report-indicators.js` or a per-product
   note in `app/bin/judge-reconciliation.js`. The rubric's standards are never softened. Template
   defects the fixtures cannot fix become NEXT.md items with the hand-computed evidence.
-- **Verification ladder per change**: blast-radius tests serially → the featured scenario
-  reconciles RECONCILES → full `npm test` before any push → the four `generate-*` workflows
+- **Verification ladder per change**: `npm test` on the change → the featured scenario
+  reconciles RECONCILES → the pre-push hook's routed run → the four `generate-*` workflows
   dispatched with skip-commit on the branch (deterministic gates plus the live judge under
   OIDC) → merge → generate-commit refresh runs so the committed reports match.
 

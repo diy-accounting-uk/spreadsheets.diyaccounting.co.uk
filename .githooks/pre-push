@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+#
+# pre-push — run the test router over everything this push adds to the remote.
+#
+# Push is the one chokepoint every branch crosses on its way to CI, and it is
+# where the scope has to be the branch's whole diff rather than whatever was
+# last edited. The base is the remote's current tip for the branch, so the
+# router sees exactly the commits the remote is about to gain. A brand new
+# branch, or a base this clone cannot resolve, falls back to origin/main, and
+# the router escalates to the full set when even that fails.
+#
+# SKIP_LIBREOFFICE is cleared: the debug-loop escape hatch does not reach the
+# push gate.
+#
+# In a hurry: SKIP_PUSH_TESTS=1 git push runs the gates tier alone, about two
+# minutes, and prints what it did not run. It is there so the fast path is a
+# recorded partial run rather than --no-verify, which runs nothing and says
+# nothing.
+
+set -uo pipefail
+
+ZERO="0000000000000000000000000000000000000000"
+base=""
+
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue
+  if [ -n "${remote_sha:-}" ] && [ "$remote_sha" != "$ZERO" ] && git rev-parse --verify --quiet "${remote_sha}^{commit}" >/dev/null; then
+    base="$remote_sha"
+  fi
+  break
+done
+
+if [ -z "$base" ]; then
+  base="origin/main"
+fi
+
+unset SKIP_LIBREOFFICE
+
+if [ "${SKIP_PUSH_TESTS:-}" = "1" ]; then
+  echo "pre-push: SKIP_PUSH_TESTS=1, running the gates tier only."
+  echo "pre-push: the unit, calc, browser and infra tiers are NOT running. CI is now the first thing that will see them."
+  TEST_SCOPE_TIERS=gates node scripts/test-scope.mjs --base "$base"
+  exit $?
+fi
+
+echo "pre-push: routing the tests over everything this push adds, base ${base}."
+node scripts/test-scope.mjs --base "$base"
