@@ -3062,7 +3062,18 @@
   // gate on consent -- it is not analytics -- though it also sends the same
   // donation_prompt GA4 event every other page's trackEvent call sends.
   // Neither steals focus: it is a corner card, appended and left alone.
-  var DONATE_STRIPE_LINK = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200";
+  //
+  // The link itself comes from donate-config.js, generated per environment
+  // by scripts/build-donate-page.mjs from the same donate-links.toml
+  // donate.html's own £10 button reads -- one source, so ci can never carry
+  // a live Payment Link here either. donate-config.js's script tag sits
+  // before this one on every DIYA-GL page, so window.DIYA_GL_DONATE_LINK is
+  // already set by the time this runs; there is no fallback link to fall
+  // back to.
+  if (!window.DIYA_GL_DONATE_LINK) {
+    throw new Error("shell.js: window.DIYA_GL_DONATE_LINK is not set -- run node scripts/build-donate-page.mjs before serving this page.");
+  }
+  var DONATE_STRIPE_LINK = window.DIYA_GL_DONATE_LINK;
   var DONATE_PAGE_LINK = "../donate.html";
 
   function donationPromptSeen(id) {

@@ -31,6 +31,7 @@ import {
   STRADDLING_COLUMNS,
   STOCK_MATERIALS_PERCENT_CELL,
   STOCK_FINAL_COUNT_CELL,
+  ADMIN_ASSOCIATED_COMPANIES_CELL,
   SCHEDULE_ASSET_CLASSES,
   SCHEDULE_NEW_ASSET_ROWS,
   CHARGE_REGISTER_ROWS,
@@ -619,6 +620,7 @@ export function isLtdInputCell(file, sheet, cellRef, monthTabs = monthTabOrder(3
     case "Financialaccounts.xlsx":
       if (sheet === "OpenAccounts") return isOpenAccountsInputCell(cellRef);
       if (sheet === "Stock") return cellRef === STOCK_MATERIALS_PERCENT_CELL || cellRef === STOCK_FINAL_COUNT_CELL;
+      if (sheet === "Admin") return cellRef === ADMIN_ASSOCIATED_COMPANIES_CELL;
       return false;
     default:
       return false;

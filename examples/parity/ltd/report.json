@@ -4,10 +4,10 @@
   "scenario": "Exported from ltd package",
   "yearEnd": "2027-10-31",
   "provenance": {
-    "formatVersion": "diya-gl-books/1",
-    "engineVersion": "1.0.0+ccc72b894a7d",
-    "taxDataHash": "942a6388a226",
-    "templateHash": "c3da60838497",
+    "formatVersion": "diya-gl/1",
+    "engineVersion": "1.2.3+cda844f81ec6",
+    "taxDataHash": "6a9c036b5f9c",
+    "templateHash": "d95b3df1e439",
     "templateScorecard": "101279 passed, 0 warnings, 0 failed"
   },
   "values": [
@@ -262,6 +262,11 @@
       "value": "250000"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Admin!P14",
+      "unit": "count",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Admin!P6",
       "unit": "rate",
       "value": "19"
@@ -385,6 +390,16 @@
       "key": "cell/Financialaccounts.xlsx!CT600!W137",
       "unit": "rate",
       "value": "23.4860126353445"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!CT600!Y118",
+      "unit": "count",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!CT600!Y120",
+      "unit": "count",
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Y133",
@@ -7656,6 +7671,14 @@
       "tolerance": "0.0001"
     },
     {
+      "key": "check/Admin P14: number of associated companies",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0"
+    },
+    {
       "key": "check/Admin P6: corporation tax small profits rate",
       "unit": "verdict",
       "value": "pass",
@@ -7757,6 +7780,22 @@
       "value": "pass",
       "expected": "51472.3412979875",
       "actual": "51472.3412979875",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/CT600: associated companies, first financial year = Admin P14",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/CT600: associated companies, second financial year = Admin P14",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -16172,6 +16211,18 @@
       "unit": "money",
       "value": "29156.7667546296",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K39"
+    },
+    {
+      "key": "section/ct600-as-filed/box-327-associated-companies-first-financial-year",
+      "unit": "count",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!CT600!Y118"
+    },
+    {
+      "key": "section/ct600-as-filed/box-328-associated-companies-second-financial-year",
+      "unit": "count",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!CT600!Y120"
     },
     {
       "key": "section/ct600-as-filed/box-330-financial-year",

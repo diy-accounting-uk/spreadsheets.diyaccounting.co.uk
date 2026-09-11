@@ -144,7 +144,7 @@ jobs:
   trigger-test-and-deploy:
     runs-on: ubuntu-24.04
     needs: [generate-ltd]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && (needs.generate-ltd.result == 'success' || needs.generate-ltd.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v7
         with:

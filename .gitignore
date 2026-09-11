@@ -39,6 +39,12 @@ web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
+# Generated donate page and DIYA-GL donation config (built per environment
+# from donate.template.html and donate-links.toml by
+# scripts/build-donate-page.mjs)
+web/spreadsheets.diyaccounting.co.uk/public/donate.html
+web/spreadsheets.diyaccounting.co.uk/public/diya-gl/donate-config.js
+
 # Books engine bundle, examples, and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
 web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/

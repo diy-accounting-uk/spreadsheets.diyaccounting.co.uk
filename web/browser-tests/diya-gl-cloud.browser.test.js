@@ -126,6 +126,9 @@ test.describe("DIYA-GL page — signed out", () => {
 
     const accountBtn = page.locator("#account-btn");
     await expect(accountBtn).toBeVisible();
+    // The accessible name must carry the visible "Sign in" label, not just
+    // the email or a paraphrase of it (WCAG 2.5.3 Label in Name).
+    await expect(accountBtn).toHaveAccessibleName(/^Sign in\b/);
 
     await accountBtn.click();
     const panel = page.locator("#account-panel");
@@ -244,6 +247,11 @@ test.describe("DIYA-GL page — the sign-in return", () => {
     expect(returnedParams.get("view")).toBe("income-tax");
 
     await expect(page.locator("#account-btn")).toHaveAttribute("title", "reader@example.com");
+    // Signed in, the visible label switches to "Account" and the accessible
+    // name must still start with it -- the email is appended, not swapped in
+    // as a replacement name (WCAG 2.5.3 Label in Name).
+    await expect(page.locator("#account-btn .btn-label")).toHaveText("Account");
+    await expect(page.locator("#account-btn")).toHaveAccessibleName("Account, signed in as reader@example.com");
     const returned = await gaEvents(page, "cloud_sign_in");
     expect(returned).toEqual([{ step: "returned" }]);
   });

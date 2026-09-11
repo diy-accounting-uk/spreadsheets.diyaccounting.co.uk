@@ -32,6 +32,16 @@ const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const TAX_OWN_YEAR = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8"));
 const TAX_APR27 = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2026-2027.toml"), "utf8"));
 
+// Every tax year api.years names in sa103-mtd-mapping.json, loaded so the
+// field-set tests below can drive buildSelfEmploymentAnnualSubmission
+// across all four without hand-rolling a fifth TOML fixture.
+const TAX_DATA_BY_YEAR = {
+  "2023-24": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2023-2024.toml"), "utf8")),
+  "2024-25": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2024-2025.toml"), "utf8")),
+  "2025-26": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8")),
+  "2026-27": TAX_APR27,
+};
+
 const REPORT_FILES = {
   "se-scenario-advanced": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
   "se-brickwork-pro-nonvat": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
@@ -447,6 +457,89 @@ describe("buildSelfEmploymentAnnualSubmission — box 55 is warned as a small po
       expect(warning.reason).toMatch(/small pools/i);
     });
   }
+});
+
+describe("buildSelfEmploymentAnnualSubmission — the annual field set follows api.years, not a fixed list", () => {
+  // Hand-read off sa103-mtd-mapping.json's own api.years block, independently
+  // of se-derivations.js's own reading of it, so a derivation that only
+  // echoes its own logic back at itself cannot pass this. Only these five
+  // fields move by year; every other warned field (the seven no-box-and-
+  // no-cell allowances/adjustments, the fourteen disallowable categories,
+  // goodsAndServicesOwnUse, box 55's small-pools note) is year-invariant.
+  const EXPECT_PRESENT_BY_YEAR = {
+    "2023-24": [
+      "allowances.zeroEmissionsGoodsVehicleAllowance",
+      "allowances.electricChargePointAllowance",
+      "adjustments.overlapReliefUsed",
+    ],
+    "2024-25": [
+      "allowances.zeroEmissionsGoodsVehicleAllowance",
+      "allowances.electricChargePointAllowance",
+      "adjustments.overlapReliefUsed",
+      "adjustments.transitionProfitAmount",
+      "adjustments.transitionProfitAccelerationAmount",
+    ],
+    "2025-26": ["adjustments.overlapReliefUsed", "adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
+    "2026-27": ["adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
+  };
+  const EXPECT_ABSENT_BY_YEAR = {
+    "2023-24": ["adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
+    "2024-25": [],
+    "2025-26": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"],
+    "2026-27": [
+      "allowances.zeroEmissionsGoodsVehicleAllowance",
+      "allowances.electricChargePointAllowance",
+      "adjustments.overlapReliefUsed",
+    ],
+  };
+
+  for (const year of Object.keys(TAX_DATA_BY_YEAR)) {
+    it(`${year}: the warned field set carries exactly what that year's schema still names, and no more`, () => {
+      const { annual } = derive("se-scenario-advanced", TAX_DATA_BY_YEAR[year]);
+      expect(annual.taxYear).toBe(year);
+      const warningFields = new Set(annual.warnings.map((w) => w.field));
+      for (const field of EXPECT_PRESENT_BY_YEAR[year]) {
+        expect(warningFields.has(field), `${year} should still warn about ${field}`).toBe(true);
+      }
+      for (const field of EXPECT_ABSENT_BY_YEAR[year]) {
+        expect(warningFields.has(field), `${year} should not mention ${field}`).toBe(false);
+      }
+    });
+  }
+
+  it("2023-24: the payload itself carries no value for the two fields not yet in that year's schema", () => {
+    const { annual } = derive("se-scenario-advanced", TAX_DATA_BY_YEAR["2023-24"]);
+    expect(annual.adjustments.transitionProfitAmount).toBeUndefined();
+    expect(annual.adjustments.transitionProfitAccelerationAmount).toBeUndefined();
+  });
+
+  it("2026-27: the payload itself carries no value for the three fields dropped from that year's schema", () => {
+    const { annual } = derive("se-scenario-advanced", TAX_DATA_BY_YEAR["2026-27"]);
+    expect(annual.allowances.zeroEmissionsGoodsVehicleAllowance).toBeUndefined();
+    expect(annual.allowances.electricChargePointAllowance).toBeUndefined();
+    expect(annual.adjustments.overlapReliefUsed).toBeUndefined();
+  });
+
+  it("the quarterly field set never moves with the year, only the annual one does", () => {
+    const fieldSets = Object.keys(TAX_DATA_BY_YEAR).map((year) => {
+      const { quarterly } = derive("se-scenario-advanced", TAX_DATA_BY_YEAR[year]);
+      return JSON.stringify(
+        Object.keys(quarterly.periods[0].periodIncome)
+          .concat(Object.keys(quarterly.periods[0].periodExpenses))
+          .concat(Object.keys(quarterly.periods[0].periodDisallowableExpenses))
+          .sort(),
+      );
+    });
+    expect(new Set(fieldSets).size).toBe(1);
+  });
+
+  it("an unlisted tax year throws instead of silently falling back to a fixed field set", () => {
+    // A full, otherwise-valid tax year file with only the label moved past
+    // what api.years names, so the throw under test is the one this check
+    // is about and not some other missing rate.
+    const unknownYear = { ...TAX_APR27, tax_year: { ...TAX_APR27.tax_year, label: "2027-28" } };
+    expect(() => derive("se-scenario-advanced", unknownYear)).toThrow(/api\.years carries no entry/);
+  });
 });
 
 describe("the derivations — unsourced fields are absent, not nil, and each carries a warning naming its box", () => {

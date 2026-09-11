@@ -453,21 +453,52 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
 // Every annual field this book can source, and a warning naming the box for
 // every one it cannot -- section 8 of the design records why each is out of
 // reach today: no cell in the template, a cell the customer fills by hand,
-// or a box the schema has no field for.
+// or a box the schema has no field for. Three of these boxes (52, 54, 69)
+// carry a field that also moves in and out of HMRC's own schema by tax
+// year -- annualFieldsUnavailableForYear() below is what keeps a year that
+// no longer accepts a field from warning about it as if it still did.
 const NO_SOURCE_ANNUAL_BOXES = [
   { box: "51", pick: 0 }, // allowances.capitalAllowanceSpecialRatePool
   { box: "51", pick: 1 }, // allowances.capitalAllowanceSingleAssetPool (shared with box 50)
+  { box: "52", pick: 0 }, // allowances.zeroEmissionsGoodsVehicleAllowance -- gone from 2025-26
   { box: "52.1", pick: 0 }, // allowances.zeroEmissionsCarAllowance
   { box: "53", pick: 0 }, // allowances.structuredBuildingAllowance
   { box: "53.1", pick: 0 }, // allowances.enhancedStructuredBuildingAllowance
+  { box: "54", pick: 1 }, // allowances.electricChargePointAllowance -- gone from 2025-26 (shared with box 55's enhancedCapitalAllowance)
   { box: "55", pick: 1 }, // allowances.businessPremisesRenovationAllowance (shared with enhancedCapitalAllowance)
   { box: "59", pick: 1 }, // adjustments.balancingChargeBpra (shared with balancingChargeOther)
   { box: "62", pick: 0 }, // adjustments.includedNonTaxableProfits
   { box: "68", pick: 0 }, // adjustments.basisAdjustment
+  { box: "69", pick: 0 }, // adjustments.overlapReliefUsed -- gone from 2026-27
   { box: "71", pick: 0 }, // adjustments.accountingAdjustment
-  { box: "73.3", pick: 0 }, // adjustments.transitionProfitAmount
-  { box: "73.3", pick: 1 }, // adjustments.transitionProfitAccelerationAmount
+  { box: "73.3", pick: 0 }, // adjustments.transitionProfitAmount -- added in 2024-25
+  { box: "73.3", pick: 1 }, // adjustments.transitionProfitAccelerationAmount -- added in 2024-25
 ];
+
+// api.years in sa103-mtd-mapping.json is the source of which annual fields
+// HMRC's schema accepts in a given tax year: a field named in an earlier
+// year's own fieldsAdded is not yet live before that year, and a field
+// named in that year's or an earlier year's fieldsGone is no longer live
+// from that year on. A fieldsAdded entry that carries a "status" (the two
+// 2026-27 additions, gated behind HMRC test flags) is not treated as a
+// live field here -- neither has a cell in this template regardless, so
+// the payload does not change, only whether the gap is worth warning about.
+function annualFieldsUnavailableForYear(taxYear) {
+  const years = loadMapping().api.years;
+  const order = Object.keys(years);
+  const index = order.indexOf(taxYear);
+  if (index === -1) throw new Error(`sa103-mtd-mapping.json's api.years carries no entry for tax year "${taxYear}"`);
+  const unavailable = new Set();
+  for (let i = index + 1; i < order.length; i++) {
+    for (const added of years[order[i]].fieldsAdded || []) {
+      if (typeof added === "string") unavailable.add(added);
+    }
+  }
+  for (let i = 0; i <= index; i++) {
+    for (const gone of years[order[i]].fieldsGone || []) unavailable.add(gone);
+  }
+  return unavailable;
+}
 
 /**
  * The annual submission that closes the year, built off the same engine the
@@ -486,6 +517,8 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   const rawResults = calculateSeCells(book, lines, taxData, scenario);
   const seFull = rawResults["SE Full"];
   const boxes = sa103fBoxes();
+  const taxYear = taxYearLabel(taxData, book);
+  const unavailableFields = annualFieldsUnavailableForYear(taxYear);
 
   // Each mapping field name already carries its own top-level branch
   // ("allowances.annualInvestmentAllowance", "adjustments.balancingChargeOther",
@@ -519,13 +552,15 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   ];
   for (const { box: boxNumber, pick } of NO_SOURCE_ANNUAL_BOXES) {
     const entry = boxEntry(boxes, boxNumber);
+    const field = fieldsOf(entry)[pick];
+    if (unavailableFields.has(field)) continue;
     warnings.push({
-      field: fieldsOf(entry)[pick],
+      field,
       reason: `SA103F box ${boxNumber} has no cell the template computes; the customer fills it in by hand.`,
     });
   }
 
-  const result = { taxYear: taxYearLabel(taxData, book) };
+  const result = { taxYear };
   if (Object.keys(allowances).length > 0) result.allowances = allowances;
   if (Object.keys(adjustments).length > 0) result.adjustments = adjustments;
   result.warnings = warnings;

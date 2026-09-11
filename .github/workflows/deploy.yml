@@ -252,6 +252,11 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build the donate page
+        run: npm run build:donate-page
+        env:
+          ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+
       - name: Build provenance data
         run: npm run build:provenance-data
 
@@ -431,7 +436,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/9611cb4818f4f6484ba900ccdb85e036d9b96022/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js enable prod --client books
+          node toggle-cognito-native-auth.js enable prod --client diya-gl
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
@@ -459,7 +464,7 @@ jobs:
             @aws-sdk/client-cognito-identity-provider
           curl -fsSL -o toggle-cognito-native-auth.js \
             https://raw.githubusercontent.com/diy-accounting-uk/submit.diyaccounting.co.uk/9611cb4818f4f6484ba900ccdb85e036d9b96022/scripts/toggle-cognito-native-auth.js
-          node toggle-cognito-native-auth.js disable prod --client books
+          node toggle-cognito-native-auth.js disable prod --client diya-gl
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}

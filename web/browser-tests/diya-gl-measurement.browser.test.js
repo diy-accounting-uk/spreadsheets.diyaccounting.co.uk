@@ -16,7 +16,6 @@ import path from "node:path";
 import { startStaticServer } from "./serve.js";
 
 const PUBLIC_DIR = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
-const DONATE_STRIPE_LINK = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200";
 
 let closeServer;
 let baseUrl;
@@ -66,6 +65,14 @@ function gaEvents(page, eventName) {
   );
 }
 
+// The same link shell.js itself reads off window.DIYA_GL_DONATE_LINK
+// (donate-config.js, generated per environment by
+// scripts/build-donate-page.mjs) -- read back from the page rather than
+// copied here, so this spec cannot drift from what the page actually loaded.
+async function donateStripeLink(page) {
+  return page.evaluate(() => window.DIYA_GL_DONATE_LINK);
+}
+
 test.describe("DIYA-GL page — measurement", () => {
   test("loading an example sends book_loaded with the product and the example source", async ({ page }) => {
     await loadExample(page);
@@ -92,7 +99,7 @@ test.describe("DIYA-GL page — measurement", () => {
     const prompt = page.locator("#donation-prompt-figures");
     await expect(prompt).toBeVisible();
     const donateLink = prompt.locator("a.btn-primary");
-    await expect(donateLink).toHaveAttribute("href", DONATE_STRIPE_LINK);
+    await expect(donateLink).toHaveAttribute("href", await donateStripeLink(page));
     await donateLink.click();
 
     events = await gaEvents(page, "donation_prompt");

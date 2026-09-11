@@ -638,7 +638,7 @@ function computeLtd(book, lines, taxData, scenario) {
   const tabs = period.tabs;
   const results = {};
 
-  const admin = buildAdmin(taxData, period);
+  const admin = buildAdmin(taxData, period, scenario.business?.associated_companies ?? 0);
   results.Admin = admin;
   link("Admin", { ...linkOnlyCells(adminDateChain(period), admin), N11: admin.B32 });
 
@@ -872,7 +872,7 @@ export function calculateLtdCells(book, lines, taxData, scenario) {
 // dates the whole book hangs off. The corporation tax rows split the period
 // at 31 March: L6 is the period start, N6 the earlier of the first financial
 // year's end and the period end, L7 the day after and N7 the period end.
-function buildAdmin(taxData, period) {
+function buildAdmin(taxData, period, associatedCompanies) {
   const corporationTax = taxData.corporation_tax || {};
   const capitalAllowances = taxData.capital_allowances || {};
   const depreciation = taxData.depreciation || {};
@@ -893,6 +893,7 @@ function buildAdmin(taxData, period) {
     P9: corporationTax.marginal_relief_fraction,
     P12: corporationTax.small_profits_limit,
     P13: corporationTax.main_rate_limit,
+    P14: associatedCompanies,
     G5: Math.round(capitalAllowances.annual_investment_allowance * 100),
     G6: Math.round(capitalAllowances.writing_down_allowance_main * 100),
     G7: Math.round(capitalAllowances.annual_investment_allowance * 100),
@@ -1791,6 +1792,7 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl }) {
     marginalReliefFraction: admin.P9,
     lowerLimit: admin.P12,
     upperLimit: admin.P13,
+    associatedCompanies: admin.P14,
   });
 
   sheet.A33 = financialYears.years[0].days;
@@ -1833,6 +1835,7 @@ function buildCt600(corporationTax, pl, admin) {
     AA126: corporationTax.G33,
     AJ126: corporationTax.J33,
     AJ128: corporationTax.J34,
+    Y118: admin.P14,
   };
   // The second financial year's row is stated only when the period reaches
   // into it.
@@ -1840,6 +1843,7 @@ function buildCt600(corporationTax, pl, admin) {
     sheet.C128 = corporationTax.E34;
     sheet.N128 = corporationTax.F34;
     sheet.AA128 = corporationTax.G34;
+    sheet.Y120 = admin.P14;
   }
   if (corporationTax.K22 > 0) sheet.Z70 = corporationTax.K22;
   if (corporationTax.K26 > 0) sheet.Z72 = corporationTax.K26;

@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+#
+# donate-links.toml — per-environment Stripe Payment Links for donate.html
+#
+# Read by scripts/build-donate-page.mjs, which picks the section named by
+# ENVIRONMENT_NAME (ci or prod, the same name deploy.yml resolves for the
+# CDK deploy step) and writes
+# web/spreadsheets.diyaccounting.co.uk/public/donate.html from
+# donate.template.html.
+#
+# [prod] carries the real, live Payment Links (moved here from donate.html
+# unchanged). [ci] is written by scripts/stripe-spreadsheets-setup.js when
+# run with a test-mode Stripe key -- see its own PLACEHOLDER comment below.
+
+[prod]
+amount10 = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200"
+amount20 = "https://buy.stripe.com/3cI7sK7m94V24qd8Ij4F201"
+amount45 = "https://buy.stripe.com/8x23cueOB0EM4qdaQr4F202"
+custom = "https://buy.stripe.com/3cI28qbCpfzGf4RcYz4F204"
+
+[ci]
+# PLACEHOLDER -- not a real Stripe link, will 404 if clicked. Fill in by running:
+#   STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js
+# which mints test-mode Payment Links and writes this section.
+amount10 = "https://buy.stripe.com/test_00000000000010"
+amount20 = "https://buy.stripe.com/test_00000000000020"
+amount45 = "https://buy.stripe.com/test_00000000000045"
+custom = "https://buy.stripe.com/test_00000000000099"

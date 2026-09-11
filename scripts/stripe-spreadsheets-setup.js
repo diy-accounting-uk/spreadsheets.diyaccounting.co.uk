@@ -11,6 +11,9 @@
 // Usage: STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js
 
 import Stripe from "stripe";
+import { readFileSync, writeFileSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 if (!STRIPE_SECRET_KEY) {
@@ -22,6 +25,38 @@ const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 const RETURN_URL = "https://spreadsheets.diyaccounting.co.uk/download.html?stripe=success";
 const METADATA_KEY = "spreadsheetDonation";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DONATE_LINKS_TOML_PATH = resolve(__dirname, "..", "web", "spreadsheets.diyaccounting.co.uk", "donate-links.toml");
+
+// Rewrites only the named [section]'s key = "value" lines in donate-links.toml,
+// leaving every other section, comment and blank line untouched -- and drops
+// any "# PLACEHOLDER" guidance comment from that section now that it is filled.
+function writeDonateLinksSection(section, values) {
+  const text = readFileSync(DONATE_LINKS_TOML_PATH, "utf8");
+  const headerMatch = text.match(new RegExp(`(^|\\n)\\[${section}\\][^\\n]*\\n`));
+  if (!headerMatch) {
+    throw new Error(`donate-links.toml has no [${section}] section`);
+  }
+  const sectionStart = headerMatch.index + headerMatch[0].length;
+  const rest = text.slice(sectionStart);
+  const nextHeader = rest.match(/\n\[/);
+  const sectionEnd = nextHeader ? sectionStart + nextHeader.index + 1 : text.length;
+
+  let body = text.slice(sectionStart, sectionEnd);
+  for (const [key, url] of Object.entries(values)) {
+    const line = `${key} = "${url}"`;
+    const keyRe = new RegExp(`^${key}\\s*=.*$`, "m");
+    body = keyRe.test(body) ? body.replace(keyRe, line) : body + `${line}\n`;
+  }
+  body = body
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("# PLACEHOLDER"))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+
+  writeFileSync(DONATE_LINKS_TOML_PATH, text.slice(0, sectionStart) + body + text.slice(sectionEnd), "utf8");
+}
 
 async function findOrCreateProduct() {
   const products = await stripe.products.search({
@@ -133,14 +168,22 @@ async function main() {
   const linkCustom = await findOrCreatePaymentLink(priceCustom.id, "custom");
 
   const mode = STRIPE_SECRET_KEY.startsWith("sk_live_") ? "LIVE" : "TEST";
+  const section = mode === "LIVE" ? "prod" : "ci";
   console.log(`\n=== Stripe Spreadsheets Donation Setup Complete (${mode} mode) ===`);
   console.log("Product ID:", product.id);
-  console.log("\nPayment Links for donate.html:");
+  console.log("\nPayment Links:");
   console.log(`  £10:        ${link10.url}`);
   console.log(`  £20:        ${link20.url}`);
   console.log(`  £45:        ${link45.url}`);
   console.log(`  Any amount: ${linkCustom.url}`);
-  console.log("\nUpdate web/spreadsheets.diyaccounting.co.uk/public/donate.html with these URLs.");
+
+  writeDonateLinksSection(section, {
+    amount10: link10.url,
+    amount20: link20.url,
+    amount45: link45.url,
+    custom: linkCustom.url,
+  });
+  console.log(`\nWrote donate-links.toml [${section}]. Commit web/spreadsheets.diyaccounting.co.uk/donate-links.toml.`);
 }
 
 main().catch((err) => {

@@ -234,6 +234,25 @@ function excelSerialAsDate(serial) {
 // scenario and no journal lines beside them.
 const SAVED_MODE_CANNOT_CARRY = ["check/", "section/journal-category-vat-netting/"];
 
+// app/products/ltd.js only writes Admin!P14 (the associated companies
+// count) into the workbook when the scenario names a nonzero count,
+// matching the template's own blank default -- a blank cell reads as zero
+// in the sheet's arithmetic, so there is nothing to write. CT600!Y118 and
+// Y120 follow the same count. ltd-latest's own scenario names none, so its
+// saved package carries no cached value for any of the five keys the count
+// touches. The JS calculator states the count explicitly, zero included,
+// so S2 always carries them. Unlike the date-shift and VAT families above,
+// this does not close when generate-ltd.yml next refreshes the package --
+// it tracks the fixture's own associated-companies count, not its
+// generation date.
+const ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2 = [
+  "cell/Financialaccounts.xlsx!Admin!P14",
+  "cell/Financialaccounts.xlsx!CT600!Y118",
+  "cell/Financialaccounts.xlsx!CT600!Y120",
+  "section/ct600-as-filed/box-327-associated-companies-first-financial-year",
+  "section/ct600-as-filed/box-328-associated-companies-second-financial-year",
+];
+
 // Vatinterface rows 4, 5 and 18 to 20 are the straddling periods themselves;
 // rows 6 and 7 are the quarters that sum the two before the year, and
 // VATQtr5 is the return that reads the three after it.
@@ -295,6 +314,7 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
       (key) =>
         !SAVED_MODE_CANNOT_CARRY.some((prefix) => key.startsWith(prefix)) &&
         !OFFICER_REGISTER_ONLY_IN_S2.includes(key) &&
+        !ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2.includes(key) &&
         !DATED_SLUG.test(key),
     );
     const onlyS3Unexplained = onlyS3.filter((key) => !DATED_SLUG.test(key) && !OFFICER_REGISTER_ONLY_IN_S3.includes(key));

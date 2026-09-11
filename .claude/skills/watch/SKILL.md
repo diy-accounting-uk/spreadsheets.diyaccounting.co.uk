@@ -1,6 +1,6 @@
 ---
 name: watch
-description: Watch this repository's GitHub CI until everything in scope is green, and fix what goes red. Scope is main plus every open PR's head branch, re-read each cycle. Invoke when the operator says "watch the builds", "keep it green", or hands over a branch to get through CI.
+description: Arm a background Monitor over this repository's GitHub CI, then act on what it reports until the whole scope is green. Scope is main plus every open PR's head branch, re-read each cycle. Invoke when the operator says "watch the builds", "keep it green", or hands over a branch to get through CI.
 ---
 
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
@@ -8,8 +8,18 @@ description: Watch this repository's GitHub CI until everything in scope is gree
 
 # watch
 
-Watch every branch in scope, fix what fails, and stop only when the whole scope is green.
-The loop ends on evidence, never on elapsed time or on a check summary.
+This skill is a brief for one background monitor. Arm it, keep working, and act on the events it
+sends. Stop only when the whole scope is green: the watch ends on evidence, never on elapsed time
+and never on a check summary.
+
+**Use the `Monitor` tool, `persistent: true`.** It runs the poll loop detached and turns each
+stdout line into a notification, so the session stays free while CI runs. Do not write a foreground
+poll loop: it occupies the session for the length of a build, which is the thing this skill exists
+to avoid. Do not write a `sleep N; check` task that has to be re-armed by hand either. The monitor
+re-arms itself and exits when the run is terminal.
+
+For a single "tell me when it finishes", `Bash` with `run_in_background: true` and a command that
+exits on the condition is lighter: one notification, no filter to get wrong.
 
 ## Scope
 
@@ -40,14 +50,13 @@ Three files, all three every time:
 - `/Users/antony/projects/diy-accounting-limited/INBOX.md` — the bridge for sessions that cannot
   reach `~/.claude/`: Cowork's Linux VM and Desktop chats.
 
-Act on every `[unread]` block in the same turn you read it, reply by appending to the sender's
-inbox, then change its marker to `[read]`. Do not poll on a tight loop — the two moments above are
-the cadence, and a sibling waiting on a line from you is a reason to check, not a reason to check
-constantly.
+Act on every `[unread]` block in the same turn you read it, then change its marker to `[read]`.
+Acting on it is the reply: write back only to say you made the change it asked for, or that you
+will not. Never acknowledge and never report progress. Do not poll on a tight loop.
 
-A message can change what this batch should contain: a sibling reporting a defect in what you just
-pushed, a repository asking you to hold an identifier, an operator note arriving through Cowork. Read
-before you merge, not after.
+An inbox carries exactly two things, both about a change in the recipient's repository: a change
+they must make, or a change already made that they are blocked on. Anything else does not get sent,
+and another session's repository state is never yours to inspect, report or wait on.
 
 ## The monitor
 
@@ -55,7 +64,11 @@ One background monitor, polling every 60-90s, emitting one line per newly finish
 
 - **Report every terminal state**: success, failure, cancelled, timed out, skipped. A monitor
   that greps only for failure is silent when a run is cancelled, and silence is
-  indistinguishable from still running.
+  indistinguishable from still running. Ask before arming: if this went red right now, would
+  anything be emitted?
+- **Keep the volume low.** Every line is a message, and a monitor that floods is stopped
+  automatically. Reds as they land plus one tally when everything is terminal is selective without
+  going quiet on bad news.
 - **Seed silently.** On the first pass, record what has already finished without emitting it,
   so the monitor reports changes rather than history.
 - **Poll the API for state, never grep a log for a word.** `status == "completed"` with its
@@ -66,7 +79,8 @@ One background monitor, polling every 60-90s, emitting one line per newly finish
   with exit 0, which reads exactly like a clean run. Count the rows before interpreting them: ask
   for `length`, and report NO DATA rather than green when it is zero or the call failed. Every
   field a `jq` filter touches must appear in the `--json` list beside it, or it silently yields
-  null for every row.
+  null for every row. Give up loudly after a few empty cycles rather than sitting there looking
+  healthy.
 
 ## Reading a run
 
@@ -93,7 +107,7 @@ gh api "repos/<owner>/<repo>/actions/jobs/<job-id>/logs" --allow-escape-sequence
 ```
 Tee before filtering, always: the part you need is often not the part you grepped for.
 
-## Three things that are not failures
+## Five things that are not failures
 
 Diagnose these before treating a red or a missing run as a defect.
 
@@ -114,6 +128,11 @@ Diagnose these before treating a red or a missing run as a defect.
   queued per group and cancels the older pending one when a third arrives. Two active branches
   sharing one environment means the last to push owns the slot, and the other's deploy silently
   never happens. "No run for this commit" is a distinct state from "run failed".
+- **A workflow cancelling itself.** When a caller workflow and its reusable callee share a
+  concurrency group, the caller fires first, then GitHub cancels it when it reaches the reusable
+  workflow's jobs. The tell is a cancellation with no other run in the group, followed seconds
+  later by the same jobs reappearing under a different workflow name. Check the workflow names
+  before calling it a failure. If the same jobs ran under another workflow, nothing failed.
 
 ## On failure
 
@@ -141,15 +160,24 @@ is the only variable.
 
 ## Push discipline
 
-**Never push to a branch while that branch's deploy run is in flight.** Gather fixes locally and
-push once after it finishes. Confirm it finished by reading the run, not by assuming elapsed time:
+**Never push to a branch while any of that branch's deploy runs are in flight.** This repository
+has two, `deploy.yml` and `deploy-holding.yml`, so check each. Gather fixes locally and push once
+after they finish. Confirm by reading the runs, not by assuming elapsed time:
 
 ```bash
-gh run list --branch <branch> --workflow deploy.yml --limit 1 --json status,conclusion,headSha
+for wf in deploy.yml deploy-holding.yml; do
+  gh run list --branch <branch> --workflow "$wf" --limit 1 --json status,conclusion,headSha
+done
 ```
 
 A cancelled deploy mid-change can leave infrastructure part-applied, which costs far more than
 the wait.
+
+**A workflow change has no CI gate here, so verify it by hand.** Submit runs its workflow linter in
+CI; this repository has `./scripts/validate-workflows.sh` (`npm run lint:workflows`) and no workflow
+that calls it, so nothing catches a bad workflow before GitHub does. Run it before pushing, and
+strict-parse the YAML as well: prettier and actionlint both accept a duplicate key that GitHub
+rejects outright, and a rejected file means every trigger in it silently stops firing.
 
 ## Stop condition
 

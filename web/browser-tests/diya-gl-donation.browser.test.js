@@ -14,7 +14,14 @@ import path from "node:path";
 import { startStaticServer } from "./serve.js";
 
 const PUBLIC_DIR = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
-const DONATE_STRIPE_LINK = "https://buy.stripe.com/5kQ7sK49X9bie0N0bN4F200";
+
+// The same link shell.js itself reads off window.DIYA_GL_DONATE_LINK
+// (donate-config.js, generated per environment by
+// scripts/build-donate-page.mjs) -- read back from the page rather than
+// copied here, so this spec cannot drift from what the page actually loaded.
+async function donateStripeLink(page) {
+  return page.evaluate(() => window.DIYA_GL_DONATE_LINK);
+}
 
 let closeServer;
 let baseUrl;
@@ -77,7 +84,7 @@ test.describe("DIYA-GL page — the figures donation prompt", () => {
     await expect(prompt).toContainText("DIYA-GL is free to use");
 
     const donateLink = prompt.locator("a.btn-primary");
-    await expect(donateLink).toHaveAttribute("href", DONATE_STRIPE_LINK);
+    await expect(donateLink).toHaveAttribute("href", await donateStripeLink(page));
     await expect(donateLink).toHaveAttribute("target", "_blank");
     await expect(donateLink).toHaveAttribute("rel", "noopener");
 
@@ -108,7 +115,7 @@ test.describe("DIYA-GL page — the save donation prompt", () => {
     await expect(prompt).toContainText("please consider a donation");
 
     const donateLink = prompt.locator("a.btn-primary");
-    await expect(donateLink).toHaveAttribute("href", DONATE_STRIPE_LINK);
+    await expect(donateLink).toHaveAttribute("href", await donateStripeLink(page));
     await expect(donateLink).toHaveAttribute("rel", "noopener");
 
     await prompt.locator(".donation-prompt-dismiss").click();

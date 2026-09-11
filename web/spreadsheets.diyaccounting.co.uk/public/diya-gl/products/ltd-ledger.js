@@ -784,6 +784,11 @@
     var rateRows = S.ADMIN_RATE_CELLS.map(function (cell) {
       return row(cell);
     });
+    // The count that divides both marginal relief limits, read alongside the
+    // rates it divides rather than folded into ADMIN_RATE_CELLS -- it is a
+    // count, not a rate, and adminCellText's ADMIN_COUNT_CELLS branch
+    // formats it as one.
+    var associatedCompaniesRow = row("P14", "Number of associated companies");
     var capitalAllowanceRows = S.ADMIN_CAPITAL_ALLOWANCE_CELLS.map(function (cell) {
       return row(cell);
     });
@@ -822,7 +827,7 @@
       "<h2>Admin</h2>" +
       '<p class="view-lede rate-provenance">The tax year\'s rates and thresholds as the package was generated with them, read-only.</p>' +
       '<div class="panel-card"><h3>Corporation tax and capital allowance rates</h3>' +
-      helpers.kvRows(rateRows.concat(capitalAllowanceRows)) +
+      helpers.kvRows(rateRows.concat([associatedCompaniesRow]).concat(capitalAllowanceRows)) +
       "</div>" +
       '<div class="panel-card"><h3>Depreciation rates</h3>' +
       helpers.kvRows(depreciationRows) +
