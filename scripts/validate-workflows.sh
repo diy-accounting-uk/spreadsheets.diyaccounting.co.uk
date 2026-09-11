@@ -44,6 +44,13 @@ if command -v actionlint &> /dev/null; then
         echo "All workflows passed actionlint validation"
     fi
 else
+    # In CI environments, actionlint must be available — we don't fall back
+    if [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+        echo "FATAL: actionlint not found in CI environment"
+        echo "Install actionlint before running this script in CI"
+        exit 1
+    fi
+
     echo "actionlint not found - using basic YAML validation"
     echo "For comprehensive validation, install actionlint:"
     echo "  brew install actionlint  # macOS"
@@ -51,24 +58,18 @@ else
     echo ""
 
     # Fall back to node-based YAML validation
-    if command -v node &> /dev/null; then
-        echo "Validating YAML syntax with Node.js..."
+    if command -v python3 &> /dev/null; then
+        echo "Validating YAML syntax with python3..."
         echo ""
 
         for workflow in "${WORKFLOW_DIR}"/*.yml; do
             filename=$(basename "$workflow")
-            if node -e "
-                const fs = require('fs');
-                const yaml = require('js-yaml');
-                try {
-                    yaml.load(fs.readFileSync('$workflow', 'utf8'));
-                    console.log('  ✓ $filename');
-                } catch (e) {
-                    console.error('  ✗ $filename');
-                    console.error('    ' + e.message);
-                    process.exit(1);
-                }
-            " 2>/dev/null; then
+            if python3 -c "
+import yaml, sys
+with open('$workflow') as f:
+    yaml.safe_load(f)
+print('  ✓ $filename')
+" 2>/dev/null; then
                 : # Success, already printed
             else
                 echo "  ✗ ${filename} - YAML parse error"
@@ -76,7 +77,7 @@ else
             fi
         done
     else
-        echo "Neither actionlint nor Node.js available for validation"
+        echo "Neither actionlint nor python3 available for validation"
         ERRORS=1
     fi
 fi
@@ -107,6 +108,42 @@ for workflow in "${WORKFLOW_DIR}"/*.yml; do
         ERRORS=1
     fi
 done
+
+echo ""
+
+# Duplicate key check — GitHub rejects workflow files with duplicate mapping keys
+# and silently disables all triggers in that file, so this is a critical gate
+echo "=== Duplicate Key Check ==="
+echo ""
+
+if command -v python3 &> /dev/null; then
+    for workflow in "${WORKFLOW_DIR}"/*.yml; do
+        filename=$(basename "$workflow")
+        if python3 -c "
+import sys, yaml
+class Strict(yaml.SafeLoader): pass
+def no_dup(loader, node, deep=False):
+    seen = {}
+    for k, v in node.value:
+        key = loader.construct_object(k, deep=deep)
+        if key in seen:
+            raise ValueError('duplicate key %r at line %d' % (key, k.start_mark.line + 1))
+        seen[key] = loader.construct_object(v, deep=deep)
+    return seen
+Strict.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, no_dup)
+with open('$workflow') as f:
+    yaml.load(f, Strict)
+" 2>&1; then
+            echo "  ✓ ${filename}"
+        else
+            echo "  ✗ ${filename}"
+            ERRORS=1
+        fi
+    done
+else
+    echo "python3 not available for the duplicate key check, which is the check that matters most here"
+    ERRORS=1
+fi
 
 echo ""
 
