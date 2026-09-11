@@ -677,11 +677,16 @@ export function diyaGlToScenario(book, lines, product) {
  * are stubs that throw when called -- extractTaxDataFromBook itself is
  * Node-only and never reached from the bundle, but a module-scope call
  * would run for every importer, browser included.
+ * The previous financial year's small profits rate comes off the same file
+ * for the same reason: a book states the rates of its own year, and a period
+ * that reaches back over 1 April charges its earlier days at the year
+ * before's rate, which no book carries.
+ *
  * @param {Object} book - parsed book.toml
  * @param {"se"|"ltd"} taxRegime
- * @returns {Object} the tax-year file's [depreciation] table
+ * @returns {Object} the parsed tax-year file
  */
-function depreciationForBook(book, taxRegime) {
+function taxYearFileForBook(book, taxRegime) {
   const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
   if (!periodCoveredEnd) {
     throw new Error("book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table");
@@ -696,7 +701,7 @@ function depreciationForBook(book, taxRegime) {
   if (!taxYearData.depreciation) {
     throw new Error(`${taxYearName}.toml declares no [depreciation] table`);
   }
-  return taxYearData.depreciation;
+  return taxYearData;
 }
 
 /**
@@ -783,7 +788,11 @@ export function extractTaxDataFromBook(book, product) {
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
   }
-  baseTaxData.depreciation = depreciationForBook(book, product === "ltd" ? "ltd" : "se");
+  const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
+  baseTaxData.depreciation = taxYearFile.depreciation;
+  if (product === "ltd") {
+    baseTaxData.corporation_tax_previous_financial_year = taxYearFile.corporation_tax_previous_financial_year;
+  }
 
   return baseTaxData;
 }

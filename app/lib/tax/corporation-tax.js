@@ -92,6 +92,50 @@ export function financialYearsInPeriod(periodStart, periodEnd) {
 }
 
 /**
+ * The small profits rate one of the working sheet's two tax rows charges, as
+ * the whole-number percentage Admin P6 and P7 carry.
+ *
+ * A package is generated from one app/data/ltd-<FY>.toml, named for the
+ * financial year its own year end falls in. An accounting period that reaches
+ * back over 1 April charges its earlier days at the year before's rate, and
+ * that file states it as corporation_tax_previous_financial_year. A row with
+ * no days charges nothing, so it takes the file's own rate rather than a rate
+ * no file has.
+ *
+ * Only the small profits rate has a cell per financial year. The main rate,
+ * the relief fraction and the two limits are one figure each for the whole
+ * period, so a period straddling a change in those still charges both rows at
+ * the year end's figures.
+ *
+ * @param {Object} taxData - the parsed ltd-<FY>.toml
+ * @param {number} rowFinancialYear - the financial year this row charges
+ * @param {number} fileFinancialYear - the financial year taxData is named for
+ * @param {number} rowDays - days the row charges
+ * @returns {number} whole-number percentage
+ */
+export function smallProfitsRatePercentFor(taxData, rowFinancialYear, fileFinancialYear, rowDays) {
+  // Tax data with no corporation tax table at all reaches here from callers
+  // that want the period dates off the Admin sheet and nothing else. Every
+  // other rate cell comes out NaN for them, so this one does too rather than
+  // demanding a rate the caller never had.
+  if (!taxData.corporation_tax) return NaN;
+  const own = Math.round(taxData.corporation_tax.small_profits_rate * 100);
+  if (rowDays <= 0 || rowFinancialYear === fileFinancialYear) return own;
+  if (rowFinancialYear !== fileFinancialYear - 1) {
+    throw new Error(
+      `financial year ${rowFinancialYear} is neither ${fileFinancialYear} nor the year before it, so no tax year file states its small profits rate`,
+    );
+  }
+  const previous = taxData.corporation_tax_previous_financial_year;
+  if (previous?.small_profits_rate === undefined) {
+    throw new Error(
+      `the financial year ${fileFinancialYear} tax data states no corporation_tax_previous_financial_year.small_profits_rate, so the ${rowDays} days in financial year ${rowFinancialYear} have no rate of their own`,
+    );
+  }
+  return Math.round(previous.small_profits_rate * 100);
+}
+
+/**
  * Corporation tax charged financial year by financial year, the way the
  * working sheet charges it: the chargeable profit is split across the two
  * years by day count, each share meets its own year's rate, and marginal
@@ -162,7 +206,13 @@ function financialYearEndOnOrAfter(date) {
   return sameYear.getTime() >= date.getTime() ? sameYear : new Date(Date.UTC(date.getUTCFullYear() + 1, 2, 31));
 }
 
-function financialYearNumber(date) {
+/**
+ * The financial year a date falls in: the calendar year of the 1 April on or
+ * before it.
+ * @param {Date} date
+ * @returns {number}
+ */
+export function financialYearNumber(date) {
   return date.getUTCFullYear() - (date.getUTCMonth() < 3 ? 1 : 0);
 }
 

@@ -35,7 +35,7 @@ import {
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
-import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
+import { calculateCorporationTax, smallProfitsRatePercentFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
   buildProfitBridge,
@@ -1475,9 +1475,10 @@ const PL_ROW_CAPTIONS = {
 // Admin cells the generator injects from the tax-year TOML, and the TOML
 // path each one carries. Whole-number percentages where the sheet holds a
 // percentage, fractions where it holds a fraction.
+// P6 and P7, the two tax rows' small profits rates, are not here: each row
+// takes the rate of the financial year it names, so they are checked against
+// their own year rather than against one figure from the file.
 const ADMIN_TAX_DATA_CELLS = [
-  ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
-  ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
   ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
   ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
   ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
@@ -4243,10 +4244,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           reliefFor(num(ct.F34), num(ct.A34)),
         );
 
-        // One tax-year TOML feeds both rows, so a period straddling a rate
-        // change would need two. Every financial year in the data set from
-        // 2020 on carries the same rates as the one after it.
-        check("CT: both financial year rows carry the same small profits rate", num(admin.P6), num(admin.P7), 0);
+        // Each row's small profits rate is its own financial year's. The
+        // year the package was generated for supplies its own; a row whose
+        // year is the one before it takes that year's rate from the same
+        // file, and a row with no days charges nothing either way.
+        // The package is generated from the tax year file named for the
+        // financial year its year end falls in: the second row's year when
+        // the period straddles 1 April, and the first row's when the year
+        // ends on 31 March and the period lies wholly inside one.
+        const packageFinancialYear = num(ct.A34) > 0 ? num(admin.K7) : num(admin.K6);
+        check(
+          "CT: first tax row small profits rate = the rate its own financial year charged",
+          num(admin.P6),
+          smallProfitsRatePercentFor(taxData, num(admin.K6), packageFinancialYear, num(ct.A33)),
+          0,
+        );
+        check(
+          "CT: second tax row small profits rate = the rate its own financial year charged",
+          num(admin.P7),
+          smallProfitsRatePercentFor(taxData, num(admin.K7), packageFinancialYear, num(ct.A34)),
+          0,
+        );
       }
 
       // Tax outstanding is the charge less any income tax already deducted

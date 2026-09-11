@@ -272,6 +272,70 @@ describe("the associated companies count on the derived sheets", () => {
   });
 });
 
+// ── A period straddling a small profits rate change ────────────────────────
+//
+// Every financial year from 2019 to 2027 charged 19%, so the two Admin rate
+// cells hold the same figure on every shipped package. This builds a year
+// whose predecessor charged 16% and follows it from the tax data to the two
+// tax rows and the checks that hold each row to its own year.
+
+describe("a period straddling a small profits rate change", () => {
+  const book = { documentInfo: { periodCoveredEnd: "2026-10-31" } };
+  function twoRateTaxData() {
+    const taxData = taxDataFor("ltd-2026");
+    taxData.corporation_tax_previous_financial_year = { small_profits_rate: 0.16 };
+    return taxData;
+  }
+
+  it("gives the first tax row the year before's rate and the second the year end's", () => {
+    const results = calculateLtdResults(book, [], twoRateTaxData(), {});
+    expect(results.Admin.K6).toBe(2025);
+    expect(results.Admin.K7).toBe(2026);
+    expect(results.Admin.P6).toBe(16);
+    expect(results.Admin.P7).toBe(19);
+  });
+
+  it("holds both rows to the same figure when the two years charged the same rate", () => {
+    const results = calculateLtdResults(book, [], taxDataFor("ltd-2026"), {});
+    expect(results.Admin.P6).toBe(19);
+    expect(results.Admin.P7).toBe(19);
+  });
+
+  // BrickWork Pro Ltd VAT read seven months on, so its year ends on
+  // 31 October 2026 and its period straddles 1 April with a profit to charge
+  // on both rows.
+  it("charges each row at its own year's rate, and names the row that carries the wrong one", () => {
+    const taxData = twoRateTaxData();
+    const { book: brick, lines } = loadDiyaGlData(resolve(ROOT, "examples", "brickwork-pro", "ltd-vat"), "+P7M");
+    const scenario = diyaGlToScenario(brick, lines, "ltd");
+    const merged = { ...scenario, ...scenario.expected };
+    const failuresFor = (mutate) => {
+      const results = calculateFromDiyaGl(brick, lines, "ltd", taxData, scenario);
+      mutate(results);
+      return ltd
+        .checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, "2026-10-31")
+        .filter((check) => !check.pass)
+        .map((check) => check.name)
+        .sort();
+    };
+
+    const intact = calculateFromDiyaGl(brick, lines, "ltd", taxData, scenario);
+    expect(intact.CorporationTax.G33).toBe(16);
+    expect(intact.CorporationTax.G34).toBe(19);
+
+    const clean = new Set(failuresFor(() => {}));
+    expect(clean.has("CT: first tax row small profits rate = the rate its own financial year charged")).toBe(false);
+
+    const flipped = failuresFor((results) => {
+      results.Admin.P6 = 19;
+    }).filter((name) => !clean.has(name));
+    expect(flipped).toEqual([
+      "CT: first tax row rate = the rate its share of the augmented profits falls in",
+      "CT: first tax row small profits rate = the rate its own financial year charged",
+    ]);
+  });
+});
+
 // ── Every check is breakable ───────────────────────────────────────────────
 //
 // A check that cannot fail is not a check. Each case below corrupts one

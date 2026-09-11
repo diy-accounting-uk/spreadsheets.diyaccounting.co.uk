@@ -25,7 +25,12 @@
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
-import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
+import {
+  apportionCorporationTax,
+  financialYearsInPeriod,
+  financialYearNumber,
+  smallProfitsRatePercentFor,
+} from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
@@ -882,13 +887,17 @@ function buildAdmin(taxData, period, associatedCompanies) {
   const yearEndSerial = serialOf(period.yearEnd);
   const periodStartSerial = serialOf(period.start);
   const financialYears = financialYearsInPeriod(period.start, period.yearEnd);
+  const fileFinancialYear = financialYearNumber(period.yearEnd);
 
   return {
     B9: periodStartSerial,
     B32: yearEndSerial,
     F21: yearEndSerial,
-    P6: Math.round(corporationTax.small_profits_rate * 100),
-    P7: Math.round(corporationTax.small_profits_rate * 100),
+    // Each tax row's own financial year's small profits rate. The two differ
+    // whenever the period reaches back over 1 April into a year that charged
+    // a different rate.
+    P6: smallProfitsRatePercentFor(taxData, financialYears.years[0].year, fileFinancialYear, financialYears.years[0].days),
+    P7: smallProfitsRatePercentFor(taxData, financialYears.years[1].year, fileFinancialYear, financialYears.years[1].days),
     P8: Math.round(corporationTax.main_rate * 100),
     P9: corporationTax.marginal_relief_fraction,
     P12: corporationTax.small_profits_limit,
