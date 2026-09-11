@@ -1343,6 +1343,7 @@
   // button and Ctrl+Z fire it and walk away) can await the DOM actually
   // reflecting the undo rather than just the call having been made.
   function undoLastEdit() {
+    if (state.committing) return Promise.resolve();
     var previous = window.DiyaGlEdits.undo.pop();
     if (!previous) {
       showToast("Nothing to undo.");

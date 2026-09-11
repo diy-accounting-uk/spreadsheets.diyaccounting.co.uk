@@ -187,8 +187,14 @@ async function allChecksPassExcept(page, expectedFailingLabels) {
   expect(await engineFailingLabels(page)).toEqual(expectedFailingLabels.slice().sort());
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
 async function undo(page) {
-  await page.locator("#undo-btn").click();
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
 }
 
 // ── Reading a rendered figure back off the page ────────────────────────────

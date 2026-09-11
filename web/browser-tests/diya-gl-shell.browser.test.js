@@ -66,6 +66,16 @@ function parseMoney(text) {
   return Number(text.replace(/[£,\s]/g, ""));
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
+async function undo(page) {
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
+}
+
 test.describe("DIYA-GL books shell — the mounted manifest drives the page", () => {
   test("the tab strip lists the mounted manifest's views in order", async ({ page }) => {
     await openLoadedBook(page);
@@ -316,7 +326,7 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     // The link would fetch the example, and the screen is no longer it.
     expect(new URL(page.url()).search).toBe("");
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(page.locator("#app-title")).not.toContainText("Ltd");
     expect(new URL(page.url()).searchParams.get("example")).toBe(EXAMPLE_KEY);
   });

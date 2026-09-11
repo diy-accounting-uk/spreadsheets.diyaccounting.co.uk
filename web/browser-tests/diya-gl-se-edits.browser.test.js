@@ -198,8 +198,14 @@ async function removeLineByEntryNumber(page, entryNumber) {
   }, entryNumber);
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
 async function undo(page) {
-  await page.locator("#undo-btn").click();
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
 }
 
 // The save menu's diya-gl zip download, captured and unzipped -- the same
