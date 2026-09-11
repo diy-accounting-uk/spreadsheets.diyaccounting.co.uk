@@ -1638,6 +1638,10 @@ export function standardReads() {
   for (const cell of CT600_CELLS) add("CT600", cell);
 
   for (const [cell] of ADMIN_TAX_DATA_CELLS) add("Admin", cell);
+  // The two tax rows' small profits rates, which are not in that table
+  // because each row takes its own financial year's rate.
+  add("Admin", "P6");
+  add("Admin", "P7");
   add("Admin", "P14");
   add("Admin", "F21");
   add("Admin", "B9");
