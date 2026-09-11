@@ -606,6 +606,36 @@ describe("assemblePrompt", () => {
     expect(prompt.user).toContain("<other-year-ends>");
   });
 
+  // A reports directory mid-refresh holds freshly generated year ends beside stale
+  // committed ones, so every fresh year end diverges from the stale featured run and
+  // promotion fires for all of them. That is the state the generate workflows run the
+  // judge in, and an unbounded prompt there failed the size guard and blocked the very
+  // commit that would have made the reports consistent again.
+  it("caps how many diverging year ends it expands, and says so for the rest", () => {
+    const featuredContent = report("bst");
+    const divergingContent = featuredContent.replace("Status: RECONCILES", "Status: RECONCILES (with warnings)");
+    const files = {
+      "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md": featuredContent,
+    };
+    for (const year of [2026, 2025, 2024, 2023, 2022, 2021]) {
+      files[`GB_Accounts_Basic_Sole_Trader_${year}_04_05__Apr${year % 100}__Excel_2007_bst-scenario-basic.md`] = divergingContent;
+    }
+    const dir = reportsDirWith(files);
+
+    const prompt = assemblePrompt("bst", { reportsDir: dir, rubric: "rubric text" });
+    const featured = prompt.runs.find((run) => run.deltas !== undefined);
+
+    // Six diverge; two are expanded and four fall back to a line.
+    expect(prompt.runs).toHaveLength(3);
+    expect(featured.deltas).toHaveLength(4);
+
+    // The overflow must not claim agreement it does not have.
+    for (const line of featured.deltas) {
+      expect(line).toContain("differs from the featured run, not expanded here");
+      expect(line).not.toContain("matches the featured run");
+    }
+  });
+
   // The Ltd product's committed reports carry ~90 year ends of the same scenario; the delta
   // digest folds all but the featured one into a line apiece, so the ceiling has to cover that
   // one product's worth of one-line deltas rather than the two or three runs the others carry.
