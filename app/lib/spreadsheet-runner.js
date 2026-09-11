@@ -251,9 +251,10 @@ function hasLibreOffice() {
 //
 // A miss always recalculates. Nothing here can make a test skip or fail: if
 // the entry is absent the work happens, if another worker holds the lock this
-// one waits, and if that wait runs out or the lock goes stale it recalculates
-// on its own into a temporary directory. Callers only ever read the directory
-// they are handed, and anything that mutates a package copies it out first.
+// one waits, if that holder has died the lock is taken over, and if the wait
+// runs out the work happens anyway in a temporary directory. Callers only ever
+// read the directory they are handed, and the packages a test corrupts are
+// copies it asked for.
 
 const CACHE_FORMAT = "v1";
 const CACHE_WORKBOOK = "input.xlsx";
