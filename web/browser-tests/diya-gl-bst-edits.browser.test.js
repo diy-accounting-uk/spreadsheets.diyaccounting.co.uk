@@ -112,6 +112,18 @@ async function expectYearTotal(page, column, value) {
   await expect.poll(() => yearTotal(page, column)).toBe(value);
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
+// Not used by the tests that exist to prove the button and keyboard
+// shortcut themselves are wired to undo -- those keep the real click.
+async function undo(page) {
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
+}
+
 function bookCheck(page, id) {
   return page.locator(`#inspector [data-book-check="${id}"]`);
 }
@@ -534,12 +546,32 @@ test.describe("DIYA-GL page — undo", () => {
     await addEntry(page, "purchases", { date: "2025-04-16", account: "5500", detail: "Second", amount: 200 });
     expect(await yearTotal(page, "netProfit")).toBe(start - 300);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expectYearTotal(page, "netProfit", start - 100);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(page.locator("#undo-btn")).toHaveClass(/hidden/);
     await expectYearTotal(page, "netProfit", start);
+  });
+
+  test("a second undo fired before the first settles does not corrupt the undo stack", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const start = await yearTotal(page, "netProfit");
+    await addEntry(page, "purchases", { date: "2025-04-15", account: "5500", detail: "First", amount: 100 });
+    await addEntry(page, "purchases", { date: "2025-04-16", account: "5500", detail: "Second", amount: 200 });
+    expect(await yearTotal(page, "netProfit")).toBe(start - 300);
+
+    // Both calls fire in the same tick, so the second reaches undoLastEdit
+    // while state.committing is still true from the first and the guard
+    // turns it into a no-op -- proving the stack survives even when nothing
+    // paces the two calls apart.
+    await page.evaluate(() => Promise.all([window.DiyaGlPage.undo(), window.DiyaGlPage.undo()]));
+
+    await expectYearTotal(page, "netProfit", start - 100);
+    expect(await page.evaluate(() => window.DiyaGlEdits.undo.depth())).toBe(1);
+    await expect(page.locator("#undo-btn")).not.toHaveClass(/hidden/);
   });
 });
 
@@ -615,7 +647,7 @@ test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book
 
     // Undo puts the broken book back, helper and all: the whole plan was one
     // step, and the entry is out of the period again.
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(bookCheck(page, "book-dates-in-period")).toHaveClass(/fail/);
     await expect(page.locator(`tr.entry-row[data-entry="${entryNumber}"]`)).toHaveCount(0);
   });

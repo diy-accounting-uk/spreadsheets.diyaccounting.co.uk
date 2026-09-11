@@ -251,13 +251,14 @@ describe("the associated companies count on the derived sheets", () => {
   });
 
   it("divides both marginal relief limits, so a company with associates pays more on the same profit", () => {
-    const rates = {
-      smallProfitsRatePercent: [19, 19],
+    const fy2025 = {
+      smallProfitsRatePercent: 19,
       mainRatePercent: 25,
       marginalReliefFraction: 0.015,
       lowerLimit: 50000,
       upperLimit: 250000,
     };
+    const rates = { perYear: [fy2025] };
     const years = [{ year: 2025, days: 365 }];
     const alone = apportionCorporationTax(100000, years, 365, rates);
     const withThree = apportionCorporationTax(100000, years, 365, { ...rates, associatedCompanies: 3 });
@@ -283,7 +284,7 @@ describe("a period straddling a small profits rate change", () => {
   const book = { documentInfo: { periodCoveredEnd: "2026-10-31" } };
   function twoRateTaxData() {
     const taxData = taxDataFor("ltd-2026");
-    taxData.corporation_tax_previous_financial_year = { small_profits_rate: 0.16 };
+    taxData.corporation_tax_previous_financial_year = { ...taxData.corporation_tax_previous_financial_year, small_profits_rate: 0.16 };
     return taxData;
   }
 
@@ -324,14 +325,158 @@ describe("a period straddling a small profits rate change", () => {
     expect(intact.CorporationTax.G34).toBe(19);
 
     const clean = new Set(failuresFor(() => {}));
-    expect(clean.has("CT: first tax row small profits rate = the rate its own financial year charged")).toBe(false);
+    expect(clean.has("CT: first tax row small profits rate = what its own financial year charged")).toBe(false);
 
     const flipped = failuresFor((results) => {
       results.Admin.P6 = 19;
     }).filter((name) => !clean.has(name));
     expect(flipped).toEqual([
       "CT: first tax row rate = the rate its share of the augmented profits falls in",
-      "CT: first tax row small profits rate = the rate its own financial year charged",
+      "CT: first tax row small profits rate = what its own financial year charged",
+    ]);
+  });
+});
+
+// ── A period straddling the FY2022 rate change ────────────────────────
+//
+// FY2022 charged 19% flat with no marginal relief; FY2023 charges 25% with
+// relief between 50,000 and 250,000. Precision Code Ltd read two years and
+// eight months back ends its year on 31 July 2023, so 243 of its 365 days
+// belong to FY2022 and 122 to FY2023, and the two rows charge differently.
+
+describe("a period straddling the FY2022 rate change", () => {
+  const YEAR_END = "2023-07-31";
+  const FIRST_ROW_DAYS = 243;
+  const SECOND_ROW_DAYS = 122;
+
+  function straddle() {
+    const taxData = taxDataFor("ltd-2023");
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples/precision-code-ltd/full"), "-P2Y8M");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    return { taxData, book, lines, scenario, merged: { ...scenario, ...scenario.expected } };
+  }
+
+  function resultsFor() {
+    const { taxData, book, lines, scenario } = straddle();
+    return calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+  }
+
+  it("gives each Admin row its own financial year's rates, limits and relief fraction", () => {
+    const { Admin } = resultsFor();
+    const { taxData } = straddle();
+    expect(Admin.K6).toBe(2022);
+    expect(Admin.K7).toBe(2023);
+    expect([Admin.R6, Admin.S6, Admin.T6, Admin.U6]).toEqual([
+      Math.round(taxData.corporation_tax_previous_financial_year.main_rate * 100),
+      taxData.corporation_tax_previous_financial_year.marginal_relief_fraction,
+      taxData.corporation_tax_previous_financial_year.small_profits_limit,
+      taxData.corporation_tax_previous_financial_year.main_rate_limit,
+    ]);
+    expect([Admin.R7, Admin.S7, Admin.T7, Admin.U7]).toEqual([
+      Math.round(taxData.corporation_tax.main_rate * 100),
+      taxData.corporation_tax.marginal_relief_fraction,
+      taxData.corporation_tax.small_profits_limit,
+      taxData.corporation_tax.main_rate_limit,
+    ]);
+    // The two rows carrying the same figures is the defect this table ends.
+    expect(Admin.R6).not.toBe(Admin.R7);
+    expect(Admin.S6).not.toBe(Admin.S7);
+    expect(Admin.T6).not.toBe(Admin.T7);
+    expect(Admin.U6).not.toBe(Admin.U7);
+  });
+
+  it("charges the FY2022 days flat at 19% and the FY2023 days at 25% less relief", () => {
+    const { CorporationTax } = resultsFor();
+    expect(CorporationTax.A33).toBe(FIRST_ROW_DAYS);
+    expect(CorporationTax.A34).toBe(SECOND_ROW_DAYS);
+    expect(CorporationTax.G33).toBe(19);
+    expect(CorporationTax.G34).toBe(25);
+    // FY2022 had no relief to give, at any profit.
+    expect(CorporationTax.L33).toBe(0);
+    expect(CorporationTax.L34).toBeGreaterThan(0);
+    // The first row's whole share at 19%, worked from the chargeable profit
+    // and the day split rather than from the row beside it.
+    expect(CorporationTax.J33).toBeCloseTo((CorporationTax.K28 * FIRST_ROW_DAYS * 0.19) / 365, 6);
+    expect(CorporationTax.I33).toBe(CorporationTax.J33);
+  });
+
+  it("names exactly the checks a row carrying the year end's figures breaks", () => {
+    const { taxData, book, lines, scenario, merged } = straddle();
+    const failuresFor = (mutate) => {
+      const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+      mutate(results);
+      return new Set(
+        ltd
+          .checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, YEAR_END)
+          .filter((entry) => !entry.pass)
+          .map((entry) => entry.name),
+      );
+    };
+    const clean = failuresFor(() => {});
+    const broken = (mutate) => [...failuresFor(mutate)].filter((name) => !clean.has(name)).sort();
+
+    expect(clean.size, [...clean].join(", ")).toBe(0);
+
+    expect(broken((results) => (results.Admin.R6 = results.Admin.R7))).toEqual([
+      "CT: first tax row main rate = what its own financial year charged",
+      "CT: first tax row rate = the rate its share of the augmented profits falls in",
+    ]);
+    expect(broken((results) => (results.Admin.S6 = results.Admin.S7))).toEqual([
+      "CT: first tax row marginal relief fraction = what its own financial year charged",
+    ]);
+    expect(broken((results) => (results.Admin.T6 = results.Admin.T7))).toEqual([
+      "CT: first tax row marginal relief lower limit = what its own financial year charged",
+    ]);
+    expect(broken((results) => (results.Admin.U6 = results.Admin.U7))).toEqual([
+      "CT: first tax row marginal relief upper limit = what its own financial year charged",
+    ]);
+  });
+
+  // What the shipped Jul23 package charges: the first row on the year end's
+  // main rate, limits and relief fraction, which is 243 days of FY2022 taxed
+  // at 25% with a relief FY2022 never gave.
+  it("fails the charge against the statutory computation when the first row takes the year end's figures", () => {
+    const { taxData, book, lines, scenario, merged } = straddle();
+    const charged = (mutate) => {
+      const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+      mutate(results);
+      const checks = ltd.checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, YEAR_END);
+      return {
+        charge: results.CorporationTax.K35,
+        failed: checks
+          .filter((entry) => !entry.pass)
+          .map((entry) => entry.name)
+          .sort(),
+      };
+    };
+
+    const asShipped = charged((results) => {
+      const ct = results.CorporationTax;
+      const share = ct.A33 / ct.A35;
+      const augmentedShare = ct.K30 * share;
+      ct.G33 = results.Admin.R7;
+      ct.J33 = (ct.F33 * results.Admin.R7) / 100;
+      ct.L33 = ((results.Admin.U7 * share - augmentedShare) * ct.F33 * results.Admin.S7) / augmentedShare;
+      ct.I33 = ct.J33 - ct.L33;
+      ct.K35 = ct.I33 + ct.I34;
+      for (const column of ["R", "S", "T", "U"]) results.Admin[`${column}6`] = results.Admin[`${column}7`];
+    });
+
+    const asDue = charged(() => {});
+    expect(asShipped.charge - asDue.charge).toBeCloseTo(4061.63606, 4);
+    expect(asShipped.failed).toEqual([
+      "CT600: corporation tax = first tax row gross tax",
+      "CT600: marginal rate relief = the working sheet's relief",
+      "CT600: tax net of marginal relief = the working sheet's charge",
+      "CT600: tax rate = first tax row rate",
+      "CT: Tax outstanding = CT less tax deducted at source",
+      "CT: charge for the year = the statutory computation with marginal relief",
+      "CT: first tax row main rate = what its own financial year charged",
+      "CT: first tax row marginal relief fraction = what its own financial year charged",
+      "CT: first tax row marginal relief lower limit = what its own financial year charged",
+      "CT: first tax row marginal relief upper limit = what its own financial year charged",
+      "Fixed asset note: corporation tax for the year = CT charge",
+      "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
     ]);
   });
 });

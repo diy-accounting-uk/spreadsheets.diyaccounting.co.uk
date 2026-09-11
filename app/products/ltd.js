@@ -35,7 +35,7 @@ import {
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
-import { calculateCorporationTax, smallProfitsRatePercentFor } from "../lib/tax/corporation-tax.js";
+import { apportionCorporationTax, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
   buildProfitBridge,
@@ -1475,14 +1475,21 @@ const PL_ROW_CAPTIONS = {
 // Admin cells the generator injects from the tax-year TOML, and the TOML
 // path each one carries. Whole-number percentages where the sheet holds a
 // percentage, fractions where it holds a fraction.
-// P6 and P7, the two tax rows' small profits rates, are not here: each row
-// takes the rate of the financial year it names, so they are checked against
-// their own year rather than against one figure from the file.
+// Rows 6 and 7 of the Admin rate table are not here: every corporation tax
+// figure on them belongs to the financial year that row names, so each is
+// checked against its own year rather than against one figure from the file.
+// Row 6 is the working sheet's first tax row and row 7 its second; each
+// column holds one of the five figures its financial year charges by.
+const ADMIN_FINANCIAL_YEAR_ROWS = [6, 7];
+const ADMIN_RATE_COLUMNS = {
+  smallProfitsRatePercent: "P",
+  mainRatePercent: "R",
+  marginalReliefFraction: "S",
+  lowerLimit: "T",
+  upperLimit: "U",
+};
+
 const ADMIN_TAX_DATA_CELLS = [
-  ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
-  ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
-  ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
-  ["P13", "marginal relief upper limit", (t) => t.corporation_tax.main_rate_limit],
   ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
@@ -1638,10 +1645,11 @@ export function standardReads() {
   for (const cell of CT600_CELLS) add("CT600", cell);
 
   for (const [cell] of ADMIN_TAX_DATA_CELLS) add("Admin", cell);
-  // The two tax rows' small profits rates, which are not in that table
-  // because each row takes its own financial year's rate.
-  add("Admin", "P6");
-  add("Admin", "P7");
+  // The two tax rows' own rates, limits and relief fraction, which are not in
+  // that table because each row takes its own financial year's figures.
+  for (const row of ADMIN_FINANCIAL_YEAR_ROWS) {
+    for (const column of Object.values(ADMIN_RATE_COLUMNS)) add("Admin", `${column}${row}`);
+  }
   add("Admin", "P14");
   add("Admin", "F21");
   add("Admin", "B9");
@@ -2070,7 +2078,7 @@ const DATE_CELLS = {
 
 // Cells that hold a rate or a percentage, whichever way the sheet writes it.
 const RATE_CELLS = {
-  Admin: ["P6", "P7", "P8", "P9", "M19", "M21", "G5", "G6", "G7", "G8", "G15", "G16", "G17", "G18", "G19", "O16", "O17"],
+  Admin: ["P6", "P7", "R6", "R7", "S6", "S7", "M19", "M21", "G5", "G6", "G7", "G8", "G15", "G16", "G17", "G18", "G19", "O16", "O17"],
   CorporationTax: ["G33", "G34"],
   CT600: ["AA126", "W137"],
   PubNotes: ["B27", "B28", "B29", "B30", "B31"],
@@ -4206,83 +4214,106 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
       // Which band a row falls in is decided on augmented profits: the
-      // chargeable profit plus the exempt distributions received. Both limits
-      // are shared out over the period the same way the profit is, then
-      // divided by one plus the number of associated companies. Relief
-      // tapers the gap up to the upper limit and is then scaled by the row's
+      // chargeable profit plus the exempt distributions received. The row's
+      // own financial year states both limits, which are shared out over the
+      // period the same way the profit is and then divided by one plus the
+      // number of associated companies. Relief tapers the gap up to the upper
+      // limit at that year's own fraction and is then scaled by the row's
       // taxable share over its augmented share, so distributions take relief
       // away without ever being taxed.
       const admin = results.Admin;
       if (admin && days > 0) {
         const associatedDivisor = 1 + num(admin.P14);
-        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days / associatedDivisor;
-        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days / associatedDivisor;
+        const sheetRates = (adminRow) =>
+          Object.fromEntries(Object.entries(ADMIN_RATE_COLUMNS).map(([figure, column]) => [figure, num(admin[`${column}${adminRow}`])]));
+        const lowerLimit = (rates, rowDays) => (rates.lowerLimit * rowDays) / days / associatedDivisor;
+        const upperLimit = (rates, rowDays) => (rates.upperLimit * rowDays) / days / associatedDivisor;
         const augmentedShare = (rowDays) => (num(ct.K30) * rowDays) / days;
-        const reliefFor = (rowProfit, rowDays) => {
+        const reliefFor = (rates, rowProfit, rowDays) => {
           const augmented = augmentedShare(rowDays);
-          if (!(augmented > lowerLimit(rowDays) && augmented < upperLimit(rowDays))) return 0;
-          return ((upperLimit(rowDays) - augmented) * rowProfit * num(admin.P9)) / augmented;
+          if (!(augmented > lowerLimit(rates, rowDays) && augmented < upperLimit(rates, rowDays))) return 0;
+          return ((upperLimit(rates, rowDays) - augmented) * rowProfit * rates.marginalReliefFraction) / augmented;
         };
-        const rateFor = (rowDays, smallProfitsRate) => (augmentedShare(rowDays) <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
+        const rateFor = (rates, rowDays) =>
+          augmentedShare(rowDays) <= lowerLimit(rates, rowDays) ? rates.smallProfitsRatePercent : rates.mainRatePercent;
 
         check(
           "CT: first tax row rate = the rate its share of the augmented profits falls in",
           num(ct.G33),
-          rateFor(num(ct.A33), num(admin.P6)),
+          rateFor(sheetRates(6), num(ct.A33)),
           0,
         );
         check(
           "CT: second tax row rate = the rate its share of the augmented profits falls in",
           num(ct.G34),
-          rateFor(num(ct.A34), num(admin.P7)),
+          rateFor(sheetRates(7), num(ct.A34)),
           0,
         );
         check(
           "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
           num(ct.L33),
-          reliefFor(num(ct.F33), num(ct.A33)),
+          reliefFor(sheetRates(6), num(ct.F33), num(ct.A33)),
         );
         check(
           "CT: second tax row marginal relief = its share of the augmented profits against its share of the limits",
           num(ct.L34),
-          reliefFor(num(ct.F34), num(ct.A34)),
+          reliefFor(sheetRates(7), num(ct.F34), num(ct.A34)),
         );
 
-        // Each row's small profits rate is its own financial year's. The
-        // year the package was generated for supplies its own; a row whose
-        // year is the one before it takes that year's rate from the same
-        // file, and a row with no days charges nothing either way.
+        // Every figure a row charges by is its own financial year's. The year
+        // the package was generated for supplies its own; a row whose year is
+        // the one before it takes that year's figures from the same file, and
+        // a row with no days charges nothing either way.
         // The package is generated from the tax year file named for the
         // financial year its year end falls in: the second row's year when
         // the period straddles 1 April, and the first row's when the year
         // ends on 31 March and the period lies wholly inside one.
         const packageFinancialYear = num(ct.A34) > 0 ? num(admin.K7) : num(admin.K6);
-        check(
-          "CT: first tax row small profits rate = the rate its own financial year charged",
-          num(admin.P6),
-          smallProfitsRatePercentFor(taxData, num(admin.K6), packageFinancialYear, num(ct.A33)),
-          0,
+        const ROW_NAMES = { 6: "first", 7: "second" };
+        const FIGURE_NAMES = {
+          smallProfitsRatePercent: "small profits rate",
+          mainRatePercent: "main rate",
+          marginalReliefFraction: "marginal relief fraction",
+          lowerLimit: "marginal relief lower limit",
+          upperLimit: "marginal relief upper limit",
+        };
+        const statedRates = ADMIN_FINANCIAL_YEAR_ROWS.map((adminRow, index) =>
+          financialYearRatesFor(taxData, num(admin[`K${adminRow}`]), packageFinancialYear, num(index === 0 ? ct.A33 : ct.A34)),
         );
-        check(
-          "CT: second tax row small profits rate = the rate its own financial year charged",
-          num(admin.P7),
-          smallProfitsRatePercentFor(taxData, num(admin.K7), packageFinancialYear, num(ct.A34)),
-          0,
-        );
+        for (const [index, adminRow] of ADMIN_FINANCIAL_YEAR_ROWS.entries()) {
+          for (const [figure, column] of Object.entries(ADMIN_RATE_COLUMNS)) {
+            check(
+              `CT: ${ROW_NAMES[adminRow]} tax row ${FIGURE_NAMES[figure]} = what its own financial year charged`,
+              num(admin[`${column}${adminRow}`]),
+              statedRates[index][figure],
+              0,
+            );
+          }
+        }
+
+        // The charge the period's profit actually bears, against the
+        // statutory computation worked from the tax year file rather than
+        // from the rate cells the sheet charged by: each financial year's
+        // share of the profit at the figures that year's own table states.
+        const statutory = apportionCorporationTax(
+          profit,
+          [
+            { year: num(admin.K6), days: num(ct.A33) },
+            { year: num(admin.K7), days: num(ct.A34) },
+          ],
+          days,
+          {
+            perYear: statedRates,
+            associatedCompanies: expected.business?.associated_companies ?? 0,
+            frankedInvestmentIncome: expected.business?.franked_investment_income ?? 0,
+          },
+        ).tax;
+        check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
       }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
-
-      // The charge the period's profit actually bears, against the statutory
-      // computation worked independently of the sheet.
-      const statutory = calculateCorporationTax(profit, {
-        ...taxData.corporation_tax,
-        associated_companies: expected.business?.associated_companies ?? 0,
-        franked_investment_income: expected.business?.franked_investment_income ?? 0,
-      }).corporationTax;
-      check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }
   }
 

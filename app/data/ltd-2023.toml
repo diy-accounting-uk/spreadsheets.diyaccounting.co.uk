@@ -17,10 +17,15 @@ main_rate_limit = 250000
 marginal_relief_fraction = 0.015
 
 # Financial year 2022, the year before this one. An accounting period that
-# reaches back over 1 April charges its earlier days at that year's small
-# profits rate, which the working sheet's first tax row carries in Admin P6.
+# reaches back over 1 April charges its earlier days at that year's own rates,
+# limits and relief fraction, which the working sheet's first tax row carries
+# in Admin P6, R6, S6, T6 and U6.
 [corporation_tax_previous_financial_year]
+main_rate = 0.19
 small_profits_rate = 0.19
+small_profits_limit = 0
+main_rate_limit = 0
+marginal_relief_fraction = 0
 
 [capital_allowances]
 annual_investment_allowance = 1.00

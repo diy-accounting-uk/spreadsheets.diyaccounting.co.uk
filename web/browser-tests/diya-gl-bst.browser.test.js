@@ -80,6 +80,16 @@ async function uploadFile(page, buffer, name) {
   });
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
+async function undo(page) {
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
+}
+
 // ── Workbook corruption helpers, for the breakability proof ────────────────
 // Mirror the OOXML mechanics diya-gl/xlsx-cells.js reads with: find a sheet's
 // XML by name through workbook.xml + its rels, then edit one cell in place.
@@ -306,7 +316,7 @@ test.describe("DIYA-GL page — loaded views", () => {
     await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
     await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading Ltd");
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(page.locator("#app-title")).not.toContainText("Ltd");
     await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
     await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading");

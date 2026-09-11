@@ -21,7 +21,7 @@ import {
   payrollYearStart,
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
-import { smallProfitsRatePercentFor, financialYearNumber } from "./tax/corporation-tax.js";
+import { financialYearRatesFor, financialYearNumber } from "./tax/corporation-tax.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -499,37 +499,31 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   const ca = taxData.capital_allowances;
   const dep = taxData.depreciation;
   const mil = taxData.mileage;
-  const ct = taxData.corporation_tax;
 
   const numericEdits = {};
 
   // Year-end date — the ONE date cell. All others are formula-driven from F21.
   numericEdits.F21 = yearEndSerial;
 
-  // Corporation Tax rates (stored as whole-number percentages in the
-  // spreadsheet). P6 and P7 are the two tax rows' own financial years, which
-  // carry different small profits rates whenever the period reaches back over
-  // 1 April into a year that charged a different one.
+  // Corporation Tax rates. Rows 6 and 7 are the two tax rows' own financial
+  // years, and each carries every figure its year charges by: the small
+  // profits rate and the main rate as whole-number percentages, the marginal
+  // relief fraction, and the two limits the relief tapers between. The rows
+  // differ whenever the period reaches back over 1 April into a year that
+  // charged differently.
   const financialYearRows = ltdAdminFinancialYearRows(yearEndSerial);
   const fileFinancialYear = financialYearNumber(fromExcelSerial(yearEndSerial));
-  numericEdits.P6 = smallProfitsRatePercentFor(
-    taxData,
-    financialYearRows.K6,
-    fileFinancialYear,
-    financialYearRows.N6 - financialYearRows.L6 + 1,
-  );
-  numericEdits.P7 = smallProfitsRatePercentFor(
-    taxData,
-    financialYearRows.K7,
-    fileFinancialYear,
-    financialYearRows.N7 - financialYearRows.L7 + 1,
-  );
-  numericEdits.P8 = Math.round(ct.main_rate * 100);
-
-  // Marginal relief: the fraction and the two profit limits it tapers between
-  numericEdits.P9 = ct.marginal_relief_fraction;
-  numericEdits.P12 = ct.small_profits_limit;
-  numericEdits.P13 = ct.main_rate_limit;
+  const rowRates = [
+    financialYearRatesFor(taxData, financialYearRows.K6, fileFinancialYear, financialYearRows.N6 - financialYearRows.L6 + 1),
+    financialYearRatesFor(taxData, financialYearRows.K7, fileFinancialYear, financialYearRows.N7 - financialYearRows.L7 + 1),
+  ];
+  for (const [index, row] of [6, 7].entries()) {
+    numericEdits[`P${row}`] = rowRates[index].smallProfitsRatePercent;
+    numericEdits[`R${row}`] = rowRates[index].mainRatePercent;
+    numericEdits[`S${row}`] = rowRates[index].marginalReliefFraction;
+    numericEdits[`T${row}`] = rowRates[index].lowerLimit;
+    numericEdits[`U${row}`] = rowRates[index].upperLimit;
+  }
 
   // Capital allowances (stored as whole-number percentages)
   numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);

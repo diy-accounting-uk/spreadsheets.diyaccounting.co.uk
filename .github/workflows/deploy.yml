@@ -27,7 +27,20 @@ on:
       - '**/cdk.json'
       - 'LICENSE'
       - 'package.json'
+      - 'package-lock.json'
       - 'pom.xml'
+      # scripts/build-diya-gl-bundle.mjs's copyRuntimeAssets() copies these
+      # into web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/, and
+      # esbuild bundles app/lib/diya-gl-engine.js (which imports app/products/**)
+      # into the engine the books pages fetch, so all of it is deployed content
+      # even though none of it sits under web/.
+      - 'app/data/**'
+      - 'app/lib/**'
+      - 'app/products/**'
+      - 'app/templates/**'
+      - 'examples/**'
+      - 'scripts/example-books.json'
+      - 'scripts/build-diya-gl-bundle.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
     inputs:

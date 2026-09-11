@@ -908,23 +908,33 @@ describeCalc(
       ]);
     });
 
-    it("fails the rate the profit is charged at when Admin P8 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P8", 19);
+    it("fails the rate the profit is charged at when the first tax row's main rate is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "R6", 19);
       expect(value).toBe(19);
-      const corrupted = checksWithCorruptedCell("Admin", "P8", value);
+      const corrupted = checksWithCorruptedCell("Admin", "R6", value);
       expect(failureNames(corrupted)).toEqual([
-        "Admin P8: corporation tax main rate",
         "CT: first tax row rate = the rate its share of the augmented profits falls in",
+        "CT: first tax row main rate = what its own financial year charged",
       ]);
     });
 
-    it("fails the relief when Admin P9 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P9", 0.03);
+    it("fails the relief when the first tax row's relief fraction is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "S6", 0.03);
       expect(value).toBe(0.03);
-      const corrupted = checksWithCorruptedCell("Admin", "P9", value);
+      const corrupted = checksWithCorruptedCell("Admin", "S6", value);
       expect(failureNames(corrupted)).toEqual([
-        "Admin P9: marginal relief fraction",
         "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
+        "CT: first tax row marginal relief fraction = what its own financial year charged",
+      ]);
+    });
+
+    it("fails the relief limits when the first tax row's upper limit is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "U6", 300000);
+      expect(value).toBe(300000);
+      const corrupted = checksWithCorruptedCell("Admin", "U6", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
+        "CT: first tax row marginal relief upper limit = what its own financial year charged",
       ]);
     });
 
@@ -940,6 +950,7 @@ describeCalc(
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
         "CT: second tax row rate = the rate its share of the augmented profits falls in",
+        "CT: charge for the year = the statutory computation with marginal relief",
       ]);
     });
 
@@ -951,6 +962,7 @@ describeCalc(
         "CT: the two tax rows span the accounting period",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: first tax row profit = chargeable profit by its share of those days",
+        "CT: charge for the year = the statutory computation with marginal relief",
       ]);
     });
 

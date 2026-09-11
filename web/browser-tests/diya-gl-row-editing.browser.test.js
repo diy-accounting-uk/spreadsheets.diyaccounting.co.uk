@@ -85,6 +85,16 @@ function bookCheck(id) {
   return `#inspector [data-book-check="${id}"]`;
 }
 
+// Calls window.DiyaGlPage.undo() directly instead of clicking #undo-btn:
+// the button's click handler fires undoLastEdit and returns immediately, so
+// a plain click can resolve before the recalculation it starts has landed.
+// Awaiting the API call waits for the actual recalculation promise instead.
+async function undo(page) {
+  await page.evaluate(async () => {
+    await window.DiyaGlPage.undo();
+  });
+}
+
 // ── Date editing ─────────────────────────────────────────────────────────
 
 test.describe("DIYA-GL page — entry date editing", () => {
@@ -154,7 +164,7 @@ test.describe("DIYA-GL page — entry date editing", () => {
     await expect(check).toContainText("TXN-0022");
     await expect(check).toContainText("2026-04-15");
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect(page.locator(bookCheck("book-dates-in-period"))).toHaveClass(/pass/);
     await expect(page.locator('[data-date-entry="TXN-0022"]')).toHaveValue("2025-04-01");
   });
@@ -225,7 +235,7 @@ test.describe("DIYA-GL page — entry account editing", () => {
     await expect(page.locator("#toast")).toContainText("Changed TXN-0019's account to 5500");
     await expect.poll(() => monthCell(page, "2025-04", "generalAdmin")).not.toBe(generalAdminBefore);
 
-    await page.locator("#undo-btn").click();
+    await undo(page);
     await expect.poll(() => monthCell(page, "2025-04", "generalAdmin")).toBe(generalAdminBefore);
     await expect(page.locator('[data-account-entry="TXN-0019"]')).toHaveValue("5501");
   });
