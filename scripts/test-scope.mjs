@@ -661,7 +661,7 @@ if (willRun("infra", sel.infra)) {
 
 const failed = results.filter(([, code]) => code !== 0).map(([name]) => name);
 const partial = [];
-if (skipLibreOffice && chosenCalc.length) partial.push("libreoffice skipped");
+if (skipLibreOffice && results.some(([name]) => name.startsWith("calc("))) partial.push("libreoffice skipped");
 if (delegatedTiers.length) partial.push(`tiers delegated: ${delegatedTiers.join(", ")}`);
 
 const verdict = failed.length ? "RED" : partial.length ? `PARTIAL (${partial.join("; ")})` : "GREEN";
