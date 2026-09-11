@@ -44,8 +44,10 @@ function productsIn(path) {
 const ROUTES = [
   {
     id: "shared engine",
-    match: (p) => /^app\/lib\/(generator|spreadsheet-runner|workbook-set|product-workbook|xlsx-[^/]+|diya-gl-engine)\.js$/.test(p),
-    adds: { calc: "all", browser: "all" },
+    // The workbook writers reach every product's recalculation. They do not
+    // reach the page, which renders from diya-gl's own engine.
+    match: (p) => /^app\/lib\/(generator|spreadsheet-runner|workbook-set|product-workbook|xlsx-[^/]+)\.js$/.test(p),
+    adds: { calc: "all" },
   },
   {
     id: "product module",
@@ -87,6 +89,12 @@ const ROUTES = [
     id: "fixture or example",
     match: (p) => /^examples\//.test(p) || /^app\/test\/fixtures\//.test(p),
     adds: { calc: "product" },
+  },
+  {
+    id: "diya-gl engine",
+    // The JS engine the page renders from, and the report shape it produces.
+    match: (p) => /^app\/lib\/diya-gl-[^/]+\.js$/.test(p) || /^app\/bin\/report\.js$/.test(p),
+    adds: { browser: "all" },
   },
   {
     id: "diya-gl package",
