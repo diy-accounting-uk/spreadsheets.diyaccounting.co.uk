@@ -215,6 +215,12 @@ Raise the PR as soon as the branch is testing and deploying, so its checks and i
 together. Keep the description honest about what each item actually turned out to be — a row's
 premise is often wrong, and the PR is where that gets recorded.
 
+**If you open it as a draft, write the reason into the PR body and own clearing it.** A draft is
+only ever a note that something is not ready yet — a red check, a missing verification, a decision
+the operator has to make first. Name which, so the condition is checkable by someone who is not
+you. When that condition clears, `gh pr ready <n>`; the reason going stale is not the same as the
+flag going away, and a draft nobody owns is a PR that never merges.
+
 **Then invoke `/watch`.** Every push hands over to it: it holds the scope, reports every terminal
 state, and drives the branch and `main` green. Do not go back to checking runs by hand.
 

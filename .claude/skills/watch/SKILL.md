@@ -209,6 +209,14 @@ All of these at once, each verified by reading:
 
 Anything less is not done. A green PR whose deploy has not started is not done.
 
+**A draft this session raised comes out of draft here.** Drafting a PR because its branch was red
+is a note about the branch, not about the work, and the note expires the moment the scope goes
+green. Leaving it set strands the PR: `/auto-merge` treats draft as a deliberate stop and will not
+route around it, which is correct, so nothing merges and nothing says why. Before reporting green,
+check each PR in scope with `gh pr view <n> --json isDraft`, and for any this session drafted whose
+reason has cleared, `gh pr ready <n>` and say so. A draft the operator set stays set; theirs is a
+decision, ours was a status.
+
 Two honest qualifications on (2), which the naive form gets wrong:
 
 - **Enumerate this repository's actual workflows** rather than assuming a set. `gh workflow list`
