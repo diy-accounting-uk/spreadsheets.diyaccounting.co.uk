@@ -75,9 +75,20 @@ One background monitor, polling every 60-90s, emitting one line per newly finish
   `conclusion` is the fact; a log line saying "passed" is not.
 - Keep the seen-set bounded, and let a failed `gh` call skip the cycle rather than kill the loop.
 - **Probe merge-readiness every cycle.** A watch that only reports reds leaves a PR sitting green
-  for however long nobody looks. Each poll, for every open PR, emit one line when it appears
-  mergeable — not a draft, no unresolved review thread, and the latest run of every workflow on its
-  head SHA green. A shell loop cannot invoke a skill, so the probe only notices and says so: emit
+  for however long nobody looks. Each poll, for every open PR that is not a draft, take the **latest
+  run of each distinct workflow on its branch** and call the PR ready when **none of those latest
+  runs is still incomplete, and none of them failed**:
+
+      gh run list --branch <headRef> --limit 60 --json workflowName,status,conclusion,databaseId \
+        | jq 'group_by(.workflowName) | map(max_by(.databaseId))'
+
+  Incomplete is `queued` or `in_progress`. Failed is `failure`, `timed_out` or `action_required`.
+  Anything else — `success`, and also `skipped`, `cancelled` or `neutral` — does not hold the PR
+  back, because a workflow can legitimately skip under a `paths:` filter and a cancelled run is
+  usually a supersession. Requiring a literal `success` from every workflow that has ever touched
+  the branch would leave a PR never ready for reasons that are not defects.
+
+  A shell loop cannot invoke a skill, so the probe's job is only to notice and say so: emit
   `MERGEABLE #<n> <branch>` and let the agent decide. Emit it once per PR per readiness, not every
   cycle, or a ready PR floods the channel until someone merges it.
 - **An empty result set is not a pass.** A branch that does not exist, a query whose filter matches
