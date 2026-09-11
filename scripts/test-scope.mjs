@@ -132,7 +132,10 @@ function git(args, { allowFail = false } = {}) {
 }
 
 function lines(text) {
-  return (text || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  return (text || "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 // Returns { paths, base, mergeBase } or { escalate: "<reason>" }.
@@ -173,7 +176,9 @@ const SOURCE_ROOTS = ["app/", "web/", "diya-gl/", "scripts/"];
 const SOURCE_EXT = /\.(js|mjs|cjs)$/;
 
 function sourceFiles() {
-  return lines(git(["ls-files"])).filter((p) => SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/"));
+  return lines(git(["ls-files"])).filter(
+    (p) => SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/"),
+  );
 }
 
 function resolveSpecifier(fromFile, spec) {
@@ -236,7 +241,10 @@ function importClosure(changed, files) {
 // Non-JS changes show up in tests as literal strings: fixture names,
 // template basenames, data files.
 function literalMatches(changed, testFiles) {
-  const names = changed.filter((p) => !SOURCE_EXT.test(p)).map((p) => p.split("/").pop()).filter((n) => n.length > 4);
+  const names = changed
+    .filter((p) => !SOURCE_EXT.test(p))
+    .map((p) => p.split("/").pop())
+    .filter((n) => n.length > 4);
   if (names.length === 0) return [];
   const hits = new Set();
   for (const file of testFiles) {
@@ -302,7 +310,13 @@ function select(changed) {
       if (!route.match(path)) continue;
       const adds = route.adds;
       if (adds.calc) {
-        const list = Array.isArray(adds.calc) ? adds.calc : adds.calc === "all" ? PRODUCTS : productsIn(path).length ? productsIn(path) : PRODUCTS;
+        const list = Array.isArray(adds.calc)
+          ? adds.calc
+          : adds.calc === "all"
+            ? PRODUCTS
+            : productsIn(path).length
+              ? productsIn(path)
+              : PRODUCTS;
         for (const p of list) sel.calcProducts.add(p);
         note("calc", path, route.id);
       }
@@ -310,7 +324,13 @@ function select(changed) {
         if (adds.browser === "all") sel.browserAll = true;
         else if (adds.browser === "diya-gl") sel.browserDiyaGl = true;
         else if (adds.browser === "content") sel.browserContent = true;
-        else if (adds.browser === "page") sel.browserPages.add(path.split("/").pop().replace(/\.(js|css)$/, ""));
+        else if (adds.browser === "page")
+          sel.browserPages.add(
+            path
+              .split("/")
+              .pop()
+              .replace(/\.(js|css)$/, ""),
+          );
         else {
           const list = productsIn(path);
           if (list.length) for (const p of list) sel.browserProducts.add(p);
@@ -440,7 +460,15 @@ let chosenSpecs;
 let unitReason;
 
 if (escalated) {
-  sel = { calcProducts: new Set(PRODUCTS), browserAll: true, infra: true, extras: new Set(["lint:workflows"]), why: new Map(), browserProducts: new Set(), browserPages: new Set() };
+  sel = {
+    calcProducts: new Set(PRODUCTS),
+    browserAll: true,
+    infra: true,
+    extras: new Set(["lint:workflows"]),
+    why: new Map(),
+    browserProducts: new Set(),
+    browserPages: new Set(),
+  };
   unitFiles = plainFiles;
   chosenSpecs = specs;
   unitReason = "every unit file, because the scope escalated";
@@ -477,7 +505,9 @@ plan.push({ tier: "unit", run: true, what: unitReason, est: unitFiles.length > 6
 plan.push({
   tier: "calc",
   run: chosenCalc.length > 0,
-  what: chosenCalc.length ? `${chosenCalc.length} LibreOffice file(s) for ${calcProducts.join(", ")}` : "nothing in the diff reaches a generator, template, tax data file or fixture",
+  what: chosenCalc.length
+    ? `${chosenCalc.length} LibreOffice file(s) for ${calcProducts.join(", ")}`
+    : "nothing in the diff reaches a generator, template, tax data file or fixture",
   est: `~${Math.max(1, calcProducts.length * 4)}m`,
 });
 plan.push({
@@ -486,7 +516,12 @@ plan.push({
   what: chosenSpecs.length ? `${chosenSpecs.length} spec(s)` : "nothing in the diff reaches diya-gl/, a page or a browser asset",
   est: `~${Math.max(1, Math.round(chosenSpecs.length * 0.8))}m`,
 });
-plan.push({ tier: "infra", run: sel.infra, what: sel.infra ? "mvnw verify, cdk synth" : "nothing in the diff reaches cdk-spreadsheets/, pom.xml or infra/", est: "~2m" });
+plan.push({
+  tier: "infra",
+  run: sel.infra,
+  what: sel.infra ? "mvnw verify, cdk synth" : "nothing in the diff reaches cdk-spreadsheets/, pom.xml or infra/",
+  est: "~2m",
+});
 
 console.log("=== test scope ===");
 if (escalated) console.log(`ESCALATED to the full set: ${escalated}`);
@@ -500,11 +535,13 @@ for (const row of plan) {
   const delegated = allowed && !allowed.has(row.tier) && row.run;
   const mark = delegated ? "DELEGATED" : row.run ? "RUN      " : "skipped  ";
   console.log(`  ${mark} ${row.tier.padEnd(8)} ${row.what}${row.run && !delegated ? `  (${row.est})` : ""}`);
-  if (delegated) console.log(`           ^ TEST_SCOPE_TIERS=${process.env.TEST_SCOPE_TIERS} excludes this tier; another job or run must cover it`);
+  if (delegated)
+    console.log(`           ^ TEST_SCOPE_TIERS=${process.env.TEST_SCOPE_TIERS} excludes this tier; another job or run must cover it`);
   for (const line of (sel.why.get(row.tier) || []).slice(0, 6)) console.log(`           <- ${line}`);
 }
 if (sel.extras.size) console.log(`  RUN      extras   ${[...sel.extras].join(", ")}`);
-if (skipLibreOffice && chosenCalc.length) console.log("  NOTE     SKIP_LIBREOFFICE=1 is set, so the calc tier will report no recalculation coverage");
+if (skipLibreOffice && chosenCalc.length)
+  console.log("  NOTE     SKIP_LIBREOFFICE=1 is set, so the calc tier will report no recalculation coverage");
 console.log("");
 
 if (planOnly) {
@@ -538,7 +575,10 @@ if (willRun("gates", true)) {
   results.push(["gates", code]);
   if (code) exitCode = 1;
 } else if (sel.extras.size) {
-  const code = await runSteps([...sel.extras].map((e) => [e, "npm", ["run", e]]), {});
+  const code = await runSteps(
+    [...sel.extras].map((e) => [e, "npm", ["run", e]]),
+    {},
+  );
   results.push(["extras", code]);
   if (code) exitCode = 1;
 }
