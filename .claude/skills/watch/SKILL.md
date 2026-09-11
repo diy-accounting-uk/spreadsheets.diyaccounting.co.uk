@@ -74,6 +74,12 @@ One background monitor, polling every 60-90s, emitting one line per newly finish
 - **Poll the API for state, never grep a log for a word.** `status == "completed"` with its
   `conclusion` is the fact; a log line saying "passed" is not.
 - Keep the seen-set bounded, and let a failed `gh` call skip the cycle rather than kill the loop.
+- **Probe merge-readiness every cycle.** A watch that only reports reds leaves a PR sitting green
+  for however long nobody looks. Each poll, for every open PR, emit one line when it appears
+  mergeable — not a draft, no unresolved review thread, and the latest run of every workflow on its
+  head SHA green. A shell loop cannot invoke a skill, so the probe only notices and says so: emit
+  `MERGEABLE #<n> <branch>` and let the agent decide. Emit it once per PR per readiness, not every
+  cycle, or a ready PR floods the channel until someone merges it.
 - **An empty result set is not a pass.** A branch that does not exist, a query whose filter matches
   nothing, and a `jq` asking for a field the `gh --json` list did not request all return nothing,
   with exit 0, which reads exactly like a clean run. Count the rows before interpreting them: ask
@@ -81,6 +87,19 @@ One background monitor, polling every 60-90s, emitting one line per newly finish
   field a `jq` filter touches must appear in the `--json` list beside it, or it silently yields
   null for every row. Give up loudly after a few empty cycles rather than sitting there looking
   healthy.
+
+## When a mergeable PR appears
+
+**Run `/auto-merge`.** Do not merge by hand: that skill is the only sanctioned path and it re-checks
+every gate properly, including the ones a shell probe cannot see — uncommitted work in the branch's
+worktree, a branch ahead of origin, a PR head that no longer equals the branch tip.
+
+The probe is a hint, not a verdict. It can be wrong in both directions: green checks on a stale head
+look ready and are not, and a PR whose runs have not registered yet looks unready and merely is
+early. `/auto-merge` is what settles it.
+
+If `/auto-merge` merges anything, the scope changes — the PR's branch leaves it and `main` gains a
+deploy. Re-read the scope on the next cycle rather than carrying the old one.
 
 ## Reading a run
 
