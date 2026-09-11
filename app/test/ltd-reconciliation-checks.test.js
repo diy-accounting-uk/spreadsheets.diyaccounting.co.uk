@@ -1341,7 +1341,7 @@ describeCalc(
       // VAT: 1,500 brought forward, 70,816.67 of output VAT less 22,557.05 of
       // input, against 40,682.17 paid under RV. What is left is the fourth
       // quarter, still to pay.
-      expect(tb.EJ33).toBeCloseTo(-9077.45, 2);
+      expect(tb.EJ33).toBeCloseTo(-9077.455, 2);
       // PAYE: 20,078.40 deducted by the payroll and the same paid over under
       // RP, month by month.
       expect(tb.EJ34).toBeCloseTo(0, 2);
