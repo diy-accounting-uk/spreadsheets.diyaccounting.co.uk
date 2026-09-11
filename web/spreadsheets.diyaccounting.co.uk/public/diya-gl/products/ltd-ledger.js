@@ -761,23 +761,12 @@
   // rate at all -- fmtRate would print "45%".
   var ADMIN_PENCE_PER_MILE_CELLS = ["O16", "O17"];
 
-  // P14 holds the associated companies count, a whole number of companies.
-  // unitFor() (app/products/ltd.js) has no entry for it in RATE_CELLS or
-  // COUNT_CELLS, so it falls through to the default "money" unit and
-  // formatByUnit would print "£0.00" for a count of zero. Formatted here as
-  // a plain number instead, the same override this file already makes for
-  // the whole-percent and pence-per-mile cells above.
-  var ADMIN_COUNT_CELLS = ["P14"];
-
   function adminCellText(value, cell, helpers) {
     if (ADMIN_WHOLE_PERCENT_CELLS.indexOf(cell) !== -1) {
       return typeof value === "number" ? String(Math.round(value * 100) / 100) + "%" : helpers.esc(String(value));
     }
     if (ADMIN_PENCE_PER_MILE_CELLS.indexOf(cell) !== -1) {
       return typeof value === "number" ? helpers.fmtPence(value) : helpers.esc(String(value));
-    }
-    if (ADMIN_COUNT_CELLS.indexOf(cell) !== -1) {
-      return typeof value === "number" ? value.toLocaleString("en-GB") : helpers.esc(String(value));
     }
     return null;
   }

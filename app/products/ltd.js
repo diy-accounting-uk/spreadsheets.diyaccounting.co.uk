@@ -563,13 +563,13 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     if (directors[1]?.name) bd.E6 = directors[1].name;
 
     // The number of companies associated with this one, which divides both
-    // marginal relief limits. Left unwritten when the scenario names none,
-    // matching the template's own blank default (blank reads as 0 in the
-    // sheet's arithmetic, so an unset count changes nothing).
-    if (biz.associated_companies) {
-      if (!hubWrites.Admin) hubWrites.Admin = {};
-      hubWrites.Admin.P14 = biz.associated_companies;
-    }
+    // marginal relief limits. Written even when it is none: a blank cell and a
+    // stated zero mean the same to the sheet's arithmetic, but only the stated
+    // zero comes back when the package is read, and the JS engine states it
+    // either way. Leaving it blank makes the two halves of the roundtrip
+    // disagree about a cell they agree on the value of.
+    if (!hubWrites.Admin) hubWrites.Admin = {};
+    hubWrites.Admin.P14 = biz.associated_companies ?? 0;
   }
 
   // Opening balance sheet (OpenAccounts)
@@ -2055,9 +2055,9 @@ const RATE_CELLS = {
 // Cells that hold a whole number of something: days, years, miles, shares, a
 // week number or a flag.
 const COUNT_CELLS = {
-  Admin: ["K6", "K7", "N16", "N17"],
+  Admin: ["K6", "K7", "N16", "N17", "P14"],
   CorporationTax: ["A33", "A34", "A35", "E33", "E34"],
-  CT600: ["C126"],
+  CT600: ["C126", "Y118", "Y120"],
   Report: ["I95", "F97", "F98"],
 };
 
