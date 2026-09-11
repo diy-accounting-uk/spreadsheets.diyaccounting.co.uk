@@ -2,28 +2,25 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: Corporation Tax marginal relief — what is still open
 
-Moved to this repository's root on 2026-09-10 and its three gaps put on the board as `MR-1`,
-`MR-2` and `MR-3`, the same ids `NEXT.md` uses. They are separate rows because they are separately
-deliverable: MR-1 is the one that produces a wrong figure for a real customer today, MR-2 shares
-its input block and formula so it follows it, and MR-3 is dormant until a financial year carries
-different rates from the one after it.
-
 The working sheet charges marginal relief. `Admin!P8`, `P9`, `P12` and `P13` carry the main
-rate, the relief fraction and the two limits from `app/data/ltd-*.toml`; `CorporationTax`
-rows 33 and 34 apportion the limits across the financial years the accounting period falls
-in and take the relief off each row's gross tax; the CT600 files the gross tax in box 63,
-the relief in box 64 and the charge in box 65. Three things the sheet has no input for yet:
+rate, the relief fraction and the two limits from `app/data/ltd-*.toml`; `P6` and `P7` carry a
+small profits rate for each of the two financial year rows; `P14` the associated companies
+count both limits are divided by. `CorporationTax!K29` takes the exempt distributions received
+and `K30` the augmented profits the limits are tested against. Rows 33 and 34 apportion the
+limits across the financial years the accounting period falls in and take the relief off each
+row's gross tax. On the CT600 sheet, box 38 is the distributions, boxes 40 and 41 the
+associated companies counts, and the version 3 numbering files them as boxes 620, 327 and 328.
 
-- **Associated companies.** The limits are divided by one plus the number of associated
-  companies. There is no cell for the count, and the CT600's own boxes 38 and 41 carry no
-  formula. A `P14` count, a `/(1+Admin!$P$14)` divisor on both apportioned limits and the two
-  form boxes would close it.
-- **Franked investment income.** Relief is strictly `(U - A) x N/A x F`, where A is augmented
-  profits and N taxable total profits. With no input for franked investment income, A = N and
-  the ratio is 1.
-- **A period straddling a rate change.** One `ltd-<FY>.toml` feeds both tax rows, and the run
-  checks that both carry the same small profits rate. Every financial year from 2020 on
-  carries the same rates as the one after it, so nothing in the current data set needs two.
+One thing left:
+
+- **A period straddling a change in the main rate, the relief fraction or the limits.** The
+  sheet carries one `P8`, one `P9` and one `P12`/`P13` pair for the whole period, so both tax
+  rows charge the year end's figures. FY2022 to FY2023 is such a change — 19% flat with no
+  relief, against 25% with relief between 50,000 and 250,000 — so a 2023 package with a year
+  end other than 31 March charges its FY2022 days at FY2023's rates today. The Jul23 Precision
+  Code package charges 243 days of FY2022 at 25%. Closing it needs a cell per financial year
+  for each of those four figures, the four row formulas reading them, and the previous year's
+  table in `app/data/ltd-<FY>.toml` widened past the small profits rate it carries now.
 
 ## Reference
 
