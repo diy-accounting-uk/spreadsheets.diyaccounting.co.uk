@@ -156,8 +156,10 @@ checks, fixtures, or the judge.
   workers 150s, four 145s, eight 146s. Long runs still need a liveness signal armed before you
   start, not after you begin to doubt it. A fresh `soffice` in `ps` is the honest one; the log is
   not, because vitest's reporter buffers its per-file lines to the end once it is piped to a file.
-  **An empty log is therefore evidence of nothing.** Use `--reporter=tap-flat`, which the router
-  already passes, for a log that grows while the run is alive. Read the process table before
+  **An empty log is therefore evidence of nothing.** `--reporter=tap-flat`, which the router already
+  passes, does not rescue this on its own: measured on a 32-minute calc tier, it printed not one
+  test line until the end, because every gated file spends its whole run inside `beforeAll`. The
+  router's own 30-second heartbeat is the signal that works. Read the process table before
   concluding a long run is stuck: parents at 0% CPU in state `S` with a child soffice seconds old
   is what healthy looks like here.
 - **Judge triage discipline.** When the LLM judge fails a run, classify each concern: a real
