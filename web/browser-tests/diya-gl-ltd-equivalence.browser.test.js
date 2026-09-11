@@ -245,12 +245,15 @@ const SAVED_MODE_CANNOT_CARRY = ["check/", "section/journal-category-vat-netting
 // this does not close when generate-ltd.yml next refreshes the package --
 // it tracks the fixture's own associated-companies count, not its
 // generation date.
-// The committed examples/ltd-latest package predates the cells the working
-// sheet gained for franked investment income, so a saved read of it has no
-// value to carry for any of them. Unlike the associated-companies list
-// below, this one does close: the next generate-ltd.yml refresh rebuilds the
-// package from the current template and every key here starts arriving.
-const FRANKED_INVESTMENT_INCOME_NOT_IN_SAVED_PACKAGE = [
+// The committed examples/ltd-latest package predates cells the working sheet
+// has gained since it was generated, so a saved read of it carries no value
+// for any of them. Unlike the associated-companies list below, this one
+// closes: the next generate-ltd.yml refresh rebuilds the package from the
+// current template and every key here starts arriving. Anything added here
+// should leave on that refresh, so a key that survives it is a real absence
+// and not this.
+const NOT_IN_SAVED_PACKAGE_UNTIL_REGENERATED = [
+  // Franked investment income and the augmented profits it feeds.
   "cell/Financialaccounts.xlsx!CT600!Z114",
   "cell/Financialaccounts.xlsx!CorporationTax!K29",
   "cell/Financialaccounts.xlsx!CorporationTax!K30",
@@ -259,6 +262,16 @@ const FRANKED_INVESTMENT_INCOME_NOT_IN_SAVED_PACKAGE = [
   "section/corporation-tax-working-sheet/add-franked-investment-income",
   "section/corporation-tax-working-sheet/augmented-profits",
   "section/ct600-as-filed/box-620-franked-investment-income",
+  // The rate table's own row per financial year: main rate, relief fraction
+  // and both limits, which replaced the period-wide P8/P9/P12/P13.
+  "cell/Financialaccounts.xlsx!Admin!R6",
+  "cell/Financialaccounts.xlsx!Admin!R7",
+  "cell/Financialaccounts.xlsx!Admin!S6",
+  "cell/Financialaccounts.xlsx!Admin!S7",
+  "cell/Financialaccounts.xlsx!Admin!T6",
+  "cell/Financialaccounts.xlsx!Admin!T7",
+  "cell/Financialaccounts.xlsx!Admin!U6",
+  "cell/Financialaccounts.xlsx!Admin!U7",
 ];
 
 const ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2 = [
@@ -331,7 +344,7 @@ test.describe("DIYA-GL Company books page — the sheet agrees (A3)", () => {
         !SAVED_MODE_CANNOT_CARRY.some((prefix) => key.startsWith(prefix)) &&
         !OFFICER_REGISTER_ONLY_IN_S2.includes(key) &&
         !ASSOCIATED_COMPANIES_ZERO_ONLY_IN_S2.includes(key) &&
-        !FRANKED_INVESTMENT_INCOME_NOT_IN_SAVED_PACKAGE.includes(key) &&
+        !NOT_IN_SAVED_PACKAGE_UNTIL_REGENERATED.includes(key) &&
         !DATED_SLUG.test(key),
     );
     const onlyS3Unexplained = onlyS3.filter((key) => !DATED_SLUG.test(key) && !OFFICER_REGISTER_ONLY_IN_S3.includes(key));
