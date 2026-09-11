@@ -196,6 +196,16 @@ export function selectRuns(reportsDir, product, listFiles = readdirSync) {
     .slice(0, MAX_RUNS);
 }
 
+// A prompt has to stay readable however badly the reports disagree. Promotion is
+// unbounded by nature -- it fires per year end whose outcome differs -- so a run
+// mid-regeneration, where freshly generated year ends sit beside stale committed
+// ones, promotes every single one and the prompt grows without limit. That is the
+// moment the judge matters most, so the count is capped and the rest fall back to
+// the delta line they would have had. Six covers every real divergence seen so far
+// (the most any product has carried is three) while keeping a mixed directory from
+// running away.
+const MAX_PROMOTED_RUNS = 2;
+
 // Whether another year end of the same scenario is worth a reviewer's eye of its own, or just
 // a one-line acknowledgement that it exists. A different deterministic status, a different set
 // of warned checks, or any failure at all means this year end's own outcome differs from the
@@ -209,6 +219,15 @@ export function runDiverges(report, featuredReport) {
   const featuredWarned = warningChecks(featuredReport);
   if (warned.length !== featuredWarned.length) return true;
   return warned.some((check, index) => check !== featuredWarned[index]);
+}
+
+// A divergent year end past the promotion cap still has to read as divergent: the
+// delta line below ends "matches the featured run", which would be a plain untruth
+// here. This says what it came out as and that it was not expanded, so the judge
+// can ask for it rather than being told it agrees.
+export function cappedDivergenceLine(run, report) {
+  const counts = checkCounts(report);
+  return `${run.yearEnd}: ${report.status || "no status line"}, ${counts.passed} passed, ${counts.warnings} warning${counts.warnings === 1 ? "" : "s"}, ${counts.failed} failed -- differs from the featured run, not expanded here.`;
 }
 
 // One line: which year end, what it deterministically came out as, and that it read the same
@@ -394,10 +413,12 @@ export function assemblePrompt(product, options = {}) {
     for (const other of others ?? []) {
       const otherContent = readFileSync(other.path, "utf8");
       const otherReport = parseReport(otherContent);
-      if (runDiverges(otherReport, featuredReport)) {
+      if (runDiverges(otherReport, featuredReport) && diverging.length < MAX_PROMOTED_RUNS) {
         const otherHeadline = scenario ? scenarioHeadline(scenario, other.scenario, PRODUCTS[product]) : null;
         const otherIndicators = buildIndicators(product, otherContent, { vatRegistered });
         diverging.push({ ...other, status: otherReport.status, headline: otherHeadline, indicators: otherIndicators });
+      } else if (runDiverges(otherReport, featuredReport)) {
+        deltas.push(cappedDivergenceLine(other, otherReport));
       } else {
         deltas.push(deltaLine(other, otherReport));
       }
