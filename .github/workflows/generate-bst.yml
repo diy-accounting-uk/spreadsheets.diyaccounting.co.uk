@@ -434,7 +434,11 @@ jobs:
 
           Triggered by: ${{ github.sha }}"
             git pull --rebase
-            git push
+            # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, so
+            # otherwise this push runs the pre-push router -- the whole suite, LibreOffice
+            # tier included, in a job with no LibreOffice, over output this run has
+            # already generated, reconciled and tested.
+            git push --no-verify
           fi
       - name: Retry push after delay
         if: ${{ steps.push.outcome == 'failure' }}
@@ -444,4 +448,4 @@ jobs:
             sleep 5
           done
           git pull --rebase
-          git push
+          git push --no-verify
