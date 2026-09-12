@@ -402,6 +402,26 @@ const bstDiya = writeSubset(
 // Extract SE (advanced)
 // ============================================================================
 
+// A different percentage per category, so a disallowable formula wired to the
+// wrong row fails. The scenario writes them to VitalTax and the book subset
+// states them under tax.selfEmployment, from this one source, so the sheet and
+// the JS engine cannot drift apart on what is disallowable.
+const SE_ADVANCED_DISALLOWABLE = {
+  costOfGoods: 0.02,
+  paymentsToSubcontractors: 0.03,
+  wagesAndStaffCosts: 0.04,
+  carVanTravelExpenses: 0.25,
+  premisesRunningCosts: 0.05,
+  maintenanceCosts: 0.06,
+  adminCosts: 0.07,
+  advertisingCosts: 0.08,
+  interestOnBankOtherLoans: 0.09,
+  financeCharges: 0.1,
+  irrecoverableDebts: 0.11,
+  professionalFees: 0.12,
+  otherExpenses: 0.13,
+};
+
 const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book)));
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
@@ -451,23 +471,7 @@ const advToml = formatScenarioToml(
     total_mileage: advBusinessMiles,
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
-    // A different percentage per category, so a disallowable formula wired to
-    // the wrong row fails.
-    disallowable: {
-      costOfGoods: 0.02,
-      paymentsToSubcontractors: 0.03,
-      wagesAndStaffCosts: 0.04,
-      carVanTravelExpenses: 0.25,
-      premisesRunningCosts: 0.05,
-      maintenanceCosts: 0.06,
-      adminCosts: 0.07,
-      advertisingCosts: 0.08,
-      interestOnBankOtherLoans: 0.09,
-      financeCharges: 0.1,
-      irrecoverableDebts: 0.11,
-      professionalFees: 0.12,
-      otherExpenses: 0.13,
-    },
+    disallowable: SE_ADVANCED_DISALLOWABLE,
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: seOpeningFixedAssets,
@@ -499,7 +503,8 @@ const advDiya = writeSubset(
   book,
   {
     entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
-    taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
+    taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage", "selfEmployment"],
+    taxOverrides: { selfEmployment: SE_ADVANCED_DISALLOWABLE },
     accountFilter: seAccountFilter,
     employees: book.employees,
     tables: advV2,

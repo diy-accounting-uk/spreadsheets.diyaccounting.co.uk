@@ -5,7 +5,7 @@
   "yearEnd": "2027-10-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.7+8f36b1c6",
+    "engineVersion": "1.2.6+8f36b1c6",
     "taxDataHash": "84585062cad8",
     "templateHash": "81ffdc956e5a",
     "templateScorecard": "101537 passed, 0 warnings, 0 failed",
@@ -340,7 +340,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AJ145",
       "unit": "money",
-      "value": "29143.9812608025"
+      "value": "29664.3512076872"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AJ154",
@@ -350,12 +350,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AJ159",
       "unit": "money",
-      "value": "29079.4750879629"
+      "value": "29599.8450348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AJ166",
       "unit": "money",
-      "value": "29079.4750879629"
+      "value": "29599.8450348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!AJ74",
@@ -410,7 +410,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!CT600!W137",
       "unit": "rate",
-      "value": "23.4789306070281"
+      "value": "23.8981502655764"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Y118",
@@ -425,17 +425,17 @@
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Y133",
       "unit": "money",
-      "value": "1888.07653240741"
+      "value": "1367.70658552268"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Y135",
       "unit": "money",
-      "value": "29143.9812608025"
+      "value": "29664.3512076872"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Z114",
       "unit": "money",
-      "value": "0"
+      "value": "20000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CT600!Z70",
@@ -520,12 +520,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!I33",
       "unit": "money",
-      "value": "12056.825124332"
+      "value": "12272.1014585226"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!I34",
       "unit": "money",
-      "value": "17087.1561364705"
+      "value": "17392.2497491645"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!I7",
@@ -585,17 +585,17 @@
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K29",
       "unit": "money",
-      "value": "0"
+      "value": "20000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K30",
       "unit": "money",
-      "value": "124128.231172839"
+      "value": "144128.231172839"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K35",
       "unit": "money",
-      "value": "29143.9812608025"
+      "value": "29664.3512076872"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K37",
@@ -605,7 +605,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K39",
       "unit": "money",
-      "value": "29079.4750879629"
+      "value": "29599.8450348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!K5",
@@ -615,12 +615,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!L33",
       "unit": "money",
-      "value": "781.094675050736"
+      "value": "565.818340860068"
     },
     {
       "key": "cell/Financialaccounts.xlsx!CorporationTax!L34",
       "unit": "money",
-      "value": "1106.98185735667"
+      "value": "801.888244662613"
     },
     {
       "key": "cell/Financialaccounts.xlsx!MnthP&L!B11",
@@ -2480,7 +2480,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!OpenAccounts!Q6",
       "unit": "money",
-      "value": "0"
+      "value": "20000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!D2",
@@ -2515,7 +2515,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!E17",
       "unit": "money",
-      "value": "29079.4750879629"
+      "value": "29599.8450348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!E18",
@@ -2525,7 +2525,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!E20",
       "unit": "money",
-      "value": "49339.1800879629"
+      "value": "49859.5500348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!E29",
@@ -2540,12 +2540,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F22",
       "unit": "money",
-      "value": "157556.249912037"
+      "value": "157035.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F26",
       "unit": "money",
-      "value": "366546.249912037"
+      "value": "366025.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F31",
@@ -2555,7 +2555,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F33",
       "unit": "money",
-      "value": "308546.249912037"
+      "value": "308025.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F36",
@@ -2565,7 +2565,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F39",
       "unit": "money",
-      "value": "308546.249912037"
+      "value": "308025.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!F6",
@@ -2735,7 +2735,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubNotes!D41",
       "unit": "money",
-      "value": "29143.9812608025"
+      "value": "29664.3512076872"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubNotes!D8",
@@ -2940,12 +2940,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubP&L!F50",
       "unit": "money",
-      "value": "29143.9812608025"
+      "value": "29664.3512076872"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubP&L!F51",
       "unit": "money",
-      "value": "142744.249912037"
+      "value": "142223.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubP&L!F52",
@@ -2955,7 +2955,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!PubP&L!F54",
       "unit": "money",
-      "value": "127744.249912037"
+      "value": "127223.879965152"
     },
     {
       "key": "cell/Financialaccounts.xlsx!PubP&L!F7",
@@ -3250,7 +3250,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!TrialBalance!EJ35",
       "unit": "money",
-      "value": "-29079.4750879629"
+      "value": "-29599.8450348477"
     },
     {
       "key": "cell/Financialaccounts.xlsx!TrialBalance!EJ39",
@@ -3275,7 +3275,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!TrialBalance!EJ91",
       "unit": "money",
-      "value": "-0.000000000004"
+      "value": "0.000000000025"
     },
     {
       "key": "cell/Financialaccounts.xlsx!TrialBalance!L34",
@@ -7803,8 +7803,8 @@
       "key": "check/CT600: corporation tax chargeable = tax net of marginal relief",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29143.9812608025",
-      "actual": "29143.9812608025",
+      "expected": "29664.3512076872",
+      "actual": "29664.3512076872",
       "tolerance": "1"
     },
     {
@@ -7819,8 +7819,8 @@
       "key": "check/CT600: franked investment income = the working sheet's figure",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0",
-      "actual": "0",
+      "expected": "20000",
+      "actual": "20000",
       "tolerance": "1"
     },
     {
@@ -7843,8 +7843,8 @@
       "key": "check/CT600: marginal rate relief = the working sheet's relief",
       "unit": "verdict",
       "value": "pass",
-      "expected": "1888.07653240741",
-      "actual": "1888.07653240741",
+      "expected": "1367.70658552268",
+      "actual": "1367.70658552268",
       "tolerance": "1"
     },
     {
@@ -7923,16 +7923,16 @@
       "key": "check/CT600: tax net of marginal relief = the working sheet's charge",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29143.9812608025",
-      "actual": "29143.9812608025",
+      "expected": "29664.3512076872",
+      "actual": "29664.3512076872",
       "tolerance": "1"
     },
     {
       "key": "check/CT600: tax outstanding",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29079.4750879629",
-      "actual": "29079.4750879629",
+      "expected": "29599.8450348477",
+      "actual": "29599.8450348477",
       "tolerance": "1"
     },
     {
@@ -7971,16 +7971,16 @@
       "key": "check/CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable",
       "unit": "verdict",
       "value": "pass",
-      "expected": "23.4789306070281",
-      "actual": "23.4789306070281",
+      "expected": "23.8981502655764",
+      "actual": "23.8981502655764",
       "tolerance": "0.01"
     },
     {
       "key": "check/CT: Tax outstanding = CT less tax deducted at source",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29079.4750879629",
-      "actual": "29079.4750879629",
+      "expected": "29599.8450348477",
+      "actual": "29599.8450348477",
       "tolerance": "1"
     },
     {
@@ -8003,8 +8003,8 @@
       "key": "check/CT: augmented profits = the chargeable profit and the franked investment income",
       "unit": "verdict",
       "value": "pass",
-      "expected": "124128.231172839",
-      "actual": "124128.231172839",
+      "expected": "144128.231172839",
+      "actual": "144128.231172839",
       "tolerance": "1"
     },
     {
@@ -8027,16 +8027,16 @@
       "key": "check/CT: charge for the year = the statutory computation with marginal relief",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29143.9812608025",
-      "actual": "29143.9812608025",
+      "expected": "29664.3512076872",
+      "actual": "29664.3512076872",
       "tolerance": "1"
     },
     {
       "key": "check/CT: charge for the year = the two tax rows",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29143.9812608025",
-      "actual": "29143.9812608025",
+      "expected": "29664.3512076872",
+      "actual": "29664.3512076872",
       "tolerance": "1"
     },
     {
@@ -8083,8 +8083,8 @@
       "key": "check/CT: first tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
-      "expected": "781.094675050736",
-      "actual": "781.094675050736",
+      "expected": "565.818340860069",
+      "actual": "565.818340860068",
       "tolerance": "1"
     },
     {
@@ -8139,16 +8139,16 @@
       "key": "check/CT: first tax row tax = its gross tax less its marginal relief",
       "unit": "verdict",
       "value": "pass",
-      "expected": "12056.825124332",
-      "actual": "12056.825124332",
+      "expected": "12272.1014585226",
+      "actual": "12272.1014585226",
       "tolerance": "1"
     },
     {
       "key": "check/CT: franked investment income = the exempt distributions entered on the opening accounts",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0",
-      "actual": "0",
+      "expected": "20000",
+      "actual": "20000",
       "tolerance": "1"
     },
     {
@@ -8203,8 +8203,8 @@
       "key": "check/CT: second tax row marginal relief = its share of the augmented profits against its share of the limits",
       "unit": "verdict",
       "value": "pass",
-      "expected": "1106.98185735667",
-      "actual": "1106.98185735667",
+      "expected": "801.888244662613",
+      "actual": "801.888244662613",
       "tolerance": "1"
     },
     {
@@ -8259,8 +8259,8 @@
       "key": "check/CT: second tax row tax = its gross tax less its marginal relief",
       "unit": "verdict",
       "value": "pass",
-      "expected": "17087.1561364705",
-      "actual": "17087.1561364705",
+      "expected": "17392.2497491645",
+      "actual": "17392.2497491645",
       "tolerance": "1"
     },
     {
@@ -9131,8 +9131,8 @@
       "key": "check/Fixed asset note: corporation tax for the year = CT charge",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29143.9812608025",
-      "actual": "29143.9812608025",
+      "expected": "29664.3512076872",
+      "actual": "29664.3512076872",
       "tolerance": "1"
     },
     {
@@ -9406,8 +9406,8 @@
       "key": "check/Opening accounts: franked investment income = the distributions the scenario received",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0",
-      "actual": "0",
+      "expected": "20000",
+      "actual": "20000",
       "tolerance": "1"
     },
     {
@@ -14387,15 +14387,15 @@
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
-      "actual": "-0.000000000004",
+      "actual": "0.000000000025",
       "tolerance": "1"
     },
     {
       "key": "check/Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
       "unit": "verdict",
       "value": "pass",
-      "expected": "29079.4750879629",
-      "actual": "29079.4750879629",
+      "expected": "29599.8450348477",
+      "actual": "29599.8450348477",
       "tolerance": "1"
     },
     {
@@ -16206,7 +16206,7 @@
     {
       "key": "section/business-details/franked-investment-income",
       "unit": "money",
-      "value": "0",
+      "value": "20000",
       "source": "cell/Financialaccounts.xlsx!OpenAccounts!Q6"
     },
     {
@@ -16266,7 +16266,7 @@
     {
       "key": "section/corporation-tax-working-sheet/add-franked-investment-income",
       "unit": "money",
-      "value": "0",
+      "value": "20000",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K29"
     },
     {
@@ -16278,13 +16278,13 @@
     {
       "key": "section/corporation-tax-working-sheet/augmented-profits",
       "unit": "money",
-      "value": "124128.231172839",
+      "value": "144128.231172839",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K30"
     },
     {
       "key": "section/corporation-tax-working-sheet/corporation-tax",
       "unit": "money",
-      "value": "29143.9812608025",
+      "value": "29664.3512076872",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K35"
     },
     {
@@ -16324,7 +16324,7 @@
     {
       "key": "section/corporation-tax-working-sheet/tax-outstanding",
       "unit": "money",
-      "value": "29079.4750879629",
+      "value": "29599.8450348477",
       "source": "cell/Financialaccounts.xlsx!CorporationTax!K39"
     },
     {
@@ -16396,19 +16396,19 @@
     {
       "key": "section/ct600-as-filed/box-435-marginal-rate-relief",
       "unit": "money",
-      "value": "1888.07653240741",
+      "value": "1367.70658552268",
       "source": "cell/Financialaccounts.xlsx!CT600!Y133"
     },
     {
       "key": "section/ct600-as-filed/box-440-corporation-tax-net-of-marginal-rate-relief",
       "unit": "money",
-      "value": "29143.9812608025",
+      "value": "29664.3512076872",
       "source": "cell/Financialaccounts.xlsx!CT600!Y135"
     },
     {
       "key": "section/ct600-as-filed/box-620-franked-investment-income",
       "unit": "money",
-      "value": "0",
+      "value": "20000",
       "source": "cell/Financialaccounts.xlsx!CT600!Z114"
     },
     {
@@ -16456,7 +16456,7 @@
     {
       "key": "section/fixed-asset-note/corporation-tax-for-the-year",
       "unit": "money",
-      "value": "29143.9812608025",
+      "value": "29664.3512076872",
       "source": "cell/Financialaccounts.xlsx!PubNotes!D41"
     },
     {
@@ -17729,7 +17729,7 @@
     {
       "key": "section/published-balance-sheet/corporation-tax",
       "unit": "money",
-      "value": "29079.4750879629",
+      "value": "29599.8450348477",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!E17"
     },
     {
@@ -17747,7 +17747,7 @@
     {
       "key": "section/published-balance-sheet/current-liabilities",
       "unit": "money",
-      "value": "49339.1800879629",
+      "value": "49859.5500348477",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!E20"
     },
     {
@@ -17765,13 +17765,13 @@
     {
       "key": "section/published-balance-sheet/net-assets",
       "unit": "money",
-      "value": "308546.249912037",
+      "value": "308025.879965152",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!F33"
     },
     {
       "key": "section/published-balance-sheet/net-current-assets",
       "unit": "money",
-      "value": "157556.249912037",
+      "value": "157035.879965152",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!F22"
     },
     {
@@ -17783,7 +17783,7 @@
     {
       "key": "section/published-balance-sheet/shareholders-funds",
       "unit": "money",
-      "value": "308546.249912037",
+      "value": "308025.879965152",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!F39"
     },
     {
@@ -17801,7 +17801,7 @@
     {
       "key": "section/published-balance-sheet/total-assets-less-cl",
       "unit": "money",
-      "value": "366546.249912037",
+      "value": "366025.879965152",
       "source": "cell/Financialaccounts.xlsx!PubBalSht!F26"
     },
     {
@@ -17825,7 +17825,7 @@
     {
       "key": "section/published-p-l/corporation-tax",
       "unit": "money",
-      "value": "29143.9812608025",
+      "value": "29664.3512076872",
       "source": "cell/Financialaccounts.xlsx!PubP&L!F50"
     },
     {
@@ -17855,7 +17855,7 @@
     {
       "key": "section/published-p-l/profit-after-tax",
       "unit": "money",
-      "value": "142744.249912037",
+      "value": "142223.879965152",
       "source": "cell/Financialaccounts.xlsx!PubP&L!F51"
     },
     {
@@ -17867,7 +17867,7 @@
     {
       "key": "section/published-p-l/retained-profit-for-the-year",
       "unit": "money",
-      "value": "127744.249912037",
+      "value": "127223.879965152",
       "source": "cell/Financialaccounts.xlsx!PubP&L!F54"
     },
     {
@@ -17909,7 +17909,7 @@
     {
       "key": "section/trial-balance/audit-accuracy-check",
       "unit": "money",
-      "value": "-0.000000000004",
+      "value": "0.000000000025",
       "source": "cell/Financialaccounts.xlsx!TrialBalance!EJ91"
     },
     {

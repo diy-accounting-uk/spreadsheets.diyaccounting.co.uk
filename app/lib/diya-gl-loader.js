@@ -448,6 +448,10 @@ export function diyaGlToScenario(book, lines, product) {
     scenario.stock = { opening: book.stock.openingValue, closing: book.stock.closingValue };
     if (book.stock.materialsPercent !== undefined) scenario.stock.materials_percent = book.stock.materialsPercent;
   }
+  // The disallowable proportions the SA103F boxes are computed from. Without
+  // them the calculator adds back only the wholly disallowable pair and
+  // charges tax on a larger profit than the package's own sheet does.
+  if (book.tax?.selfEmployment) scenario.disallowable = { ...book.tax.selfEmployment };
   if (book.debtors) {
     scenario.opening_debtors = ledgerListing(book.debtors, "opening", "customer");
     scenario.closing_debtors = ledgerListing(book.debtors, "closing", "customer");

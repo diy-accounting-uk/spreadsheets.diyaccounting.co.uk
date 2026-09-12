@@ -1661,6 +1661,26 @@ export function normaliseLine(line) {
 const LTD_FRANKED_INVESTMENT_INCOME_CELL = "Q6";
 const LTD_ASSOCIATED_COMPANIES_CELL = "P14";
 
+// VitalTax column I, the same cells app/products/se.js writes from
+// DISALLOWABLE_PERCENT_CELLS. Rows 44 and 49 are absent on purpose: business
+// entertainment and depreciation are wholly disallowable and take no
+// proportion of their own.
+const SE_DISALLOWABLE_PERCENT_CELLS = {
+  costOfGoods: "I36",
+  paymentsToSubcontractors: "I37",
+  wagesAndStaffCosts: "I38",
+  carVanTravelExpenses: "I39",
+  premisesRunningCosts: "I40",
+  maintenanceCosts: "I41",
+  adminCosts: "I42",
+  advertisingCosts: "I43",
+  interestOnBankOtherLoans: "I45",
+  financeCharges: "I46",
+  irrecoverableDebts: "I47",
+  professionalFees: "I48",
+  otherExpenses: "I50",
+};
+
 const ENTITY_CELLS = {
   bst: {
     file: null,
@@ -2473,6 +2493,23 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
 
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? await taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product, options.readRateData) : {};
+
+  // The trader's own disallowable proportion per expense category, entered on
+  // VitalTax and standing behind SA103F boxes 32 to 45. No year file carries
+  // them, so only the sheet does, and a package read back without them charges
+  // tax on a larger profit than the sheet does: box 46 loses every category's
+  // share and keeps only the wholly disallowable pair.
+  if (product === "se") {
+    const vitalTax = await openSheet(hubZip, "VitalTax");
+    if (vitalTax) {
+      const percentages = {};
+      for (const [field, cell] of Object.entries(SE_DISALLOWABLE_PERCENT_CELLS)) {
+        const value = numberAt(vitalTax.xml, cell, vitalTax.sharedStrings);
+        if (value !== undefined) percentages[field] = value;
+      }
+      if (Object.keys(percentages).length > 0) tax.selfEmployment = percentages;
+    }
+  }
 
   // The two Corporation Tax figures the company enters rather than the year's
   // rate file carrying them, so taxTablesForPackage has no source for either

@@ -352,6 +352,21 @@ standardRate = 0.2000
 reducedRate = 0.0500
 registrationThreshold = 90000.00
 
+[tax.selfEmployment]
+costOfGoods = 0.0200
+paymentsToSubcontractors = 0.0300
+wagesAndStaffCosts = 0.0400
+carVanTravelExpenses = 0.2500
+premisesRunningCosts = 0.0500
+maintenanceCosts = 0.0600
+adminCosts = 0.0700
+advertisingCosts = 0.0800
+interestOnBankOtherLoans = 0.0900
+financeCharges = 0.1000
+irrecoverableDebts = 0.1100
+professionalFees = 0.1200
+otherExpenses = 0.1300
+
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000.00
 mainRateWDA = 0.1800

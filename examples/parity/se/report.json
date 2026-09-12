@@ -5,7 +5,7 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.7+8f36b1c6",
+    "engineVersion": "1.2.6+8f36b1c6",
     "taxDataHash": "84585062cad8",
     "templateHash": "185e5ad6b61d",
     "templateScorecard": "7692 passed, 0 warnings, 0 failed",
@@ -180,12 +180,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E10",
       "unit": "money",
-      "value": "0"
+      "value": "2435.76382500001"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E11",
       "unit": "money",
-      "value": "40339.81"
+      "value": "44951.763825"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E12",
@@ -200,27 +200,27 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E16",
       "unit": "money",
-      "value": "1424.86033333333"
+      "value": "1605.65617"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E18",
       "unit": "money",
-      "value": "44026.6703333333"
+      "value": "48819.419995"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E5",
       "unit": "money",
-      "value": "121513.016666667"
+      "value": "130552.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E6",
       "unit": "money",
-      "value": "1813.49166666666"
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E7",
       "unit": "money",
-      "value": "119699.525"
+      "value": "130552.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E8",
@@ -230,7 +230,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E9",
       "unit": "money",
-      "value": "32799.81"
+      "value": "34976"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B11",
@@ -2020,7 +2020,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D174",
       "unit": "money",
-      "value": "14031.6666666667"
+      "value": "23071.4585"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D219",
@@ -2100,17 +2100,17 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O102",
       "unit": "money",
-      "value": "0"
+      "value": "390"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O106",
       "unit": "money",
-      "value": "0"
+      "value": "-33"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O110",
       "unit": "money",
-      "value": "0"
+      "value": "831"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O114",
@@ -2120,12 +2120,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O118",
       "unit": "money",
-      "value": "0"
+      "value": "420.116666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O122",
       "unit": "money",
-      "value": "14031.6666666667"
+      "value": "23071.4585"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O129",
@@ -2160,7 +2160,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O174",
       "unit": "money",
-      "value": "119429.683333333"
+      "value": "128469.475166667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O179",
@@ -2170,7 +2170,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O194",
       "unit": "money",
-      "value": "119429.683333333"
+      "value": "128469.475166667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O199",
@@ -2185,7 +2185,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O210",
       "unit": "money",
-      "value": "121513.016666667"
+      "value": "130552.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O224",
@@ -2200,42 +2200,42 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O66",
       "unit": "money",
-      "value": "0"
+      "value": "269.4"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O70",
       "unit": "money",
-      "value": "0"
+      "value": "200"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O74",
       "unit": "money",
-      "value": "0"
+      "value": "3709.42933333333"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O78",
       "unit": "money",
-      "value": "0"
+      "value": "1996.0625"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O82",
       "unit": "money",
-      "value": "0"
+      "value": "660"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O86",
       "unit": "money",
-      "value": "0"
+      "value": "57"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O90",
       "unit": "money",
-      "value": "0"
+      "value": "212.45"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O94",
       "unit": "money",
-      "value": "291.666666666667"
+      "value": "619"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O98",
@@ -2265,7 +2265,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D106",
       "unit": "money",
-      "value": "121513.016666667"
+      "value": "130552.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D124",
@@ -2280,32 +2280,32 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D46",
       "unit": "money",
-      "value": "20136.6666666667"
+      "value": "19667.2666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D51",
       "unit": "money",
-      "value": "7984.25"
+      "value": "5988.1875"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D55",
       "unit": "money",
-      "value": "92735.7333333333"
+      "value": "89026.304"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D60",
       "unit": "money",
-      "value": "13200"
+      "value": "12540"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D64",
       "unit": "money",
-      "value": "950"
+      "value": "893"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D71",
       "unit": "money",
-      "value": "183429.683333333"
+      "value": "192469.475166667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D80",
@@ -2325,7 +2325,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!D99",
       "unit": "money",
-      "value": "119429.683333333"
+      "value": "128469.475166667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O106",
@@ -2345,27 +2345,27 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O46",
       "unit": "money",
-      "value": "6925"
+      "value": "6094"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O51",
       "unit": "money",
-      "value": "3900"
+      "value": "3510"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O55",
       "unit": "money",
-      "value": "3035"
+      "value": "2822.55"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O60",
       "unit": "money",
-      "value": "6903.66666666667"
+      "value": "6189.21666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O64",
       "unit": "money",
-      "value": "155770.316666667"
+      "value": "146730.524833333"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Short!O71",
@@ -6673,8 +6673,8 @@
       "key": "check/Income Tax",
       "unit": "verdict",
       "value": "pass",
-      "expected": "40339.81",
-      "actual": "40339.81",
+      "expected": "44951.763825",
+      "actual": "44951.763825",
       "tolerance": "0.01"
     },
     {
@@ -10295,8 +10295,8 @@
       "key": "check/SA103F box 19 wages, salaries and staff costs: short return (D55) = full return (D74) less its own disallowable share (O74)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "92735.7333333333",
-      "actual": "92735.7333333333",
+      "expected": "89026.304",
+      "actual": "89026.304",
       "tolerance": "1"
     },
     {
@@ -10311,8 +10311,8 @@
       "key": "check/SA103F box 20 car, van and travel expenses: short return (D51) = full return (D78) less its own disallowable share (O78)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "7984.25",
-      "actual": "7984.25",
+      "expected": "5988.1875",
+      "actual": "5988.1875",
       "tolerance": "1"
     },
     {
@@ -10327,8 +10327,8 @@
       "key": "check/SA103F box 21 rent, rates, power and insurance: short return (D60) = full return (D82) less its own disallowable share (O82)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "13200",
-      "actual": "13200",
+      "expected": "12540",
+      "actual": "12540",
       "tolerance": "1"
     },
     {
@@ -10343,8 +10343,8 @@
       "key": "check/SA103F box 22 repairs and maintenance: short return (D64) = full return (D86) less its own disallowable share (O86)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "950",
-      "actual": "950",
+      "expected": "893",
+      "actual": "893",
       "tolerance": "1"
     },
     {
@@ -10359,8 +10359,8 @@
       "key": "check/SA103F box 23 phone, stationery and office costs: short return (O55) = full return (D90) less its own disallowable share (O90)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "3035",
-      "actual": "3035",
+      "expected": "2822.55",
+      "actual": "2822.55",
       "tolerance": "1"
     },
     {
@@ -10407,8 +10407,8 @@
       "key": "check/SA103F box 28 accountancy, legal and professional fees: short return (O46) = full return (D110) less its own disallowable share (O110)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "6925",
-      "actual": "6925",
+      "expected": "6094",
+      "actual": "6094",
       "tolerance": "1"
     },
     {
@@ -10463,8 +10463,8 @@
       "key": "check/SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
       "unit": "verdict",
       "value": "pass",
-      "expected": "14031.6666666667",
-      "actual": "14031.6666666667",
+      "expected": "23071.4585",
+      "actual": "23071.4585",
       "tolerance": "1"
     },
     {
@@ -10599,8 +10599,8 @@
       "key": "check/SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60",
       "unit": "verdict",
       "value": "pass",
-      "expected": "14031.6666666667",
-      "actual": "14031.6666666667",
+      "expected": "23071.4585",
+      "actual": "23071.4585",
       "tolerance": "1"
     },
     {
@@ -10615,16 +10615,16 @@
       "key": "check/SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63",
       "unit": "verdict",
       "value": "pass",
-      "expected": "119429.683333333",
-      "actual": "119429.683333333",
+      "expected": "128469.475166667",
+      "actual": "128469.475166667",
       "tolerance": "1"
     },
     {
       "key": "check/SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "119429.683333333",
-      "actual": "119429.683333333",
+      "expected": "128469.475166667",
+      "actual": "128469.475166667",
       "tolerance": "1"
     },
     {
@@ -10639,8 +10639,8 @@
       "key": "check/SA103F box 73 adjusted profit (O194) = box 64",
       "unit": "verdict",
       "value": "pass",
-      "expected": "119429.683333333",
-      "actual": "119429.683333333",
+      "expected": "128469.475166667",
+      "actual": "128469.475166667",
       "tolerance": "1"
     },
     {
@@ -10671,16 +10671,16 @@
       "key": "check/SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75",
       "unit": "verdict",
       "value": "pass",
-      "expected": "121513.016666667",
-      "actual": "121513.016666667",
+      "expected": "130552.8085",
+      "actual": "130552.8085",
       "tolerance": "1"
     },
     {
       "key": "check/SA103F box 76 total taxable profits: full return (O210) = short return (D106)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "121513.016666667",
-      "actual": "121513.016666667",
+      "expected": "130552.8085",
+      "actual": "130552.8085",
       "tolerance": "1"
     },
     {
@@ -10743,8 +10743,8 @@
       "key": "check/SA103S: Profit for tax = Income Tax E5",
       "unit": "verdict",
       "value": "pass",
-      "expected": "121513.016666667",
-      "actual": "121513.016666667",
+      "expected": "130552.8085",
+      "actual": "130552.8085",
       "tolerance": "1"
     },
     {
@@ -10767,16 +10767,16 @@
       "key": "check/SA103S: net profit = turnover + other business income - total expenses",
       "unit": "verdict",
       "value": "pass",
-      "expected": "183429.683333333",
-      "actual": "183429.683333333",
+      "expected": "192469.475166667",
+      "actual": "192469.475166667",
       "tolerance": "1"
     },
     {
       "key": "check/SA103S: total expenses = cost of sales + admin expenses less depreciation",
       "unit": "verdict",
       "value": "pass",
-      "expected": "155770.316666667",
-      "actual": "155770.316666667",
+      "expected": "146730.524833333",
+      "actual": "146730.524833333",
       "tolerance": "1"
     },
     {
@@ -11135,8 +11135,8 @@
       "key": "check/Tax at additional rate",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0",
-      "actual": "0",
+      "expected": "2435.76382500001",
+      "actual": "2435.76382500001",
       "tolerance": "1"
     },
     {
@@ -11151,32 +11151,32 @@
       "key": "check/Tax: IT = Basic + Higher + Additional",
       "unit": "verdict",
       "value": "pass",
-      "expected": "40339.81",
-      "actual": "40339.81",
+      "expected": "44951.763825",
+      "actual": "44951.763825",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Personal allowance after taper",
       "unit": "verdict",
       "value": "pass",
-      "expected": "1813.49166666666",
-      "actual": "1813.49166666666",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Taxable = Profit - Allowance",
       "unit": "verdict",
       "value": "pass",
-      "expected": "119699.525",
-      "actual": "119699.525",
+      "expected": "130552.8085",
+      "actual": "130552.8085",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Total = IT + CIS deduction line + NI",
       "unit": "verdict",
       "value": "pass",
-      "expected": "44026.6703333333",
-      "actual": "44026.6703333333",
+      "expected": "48819.419995",
+      "actual": "48819.419995",
       "tolerance": "1"
     },
     {
@@ -11215,8 +11215,8 @@
       "key": "check/Total Tax + NI, less the CIS already deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "44026.6703333333",
-      "actual": "44026.6703333333",
+      "expected": "48819.419995",
+      "actual": "48819.419995",
       "tolerance": "0.01"
     },
     {
@@ -12746,7 +12746,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
       "unit": "money",
-      "value": "14031.6666666667",
+      "value": "23071.4585",
       "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
@@ -12811,7 +12811,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
       "unit": "money",
-      "value": "121513.016666667",
+      "value": "130552.8085",
       "derivedFrom": [
         "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
         "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
@@ -12830,7 +12830,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
       "unit": "money",
-      "value": "121513.016666667",
+      "value": "130552.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
@@ -13042,7 +13042,7 @@
     {
       "key": "section/income-tax-calculation/less-personal-allowance",
       "unit": "money",
-      "value": "1813.49166666666",
+      "value": "0",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E6"
     },
     {
@@ -13054,19 +13054,19 @@
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
       "unit": "money",
-      "value": "1424.86033333333",
+      "value": "1605.65617",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
       "unit": "money",
-      "value": "121513.016666667",
+      "value": "130552.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate-45",
       "unit": "money",
-      "value": "0",
+      "value": "2435.76382500001",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E10"
     },
     {
@@ -13078,25 +13078,25 @@
     {
       "key": "section/income-tax-calculation/tax-at-higher-rate-40",
       "unit": "money",
-      "value": "32799.81",
+      "value": "34976",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E9"
     },
     {
       "key": "section/income-tax-calculation/taxable-income",
       "unit": "money",
-      "value": "119699.525",
+      "value": "130552.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
       "unit": "money",
-      "value": "40339.81",
+      "value": "44951.763825",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
       "unit": "money",
-      "value": "44026.6703333333",
+      "value": "48819.419995",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E18"
     },
     {
@@ -14219,7 +14219,7 @@
     {
       "key": "section/self-assessment-sa103f/adjusted-profit-box-73",
       "unit": "money",
-      "value": "119429.683333333",
+      "value": "128469.475166667",
       "source": "cell/Financialaccounts.xlsx!SE Full!O194"
     },
     {
@@ -14321,7 +14321,7 @@
     {
       "key": "section/self-assessment-sa103f/net-business-profit-for-tax-purposes-box-64",
       "unit": "money",
-      "value": "119429.683333333",
+      "value": "128469.475166667",
       "source": "cell/Financialaccounts.xlsx!SE Full!O174"
     },
     {
@@ -14381,7 +14381,7 @@
     {
       "key": "section/self-assessment-sa103f/total-additions-to-net-profit-box-61",
       "unit": "money",
-      "value": "14031.6666666667",
+      "value": "23071.4585",
       "source": "cell/Financialaccounts.xlsx!SE Full!D174"
     },
     {
@@ -14399,7 +14399,7 @@
     {
       "key": "section/self-assessment-sa103f/total-disallowable-expenses-box-46",
       "unit": "money",
-      "value": "14031.6666666667",
+      "value": "23071.4585",
       "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
@@ -14417,7 +14417,7 @@
     {
       "key": "section/self-assessment-sa103f/total-taxable-profits-from-this-business-box-76",
       "unit": "money",
-      "value": "121513.016666667",
+      "value": "130552.8085",
       "source": "cell/Financialaccounts.xlsx!SE Full!O210"
     },
     {
@@ -14435,7 +14435,7 @@
     {
       "key": "section/self-assessment-sa103s/accountancy-legal-and-professional",
       "unit": "money",
-      "value": "6925",
+      "value": "6094",
       "source": "cell/Financialaccounts.xlsx!SE Short!O46"
     },
     {
@@ -14471,13 +14471,13 @@
     {
       "key": "section/self-assessment-sa103s/car-van-and-travel",
       "unit": "money",
-      "value": "7984.25",
+      "value": "5988.1875",
       "source": "cell/Financialaccounts.xlsx!SE Short!D51"
     },
     {
       "key": "section/self-assessment-sa103s/cost-of-sales",
       "unit": "money",
-      "value": "20136.6666666667",
+      "value": "19667.2666666667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D46"
     },
     {
@@ -14489,7 +14489,7 @@
     {
       "key": "section/self-assessment-sa103s/employee-costs",
       "unit": "money",
-      "value": "92735.7333333333",
+      "value": "89026.304",
       "source": "cell/Financialaccounts.xlsx!SE Short!D55"
     },
     {
@@ -14501,7 +14501,7 @@
     {
       "key": "section/self-assessment-sa103s/interest-and-bank-charges",
       "unit": "money",
-      "value": "3900",
+      "value": "3510",
       "source": "cell/Financialaccounts.xlsx!SE Short!O51"
     },
     {
@@ -14513,7 +14513,7 @@
     {
       "key": "section/self-assessment-sa103s/net-business-profit-box-28",
       "unit": "money",
-      "value": "119429.683333333",
+      "value": "128469.475166667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D99"
     },
     {
@@ -14531,19 +14531,19 @@
     {
       "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
       "unit": "money",
-      "value": "121513.016666667",
+      "value": "130552.8085",
       "source": "cell/Financialaccounts.xlsx!SE Short!D106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-loss",
       "unit": "money",
-      "value": "183429.683333333",
+      "value": "192469.475166667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D71"
     },
     {
       "key": "section/self-assessment-sa103s/other-business-expenses",
       "unit": "money",
-      "value": "6903.66666666667",
+      "value": "6189.21666666667",
       "source": "cell/Financialaccounts.xlsx!SE Short!O60"
     },
     {
@@ -14567,25 +14567,25 @@
     {
       "key": "section/self-assessment-sa103s/phone-stationery-and-office-costs",
       "unit": "money",
-      "value": "3035",
+      "value": "2822.55",
       "source": "cell/Financialaccounts.xlsx!SE Short!O55"
     },
     {
       "key": "section/self-assessment-sa103s/premises-costs",
       "unit": "money",
-      "value": "13200",
+      "value": "12540",
       "source": "cell/Financialaccounts.xlsx!SE Short!D60"
     },
     {
       "key": "section/self-assessment-sa103s/repairs-and-renewals",
       "unit": "money",
-      "value": "950",
+      "value": "893",
       "source": "cell/Financialaccounts.xlsx!SE Short!D64"
     },
     {
       "key": "section/self-assessment-sa103s/total-expenses",
       "unit": "money",
-      "value": "155770.316666667",
+      "value": "146730.524833333",
       "source": "cell/Financialaccounts.xlsx!SE Short!O64"
     },
     {

@@ -1392,7 +1392,12 @@ export function buildSubsetBook(
     entityInformation: entity,
     accounts: accountFilter(book.accounts),
     tax: Object.fromEntries(
-      taxSections.filter((section) => book.tax[section]).map((section) => [section, { ...book.tax[section], ...taxOverrides[section] }]),
+      // A section the master book has none of still belongs to the subset when
+      // the override carries the whole of it: the trader's own disallowable
+      // proportions are a fact about the subset, not a rate the master states.
+      taxSections
+        .filter((section) => book.tax[section] || taxOverrides[section])
+        .map((section) => [section, { ...book.tax[section], ...taxOverrides[section] }]),
     ),
   };
   if (directors) subsetBook.directors = directors;
