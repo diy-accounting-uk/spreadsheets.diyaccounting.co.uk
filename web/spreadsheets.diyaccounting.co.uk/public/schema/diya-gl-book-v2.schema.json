@@ -10,7 +10,7 @@
   "properties": {
     "documentInfo": {
       "type": "object",
-      "description": "gl-cor:documentInfo — Metadata about this set of books",
+      "description": "gl-cor:documentInfo \u2014 Metadata about this set of books",
       "required": ["entriesType", "periodCoveredStart", "periodCoveredEnd", "defaultCurrency"],
       "additionalProperties": false,
       "properties": {
@@ -30,166 +30,164 @@
             "profile_compliant",
             "other"
           ],
-          "description": "gl-cor:entriesType — What kind of data this book contains. Enumeration from GL 2015 specification."
+          "description": "gl-cor:entriesType \u2014 What kind of data this book contains. Enumeration from GL 2015 specification."
         },
         "language": {
           "type": "string",
           "pattern": "^[a-z]{2}$",
           "default": "en",
-          "description": "gl-cor:language — ISO 639-1 language code"
+          "description": "gl-cor:language \u2014 ISO 639-1 language code"
         },
         "creationDate": {
           "type": "string",
           "format": "date",
-          "description": "gl-cor:creationDate — When this book file was created (ISO 8601)"
+          "description": "gl-cor:creationDate \u2014 When this book file was created (ISO 8601)"
         },
         "periodCoveredStart": {
           "type": "string",
           "format": "date",
-          "description": "gl-cor:periodCoveredStart — First day of the accounting period (ISO 8601)"
+          "description": "gl-cor:periodCoveredStart \u2014 First day of the accounting period (ISO 8601)"
         },
         "periodCoveredEnd": {
           "type": "string",
           "format": "date",
-          "description": "gl-cor:periodCoveredEnd — Last day of the accounting period (ISO 8601)"
+          "description": "gl-cor:periodCoveredEnd \u2014 Last day of the accounting period (ISO 8601)"
         },
         "defaultCurrency": {
           "type": "string",
           "pattern": "^[A-Z]{3}$",
           "default": "GBP",
-          "description": "gl-cor:defaultCurrency — ISO 4217 currency code"
+          "description": "gl-cor:defaultCurrency \u2014 ISO 4217 currency code"
         },
         "entriesComment": {
           "type": "string",
-          "description": "gl-cor:entriesComment — Free text note about this book"
+          "description": "gl-cor:entriesComment \u2014 Free text note about this book"
         },
         "diya-gl:vatStaggerGroup": {
           "type": "integer",
           "enum": [1, 2, 3],
-          "description": "diya-gl: extension — Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb."
+          "description": "diya-gl: extension \u2014 Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb."
         },
         "diya-gl:payrollYearStart": {
           "type": "string",
           "format": "date",
-          "description": "diya-gl: extension — The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart."
+          "description": "diya-gl: extension \u2014 The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart."
         },
         "diya-gl:formatVersion": {
           "type": "string",
-          "description": "diya-gl: extension — The diya-gl format name and version this file is written as, e.g. \"diya-gl/1\"."
+          "description": "diya-gl: extension \u2014 The diya-gl format name and version this file is written as, e.g. \"diya-gl/1\"."
         },
         "diya-gl:engineVersion": {
           "type": "string",
-          "description": "diya-gl: extension — The npm package version and commit of the engine that wrote this file, e.g. \"1.0.0+3f2a1b9c4d7e\"."
+          "description": "diya-gl: extension \u2014 The npm package version and commit of the engine that wrote this file, e.g. \"1.0.0+3f2a1b9c4d7e\"."
         },
         "diya-gl:taxDataHash": {
           "type": "string",
-          "description": "diya-gl: extension — A hash over every app/data/*.toml tax-year file, naming which rates this file's figures were calculated from."
+          "description": "diya-gl: extension \u2014 A hash over every app/data/*.toml tax-year file, naming which rates this file's figures were calculated from."
         },
         "diya-gl:templateHash": {
           "type": "string",
-          "description": "diya-gl: extension — A hash over this product's own Excel template files, naming which workbook this file reproduces."
+          "description": "diya-gl: extension \u2014 A hash over this product's own Excel template files, naming which workbook this file reproduces."
         },
         "diya-gl:templateScorecard": {
           "type": "string",
-          "description": "diya-gl: extension — The published reconciliation check counts for this product's template, e.g. \"132 passed, 0 warnings, 0 failed\"."
+          "description": "diya-gl: extension \u2014 The published reconciliation check counts for this product's template, e.g. \"132 passed, 0 warnings, 0 failed\"."
         },
         "diya-gl:reconciledCommit": {
           "type": "string",
-          "description": "diya-gl: extension — The commit whose CI reconciliation run last passed for this product, the proof this file's figures rest on."
+          "description": "diya-gl: extension \u2014 The commit whose CI reconciliation run last passed for this product, the proof this file's figures rest on."
         }
       }
     },
-
     "entityInformation": {
       "type": "object",
-      "description": "gl-cor:entityInformation + gl-bus:organizationInformation — Who this book belongs to",
+      "description": "gl-cor:entityInformation + gl-bus:organizationInformation \u2014 Who this book belongs to",
       "required": ["organizationIdentifier"],
       "additionalProperties": false,
       "properties": {
         "organizationIdentifier": {
           "type": "string",
-          "description": "gl-bus:organizationIdentifier — Trading name or legal entity name"
+          "description": "gl-bus:organizationIdentifier \u2014 Trading name or legal entity name"
         },
         "organizationDescription": {
           "type": "string",
-          "description": "gl-bus:organizationDescription — Nature of the business"
+          "description": "gl-bus:organizationDescription \u2014 Nature of the business"
         },
         "organizationAddressLine": {
           "type": "string",
-          "description": "gl-bus:organizationAddressLine — Registered or trading address, first line"
+          "description": "gl-bus:organizationAddressLine \u2014 Registered or trading address, first line"
         },
         "organizationTown": {
           "type": "string",
-          "description": "gl-bus:organizationTown — Registered or trading address town/city"
+          "description": "gl-bus:organizationTown \u2014 Registered or trading address town/city"
         },
         "organizationPostcode": {
           "type": "string",
-          "description": "gl-bus:organizationPostcode — Registered or trading address postcode"
+          "description": "gl-bus:organizationPostcode \u2014 Registered or trading address postcode"
         },
         "organizationTelephone": {
           "type": "string",
-          "description": "gl-bus:organizationTelephone — Contact telephone number"
+          "description": "gl-bus:organizationTelephone \u2014 Contact telephone number"
         },
         "taxRegistrationNumber": {
           "type": "string",
-          "description": "gl-taf:taxRegistrationNumber — HMRC Unique Taxpayer Reference (UTR)"
+          "description": "gl-taf:taxRegistrationNumber \u2014 HMRC Unique Taxpayer Reference (UTR)"
         },
         "taxAuthorityIdentifier": {
           "type": "string",
           "default": "HMRC",
-          "description": "gl-taf:taxAuthorityIdentifier — Tax authority identifier"
+          "description": "gl-taf:taxAuthorityIdentifier \u2014 Tax authority identifier"
         },
         "diya-gl:product": {
           "type": "string",
           "enum": ["BasicSoleTrader", "SelfEmployed", "TaxiDriver", "Company", "Payslip05", "Payslip10", "Payslip20"],
-          "description": "diya-gl: extension — DIY Accounting product identifier. Determines which schema subset is active."
+          "description": "diya-gl: extension \u2014 DIY Accounting product identifier. Determines which schema subset is active."
         },
         "diya-gl:vatRegistered": {
           "type": "boolean",
           "default": false,
-          "description": "diya-gl: extension — Whether the business is VAT registered"
+          "description": "diya-gl: extension \u2014 Whether the business is VAT registered"
         },
         "diya-gl:basisOfAccounting": {
           "type": "string",
           "enum": ["cash", "accrual"],
           "default": "cash",
-          "description": "diya-gl: extension — Accounting basis. Cash for sole traders, accrual for companies."
+          "description": "diya-gl: extension \u2014 Accounting basis. Cash for sole traders, accrual for companies."
         },
         "diya-gl:nino": {
           "type": "string",
           "pattern": "^([A-Z]{2}[0-9]{6}[A-D])?$",
-          "description": "diya-gl: extension — National Insurance Number (format: AB123456C)"
+          "description": "diya-gl: extension \u2014 National Insurance Number (format: AB123456C)"
         },
         "diya-gl:vatNumber": {
           "type": "string",
           "pattern": "^([0-9]{9})?$",
-          "description": "diya-gl: extension — VAT registration number (9 digits)"
+          "description": "diya-gl: extension \u2014 VAT registration number (9 digits)"
         },
         "diya-gl:companyNumber": {
           "type": "string",
           "pattern": "^([0-9]{8})?$",
-          "description": "diya-gl: extension — Companies House number (8 digits, Company Accounts only)"
+          "description": "diya-gl: extension \u2014 Companies House number (8 digits, Company Accounts only)"
         },
         "diya-gl:cisRegistered": {
           "type": "boolean",
           "default": false,
-          "description": "diya-gl: extension — Whether the business is registered under the Construction Industry Scheme (CIS)"
+          "description": "diya-gl: extension \u2014 Whether the business is registered under the Construction Industry Scheme (CIS)"
         },
         "diya-gl:companiesHouseName": {
           "type": "string",
-          "description": "diya-gl: extension — The first director's name as filed at Companies House, for the directors' report and CT600 (Company Accounts only)."
+          "description": "diya-gl: extension \u2014 The first director's name as filed at Companies House, for the directors' report and CT600 (Company Accounts only)."
         },
         "diya-gl:mileageBasis": {
           "type": "string",
           "enum": ["actual", "mileage"],
-          "description": "diya-gl: extension — Whether the Taxi Driver return claims actual vehicle costs or the HMRC mileage allowance. Where absent, the calculator compares both and claims the higher, matching the shipped workbook's own comparison."
+          "description": "diya-gl: extension \u2014 Whether the Taxi Driver return claims actual vehicle costs or the HMRC mileage allowance. Where absent, the calculator compares both and claims the higher, matching the shipped workbook's own comparison."
         }
       }
     },
-
     "directors": {
       "type": "array",
-      "description": "diya-gl: extension — Company directors and their shareholdings (Company Accounts only). Used to populate Companysecretary.xlsx sheets.",
+      "description": "diya-gl: extension \u2014 Company directors and their shareholdings (Company Accounts only). Used to populate Companysecretary.xlsx sheets.",
       "items": {
         "type": "object",
         "required": ["name", "role"],
@@ -221,10 +219,9 @@
         }
       }
     },
-
     "employees": {
       "type": "array",
-      "description": "diya-gl: extension — Employees on payroll. Used to populate Payslips.xlsx. Includes directors paid via PAYE.",
+      "description": "diya-gl: extension \u2014 Employees on payroll. Used to populate Payslips.xlsx. Includes directors paid via PAYE.",
       "items": {
         "type": "object",
         "required": ["employeeID", "name", "grossPay", "payFrequency", "taxCode"],
@@ -275,7 +272,6 @@
         }
       }
     },
-
     "accounts": {
       "type": "object",
       "description": "Chart of accounts. Maps to gl-cor:account tuples. Organised by journal for spreadsheet column mapping.",
@@ -293,7 +289,6 @@
           },
           "additionalProperties": false
         },
-
         "purchases": {
           "type": "object",
           "description": "Purchase/expense account codes. Keys are gl-cor:accountMainID values.",
@@ -305,7 +300,6 @@
           },
           "additionalProperties": false
         },
-
         "bank": {
           "type": "object",
           "description": "Bank/cash account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
@@ -316,7 +310,6 @@
           },
           "additionalProperties": false
         },
-
         "capital": {
           "type": "object",
           "description": "Capital/equity account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
@@ -327,7 +320,6 @@
           },
           "additionalProperties": false
         },
-
         "assets": {
           "type": "object",
           "description": "Fixed/current asset account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
@@ -338,7 +330,6 @@
           },
           "additionalProperties": false
         },
-
         "liabilities": {
           "type": "object",
           "description": "Liability account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
@@ -351,69 +342,127 @@
         }
       }
     },
-
     "openingBalances": {
       "type": "object",
-      "description": "diya-gl: extension — The trial balance brought forward, reverse-engineered today from an opening journal by buildOpeningBalance(); this table lets a book state it directly. Every figure is positive; the balance sheet applies its own sign.",
+      "description": "diya-gl: extension \u2014 The trial balance brought forward, reverse-engineered today from an opening journal by buildOpeningBalance(); this table lets a book state it directly. Every figure is positive; the balance sheet applies its own sign.",
       "additionalProperties": false,
       "properties": {
-        "fixedAssetCost": { "$ref": "#/$defs/assetClassAmounts" },
-        "fixedAssetDepreciation": { "$ref": "#/$defs/assetClassAmounts" },
-        "stock": { "type": "number", "minimum": 0 },
-        "tradeDebtors": { "type": "number", "minimum": 0 },
-        "tradeCreditors": { "type": "number", "minimum": 0 },
-        "longTermDebtors": { "type": "number", "minimum": 0 },
+        "fixedAssetCost": {
+          "$ref": "#/$defs/assetClassAmounts"
+        },
+        "fixedAssetDepreciation": {
+          "$ref": "#/$defs/assetClassAmounts"
+        },
+        "stock": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tradeDebtors": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tradeCreditors": {
+          "type": "number",
+          "minimum": 0
+        },
+        "longTermDebtors": {
+          "type": "number",
+          "minimum": 0
+        },
         "bankAccounts": {
           "type": "object",
           "description": "Opening balance per bank account, keyed by the account code declared in accounts.bank.",
           "patternProperties": {
-            "^[0-9]{4}$": { "type": "number" }
+            "^[0-9]{4}$": {
+              "type": "number"
+            }
           },
           "additionalProperties": false
         },
-        "payeDue": { "type": "number" },
-        "vatDue": { "type": "number" },
-        "cisDue": { "type": "number" },
-        "netWagesDue": { "type": "number" },
-        "wageDeductionsDue": { "type": "number" },
-        "corporationTaxDue": { "type": "number" },
-        "dividendsDue": { "type": "number" },
-        "directorsLoan": { "type": "number" },
-        "longTermCreditors": { "type": "number" },
-        "shareCapital": { "type": "number", "minimum": 0 },
-        "retainedEarnings": { "type": "number" },
-        "capitalReserves": { "type": "number" }
+        "payeDue": {
+          "type": "number"
+        },
+        "vatDue": {
+          "type": "number"
+        },
+        "cisDue": {
+          "type": "number"
+        },
+        "netWagesDue": {
+          "type": "number"
+        },
+        "wageDeductionsDue": {
+          "type": "number"
+        },
+        "corporationTaxDue": {
+          "type": "number"
+        },
+        "dividendsDue": {
+          "type": "number"
+        },
+        "directorsLoan": {
+          "type": "number"
+        },
+        "longTermCreditors": {
+          "type": "number"
+        },
+        "shareCapital": {
+          "type": "number",
+          "minimum": 0
+        },
+        "retainedEarnings": {
+          "type": "number"
+        },
+        "capitalReserves": {
+          "type": "number"
+        }
       }
     },
-
     "stock": {
       "type": "object",
-      "description": "diya-gl: extension — Opening and closing stock, and the physical count taken at each. materialsPercent is the share of net sales that is direct materials; the Stock sheet's bought and sold columns stay at zero without it.",
+      "description": "diya-gl: extension \u2014 Opening and closing stock, and the physical count taken at each. materialsPercent is the share of net sales that is direct materials; the Stock sheet's bought and sold columns stay at zero without it.",
       "additionalProperties": false,
       "properties": {
-        "openingValue": { "type": "number", "minimum": 0 },
-        "closingValue": { "type": "number", "minimum": 0 },
-        "openingCount": { "type": "number", "minimum": 0 },
-        "closingCount": { "type": "number", "minimum": 0 },
-        "materialsPercent": { "type": "number", "minimum": 0, "maximum": 1 }
+        "openingValue": {
+          "type": "number",
+          "minimum": 0
+        },
+        "closingValue": {
+          "type": "number",
+          "minimum": 0
+        },
+        "openingCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "closingCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "materialsPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
-
     "debtors": {
       "type": "array",
-      "description": "diya-gl: extension — Named trade debtors at the opening or closing balance sheet date.",
-      "items": { "$ref": "#/$defs/ledgerListing" }
+      "description": "diya-gl: extension \u2014 Named trade debtors at the opening or closing balance sheet date.",
+      "items": {
+        "$ref": "#/$defs/ledgerListing"
+      }
     },
-
     "creditors": {
       "type": "array",
-      "description": "diya-gl: extension — Named trade creditors at the opening or closing balance sheet date.",
-      "items": { "$ref": "#/$defs/ledgerListing" }
+      "description": "diya-gl: extension \u2014 Named trade creditors at the opening or closing balance sheet date.",
+      "items": {
+        "$ref": "#/$defs/ledgerListing"
+      }
     },
-
     "fixedAssets": {
       "type": "array",
-      "description": "diya-gl: extension — The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates. class is optional: the Basic Sole Trader and Taxi Driver Fixed Assets sheets carry a flat list with no asset-class blocks, unlike the Self Employed and Company Schedule.",
+      "description": "diya-gl: extension \u2014 The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates. class is optional: the Basic Sole Trader and Taxi Driver Fixed Assets sheets carry a flat list with no asset-class blocks, unlike the Self Employed and Company Schedule.",
       "items": {
         "type": "object",
         "required": ["assetID", "cost"],
@@ -428,25 +477,45 @@
             "enum": ["landBuildings", "plantMachinery", "fixturesFittings", "computerTechnology", "motorVehicles"],
             "description": "The Schedule block this asset belongs to (Self Employed and Company only)."
           },
-          "description": { "type": "string" },
-          "cost": { "type": "number", "minimum": 0 },
-          "accumulatedDepreciation": { "type": "number", "minimum": 0 },
+          "description": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number",
+            "minimum": 0
+          },
+          "accumulatedDepreciation": {
+            "type": "number",
+            "minimum": 0
+          },
           "taxWrittenDownValue": {
             "type": "number",
             "minimum": 0,
             "description": "Written down value carried forward on the capital allowances computation, brought forward for an asset already held at the opening balance sheet date."
           },
-          "acquiredDate": { "type": "string", "format": "date" },
-          "depreciationRate": { "type": "number", "minimum": 0, "maximum": 1 },
-          "disposedDate": { "type": "string", "format": "date" },
-          "disposalProceeds": { "type": "number", "minimum": 0 }
+          "acquiredDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "depreciationRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "disposedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "disposalProceeds": {
+            "type": "number",
+            "minimum": 0
+          }
         }
       }
     },
-
     "hpAgreements": {
       "type": "array",
-      "description": "diya-gl: extension — Hire purchase agreements financing an asset over a fixed term. The HPfinance sheet works out its own monthly payment, capital and interest split from these fields.",
+      "description": "diya-gl: extension \u2014 Hire purchase agreements financing an asset over a fixed term. The HPfinance sheet works out its own monthly payment, capital and interest split from these fields.",
       "items": {
         "type": "object",
         "required": ["agreementID", "amountFinanced", "adminCharges", "totalInterest", "termMonths", "startDate"],
@@ -456,36 +525,64 @@
             "type": "string",
             "description": "Identifier matched by diya-gl:hpAgreement on the purchase line the agreement finances."
           },
-          "description": { "type": "string" },
-          "financeCompany": { "type": "string" },
-          "supplier": { "type": "string" },
-          "amountFinanced": { "type": "number", "minimum": 0 },
-          "adminCharges": { "type": "number", "minimum": 0 },
-          "totalInterest": { "type": "number", "minimum": 0 },
-          "termMonths": { "type": "integer", "minimum": 1 },
-          "startDate": { "type": "string", "format": "date" }
+          "description": {
+            "type": "string"
+          },
+          "financeCompany": {
+            "type": "string"
+          },
+          "supplier": {
+            "type": "string"
+          },
+          "amountFinanced": {
+            "type": "number",
+            "minimum": 0
+          },
+          "adminCharges": {
+            "type": "number",
+            "minimum": 0
+          },
+          "totalInterest": {
+            "type": "number",
+            "minimum": 0
+          },
+          "termMonths": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          }
         }
       }
     },
-
     "dividends": {
       "type": "array",
-      "description": "diya-gl: extension — Dividends the board declared (Company Accounts only). The directors' report and the trial balance both read the declaration; the bank pays it in one or more instalments.",
+      "description": "diya-gl: extension \u2014 Dividends the board declared (Company Accounts only). The directors' report and the trial balance both read the declaration; the bank pays it in one or more instalments.",
       "items": {
         "type": "object",
         "required": ["boardMeetingDate", "amount"],
         "additionalProperties": false,
         "properties": {
-          "declaredDate": { "type": "string", "format": "date" },
-          "boardMeetingDate": { "type": "string", "format": "date" },
-          "amount": { "type": "number", "minimum": 0 }
+          "declaredDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "boardMeetingDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          }
         }
       }
     },
-
     "members": {
       "type": "array",
-      "description": "diya-gl: extension — The register of members (Company Accounts only). A member is not always a director; directors[] holds the officers.",
+      "description": "diya-gl: extension \u2014 The register of members (Company Accounts only). A member is not always a director; directors[] holds the officers.",
       "items": {
         "type": "object",
         "required": ["memberID", "name", "shares"],
@@ -495,39 +592,58 @@
             "type": "string",
             "description": "Identifier matched by diya-gl:memberID on the dividend payment lines this member receives."
           },
-          "name": { "type": "string" },
-          "shares": { "type": "integer", "minimum": 0 },
+          "name": {
+            "type": "string"
+          },
+          "shares": {
+            "type": "integer",
+            "minimum": 0
+          },
           "nominalValue": {
             "type": "number",
             "minimum": 0,
             "description": "Nominal value per share. The shipped register currently prices every holding at a single nominal value set for the whole company, so a per-member figure here is not yet read."
           },
-          "acquiredDate": { "type": "string", "format": "date" }
+          "acquiredDate": {
+            "type": "string",
+            "format": "date"
+          }
         }
       }
     },
-
     "charges": {
       "type": "array",
-      "description": "diya-gl: extension — Charges and debentures registered over the company's assets (Company Accounts only). Each secures a creditor falling due after more than one year.",
+      "description": "diya-gl: extension \u2014 Charges and debentures registered over the company's assets (Company Accounts only). Each secures a creditor falling due after more than one year.",
       "items": {
         "type": "object",
         "required": ["valuation"],
         "additionalProperties": false,
         "properties": {
-          "chargeDate": { "type": "string", "format": "date" },
+          "chargeDate": {
+            "type": "string",
+            "format": "date"
+          },
           "description": {
             "type": "string",
             "description": "The charged asset, as it reads on the register (e.g. 'Motor vehicles, being the company's delivery van')."
           },
-          "valuation": { "type": "number", "minimum": 0 },
-          "holder": { "type": "string" },
-          "terms": { "type": "string" },
-          "boardMeetingDate": { "type": "string", "format": "date" }
+          "valuation": {
+            "type": "number",
+            "minimum": 0
+          },
+          "holder": {
+            "type": "string"
+          },
+          "terms": {
+            "type": "string"
+          },
+          "boardMeetingDate": {
+            "type": "string",
+            "format": "date"
+          }
         }
       }
     },
-
     "tax": {
       "type": "object",
       "description": "Tax rates and thresholds. Values from HMRC published rates for the period. Used by validate and generate commands. Derived from gl-taf tax concepts.",
@@ -538,48 +654,135 @@
           "description": "HMRC income tax rates and thresholds (England/Wales/NI)",
           "additionalProperties": false,
           "properties": {
-            "personalAllowance": { "type": "number", "minimum": 0 },
-            "personalAllowanceTaperThreshold": { "type": "number", "minimum": 0 },
-            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "basicRateLimit": { "type": "number", "minimum": 0 },
-            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "higherRateThreshold": { "type": "number", "minimum": 0 },
-            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "additionalRateThreshold": { "type": "number", "minimum": 0 }
+            "personalAllowance": {
+              "type": "number",
+              "minimum": 0
+            },
+            "personalAllowanceTaperThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "basicRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "basicRateLimit": {
+              "type": "number",
+              "minimum": 0
+            },
+            "higherRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "higherRateThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "additionalRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "additionalRateThreshold": {
+              "type": "number",
+              "minimum": 0
+            }
           }
         },
-
         "nationalInsurance": {
           "type": "object",
           "description": "HMRC National Insurance rates (self-employed Class 2 + 4, employed Class 1)",
           "additionalProperties": false,
           "properties": {
-            "class2WeeklyRate": { "type": "number", "minimum": 0 },
-            "class2SmallProfitsThreshold": { "type": "number", "minimum": 0 },
-            "class4MainRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "class4UpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "class4LowerProfits": { "type": "number", "minimum": 0 },
-            "class4UpperProfits": { "type": "number", "minimum": 0 },
-            "class1EmployeeMainRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployeeUpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployeePrimaryThreshold": { "type": "number", "minimum": 0 },
-            "class1EmployeeUpperEarningsLimit": { "type": "number", "minimum": 0 },
-            "class1EmployerRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployerSecondaryThreshold": { "type": "number", "minimum": 0 },
-            "employmentAllowance": { "type": "number", "minimum": 0 }
+            "class2WeeklyRate": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class2SmallProfitsThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class4MainRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "class4UpperRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "class4LowerProfits": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class4UpperProfits": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class1EmployeeMainRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "class1EmployeeUpperRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "class1EmployeePrimaryThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class1EmployeeUpperEarningsLimit": {
+              "type": "number",
+              "minimum": 0
+            },
+            "class1EmployerRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "class1EmployerSecondaryThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "employmentAllowance": {
+              "type": "number",
+              "minimum": 0
+            }
           }
         },
-
         "vat": {
           "type": "object",
           "description": "HMRC VAT rates and thresholds",
           "additionalProperties": false,
           "properties": {
-            "standardRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "reducedRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "registrationThreshold": { "type": "number", "minimum": 0 },
-            "flatRateScheme": { "type": "boolean", "default": false },
-            "flatRatePercentage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "standardRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reducedRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "registrationThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "flatRateScheme": {
+              "type": "boolean",
+              "default": false
+            },
+            "flatRatePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
             "staggerGroup": {
               "type": "integer",
               "enum": [1, 2, 3],
@@ -592,60 +795,193 @@
             }
           }
         },
-
         "corporationTax": {
           "type": "object",
           "description": "HMRC Corporation Tax rates (Company Accounts only)",
           "additionalProperties": false,
           "properties": {
-            "smallProfitsRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "smallProfitsLimit": { "type": "number", "minimum": 0 },
-            "mainRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "mainRateThreshold": { "type": "number", "minimum": 0 },
-            "associatedCompanies": { "type": "integer", "minimum": 0, "default": 0 },
-            "frankedInvestmentIncome": { "type": "number", "minimum": 0, "default": 0 }
+            "smallProfitsRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "smallProfitsLimit": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mainRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mainRateThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "associatedCompanies": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "frankedInvestmentIncome": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0
+            }
           }
         },
-
+        "selfEmployment": {
+          "type": "object",
+          "description": "The trader's own disallowable proportion of each expense category -- private use or otherwise not allowable -- behind SA103F boxes 32 to 45. Entered on the package's VitalTax sheet, not a rate any year file carries. Business entertainment and depreciation take no proportion: they are wholly disallowable and have their own boxes.",
+          "additionalProperties": false,
+          "properties": {
+            "costOfGoods": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "paymentsToSubcontractors": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "wagesAndStaffCosts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "carVanTravelExpenses": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "premisesRunningCosts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "maintenanceCosts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "adminCosts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "advertisingCosts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "interestOnBankOtherLoans": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "financeCharges": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "irrecoverableDebts": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "professionalFees": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "otherExpenses": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
         "capitalAllowances": {
           "type": "object",
           "description": "HMRC capital allowance rates",
           "additionalProperties": false,
           "properties": {
-            "annualInvestmentAllowance": { "type": "number", "minimum": 0 },
-            "mainRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
-            "specialRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
-            "firstYearAllowanceRate": { "type": "number", "minimum": 0, "maximum": 1 }
+            "annualInvestmentAllowance": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mainRateWDA": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "specialRateWDA": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "firstYearAllowanceRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
-
         "mileage": {
           "type": "object",
           "description": "HMRC approved mileage rates (Taxi Driver / Self Employed)",
           "additionalProperties": false,
           "properties": {
-            "carFirst10000": { "type": "number", "minimum": 0, "description": "Rate per mile, first 10,000 miles" },
-            "carOver10000": { "type": "number", "minimum": 0, "description": "Rate per mile, above 10,000 miles" },
-            "motorcycle": { "type": "number", "minimum": 0 },
-            "bicycle": { "type": "number", "minimum": 0 }
+            "carFirst10000": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Rate per mile, first 10,000 miles"
+            },
+            "carOver10000": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Rate per mile, above 10,000 miles"
+            },
+            "motorcycle": {
+              "type": "number",
+              "minimum": 0
+            },
+            "bicycle": {
+              "type": "number",
+              "minimum": 0
+            }
           }
         },
-
         "dividends": {
           "type": "object",
-          "description": "Dividend tax rates (Company Accounts — director extraction)",
+          "description": "Dividend tax rates (Company Accounts \u2014 director extraction)",
           "additionalProperties": false,
           "properties": {
-            "allowance": { "type": "number", "minimum": 0 },
-            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
-            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 }
+            "allowance": {
+              "type": "number",
+              "minimum": 0
+            },
+            "basicRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "higherRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "additionalRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         }
       }
     }
   },
-
   "$defs": {
     "accountDefinition": {
       "type": "object",
@@ -655,60 +991,83 @@
       "properties": {
         "accountMainDescription": {
           "type": "string",
-          "description": "gl-cor:accountMainDescription — Human-readable account name"
+          "description": "gl-cor:accountMainDescription \u2014 Human-readable account name"
         },
         "accountType": {
           "type": "string",
           "enum": ["account", "bank", "customer", "vendor", "employee", "job", "statistical", "measurable", "other"],
           "default": "account",
-          "description": "gl-bus:accountType — GL account type enumeration"
+          "description": "gl-bus:accountType \u2014 GL account type enumeration"
         },
         "diya-gl:column": {
           "type": "string",
           "pattern": "^[A-Z]{1,2}$",
-          "description": "diya-gl: extension — Excel column letter(s) for this account in the workbook"
+          "description": "diya-gl: extension \u2014 Excel column letter(s) for this account in the workbook"
         },
         "diya-gl:sa103sBox": {
           "type": "string",
           "pattern": "^box[0-9]{1,2}$",
-          "description": "diya-gl: extension — SA103S box reference this account maps to (e.g. 'box10')"
+          "description": "diya-gl: extension \u2014 SA103S box reference this account maps to (e.g. 'box10')"
         },
         "diya-gl:ct600Box": {
           "type": "string",
-          "description": "diya-gl: extension — CT600 box reference (Company Accounts only)"
+          "description": "diya-gl: extension \u2014 CT600 box reference (Company Accounts only)"
         },
         "diya-gl:vatBox": {
           "type": "integer",
           "minimum": 1,
           "maximum": 9,
-          "description": "diya-gl: extension — VAT return box number (1-9) this account contributes to"
+          "description": "diya-gl: extension \u2014 VAT return box number (1-9) this account contributes to"
         }
       }
     },
-
     "assetClassAmounts": {
       "type": "object",
       "description": "An amount per fixed asset class.",
       "additionalProperties": false,
       "properties": {
-        "landBuildings": { "type": "number", "minimum": 0 },
-        "plantMachinery": { "type": "number", "minimum": 0 },
-        "fixturesFittings": { "type": "number", "minimum": 0 },
-        "computerTechnology": { "type": "number", "minimum": 0 },
-        "motorVehicles": { "type": "number", "minimum": 0 }
+        "landBuildings": {
+          "type": "number",
+          "minimum": 0
+        },
+        "plantMachinery": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fixturesFittings": {
+          "type": "number",
+          "minimum": 0
+        },
+        "computerTechnology": {
+          "type": "number",
+          "minimum": 0
+        },
+        "motorVehicles": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     },
-
     "ledgerListing": {
       "type": "object",
       "description": "One named debtor or creditor balance.",
       "required": ["counterparty", "amount", "timing"],
       "additionalProperties": false,
       "properties": {
-        "counterparty": { "type": "string" },
-        "invoice": { "type": "string" },
-        "amount": { "type": "number", "minimum": 0 },
-        "timing": { "type": "string", "enum": ["opening", "closing"] }
+        "counterparty": {
+          "type": "string"
+        },
+        "invoice": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timing": {
+          "type": "string",
+          "enum": ["opening", "closing"]
+        }
       }
     }
   }

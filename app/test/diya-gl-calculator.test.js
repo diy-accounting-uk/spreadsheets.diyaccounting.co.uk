@@ -284,14 +284,14 @@ describe("calculateFromDiyaGl — SE", () => {
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
-    expect(results["Income Tax"].E5).toBeCloseTo(121513.02, 2);
+    expect(results["Income Tax"].E5).toBeCloseTo(130552.81, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
-  it("E11: income tax is charged across the bands with the allowance tapered", () => {
+  it("E11: income tax is charged across the bands with the allowance tapered away entirely", () => {
     const tax = seResults()["Income Tax"];
-    expect(tax.E6).toBeCloseTo(1813.49, 2);
-    expect(tax.E11).toBeCloseTo(40339.81, 2);
+    expect(tax.E6).toBeCloseTo(0, 2);
+    expect(tax.E11).toBeCloseTo(44951.76, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 

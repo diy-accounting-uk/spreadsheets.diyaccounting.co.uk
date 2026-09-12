@@ -57,10 +57,10 @@ describe("report.js --data derives the depreciation table --years would have nam
     expect(diffShared(withoutYears, withYears)).toEqual([]);
 
     // The reconciled figure the committed reports/*.md carries for this
-    // fixture (Income Tax!E5, "Tax profit the sheet carries", 121,513.02):
-    // the fixed asset schedule's depreciation now reaches the tax profit
-    // calculation instead of leaving it at zero.
-    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe("121513.016666667");
+    // fixture (Income Tax!E5, "Tax profit the sheet carries", 130,552.81):
+    // the fixed asset schedule's depreciation reaches the tax profit
+    // calculation, and so do the trader's disallowable proportions.
+    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe("130552.8085");
   });
 
   it("computes the same values as --years for a BST book", () => {

@@ -298,6 +298,7 @@ jobs:
       - name: Unit tests against the fresh packages and example
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
+          ls reports/*.md > /tmp/own-reports.txt 2>/dev/null || : > /tmp/own-reports.txt
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
           node app/bin/build-sitemaps.js
           # donate.html is generated and gitignored, and this step runs vitest
@@ -321,6 +322,18 @@ jobs:
           name: se-reconciliation-page
           retention-days: 1
           path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+      - name: Keep only this run's own reports in the uploaded artifact
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        run: |
+          # The unit tests above need the other year-ends' committed reports on
+          # disk to read, but uploading them puts a stale copy of a filename
+          # another leg is uploading fresh into the same merge. The commit job
+          # merges the artifacts by name, so the loser of that clash is written
+          # over the winner and the file ends up holding both generations.
+          for f in reports/*.md; do
+            [ -f "$f" ] || continue
+            grep -qxF "$f" /tmp/own-reports.txt || rm -f "$f"
+          done
       - run: rm -rf reports/populated
       - uses: actions/upload-artifact@v7
         with:

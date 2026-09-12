@@ -1032,41 +1032,55 @@ Trade: IT consultancy and software development
 | CT600: trading profits = CT profit after capital allowances | 123788.725 | 123788.725 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
 | CT600: net trading profits = trading profits - losses brought forward | 123788.725 | 123788.725 | 0 | PASS |
-| CT600: interest received = CT interest received | 339.506172839506 | 339.5061506172839506 | 339.506172839506 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 124419.897839506 | 124419.897839506 | 0 | PASS |
+| CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 124128.23117283951 | 124128.231172839 | -5.093170329928398e-10 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 124128.231172839 | 124128.231172839 | 0 | PASS |
 | CT600: financial year = first tax row financial year | 2025 | 2025 | 0 | PASS |
-| CT600: amount of profit = first tax row profit | 30678.8789193302 | 30678.8789193302 | 0 | PASS |
+| CT600: amount of profit = first tax row profit | 30606.961111111 | 30606.961111111 | 0 | PASS |
 | CT600: tax rate = first tax row rate | 25 | 25 | 0 | PASS |
-| CT600: corporation tax = first tax row gross tax | 7669.71972983255 | 7669.71972983255 | 0 | PASS |
-| CT600: second financial year tax = second tax row gross tax | 23435.2547300439 | 23435.2547300439 | 0 | PASS |
+| CT600: corporation tax = first tax row gross tax | 7651.74027777775 | 7651.74027777775 | 0 | PASS |
+| CT600: second financial year tax = second tax row gross tax | 23380.317515432 | 23380.317515432 | 0 | PASS |
 | CT600: second financial year = second tax row financial year | 2026 | 2026 | 0 | PASS |
-| CT600: second financial year profit = second tax row profit | 93741.0189201756 | 93741.0189201756 | 0 | PASS |
+| CT600: second financial year profit = second tax row profit | 93521.2700617281 | 93521.2700617281 | 0 | PASS |
 | CT600: second financial year rate = second tax row rate | 25 | 25 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 31104.974459876452 | 31104.9744598764 | -5.093170329928398e-11 | PASS |
-| CT600: marginal rate relief = the working sheet's relief | 1883.701532407412 | 1883.70153240741 | -2.0463630789890885e-12 | PASS |
-| CT600: tax net of marginal relief = the working sheet's charge | 29221.272927469 | 29221.272927469 | 0 | PASS |
-| CT600: corporation tax chargeable = tax net of marginal relief | 29221.272927469 | 29221.272927469 | 0 | PASS |
-| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.486012635344423 | 23.4860126353445 | +7.815970093361102e-14 | PASS |
-| CT600: tax outstanding | 29156.7667546295 | 29156.7667546295 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 29221.272927469 | 29221.272927469 | 0 | PASS |
+| CT600: franked investment income = the working sheet's figure | 20000 | 20000 | 0 | PASS |
+| CT600: associated companies, first financial year = Admin P14 | 0 | 0 | 0 | PASS |
+| CT600: associated companies, second financial year = Admin P14 | 0 | 0 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 31032.05779320975 | 31032.0577932098 | +4.729372449219227e-11 | PASS |
+| CT600: marginal rate relief = the working sheet's relief | 1367.7065855226829 | 1367.70658552269 | +7.048583938740194e-12 | PASS |
+| CT600: tax net of marginal relief = the working sheet's charge | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
+| CT600: corporation tax chargeable = tax net of marginal relief | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
+| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.89815026557639 | 23.8981502655764 | +1.0658141036401503e-14 | PASS |
+| CT600: tax outstanding | 29599.8450348476 | 29599.8450348476 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 16742.6666666667 | 16742.6666666667 | 0 | PASS |
+| CT: franked investment income = the exempt distributions entered on the opening accounts | 20000 | 20000 | 0 | PASS |
+| CT: augmented profits = the chargeable profit and the franked investment income | 144128.231172839 | 144128.231172839 | 0 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
-| CT: first tax row profit = chargeable profit by its share of those days | 30678.878919330244 | 30678.8789193302 | -4.3655745685100555e-11 | PASS |
-| CT: second tax row profit = chargeable profit by its share of those days | 93741.01892017575 | 93741.0189201756 | -1.4551915228366852e-10 | PASS |
-| CT: first tax row gross tax = its profit at its rate | 7669.719729832551 | 7669.71972983255 | -9.094947017729282e-13 | PASS |
-| CT: second tax row gross tax = its profit at its rate | 23435.2547300439 | 23435.2547300439 | 0 | PASS |
-| CT: first tax row tax = its gross tax less its marginal relief | 7205.245379375928 | 7205.24537937593 | +1.8189894035458565e-12 | PASS |
-| CT: second tax row tax = its gross tax less its marginal relief | 22016.02754809311 | 22016.0275480931 | -7.275957614183426e-12 | PASS |
-| CT: charge for the year = the two tax rows | 29221.272927469032 | 29221.272927469 | -3.2741809263825417e-11 | PASS |
-| CT: first tax row rate = the rate its share of the profit falls in | 25 | 25 | 0 | PASS |
-| CT: second tax row rate = the rate its share of the profit falls in | 25 | 25 | 0 | PASS |
-| CT: first tax row marginal relief = its share of the profit against its share of the limits | 464.47435045662235 | 464.474350456622 | -3.410605131648481e-13 | PASS |
-| CT: second tax row marginal relief = its share of the profit against its share of the limits | 1419.2271819507905 | 1419.22718195079 | -4.547473508864641e-13 | PASS |
-| CT: both financial year rows carry the same small profits rate | 19 | 19 | 0 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 29156.766754629494 | 29156.7667546295 | +7.275957614183426e-12 | PASS |
-| CT: charge for the year = the statutory computation with marginal relief | 29221.27292746909 | 29221.272927469 | -9.094947017729282e-11 | PASS |
-| Accounting profit to tax profit bridge closes to zero | 0 | -4.94765117764473e-10 | -4.94765117764473e-10 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 30606.961111110988 | 30606.961111111 | +1.0913936421275139e-11 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 93521.270061728 | 93521.2700617281 | +8.731149137020111e-11 | PASS |
+| CT: first tax row gross tax = its profit at its rate | 7651.74027777775 | 7651.74027777775 | 0 | PASS |
+| CT: second tax row gross tax = its profit at its rate | 23380.317515432023 | 23380.317515432 | -2.1827872842550278e-11 | PASS |
+| CT: first tax row tax = its gross tax less its marginal relief | 7314.497558059827 | 7314.49755805983 | +3.637978807091713e-12 | PASS |
+| CT: second tax row tax = its gross tax less its marginal relief | 22349.853649627243 | 22349.8536496273 | +5.820766091346741e-11 | PASS |
+| CT: charge for the year = the two tax rows | 29664.35120768713 | 29664.3512076871 | -2.9103830456733704e-11 | PASS |
+| CT: first tax row rate = the rate its share of the augmented profits falls in | 25 | 25 | 0 | PASS |
+| CT: second tax row rate = the rate its share of the augmented profits falls in | 25 | 25 | 0 | PASS |
+| CT: first tax row marginal relief = its share of the augmented profits against its share of the limits | 337.2427197179229 | 337.242719717923 | +1.1368683772161603e-13 | PASS |
+| CT: second tax row marginal relief = its share of the augmented profits against its share of the limits | 1030.4638658047652 | 1030.46386580476 | -5.229594535194337e-12 | PASS |
+| CT: first tax row small profits rate = what its own financial year charged | 19 | 19 | 0 | PASS |
+| CT: first tax row main rate = what its own financial year charged | 25 | 25 | 0 | PASS |
+| CT: first tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
+| CT: first tax row marginal relief lower limit = what its own financial year charged | 50000 | 50000 | 0 | PASS |
+| CT: first tax row marginal relief upper limit = what its own financial year charged | 250000 | 250000 | 0 | PASS |
+| CT: second tax row small profits rate = what its own financial year charged | 19 | 19 | 0 | PASS |
+| CT: second tax row main rate = what its own financial year charged | 25 | 25 | 0 | PASS |
+| CT: second tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
+| CT: second tax row marginal relief lower limit = what its own financial year charged | 50000 | 50000 | 0 | PASS |
+| CT: second tax row marginal relief upper limit = what its own financial year charged | 250000 | 250000 | 0 | PASS |
+| CT: charge for the year = the statutory computation with marginal relief | 29664.35120768706 | 29664.3512076871 | +4.001776687800884e-11 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 29599.845034847596 | 29599.8450348476 | +3.637978807091713e-12 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 5.093170329928398e-10 | +5.093170329928398e-10 | PASS |
 | Category netting: Sales Product A (sales a) net reaches MnthP&L!B4 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product B (sales b) net reaches MnthP&L!B5 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product C (sales c) net reaches MnthP&L!B6 with no residue | 0 | 0 | 0 | PASS |
@@ -1081,7 +1095,7 @@ Trade: IT consultancy and software development
 | Category netting: Equipment Tools & Plant Hire (purchases q) net reaches MnthP&L!B24 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Repairs & Maintenance (purchases m) net reaches MnthP&L!B25 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Consumable Materials (purchases u) net reaches MnthP&L!B26 with no residue | 0 | 0 | 0 | PASS |
-| Category netting: Advertising & Promotion (purchases a) net reaches MnthP&L!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Advertising & Promotion (purchases a) net reaches MnthP&L!B27 with no residue | 0 | -3.183231456205249e-12 | -3.183231456205249e-12 | PASS |
 | Category netting: Telephone Postage & Stationery (purchases g) net reaches MnthP&L!B28 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Travel & Hotel Expenses (purchases h) net reaches MnthP&L!B29 with no residue | 0 | 2.2737367544323206e-13 | +2.2737367544323206e-13 | PASS |
 | Category netting: Motor Vehicle Expenses (purchases v) net reaches MnthP&L!B30 with no residue | 0 | 0 | 0 | PASS |
@@ -1105,15 +1119,15 @@ Trade: IT consultancy and software development
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Profit before tax per the management profit and loss account | MnthP&L!B45 | 172,115.39 |
+| Profit before tax per the management profit and loss account | MnthP&L!B45 | 171,823.73 |
 | Less bank interest received, net of tax deducted at source | MnthP&L!B44 | -275 |
 | Add back goodwill written off | CorporationTax!I7 | 2,500 |
 | Add back depreciation charged in the year | CorporationTax!I8 | 13,740 |
 | Less capital allowances | CorporationTax!K20 | -64,000 |
 | Add gross bank interest received | CorporationTax!K24 | 339.51 |
 | Less losses brought forward | CorporationTax!K26 | 0 |
-| **Tax profit the bridge computes** | | **124,419.9** |
-| Tax profit the sheet carries | CorporationTax!K28 | 124,419.9 |
+| **Tax profit the bridge computes** | | **124,128.23** |
+| Tax profit the sheet carries | CorporationTax!K28 | 124,128.23 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -1135,26 +1149,6 @@ Journal amounts include VAT at 20%.
 | Distribution Transport Costs (purchases t) | 960 | 160 | 800 | MnthP&L!B23 | 800 | 0 |
 | Equipment Tools & Plant Hire (purchases q) | 1,620 | 270 | 1,350 | MnthP&L!B24 | 1,350 | 0 |
 | Repairs & Maintenance (purchases m) | 1,140 | 190 | 950 | MnthP&L!B25 | 950 | 0 |
-| Consumable Materials (purchases u) | 1,578 | 263 | 1,315 | MnthP&L!B26 | 1,315 | 0 |
-| Advertising & Promotion (purchases a) | 4,560 | 760 | 3,800 | MnthP&L!B27 | 3,800 | 0 |
-| Telephone Postage & Stationery (purchases g) | 1,962 | 327 | 1,635 | MnthP&L!B28 | 1,635 | 0 |
-| Travel & Hotel Expenses (purchases h) | 1,860 | 310 | 1,550 | MnthP&L!B29 | 1,550 | 0 |
-| Motor Vehicle Expenses (purchases v) | 7,598.25 | 1,266.38 | 6,331.88 | MnthP&L!B30 | 6,331.88 | 0 |
-| Insurance Costs (purchases n) | 1,800 | 300 | 1,500 | MnthP&L!B31 | 1,500 | 0 |
-| Leasing Charges (purchases f) | 720 | 120 | 600 | MnthP&L!B32 | 600 | 0 |
-| Legal & Professional Fees (purchases l) | 5,310 | 885 | 4,425 | MnthP&L!B33 | 4,425 | 0 |
-| Charitable Donations (purchases y) | 500 | 83.33 | 416.67 | MnthP&L!B37 | 416.67 | 0 |
-| Goodwill written off (purchases z) | 3,000 | 500 | 2,500 | MnthP&L!B38 | 2,500 | 0 |
-| Wages and Salaries, less the employees' own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the employees' gross pay | 666.67 | 0 |
-| Directors Wages, less the directors' own gross pay (purchases d) | 5,000 | 833.33 | 4,166.67 | MnthP&L!B19 less the directors' gross pay | 4,166.67 | 0 |
-| Capitalised fixed asset spend (purchases fa) | 63,000 | 10,500 | 52,500 | Fixedassets.xlsx!FAreconciliation!E11 | 52,500 | 0 |
-| Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
-
-## Business Details
-
-| | Amount |
-|---|------:|
-| Company Name (including Limite90 | 950 | MnthP&L!B25 | 950 | 0 |
 | Consumable Materials (purchases u) | 1,578 | 263 | 1,315 | MnthP&L!B26 | 1,315 | 0 |
 | Advertising & Promotion (purchases a) | 4,910 | 818.33 | 4,091.67 | MnthP&L!B27 | 4,091.67 | 0 |
 | Telephone Postage & Stationery (purchases g) | 1,962 | 327 | 1,635 | MnthP&L!B28 | 1,635 | 0 |

@@ -83,7 +83,7 @@
   {
     "id": "book-ltd-dividend-within-distributable-profits",
     "tier": "warning",
-    "label": "Dividends declared are £15,000.00, against £323,660.62 of retained profit brought forward plus profit after tax for the year.",
+    "label": "Dividends declared are £15,000.00, against £322,925.88 of retained profit brought forward plus profit after tax for the year.",
     "result": "pass",
     "actual": 15000,
     "consequence": null,
