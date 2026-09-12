@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Company 2026-10-31 (Oct26) Excel 2007
 
 Scenario: ltd-scenario-full
@@ -12,7 +14,7 @@ Trade: IT consultancy and software development
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 3.26508597936481e-10 | +3.26508597936481e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 3.25599103234708e-10 | +3.25599103234708e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 233000 | 233000 | 0 | PASS |
@@ -32,9 +34,9 @@ Trade: IT consultancy and software development
 | Trial Balance opening: revenue reserve | -180702 | -180702 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | -13000 | -13000 | 0 | PASS |
 | P&L: Gross = Turnover - CoS | 322496.66666666634 | 322496.666666666 | -3.4924596548080444e-10 | PASS |
-| P&L: Operating = Gross - Admin | 171840.391666666 | 171840.391666666 | 0 | PASS |
-| P&L: PBT = Operating + Interest | 172115.391666666 | 172115.391666666 | 0 | PASS |
-| P&L: Admin lines sum = Total | 150656.27500000005 | 150656.275 | -5.820766091346741e-11 | PASS |
+| P&L: Operating = Gross - Admin | 171548.724999999 | 171548.725 | +1.0186340659856796e-9 | PASS |
+| P&L: PBT = Operating + Interest | 171823.725 | 171823.725 | 0 | PASS |
+| P&L: Admin lines sum = Total | 150947.94166666674 | 150947.941666667 | +2.6193447411060333e-10 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
 | Stock: opening carried in from the opening balance sheet | 10000 | 10000 | 0 | PASS |
@@ -43,15 +45,15 @@ Trade: IT consultancy and software development
 | Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
 | Stock: calculated stock = opening + materials bought - materials sold | 6102 | 6102.00000000002 | +2.000888343900442e-11 | PASS |
 | Published balance sheet: trade debtors = closing debtors | 7900 | 7900 | 0 | PASS |
-| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts | 7900 | 7900 | 0 | PASS |
+| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered | 7900 | 7900 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
-| VAT: Q1-Q4 box 4 = Purchases VAT | 22498.708333333332 | 22498.70833333333 | -3.637978807091713e-12 | PASS |
+| VAT: Q1-Q4 box 4 = Purchases VAT | 22557.041666666668 | 22557.041666666668 | 0 | PASS |
 | VAT Q1: box 5 = box 3 - box 4 | 10896.125 | 10896.125 | 0 | PASS |
-| VAT Q2: box 5 = box 3 - box 4 | 12783.4166666667 | 12783.4166666667 | 0 | PASS |
+| VAT Q2: box 5 = box 3 - box 4 | 12725.083333333361 | 12725.0833333333 | -6.184563972055912e-11 | PASS |
 | VAT Q3: box 5 = box 3 - box 4 | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q4: box 5 = box 3 - box 4 | 14754.29166666667 | 14754.2916666667 | +3.092281986027956e-11 | PASS |
 | VAT: annual output VAT = the sales journal at the book's rate | 70816.70999999998 | 70816.6666666667 | -0.04333333327667788 | PASS |
-| VAT: annual input VAT = the purchase journal at the book's rate | 22498.67000000001 | 22498.708333333332 | +0.03833333332295297 | PASS |
+| VAT: annual input VAT = the purchase journal at the book's rate | 22557.000000000004 | 22557.041666666668 | +0.04166666666424135 | PASS |
 | Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
@@ -94,8 +96,8 @@ Trade: IT consultancy and software development
 | Vatinterface J9: Feb input VAT = Purchases.xlsx Feb | 1509.875 | 1509.875 | 0 | PASS |
 | Vatinterface D10: Mar sales net = Sales.xlsx Mar | 30016.6666666667 | 30016.6666666667 | 0 | PASS |
 | Vatinterface F10: Mar output VAT = Sales.xlsx Mar | 6003.33333333333 | 6003.33333333333 | 0 | PASS |
-| Vatinterface H10: Mar purchases net = Purchases.xlsx Mar | 3671.04166666667 | 3671.04166666667 | 0 | PASS |
-| Vatinterface J10: Mar input VAT = Purchases.xlsx Mar | 734.208333333333 | 734.208333333333 | 0 | PASS |
+| Vatinterface H10: Mar purchases net = Purchases.xlsx Mar | 3962.70833333333 | 3962.70833333333 | 0 | PASS |
+| Vatinterface J10: Mar input VAT = Purchases.xlsx Mar | 792.541666666667 | 792.541666666667 | 0 | PASS |
 | Vatinterface D11: Apr sales net = Sales.xlsx Apr | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
 | Vatinterface F11: Apr output VAT = Sales.xlsx Apr | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
 | Vatinterface H11: Apr purchases net = Purchases.xlsx Apr | 11145.8333333333 | 11145.8333333333 | 0 | PASS |
@@ -157,11 +159,11 @@ Trade: IT consultancy and software development
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E11: quarter sales net = its three period rows | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | Vatinterface G11: quarter output VAT = its three period rows | 17256.66666666667 | 17256.6666666667 | +2.9103830456733704e-11 | PASS |
-| Vatinterface I11: quarter purchases net = its three period rows | 22366.24999999997 | 22366.25 | +2.9103830456733704e-11 | PASS |
-| Vatinterface K11: quarter input VAT = its three period rows | 4473.250000000004 | 4473.25 | -3.637978807091713e-12 | PASS |
+| Vatinterface I11: quarter purchases net = its three period rows | 22657.916666666628 | 22657.9166666666 | -2.9103830456733704e-11 | PASS |
+| Vatinterface K11: quarter input VAT = its three period rows | 4531.583333333338 | 4531.58333333334 | +2.7284841053187847e-12 | PASS |
 | VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 17256.6666666667 | 17256.6666666667 | 0 | PASS |
-| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4473.25 | 4473.25 | 0 | PASS |
-| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 22366.25 | 22366.25 | 0 | PASS |
+| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4531.58333333334 | 4531.58333333334 | 0 | PASS |
+| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 22657.9166666666 | 22657.9166666666 | 0 | PASS |
 | VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46173 | 46173 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
@@ -180,8 +182,7 @@ Trade: IT consultancy and software development
 | Vatinterface I17: quarter purchases net = its three period rows | 10528.54166666667 | 10528.5416666667 | +3.092281986027956e-11 | PASS |
 | Vatinterface K17: quarter input VAT = its three period rows | 2105.708333333333 | 2105.70833333333 | -3.183231456205249e-12 | PASS |
 | VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G17) | 16860 | 16860 | 0 | PASS |
-| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2105.70833333333 | 2105.70833333333 | 0 | PASS |
-| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 10528.5416666667 | 10528.5416666667 | 0 | PASS |
+| V 0 | PASS |
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
 | VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46356 | 46356 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
@@ -1161,10 +1162,33 @@ Journal amounts include VAT at 20%.
 | Telephone number | 0161 555 0100 |
 | First Director's Name | Carol Smith |
 | Principal activity | IT consultancy and software development |
+| Registered Office Address | 123 H327 | 1,635 | MnthP&L!B28 | 1,635 | 0 |
+| Travel & Hotel Expenses (purchases h) | 1,860 | 310 | 1,550 | MnthP&L!B29 | 1,550 | 0 |
+| Motor Vehicle Expenses (purchases v) | 7,598.25 | 1,266.38 | 6,331.88 | MnthP&L!B30 | 6,331.88 | 0 |
+| Insurance Costs (purchases n) | 1,800 | 300 | 1,500 | MnthP&L!B31 | 1,500 | 0 |
+| Leasing Charges (purchases f) | 720 | 120 | 600 | MnthP&L!B32 | 600 | 0 |
+| Legal & Professional Fees (purchases l) | 5,310 | 885 | 4,425 | MnthP&L!B33 | 4,425 | 0 |
+| Charitable Donations (purchases y) | 500 | 83.33 | 416.67 | MnthP&L!B37 | 416.67 | 0 |
+| Goodwill written off (purchases z) | 3,000 | 500 | 2,500 | MnthP&L!B38 | 2,500 | 0 |
+| Wages and Salaries, less the employees' own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the employees' gross pay | 666.67 | 0 |
+| Directors Wages, less the directors' own gross pay (purchases d) | 5,000 | 833.33 | 4,166.67 | MnthP&L!B19 less the directors' gross pay | 4,166.67 | 0 |
+| Capitalised fixed asset spend (purchases fa) | 63,000 | 10,500 | 52,500 | Fixedassets.xlsx!FAreconciliation!E11 | 52,500 | 0 |
+| Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
+
+## Business Details
+
+| | Amount |
+|---|------:|
+| Company Name (including Limited) | Precision Code Ltd |
+| Company registration number | 12345678 |
+| Telephone number | 0161 555 0100 |
+| First Director's Name | Carol Smith |
+| Principal activity | IT consultancy and software development |
 | Registered Office Address | 123 High Street |
 | Registered Office Town | Manchester |
 | Postcode | M1 1AA |
 | Tax Reference per CT603 Notice | 1234567890 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Franked investment income | 20,000 |
 
 ## Opening Balance Sheet
 
@@ -1206,7 +1230,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Equipment Hire (code q) | 1,350 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance (code m) | 950 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Consumables (code u) | 1,315 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 3,800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 4,091.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage & Stationery (code g) | 1,635 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Hotel (code h) | 1,550 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v) | 6,331.88 |
@@ -1220,43 +1244,48 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Goodwill written off (code z) | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on disposal of assets | 172 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 13,740 |
-| Total Admin Expenses | 150,656.28 |
-| **Operating Profit** | 171,840.39 |
+| Total Admin Expenses | 150,947.94 |
+| **Operating Profit** | 171,548.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
-| **Profit Before Tax** | 172,115.39 |
+| **Profit Before Tax** | 171,823.73 |
 
 ## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
-| Operating Profit | 171,840.39 |
+| Operating Profit | 171,548.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 13,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 16,240 |
-| Operational profit chargeable | 188,080.39 |
+| Operational profit chargeable | 187,788.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 64,000 |
-| Profit after capital allowances | 124,080.39 |
+| Profit after capital allowances | 123,788.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 339.51 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | 124,419.9 |
-| **Corporation Tax** | 29,221.27 |
-| Tax Outstanding | 29,156.77 |
+| **Profit Chargeable to CT** | 124,128.23 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add: franked investment income | 20,000 |
+| **Augmented profits** | 144,128.23 |
+| **Corporation Tax** | 29,664.35 |
+| Tax Outstanding | 29,599.85 |
 
 ## CT600 as filed
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,025 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 51,472.34 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 12,868.09 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 72,947.56 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 18,236.89 |
-| **Box 63: corporation tax** | 31,104.97 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 1,883.7 |
-| **Box 65: corporation tax net of marginal rate relief** | 29,221.27 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year | 2,025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 51,351.68 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax | 25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 12,837.92 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year | 2,026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 72,776.55 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax | 25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 18,194.14 |
+| **Box 430: corporation tax** | 31,032.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 1,367.71 |
+| **Box 440: corporation tax net of marginal rate relief** | 29,664.35 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 327: associated companies, first financial year | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 328: associated companies, second financial year | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 620: franked investment income | 20,000 |
 
 ## Published P&L
 
@@ -1267,13 +1296,13 @@ Journal amounts include VAT at 20%.
 | **Total Sales Turnover** | 341,283.33 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 18,786.67 |
 | **Gross Profit** | 322,496.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 150,656.28 |
-| **Operating Profit** | 171,840.39 |
-| **Profit Before Tax** | 172,179.9 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 29,221.27 |
-| **Profit after Tax** | 142,958.62 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 150,947.94 |
+| **Operating Profit** | 171,548.73 |
+| **Profit Before Tax** | 171,888.23 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 29,664.35 |
+| **Profit after Tax** | 142,223.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Dividends | 15,000 |
-| **Retained Profit for the year** | 127,958.62 |
+| **Retained Profit for the year** | 127,223.88 |
 
 ## Published Balance Sheet
 
@@ -1282,56 +1311,7 @@ Journal amounts include VAT at 20%.
 | Fixed Assets (NBV) | 208,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 6,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 7,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 192,995.43 |
-| Current Assets | 206,895.43 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 10,832.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 29,156.77 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 9,135.79 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 49,124.81 |
-| **Net Current Assets** | 157,770.62 |
-| **Total Assets less CL** | 366,760.62 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Creditors due after more than one year | 45,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 58,000 |
-| **Net Assets** | 308,760.62 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| **Shareholders' Funds** | 308,760.62 |
-
-## Fixed Asset Note
-
-| | Amount |
-|---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Original cost brought forward | 233,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Additions | 52,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Disposals | 30,000 |
-| **Original cost carried forward** | 255,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation brought forward | 50,098 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Charge for the year | 13,740 |
-| &nbsp;&nbsp;&nbsp;&nbsp;On disposals | 17,328 |
-| **Depreciation carried forward** | 46,510 |
-| **Net book value** | 208,990 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 16,742.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 29,221.27 |
-
-## Directors' Report
-
-| | Amount |
-|---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Sales turnover in the year | 341,283.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Sales turnover last year | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trading margin | 0.94 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trading margin last year | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Dividend declared | 15,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Ordinary shares issued | 100 |
-
-## Stock
-
-| | Amount |
-|---|------:|
-| Opening Stock | 10,000 |
-| Closing Stock (physical count) | 6,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Stock (calculated) | 6,102 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Stock loss adjustment | -102 |
+| &nbsp;&nbs| -102 |
 
 ## Trial Balance
 
@@ -3296,6 +3276,145 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | A1 |  | 183605.63 |  |
 | A2 |  | 181315.43 |  |
+
+### Savingaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 5125 |  |
+| A2 |  | 10275 |  |
+
+### Cashaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 492 |  |
+| A2 |  | 480 |  |
+
+### Creditcardaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 1025 |  |
+| A2 |  | 1025 |  |
+ DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C2 |  | 30000 |  |
+
+### Companysecretary.xlsx!Directors&Secretary
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A2 |  | Carol Smith |  |
+| B2 |  | 123 High Street, Manchester, M1 1AA |  |
+| D2 |  | Director |  |
+| D3 |  | Company Secretary |  |
+
+### Companysecretary.xlsx!DirectorsInterests
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A2 |  | Carol Smith |  |
+| B2 |  | 123 High Street, Manchester, M1 1AA |  |
+| C2 |  | 43831 |  |
+
+### expensesform.xlsx!Month 01
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 02
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 03
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 04
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 05
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 06
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 07
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 08
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 09
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 10
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 11
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 12
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 1200 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 247.5 |  |
+| P64 |  | 1485 |  |
+| J38 |  | 1200 |  |
+| L38 |  | 1 |  |
+| P38 |  | 1200 |  |
+| V38 |  | 240 |  |
+
+### Currentaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
 
 ### Savingaccount.xlsx!Oct
 
