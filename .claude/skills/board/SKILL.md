@@ -48,7 +48,7 @@ a task can be stopped, and a completed one stops notifying.
 
 ## Part 1 — the board table
 
-| # | Item | Source | Owner | Precursors | State | Status |
+| # | Item | Source | Needs | Precursors | State | Status |
 
 - `#`: a stable id. Machine tasks keep the plan's task id (`T3`). Human steps are `H1`,
   `H2`, … Rows finished in the current session are `D1`, `D2`, … Rows the GitHub scan
@@ -57,9 +57,17 @@ a task can be stopped, and a completed one stops notifying.
 - `Source`: the plan file name (`PLAN_DIYA_GL_LAUNCH.md`), `operator` for an
   instruction given in chat that no plan yet carries, or `none` for a row `NEXT.md` holds
   on its own.
-- `Owner`: `human` for an activity only the operator can do (merge a PR, approve an AWS
-  write, review a design on sight, decide between named alternatives, run a command on a
-  host the session cannot reach); `machine` for work a session or sub-agent does.
+- `Needs`: exactly one of `machine-only`, `human and machine`, `human-only` — what it
+  takes to carry the row to completion, not who happens to own it now. `human-only` is
+  work no session can do: an external registration, a console action with no API, a
+  decision between named alternatives, a command on a host the session cannot reach.
+  `human and machine` needs both, and `Status` says which half is whose — a row waiting
+  on a credential the operator holds and then executing is this, not `human-only`.
+  Everything else is `machine-only`, including a row whose only human step is merging its
+  PR: that is the standing workflow, not an action the row needs.
+
+  Judge it from the work, not from whoever the row names today. Say so in the render when
+  a classification contradicts the row's own wording.
 - `Precursors`: the ids of the rows that must be done before this one can start or resume,
   comma-separated (`T3, T10`); a date or a named decision where that is the gate; `—`
   when nothing gates it. Ids only, never prose. A machine task that waits on a human
@@ -86,11 +94,13 @@ a task can be stopped, and a completed one stops notifying.
 
 ### Rules
 
-- **Row order (the operator's standing order, 2026-09-09).** Four bands, in this order:
-  1. machine rows that can be worked now: `in-flight`, `ready-to-start`, `ready-to-resume`;
-  2. human rows that can be done now: `ready-to-start`, `ready-to-resume`;
-  3. blocked rows of either owner: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
-  4. rows gated by a date, whatever their owner.
+- **Row order (the operator's standing order, 2026-09-09, revised 2026-09-12).** Five bands,
+  in this order, by `Needs` first and state second:
+  1. `machine-only` rows that can be worked now: `in-flight`, `ready-to-start`, `ready-to-resume`;
+  2. `human and machine` rows that can be worked now;
+  3. `human-only` rows that can be done now: `ready-to-start`, `ready-to-resume`;
+  4. blocked rows of any class: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
+  5. rows gated by a date, whatever their class.
   Within a band, precursors come before their dependants, then `CQ-n` rows, then product order
   BST, SE, Taxi, Ltd. `D` rows follow the four bands in the render and are never written back.
 - One row per discrete task. When a plan defines tasks, the board carries one row per
@@ -99,9 +109,15 @@ a task can be stopped, and a completed one stops notifying.
   at a render: each is a pipeline check (a behaviour probe, a screenshot artefact, an axe
   gate) inside the machine row that produces it. A human row exists only for an action
   the session may not take: merge a PR, write to AWS, decide between named alternatives.
-- Split human from machine. A machine task blocked pending a human activity is two rows:
-  the human row in its own state, and the machine row naming it in `Precursors`. A batch's
-  merge, and any on-sight review, is a human row that the rows after it name.
+- Split human from machine where splitting is honest. A machine task blocked pending a
+  human activity is two rows: the human row in its own state, and the machine row naming it
+  in `Precursors`. A batch's merge, and any on-sight review, is a human row that the rows
+  after it name.
+
+  That is why band 2 is usually empty. `human and machine` is for the row that cannot be
+  split without lying about it — one indivisible action needing both halves, such as a
+  command the session runs with a credential only the operator can supply. Prefer two rows;
+  use the class when two rows would misrepresent one action.
 - Precursors are real dependencies (a module the task calls, a file it shares with an
   unfinished row, a decision it needs), never an ordering chosen for tidiness. If two rows
   could run on one branch at once, neither names the other.
@@ -145,7 +161,7 @@ Dependabot alert, and per code-scanning rule family (one row per rule id, files 
   `Board row` reads `parked`. Otherwise, a finding whose action is `fix`, `bump` or
   `investigate` belongs to an existing row (a row whose worktree already touches that
   file, or a plan task that covers it) or gets a new `CQ-n` row (`Source` `none`,
-  `Owner` `machine`, the model tier in `Status`). `keep open and watch` and `close as
+  `Needs` `machine-only`, the model tier in `Status`). `keep open and watch` and `close as
   stale` need no row; `close as stale` findings are listed for the operator in the
   render. Never close, label or comment on an issue or alert from this skill; the
   operator does.
