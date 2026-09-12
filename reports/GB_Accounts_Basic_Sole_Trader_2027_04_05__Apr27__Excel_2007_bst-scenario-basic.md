@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Basic Sole Trader 2027-04-05 (Apr27) Excel 2007
 
 Scenario: bst-scenario-basic
@@ -82,9 +84,9 @@ Trade: IT consultancy and software development
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 88132 | 88131.6 | -0.39999999999417923 | PASS |
+| Income Tax | 88131.6 | 88131.6 | 0 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI | 93918 | 93918.36 | +0.3600000000005821 | PASS |
+| Total Tax + NI, less the CIS already deducted | 93918.36 | 93918.36 | 0 | PASS |
 | Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |

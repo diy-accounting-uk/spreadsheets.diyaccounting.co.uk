@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Basic Sole Trader 2027-04-05 (Apr27) Excel 2007
 
 Scenario: bst-brickwork-pro-nonvat
@@ -65,7 +67,8 @@ Trade: Bricklaying, plastering and general building
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Rate = tax data | 3.5 | 3.5 | 0 | PASS |
+| Admin: NI Class 2 Rate = tax data | 3.65 | 3.65 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 7105 | 7105 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -79,7 +82,7 @@ Trade: Bricklaying, plastering and general building
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Income Tax | 0 | 0 | 0 | PASS |
 | NI Class 4 (lower) | 0 | 0 | 0 | PASS |
-| Total Tax + NI | 0 | 0 | 0 | PASS |
+| Total Tax + NI, less the CIS already deducted | 0 | 0 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
@@ -188,7 +191,7 @@ Trade: Bricklaying, plastering and general building
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 0 |
 | **Total Income Tax** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
 | **Total Tax + NI** | 0 |
@@ -198,11 +201,11 @@ Trade: Bricklaying, plastering and general building
 | | Amount |
 |---|------:|
 | Turnover | 75,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 35,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 18,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | 350 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10) | — |
 | **Net profit/loss** | 15,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
@@ -289,7 +292,8 @@ Trade: Bricklaying, plastering and general building
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Rate | 3.5 |
+| NI Class 2 Rate | 3.65 |
+| NI Class 2 Small Profits Threshold | 7,105 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -382,11 +386,6 @@ Trade: Bricklaying, plastering and general building
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 75000 | gl-cor:amount (sa103s.turnover) |
-| D46 | Cost of goods | 35500 | gl-cor:amount (sa103s.costOfGoods) |
-| D51 | Motor & travel expenses | 2400 | gl-cor:amount (sa103s.motorAndTravel) |
-| D55 | Employee costs | 18000 | gl-cor:amount (sa103s.employeeCosts) |
-| D60 | Premises costs | 0 | gl-cor:amount (sa103s.premises) |
-| D64 | Repairs & maintenance | 350 | gl-cor:amount (sa103s.repairs) |
 | D71 | **Net profit/loss** | 15530 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
@@ -460,7 +459,8 @@ Trade: Bricklaying, plastering and general building
 | M12 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N13 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
 | N14 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L17 | NI Class 2 Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
+| L17 | NI Class 2 Rate | 3.65 | tax.nationalInsurance.class2WeeklyRate |
+| N17 | NI Class 2 Small Profits Threshold | 7105 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
