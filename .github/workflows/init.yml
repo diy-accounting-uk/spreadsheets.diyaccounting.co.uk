@@ -90,7 +90,10 @@ jobs:
             git commit -m "init: clean packages, reports, and/or tax data
 
           Triggered by: ${{ github.actor }} via workflow_dispatch"
-            git push
+            # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, and
+            # this job deletes generated output on purpose, so the router would route
+            # over exactly the deletions this step exists to make.
+            git push --no-verify
           fi
 
   generate-bst:
