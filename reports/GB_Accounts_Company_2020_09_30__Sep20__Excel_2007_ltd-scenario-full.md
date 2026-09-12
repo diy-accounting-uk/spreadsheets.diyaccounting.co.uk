@@ -3355,3 +3355,107 @@ l | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 1025 |  |
 | A2 |  | 1025 |  |
+el | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 04
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 05
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 06
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 07
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 08
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 09
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 10
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 11
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 12
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 1200 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 247.5 |  |
+| P64 |  | 1485 |  |
+| J38 |  | 1200 |  |
+| L38 |  | 1 |  |
+| P38 |  | 1200 |  |
+| V38 |  | 240 |  |
+
+### Currentaccount.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 183505.63 |  |
+| A2 |  | 181215.43 |  |
+
+### Savingaccount.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 5125 |  |
+| A2 |  | 10275 |  |
+
+### Cashaccount.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 492 |  |
+| A2 |  | 480 |  |
+
+### Creditcardaccount.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 1025 |  |
+| A2 |  | 1025 |  |

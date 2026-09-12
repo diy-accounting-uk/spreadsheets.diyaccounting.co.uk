@@ -3148,3 +3148,84 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
 | A2 |  | 0 |  |
+---|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 07
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 08
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 09
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 10
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 11
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### expensesform.xlsx!Month 12
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C30 |  | 0.45 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 0 |  |
+| P62 |  | 0 |  |
+| P64 |  | 0 |  |
+| V38 |  | 0 |  |
+
+### Currentaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 11938.7 |  |
+| A2 |  | 11180.7 |  |
+
+### Savingaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
+| A2 |  | 0 |  |
+
+### Cashaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
+| A2 |  | 0 |  |
+
+### Creditcardaccount.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
+| A2 |  | 0 |  |

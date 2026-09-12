@@ -244,7 +244,10 @@ jobs:
           Triggered by: ${{ github.sha }}"
             git fetch origin "${GITHUB_REF_NAME}"
             git rebase "origin/${GITHUB_REF_NAME}"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, so
+            # otherwise this push runs the pre-push router a second time, over the same
+            # tree the validate job has already routed.
+            git push --no-verify origin "HEAD:${GITHUB_REF_NAME}"
           fi
       - name: Retry push after delay
         if: ${{ steps.push.outcome == 'failure' }}
@@ -255,4 +258,4 @@ jobs:
           done
           git fetch origin "${GITHUB_REF_NAME}"
           git rebase "origin/${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push --no-verify origin "HEAD:${GITHUB_REF_NAME}"
