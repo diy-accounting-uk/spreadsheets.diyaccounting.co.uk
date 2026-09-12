@@ -43,7 +43,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 ## Board
 
-| # | Item | Source | Owner | Precursors | State | Status |
+| # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | CQ-14 | Three browser spec sites still drive undo with `page.locator("#undo-btn").click()` and then assert recomputed state: `diya-gl-taxi-takings` at the day-takings check, and `diya-gl-bst-edits` at both the year table and the mobile button's landscape check. The click resolves before the recalculation it starts has landed. Move those three onto `window.DiyaGlPage.undo()`; the sites asserting only the button's own visibility are fine as they are | none | machine | — | ready-to-resume | the rest of the sweep is on main; three sites left |
 | CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine | — | ready-to-resume | built on `claude/b13-board`; merge main into it first |
