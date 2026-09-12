@@ -37,6 +37,7 @@ export const LTD_PURCHASE_CODE_MAP = {
   5401: "u",
   5500: "a",
   5501: "g",
+  5502: "a", // business entertainment -> Advertising, the same category Ltd's own book.toml column folds it into
   5600: "h",
   5601: "v",
   5700: "n",
@@ -74,7 +75,7 @@ export const BST_PURCHASE_CODE_MAP = {
   5900: "f", // Fixed assets
 };
 
-// SE purchases: accountMainID -> SE code letter (21 codes)
+// SE purchases: accountMainID -> SE code letter (22 codes)
 export const SE_PURCHASE_CODE_MAP = {
   5000: "s",
   5001: "c",
@@ -88,6 +89,7 @@ export const SE_PURCHASE_CODE_MAP = {
   5401: "y", // general shopping -> Other Expenses
   5500: "a",
   5501: "g",
+  5502: "e", // business entertainment -> its own Purchases analysis column
   5600: "h",
   5601: "v",
   5700: "y", // insurance -> Other Expenses (no insurance column)
@@ -1132,6 +1134,15 @@ export function formatScenarioToml(metadata, grouped, expected) {
     parts.push(`opening = ${expected.opening_stock}`);
     parts.push(`closing = ${expected.closing_stock}`);
     if (expected.stock_materials_percent !== undefined) parts.push(`materials_percent = ${expected.stock_materials_percent}`);
+    parts.push("");
+  }
+
+  // The share of each SA103F expense category (32 to 45) that is private use
+  // or otherwise disallowable, as a fraction (0.1 = 10%). A book setting, not
+  // a transaction: no journal line carries it.
+  if (expected.disallowable) {
+    parts.push("[disallowable]");
+    for (const [key, percent] of Object.entries(expected.disallowable)) parts.push(`${key} = ${percent}`);
     parts.push("");
   }
 

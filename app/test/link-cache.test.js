@@ -150,7 +150,7 @@ describe("LINK_ORDER.se names exactly the SE templates that carry external links
 });
 
 describe("every link-addressed cell in the nine SE templates is pinned", () => {
-  it("lists 543 cells, no more and no fewer", async () => {
+  it("lists 555 cells, no more and no fewer", async () => {
     const addressed = await addressedKeys(await workbookZips(TEMPLATES));
     const pinned = new Set(FIXTURE.addressed);
     expect(
@@ -161,7 +161,7 @@ describe("every link-addressed cell in the nine SE templates is pinned", () => {
       FIXTURE.addressed.filter((key) => !addressed.has(key)),
       "pinned but no template addresses it",
     ).toEqual([]);
-    expect(FIXTURE.addressed.length).toBe(543);
+    expect(FIXTURE.addressed.length).toBe(555);
   });
 });
 
@@ -182,8 +182,8 @@ describe("every pinned cell is a calculator output, a writer input or a declared
     expect(FIXTURE.addressed.filter((key) => !emitted.has(key) && !written.has(key) && !blank.has(key))).toEqual([]);
   });
 
-  it("covers 539 cells and declares 4 blank", () => {
-    expect(FIXTURE.addressed.filter((key) => emitted.has(key) || written.has(key)).length).toBe(539);
+  it("covers 551 cells and declares 4 blank", () => {
+    expect(FIXTURE.addressed.filter((key) => emitted.has(key) || written.has(key)).length).toBe(551);
     expect(blank.size).toBe(4);
     expect(FIXTURE.addressed.filter((key) => blank.has(key)).length).toBe(4);
   });

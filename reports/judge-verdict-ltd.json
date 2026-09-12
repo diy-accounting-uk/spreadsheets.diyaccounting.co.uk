@@ -1,11 +1,11 @@
 {
   "product": "ltd",
   "verdict": "pass",
-  "summary": "All indicators align with the headline. The reconciliation run is clean and consistent.",
+  "summary": "All indicators align with the headline. The company is VAT-registered with non-zero VAT boxes in all reported quarters, balance sheet balances, profit bridge residues at zero, and corporation tax correctly charged against taxable profit. Minor timing differences (e.g., VAT returns beyond year end, stock valuation variance of £102) are noted but do not contradict the headline.",
   "concerns": [],
-  "model": "us.amazon.nova-pro-v1:0",
+  "model": "us.amazon.nova-2-lite-v1:0",
   "region": "us-east-1",
-  "digestHash": "a376b7ace10f5e2043d89230f2964da59777672b2826728aea746c556e7a76cc",
+  "digestHash": "7b8a1ea56f53a911b443cdeb53936e3c6c5642d4150f54b82647a842aee11831",
   "runs": [
     {
       "file": "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-scenario-full.md",
@@ -14,5 +14,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-06T13:33:45.396Z"
+  "timestamp": "2026-09-12T09:26:20.141Z"
 }

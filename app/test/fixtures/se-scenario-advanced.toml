@@ -2390,6 +2390,14 @@ code = "l"
 amount = 300
 account = "5800"
 
+[[purchases.aug]]
+date = 2025-08-12
+supplier = "The Ivy"
+description = "Client dinner, project kickoff"
+code = "e"
+amount = 350
+account = "5502"
+
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"
@@ -6179,6 +6187,21 @@ taxCode = "1257L"
 [stock]
 opening = 10000
 closing = 6000
+
+[disallowable]
+costOfGoods = 0.02
+paymentsToSubcontractors = 0.03
+wagesAndStaffCosts = 0.04
+carVanTravelExpenses = 0.25
+premisesRunningCosts = 0.05
+maintenanceCosts = 0.06
+adminCosts = 0.07
+advertisingCosts = 0.08
+interestOnBankOtherLoans = 0.09
+financeCharges = 0.1
+irrecoverableDebts = 0.11
+professionalFees = 0.12
+otherExpenses = 0.13
 
 [[hp_agreements]]
 date = 2025-06-01

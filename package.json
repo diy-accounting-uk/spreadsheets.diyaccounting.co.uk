@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/spreadsheets-diyaccounting-co-uk",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "type": "module",
   "description": "Spreadsheets download site for spreadsheets.diyaccounting.co.uk",
   "license": "SEE LICENSE IN LICENSE",
@@ -122,7 +122,7 @@
     "wait-on": "^9.1.0"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1130.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1131.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "stripe": "^22.6.2"

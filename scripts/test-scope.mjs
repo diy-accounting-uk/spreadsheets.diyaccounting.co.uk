@@ -568,7 +568,13 @@ for (const row of plan) {
     console.log(`           ^ TEST_SCOPE_TIERS=${process.env.TEST_SCOPE_TIERS} excludes this tier; another job or run must cover it`);
   for (const line of (sel.why.get(row.tier) || []).slice(0, 6)) console.log(`           <- ${line}`);
 }
-if (sel.extras.size) console.log(`  RUN      extras   ${[...sel.extras].join(", ")}`);
+if (sel.extras.size) {
+  // The extras ride the gates tier, so TEST_SCOPE_TIERS delegates them with it.
+  const extrasDelegated = allowed && !allowed.has("gates");
+  console.log(`  ${extrasDelegated ? "DELEGATED" : "RUN      "} extras   ${[...sel.extras].join(", ")}`);
+  if (extrasDelegated)
+    console.log(`           ^ TEST_SCOPE_TIERS=${process.env.TEST_SCOPE_TIERS} excludes this tier; another job or run must cover it`);
+}
 if (skipLibreOffice && chosenCalc.length)
   console.log("  NOTE     SKIP_LIBREOFFICE=1 is set, so the calc tier will report no recalculation coverage");
 console.log("");
@@ -603,13 +609,6 @@ if (willRun("gates", true)) {
   for (const extra of sel.extras) steps.push([extra, "npm", ["run", extra]]);
   const code = await runSteps(steps, {});
   results.push(["gates", code]);
-  if (code) exitCode = 1;
-} else if (sel.extras.size) {
-  const code = await runSteps(
-    [...sel.extras].map((e) => [e, "npm", ["run", e]]),
-    {},
-  );
-  results.push(["extras", code]);
   if (code) exitCode = 1;
 }
 

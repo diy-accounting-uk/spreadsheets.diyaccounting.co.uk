@@ -8,27 +8,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Batch b10 is merged (PR #92, `7dc0d3b8`) and main's prod deploy is running. That was the four CI
-rows, the SE field set by tax year, marginal relief for associated companies, and per-environment
-donation links on both the donate page and the DIYA-GL pages. No worktree is open, no branch but
-main exists locally, and no agent is running.
+Main is `1839cf95`. All four generate workflows pass with tests enabled, and `examples/`,
+`reports/` and `packages/` are freshly generated from the templates as they stand. A `test`, a
+`deploy` and a `generate-ltd` with `reconcile-all` are running against that commit.
 
-`origin/claude/b9-board` and `origin/claude/b10-board` are both merged and still on the remote;
-deleting a branch is the operator's.
+`claude/b13-board` is the one branch holding unlanded work (CQ-17 and CQ-19). It predates the
+generate-pipeline repair, so its `scripts/test-scope.mjs`, its four `generate-*.yml` and its
+`test.yml` are all superseded by main: merge main into it before touching anything else on it.
 
-One ci environment serves every branch, so only one batch branch can hold the deploy slot. The
-deploy group is keyed on the environment with `cancel-in-progress: false`, so a second branch's
-push displaces the first's pending deploy rather than racing it. While two batches are live,
-push the one whose PR needs to go green and let the draft's deploys wait.
-
-Publishing is automatic: every green prod deploy from a push to main publishes the next `diya-gl`
-version, pushes the image and rolls the version; the tap tracks npm hourly. Sub-agents run no
-LibreOffice and prove JS calculations against the committed packages' extraction
-(`report.js --source-dir`). A fresh worktree needs `node scripts/build-books-bundle.mjs` before
-any DIYA-GL browser spec, and a rebuild after merging engine changes. The generate workflows cancel
-their own in-progress run on a push to their ref, so a session pushes nothing to a branch while a
-generate run is in progress on it. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of
-record and carries its own open items.
+`claude/docs-test-strategy` is fully on main but `git branch -d` refuses it; deleting it is the
+operator's. Eight merged branches remain on the remote.
 
 ## Context for the open rows
 
@@ -56,17 +45,16 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-14 | Ten browser specs still drive undo with `page.locator("#undo-btn").click()`, which resolves before the recalculation the click starts has landed, so each carries the race CQ-13 removed from the Ltd warnings spec. `diya-gl-warnings`, `diya-gl-ltd-edits`, `diya-gl-row-editing`, `diya-gl-bst-edits`, `diya-gl-bst`, `diya-gl-se-edits`, `diya-gl-shell` and `diya-gl-taxi-takings` all click then assert. Move the ones that assert recomputed state onto `window.DiyaGlPage.undo()`; the ones asserting only the button's own visibility are fine as they are, so read each site rather than sweeping | none | machine | — | in-flight | one agent on `claude/gl-undo-sweep` |
-| CQ-15 | `undoLastEdit` has no `state.committing` re-entrancy guard, where `commit()` and `commitBook()` both open with one. A second undo fired while the first is still recalculating runs against half-applied state, and undo's error path re-pushes the popped entry, so the recovery is what makes it unsafe rather than the double call itself | none | machine | — | in-flight | one agent on `claude/gl-undo-sweep` |
-| CQ-16 | `deploy.yml`'s `paths:` filter does not list `app/data/**`, but `scripts/build-diya-gl-bundle.mjs` copies `app/data/filing` and `app/data/hmrc/form-layouts` into `public/diya-gl/assets/data/`, which the page fetches at runtime and prod serves: `/diya-gl/assets/data/filing/ct600-v3.toml` answers 200. So a change to the CT600 box list or a form layout is deployed content that fires no deploy, and prod keeps the old copy until the 07:17 schedule. Batch b11 hit it: a push changing that file ran the tests and no deploy at all. Widen the filter to the paths the bundle actually copies, rather than listing the two known today | none | machine | — | in-flight | code on `claude/b12-board` |
-| CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine | — | ready-to-start | the filter and the generator can drift again tomorrow; Sonnet |
-| SET-2 | Purchases needs an entertainment column so box 20 stops being lumped with advertising: column AC is free and contiguous, the A1 check extends to `SUM(P1:AC1)`, and P&L row 27's twelve month formulas, VitalTax rows 18/25/29 and `SE Short!O60` follow it. `SE Short!O60`'s caption already says entertaining is not allowable while the cell reads the combined row | PLAN_SE_TEMPLATE_GAPS.md | machine | — | in-flight | one agent on `claude/se-2-disallowable` |
-| SET-3 | Boxes 32 to 45 have empty cells in `SE Full` already, so the missing input is a disallowable percentage per category, in `VitalTax!I36:I50` where the "Not captured in DIY Accounting" note sits now. `C36 = C7*$I$36` per row, the `SE Full` O-cells read `VitalTax!G`, and `SE Short` boxes 11 to 20 go net of their share. This is the step that moves the tax computation | PLAN_SE_TEMPLATE_GAPS.md | machine | — | in-flight | same agent, after SET-2 |
-| MR-5 | A period straddling a change in the main rate, the relief fraction or the limits is charged the year end's figures for all of it. The sheet carries one `Admin!P8`, one `P9` and one `P12`/`P13` pair for the whole period, so both tax rows read the same ones. FY2022 to FY2023 is such a change, 19% flat with no relief against 25% with relief between 50,000 and 250,000, so any 2023 package with a year end other than 31 March is wrong today: the Jul23 Precision Code package charges 243 days of FY2022 at 25%. Needs a cell per financial year for each of those four figures, the four row formulas reading them, the previous year's table in `app/data/ltd-<FY>.toml` widened past the small profits rate it carries now, and every 2023 non-March package regenerated | PLAN_LTD_MARGINAL_RELIEF.md | machine | — | in-flight | agent on `claude/ltd-straddle-rates` |
-| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com` in the management account, beside `diyaccounting.co.uk`. Both were available in Route 53 on 2026-09-10 at USD 9 and USD 16 a year. Copy the contact block from the existing registration; delete the hosted zone Route 53 creates within twelve hours and it costs nothing; neither name has to resolve | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | the permission classifier refuses the register call |
+| CQ-14 | Three browser spec sites still drive undo with `page.locator("#undo-btn").click()` and then assert recomputed state: `diya-gl-taxi-takings` at the day-takings check, and `diya-gl-bst-edits` at both the year table and the mobile button's landscape check. The click resolves before the recalculation it starts has landed. Move those three onto `window.DiyaGlPage.undo()`; the sites asserting only the button's own visibility are fine as they are | none | machine | — | ready-to-resume | the rest of the sweep is on main; three sites left |
+| CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine | — | ready-to-resume | built on `claude/b13-board`; merge main into it first |
+| CQ-19 | The recalculation cache, keyed on the workbook buffers, the cell writes, the engine source, the soffice version and the UTC date, so a fixture recalculates once per change rather than once per run. Its own test proves the work happens once and again when an input moves | none | machine | — | ready-to-resume | same branch as CQ-17 |
+| CQ-20 | The Company computation deducts client entertaining in full. `app/lib/calculators/ltd.js` carries no disallowable treatment at all, and `CorporationTax` `I6`/`I9` are free, so the Ltd product has the gap SET-2 and SET-3 have just closed for Self Employed. Same shape: a column on the entry sheet, a disallowable percentage, and the computation reading net of it | none | machine | — | ready-to-start | follow SET-2 and SET-3's landed shape; Sonnet |
+| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine | — | ready-to-start | one file; Haiku |
+| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine | — | ready-to-start | SET-3 landed in #97; three boxes each need a decision written into the plan's 3.4 |
+| H-PR-102 | Merge PR #102, which sequences this board by what completion needs rather than by owner | operator | human | — | ready-to-start | open on `claude/docs-board-needs` |
 | H-SB-1a | Fill `donate-links.toml`'s `[ci]` section with real test-mode Payment Links: `STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js`, which mints them and writes the section. Until then ci's donate page carries placeholder URLs that 404 rather than live links that take a real payment | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | needs a test-mode Stripe key the session does not hold |
-| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine | SET-3 | blocked-to-start | the leftover after the percentages |
 | SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine | H-SB-1a | blocked-to-start | needs real test-mode links before a donation can be driven |
+
 
 ## Plans not tracked here
 

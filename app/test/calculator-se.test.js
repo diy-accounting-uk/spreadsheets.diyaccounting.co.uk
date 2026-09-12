@@ -48,9 +48,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 873 },
-  { name: "se-brickwork-pro-vat", checkCount: 807 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 796 },
+  { name: "se-scenario-advanced", checkCount: 886 },
+  { name: "se-brickwork-pro-vat", checkCount: 819 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 808 },
 ];
 
 function loadFixture(name) {
@@ -360,14 +360,35 @@ describe("Self Employed engine: the checks are breakable", () => {
       failing: ["P&L: Depreciation (row 34, summed) = Schedule I1"],
     },
     {
-      // Every box in the 32-to-45 block sits at nil on this fixture, so this
-      // gives one a figure rather than moving one that already carries one --
-      // the same shape of change a later book field will make for real.
-      what: "box 32's own cell, blank on this fixture",
+      // Box 32 carries a real, nonzero percentage on this fixture; this
+      // moves the figure rather than giving a blank one its first value.
+      what: "box 32's own cell",
       corrupt: (results) => {
         results["SE Full"].O66 = 500;
       },
       failing: ["SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45"],
+    },
+    {
+      // Box 35's disallowable share is read twice: once into box 46's total,
+      // once out of box 20 (D51) on the short return. A cell that feeds two
+      // checks has to fail both, or one of them is reading a stale copy.
+      what: "box 35's disallowable share",
+      corrupt: (results) => {
+        results["SE Full"].O78 = 500;
+      },
+      failing: [
+        "SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
+        "SA103F box 20 car, van and travel expenses: short return (D51) = full return (D78) less its own disallowable share (O78)",
+      ],
+    },
+    {
+      // August's own entertainment figure, the one month this fixture's
+      // transaction falls in.
+      what: "August's entertainment column on the profit and loss account",
+      corrupt: (results) => {
+        results["Profit & Loss Account"].G49 += 100;
+      },
+      failing: ["P&L aug col G49 = Purchases.xlsx e-coded net"],
     },
   ];
 
@@ -490,20 +511,7 @@ describe("Self Employed engine: the read scope", () => {
         "SE Full!D156",
         "SE Full!D160",
         "SE Full!D179",
-        "SE Full!O102",
-        "SE Full!O106",
-        "SE Full!O110",
-        "SE Full!O118",
         "SE Full!O139",
-        "SE Full!O66",
-        "SE Full!O70",
-        "SE Full!O74",
-        "SE Full!O78",
-        "SE Full!O82",
-        "SE Full!O86",
-        "SE Full!O90",
-        "SE Full!O94",
-        "SE Full!O98",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",
         "Vat.xlsx!Vatinterface!G4",
@@ -658,7 +666,14 @@ describe("Self Employed engine: from the diya-gl book", () => {
     const fromFixture = calculateFromDiyaGl(book, lines, "se", TAX_DATA, loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml")));
     for (let quarter = 1; quarter <= 5; quarter++) {
       const sheet = `Vat.xlsx!VATQtr${quarter}`;
-      expect(fromBook[sheet], sheet).toEqual(fromFixture[sheet]);
+      // A TOML round trip re-parses a repeating-decimal net-of-VAT amount to
+      // a float that agrees with the live figure to the penny but not
+      // always to the last bit, so this compares each cell to six decimal
+      // places rather than requiring bit-identical objects.
+      expect(Object.keys(fromBook[sheet] || {}).sort(), sheet).toEqual(Object.keys(fromFixture[sheet] || {}).sort());
+      for (const cell of Object.keys(fromBook[sheet] || {})) {
+        expect(fromBook[sheet][cell], `${sheet}!${cell}`).toBeCloseTo(fromFixture[sheet][cell], 6);
+      }
     }
     // The fifth quarter falls wholly outside the accounting year, so the
     // straddling entries are the only thing that puts a figure on it.

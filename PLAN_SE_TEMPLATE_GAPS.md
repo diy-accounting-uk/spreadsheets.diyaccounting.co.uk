@@ -220,21 +220,34 @@ already reads as a blank (`seFull.D147`, `D152`, `D156`, `D160`, `O139`, `D179` 
 988). Printing a box a second time buys nothing. What they lack is a place in `book.toml` and a
 writer, which is book-schema work, not template work.
 
-Two are genuine template gaps:
+Two are genuine template gaps. Each needs a decision this document does not make; the
+geometry below is what the sheet XML says about them.
 
 - **Box 53.1**, the Freeport Structures and Buildings Allowance. `SE Full` prints box 53 at A157
-  with its value at D160 and jumps to the next section. Add the box number at L157 in the pattern
-  every other right-hand box uses (number in L, label in N, `£` in N and value in O two rows down),
-  giving box 53.1 a cell at O160. O160 is box 59 today, so the block from row 156 down needs
-  laying out afresh rather than one cell dropped in.
-- **Box 73.3**, the transition profit pair. `SE Full` row 192 prints box 73 at L192 with its value
-  at O194 and no 73.1, 73.2 or 73.3 beside it. Rows 300 to 324 are inside the sheet's dimension
-  (`A1:W324`) and empty, so the continuation block has room below the losses section.
+  with its value at D160 and jumps to the next section at A162. A printed box takes two shaped
+  rows, a label row and a value row carrying the merged `£` box. Between rows 146 and 161 every
+  such pair is already spoken for -- boxes 51, 52, 52.1 and 53 on the left (`D147:F147`,
+  `D152:F152`, `D156:F156`, `D160:F160`), boxes 56, 57 and 59 on the right (`O149:Q149`,
+  `O154:Q154`, `O160:Q160`). Row 161 is the only free row and one row holds a label or a value,
+  not both. So the block does need laying out afresh, and that means re-pitching row heights and
+  box borders across a printed statutory form.
+- **Box 73.3**, the transition profit. `SE Full` row 192 prints box 73 at L192 with its value at
+  O194 and no 73.1, 73.2 or 73.3 beside it, and `app/data/hmrc/form-layouts/se.json` declares all
+  three, so the block is three boxes and six shaped rows. Rows 300 to 324 are not free: `C298:V323`
+  is one merged cell, box 103's "any other information" answer space. The sheet's one properly
+  shaped free slot is the 15pt label row 199 with the already-merged value box `D201:F201` below
+  it, and that row currently carries the "Boxes 69 and 70 are not in use" notice. It holds one box
+  of the three.
 
 One is Fixed Assets work: the special rate pool (box 51). `Admin!G6` is free directly under the
 writing-down rate at G5, and `Fixedassets.xlsx!Schedule` runs to column AA with AB onward free, so
 a second rate and a second allowance column pair fit without moving anything. `buildSchedule` in
-`app/lib/calculators/se.js` grows a second pool alongside.
+`app/lib/calculators/se.js` grows a second pool alongside. What is missing is the rule that puts an
+asset row in the pool. `Schedule` holds no CO2 figure, and its one candidate block, "Motor Vehicles
+- costing over £" (rows 38 to 42 and 91 to 95), claims the 18% rate today, so reading it as the
+special rate pool would move figures for every customer who has one. Closing it needs a marker
+column on the asset rows and a book field to fill it, the same shape section 7 names for single
+asset pools.
 
 ## 4. What the change costs beyond the cells
 

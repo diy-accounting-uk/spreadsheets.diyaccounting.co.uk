@@ -105,6 +105,10 @@ accountMainDescription = "Advertising and promotion"
 accountMainDescription = "General admin (telephone, postage, stationery)"
 "diya-gl:column" = "AA"
 
+[accounts.purchases."5502"]
+accountMainDescription = "Business entertainment"
+"diya-gl:column" = "Z"
+
 [accounts.purchases."5600"]
 accountMainDescription = "Travel and hotel expenses"
 "diya-gl:column" = "AB"

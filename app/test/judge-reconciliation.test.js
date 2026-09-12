@@ -304,28 +304,28 @@ describe("the VAT indicator", () => {
 describe("buildIndicators for the Self Employed", () => {
   const text = indicatorText("se", "seAdvanced", { vatRegistered: true });
 
-  // 183,429.68 less 52,500.00 and 11,500.00 is 119,429.68. Naming only the 52,500.00 left an
+  // 192,469.48 less 52,500.00 and 11,500.00 is 128,469.48. Naming only the 52,500.00 left an
   // 11,500.00 hole between two figures printed side by side, which is what a reviewer sees.
   it("itemises every capital allowance box so the drop to the net business profit is exact", () => {
     expect(text).toContain(
-      "Self assessment: net profit 183,429.68, less 64,000.00 of capital allowances " +
+      "Self assessment: net profit 192,469.48, less 64,000.00 of capital allowances " +
         "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 11,500.00), " +
-        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a net business profit of 119,429.68.",
+        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a net business profit of 128,469.48.",
     );
   });
 
   it("states the SA103F full return's relation to the short return's figures", () => {
     expect(text).toContain(
       "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
-        "Total expenses (box 31) 169,510.32 = the short return's total expenses 155,770.32 plus total disallowable expenses (box 46) 13,740.00; " +
-        "net profit (box 47) 169,689.68 = the short return's net profit 183,429.68 less that same 13,740.00; " +
+        "Total expenses (box 31) 169,801.98 = the short return's total expenses 146,730.52 plus total disallowable expenses (box 46) 23,071.46; " +
+        "net profit (box 47) 169,398.02 = the short return's net profit 192,469.48 less that same 23,071.46; " +
         "total capital allowances (box 57) 64,000.00 sums the same allowances split across more boxes than the short return uses.",
     );
   });
 
   it("carries the grants line from the taxable profit to the profit tax is charged on", () => {
-    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 121,513.02");
-    expect(text).toContain("Income tax: charged on a profit of 121,513.02");
+    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 130,552.81");
+    expect(text).toContain("Income tax: charged on a profit of 130,552.81");
   });
 
   it("says the product publishes no balance sheet rather than leaving it unexplained", () => {
@@ -345,7 +345,7 @@ describe("buildIndicators for the Self Employed", () => {
   });
 
   it("leaves the CIS clause out of a book with nothing deducted", () => {
-    expect(text).toContain("income tax and National Insurance together 44,026.67.");
+    expect(text).toContain("income tax and National Insurance together 48,819.42.");
     expect(text).not.toContain("under CIS");
   });
 });
@@ -604,6 +604,36 @@ describe("assemblePrompt", () => {
     expect(diverged.indicators.length).toBeGreaterThan(1);
     expect(prompt.user).toContain('year-end="2025-04-05"');
     expect(prompt.user).toContain("<other-year-ends>");
+  });
+
+  // A reports directory mid-refresh holds freshly generated year ends beside stale
+  // committed ones, so every fresh year end diverges from the stale featured run and
+  // promotion fires for all of them. That is the state the generate workflows run the
+  // judge in, and an unbounded prompt there failed the size guard and blocked the very
+  // commit that would have made the reports consistent again.
+  it("caps how many diverging year ends it expands, and says so for the rest", () => {
+    const featuredContent = report("bst");
+    const divergingContent = featuredContent.replace("Status: RECONCILES", "Status: RECONCILES (with warnings)");
+    const files = {
+      "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md": featuredContent,
+    };
+    for (const year of [2026, 2025, 2024, 2023, 2022, 2021]) {
+      files[`GB_Accounts_Basic_Sole_Trader_${year}_04_05__Apr${year % 100}__Excel_2007_bst-scenario-basic.md`] = divergingContent;
+    }
+    const dir = reportsDirWith(files);
+
+    const prompt = assemblePrompt("bst", { reportsDir: dir, rubric: "rubric text" });
+    const featured = prompt.runs.find((run) => run.deltas !== undefined);
+
+    // Six diverge; two are expanded and four fall back to a line.
+    expect(prompt.runs).toHaveLength(3);
+    expect(featured.deltas).toHaveLength(4);
+
+    // The overflow must not claim agreement it does not have.
+    for (const line of featured.deltas) {
+      expect(line).toContain("differs from the featured run, not expanded here");
+      expect(line).not.toContain("matches the featured run");
+    }
   });
 
   // The Ltd product's committed reports carry ~90 year ends of the same scenario; the delta

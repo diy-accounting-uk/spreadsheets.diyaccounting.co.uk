@@ -2,7 +2,7 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Claude Code Memory - DIY Accounting Spreadsheets
 
-> **Shared conventions** (git workflow, AWS accounts, code quality, confirm behavior, security): See `../CLAUDE.md`
+> **Shared conventions** (git workflow, AWS accounts, code quality, confirm behavior, security, commit attribution): See `../CLAUDE.md`
 
 ## Context Survival (CRITICAL — read this first after every compaction)
 
