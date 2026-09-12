@@ -12,6 +12,12 @@ run-name: "publish-diya-gl from ${{ github.ref_name }}"
 on:
   workflow_call:
   workflow_dispatch:
+    inputs:
+      tag-commit:
+        description: 'Commit to tag when finishing a run that published but did not tag (default: main)'
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -47,14 +53,27 @@ jobs:
         run: |
           PKG_NAME=$(node -p "require('./diya-gl/package.json').name")
           PKG_VERSION=$(node -p "require('./diya-gl/package.json').version")
+          TAG="diya-gl-v${PKG_VERSION}"
           echo "name=${PKG_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "version=${PKG_VERSION}" | tee -a "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" | tee -a "$GITHUB_OUTPUT"
           if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
             echo "${PKG_NAME}@${PKG_VERSION} is already on npm; nothing to publish"
             echo "publish=false" | tee -a "$GITHUB_OUTPUT"
           else
             echo "Publishing ${PKG_NAME}@${PKG_VERSION}"
             echo "publish=true" | tee -a "$GITHUB_OUTPUT"
+          fi
+          # The tag, the release record and the version roll key on the tag, not on
+          # whether this run did the publishing. A run that published and then died
+          # before tagging leaves the version on npm and no roll on main, so every
+          # later run reads publish=false and nothing is ever published again. Keyed
+          # this way, a re-dispatch finishes it.
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "${TAG} is already tagged; nothing left to finish"
+            echo "finish=false" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "finish=true" | tee -a "$GITHUB_OUTPUT"
           fi
 
       - name: Check the npm publish token is configured
@@ -68,7 +87,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Node dependencies
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        # Also on a finish-only run: the release record and the version roll both
+        # need the install, and they run when the publish steps do not.
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.finish == 'true' }}
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
@@ -129,24 +150,28 @@ jobs:
           docker push ghcr.io/diy-accounting-uk/diya-gl:latest
 
       - name: Tag the published commit
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.finish == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "diya-gl-v${{ steps.version.outputs.version }}" -m "diya-gl ${{ steps.version.outputs.version }}"
+          # Finishing an earlier run tags the commit that run published, which is
+          # not main's head any more; tag-commit names it.
+          TARGET='${{ inputs.tag-commit }}'
+          [ -n "$TARGET" ] || TARGET=HEAD
+          git tag -a "diya-gl-v${{ steps.version.outputs.version }}" -m "diya-gl ${{ steps.version.outputs.version }}" "$TARGET"
           # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, so
           # otherwise tagging runs the pre-push router in a job that has Node alone --
           # no JDK for the infra tier, no browsers for the browser tier.
           git push --no-verify origin "diya-gl-v${{ steps.version.outputs.version }}"
 
       - name: Record the release and rebuild the reconciled-releases page
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.finish == 'true' }}
         run: |
           node app/bin/build-reconciliation-pages.js --record "diya-gl-v${{ steps.version.outputs.version }}"
           node app/bin/build-reconciliation-pages.js --index-only
 
       - name: Roll the patch version for the next publish
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.finish == 'true' }}
         id: roll
         run: |
           NEXT=$(npm version patch --no-git-tag-version)
@@ -155,7 +180,7 @@ jobs:
           echo "next=${NEXT#v}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Commit the release record and the rolled version onto main
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.finish == 'true' }}
         id: push
         continue-on-error: true
         run: |
@@ -170,7 +195,7 @@ jobs:
           git push --no-verify origin HEAD:main
 
       - name: Retry push after delay
-        if: ${{ steps.version.outputs.publish == 'true' && steps.push.outcome == 'failure' }}
+        if: ${{ steps.version.outputs.finish == 'true' && steps.push.outcome == 'failure' }}
         run: |
           for i in 5 10 15 20 25 30; do
             echo "Waiting... ${i}s"
