@@ -4,12 +4,12 @@
   "scenario": "Exported from se package",
   "yearEnd": "2027-03-31",
   "provenance": {
-    "formatVersion": "diya-gl-books/1",
-    "engineVersion": "1.1.2+0f27d99accb1",
-    "taxDataHash": "6a9c036b5f9c",
-    "templateHash": "c6a50059cc90",
-    "templateScorecard": "7679 passed, 0 warnings, 0 failed",
-    "reconciledCommit": "320b4b8a1585e16fa170c2d312c14df38d0bcf5b"
+    "formatVersion": "diya-gl/1",
+    "engineVersion": "1.2.7+8f36b1c6",
+    "taxDataHash": "84585062cad8",
+    "templateHash": "185e5ad6b61d",
+    "templateScorecard": "7692 passed, 0 warnings, 0 failed",
+    "reconciledCommit": "1839cf9537c130410e2a180626e7729aca82ffc9"
   },
   "values": [
     {
@@ -295,7 +295,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B27",
       "unit": "money",
-      "value": "3800"
+      "value": "4091.66666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B28",
@@ -335,12 +335,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B35",
       "unit": "money",
-      "value": "149373.65"
+      "value": "149665.316666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B37",
       "unit": "money",
-      "value": "171773.016666667"
+      "value": "171481.35"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B38",
@@ -350,7 +350,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B39",
       "unit": "money",
-      "value": "171773.016666667"
+      "value": "171481.35"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B49",
+      "unit": "money",
+      "value": "291.666666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!B5",
@@ -469,6 +474,11 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!C38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!C49",
       "unit": "money",
       "value": "0"
     },
@@ -593,6 +603,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!D49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!D5",
       "unit": "money",
       "value": "25633.3333333333"
@@ -709,6 +724,11 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!E38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!E49",
       "unit": "money",
       "value": "0"
     },
@@ -833,6 +853,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!F49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!F5",
       "unit": "money",
       "value": "25633.3333333333"
@@ -910,7 +935,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!G27",
       "unit": "money",
-      "value": "0"
+      "value": "291.666666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!G28",
@@ -951,6 +976,11 @@
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!G38",
       "unit": "money",
       "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!G49",
+      "unit": "money",
+      "value": "291.666666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!G5",
@@ -1069,6 +1099,11 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!H38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!H49",
       "unit": "money",
       "value": "0"
     },
@@ -1193,6 +1228,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!I49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!I5",
       "unit": "money",
       "value": "27133.3333333333"
@@ -1309,6 +1349,11 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!J38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!J49",
       "unit": "money",
       "value": "0"
     },
@@ -1433,6 +1478,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!K49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!K5",
       "unit": "money",
       "value": "26533.3333333333"
@@ -1549,6 +1599,11 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!L38",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!L49",
       "unit": "money",
       "value": "0"
     },
@@ -1673,6 +1728,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!M49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!M5",
       "unit": "money",
       "value": "26333.3333333333"
@@ -1793,6 +1853,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!N49",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Profit & Loss Account!N5",
       "unit": "money",
       "value": "25033.3333333333"
@@ -1840,7 +1905,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C30",
       "unit": "money",
-      "value": "149373.65"
+      "value": "149665.316666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C33",
@@ -1850,7 +1915,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C34",
       "unit": "money",
-      "value": "171773.016666667"
+      "value": "171481.35"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C37",
@@ -1865,17 +1930,17 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C39",
       "unit": "money",
-      "value": "121685.016666667"
+      "value": "121393.35"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C40",
       "unit": "money",
-      "value": "1727.49166666671"
+      "value": "1873.32500000004"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C41",
       "unit": "money",
-      "value": "119957.525"
+      "value": "119520.025"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C42",
@@ -1885,7 +1950,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C43",
       "unit": "money",
-      "value": "32903.0099999999"
+      "value": "32728.01"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C44",
@@ -1895,12 +1960,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C45",
       "unit": "money",
-      "value": "3690.30033333333"
+      "value": "3684.467"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Profit Forecast!C46",
       "unit": "money",
-      "value": "44133.3103333333"
+      "value": "43952.4769999999"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D102",
@@ -1930,12 +1995,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D122",
       "unit": "money",
-      "value": "169510.316666667"
+      "value": "169801.983333333"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D129",
       "unit": "money",
-      "value": "169689.683333333"
+      "value": "169398.016666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D139",
@@ -1955,7 +2020,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D174",
       "unit": "money",
-      "value": "13740"
+      "value": "14031.6666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D219",
@@ -2010,7 +2075,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D94",
       "unit": "money",
-      "value": "3800"
+      "value": "4091.66666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D98",
@@ -2033,14 +2098,34 @@
       "value": "12570"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O102",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O106",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O110",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!SE Full!O114",
       "unit": "money",
       "value": "13740"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O118",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!SE Full!O122",
       "unit": "money",
-      "value": "13740"
+      "value": "14031.6666666667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O129",
@@ -2109,6 +2194,51 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O55",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O66",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O70",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O74",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O78",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O82",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O86",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O90",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O94",
+      "unit": "money",
+      "value": "291.666666666667"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!O98",
       "unit": "money",
       "value": "0"
     },
@@ -4050,7 +4180,7 @@
     {
       "key": "cell/Purchases.xlsx!Aug!H1",
       "unit": "money",
-      "value": "727.833333333333"
+      "value": "786.166666666667"
     },
     {
       "key": "cell/Purchases.xlsx!Aug!H2",
@@ -4060,7 +4190,7 @@
     {
       "key": "cell/Purchases.xlsx!Aug!I1",
       "unit": "money",
-      "value": "3677.41666666667"
+      "value": "3969.08333333333"
     },
     {
       "key": "cell/Purchases.xlsx!ClosingCreditors!G1",
@@ -4885,12 +5015,12 @@
     {
       "key": "cell/Vat.xlsx!VATQtr2!G15",
       "unit": "money",
-      "value": "4451.5"
+      "value": "4509.83333333333"
     },
     {
       "key": "cell/Vat.xlsx!VATQtr2!G17",
       "unit": "money",
-      "value": "12805.1666666667"
+      "value": "12746.8333333333"
     },
     {
       "key": "cell/Vat.xlsx!VATQtr2!G21",
@@ -4900,7 +5030,7 @@
     {
       "key": "cell/Vat.xlsx!VATQtr2!G23",
       "unit": "money",
-      "value": "22388"
+      "value": "22679.6666666667"
     },
     {
       "key": "cell/Vat.xlsx!VATQtr2!G5",
@@ -5545,7 +5675,7 @@
     {
       "key": "cell/Vat.xlsx!Vatinterface!H10",
       "unit": "money",
-      "value": "3677.41666666667"
+      "value": "3969.08333333333"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!H11",
@@ -5630,17 +5760,17 @@
     {
       "key": "cell/Vat.xlsx!Vatinterface!I10",
       "unit": "money",
-      "value": "31792.6666666667"
+      "value": "32084.3333333333"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!I11",
       "unit": "money",
-      "value": "22388"
+      "value": "22679.6666666667"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!I12",
       "unit": "money",
-      "value": "50680.5"
+      "value": "50972.1666666667"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!I13",
@@ -5705,7 +5835,7 @@
     {
       "key": "cell/Vat.xlsx!Vatinterface!J10",
       "unit": "money",
-      "value": "727.833333333333"
+      "value": "786.166666666667"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!J11",
@@ -5790,17 +5920,17 @@
     {
       "key": "cell/Vat.xlsx!Vatinterface!K10",
       "unit": "money",
-      "value": "6328.83333333333"
+      "value": "6387.16666666667"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!K11",
       "unit": "money",
-      "value": "4451.5"
+      "value": "4509.83333333333"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!K12",
       "unit": "money",
-      "value": "10105.5"
+      "value": "10163.8333333333"
     },
     {
       "key": "cell/Vat.xlsx!Vatinterface!K13",
@@ -6148,7 +6278,15 @@
       "tolerance": "1"
     },
     {
-      "key": "check/Category netting: Advertising & Promotion (purchases a) net reaches Profit & Loss Account!B27 with no residue",
+      "key": "check/Category netting: Advertising Promotion & Entertainment (purchases a) net reaches Profit & Loss Account!B27 with no residue",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "-0.000000000000",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/Category netting: Bad Debts written off (sales o) net reaches Profit & Loss Account!B29 negated with no residue",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -6156,7 +6294,7 @@
       "tolerance": "0.01"
     },
     {
-      "key": "check/Category netting: Bad Debts written off (sales o) net reaches Profit & Loss Account!B29 negated with no residue",
+      "key": "check/Category netting: Business Entertainment (memo) (purchases e) net reaches Profit & Loss Account!B49 with no residue",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -6367,8 +6505,8 @@
       "key": "check/Forecast: National Insurance",
       "unit": "verdict",
       "value": "pass",
-      "expected": "3690.30033333333",
-      "actual": "3690.30033333333",
+      "expected": "3684.467",
+      "actual": "3684.467",
       "tolerance": "0.01"
     },
     {
@@ -6399,8 +6537,8 @@
       "key": "check/Forecast: general expenses = P&L administrative expenses",
       "unit": "verdict",
       "value": "pass",
-      "expected": "149373.65",
-      "actual": "149373.65",
+      "expected": "149665.316666667",
+      "actual": "149665.316666667",
       "tolerance": "1"
     },
     {
@@ -6431,24 +6569,24 @@
       "key": "check/Forecast: personal allowance after taper",
       "unit": "verdict",
       "value": "pass",
-      "expected": "1727.49166666671",
-      "actual": "1727.49166666671",
+      "expected": "1873.32500000004",
+      "actual": "1873.32500000004",
       "tolerance": "0.01"
     },
     {
       "key": "check/Forecast: profit before tax = P&L profit before tax",
       "unit": "verdict",
       "value": "pass",
-      "expected": "171773.016666667",
-      "actual": "171773.016666667",
+      "expected": "171481.35",
+      "actual": "171481.35",
       "tolerance": "1"
     },
     {
       "key": "check/Forecast: tax and NI liability",
       "unit": "verdict",
       "value": "pass",
-      "expected": "44133.3103333333",
-      "actual": "44133.3103333333",
+      "expected": "43952.4769999999",
+      "actual": "43952.4769999999",
       "tolerance": "0.01"
     },
     {
@@ -6463,8 +6601,8 @@
       "key": "check/Forecast: tax at higher rate",
       "unit": "verdict",
       "value": "pass",
-      "expected": "32903.0099999999",
-      "actual": "32903.0099999999",
+      "expected": "32728.01",
+      "actual": "32728.01",
       "tolerance": "0.01"
     },
     {
@@ -6479,8 +6617,8 @@
       "key": "check/Forecast: taxable profit = profit + depreciation - capital allowances",
       "unit": "verdict",
       "value": "pass",
-      "expected": "121685.016666667",
-      "actual": "121685.016666667",
+      "expected": "121393.35",
+      "actual": "121393.35",
       "tolerance": "1"
     },
     {
@@ -6676,6 +6814,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L apr col C49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L apr col C5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -6775,8 +6921,8 @@
       "key": "check/P&L aug col G27 = Purchases.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0",
-      "actual": "0",
+      "expected": "291.67",
+      "actual": "291.666666666667",
       "tolerance": "1"
     },
     {
@@ -6801,6 +6947,14 @@
       "value": "pass",
       "expected": "135.83",
       "actual": "135.833333333333",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L aug col G49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "291.67",
+      "actual": "291.666666666667",
       "tolerance": "1"
     },
     {
@@ -6932,6 +7086,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L dec col K49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L dec col K5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -7057,6 +7219,14 @@
       "value": "pass",
       "expected": "110.83",
       "actual": "110.833333333333",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L feb col M49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -7188,6 +7358,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L jan col L49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L jan col L5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -7313,6 +7491,14 @@
       "value": "pass",
       "expected": "95.83",
       "actual": "95.8333333333333",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L jul col F49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -7444,6 +7630,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L jun col E49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L jun col E5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -7569,6 +7763,14 @@
       "value": "pass",
       "expected": "95.83",
       "actual": "95.8333333333333",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L mar col N49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -7700,6 +7902,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L may col D49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L may col D5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -7825,6 +8035,14 @@
       "value": "pass",
       "expected": "95.83",
       "actual": "95.8333333333333",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/P&L nov col J49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -7956,6 +8174,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L oct col I49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L oct col I5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -8084,6 +8310,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/P&L sep col H49 = Purchases.xlsx e-coded net",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/P&L sep col H5 = Sales.xlsx a-coded net",
       "unit": "verdict",
       "value": "pass",
@@ -8119,8 +8353,8 @@
       "key": "check/P&L: Admin lines sum = Total",
       "unit": "verdict",
       "value": "pass",
-      "expected": "149373.65",
-      "actual": "149373.65",
+      "expected": "149665.316666667",
+      "actual": "149665.316666667",
       "tolerance": "1"
     },
     {
@@ -8167,16 +8401,16 @@
       "key": "check/P&L: Operating = Gross - Admin",
       "unit": "verdict",
       "value": "pass",
-      "expected": "171773.016666667",
-      "actual": "171773.016666667",
+      "expected": "171481.35",
+      "actual": "171481.35",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: PBT = Operating",
       "unit": "verdict",
       "value": "pass",
-      "expected": "171773.016666667",
-      "actual": "171773.016666667",
+      "expected": "171481.35",
+      "actual": "171481.35",
       "tolerance": "1"
     },
     {
@@ -10058,7 +10292,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 19 wages, salaries and staff costs: full return (D74) = short return (D55)",
+      "key": "check/SA103F box 19 wages, salaries and staff costs: short return (D55) = full return (D74) less its own disallowable share (O74)",
       "unit": "verdict",
       "value": "pass",
       "expected": "92735.7333333333",
@@ -10074,7 +10308,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 20 car, van and travel expenses: full return (D78) = short return (D51)",
+      "key": "check/SA103F box 20 car, van and travel expenses: short return (D51) = full return (D78) less its own disallowable share (O78)",
       "unit": "verdict",
       "value": "pass",
       "expected": "7984.25",
@@ -10090,7 +10324,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 21 rent, rates, power and insurance: full return (D82) = short return (D60)",
+      "key": "check/SA103F box 21 rent, rates, power and insurance: short return (D60) = full return (D82) less its own disallowable share (O82)",
       "unit": "verdict",
       "value": "pass",
       "expected": "13200",
@@ -10106,7 +10340,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 22 repairs and maintenance: full return (D86) = short return (D64)",
+      "key": "check/SA103F box 22 repairs and maintenance: short return (D64) = full return (D86) less its own disallowable share (O86)",
       "unit": "verdict",
       "value": "pass",
       "expected": "950",
@@ -10122,7 +10356,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 23 phone, stationery and office costs: full return (D90) = short return (O55)",
+      "key": "check/SA103F box 23 phone, stationery and office costs: short return (O55) = full return (D90) less its own disallowable share (O90)",
       "unit": "verdict",
       "value": "pass",
       "expected": "3035",
@@ -10133,8 +10367,8 @@
       "key": "check/SA103F box 24 advertising and entertainment (D94) = the profit and loss account",
       "unit": "verdict",
       "value": "pass",
-      "expected": "3800",
-      "actual": "3800",
+      "expected": "4091.66666666667",
+      "actual": "4091.66666666667",
       "tolerance": "1"
     },
     {
@@ -10170,7 +10404,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 28 accountancy, legal and professional fees: full return (D110) = short return (O46)",
+      "key": "check/SA103F box 28 accountancy, legal and professional fees: short return (O46) = full return (D110) less its own disallowable share (O110)",
       "unit": "verdict",
       "value": "pass",
       "expected": "6925",
@@ -10197,16 +10431,16 @@
       "key": "check/SA103F box 31 total expenses (D122) = the profit and loss account",
       "unit": "verdict",
       "value": "pass",
-      "expected": "169510.316666667",
-      "actual": "169510.316666667",
+      "expected": "169801.983333333",
+      "actual": "169801.983333333",
       "tolerance": "1"
     },
     {
       "key": "check/SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back",
       "unit": "verdict",
       "value": "pass",
-      "expected": "169510.316666667",
-      "actual": "169510.316666667",
+      "expected": "169801.983333333",
+      "actual": "169801.983333333",
       "tolerance": "1"
     },
     {
@@ -10229,24 +10463,24 @@
       "key": "check/SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45",
       "unit": "verdict",
       "value": "pass",
-      "expected": "13740",
-      "actual": "13740",
+      "expected": "14031.6666666667",
+      "actual": "14031.6666666667",
       "tolerance": "1"
     },
     {
       "key": "check/SA103F box 47 net profit (D129) = boxes 15 and 16 less box 31",
       "unit": "verdict",
       "value": "pass",
-      "expected": "169689.683333333",
-      "actual": "169689.683333333",
+      "expected": "169398.016666667",
+      "actual": "169398.016666667",
       "tolerance": "1"
     },
     {
       "key": "check/SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation",
       "unit": "verdict",
       "value": "pass",
-      "expected": "169689.683333333",
-      "actual": "169689.683333333",
+      "expected": "169398.016666667",
+      "actual": "169398.016666667",
       "tolerance": "1"
     },
     {
@@ -10365,8 +10599,8 @@
       "key": "check/SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60",
       "unit": "verdict",
       "value": "pass",
-      "expected": "13740",
-      "actual": "13740",
+      "expected": "14031.6666666667",
+      "actual": "14031.6666666667",
       "tolerance": "1"
     },
     {
@@ -11109,24 +11343,24 @@
       "key": "check/VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "4451.5",
-      "actual": "4451.5",
+      "expected": "4509.83333333333",
+      "actual": "4509.83333333333",
       "tolerance": "1"
     },
     {
       "key": "check/VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter",
       "unit": "verdict",
       "value": "pass",
-      "expected": "4451.5",
-      "actual": "4451.5",
+      "expected": "4509.83333333333",
+      "actual": "4509.83333333333",
       "tolerance": "1"
     },
     {
       "key": "check/VAT Q2: box 5 net due (G17) = box 3 (G13) - box 4 (G15)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "12805.1666666667",
-      "actual": "12805.1666666667",
+      "expected": "12746.8333333333",
+      "actual": "12746.8333333333",
       "tolerance": "1"
     },
     {
@@ -11141,16 +11375,16 @@
       "key": "check/VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "22388",
-      "actual": "22388",
+      "expected": "22679.6666666667",
+      "actual": "22679.6666666667",
       "tolerance": "1"
     },
     {
       "key": "check/VAT Q2: box 7 net purchases (G23) = scenario purchases net for the quarter",
       "unit": "verdict",
       "value": "pass",
-      "expected": "22388",
-      "actual": "22388",
+      "expected": "22679.6666666667",
+      "actual": "22679.6666666667",
       "tolerance": "1"
     },
     {
@@ -11813,8 +12047,8 @@
       "key": "check/Vatinterface H10: Aug purchases net = Purchases.xlsx Aug",
       "unit": "verdict",
       "value": "pass",
-      "expected": "3677.41666666667",
-      "actual": "3677.41666666667",
+      "expected": "3969.08333333333",
+      "actual": "3969.08333333333",
       "tolerance": "1"
     },
     {
@@ -11909,8 +12143,8 @@
       "key": "check/Vatinterface I11: quarter purchases net = its three period rows",
       "unit": "verdict",
       "value": "pass",
-      "expected": "22388",
-      "actual": "22388",
+      "expected": "22679.6666666667",
+      "actual": "22679.6666666667",
       "tolerance": "1"
     },
     {
@@ -11949,8 +12183,8 @@
       "key": "check/Vatinterface J10: Aug input VAT = Purchases.xlsx Aug",
       "unit": "verdict",
       "value": "pass",
-      "expected": "727.833333333333",
-      "actual": "727.833333333333",
+      "expected": "786.166666666667",
+      "actual": "786.166666666667",
       "tolerance": "1"
     },
     {
@@ -12045,8 +12279,8 @@
       "key": "check/Vatinterface K11: quarter input VAT = its three period rows",
       "unit": "verdict",
       "value": "pass",
-      "expected": "4451.5",
-      "actual": "4451.5",
+      "expected": "4509.83333333333",
+      "actual": "4509.83333333333",
       "tolerance": "1"
     },
     {
@@ -12510,10 +12744,10 @@
       "source": "cell/Financialaccounts.xlsx!SE Short!O85"
     },
     {
-      "key": "section/accounting-profit-to-tax-profit-bridge/add-depreciation-charged-in-the-accounts",
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
       "unit": "money",
-      "value": "13740",
-      "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B34"
+      "value": "14031.6666666667",
+      "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
@@ -12566,7 +12800,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
       "unit": "money",
-      "value": "171773.016666667",
+      "value": "171481.35",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B39"
     },
     {
@@ -12580,7 +12814,7 @@
       "value": "121513.016666667",
       "derivedFrom": [
         "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
-        "section/accounting-profit-to-tax-profit-bridge/add-depreciation-charged-in-the-accounts",
+        "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
         "section/accounting-profit-to-tax-profit-bridge/less-grants-taxed-as-other-business-income-below",
         "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
         "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-24",
@@ -12866,37 +13100,37 @@
       "source": "cell/Financialaccounts.xlsx!Income Tax!E18"
     },
     {
-      "key": "section/journal-category-vat-netting/advertising-promotion-purchases-a/downstream",
+      "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/downstream",
       "unit": "money",
-      "value": "3800",
+      "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B27"
     },
     {
-      "key": "section/journal-category-vat-netting/advertising-promotion-purchases-a/gross",
+      "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/gross",
       "unit": "money",
-      "value": "4560"
+      "value": "4910"
     },
     {
-      "key": "section/journal-category-vat-netting/advertising-promotion-purchases-a/net",
+      "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/net",
       "unit": "money",
-      "value": "3800"
+      "value": "4091.66666666667"
     },
     {
-      "key": "section/journal-category-vat-netting/advertising-promotion-purchases-a/residue",
+      "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/residue",
       "unit": "money",
-      "value": "0",
+      "value": "-0.000000000000",
       "derivedFrom": [
-        "section/journal-category-vat-netting/advertising-promotion-purchases-a/net",
-        "section/journal-category-vat-netting/advertising-promotion-purchases-a/downstream"
+        "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/net",
+        "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/downstream"
       ]
     },
     {
-      "key": "section/journal-category-vat-netting/advertising-promotion-purchases-a/vat",
+      "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/vat",
       "unit": "money",
-      "value": "760",
+      "value": "818.333333333333",
       "derivedFrom": [
-        "section/journal-category-vat-netting/advertising-promotion-purchases-a/gross",
-        "section/journal-category-vat-netting/advertising-promotion-purchases-a/net"
+        "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/gross",
+        "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/net"
       ]
     },
     {
@@ -12931,6 +13165,40 @@
       "derivedFrom": [
         "section/journal-category-vat-netting/bad-debts-written-off-sales-o/gross",
         "section/journal-category-vat-netting/bad-debts-written-off-sales-o/net"
+      ]
+    },
+    {
+      "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/downstream",
+      "unit": "money",
+      "value": "291.666666666667",
+      "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B49"
+    },
+    {
+      "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/gross",
+      "unit": "money",
+      "value": "350"
+    },
+    {
+      "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/net",
+      "unit": "money",
+      "value": "291.666666666667"
+    },
+    {
+      "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/residue",
+      "unit": "money",
+      "value": "0",
+      "derivedFrom": [
+        "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/net",
+        "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/downstream"
+      ]
+    },
+    {
+      "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/vat",
+      "unit": "money",
+      "value": "58.3333333333333",
+      "derivedFrom": [
+        "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/gross",
+        "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/net"
       ]
     },
     {
@@ -13615,7 +13883,7 @@
     {
       "key": "section/profit-forecast/forecast-general-expenses",
       "unit": "money",
-      "value": "149373.65",
+      "value": "149665.316666667",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C30"
     },
     {
@@ -13633,7 +13901,7 @@
     {
       "key": "section/profit-forecast/forecast-profit-before-tax",
       "unit": "money",
-      "value": "171773.016666667",
+      "value": "171481.35",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C34"
     },
     {
@@ -13645,7 +13913,7 @@
     {
       "key": "section/profit-forecast/forecast-tax-ni-liability",
       "unit": "money",
-      "value": "44133.3103333333",
+      "value": "43952.4769999999",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C46"
     },
     {
@@ -13663,25 +13931,25 @@
     {
       "key": "section/profit-forecast/national-insurance",
       "unit": "money",
-      "value": "3690.30033333333",
+      "value": "3684.467",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C45"
     },
     {
       "key": "section/profit-forecast/personal-allowance",
       "unit": "money",
-      "value": "1727.49166666671",
+      "value": "1873.32500000004",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C40"
     },
     {
       "key": "section/profit-forecast/profit-after-allowance",
       "unit": "money",
-      "value": "119957.525",
+      "value": "119520.025",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C41"
     },
     {
       "key": "section/profit-forecast/profit-before-tax",
       "unit": "money",
-      "value": "121685.016666667",
+      "value": "121393.35",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C39"
     },
     {
@@ -13693,7 +13961,7 @@
     {
       "key": "section/profit-forecast/tax-at-higher-rate",
       "unit": "money",
-      "value": "32903.0099999999",
+      "value": "32728.01",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C43"
     },
     {
@@ -13705,7 +13973,7 @@
     {
       "key": "section/profit-loss-account/advertising",
       "unit": "money",
-      "value": "3800",
+      "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B27"
     },
     {
@@ -13783,7 +14051,7 @@
     {
       "key": "section/profit-loss-account/operating-profit",
       "unit": "money",
-      "value": "171773.016666667",
+      "value": "171481.35",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B37"
     },
     {
@@ -13831,7 +14099,7 @@
     {
       "key": "section/profit-loss-account/profit-before-tax",
       "unit": "money",
-      "value": "171773.016666667",
+      "value": "171481.35",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B39"
     },
     {
@@ -13855,7 +14123,7 @@
     {
       "key": "section/profit-loss-account/total-admin-expenses",
       "unit": "money",
-      "value": "149373.65",
+      "value": "149665.316666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B35"
     },
     {
@@ -13957,7 +14225,7 @@
     {
       "key": "section/self-assessment-sa103f/advertising-and-entertainment-box-24",
       "unit": "money",
-      "value": "3800",
+      "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D94"
     },
     {
@@ -14065,7 +14333,7 @@
     {
       "key": "section/self-assessment-sa103f/net-profit-box-47",
       "unit": "money",
-      "value": "169689.683333333",
+      "value": "169398.016666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D129"
     },
     {
@@ -14113,7 +14381,7 @@
     {
       "key": "section/self-assessment-sa103f/total-additions-to-net-profit-box-61",
       "unit": "money",
-      "value": "13740",
+      "value": "14031.6666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D174"
     },
     {
@@ -14131,13 +14399,13 @@
     {
       "key": "section/self-assessment-sa103f/total-disallowable-expenses-box-46",
       "unit": "money",
-      "value": "13740",
+      "value": "14031.6666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
       "key": "section/self-assessment-sa103f/total-expenses-box-31",
       "unit": "money",
-      "value": "169510.316666667",
+      "value": "169801.983333333",
       "source": "cell/Financialaccounts.xlsx!SE Full!D122"
     },
     {
@@ -14348,11 +14616,11 @@
     },
     {
       "key": "section/vat-returns/purchases-invoiced-including-vat",
-      "value": "134992.25"
+      "value": "135342.25"
     },
     {
       "key": "section/vat-returns/purchases-net-of-vat",
-      "value": "112595.92"
+      "value": "112887.58"
     },
     {
       "key": "section/vat-returns/q1-covers-the-periods-ending",
@@ -14380,11 +14648,11 @@
     },
     {
       "key": "section/vat-returns/q2-period-ending-30-september-2026-box-4-vat-reclaimed-on-purchases",
-      "value": "4451.5"
+      "value": "4509.83"
     },
     {
       "key": "section/vat-returns/q2-period-ending-30-september-2026-box-5-net-vat-due",
-      "value": "12805.17"
+      "value": "12746.83"
     },
     {
       "key": "section/vat-returns/q3-covers-the-periods-ending",
@@ -14448,11 +14716,11 @@
     },
     {
       "key": "section/vat-returns/vat-due-for-the-year",
-      "value": "48420.33"
+      "value": "48362"
     },
     {
       "key": "section/vat-returns/vat-reclaimed-on-purchases",
-      "value": "22396.33"
+      "value": "22454.67"
     }
   ]
 }
