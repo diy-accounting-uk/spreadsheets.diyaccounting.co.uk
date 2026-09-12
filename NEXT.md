@@ -8,15 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `a498c77d` plus the Ltd generate and publish commits. `claude/ops-se-parity` carries the
-parity refresh and four fixes on top of it: the report splice, franked investment income, the
-Self Employed render declarations and the disallowable percentages. Its browser tier went from
-nine failures to none.
+Main is `6f6d2077` and green: `test`, `deploy` and `codeql` all pass on the merge commit below
+it, the four generate workflows pass with tests enabled, and `diya-gl` publishes again -- 1.2.7
+and 1.2.8 both released, tagged and rolled.
 
-`claude/b13-board` holds CQ-17 and CQ-19, merged with main and verified.
-
-`claude/docs-test-strategy` is fully on main but `git branch -d` refuses it; deleting it is the
-operator's.
+No branch holds unlanded work. `claude/docs-test-strategy` is fully on main but `git branch -d`
+refuses it, and twelve merged branches sit on the remote; deleting either is the operator's.
 
 ## Context for the open rows
 
@@ -44,8 +41,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine-only | — | ready-to-resume | built and green on `claude/b13-board`; needs a PR |
-| CQ-19 | The recalculation cache, keyed on the workbook buffers, the cell writes, the engine source, the soffice version and the UTC date, so a fixture recalculates once per change rather than once per run. Its own test proves the work happens once and again when an input moves | none | machine-only | — | ready-to-resume | same branch; the calc tier ran 15m30s under it |
 | CQ-20 | `app/lib/calculators/ltd.js` carries no disallowable treatment, so the Company computation deducts client entertaining in full. SET-2 and SET-3 have just closed the same gap for Self Employed, and the shared master fixture now carries the £350 client dinner that exercises it | none | machine-only | — | ready-to-start | follow SET-2 and SET-3's landed shape; Sonnet |
 | CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | ready-to-start | one file; Haiku |
 | CQ-25 | Nothing on the Self Employed page shows the disallowable figures SET-2 and SET-3 added. The entertainment memo at `Profit & Loss Account!B49` and its twelve months, box 46's add-back, and the two journal categories are all declared unrenderable in `app/data/render-unrepresentable/se.json`, which is accurate today and is why the render-coverage gate passes: the P&L view renders the statement B5 to B39 and stops, and the page has no profit-bridge or VAT-netting view at all. A trader who enters client entertaining sees the money leave and never sees what it does to the tax. Either the P&L view carries a memo block under the statement, or the SA103F view carries the bridge | PLAN_SE_TEMPLATE_GAPS.md | human and machine | — | ready-to-start | the operator picks which view carries it; building it is a session's |
