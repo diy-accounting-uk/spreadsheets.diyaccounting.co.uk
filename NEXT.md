@@ -8,16 +8,18 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `1839cf95`. All four generate workflows pass with tests enabled, and `examples/`,
-`reports/` and `packages/` are freshly generated from the templates as they stand. A `test`, a
-`deploy` and a `generate-ltd` with `reconcile-all` are running against that commit.
+Main is `a498c77d`. All four generate workflows pass with tests enabled, `generate-ltd` has run
+green with `reconcile-all` across 91 legs, and `diya-gl` 1.2.6 is published, tagged on `1839cf95`
+and recorded, with main rolled to 1.2.7.
 
-`claude/b13-board` is the one branch holding unlanded work (CQ-17 and CQ-19). It predates the
-generate-pipeline repair, so its `scripts/test-scope.mjs`, its four `generate-*.yml` and its
-`test.yml` are all superseded by main: merge main into it before touching anything else on it.
+`main`'s `test` run is red on two things. PR #105 clears the parity gate. The browser tier is
+CQ-22 and CQ-23, both of them work that landed today.
+
+`claude/b13-board` holds CQ-17 and CQ-19, merged with main and verified: unit, calc and infra
+green, and the two tiers it fails are main's own, not the branch's.
 
 `claude/docs-test-strategy` is fully on main but `git branch -d` refuses it; deleting it is the
-operator's. Eight merged branches remain on the remote.
+operator's.
 
 ## Context for the open rows
 
@@ -45,15 +47,15 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-14 | Three browser spec sites still drive undo with `page.locator("#undo-btn").click()` and then assert recomputed state: `diya-gl-taxi-takings` at the day-takings check, and `diya-gl-bst-edits` at both the year table and the mobile button's landscape check. The click resolves before the recalculation it starts has landed. Move those three onto `window.DiyaGlPage.undo()`; the sites asserting only the button's own visibility are fine as they are | none | machine | — | ready-to-resume | the rest of the sweep is on main; three sites left |
-| CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine | — | ready-to-resume | built on `claude/b13-board`; merge main into it first |
-| CQ-19 | The recalculation cache, keyed on the workbook buffers, the cell writes, the engine source, the soffice version and the UTC date, so a fixture recalculates once per change rather than once per run. Its own test proves the work happens once and again when an input moves | none | machine | — | ready-to-resume | same branch as CQ-17 |
-| CQ-20 | The Company computation deducts client entertaining in full. `app/lib/calculators/ltd.js` carries no disallowable treatment at all, and `CorporationTax` `I6`/`I9` are free, so the Ltd product has the gap SET-2 and SET-3 have just closed for Self Employed. Same shape: a column on the entry sheet, a disallowable percentage, and the computation reading net of it | none | machine | — | ready-to-start | follow SET-2 and SET-3's landed shape; Sonnet |
-| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine | — | ready-to-start | one file; Haiku |
-| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine | — | ready-to-start | SET-3 landed in #97; three boxes each need a decision written into the plan's 3.4 |
-| H-PR-102 | Merge PR #102, which sequences this board by what completion needs rather than by owner | operator | human | — | ready-to-start | open on `claude/docs-board-needs` |
-| H-SB-1a | Fill `donate-links.toml`'s `[ci]` section with real test-mode Payment Links: `STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js`, which mints them and writes the section. Until then ci's donate page carries placeholder URLs that 404 rather than live links that take a real payment | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | needs a test-mode Stripe key the session does not hold |
-| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine | H-SB-1a | blocked-to-start | needs real test-mode links before a donation can be driven |
+| CQ-17 | Nothing keeps `deploy.yml`'s `paths:` filter in step with what `scripts/build-diya-gl-bundle.mjs` copies into `public/`. The filter is a hand-maintained guess at the generator and has been wrong once already, silently: a change to deployed content fires no deploy and prod serves the old copy until the 07:17 schedule. Extract every source path the generator reads and assert each is covered by one of the filter's globs, as a CI check | none | machine-only | — | ready-to-resume | built and green on `claude/b13-board`; needs a PR |
+| CQ-19 | The recalculation cache, keyed on the workbook buffers, the cell writes, the engine source, the soffice version and the UTC date, so a fixture recalculates once per change rather than once per run. Its own test proves the work happens once and again when an input moves | none | machine-only | — | ready-to-resume | same branch; the calc tier ran 15m30s under it |
+| CQ-20 | `app/lib/calculators/ltd.js` carries no disallowable treatment, so the Company computation deducts client entertaining in full. SET-2 and SET-3 have just closed the same gap for Self Employed, and the shared master fixture now carries the £350 client dinner that exercises it | none | machine-only | — | ready-to-start | follow SET-2 and SET-3's landed shape; Sonnet |
+| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | ready-to-start | one file; Haiku |
+| CQ-22 | The Self Employed page renders none of what SET-2 and SET-3 added, so `diya-gl-render-coverage` fails on all three SE scenarios with 26 S2 keys neither rendered nor declared: `Profit & Loss Account!B49` to `N49`, the entertainment row's twelve months and its total; `add-disallowable-expenses-added-back-box-46`; and two whole journal categories, `advertising-promotion-entertainment-purchases-a` and `business-entertainment-memo-purchases-e`, five keys each | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | SET-2 and SET-3's remainder; the page's render map and its declared list |
+| CQ-23 | Franked investment income does not survive the roundtrip. `examples/precision-code-ltd/full/book.toml` carries 20,000.00, `app/products/ltd.js` writes it and the sheet computes from it, but the engine reading the saved package back gives zero: `CT600!Z114` S3=20000.00 S2=0.00, `CorporationTax!K29` the same, `K30` 144,128.23 against 124,128.23. Augmented profits and every marginal relief figure below them move with it, so `W137`, `AJ145`, `AJ159`, `AJ166`, `Y133` and `Y135` all differ. Three Ltd browser specs fail on it. The extraction path is where to look; the write path is already right | none | machine-only | — | ready-to-start | `NOT_IN_SAVED_PACKAGE_UNTIL_REGENERATED` in `diya-gl-ltd-equivalence` excepts these keys only while they are absent from S3, so regeneration has retired it |
+| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | three boxes each need a decision written into the plan's 3.4 |
+| H-SB-1a | Fill `donate-links.toml`'s `[ci]` section with real test-mode Payment Links: `STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js`, which mints them and writes the section. Until then ci's donate page carries placeholder URLs that 404 rather than live links that take a real payment | PLAN_DIYA_GL_LAUNCH.md | human and machine | — | ready-to-start | the operator holds the test-mode key; the script does the rest |
+| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | H-SB-1a | blocked-to-start | needs real test-mode links before a donation can be driven |
 
 
 ## Plans not tracked here
