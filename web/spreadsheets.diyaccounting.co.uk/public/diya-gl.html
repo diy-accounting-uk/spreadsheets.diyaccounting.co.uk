@@ -300,6 +300,20 @@
             <tr><td><code>tax.corporationTax.mainRateThreshold</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
             <tr><td><code>tax.corporationTax.associatedCompanies</code></td><td>integer</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
             <tr><td><code>tax.corporationTax.frankedInvestmentIncome</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment</code></td><td>table</td><td>&mdash;</td><td>The trader's own disallowable proportion of each expense category -- private use or otherwise not allowable -- behind SA103F boxes 32 to 45. Entered on the package's VitalTax sheet, not a rate any year file carries. Business entertainment and depreciation take no proportion: they are wholly disallowable and have their own boxes.</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.costOfGoods</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.paymentsToSubcontractors</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.wagesAndStaffCosts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.carVanTravelExpenses</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.premisesRunningCosts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.maintenanceCosts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.adminCosts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.advertisingCosts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.interestOnBankOtherLoans</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.financeCharges</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.irrecoverableDebts</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.professionalFees</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
+            <tr><td><code>tax.selfEmployment.otherExpenses</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
             <tr><td><code>tax.capitalAllowances</code></td><td>table</td><td>&mdash;</td><td>HMRC capital allowance rates</td><td>optional</td></tr>
             <tr><td><code>tax.capitalAllowances.annualInvestmentAllowance</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
             <tr><td><code>tax.capitalAllowances.mainRateWDA</code></td><td>number</td><td>&mdash;</td><td>&mdash;</td><td>optional</td></tr>
