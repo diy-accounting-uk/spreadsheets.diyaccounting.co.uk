@@ -134,7 +134,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "diya-gl-v${{ steps.version.outputs.version }}" -m "diya-gl ${{ steps.version.outputs.version }}"
-          git push origin "diya-gl-v${{ steps.version.outputs.version }}"
+          # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, so
+          # otherwise tagging runs the pre-push router in a job that has Node alone --
+          # no JDK for the infra tier, no browsers for the browser tier.
+          git push --no-verify origin "diya-gl-v${{ steps.version.outputs.version }}"
 
       - name: Record the release and rebuild the reconciled-releases page
         if: ${{ steps.version.outputs.publish == 'true' }}
@@ -164,7 +167,7 @@ jobs:
           git restore .
           git fetch origin main
           git rebase origin/main
-          git push origin HEAD:main
+          git push --no-verify origin HEAD:main
 
       - name: Retry push after delay
         if: ${{ steps.version.outputs.publish == 'true' && steps.push.outcome == 'failure' }}
@@ -176,4 +179,4 @@ jobs:
           git restore .
           git fetch origin main
           git rebase origin/main
-          git push origin HEAD:main
+          git push --no-verify origin HEAD:main
