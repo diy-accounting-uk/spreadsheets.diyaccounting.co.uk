@@ -1654,6 +1654,13 @@ export function normaliseLine(line) {
 // the name there and the address on the Payslips employer block; Ltd keeps
 // everything on OpenAccounts, with the registered office in J3:J6 and the
 // postcode in N6.
+// The two Corporation Tax figures the company enters. app/products/ltd.js
+// writes them from ADMIN_ASSOCIATED_COMPANIES_CELL and
+// OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL; they are restated here rather
+// than imported, because the writer imports this file.
+const LTD_FRANKED_INVESTMENT_INCOME_CELL = "Q6";
+const LTD_ASSOCIATED_COMPANIES_CELL = "P14";
+
 const ENTITY_CELLS = {
   bst: {
     file: null,
@@ -2466,6 +2473,29 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
 
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? await taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product, options.readRateData) : {};
+
+  // The two Corporation Tax figures the company enters rather than the year's
+  // rate file carrying them, so taxTablesForPackage has no source for either
+  // and only the sheet does. Both are written on the way in, and without this
+  // a package read back has neither: augmented profits then drop the franked
+  // investment income and marginal relief is charged on the wrong profit, and
+  // the associated-companies divisor falls back to one company.
+  if (product === "ltd") {
+    const companyFigures = {
+      frankedInvestmentIncome: entitySheet
+        ? numberAt(entitySheet.xml, LTD_FRANKED_INVESTMENT_INCOME_CELL, entitySheet.sharedStrings)
+        : undefined,
+      associatedCompanies: adminSheet ? numberAt(adminSheet.xml, LTD_ASSOCIATED_COMPANIES_CELL, adminSheet.sharedStrings) : undefined,
+    };
+    // Zero is carried like any other figure, because the writer sets both
+    // cells whether or not the book states them: a package always holds both,
+    // so reading them back always is the symmetric half.
+    for (const [field, value] of Object.entries(companyFigures)) {
+      if (value === undefined) continue;
+      if (!tax.corporationTax) tax.corporationTax = {};
+      tax.corporationTax[field] = value;
+    }
+  }
 
   const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {

@@ -283,16 +283,6 @@
       "reason": "The self-employment year files declare one writing_down_allowance rate. The special rate pool is a Company distinction their capital allowance block does not draw."
     },
     {
-      "path": "tax.corporationTax.associatedCompanies",
-      "products": ["ltd"],
-      "reason": "No app/data year file carries a count of associated companies: it is a fact about the group a company sits in, not a rate the generator applied."
-    },
-    {
-      "path": "tax.corporationTax.frankedInvestmentIncome",
-      "products": ["ltd"],
-      "reason": "No app/data year file carries the exempt distributions a company received: it is a figure from the company's own year, not a rate the generator applied."
-    },
-    {
       "path": "tax.incomeTax.additionalRate",
       "products": ["ltd"],
       "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
