@@ -51,7 +51,18 @@ const PAGES = ["bst.html", "se.html", "taxi.html", "ltd.html"];
 // that only runs under Node fails loudly in a browser rather than quietly
 // returning nothing.
 const NODE_STUBS = {
-  fs: ["readFileSync", "writeFileSync", "existsSync", "readdirSync", "mkdirSync", "rmSync", "cpSync", "statSync"],
+  fs: [
+    "readFileSync",
+    "writeFileSync",
+    "existsSync",
+    "readdirSync",
+    "mkdirSync",
+    "rmSync",
+    "cpSync",
+    "statSync",
+    "appendFileSync",
+    "renameSync",
+  ],
   path: ["resolve", "dirname", "basename", "join", "extname", "relative"],
   url: ["fileURLToPath", "pathToFileURL"],
   os: ["tmpdir", "platform", "homedir"],

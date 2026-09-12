@@ -53,6 +53,7 @@
     "lint:workflows": "./scripts/validate-workflows.sh",
     "test": "node scripts/test-scope.mjs",
     "gate:fixtures": "node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/",
+    "gate:deploy-filter": "node scripts/check-deploy-filter-coverage.mjs",
     "test:browser": "node app/bin/build-sitemaps.js ; node scripts/build-donate-page.mjs ; node scripts/build-provenance-data.mjs ; node scripts/build-diya-gl-bundle.mjs ; node scripts/build-runner.mjs ; npx playwright test --project=browser-tests",
     "test:spreadsheetsBehaviour": "bash -c 'set -o pipefail; npx playwright test --project=spreadsheetsBehaviour 2>&1 | tee spreadsheetsBehaviour.log'",
     "test:spreadsheetsBehaviour-local": "SPREADSHEETS_BASE_URL=http://localhost:3000 npm run test:spreadsheetsBehaviour",
