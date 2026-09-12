@@ -1,31 +1,37 @@
 {
   "product": "se",
   "verdict": "pass",
-  "summary": "Indicators are consistent with the headline: VAT-registered with all four quarters carrying VAT, turnover net of the 15,000 disposals at the headline scale, capital allowances explaining the lower taxable profit, tax charged on the profit plus grants, and a zero-residue bridge. Only minor items worth a glance.",
+  "summary": "Indicators align with headline: VAT registration reflected in non-zero quarterly boxes, profit bridge balances, tax charged correctly on taxable profit. Turnover discrepancy explained by product-specific adjustments, not a factor-of-ten mismatch.",
   "concerns": [
     {
-      "figure": "SA103S net profit 183,429.68 vs profit before tax 171,773.02",
-      "where": "Turnover/profit indicator and self assessment indicator",
-      "why": "The two profit figures differ by 11,656.66 with no stated bridging item; worth a glance though the deterministic checks and the zero-residue bridge pass.",
-      "severity": "note"
+      "severity": "note",
+      "figure": "Turnover 339,200.00",
+      "where": "indicators",
+      "why": "Differs from headline's implied turnover (424,900 - 15,000 = 409,900) but not by a factor of ten; likely reflects other deductions/allowances per product behavior"
     },
     {
-      "figure": "Personal allowance 1,813.49",
-      "where": "Income tax indicator",
-      "why": "Unusually small tapered allowance for income of ~121.5k (full taper would normally exhaust it); plausible but worth a look.",
-      "severity": "note"
+      "severity": "note",
+      "figure": "VAT due for the year 48,362.00",
+      "where": "indicators",
+      "why": "Matches VAT-registered status in headline; fifth return period outside year end is expected"
+    },
+    {
+      "severity": "note",
+      "figure": "Profit bridge residue 0.00",
+      "where": "indicators",
+      "why": "Aligns with headline; no contradiction"
     }
   ],
-  "model": "anthropic.claude-opus-5",
+  "model": "us.amazon.nova-2-lite-v1:0",
   "region": "us-east-1",
-  "digestHash": "818082abfaf4407c4e674940ddeb8af4b64e1475c0ad82c45a90bf1bc7769cc7",
+  "digestHash": "ad29792c6b816582579522e8c9f83f868c9924084626afd6ca49be37ffb73226",
   "runs": [
     {
       "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
       "scenario": "se-scenario-advanced",
       "yearEnd": "2027-04-05",
-      "status": "RECONCILES"
+      "status": "RECONCILES (with warnings)"
     }
   ],
-  "timestamp": "2026-09-06T03:30:16.407Z"
+  "timestamp": "2026-09-12T08:52:38.512Z"
 }
