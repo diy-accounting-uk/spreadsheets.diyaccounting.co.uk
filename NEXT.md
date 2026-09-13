@@ -8,13 +8,14 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `712594a5` and green again: PR #107 put the licence header on `.github/FUNDING.yml`, which
-had failed `test` and `update` on `193777cc`. Prod serves `2c047a2a`; `deploy` fires on the next
-push that reaches its paths filter or at 07:17 UTC. The four generate workflows pass with tests
-enabled, and `diya-gl` publishes again -- 1.2.7 and 1.2.8 both released, tagged and rolled.
+Main is `8f32709d`. PR #107 put the licence header on `.github/FUNDING.yml`, which had failed
+`test` and `update` on `193777cc`; `test` and `codeql` are running on the merge. Prod serves
+`2c047a2a`; `deploy` fires on the next push that reaches its paths filter or at 07:17 UTC. The
+four generate workflows pass with tests enabled, and `diya-gl` publishes again -- 1.2.7 and 1.2.8
+both released, tagged and rolled.
 
-No branch holds unlanded work. `claude/docs-test-strategy` is fully on main but `git branch -d`
-refuses it, and thirteen merged branches sit on the remote; deleting either is the operator's.
+`claude/ops-donate-ci-links` (PR #108) is the only branch off main: the ci donate links, checks
+running.
 
 ## Context for the open rows
 
