@@ -118,7 +118,9 @@ test.describe("download.html — GA4 events", () => {
     // carries no runners/ directory -- fulfil the request so the download
     // attribute still completes and the click handler's own event fires.
     // The download attribute means this never navigates the tab regardless.
-    await page.route("**/runners/diya-gl-bst.html", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" }));
+    await page.route("**/runners/diya-gl-bst.html", (route) =>
+      route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" }),
+    );
     const [download] = await Promise.all([page.waitForEvent("download"), page.click("#runner-bst-link")]);
     await download.cancel();
 
