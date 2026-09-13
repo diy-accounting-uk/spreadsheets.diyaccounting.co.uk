@@ -101,8 +101,11 @@ a task can be stopped, and a completed one stops notifying.
   3. `human-only` rows that can be done now: `ready-to-start`, `ready-to-resume`;
   4. blocked rows of any class: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
   5. rows gated by a date, whatever their class.
-  Within a band, precursors come before their dependants, then `CQ-n` rows, then product order
-  BST, SE, Taxi, Ltd. `D` rows follow the four bands in the render and are never written back.
+  Within a band: `in-flight` rows first; then the rows that can start, by the size of the change,
+  fewest files first, read from the `~n files` count in `Status` (a row without a count follows
+  the counted ones); a precursor stays ahead of its dependants whatever their sizes; equal sizes
+  run `CQ-n` rows first, then product order BST, SE, Taxi, Ltd. `D` rows follow the four bands in
+  the render and are never written back.
 - One row per discrete task. When a plan defines tasks, the board carries one row per
   task, never one per wave or bullet; grouping is visible through `Precursors`.
 - Verification is never a human row. Confirming a deploy, checking a page loads, looking
