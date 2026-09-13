@@ -113,6 +113,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Notify the homebrew tap of the new release
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        run: |
+          if [ -z "${HOMEBREW_DISPATCH_TOKEN:-}" ]; then
+            echo "::error::The HOMEBREW_DISPATCH_TOKEN repository secret is not set. Add a fine-grained PAT scoped to diy-accounting-uk/homebrew-diya-gl with Contents: read and write, then set it as a repository secret."
+            exit 1
+          fi
+          curl -sS -f -X POST \
+            -H "Authorization: Bearer ${HOMEBREW_DISPATCH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/diy-accounting-uk/homebrew-diya-gl/dispatches \
+            -d '{"event_type":"diya-gl-published","client_payload":{"version":"${{ steps.version.outputs.version }}"}}'
+        env:
+          HOMEBREW_DISPATCH_TOKEN: ${{ secrets.HOMEBREW_DISPATCH_TOKEN }}
+
       - name: Find the packed tarball
         if: ${{ steps.version.outputs.publish == 'true' }}
         id: tarball
