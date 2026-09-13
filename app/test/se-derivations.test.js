@@ -580,46 +580,116 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       expect(nonGapWarnings.every((w) => typeof w.reason === "string" && w.reason.length > 0)).toBe(true);
     });
 
-    it(`${fixture}: annual submission never carries the seven allowance/adjustment fields with no cell, and each is warned by box`, () => {
+    it(`${fixture}: annual submission never carries the fields with no cell and no book statement, and each is warned by box`, () => {
       const { annual } = derive(fixture, TAX_APR27);
+      const statesAnnualFigures = fixture === "se-scenario-advanced";
       expect(Object.keys(annual.allowances).sort()).toEqual(
-        ["annualInvestmentAllowance", "allowanceOnSales", "capitalAllowanceMainPool", "enhancedCapitalAllowance"].sort(),
+        [
+          "annualInvestmentAllowance",
+          "allowanceOnSales",
+          "capitalAllowanceMainPool",
+          "capitalAllowanceSpecialRatePool",
+          "enhancedCapitalAllowance",
+          ...(statesAnnualFigures ? ["zeroEmissionsCarAllowance", "structuredBuildingAllowance"] : []),
+        ].sort(),
       );
       expect(Object.keys(annual.adjustments).sort()).toEqual(
-        ["balancingChargeOther", "goodsAndServicesOwnUse", "outstandingBusinessIncome"].sort(),
+        [
+          "balancingChargeOther",
+          "goodsAndServicesOwnUse",
+          "outstandingBusinessIncome",
+          ...(statesAnnualFigures ? ["includedNonTaxableProfits", "accountingAdjustment"] : []),
+        ].sort(),
       );
       const warningFields = annual.warnings.map((w) => w.field);
-      for (const field of [
-        "allowances.capitalAllowanceSpecialRatePool",
+      const neverSourced = [
         "allowances.capitalAllowanceSingleAssetPool",
-        "allowances.zeroEmissionsCarAllowance",
-        "allowances.structuredBuildingAllowance",
         "allowances.enhancedStructuredBuildingAllowance",
         "allowances.businessPremisesRenovationAllowance",
         "adjustments.balancingChargeBpra",
-        "adjustments.includedNonTaxableProfits",
         "adjustments.basisAdjustment",
-        "adjustments.accountingAdjustment",
         "adjustments.transitionProfitAmount",
         "adjustments.transitionProfitAccelerationAmount",
+      ];
+      const bookStated = [
+        "allowances.zeroEmissionsCarAllowance",
+        "allowances.structuredBuildingAllowance",
+        "adjustments.includedNonTaxableProfits",
         "adjustments.goodsAndServicesOwnUse",
-      ]) {
-        expect(warningFields).toContain(field);
+      ];
+      for (const field of neverSourced) expect(warningFields).toContain(field);
+      for (const field of bookStated) {
+        if (statesAnnualFigures) expect(warningFields).not.toContain(field);
+        else expect(warningFields).toContain(field);
       }
+      // Box 71 is warned either way: unstated it stays blank; stated, the
+      // sheet carries it into box 77 but not box 73.
+      expect(warningFields).toContain("adjustments.accountingAdjustment");
+    });
+
+    it(`${fixture}: the stated annual figures come through as the book states them`, () => {
+      const { annual, scenario, book, lines } = derive(fixture, TAX_APR27);
+      const stated = scenario
+        ? { allowances: scenario.annual_allowances, adjustments: scenario.annual_adjustments }
+        : book.tax?.selfEmployment;
+      if (!stated?.allowances) return;
+      expect(annual.allowances.zeroEmissionsCarAllowance).toBe(stated.allowances.zeroEmissionsCarAllowance);
+      expect(annual.allowances.structuredBuildingAllowance).toBe(stated.allowances.structuredBuildingAllowance);
+      expect(annual.adjustments.includedNonTaxableProfits).toBe(stated.adjustments.includedNonTaxableProfits);
+      expect(annual.adjustments.accountingAdjustment).toBe(stated.adjustments.accountingAdjustment);
+      expect(annual.adjustments.goodsAndServicesOwnUse).toBe(stated.adjustments.goodsAndServicesOwnUse);
+      const box71 = annual.warnings.find((w) => w.field === "adjustments.accountingAdjustment");
+      const seFull = calculateSeCells(book, lines, TAX_APR27, scenario)["SE Full"];
+      expect(box71.handComputed).toBeCloseTo(seFull.O174 + stated.adjustments.accountingAdjustment, 2);
     });
   }
+
+  it("box 51 files the special rate pool the schedule computes: the marked asset's tax written-down value at the special rate", () => {
+    const { annual, scenario } = derive("se-scenario-advanced", TAX_APR27);
+    const specialAssets = scenario.opening_fixed_assets.filter((asset) => asset.pool === "special");
+    expect(specialAssets).toHaveLength(1);
+    const expected = specialAssets[0].tax_wdv * TAX_APR27.capital_allowances.writing_down_allowance_special;
+    expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeCloseTo(expected, 2);
+    expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeGreaterThan(0);
+    // The main pool no longer carries the marked asset.
+    const mainWdv = scenario.opening_fixed_assets.filter((asset) => asset.pool !== "special").reduce((t, a) => t + (a.tax_wdv || 0), 0);
+    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(mainWdv * TAX_APR27.capital_allowances.writing_down_allowance, 2);
+    expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSpecialRatePool");
+  });
+
+  it("a box 52 figure stated for a year whose schema dropped the field is not filed, and the warning carries it", () => {
+    const { book, lines, scenario } = loadFixture("se-scenario-advanced");
+    const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, zeroEmissionsGoodsVehicleAllowance: 900 } };
+    const later = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario: stating });
+    expect(later.allowances.zeroEmissionsGoodsVehicleAllowance).toBeUndefined();
+    const dropped = later.warnings.find((w) => w.field === "allowances.zeroEmissionsGoodsVehicleAllowance");
+    expect(dropped.handComputed).toBe(900);
+    expect(dropped.reason).toMatch(/no longer accepts/);
+    const earlier = buildSelfEmploymentAnnualSubmission(book, lines, TAX_DATA_BY_YEAR["2024-25"], { scenario: stating });
+    expect(earlier.allowances.zeroEmissionsGoodsVehicleAllowance).toBe(900);
+  });
+
+  it("a stated box 54 figure joins box 55 under enhancedCapitalAllowance, HMRC's primary field for both boxes", () => {
+    const { book, lines, scenario } = loadFixture("se-scenario-advanced");
+    const base = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario });
+    const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, electricChargePointAllowance: 450 } };
+    const withChargePoint = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario: stating });
+    expect(withChargePoint.allowances.enhancedCapitalAllowance).toBeCloseTo(base.allowances.enhancedCapitalAllowance + 450, 2);
+    expect(withChargePoint.allowances.electricChargePointAllowance).toBeUndefined();
+    expect(withChargePoint.warnings.find((w) => w.field === "allowances.electricChargePointAllowance").handComputed).toBe(450);
+  });
 });
 
 describe("the derivations — the boxes with no cell really do read blank in the engine", () => {
   for (const fixture of FIXTURES) {
-    it(`${fixture}: SE Full D147, D152, D156, D160, O139 and D179 are blank`, () => {
+    it(`${fixture}: the stated boxes are blank only where the book states nothing`, () => {
       const { book, lines, scenario: fixtureScenario } = loadFixture(fixture);
       const scenario = fixtureScenario || undefined;
       const results = calculateSeCells(book, lines, TAX_APR27, scenario);
       const seFull = results["SE Full"];
-      for (const cell of ["D147", "D152", "D156", "D160", "O139", "D179"]) {
-        expect(typeof seFull[cell]).not.toBe("number");
-      }
+      const stated = fixture === "se-scenario-advanced";
+      for (const cell of ["D152", "O139"]) expect(typeof seFull[cell]).not.toBe("number");
+      for (const cell of ["D156", "D160", "D179", "D210"]) expect(typeof seFull[cell] === "number").toBe(stated);
     });
   }
 });
@@ -807,5 +877,12 @@ describe("setPath — a mapping field name cannot reach the prototype chain", ()
     const target = {};
     setPath(target, "periodIncome.turnover", 123.45);
     expect(target).toEqual({ periodIncome: { turnover: 123.45 } });
+  });
+
+  it("never reuses an inherited property as an intermediate node", () => {
+    const target = {};
+    setPath(target, "toString.polluted", "evil");
+    expect(Object.prototype.toString.polluted).toBeUndefined();
+    expect(target.toString).toEqual({ polluted: "evil" });
   });
 });

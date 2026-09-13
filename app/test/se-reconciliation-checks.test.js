@@ -626,7 +626,7 @@ describeCalc(
       // The full return totals the same three allowance boxes, so losing one
       // breaks its box 56 alongside the bridge.
       expect(failureNames(corruptedChecks)).toEqual([
-        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25",
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54",
         PROFIT_BRIDGE_CHECK,
       ]);
       expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);

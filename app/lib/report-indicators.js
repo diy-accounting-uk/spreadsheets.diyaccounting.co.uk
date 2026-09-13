@@ -228,6 +228,22 @@ const SA103F = "Self Assessment (SA103F)";
 // A report predating the SA103F checks carries no such section; the line is
 // left out of that digest rather than failing it, the same way vatLine treats
 // a report with no VAT Returns section.
+// The boxes the trader states on the full return alone. The short return has
+// no box for any of them, so wherever one carries a figure the two returns'
+// allowance totals and taxable profits stand apart by exactly that figure.
+const SE_FULL_ONLY_ALLOWANCES = [
+  "Zero-emission goods vehicle allowance (box 52)",
+  "Zero-emission car allowance (box 52.1)",
+  "Structures and Buildings Allowance (box 53)",
+  "Electric charge-point allowance (box 54)",
+];
+const SE_FULL_ONLY_DEDUCTION = "Income included but not taxable as business profits (box 62)";
+const SE_ACCOUNTING_ADJUSTMENT = "Adjustment for change of accounting practice (box 71)";
+
+function statedBoxes(report, labels) {
+  return labels.map((label) => ({ label, figure: value(report, SA103F, label) })).filter((box) => box.figure !== null && box.figure !== 0);
+}
+
 function sa103fLine(report) {
   if (!report.sections.has(SA103F)) return null;
   const shortExpenses = requireValue(report, SA103S, "Total expenses");
@@ -236,12 +252,46 @@ function sa103fLine(report) {
   const fullExpenses = requireValue(report, SA103F, "Total expenses (box 31)");
   const fullNetProfit = requireValue(report, SA103F, "Net profit (box 47)");
   const capitalAllowances = requireValue(report, SA103F, "Total capital allowances (box 57)");
-  return [
+  const fullOnlyAllowances = statedBoxes(report, SE_FULL_ONLY_ALLOWANCES);
+  const parts = [
     "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not.",
     `Total expenses (box 31) ${amount(fullExpenses)} = the short return's total expenses ${amount(shortExpenses)} plus total disallowable expenses (box 46) ${amount(disallowable)};`,
     `net profit (box 47) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)};`,
-    `total capital allowances (box 57) ${amount(capitalAllowances)} sums the same allowances split across more boxes than the short return uses.`,
-  ].join(" ");
+  ];
+  if (fullOnlyAllowances.length === 0) {
+    parts.push(
+      `total capital allowances (box 57) ${amount(capitalAllowances)} sums the same allowances split across more boxes than the short return uses.`,
+    );
+  } else {
+    const shortAllowances = ["Capital allowances", "AIA / WDA claimed", "Other capital allowances"].reduce(
+      (sum, label) => sum + requireValue(report, SA103S, label),
+      0,
+    );
+    parts.push(
+      `total capital allowances (box 57) ${amount(capitalAllowances)} = the short return's allowance boxes ${amount(shortAllowances)} plus the allowances stated on the full return alone, which the short return has no box for (${fullOnlyAllowances.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}).`,
+    );
+  }
+  const accountingAdjustment = value(report, SA103F, SE_ACCOUNTING_ADJUSTMENT);
+  if (accountingAdjustment !== null && accountingAdjustment !== 0) {
+    parts.push(
+      `The sheet carries the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; adjusted profit (box 73) repeats box 64, and the warning names the figure HMRC's working sheet would add.`,
+    );
+  }
+  return parts.join(" ");
+}
+
+// The income tax computation charges the full return's total taxable profits
+// (box 76), which the short return's own figure restates only while no box
+// stated on the full return alone carries a figure.
+function profitForTaxLine(report, grants, shortForTax) {
+  const opening = `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(shortForTax)}`;
+  const fullOnly = report.sections.has(SA103F) ? statedBoxes(report, [...SE_FULL_ONLY_ALLOWANCES, SE_FULL_ONLY_DEDUCTION]) : [];
+  if (fullOnly.length === 0) return `${opening}, which is the profit the income tax computation charges.`;
+  const fullForTax = requireValue(report, SA103F, "Total taxable profits from this business (box 76)");
+  return (
+    `${opening} on the short return; the income tax computation charges the full return's total taxable profits (box 76) of ${amount(fullForTax)}, ` +
+    `${amount(shortForTax - fullForTax)} below it by the boxes stated on the full return alone (${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}).`
+  );
 }
 
 // The SA103S splits capital allowances across several boxes. Naming the first one alone
@@ -370,7 +420,7 @@ function seIndicators(report, vatRegistered) {
       to: "Net business profit",
       toLabel: "net business profit",
     }),
-    `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(forTax)}, which is the profit the income tax computation charges.`,
+    profitForTaxLine(report, grants, forTax),
     sa103fLine(report),
     incomeTaxLine(report, "Income Tax Calculation"),
     vatLine(report, vatRegistered),

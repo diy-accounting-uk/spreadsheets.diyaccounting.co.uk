@@ -304,28 +304,42 @@ describe("the VAT indicator", () => {
 describe("buildIndicators for the Self Employed", () => {
   const text = indicatorText("se", "seAdvanced", { vatRegistered: true });
 
-  // 192,469.48 less 52,500.00 and 11,500.00 is 128,469.48. Naming only the 52,500.00 left an
-  // 11,500.00 hole between two figures printed side by side, which is what a reviewer sees.
+  // 192,469.48 less 52,500.00 and 12,040.00, plus 640.00 of own use, is 128,569.48. Naming
+  // only the 52,500.00 left a hole between two figures printed side by side, which is what
+  // a reviewer sees.
   it("itemises every capital allowance box so the drop to the net business profit is exact", () => {
     expect(text).toContain(
-      "Self assessment: net profit 192,469.48, less 64,000.00 of capital allowances " +
-        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 11,500.00), " +
-        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a net business profit of 128,469.48.",
+      "Self assessment: net profit 192,469.48, less 64,540.00 of capital allowances " +
+        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 12,040.00), " +
+        "plus balancing charges 0.00 and other tax adjustments 640.00, gives a net business profit of 128,569.48.",
     );
   });
 
-  it("states the SA103F full return's relation to the short return's figures", () => {
+  it("states the SA103F full return's relation to the short return's figures, naming the boxes stated on the full return alone", () => {
     expect(text).toContain(
       "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
-        "Total expenses (box 31) 169,801.98 = the short return's total expenses 146,730.52 plus total disallowable expenses (box 46) 23,071.46; " +
-        "net profit (box 47) 169,398.02 = the short return's net profit 192,469.48 less that same 23,071.46; " +
-        "total capital allowances (box 57) 64,000.00 sums the same allowances split across more boxes than the short return uses.",
+        "Total expenses (box 31) 173,801.98 = the short return's total expenses 146,730.52 plus total disallowable expenses (box 46) 27,071.46; " +
+        "net profit (box 47) 165,398.02 = the short return's net profit 192,469.48 less that same 27,071.46; " +
+        "total capital allowances (box 57) 68,840.00 = the short return's allowance boxes 64,540.00 plus the allowances stated on the full return alone, " +
+        "which the short return has no box for (Zero-emission car allowance (box 52.1) 2,500.00, Structures and Buildings Allowance (box 53) 1,800.00). " +
+        "The sheet carries the 90.00 adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; " +
+        "adjusted profit (box 73) repeats box 64, and the warning names the figure HMRC's working sheet would add.",
     );
   });
 
-  it("carries the grants line from the taxable profit to the profit tax is charged on", () => {
-    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 130,552.81");
-    expect(text).toContain("Income tax: charged on a profit of 130,552.81");
+  it("carries the grants line from the short return's taxable profit to the full return's figure the tax is charged on", () => {
+    expect(text).toContain(
+      "Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 130,652.81 on the short return; " +
+        "the income tax computation charges the full return's total taxable profits (box 76) of 126,002.81, 4,650.00 below it by the boxes stated on the full return alone " +
+        "(Zero-emission car allowance (box 52.1) 2,500.00, Structures and Buildings Allowance (box 53) 1,800.00, Income included but not taxable as business profits (box 62) 350.00).",
+    );
+    expect(text).toContain("Income tax: charged on a profit of 126,002.81");
+  });
+
+  it("keeps the one-line form of both relations on a book that states nothing on the full return alone", () => {
+    const plain = indicatorText("se", "seVat", { vatRegistered: true });
+    expect(plain).toContain("sums the same allowances split across more boxes than the short return uses.");
+    expect(plain).toMatch(/net profit for the tax calculation of [0-9,.]+, which is the profit the income tax computation charges\./);
   });
 
   it("says the product publishes no balance sheet rather than leaving it unexplained", () => {
@@ -345,7 +359,7 @@ describe("buildIndicators for the Self Employed", () => {
   });
 
   it("leaves the CIS clause out of a book with nothing deducted", () => {
-    expect(text).toContain("income tax and National Insurance together 48,819.42.");
+    expect(text).toContain("income tax and National Insurance together 46,680.92.");
     expect(text).not.toContain("under CIS");
   });
 });

@@ -451,7 +451,15 @@ export function diyaGlToScenario(book, lines, product) {
   // The disallowable proportions the SA103F boxes are computed from. Without
   // them the calculator adds back only the wholly disallowable pair and
   // charges tax on a larger profit than the package's own sheet does.
-  if (book.tax?.selfEmployment) scenario.disallowable = { ...book.tax.selfEmployment };
+  if (book.tax?.selfEmployment) {
+    const { allowances, adjustments, ...disallowable } = book.tax.selfEmployment;
+    if (Object.keys(disallowable).length > 0) scenario.disallowable = disallowable;
+    // The annual SA103F figures the trader states by hand, keyed by HMRC's
+    // own field names: the writer puts each on its SE Full box and the
+    // derivation files it from there.
+    if (allowances) scenario.annual_allowances = { ...allowances };
+    if (adjustments) scenario.annual_adjustments = { ...adjustments };
+  }
   if (book.debtors) {
     scenario.opening_debtors = ledgerListing(book.debtors, "opening", "customer");
     scenario.closing_debtors = ledgerListing(book.debtors, "closing", "customer");
@@ -554,6 +562,7 @@ export function diyaGlToScenario(book, lines, product) {
         }
         const opening = { category, description: asset.description, cost: asset.cost, acc_dep: asset.accumulatedDepreciation };
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+        if (asset.capitalAllowancePool === "special") opening.pool = "special";
         return opening;
       });
     if (openingFixedAssets.length > 0) scenario.opening_fixed_assets = openingFixedAssets;
@@ -786,11 +795,13 @@ export function extractTaxDataFromBook(book, product) {
       marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
     };
   } else {
-    // SE/BST/Taxi use a single writing_down_allowance key
+    // SE/BST/Taxi use a single writing_down_allowance key; the Self Employed
+    // schedule also keeps a special rate pool.
     baseTaxData.capital_allowances = {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
+    if (product === "se") baseTaxData.capital_allowances.writing_down_allowance_special = ca.specialRateWDA || 0.06;
   }
   const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
   baseTaxData.depreciation = taxYearFile.depreciation;

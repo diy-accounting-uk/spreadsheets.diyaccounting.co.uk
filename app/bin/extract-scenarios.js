@@ -307,6 +307,7 @@ const openingFixedAssets = book.fixedAssets.map((asset) => {
     acc_dep: asset.accumulatedDepreciation,
   };
   if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+  if (asset.capitalAllowancePool === "special") opening.pool = "special";
   return opening;
 });
 
@@ -314,7 +315,30 @@ const openingFixedAssets = book.fixedAssets.map((asset) => {
 // motor and computer), the same restriction filterAdvanced already applies
 // to the rest of the opening journal (only accounts 0030/0040 pass). Ltd's
 // Schedule and OpenAccounts both take land, so the full set stands there.
-const seOpeningFixedAssets = openingFixedAssets.filter((asset) => asset.category !== "land");
+// The self-employed subset also holds a car in the special rate pool, so
+// SA103F box 51 and the Schedule's AC column carry a figure the main pool
+// (the van, box 50) does not. A fact about the subset: the Company package
+// keeps one pool and does not carry this asset.
+const SE_SPECIAL_RATE_CAR = {
+  assetID: "SE-FA-1",
+  class: "motorVehicles",
+  capitalAllowancePool: "special",
+  description: "Estate car (CO2 over 50g/km, 1.5 years old)",
+  cost: 16000,
+  accumulatedDepreciation: 4000,
+  taxWrittenDownValue: 9000,
+};
+const seOpeningFixedAssets = [
+  ...openingFixedAssets.filter((asset) => asset.category !== "land"),
+  {
+    category: OPENING_ASSET_CATEGORIES[SE_SPECIAL_RATE_CAR.class],
+    description: SE_SPECIAL_RATE_CAR.description,
+    cost: SE_SPECIAL_RATE_CAR.cost,
+    acc_dep: SE_SPECIAL_RATE_CAR.accumulatedDepreciation,
+    tax_wdv: SE_SPECIAL_RATE_CAR.taxWrittenDownValue,
+    pool: "special",
+  },
+];
 
 // The charges registered over the company's assets, from the book's own
 // register. Each one secures a creditor falling due after more than one year.
@@ -422,7 +446,59 @@ const SE_ADVANCED_DISALLOWABLE = {
   otherExpenses: 0.13,
 };
 
-const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book)));
+// The SA103F boxes the trader states by hand, each a different figure so a
+// writer or a check wired to the wrong cell fails. Boxes 52 and 54 stay
+// unstated: HMRC's schema dropped their fields from 2025-26 and the featured
+// package files a later year.
+const SE_ADVANCED_ANNUAL = {
+  allowances: {
+    zeroEmissionsCarAllowance: 2500,
+    structuredBuildingAllowance: 1800,
+  },
+  adjustments: {
+    goodsAndServicesOwnUse: 640,
+    includedNonTaxableProfits: 350,
+    accountingAdjustment: 90,
+  },
+};
+
+// The special rate car's own opening balance lines, after the van's (TXN-0004
+// and TXN-0005), so the subset's journal states the asset the register does.
+const SE_SPECIAL_RATE_CAR_LINES = [
+  {
+    entryNumber: "TXN-0004S",
+    lineNumber: 4,
+    sourceJournalID: "journal",
+    postingDate: "2025-04-01",
+    accountMainID: "0040",
+    debitCreditCode: "D",
+    amount: SE_SPECIAL_RATE_CAR.cost,
+    documentType: "journal",
+    documentReference: "OB-001",
+    detailComment: "Opening balances",
+    lineItemComment: "Estate car cost (special rate pool)",
+    taxCode: "OS",
+    taxRate: 0,
+  },
+  {
+    entryNumber: "TXN-0005S",
+    lineNumber: 5,
+    sourceJournalID: "journal",
+    postingDate: "2025-04-01",
+    accountMainID: "0040",
+    debitCreditCode: "C",
+    amount: SE_SPECIAL_RATE_CAR.accumulatedDepreciation,
+    documentType: "journal",
+    documentReference: "OB-001",
+    detailComment: "Opening balances",
+    lineItemComment: "Estate car accumulated depreciation",
+    taxCode: "OS",
+    taxRate: 0,
+  },
+];
+const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book))).flatMap((line) =>
+  line.entryNumber === "TXN-0005" ? [line, ...SE_SPECIAL_RATE_CAR_LINES] : [line],
+);
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
@@ -472,6 +548,8 @@ const advToml = formatScenarioToml(
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     disallowable: SE_ADVANCED_DISALLOWABLE,
+    annual_allowances: SE_ADVANCED_ANNUAL.allowances,
+    annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: seOpeningFixedAssets,
@@ -492,7 +570,7 @@ const advV2 = {
   // Same restriction as seOpeningFixedAssets above: SE's Schedule has no
   // land block, so a land & buildings asset the master book holds is a Ltd
   // fact, not one this subset can carry.
-  fixedAssets: book.fixedAssets.filter((asset) => asset.class !== "landBuildings"),
+  fixedAssets: [...book.fixedAssets.filter((asset) => asset.class !== "landBuildings"), SE_SPECIAL_RATE_CAR],
   hpAgreements: book.hpAgreements,
 };
 
@@ -504,7 +582,7 @@ const advDiya = writeSubset(
   {
     entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
     taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage", "selfEmployment"],
-    taxOverrides: { selfEmployment: SE_ADVANCED_DISALLOWABLE },
+    taxOverrides: { selfEmployment: { ...SE_ADVANCED_DISALLOWABLE, ...SE_ADVANCED_ANNUAL } },
     accountFilter: seAccountFilter,
     employees: book.employees,
     tables: advV2,

@@ -61,9 +61,11 @@ part comes out of.
 
 `depreciationDisallowable` (box 44, O114, VitalTax row 49) is the fifteenth field and is sourced.
 
-`Fixedassets.xlsx!Schedule!M1` carries the label "Enter % Personal use of vehicles". No cell on
-that sheet holds a figure under it, and no formula in any of the nine workbooks reads column M of
-`Schedule`. It is a label with nothing behind it.
+`Fixedassets.xlsx!Schedule!M1` carries the label "Enter % Personal use of vehicles", and the car
+rows read it: `R38 = IF(O38>0,O38*R$4*(1-M38)," ")` on the existing cars (rows 38 to 48) and
+`R91 = IF(E91>0,E91*R$4*(1-M91)," ")` on the new ones (rows 91 to 101), with Y and Z scaled the
+same way. It restricts the capital allowance on a car, not the expense categories boxes 32 to 45
+carry, so it is not a source for SED-2.
 
 ### 2.2 SED-3, the advertising split
 
@@ -213,41 +215,47 @@ Box 33 (subcontractor payments) has no short-return box of its own; SA103S folds
 Written this way, `box 31 = box 20 + box 46` and `box 47 = short net profit - box 46` stay exactly
 true, so the two cross-form checks at `app/products/se.js:2427` and `:2432` survive unchanged.
 
-### 3.4 SED-7 and SED-8 are mostly not template work
+### 3.4 SED-7 and SED-8: the book states nine boxes, the schedule computes one, two wait
 
-Seven of the twelve figures in 2.3 and 2.4 already have a cell that `app/lib/calculators/se.js`
-already reads as a blank (`seFull.D147`, `D152`, `D156`, `D160`, `O139`, `D179` at lines 983 to
-988). Printing a box a second time buys nothing. What they lack is a place in `book.toml` and a
-writer, which is book-schema work, not template work.
+**The stated boxes (done).** `tax.selfEmployment.allowances` and `.adjustments` hold, keyed by
+HMRC's API field names, the figures the trader states by hand: boxes 52 (`D152`), 52.1 (`D156`),
+53 (`D160`), 54 (`O139`), 62 (`D179`), 71 (`D210`) on `SE Full`, and box 60 on
+`Business Details!O50`. `app/products/se.js` writes them (`ANNUAL_ALLOWANCE_CELLS`,
+`ANNUAL_ADJUSTMENT_CELLS`, `GOODS_FOR_OWN_USE_CELL`), `extractBook` reads them back, and the
+annual derivation files each from its cell. Two of the brief's cells read differently in the XML:
+`O139` is box 54 (`L136` = 54), not box 55, whose cell `O144` is the small pools formula; and
+`O160` is `[1]Schedule!$Z$1`. So `electricChargePointAllowance` is the book field behind `O139`
+(filed under `enhancedCapitalAllowance`, HMRC's primary field for boxes 54 and 55), and
+`businessPremisesRenovationAllowance` and `balancingChargeBpra` have no input cell: both stay
+warned, not stated.
 
-Two are genuine template gaps. Each needs a decision this document does not make; the
-geometry below is what the sheet XML says about them.
+**Box 51, the special rate pool: a second pool on the schedule.** The rule that puts an asset in
+the pool is a marker the book states per asset, because `Schedule` holds no CO2 figure and no
+block on it is special-rate by nature.
 
-- **Box 53.1**, the Freeport Structures and Buildings Allowance. `SE Full` prints box 53 at A157
-  with its value at D160 and jumps to the next section at A162. A printed box takes two shaped
-  rows, a label row and a value row carrying the merged `£` box. Between rows 146 and 161 every
-  such pair is already spoken for -- boxes 51, 52, 52.1 and 53 on the left (`D147:F147`,
-  `D152:F152`, `D156:F156`, `D160:F160`), boxes 56, 57 and 59 on the right (`O149:Q149`,
-  `O154:Q154`, `O160:Q160`). Row 161 is the only free row and one row holds a label or a value,
-  not both. So the block does need laying out afresh, and that means re-pitching row heights and
-  box borders across a printed statutory form.
-- **Box 73.3**, the transition profit. `SE Full` row 192 prints box 73 at L192 with its value at
-  O194 and no 73.1, 73.2 or 73.3 beside it, and `app/data/hmrc/form-layouts/se.json` declares all
-  three, so the block is three boxes and six shaped rows. Rows 300 to 324 are not free: `C298:V323`
-  is one merged cell, box 103's "any other information" answer space. The sheet's one properly
-  shaped free slot is the 15pt label row 199 with the already-merged value box `D201:F201` below
-  it, and that row currently carries the "Boxes 69 and 70 are not in use" notice. It holds one box
-  of the three.
+| Where | Change |
+| --- | --- |
+| `diya-gl-book-v2.schema.json` `fixedAssets[]` | `capitalAllowancePool`, enum `main` (default) or `special`. `scenario-extractor.js` carries it to `opening_fixed_assets[].pool`; the writer puts `S` in column AB of the asset's row when it is `special`. |
+| `Financialaccounts.xlsx!Admin` | `D6` "Special rate writing down allowance", `G6` the rate. `generator.js` injects `G6` from `capital_allowances.writing_down_allowance_special`, which every `se-*.toml` gains (0.06). |
+| `Fixedassets.xlsx!Schedule` | `AB2` "Pool (S = special rate)"; `AC2` "Special Rate W Down Allowance"; `AC4 = [1]Admin!$G$6`. On the 40 writing-down rows (existing 14-18, 22-26, 30-34, 38-42, 44-48, 50-54; new cars 91-95, 97-101) the R formula gains `AB<>"S"` in its condition, AC mirrors it with `AB="S"` and `AC$4`, and S becomes `O-N(R)-N(AC)` (or `E-...` on the new-car rows). AC block totals on rows 11, 19, 27, 35, 55, 64, 72, 80, 88, 108; `AC57`, `AC110` and `AC1 = AC57+AC110` as R has. Dimension `A1:AC111`. |
+| `Financialaccounts.xlsx` | `SE Full!D147 = [1]Schedule!$AC$1`; `SE Short!O80` and `Profit Forecast!C38` add `[1]Schedule!$AC$1`, so SA103S box 25 and the forecast carry the pool. |
+| `app/lib/calculators/se.js` | `scheduleRow` takes `pool`; `R` and `AC` split on it; `S` nets both; `AC` joins `SCHEDULE_TOTAL_COLUMNS`; `seFull.D147 = totals.AC`, `seShort.O80` and `forecast.C38` add it. |
+| Checks | box 51 = the fixture's special-rate opening tax written-down value at the year's special rate; box 50 = the main-pool values alone; box 57 still the sum of boxes 49 to 56. |
 
-One is Fixed Assets work: the special rate pool (box 51). `Admin!G6` is free directly under the
-writing-down rate at G5, and `Fixedassets.xlsx!Schedule` runs to column AA with AB onward free, so
-a second rate and a second allowance column pair fit without moving anything. `buildSchedule` in
-`app/lib/calculators/se.js` grows a second pool alongside. What is missing is the rule that puts an
-asset row in the pool. `Schedule` holds no CO2 figure, and its one candidate block, "Motor Vehicles
-- costing over £" (rows 38 to 42 and 91 to 95), claims the 18% rate today, so reading it as the
-special rate pool would move figures for every customer who has one. Closing it needs a marker
-column on the asset rows and a book field to fill it, the same shape section 7 names for single
-asset pools.
+The small pools write-off (`O144`) keeps reading `R1+S1` over one S column, so a special-rate
+balance counts towards the £1,000 test alongside the main pool. HMRC applies the test per pool;
+splitting S into two columns is the follow-on if a book ever needs it.
+
+**Boxes 53.1 and 73.3: no cell this wave.** Both wait on a record the book does not hold, and
+neither gets a book field before it. The Freeport SBA (53.1) is the enhanced-rate variant of the
+box 53 claim, and section 7 puts the claim record before either cell. The transition profit (73.3)
+is the basis period reform's spread, computed from the overlap record section 7 names for box 68.
+Filing a figure the printed return cannot show is the outcome SED-1 already ruled out, so until the
+record exists the derivation omits both fields and warns, and `sa103-mtd-mapping.json` keeps
+`cell: null` for both. When a record lands, the geometry is: 53.1 needs a label-and-value row pair
+laid out afresh between rows 146 and 161, and 73.3 can take the one free shaped slot, the 15pt
+label row 199 with the merged value box `D201:F201` under it, once the "Boxes 69 and 70 are not
+in use" notice moves.
 
 ## 4. What the change costs beyond the cells
 
@@ -338,10 +346,10 @@ feeds box 61 (`D174`), which feeds box 64 (`O174`). _Verification:_ box 61 rises
 box 46; box 64 rises by the same; the two SA103F/SA103S cross checks still pass untouched; the
 corruption proof for all fourteen cells.
 
-**Step 4. Boxes 51, 53.1 and 73.3.** The three genuine remaining template gaps in 3.4. Do this last
-and separately from the book-schema work the other nine fields need. _Verification:_ box 57
-(`O154`) still equals boxes 49 to 56 with the new box 51 term included; box 53.1 and box 73.3 read
-as blanks in `standardReads()` until a book fills them.
+**Step 4. Box 51.** The second pool in 3.4. Do this last and separately from the book-schema work
+the stated boxes need. _Verification:_ box 57 (`O154`) still equals boxes 49 to 56 with the new
+box 51 term included; box 50 drops the special-rate asset's allowance by exactly what box 51
+gains; the derivation still omits 53.1 and 73.3 with a warning each.
 
 Steps 2 and 3 can share a commit if the fixtures land together, because step 2's entertainment
 figure is also step 3's box 39 term. Step 1 must not, because its whole value is being provably
