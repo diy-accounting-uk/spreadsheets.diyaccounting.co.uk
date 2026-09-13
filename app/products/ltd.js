@@ -1163,7 +1163,7 @@ export const CELL_MAP = [
   ["MnthP&L", "B24", "Equipment Hire (code q)",      "accounts.purchases.5301",        "Profit & Loss Account", 1],
   ["MnthP&L", "B25", "Repairs & Maintenance (code m)","accounts.purchases.5400",       "Profit & Loss Account", 1],
   ["MnthP&L", "B26", "Consumables (code u)",         "accounts.purchases.5401",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B27", "Advertising (code a)",         "accounts.purchases.5500",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B27", "Advertising & Entertainment (codes a, e)", "accounts.purchases.5500 + 5502", "Profit & Loss Account", 1],
   ["MnthP&L", "B28", "Telephone, Postage & Stationery (code g)", "accounts.purchases.5501", "Profit & Loss Account", 1],
   ["MnthP&L", "B29", "Travel & Hotel (code h)",      "accounts.purchases.5600",        "Profit & Loss Account", 1],
   ["MnthP&L", "B30", "Motor Vehicle (code v)",       "accounts.purchases.5601",        "Profit & Loss Account", 1],
@@ -1185,6 +1185,7 @@ export const CELL_MAP = [
   [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax working sheet", 0],
   [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "I9",  "Add back: Business entertainment", "gl-cor:amount (ct600.addBackEntertaining)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax working sheet", 0],
   [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax working sheet", 1],
@@ -1316,6 +1317,7 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ40","Final: Creditor Long Term",                 "accounts.liabilities.2600 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ48","Final: Dividends declared",                 "gl-cor:amount (dividendsDeclared)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ90","Final: Business Entertainment (code e)",    "accounts.purchases.5502 (final)",    "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
@@ -1376,7 +1378,7 @@ export const HEADLINES = {
     ["cell/Financialaccounts.xlsx!MnthP&L!B24", "Equipment Hire (code q)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B25", "Repairs & Maintenance (code m)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B26", "Consumables (code u)"],
-    ["cell/Financialaccounts.xlsx!MnthP&L!B27", "Advertising (code a)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B27", "Advertising & Entertainment (codes a, e)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B28", "Telephone, Postage & Stationery (code g)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B29", "Travel & Hotel (code h)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B30", "Motor Vehicle (code v)"],
@@ -1417,11 +1419,15 @@ const PL_DIRECTOR_WAGES_ROW = 19;
 // Materials (row 11) also carries the stock adjustment, wages (rows 18-20)
 // also carry WagesInterface payroll, and the bank and fixed asset rows come
 // from elsewhere entirely, so none of those tie 1:1 to a month's code total.
+// Row 27 reads two trial balance rows, advertising (74) and business
+// entertainment (90), so the places below that read this map add code e's
+// figure to code a's rather than the map carrying two codes on one row.
 const SALES_MONTHLY_TIE_ROWS = { a: 4, b: 5, c: 6, d: 7, g: 8 };
 // Sales code "o" ("Other") feeds the bad debts row negated — a template
 // quirk, verified against the formula chain (MnthP&L C34 = TrialBalance!O81,
 // TrialBalance row 81 = -[3]Apr!$T$1).
 const SALES_BAD_DEBT_ROW = 34;
+const ENTERTAINMENT_CODE = "e";
 const PURCHASES_MONTHLY_TIE_ROWS = {
   c: 12,
   o: 13,
@@ -1460,7 +1466,7 @@ const PL_ROW_CAPTIONS = {
   24: "Equipment Tools & Plant Hire",
   25: "Repairs & Maintenance",
   26: "Consumable Materials",
-  27: "Advertising & Promotion",
+  27: "Advertising, Promotion & Entertainment",
   28: "Telephone Postage & Stationery",
   29: "Travel & Hotel Expenses",
   30: "Motor Vehicle Expenses",
@@ -2206,9 +2212,9 @@ export function fmt(v, unit = "money") {
 // bank interest comes out and goes back in: the accounts carry it net of the
 // tax deducted at source and the computation charges the gross figure. The
 // two interest lines below differ by exactly that tax, which the working
-// sheet then credits against the charge (CorporationTax!K37). Depreciation
-// and goodwill written off are not deductible and are added back; capital
-// allowances stand in for the depreciation.
+// sheet then credits against the charge (CorporationTax!K37). Depreciation,
+// goodwill written off and business entertainment are not deductible and are
+// added back; capital allowances stand in for the depreciation.
 export function profitBridge(results) {
   const pl = results["MnthP&L"];
   const ct = results[TAX_SHEET];
@@ -2220,6 +2226,7 @@ export function profitBridge(results) {
     { label: "Less bank interest received, net of tax deducted at source", cell: "MnthP&L!B44", value: -num(pl.B44) },
     { label: "Add back goodwill written off", cell: "CorporationTax!I7", value: num(ct.I7) },
     { label: "Add back depreciation charged in the year", cell: "CorporationTax!I8", value: num(ct.I8) },
+    { label: "Add back business entertainment", cell: "CorporationTax!I9", value: num(ct.I9) },
     { label: "Less capital allowances", cell: "CorporationTax!K20", value: -num(ct.K20) },
     { label: "Add gross bank interest received", cell: "CorporationTax!K24", value: num(ct.K24) },
     { label: "Less losses brought forward", cell: "CorporationTax!K26", value: -num(ct.K26) },
@@ -2291,7 +2298,15 @@ export function categoryNetting(results, scenario) {
 
   for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) plRow("sales", sales, code, row);
   plRow("sales", sales, "o", SALES_BAD_DEBT_ROW, -1);
-  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) plRow("purchases", purchases, code, row);
+  // Row 27 shows advertising and business entertainment together, so its
+  // netting row carries both codes' gross and net.
+  const purchasesRow27 = {
+    gross: { a: (purchases.gross.a || 0) + (purchases.gross[ENTERTAINMENT_CODE] || 0) },
+    net: { a: (purchases.net.a || 0) + (purchases.net[ENTERTAINMENT_CODE] || 0) },
+  };
+  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
+    plRow("purchases", code === "a" ? purchasesRow27 : purchases, code, row);
+  }
 
   // Casual workers and directors' payments are purchased under their own
   // codes and land on the two wages lines together with the payroll's own
@@ -3507,7 +3522,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     fiscalTabs.forEach((tab, i) => {
       const col = MONTH_COLS[i];
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        check(`P&L ${tab} ${col}${row} = Purchases.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0, rate));
+        let expectedNet = netOfVat(buckets[tab][code] || 0, rate);
+        if (code === "a") {
+          expectedNet += netOfVat(buckets[tab][ENTERTAINMENT_CODE] || 0, rate);
+          check(`P&L ${tab} ${col}${row} = Purchases.xlsx "a" and "e" net`, num(pl[`${col}${row}`]), expectedNet);
+          continue;
+        }
+        check(`P&L ${tab} ${col}${row} = Purchases.xlsx "${code}" net`, num(pl[`${col}${row}`]), expectedNet);
       }
     });
   }
@@ -4076,7 +4097,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT: operating profit = published P&L operating profit", num(corporationTax.K5), num(pubPL.F46));
     check("CT: depreciation add-back = P&L depreciation", num(corporationTax.I8), num(pl.B40));
     check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
-    check("CT: add-backs = depreciation + goodwill", num(corporationTax.K10), num(corporationTax.I7) + num(corporationTax.I8));
+    // The entertainment add-back is anchored in the journal, not in another
+    // cell of the sheet: the trial balance row it reads is the only place the
+    // figure exists on the hub, so the scenario's own "e"-coded purchases are
+    // what prove it. Its trial balance row is checked against the same anchor.
+    if (expected.purchases) {
+      const entertainmentNet = journalTotalsByCode(expected.purchases, rate, "g").net[ENTERTAINMENT_CODE] || 0;
+      check('CT: entertainment add-back = Purchases.xlsx "e" net', num(corporationTax.I9), entertainmentNet);
+      if (results.TrialBalance) {
+        check('Trial balance: business entertainment = Purchases.xlsx "e" net', num(results.TrialBalance.EJ90), entertainmentNet);
+      }
+    }
+    check(
+      "CT: add-backs = depreciation + goodwill + entertainment",
+      num(corporationTax.K10),
+      num(corporationTax.I7) + num(corporationTax.I8) + num(corporationTax.I9),
+    );
     check("CT: profit plus add-backs", num(corporationTax.K12), num(corporationTax.K5) + num(corporationTax.K10));
     // Each allowance line against the schedule column it claims from. The
     // notes behind these lines address Schedule rows one by one, so they

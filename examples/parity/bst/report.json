@@ -4,11 +4,12 @@
   "scenario": "Exported from bst package",
   "yearEnd": "2027-03-31",
   "provenance": {
-    "formatVersion": "diya-gl-books/1",
-    "engineVersion": "1.0.0+ccc72b894a7d",
-    "taxDataHash": "942a6388a226",
-    "templateHash": "06fdcd072930",
-    "templateScorecard": "810 passed, 0 warnings, 0 failed"
+    "formatVersion": "diya-gl/1",
+    "engineVersion": "1.2.10+32b8b8c8",
+    "taxDataHash": "4ecdbe985d22",
+    "templateHash": "0d003e10e00c",
+    "templateScorecard": "812 passed, 0 warnings, 0 failed",
+    "reconciledCommit": "c910fdeefbe4f2f71ae9ec5f5d4a713783a1c0c7"
   },
   "values": [
     {

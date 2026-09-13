@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Company 2027-10-31 (Oct27) Excel 2007
 
 Scenario: ltd-brickwork-pro-vat
@@ -366,7 +368,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Nov C24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Nov C25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Nov C26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Nov C27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Nov C27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Nov C28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Nov C29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Nov C30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -383,7 +385,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Dec D24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Dec D25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Dec D26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Dec D27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Dec D27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Dec D28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Dec D29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Dec D30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -400,7 +402,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Jan E24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jan E25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jan E26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jan E27 = Purchases.xlsx "a" net | 450 | 450 | 0 | PASS |
+| P&L Jan E27 = Purchases.xlsx "a" and "e" net | 450 | 450 | 0 | PASS |
 | P&L Jan E28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jan E29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Jan E30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -417,7 +419,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Feb F24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Feb F25 = Purchases.xlsx "m" net | 525 | 525 | 0 | PASS |
 | P&L Feb F26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Feb F27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Feb F27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Feb F28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Feb F29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Feb F30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -434,7 +436,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Mar G24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Mar G25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Mar G26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Mar G27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Mar G27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Mar G28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Mar G29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Mar G30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -451,7 +453,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Apr H24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Apr H25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Apr H26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Apr H27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Apr H27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Apr H28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Apr H29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Apr H30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -468,7 +470,7 @@ Trade: Bricklaying, plastering and general building
 | P&L May I24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L May I25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L May I26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L May I27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L May I27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L May I28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L May I29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L May I30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -485,7 +487,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Jun J24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jun J25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jun J26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jun J27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jun J27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Jun J28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jun J29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Jun J30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -502,7 +504,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Jul K24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jul K25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jul K26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jul K27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jul K27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Jul K28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jul K29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Jul K30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -519,7 +521,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Aug L24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Aug L25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Aug L26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Aug L27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Aug L27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Aug L28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Aug L29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Aug L30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -536,7 +538,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Sep M24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Sep M25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Sep M26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Sep M27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Sep M27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Sep M28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Sep M29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Sep M30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -553,7 +555,7 @@ Trade: Bricklaying, plastering and general building
 | P&L Oct N24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Oct N25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Oct N26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Oct N27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Oct N27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Oct N28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Oct N29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
 | P&L Oct N30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
@@ -832,7 +834,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: the page reads the Dec tab | Dec | Dec |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
-| Payslips print: the period ends the day the scenario paid that month's wages | 46019 | 46019 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 46384 | 46384 | 0 | PASS |
 | Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
 | Payslips print: gross pay is the pay the scenario recorded | 1048 | 1048 | 0 | PASS |
 | Payslips print: income tax is the tax the scenario recorded | 0 | 0 | 0 | PASS |
@@ -842,7 +844,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: income tax to date is every month printed so far | 0 | 0 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 0 | 0 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 2096 | 2096 | 0 | PASS |
-| Payslips print: the payment date is the day the scenario paid that month's wages | 46019 | 46019 | 0 | PASS |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 46384 | 46384 | 0 | PASS |
 | Payslips!Feb F51 employee name | Mike Brown | Mike Brown |  | PASS |
 | Payslips!Feb M51 gross pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Feb N51 income tax | 0 | 0 | 0 | PASS |
@@ -857,7 +859,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Feb R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
 | Payslips!Feb T52 employer NI | 0 | 0 | 0 | PASS |
 | Payslips!Feb S52 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
-| Payslips!Feb M49 wages paid date | 46081 | 46081 | 0 | PASS |
+| Payslips!Feb M49 wages paid date | 46446 | 46446 | 0 | PASS |
 | Payslips!Mar F51 employee name | Mike Brown | Mike Brown |  | PASS |
 | Payslips!Mar M51 gross pay | 1048 | 1048 | 0 | PASS |
 | Payslips!Mar N51 income tax | 0 | 0 | 0 | PASS |
@@ -872,7 +874,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Mar R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
 | Payslips!Mar T52 employer NI | 0 | 0 | 0 | PASS |
 | Payslips!Mar S52 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
-| Payslips!Mar M49 wages paid date | 46109 | 46109 | 0 | PASS |
+| Payslips!Mar M49 wages paid date | 46474 | 46474 | 0 | PASS |
 | Payslips!Feb F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Feb F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Feb F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
@@ -912,12 +914,6 @@ Trade: Bricklaying, plastering and general building
 | MnthP&L: Directors Wages (B19) = directors' gross pay + Purchases d-coded net | 12576 | 12576 | 0 | PASS |
 | MnthP&L: Employers National Insurance (B20) = payroll employer NI | 0 | 0 | 0 | PASS |
 | Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due | -126.7 | -126.7 | 0 | PASS |
-| Admin P6: corporation tax small profits rate | 19 | 19 | 0 | PASS |
-| Admin P7: corporation tax small profits rate (second year) | 19 | 19 | 0 | PASS |
-| Admin P8: corporation tax main rate | 25 | 25 | 0 | PASS |
-| Admin P9: marginal relief fraction | 0.015 | 0.015 | 0 | PASS |
-| Admin P12: marginal relief lower limit | 50000 | 50000 | 0 | PASS |
-| Admin P13: marginal relief upper limit | 250000 | 250000 | 0 | PASS |
 | Admin G5: annual investment allowance | 100 | 100 | 0 | PASS |
 | Admin G7: annual investment allowance (new assets) | 100 | 100 | 0 | PASS |
 | Admin G6: writing down allowance | 14 | 14 | 0 | PASS |
@@ -933,6 +929,8 @@ Trade: Bricklaying, plastering and general building
 | Admin O17: mileage lower rate pence | 0.25 | 0.25 | 0 | PASS |
 | Admin M19: standard VAT rate | 20 | 20 | 0 | PASS |
 | Admin M21: standard VAT rate (second period) | 20 | 20 | 0 | PASS |
+| Admin P14: number of associated companies | 2 | 2 | 0 | PASS |
+| Opening accounts: franked investment income = the distributions the scenario received | 0 | 0 | 0 | PASS |
 | Admin: year-end seed = the package's own year end | 46691 | 46691 | 0 | PASS |
 | Admin: year-end seed drives the accounting period anchor | 46691 | 46691 | 0 | PASS |
 | Published P&L: year end = Admin year-end seed | 46691 | 46691 | 0 | PASS |
@@ -968,7 +966,9 @@ Trade: Bricklaying, plastering and general building
 | CT: operating profit = published P&L operating profit | 18769 | 18769 | 0 | PASS |
 | CT: depreciation add-back = P&L depreciation | 1200 | 1200 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 0 | 0 | 0 | PASS |
-| CT: add-backs = depreciation + goodwill | 1200 | 1200 | 0 | PASS |
+| CT: entertainment add-back = Purchases.xlsx "e" net | 0 | 0 | 0 | PASS |
+| Trial balance: business entertainment = Purchases.xlsx "e" net | 0 | 0 | 0 | PASS |
+| CT: add-backs = depreciation + goodwill + entertainment | 1200 | 1200 | 0 | PASS |
 | CT: profit plus add-backs | 19969 | 19969 | 0 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 12000 | 12000 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 0 | 0 | 0 | PASS |
@@ -992,6 +992,9 @@ Trade: Bricklaying, plastering and general building
 | CT600: second financial year = second tax row financial year | 2027 | 2027 | 0 | PASS |
 | CT600: second financial year profit = second tax row profit | 4672.23561643836 | 4672.23561643836 | 0 | PASS |
 | CT600: second financial year rate = second tax row rate | 19 | 19 | 0 | PASS |
+| CT600: franked investment income = the working sheet's figure | 0 | 0 | 0 | PASS |
+| CT600: associated companies, first financial year = Admin P14 | 2 | 2 | 0 | PASS |
+| CT600: associated companies, second financial year = Admin P14 | 2 | 2 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
 | CT600: marginal rate relief = the working sheet's relief | 0 | 0 | 0 | PASS |
 | CT600: tax net of marginal relief = the working sheet's charge | 1514.11 | 1514.11 | 0 | PASS |
@@ -1000,6 +1003,8 @@ Trade: Bricklaying, plastering and general building
 | CT600: tax outstanding | 1514.11 | 1514.11 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 1514.11 | 1514.11 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 12576 | 12576 | 0 | PASS |
+| CT: franked investment income = the exempt distributions entered on the opening accounts | 0 | 0 | 0 | PASS |
+| CT: augmented profits = the chargeable profit and the franked investment income | 7969 | 7969 | 0 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
 | CT: first tax row profit = chargeable profit by its share of those days | 3296.7643835616436 | 3296.76438356164 | -3.637978807091713e-12 | PASS |
 | CT: second tax row profit = chargeable profit by its share of those days | 4672.235616438356 | 4672.23561643836 | +3.637978807091713e-12 | PASS |
@@ -1008,18 +1013,27 @@ Trade: Bricklaying, plastering and general building
 | CT: first tax row tax = its gross tax less its marginal relief | 626.385232876712 | 626.385232876712 | 0 | PASS |
 | CT: second tax row tax = its gross tax less its marginal relief | 887.724767123288 | 887.724767123288 | 0 | PASS |
 | CT: charge for the year = the two tax rows | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
-| CT: first tax row rate = the rate its share of the profit falls in | 19 | 19 | 0 | PASS |
-| CT: second tax row rate = the rate its share of the profit falls in | 19 | 19 | 0 | PASS |
-| CT: first tax row marginal relief = its share of the profit against its share of the limits | 0 | 0 | 0 | PASS |
-| CT: second tax row marginal relief = its share of the profit against its share of the limits | 0 | 0 | 0 | PASS |
-| CT: both financial year rows carry the same small profits rate | 19 | 19 | 0 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 1514.11 | 1514.11 | 0 | PASS |
+| CT: first tax row rate = the rate its share of the augmented profits falls in | 19 | 19 | 0 | PASS |
+| CT: second tax row rate = the rate its share of the augmented profits falls in | 19 | 19 | 0 | PASS |
+| CT: first tax row marginal relief = its share of the augmented profits against its share of the limits | 0 | 0 | 0 | PASS |
+| CT: second tax row marginal relief = its share of the augmented profits against its share of the limits | 0 | 0 | 0 | PASS |
+| CT: first tax row small profits rate = what its own financial year charged | 19 | 19 | 0 | PASS |
+| CT: first tax row main rate = what its own financial year charged | 25 | 25 | 0 | PASS |
+| CT: first tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
+| CT: first tax row marginal relief lower limit = what its own financial year charged | 50000 | 50000 | 0 | PASS |
+| CT: first tax row marginal relief upper limit = what its own financial year charged | 250000 | 250000 | 0 | PASS |
+| CT: second tax row small profits rate = what its own financial year charged | 19 | 19 | 0 | PASS |
+| CT: second tax row main rate = what its own financial year charged | 25 | 25 | 0 | PASS |
+| CT: second tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
+| CT: second tax row marginal relief lower limit = what its own financial year charged | 50000 | 50000 | 0 | PASS |
+| CT: second tax row marginal relief upper limit = what its own financial year charged | 250000 | 250000 | 0 | PASS |
 | CT: charge for the year = the statutory computation with marginal relief | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 1514.11 | 1514.11 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product A (sales a) net reaches MnthP&L!B4 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sub contractors (purchases c) net reaches MnthP&L!B12 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Repairs & Maintenance (purchases m) net reaches MnthP&L!B25 with no residue | 0 | 0 | 0 | PASS |
-| Category netting: Advertising & Promotion (purchases a) net reaches MnthP&L!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Advertising, Promotion & Entertainment (purchases a) net reaches MnthP&L!B27 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Telephone Postage & Stationery (purchases g) net reaches MnthP&L!B28 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Motor Vehicle Expenses (purchases v) net reaches MnthP&L!B30 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Insurance Costs (purchases n) net reaches MnthP&L!B31 with no residue | 0 | 0 | 0 | PASS |
@@ -1040,6 +1054,7 @@ Trade: Bricklaying, plastering and general building
 | Less bank interest received, net of tax deducted at source | MnthP&L!B44 | 0 |
 | Add back goodwill written off | CorporationTax!I7 | 0 |
 | Add back depreciation charged in the year | CorporationTax!I8 | 1,200 |
+| Add back business entertainment | CorporationTax!I9 | 0 |
 | Less capital allowances | CorporationTax!K20 | -12,000 |
 | Add gross bank interest received | CorporationTax!K24 | 0 |
 | Less losses brought forward | CorporationTax!K26 | 0 |
@@ -1056,7 +1071,7 @@ Journal amounts include VAT at 20%.
 | Sales Product A (sales a) | 135,000 | 22,500 | 112,500 | MnthP&L!B4 | 112,500 | 0 |
 | Sub contractors (purchases c) | 36,000 | 6,000 | 30,000 | MnthP&L!B12 | 30,000 | 0 |
 | Repairs & Maintenance (purchases m) | 630 | 105 | 525 | MnthP&L!B25 | 525 | 0 |
-| Advertising & Promotion (purchases a) | 540 | 90 | 450 | MnthP&L!B27 | 450 | 0 |
+| Advertising, Promotion & Entertainment (purchases a) | 540 | 90 | 450 | MnthP&L!B27 | 450 | 0 |
 | Telephone Postage & Stationery (purchases g) | 1,296 | 216 | 1,080 | MnthP&L!B28 | 1,080 | 0 |
 | Motor Vehicle Expenses (purchases v) | 4,320 | 720 | 3,600 | MnthP&L!B30 | 3,600 | 0 |
 | Insurance Costs (purchases n) | 2,160 | 360 | 1,800 | MnthP&L!B31 | 1,800 | 0 |
@@ -1076,6 +1091,7 @@ Journal amounts include VAT at 20%.
 | Registered Office Town | Sheffield |
 | Postcode | S1 2AB |
 | Tax Reference per CT603 Notice | 9876543210 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Franked investment income | 0 |
 
 ## Opening Balance Sheet
 
@@ -1117,7 +1133,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Equipment Hire (code q) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance (code m) | 525 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Consumables (code u) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising & Entertainment (codes a, e) | 450 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage & Stationery (code g) | 1,080 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Hotel (code h) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v) | 3,600 |
@@ -1143,6 +1159,7 @@ Journal amounts include VAT at 20%.
 | Operating Profit | 18,769 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 1,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Business entertainment | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 1,200 |
 | Operational profit chargeable | 19,969 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 12,000 |
@@ -1150,6 +1167,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
 | **Profit Chargeable to CT** | 7,969 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add: franked investment income | 0 |
+| **Augmented profits** | 7,969 |
 | **Corporation Tax** | 1,514.11 |
 | Tax Outstanding | 1,514.11 |
 
@@ -1168,6 +1187,9 @@ Journal amounts include VAT at 20%.
 | **Box 430: corporation tax** | 1,514.11 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 0 |
 | **Box 440: corporation tax net of marginal rate relief** | 1,514.11 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 327: associated companies, first financial year | 2 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 328: associated companies, second financial year | 2 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 620: franked investment income | 0 |
 
 ## Published P&L
 
@@ -1265,6 +1287,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Cash Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors | -2,718 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Vat | -1,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Corporation Tax | -900 |
@@ -1273,15 +1297,19 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -30,162 |
 | **Opening Balances Audit Check** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Trade Debtors | 12,060 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 29,524.7 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Net Wages Creditor | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Other Deductions from Wages | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends Creditor | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends declared | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Business Entertainment (code e) | 0 |
 | **Audit Accuracy Check** | 0 |
 
 ## VAT Returns
@@ -1338,6 +1366,7 @@ Journal amounts include VAT at 20%.
 | J4 | Registered Office Town | Sheffield | gl-bus:organizationAddress |
 | N6 | Postcode | S1 2AB | gl-bus:organizationAddress |
 | O3 | Tax Reference per CT603 Notice | 9876543210 | gl-taf:taxRegistrationNumber |
+| Q6 | Franked investment income | 0 | gl-cor:amount (ct600.box620) |
 | E15 | Stock at cost | 3000 | accounts.assets.1100 (opening) |
 | E16 | Trade Debtors | 11880 | accounts.assets.1300 (opening) |
 | E18 | Cash and Bank Balances | 20000 | gl-cor:amount (opening.bank) |
@@ -1373,7 +1402,7 @@ Journal amounts include VAT at 20%.
 | B24 | Equipment Hire (code q) | 0 | accounts.purchases.5301 |
 | B25 | Repairs & Maintenance (code m) | 525 | accounts.purchases.5400 |
 | B26 | Consumables (code u) | 0 | accounts.purchases.5401 |
-| B27 | Advertising (code a) | 450 | accounts.purchases.5500 |
+| B27 | Advertising & Entertainment (codes a, e) | 450 | accounts.purchases.5500 + 5502 |
 | B28 | Telephone, Postage & Stationery (code g) | 1080 | accounts.purchases.5501 |
 | B29 | Travel & Hotel (code h) | 0 | accounts.purchases.5600 |
 | B30 | Motor Vehicle (code v) | 3600 | accounts.purchases.5601 |
@@ -1717,6 +1746,8 @@ Journal amounts include VAT at 20%.
 | K24 | Add: gross bank interest | 0 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
 | K28 | **Profit Chargeable to CT** | 7969 | gl-cor:amount (ct600.box315) |
+| K29 | Add: franked investment income | 0 | gl-cor:amount (ct600.box620) |
+| K30 | **Augmented profits** | 7969 | gl-cor:amount (ct600.augmentedProfits) |
 | K35 | **Corporation Tax** | 1514.11 | gl-cor:taxAmount (ct600.box430) |
 | K39 | Tax Outstanding | 1514.11 | gl-cor:taxAmount (ct600.box600) |
 | E5 |  | 46327 |  |
@@ -1757,6 +1788,9 @@ Journal amounts include VAT at 20%.
 | AJ131 | **Box 430: corporation tax** | 1514.11 | gl-cor:taxAmount (ct600.box430) |
 | Y133 | Box 435: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box435) |
 | Y135 | **Box 440: corporation tax net of marginal rate relief** | 1514.11 | gl-cor:taxAmount (ct600.box440) |
+| Y118 | Box 327: associated companies, first financial year | 2 | gl-cor:count (ct600.box327) |
+| Y120 | Box 328: associated companies, second financial year | 2 | gl-cor:count (ct600.box328) |
+| Z114 | Box 620: franked investment income | 0 | gl-cor:amount (ct600.box620) |
 | B33 |  | 46327 |  |
 | M33 |  | 46691 |  |
 | W137 |  | 19 |  |
@@ -1927,6 +1961,8 @@ Journal amounts include VAT at 20%.
 | D24 | Opening: Credit Card Account | 0 | accounts.assets.1230 (opening) |
 | D25 | Opening: Cash Account | 0 | accounts.assets.1220 (opening) |
 | D28 | Opening: Trade Creditors | -2718 | accounts.liabilities.2100 (opening) |
+| D29 | Opening: Net Wages Creditor | 0 | openingBalance.net_wages_due |
+| D30 | Opening: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due |
 | D31 | Opening: Dividends Creditor | 0 | accounts.capital.3200 (opening) |
 | D33 | Opening: Creditor HMRC Vat | -1000 | accounts.liabilities.2200 (opening) |
 | D35 | Opening: Creditor HMRC Corporation Tax | -900 | accounts.liabilities.2300 (opening) |
@@ -1935,15 +1971,19 @@ Journal amounts include VAT at 20%.
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -30162 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
+| EJ20 | Final: Trade Debtors | 12060 | accounts.assets.1300 (final) |
 | EJ22 | Final: Bank Current Account | 29524.7 | accounts.assets.1200 (final) |
 | EJ23 | Final: Bank Savings Account | 0 | accounts.assets.1210 (final) |
 | EJ24 | Final: Credit Card Account | 0 | accounts.assets.1230 (final) |
 | EJ25 | Final: Cash Account | 0 | accounts.assets.1220 (final) |
 | EJ26 | Final: Intra Cash & Bank Transfers | 0 | gl-cor:amount (intraTransfers) |
+| EJ29 | Final: Net Wages Creditor | 0 | openingBalance.net_wages_due (final) |
+| EJ30 | Final: Other Deductions from Wages | 0 | openingBalance.wage_deductions_due (final) |
 | EJ31 | Final: Dividends Creditor | 0 | accounts.capital.3200 (final) |
 | EJ39 | Final: Directors Loan Account | 0 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | 0 | accounts.liabilities.2600 (final) |
 | EJ48 | Final: Dividends declared | 0 | gl-cor:amount (dividendsDeclared) |
+| EJ90 | Final: Business Entertainment (code e) | 0 | accounts.purchases.5502 (final) |
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 12576 |  |
 | EJ28 |  | -2718 |  |
@@ -1958,12 +1998,6 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| P6 |  | 19 |  |
-| P7 |  | 19 |  |
-| P8 |  | 25 |  |
-| P9 |  | 0.015 |  |
-| P12 |  | 50000 |  |
-| P13 |  | 250000 |  |
 | G5 |  | 100 |  |
 | G7 |  | 100 |  |
 | G6 |  | 14 |  |
@@ -1979,6 +2013,17 @@ Journal amounts include VAT at 20%.
 | O17 |  | 0.25 |  |
 | M19 |  | 20 |  |
 | M21 |  | 20 |  |
+| P6 |  | 19 |  |
+| R6 |  | 25 |  |
+| S6 |  | 0.015 |  |
+| T6 |  | 50000 |  |
+| U6 |  | 250000 |  |
+| P7 |  | 19 |  |
+| R7 |  | 25 |  |
+| S7 |  | 0.015 |  |
+| T7 |  | 50000 |  |
+| U7 |  | 250000 |  |
+| P14 |  | 2 |  |
 | F21 |  | 46691 |  |
 | B9 |  | 46327 |  |
 | B32 |  | 46691 |  |
@@ -2772,7 +2817,7 @@ Journal amounts include VAT at 20%.
 | H3 |  | Dec |  |
 | H4 |  | 48 |  |
 | L7 |  | MONTHLY PAYROLL |  |
-| I9 |  | 46019 |  |
+| I9 |  | 46384 |  |
 | I10 |  | 2 |  |
 | M8 |  | 1 |  |
 | G14 |  | 1048 |  |
@@ -2783,7 +2828,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 0 |  |
 | I16 |  | 0 |  |
 | M16 |  | 2096 |  |
-| M18 |  | 46019 |  |
+| M18 |  | 46384 |  |
 
 ### Payslips.xlsx!Admin
 
@@ -2890,7 +2935,8 @@ Journal amounts include VAT at 20%.
 | N1 |  | 90.5 |  |
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
-| M49 |  | 46081 |  |
+| M49 |  | 46446 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Mike Brown |  |
 | M51 |  | 1048 |  |
 | N51 |  | 0 |  |
@@ -2898,6 +2944,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 1048 |  |
 | S51 |  | PAY-EMP001-2025-07 |  |
 | T51 |  | 0 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Tom Davies |  |
 | M52 |  | 1500 |  |
 | N52 |  | 90.5 |  |
@@ -2948,7 +2995,8 @@ Journal amounts include VAT at 20%.
 | J15 |  | 0 |  |
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
-| M49 |  | 46109 |  |
+| M49 |  | 46474 |  |
+| D51 |  | 1257L |  |
 | F51 |  | Mike Brown |  |
 | M51 |  | 1048 |  |
 | N51 |  | 0 |  |
@@ -2956,6 +3004,7 @@ Journal amounts include VAT at 20%.
 | R51 |  | 1048 |  |
 | S51 |  | PAY-EMP001-2025-08 |  |
 | T51 |  | 0 |  |
+| D52 |  | 1257L |  |
 | F52 |  | Tom Davies |  |
 | M52 |  | 1500 |  |
 | N52 |  | 90.5 |  |
@@ -3059,136 +3108,6 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | A2 |  | Mike Brown |  |
 | B2 |  | Unit 5, Industrial Estate, Sheffield, S1 2AB |  |
-| D2 |  | Director |  |
-| D3 |  | Company Secretary |  |
-
-### Companysecretary.xlsx!DirectorsInterests
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A2 |  | Mike Brown |  |
-| B2 |  | Unit 5, Industrial Estate, Sheffield, S1 2AB |  |
-| C2 |  | 43617 |  |
-
-### expensesform.xlsx!Month 01
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 02
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 03
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 04
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 05
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 06
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 07
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 08
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 09
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 10
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 11
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### expensesform.xlsx!Month 12
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
-
-### Salesinvoice.xlsx!Product Details
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| D2 |  | 20 |  |
-
-### Salesinvoice.xlsx!Invoice Template
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| P58 |  | 8190 |  |
-| P60 |  | 37.5 |  |
-| P62 |  | 1645.5 |  |
-| P64 |  | 9873 |  |
-| J38 |  | 8190 |  |
-| L38 |  | 1 |  |
-| P38 |  | 8190 |  |
-| V38 |  | 1638 |  |
-
-### Currentaccount.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A1 |  | 29090.7 |  |
-| A2 |  | 29524.7 |  |
-
-### Savingaccount.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A1 |  | 0 |  |
-| A2 |  | 0 |  |
-
-### Cashaccount.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A1 |  | 0 |  |
-| A2 |  | 0 |  |
-
-### Creditcardaccount.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A1 |  | 0 |  |
-| A2 |  | 0 |  |
-AB |  |
 | D2 |  | Director |  |
 | D3 |  | Company Secretary |  |
 

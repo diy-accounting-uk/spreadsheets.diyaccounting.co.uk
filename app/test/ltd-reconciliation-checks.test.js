@@ -507,7 +507,40 @@ describeCalc(
       const name = "CT: depreciation add-back = P&L depreciation";
       const corrupted = checksWithCorruptedCell("CorporationTax", "I8", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill", PROFIT_BRIDGE_CHECK]);
+      expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill + entertainment", PROFIT_BRIDGE_CHECK]);
+    });
+
+    it("fails the entertainment add-back when CorporationTax I9 is corrupted via JSZip", async () => {
+      // The fixture's one client dinner: 350 gross, 291.67 net, coded "e".
+      expect(results.CorporationTax.I9).toBeCloseTo(291.67, 2);
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I9", 0);
+      expect(value).toBe(0);
+      const name = 'CT: entertainment add-back = Purchases.xlsx "e" net';
+      const corrupted = checksWithCorruptedCell("CorporationTax", "I9", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill + entertainment", PROFIT_BRIDGE_CHECK]);
+    });
+
+    it("fails the trial balance's entertainment row when TrialBalance EJ90 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ90", 0);
+      expect(value).toBe(0);
+      const name = 'Trial balance: business entertainment = Purchases.xlsx "e" net';
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ90", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails August's advertising and entertainment tie when MnthP&L G27 drops the dinner via JSZip", async () => {
+      const real = results["MnthP&L"].G27;
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "G27", real - results.CorporationTax.I9);
+      expect(value).toBeCloseTo(real - 291.67, 2);
+      const name = 'P&L Aug G27 = Purchases.xlsx "a" and "e" net';
+      const corrupted = checksWithCorruptedCell("MnthP&L", "G27", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([
+        name,
+        "P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases",
+      ]);
     });
 
     it("carries the schedule's per-asset capital allowance rows into the tax computation", () => {
@@ -800,7 +833,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(29664.351207686, 4);
+      expect(ct.K35).toBeCloseTo(29740.591948753, 4);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -809,8 +842,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(31032.057793209, 4);
-      expect(ct600.Y133).toBeCloseTo(1367.706585522, 4);
+      expect(ct600.AJ131).toBeCloseTo(31104.974459877, 4);
+      expect(ct600.Y133).toBeCloseTo(1364.382511123, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank
@@ -1347,7 +1380,7 @@ describeCalc(
       expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
-      expect(tb.EJ35).toBeCloseTo(-29599.85, 2);
+      expect(tb.EJ35).toBeCloseTo(-29676.09, 2);
     });
 
     it("writes each CIS certificate into the purchase journal's own column", () => {

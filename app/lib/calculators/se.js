@@ -440,7 +440,7 @@ function payrollMonths(payroll) {
  * That is what the sheet reports for a disposal with no tax value entered, so
  * it is what this reports too.
  */
-function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, disposal }) {
+function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, specialRate = 0, pool, disposal }) {
   const written = cost > 0;
   const isNewAsset = aiaRate !== undefined;
   const row = { E: cost, F: accDep, H: depRate };
@@ -451,17 +451,23 @@ function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, disp
   row.J = written ? accDep + sheetNumber(row.I) : SHEET_BLANK;
   row.K = written ? (disposal ? 0 : cost - sheetNumber(row.J)) : SHEET_BLANK;
 
+  // Column AB marks a row "S" for the special rate pool: its writing down
+  // allowance then lands in AC at the special rate and R stays blank, and S
+  // nets whichever of the two the row claimed.
+  const specialPool = pool === "special";
   if (!isNewAsset) {
     row.O = taxWdv === undefined ? SHEET_BLANK : taxWdv;
     row.Q = SHEET_BLANK;
     const claimsWritingDown = typeof row.O === "number" && row.O > 0;
-    row.R = claimsWritingDown ? row.O * wdaRate : SHEET_BLANK;
-    row.S = claimsWritingDown ? row.O - row.R : SHEET_BLANK;
+    row.R = claimsWritingDown && !specialPool ? row.O * wdaRate : SHEET_BLANK;
+    row.AC = claimsWritingDown && specialPool ? row.O * specialRate : SHEET_BLANK;
+    row.S = claimsWritingDown ? row.O - sheetNumber(row.R) - sheetNumber(row.AC) : SHEET_BLANK;
   } else {
     row.O = SHEET_BLANK;
     row.P = aiaRate;
     row.Q = written ? cost * aiaRate : SHEET_BLANK;
     row.R = SHEET_BLANK;
+    row.AC = SHEET_BLANK;
     row.S = written ? cost - sheetNumber(row.Q) : SHEET_BLANK;
   }
 
@@ -494,7 +500,7 @@ function carry(inputs, compute) {
   return inputs.some((value) => value === SHEET_ERROR) ? SHEET_ERROR : compute();
 }
 
-const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z"];
+const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC"];
 
 function scheduleTotals(rows) {
   const totals = {};
@@ -515,6 +521,7 @@ function addScheduleTotals(left, right) {
 function buildSchedule(scenario, taxData, rate) {
   const depreciation = taxData?.depreciation || {};
   const wdaRate = taxData?.capital_allowances?.writing_down_allowance ?? 0;
+  const specialRate = taxData?.capital_allowances?.writing_down_allowance_special ?? 0;
   const aiaRate = taxData?.capital_allowances?.annual_investment_allowance ?? 0;
 
   const capitalPurchases = [];
@@ -548,6 +555,8 @@ function buildSchedule(scenario, taxData, rate) {
           taxWdv: asset.tax_wdv,
           depRate: depreciation[block.rateKey] ?? 0,
           wdaRate,
+          specialRate,
+          pool: asset.pool,
           disposal: disposalByAsset.get(asset),
         }),
       );
@@ -680,6 +689,7 @@ function buildAdmin(taxData, dateSerials) {
   cells.N23 = ni.class4_upper_limit;
   cells.G4 = ca.annual_investment_allowance;
   cells.G5 = ca.writing_down_allowance;
+  cells.G6 = ca.writing_down_allowance_special;
   cells.G13 = dep.land_and_property;
   cells.G14 = dep.plant_and_machinery;
   cells.G15 = dep.fixtures_and_fittings;
@@ -913,6 +923,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     const percent = disallowablePercent[key] || 0;
     for (const [col] of QUARTER_COLS) vitalTax[`${col}${row}`] = vitalTax[`${col}${allowableRow}`] * percent;
     vitalTax[`G${row}`] = vitalTax[`C${row}`] + vitalTax[`D${row}`] + vitalTax[`E${row}`] + vitalTax[`F${row}`];
+    // Column I is the input itself (VitalTax!I36-I50): the trader's own
+    // percentage, read back rather than only spent on the row it multiplies.
+    vitalTax[`I${row}`] = percent;
   }
   for (const [col] of QUARTER_COLS) vitalTax[`${col}44`] = vitalTax[`${col}25`];
   vitalTax.G44 = vitalTax.C44 + vitalTax.D44 + vitalTax.E44 + vitalTax.F44;
@@ -947,7 +960,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const boxes32to45Total = sheetSum(Object.values(seFullDisallowable)) + pl.B34;
 
   // ── The fixed asset workbook ──
-  const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E };
+  const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E, AC4: admin.G6 };
   for (const column of SCHEDULE_TOTAL_COLUMNS) scheduleCells[`${column}1`] = schedule.totals[column];
   const faReconciliation = {
     E11: schedule.additions.E,
@@ -988,11 +1001,16 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   });
 
   // ── The two self assessment returns ──
-  // Short return boxes 27, 29 and 35 and full return boxes 50, 52, 53, 57 and
-  // 61 have no formula behind them: the customer fills them in on the Business
-  // Details sheet or on the return, and nothing the scenario carries reaches
-  // them.
-  const goodsForOwnUse = 0;
+  // Short return boxes 29 and 35 have no formula behind them and nothing the
+  // scenario carries reaches them. Goods and services for own use is the one
+  // hand-entered figure both returns read (Business Details!O50), so it
+  // comes from the book's own statement.
+  const annualAllowances = scenario.annual_allowances || {};
+  const annualAdjustments = scenario.annual_adjustments || {};
+  const stated = (value) => (value === undefined ? SHEET_BLANK : value);
+  // D169 and D94 reference O50 directly, and a reference to an empty cell
+  // reads as 0, not as the blank the cell itself shows.
+  const goodsForOwnUse = annualAdjustments.goodsAndServicesOwnUse ?? 0;
   const lossesBroughtForward = 0;
   const lossToCarryForward = 0;
   // Turnover at or below the VAT threshold lets the short return state one
@@ -1004,6 +1022,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
 
   const scheduleQ = schedule.totals.Q;
   const scheduleR = schedule.totals.R;
+  const scheduleAC = schedule.totals.AC;
   const scheduleS = schedule.totals.S;
   const scheduleY = schedule.totals.Y;
   const scheduleZ = schedule.totals.Z;
@@ -1051,7 +1070,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seShort.D71 = shortNetProfit >= 0 ? shortNetProfit : 0;
   seShort.O71 = shortNetProfit < 0 ? -shortNetProfit : 0;
   seShort.D80 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
-  seShort.O80 = carry([scheduleR, scheduleY], () => (scheduleR + scheduleY > 0 ? scheduleR + scheduleY : 0));
+  seShort.O80 = carry([scheduleR, scheduleY, scheduleAC], () =>
+    scheduleR + scheduleY + scheduleAC > 0 ? scheduleR + scheduleY + scheduleAC : 0,
+  );
   seShort.D85 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
   seShort.O85 = carry([scheduleZ], () => (scheduleZ > 0 ? scheduleZ : 0));
   seShort.D94 = goodsForOwnUse;
@@ -1121,22 +1142,22 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
   seFull.G141 = admin.G5;
   seFull.D139 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
-  // Boxes the customer fills in by hand, with no formula to compute them. The
-  // schedule keeps one main pool at the 18% writing down rate, so the special
-  // rate pool (box 51), the zero-emission and structures-and-buildings claims
-  // (boxes 52, 52.1 and 53) and the electric charge-point claim (box 54) have
-  // nothing feeding them.
-  seFull.D147 = SHEET_BLANK;
-  seFull.D152 = SHEET_BLANK;
-  seFull.D156 = SHEET_BLANK;
-  seFull.D160 = SHEET_BLANK;
-  seFull.O139 = SHEET_BLANK;
-  seFull.D179 = SHEET_BLANK;
+  // Box 51 is the special rate pool's writing down allowance, the
+  // schedule's AC column (Admin!G6 on the rows marked S in column AB).
+  seFull.D147 = carry([scheduleAC], () => scheduleAC);
+  // Boxes with no formula behind them, carrying whatever figure the book
+  // states and blank otherwise.
+  seFull.D152 = stated(annualAllowances.zeroEmissionsGoodsVehicleAllowance);
+  seFull.D156 = stated(annualAllowances.zeroEmissionsCarAllowance);
+  seFull.D160 = stated(annualAllowances.structuredBuildingAllowance);
+  seFull.O139 = stated(annualAllowances.electricChargePointAllowance);
+  seFull.D179 = stated(annualAdjustments.includedNonTaxableProfits);
+  seFull.D210 = stated(annualAdjustments.accountingAdjustment);
   // Box 50 carries the whole writing down allowance the schedule claims.
   seFull.D144 = carry([scheduleR], () => scheduleR);
   seFull.O144 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
   seFull.O149 = scheduleY;
-  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O144, seFull.O149], () =>
+  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.O144, seFull.O149], () =>
     sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
   );
   seFull.O160 = scheduleZ;
@@ -1158,7 +1179,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O204 = pl.B11;
   seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
-  seFull.D219 = carry([seFull.O179], () => seFull.O179);
+  // Box 77 is O179+E197+D210+P190: the box 68 and 72 terms read the blank
+  // cell beside each printed dash, so only box 71 joins the loss.
+  seFull.D219 = carry([seFull.O179], () => seFull.O179 + sheetNumber(seFull.D210));
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
   seFull.J280 = admin.N20;
@@ -1220,7 +1243,10 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   forecast.C33 = yearTotal(38);
   forecast.C34 = forecast.C32 + forecast.C33;
   forecast.C37 = pl.B33 + pl.B34;
-  forecast.C38 = carry([scheduleQ, scheduleR, scheduleY, scheduleZ], () => scheduleQ + scheduleR + scheduleY - scheduleZ);
+  forecast.C38 = carry(
+    [scheduleQ, scheduleR, scheduleAC, scheduleY, scheduleZ],
+    () => scheduleQ + scheduleR + scheduleAC + scheduleY - scheduleZ,
+  );
   forecast.C39 = carry([forecast.C38], () => forecast.C34 + forecast.C37 - forecast.C38);
   forecast.C40 = carry([forecast.C39], () => (forecast.C39 <= 0 ? 0 : Math.max(0, admin.N4 - Math.max(0, forecast.C39 - admin.N5) / 2)));
   forecast.C41 = carry([forecast.C39, forecast.C40], () => (forecast.C39 > forecast.C40 ? forecast.C39 - forecast.C40 : 0));
@@ -1239,7 +1265,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
 
   // ── The results, keyed the way the reconciliation reads them ──
   const results = {
-    "Business Details": { C5: businessName(scenario) },
+    "Business Details": { C5: businessName(scenario), O50: stated(annualAdjustments.goodsAndServicesOwnUse) },
     "Profit & Loss Account": pl,
     "Income Tax": incomeTax,
     "Profit Forecast": forecast,

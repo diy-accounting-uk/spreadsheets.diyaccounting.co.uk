@@ -60,7 +60,10 @@ const VAT_RATE = 0.2;
 // Sales and Purchases analysis columns, code letter by column letter, in the
 // order row 5 of each month tab tests them. Column AK of a Purchases month
 // tab is the CIS certificates column, which the writer fills from a
-// sub-contractor purchase rather than from a code letter.
+// sub-contractor purchase rather than from a code letter. Column AJ, business
+// entertainment, sits after the fixed asset column: it is the one expense the
+// working sheet adds back in full, so it has to be analysed apart from the
+// advertising it shares a profit and loss line with.
 export const SALES_ANALYSIS_COLUMNS = { a: "O", b: "P", c: "Q", d: "R", g: "S", o: "T", fs: "U" };
 export const PURCHASE_ANALYSIS_COLUMNS = {
   s: "O",
@@ -84,6 +87,7 @@ export const PURCHASE_ANALYSIS_COLUMNS = {
   y: "AG",
   z: "AH",
   fa: "AI",
+  e: "AJ",
 };
 const SALES_CIS_COLUMN = "V";
 const PURCHASES_CIS_COLUMN = "AK";
@@ -106,7 +110,15 @@ const SALES_ROW_OFFSET = 49;
 const SALES_BAD_DEBT_ROW = 34;
 
 // The management P&L's expense rows and the trial balance row each reads.
+// Row 27 also reads the entertainment row, TRIAL_BALANCE_ENTERTAINMENT_ROW.
 const EXPENSE_PL_ROWS = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74, 28: 75, 29: 76, 30: 77, 31: 78, 32: 79, 33: 80 };
+const ADVERTISING_PL_ROW = 27;
+
+// The trial balance row business entertainment lands on. The profit and loss
+// account shows it with advertising; the Corporation Tax working sheet reads
+// it back out of the trial balance as a third add-back beside goodwill and
+// depreciation, the way HMRC disallows client entertaining in full.
+const TRIAL_BALANCE_ENTERTAINMENT_ROW = 90;
 
 // WagesInterface holds a month a row in two blocks, employees above
 // directors, twelve rows each.
@@ -275,6 +287,7 @@ const TRIAL_BALANCE_READS = [
   "EJ40",
   "EJ48",
   "EJ66",
+  "EJ90",
   "EJ91",
   "L34",
 ];
@@ -284,7 +297,7 @@ const TRIAL_BALANCE_READS = [
 const AUDIT_ROWS = [
   6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 37, 39, 40, 42, 43, 44, 47, 48,
   49, 53, 54, 55, 56, 57, 58, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87,
-  88, 89,
+  88, 89, 90,
 ];
 
 // ── Small helpers ──────────────────────────────────────────────────────────
@@ -1541,6 +1554,7 @@ function buildTrialBalance(input) {
   monthly[87] = zeroMonths().map(() => blocks.whole.I / 12);
   monthly[88] = negated(receipts("X"));
   monthly[89] = payments("X");
+  monthly[TRIAL_BALANCE_ENTERTAINMENT_ROW] = purchasesMonthly(PURCHASE_ANALYSIS_COLUMNS.e);
   monthly[19] = stock.movements;
   for (const [row, values] of Object.entries(monthly)) tb[`EJ${row}`] = sum(values) + (tb[`D${row}`] || 0);
 
@@ -1651,7 +1665,13 @@ function buildMonthlyProfitAndLoss(tb, tabs) {
   pl.B18 = tb.EJ64 + tb.EJ65;
   pl.B19 = tb.EJ66;
   pl.B20 = tb.EJ67;
-  for (const [row, source] of Object.entries(EXPENSE_PL_ROWS)) setRow(row, tb.monthly[source]);
+  for (const [row, source] of Object.entries(EXPENSE_PL_ROWS)) {
+    const values =
+      Number(row) === ADVERTISING_PL_ROW
+        ? tb.monthly[source].map((value, index) => value + tb.monthly[TRIAL_BALANCE_ENTERTAINMENT_ROW][index])
+        : tb.monthly[source];
+    setRow(row, values);
+  }
   setRow(SALES_BAD_DEBT_ROW, tb.monthly[81]);
   pl.B35 = tb.EJ82;
   pl.B36 = tb.EJ83 + tb.EJ88 + tb.EJ89;
@@ -1781,6 +1801,7 @@ function buildDirectorsReport(publishedPl, publishedBalanceSheet, companySecreta
 function buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAccounts }) {
   const goodwill = trialBalance.EJ85 > 0 ? trialBalance.EJ85 : 0;
   const depreciation = trialBalance.EJ87 > 0 ? trialBalance.EJ87 : 0;
+  const entertainment = trialBalance[`EJ${TRIAL_BALANCE_ENTERTAINMENT_ROW}`] > 0 ? trialBalance[`EJ${TRIAL_BALANCE_ENTERTAINMENT_ROW}`] : 0;
   const netBalancingCharge = blocks.whole.W > 0 ? blocks.whole.Z - blocks.whole.Y : 0;
 
   const sheet = {
@@ -1794,7 +1815,8 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAcc
   };
   if (goodwill > 0) sheet.I7 = goodwill;
   if (depreciation > 0) sheet.I8 = depreciation;
-  sheet.K10 = goodwill + depreciation;
+  if (entertainment > 0) sheet.I9 = entertainment;
+  sheet.K10 = goodwill + depreciation + entertainment;
   sheet.K12 = sheet.K5 + sheet.K10;
   sheet.K20 = sheet.I15 + sheet.I16 + sheet.I17 + sheet.I18;
   sheet.K22 = sheet.K12 - sheet.K20;

@@ -182,6 +182,7 @@ Record expenses from all sources, except bank interest and charges, in the Purch
 | **M** | Repairs and maintenance |
 | **U** | Consumable materials |
 | **A** | Advertising and promotion |
+| **E** | Business entertainment (added back in the corporation tax computation) |
 | **G** | General admin (telephone, postage, stationery) |
 | **H** | Travel and hotel expenses |
 | **V** | Motor vehicle expenses |

@@ -5,7 +5,7 @@
 //
 // Pure GA4 event-payload builders for the DIYA-GL pages: a book loaded, a
 // save and a donation prompt shown or followed. Kept apart from
-// public/lib/ecommerce-events.js so this file can sit inside the /books/
+// public/lib/ecommerce-events.js so this file can sit inside the /diya-gl/
 // service worker's cache scope and never risks that file's own
 // view_item_list guard. shell.js calls these and sends the result through
 // its own trackEvent; nothing here touches gtag or the DOM.

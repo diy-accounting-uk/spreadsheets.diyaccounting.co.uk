@@ -444,7 +444,7 @@
       "form": "SA103F",
       "box": "51",
       "label": "Capital allowances at 6% on equipment, including cars with higher CO2 emissions",
-      "cell": null,
+      "cell": "SE Full!D147",
       "field": "allowances.capitalAllowanceSpecialRatePool | allowances.capitalAllowanceSingleAssetPool",
       "route": "annual"
     },
@@ -452,7 +452,7 @@
       "form": "SA103F",
       "box": "52",
       "label": "Zero-emission goods vehicle allowance",
-      "cell": null,
+      "cell": "SE Full!D152",
       "field": "allowances.zeroEmissionsGoodsVehicleAllowance",
       "route": "annual"
     },
@@ -460,7 +460,7 @@
       "form": "SA103F",
       "box": "52.1",
       "label": "Zero-emission car allowance",
-      "cell": null,
+      "cell": "SE Full!D156",
       "field": "allowances.zeroEmissionsCarAllowance",
       "route": "annual"
     },
@@ -468,7 +468,7 @@
       "form": "SA103F",
       "box": "53",
       "label": "The Structures and Buildings Allowance",
-      "cell": null,
+      "cell": "SE Full!D160",
       "field": "allowances.structuredBuildingAllowance",
       "route": "annual"
     },
@@ -484,7 +484,7 @@
       "form": "SA103F",
       "box": "54",
       "label": "Electric charge-point allowance",
-      "cell": null,
+      "cell": "SE Full!O139",
       "field": "allowances.enhancedCapitalAllowance | allowances.electricChargePointAllowance",
       "route": "annual"
     },
@@ -545,7 +545,7 @@
       "form": "SA103F",
       "box": "62",
       "label": "Income, receipts and other profits included in business income or expenses but not taxable as business profits",
-      "cell": null,
+      "cell": "SE Full!D179",
       "field": "adjustments.includedNonTaxableProfits",
       "route": "annual"
     },
@@ -598,7 +598,7 @@
       "form": "SA103F",
       "box": "71",
       "label": "Adjustment for change of accounting practice",
-      "cell": null,
+      "cell": "SE Full!D210",
       "field": "adjustments.accountingAdjustment",
       "route": "annual"
     },

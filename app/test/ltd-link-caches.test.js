@@ -153,8 +153,8 @@ describe("every pinned cell is a calculator output, a writer input or a declared
   });
 
   it("emits every addressed formula cell", () => {
-    expect(FIXTURE.addressed.filter((key) => !blank.has(key)).length).toBe(2105);
-    expect(FIXTURE.addressed.filter((key) => !blank.has(key) && emitted.has(key)).length).toBe(2105);
+    expect(FIXTURE.addressed.filter((key) => !blank.has(key)).length).toBe(2117);
+    expect(FIXTURE.addressed.filter((key) => !blank.has(key) && emitted.has(key)).length).toBe(2117);
   });
 
   it("emits an addressed input cell exactly when the writer fills it", () => {
@@ -240,7 +240,7 @@ describe("LINK_ORDER.ltd names exactly the Ltd templates that carry external lin
 });
 
 describe("every link-addressed cell in the thirteen templates is pinned", () => {
-  it("lists 2,214 cells, no more and no fewer", async () => {
+  it("lists 2,226 cells, no more and no fewer", async () => {
     const addressed = await addressedKeys(await workbookZips(TEMPLATES));
     const pinned = new Set(FIXTURE.addressed);
     expect(
@@ -251,7 +251,7 @@ describe("every link-addressed cell in the thirteen templates is pinned", () => 
       FIXTURE.addressed.filter((key) => !addressed.has(key)),
       "pinned but no template addresses it",
     ).toEqual([]);
-    expect(FIXTURE.addressed.length).toBe(2214);
+    expect(FIXTURE.addressed.length).toBe(2226);
   }, 120000);
 });
 
@@ -355,7 +355,7 @@ describe("the saved package's caches equal the calculator", () => {
     });
     expect(disagreements).toEqual([]);
     expect(uncached, "an addressed formula cell no workbook caches").toEqual([]);
-    expect([keys, readings]).toEqual([2105, 2224]);
+    expect([keys, readings]).toEqual([2117, 2236]);
   }, 300000);
 
   it("caches an addressed input cell exactly where the writer filled it", async () => {
@@ -385,7 +385,7 @@ describe("the committed package's caches equal the calculator", () => {
     const pkg = await committedPackage();
     const { disagreements, keys, readings, uncached } = cacheAgreement(pkg);
     expect(disagreements).toEqual([]);
-    expect([keys, readings]).toEqual([2079, 2198]);
+    expect([keys, readings]).toEqual([2091, 2210]);
     // The 26 the package caches nothing for are the capital allowance cells
     // of the Schedule rows that hold no asset: the sheet's own formula
     // returns a space there, and a space is not a value to cache.
@@ -401,7 +401,7 @@ describe("the committed package's caches equal the calculator", () => {
     pkg.caches = await packageLinkCaches(pkg.zips, LINK_ORDER.ltd);
     const { disagreements, keys, readings } = cacheAgreement(pkg);
     expect(disagreements).toEqual([`${HUB} caches ${key} as 1, the calculator holds ${pkg.engine.get(key)}`]);
-    expect([keys, readings]).toEqual([2079, 2198]);
+    expect([keys, readings]).toEqual([2091, 2210]);
   }, 300000);
 
   it("caches a declared blank only where the package's own inputs fill it", async () => {

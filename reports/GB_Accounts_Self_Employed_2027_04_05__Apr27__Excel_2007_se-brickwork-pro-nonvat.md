@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-brickwork-pro-nonvat
@@ -63,9 +65,10 @@ Trade: Bricklaying, plastering and general building
 | Tax: IT = Basic + Higher + Additional | 0 | 0 | 0 | PASS |
 | Tax: Total = IT + CIS deduction line + NI | -200 | -200 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
-| SA103S: total expenses = cost of sales + admin expenses less depreciation | 59470 | 59470 | 0 | PASS |
-| SA103S: net profit = turnover + other business income - total expenses | 15530 | 15530 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 3530 | 3530 | 0 | PASS |
+| SA103S: total expenses = cost of sales + admin expenses less depreciation | 58990 | 58990 | 0 | PASS |
+| SA103S: net profit = turnover + other business income - total expenses | 16010 | 16010 | 0 | PASS |
+| SA103S: net loss = total expenses - turnover - other business income | 0 | 0 | 0 | PASS |
+| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5 | 4010 | 4010 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
 | Forecast: turnover = P&L turnover | 75000 | 75000 | 0 | PASS |
@@ -101,21 +104,40 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 30 other business expenses (D118) = the profit and loss account | 1200 | 1200 | 0 | PASS |
 | SA103F box 31 total expenses (D122) = the profit and loss account | 60670 | 60670 | 0 | PASS |
 | SA103F box 44 disallowable depreciation (O114) = the profit and loss account | 1200 | 1200 | 0 | PASS |
-| SA103F box 46 total disallowable expenses (O122) = the profit and loss account | 1200 | 1200 | 0 | PASS |
 | SA103F box 75 other business income (O204) = the profit and loss account | 0 | 0 | 0 | PASS |
+| SA103F box 46 total disallowable expenses (O122) = boxes 32 to 45 | 1680 | 1680 | 0 | PASS |
+| SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries | 1200 | 1200 | 0 | PASS |
+| VitalTax annual sales (G5) excludes the Other Income sales that SA103F box 15 (D55) includes | 75000 | 75000 | 0 | PASS |
+| VitalTax other income (rows 8, 11 and 38 folded together) treats Investment Grants as ordinary other income, while SA103F reports them apart at box 75 (O204) rather than box 16 (O55) | 0 | 0 | 0 | PASS |
 | SA103F box 57 total capital allowances (O154) = boxes 49 to 56 | 12000 | 12000 | 0 | PASS |
 | SA103F box 47 net profit (D129) = boxes 15 and 16 less box 31 | 14330 | 14330 | 0 | PASS |
-| SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 1200 | 1200 | 0 | PASS |
+| SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 1680 | 1680 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 12000 | 12000 | 0 | PASS |
-| SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 3530 | 3530 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 | 3530 | 3530 | 0 | PASS |
-| SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 3530 | 3530 | 0 | PASS |
+| SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 4010 | 4010 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 | 4010 | 4010 | 0 | PASS |
+| SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 4010 | 4010 | 0 | PASS |
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 0 | 0 | 0 | PASS |
+| SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 0 | 0 | 0 | PASS |
 | SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
 | SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1 | 0 | 0 | 0 | PASS |
 | SA103F box 59 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
-| SA103F box 51 capital allowances at 6% (D147) is nil | 0 | 0 | 0 | PASS |
+| SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 54 electric charge-point allowance (O139) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 62 income included but not taxable as business profits (D179) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50 | 0 | 0 | 0 | PASS |
+| Business Details!O50 goods and services for own use = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54) | 0 | 0 | 0 | PASS |
+| SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64 | 4010 | 4010 | 0 | PASS |
+| SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 | 4010 | 4010 | 0 | PASS |
+| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off | 4010 | 4010 | 0 | PASS |
+| SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone | 4010 | 4010 | 0 | PASS |
 | SA103F box 15 turnover: full return (D55) = short return (D38) | 75000 | 75000 | 0 | PASS |
 | SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
 | SA103F box 48 net loss: full return (O129) = short return (O71) | 0 | 0 | 0 | PASS |
@@ -123,15 +145,14 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 55 100% and other enhanced capital allowances: full return (O144) = short return (D85) | 0 | 0 | 0 | PASS |
 | SA103F box 59 balancing charge: full return (O160) = short return (O85) | 0 | 0 | 0 | PASS |
 | SA103F box 60 goods and services for own use: full return (D169) = short return (D94) | 0 | 0 | 0 | PASS |
-| SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) | 3530 | 3530 | 0 | PASS |
 | SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106) | 0 | 0 | 0 | PASS |
 | SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94) | 0 | 0 | 0 | PASS |
 | SA103F box 75 other business income: full return (O204) = short return (O99) | 0 | 0 | 0 | PASS |
-| SA103F box 76 total taxable profits: full return (O210) = short return (D106) | 3530 | 3530 | 0 | PASS |
 | SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 200 | 200 | 0 | PASS |
 | SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back | 60670 | 60670 | 0 | PASS |
 | SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation | 14330 | 14330 | 0 | PASS |
-| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 | 12000 | 12000 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54 | 12000 | 12000 | 0 | PASS |
+| SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54) | 0 | 0 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 46118 | 46118 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 46482 | 46482 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.14 | 0.14 | 0 | PASS |
@@ -230,6 +251,7 @@ Trade: Bricklaying, plastering and general building
 | P&L apr col C27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L apr col C28 = Purchases.xlsx l-coded net | 600 | 600 | 0 | PASS |
 | P&L apr col C32 = Purchases.xlsx y-coded net | 1200 | 1200 | 0 | PASS |
+| P&L apr col C49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L may col D15 = Purchases.xlsx c-coded net | 6000 | 6000 | 0 | PASS |
 | P&L may col D16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L may col D22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -240,6 +262,7 @@ Trade: Bricklaying, plastering and general building
 | P&L may col D27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L may col D28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L may col D32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L may col D49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L jun col E15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L jun col E16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L jun col E22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -250,6 +273,7 @@ Trade: Bricklaying, plastering and general building
 | P&L jun col E27 = Purchases.xlsx a-coded net | 300 | 300 | 0 | PASS |
 | P&L jun col E28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L jun col E32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L jun col E49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L jul col F15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L jul col F16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L jul col F22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -260,6 +284,7 @@ Trade: Bricklaying, plastering and general building
 | P&L jul col F27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L jul col F28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L jul col F32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L jul col F49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L aug col G15 = Purchases.xlsx c-coded net | 5000 | 5000 | 0 | PASS |
 | P&L aug col G16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L aug col G22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -270,6 +295,7 @@ Trade: Bricklaying, plastering and general building
 | P&L aug col G27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L aug col G28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L aug col G32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L aug col G49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L sep col H15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L sep col H16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L sep col H22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -280,6 +306,7 @@ Trade: Bricklaying, plastering and general building
 | P&L sep col H27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L sep col H28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L sep col H32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L sep col H49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L oct col I15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L oct col I16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L oct col I22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -290,6 +317,7 @@ Trade: Bricklaying, plastering and general building
 | P&L oct col I27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L oct col I28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L oct col I32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L oct col I49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L nov col J15 = Purchases.xlsx c-coded net | 5000 | 5000 | 0 | PASS |
 | P&L nov col J16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L nov col J22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -300,6 +328,7 @@ Trade: Bricklaying, plastering and general building
 | P&L nov col J27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L nov col J28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L nov col J32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L nov col J49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L dec col K15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L dec col K16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L dec col K22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -310,6 +339,7 @@ Trade: Bricklaying, plastering and general building
 | P&L dec col K27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L dec col K28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L dec col K32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L dec col K49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L jan col L15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L jan col L16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L jan col L22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -320,6 +350,7 @@ Trade: Bricklaying, plastering and general building
 | P&L jan col L27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L jan col L28 = Purchases.xlsx l-coded net | 400 | 400 | 0 | PASS |
 | P&L jan col L32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L jan col L49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L feb col M15 = Purchases.xlsx c-coded net | 4000 | 4000 | 0 | PASS |
 | P&L feb col M16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L feb col M22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -330,6 +361,7 @@ Trade: Bricklaying, plastering and general building
 | P&L feb col M27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L feb col M28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L feb col M32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L feb col M49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N15 = Purchases.xlsx c-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N16 = Purchases.xlsx o-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N22 = Purchases.xlsx p-coded net | 0 | 0 | 0 | PASS |
@@ -340,6 +372,7 @@ Trade: Bricklaying, plastering and general building
 | P&L mar col N27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N28 = Purchases.xlsx l-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N32 = Purchases.xlsx y-coded net | 0 | 0 | 0 | PASS |
+| P&L mar col N49 = Purchases.xlsx e-coded net | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Apr: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx Apr: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
 | Purchases.xlsx May: CIS tax withheld reaches the certificates column (AD1) | 1200 | 1200 | 0 | PASS |
@@ -513,7 +546,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: the page reads the May tab | May | May |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
-| Payslips print: the period ends the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 46170 | 46170 | 0 | PASS |
 | Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
 | Payslips print: gross pay is the pay the scenario recorded | 1500 | 1500 | 0 | PASS |
 | Payslips print: income tax is the tax the scenario recorded | 90.5 | 90.5 | 0 | PASS |
@@ -523,7 +556,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: income tax to date is every month printed so far | 181 | 181 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 72.4 | 72.4 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 2746.6 | 2746.6 | 0 | PASS |
-| Payslips print: the payment date is the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 46170 | 46170 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 18000 | 18000 | 0 | PASS |
 | Payslips!Jul F51 employee name | Tom Davies | Tom Davies |  | PASS |
 | Payslips!Jul M51 gross pay | 1500 | 1500 | 0 | PASS |
@@ -532,7 +565,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Jul R51 net pay | 1373.3 | 1373.3 | 0 | PASS |
 | Payslips!Jul T51 employer NI | 0 | 0 | 0 | PASS |
 | Payslips!Jul S51 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
-| Payslips!Jul M49 wages paid date | 45866 | 45866 | 0 | PASS |
+| Payslips!Jul M49 wages paid date | 46231 | 46231 | 0 | PASS |
 | Payslips!Aug F51 employee name | Tom Davies | Tom Davies |  | PASS |
 | Payslips!Aug M51 gross pay | 1500 | 1500 | 0 | PASS |
 | Payslips!Aug N51 income tax | 90.5 | 90.5 | 0 | PASS |
@@ -540,7 +573,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Aug R51 net pay | 1373.3 | 1373.3 | 0 | PASS |
 | Payslips!Aug T51 employer NI | 0 | 0 | 0 | PASS |
 | Payslips!Aug S51 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
-| Payslips!Aug M49 wages paid date | 45897 | 45897 | 0 | PASS |
+| Payslips!Aug M49 wages paid date | 46262 | 46262 | 0 | PASS |
 | Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
 | Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
@@ -721,14 +754,15 @@ Trade: Bricklaying, plastering and general building
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
-| Admin: NI Class 2 Weekly Rate = tax data | 3.5 | 3.5 | 0 | PASS |
-| Admin: NI Class 2 Small Profits Threshold = tax data | 6845 | 6845 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 3.65 | 3.65 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 7105 | 7105 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
 | Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
+| Admin: special rate WDA = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
@@ -797,7 +831,7 @@ Trade: Bricklaying, plastering and general building
 | Category netting: Repairs & Maintenance (purchases m) net reaches Profit & Loss Account!B23 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: General Administrative Expenses (purchases g) net reaches Profit & Loss Account!B24 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Motor Expenses (purchases v) net reaches Profit & Loss Account!B25 with no residue | 0 | 0 | 0 | PASS |
-| Category netting: Advertising & Promotion (purchases a) net reaches Profit & Loss Account!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Advertising Promotion & Entertainment (purchases a) net reaches Profit & Loss Account!B27 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Legal & Professional Fees (purchases l) net reaches Profit & Loss Account!B28 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Other Expenses (purchases y) net reaches Profit & Loss Account!B32 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Purchases after stock adjustment, less the year's stock movement (purchases s) net reaches Profit & Loss Account!B14 less the stock movement with no residue | 0 | 0 | 0 | PASS |
@@ -809,18 +843,23 @@ Trade: Bricklaying, plastering and general building
 | Line | Cell | Amount |
 |------|------|-------:|
 | Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 14,330 |
-| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 1,200 |
+| Add disallowable expenses added back (box 46) | SE Full!O122 | 1,680 |
 | Less grants, taxed as other business income below | Profit & Loss Account!B11 | 0 |
-| Less net loss for the year (box 22) | SE Short!O71 | 0 |
 | Less annual investment allowance (box 23) | SE Short!D80 | -12,000 |
 | Less small-balance allowance (box 24) | SE Short!D85 | 0 |
 | Less other capital allowances (box 25) | SE Short!O80 | 0 |
 | Add balancing charges (box 26) | SE Short!O85 | 0 |
 | Add goods and services for own use (box 27) | SE Short!D94 | 0 |
-| Add grants as other business income (box 30) | SE Short!O99 | 0 |
+| Less the full return's own zero-emission goods vehicle allowance (box 52) | SE Full!D152 | 0 |
+| Less the full return's own zero-emission car allowance (box 52.1) | SE Full!D156 | 0 |
+| Less the full return's own Structures and Buildings Allowance (box 53) | SE Full!D160 | 0 |
+| Less the full return's own electric charge-point allowance (box 54) | SE Full!O139 | 0 |
+| Less the full return's own box 62 adjustment | SE Full!D179 | 0 |
+| Add back the year's loss, carried forward rather than reducing tax below nil | SE Full!O179 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
-| **Tax profit the bridge computes** | | **3,530** |
-| Tax profit the sheet carries | Income Tax!E5 | 3,530 |
+| Add grants as other business income (box 30) | SE Short!O99 | 0 |
+| **Tax profit the bridge computes** | | **4,010** |
+| Tax profit the sheet carries | Income Tax!E5 | 4,010 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -832,6 +871,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | | Amount |
 |---|------:|
 | Business Name | BrickWork Pro Trading |
+| &nbsp;&nbsp;&nbsp;&nbsp;Value of goods and services for own use (box 24) | — |
 
 ## Profit & Loss Account
 
@@ -870,7 +910,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 3,530 |
+| Profit from Self Employment | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
 | Taxable Income | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 0 |
@@ -924,19 +964,20 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | — |
-| **Total expenses** | 59,470 |
-| **Net profit/loss** | 15,530 |
+| **Total expenses** | 58,990 |
+| **Net profit/loss** | 16,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 26) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Net business profit (box 28)** | 3,530 |
+| **Net business profit (box 28)** | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 30) | 0 |
 | Turnover note | Business income - if your annual turnover was below £90000 VAT threshold |
-| **Net profit for tax calc (box 31)** | 3,530 |
+| **Net profit for tax calc (box 31)** | 4,010 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss for tax calc | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 35) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Deductions by contractors (box 38) | 200 |
 
@@ -962,24 +1003,31 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses (box 30) | 1,200 |
 | **Total expenses (box 31)** | 60,670 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Disallowable depreciation (box 44) | 1,200 |
-| **Total disallowable expenses (box 46)** | 1,200 |
+| **Total disallowable expenses (box 46)** | 1,680 |
 | **Net profit (box 47)** | 14,330 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 48) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 49) | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances at 18% (box 50) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances at 6% (box 51) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Zero-emission goods vehicle allowance (box 52) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Zero-emission car allowance (box 52.1) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Structures and Buildings Allowance (box 53) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Electric charge-point allowance (box 54) | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;100% and other enhanced capital allowances (box 55) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 56) | 0 |
 | **Total capital allowances (box 57)** | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 59) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 60) | 0 |
-| **Total additions to net profit (box 61)** | 1,200 |
+| **Total additions to net profit (box 61)** | 1,680 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income included but not taxable as business profits (box 62) | — |
 | **Total deductions from net profit (box 63)** | 12,000 |
-| **Net business profit for tax purposes (box 64)** | 3,530 |
+| **Net business profit for tax purposes (box 64)** | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65) | 0 |
-| **Adjusted profit (box 73)** | 3,530 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71) | — |
+| **Adjusted profit (box 73)** | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 0 |
-| **Total taxable profits from this business (box 76)** | 3,530 |
+| **Total taxable profits from this business (box 76)** | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 200 |
@@ -1032,14 +1080,15 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
-| NI Class 2 Weekly Rate | 3.5 |
-| NI Class 2 Small Profits Threshold | 6,845 |
+| NI Class 2 Weekly Rate | 3.65 |
+| NI Class 2 Small Profits Threshold | 7,105 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
 | NI Class 4 Upper Limit | 50,270 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
+| Special Rate Writing Down Allowance Rate | 0.06 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -1335,6 +1384,19 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | L32 |  | 0 |  |
 | M32 |  | 0 |  |
 | N32 |  | 0 |  |
+| B49 |  | 0 |  |
+| C49 |  | 0 |  |
+| D49 |  | 0 |  |
+| E49 |  | 0 |  |
+| F49 |  | 0 |  |
+| G49 |  | 0 |  |
+| H49 |  | 0 |  |
+| I49 |  | 0 |  |
+| J49 |  | 0 |  |
+| K49 |  | 0 |  |
+| L49 |  | 0 |  |
+| M49 |  | 0 |  |
+| N49 |  | 0 |  |
 | C33 |  | 0 |  |
 | D33 |  | 0 |  |
 | E33 |  | 0 |  |
@@ -1384,12 +1446,60 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | L38 |  | 0 |  |
 | M38 |  | 0 |  |
 | N38 |  | 0 |  |
+| C14 |  | 1250 |  |
+| D14 |  | 1250 |  |
+| E14 |  | 1250 |  |
+| F14 |  | 1250 |  |
+| G14 |  | 1250 |  |
+| H14 |  | 1250 |  |
+| I14 |  | 1250 |  |
+| J14 |  | 1250 |  |
+| K14 |  | 1250 |  |
+| L14 |  | 1250 |  |
+| M14 |  | 1250 |  |
+| N14 |  | 1750 |  |
+| C21 |  | 1500 |  |
+| D21 |  | 1500 |  |
+| E21 |  | 1500 |  |
+| F21 |  | 1500 |  |
+| G21 |  | 1500 |  |
+| H21 |  | 1500 |  |
+| I21 |  | 1500 |  |
+| J21 |  | 1500 |  |
+| K21 |  | 1500 |  |
+| L21 |  | 1500 |  |
+| M21 |  | 1500 |  |
+| N21 |  | 1500 |  |
+| C30 |  | 0 |  |
+| D30 |  | 0 |  |
+| E30 |  | 0 |  |
+| F30 |  | 0 |  |
+| G30 |  | 0 |  |
+| H30 |  | 0 |  |
+| I30 |  | 0 |  |
+| J30 |  | 0 |  |
+| K30 |  | 0 |  |
+| L30 |  | 0 |  |
+| M30 |  | 0 |  |
+| N30 |  | 0 |  |
+| C31 |  | 0 |  |
+| D31 |  | 0 |  |
+| E31 |  | 0 |  |
+| F31 |  | 0 |  |
+| G31 |  | 0 |  |
+| H31 |  | 0 |  |
+| I31 |  | 0 |  |
+| J31 |  | 0 |  |
+| K31 |  | 0 |  |
+| L31 |  | 0 |  |
+| M31 |  | 0 |  |
+| N31 |  | 0 |  |
 
 ### Income Tax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 3530 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 4010 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
 | E7 | Taxable Income | 0 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 0 | tax.incomeTax.basicRate |
@@ -1434,19 +1544,20 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | S17 | Accounting date | 46118 | documentInfo.periodCoveredEnd |
 | D38 | Turnover | 75000 | gl-cor:amount (sa103s.turnover) |
 | O38 | Other business income | 0 | gl-cor:amount (sa103s.otherIncome) |
-| O64 | **Total expenses** | 59470 | gl-cor:amount (sa103s.totalExpenses) |
-| D71 | **Net profit/loss** | 15530 | gl-cor:amount (sa103s.netProfit) |
+| O64 | **Total expenses** | 58990 | gl-cor:amount (sa103s.totalExpenses) |
+| D71 | **Net profit/loss** | 16010 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | Other capital allowances (box 25) | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing charges (box 26) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Net business profit (box 28)** | 3530 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 4010 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | A33 | Turnover note | Business income - if your annual turnover was below £90000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc (box 31)** | 3530 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 4010 | gl-cor:amount (sa103s.profitForTax) |
+| O106 | Net loss for tax calc | 0 | gl-cor:amount (sa103s.lossForTax) |
 | D124 | Total loss to carry forward (box 35) | 0 | gl-cor:amount (sa103s.lossCarriedForward) |
 | O124 | Deductions by contractors (box 38) | 200 | diya-gl:cisDeduction (sa103s) |
 
@@ -1472,24 +1583,25 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | D118 | Other business expenses (box 30) | 1200 | gl-cor:amount (sa103f.otherExpenses) |
 | D122 | **Total expenses (box 31)** | 60670 | gl-cor:amount (sa103f.totalExpenses) |
 | O114 | Disallowable depreciation (box 44) | 1200 | gl-cor:amount (sa103f.disallowableDepreciation) |
-| O122 | **Total disallowable expenses (box 46)** | 1200 | gl-cor:amount (sa103f.totalDisallowable) |
+| O122 | **Total disallowable expenses (box 46)** | 1680 | gl-cor:amount (sa103f.totalDisallowable) |
 | D129 | **Net profit (box 47)** | 14330 | gl-cor:amount (sa103f.netProfit) |
 | O129 | Net loss (box 48) | 0 | gl-cor:amount (sa103f.netLoss) |
 | D139 | Annual investment allowance (box 49) | 12000 | tax.capitalAllowances.aia (sa103f) |
 | D144 | Capital allowances at 18% (box 50) | 0 | tax.capitalAllowances.wda (sa103f) |
+| D147 | Capital allowances at 6% (box 51) | 0 | tax.capitalAllowances.specialRateWDA (sa103f) |
 | O144 | 100% and other enhanced capital allowances (box 55) | 0 | tax.capitalAllowances.enhanced (sa103f) |
 | O149 | Allowances on sale or cessation (box 56) | 0 | tax.capitalAllowances.balancingAllowance (sa103f) |
 | O154 | **Total capital allowances (box 57)** | 12000 | tax.capitalAllowances (sa103f) |
 | O160 | Balancing charge (box 59) | 0 | tax.capitalAllowances.balancingCharge (sa103f) |
 | D169 | Goods and services for own use (box 60) | 0 | gl-cor:amount (sa103f.ownUse) |
-| D174 | **Total additions to net profit (box 61)** | 1200 | gl-cor:amount (sa103f.totalAdditions) |
+| D174 | **Total additions to net profit (box 61)** | 1680 | gl-cor:amount (sa103f.totalAdditions) |
 | O169 | **Total deductions from net profit (box 63)** | 12000 | gl-cor:amount (sa103f.totalDeductions) |
-| O174 | **Net business profit for tax purposes (box 64)** | 3530 | gl-cor:amount (sa103f.taxableProfit) |
+| O174 | **Net business profit for tax purposes (box 64)** | 4010 | gl-cor:amount (sa103f.taxableProfit) |
 | O179 | Net business loss for tax purposes (box 65) | 0 | gl-cor:amount (sa103f.taxableLoss) |
-| O194 | **Adjusted profit (box 73)** | 3530 | gl-cor:amount (sa103f.adjustedProfit) |
+| O194 | **Adjusted profit (box 73)** | 4010 | gl-cor:amount (sa103f.adjustedProfit) |
 | O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 0 | gl-cor:amount (sa103f.otherBusinessIncome) |
-| O210 | **Total taxable profits from this business (box 76)** | 3530 | gl-cor:amount (sa103f.profitForTax) |
+| O210 | **Total taxable profits from this business (box 76)** | 4010 | gl-cor:amount (sa103f.profitForTax) |
 | D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
 | O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 81) | 200 | diya-gl:cisDeduction (sa103f) |
@@ -1498,6 +1610,19 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | V2 |  | 46482 |  |
 | G141 |  | 0.14 |  |
 | J280 |  | 12570 |  |
+| O66 |  | 0 |  |
+| O70 |  | 0 |  |
+| O74 |  | 0 |  |
+| O78 |  | 480 |  |
+| O82 |  | 0 |  |
+| O86 |  | 0 |  |
+| O90 |  | 0 |  |
+| O94 |  | 0 |  |
+| O98 |  | 0 |  |
+| O102 |  | 0 |  |
+| O106 |  | 0 |  |
+| O110 |  | 0 |  |
+| O118 |  | 0 |  |
 
 ### Wagesinterface
 
@@ -1566,6 +1691,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | E7 | Q3 Expenses | 3750 | gl-cor:amount (vitalTax.q3Exp) |
 | F7 | Q4 Expenses | 4250 | gl-cor:amount (vitalTax.q4Exp) |
 | G7 | **Annual Expenses** | 15500 | gl-cor:amount (vitalTax.annualExp) |
+| I39 |  | 0.2 |  |
 
 ### Admin
 
@@ -1579,14 +1705,15 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N12 | Higher Band Start | 37701 |  |
 | N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
-| L16 | NI Class 2 Weekly Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
-| N16 | NI Class 2 Small Profits Threshold | 6845 | tax.nationalInsurance.class2SmallProfitsThreshold |
+| L16 | NI Class 2 Weekly Rate | 3.65 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 7105 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
 | N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
 | G4 | Annual Investment Allowance Rate | 1 |  |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
+| G6 | Special Rate Writing Down Allowance Rate | 0.06 | tax.capitalAllowances.specialRateWDA |
 | F21 | Mileage Higher Rate Limit | 10000 |  |
 | G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 |  |
@@ -2190,6 +2317,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | X1 | Accumulated depreciation on the assets sold in the year | 0 |  |
 | Y1 | Balancing allowance on the disposals | 0 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
+| AC1 |  | 0 |  |
+| AC4 |  | 0.06 |  |
 | E57 | Cost of the assets owned at the start of the year | 0 |  |
 | E110 | Cost of the assets bought during the year | 12000 |  |
 
@@ -2246,7 +2375,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | N1 |  | 90.5 |  |
 | P1 |  | 0 |  |
 | T41 |  | 0 |  |
-| M49 |  | 45866 |  |
+| M49 |  | 46231 |  |
 | D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
@@ -2300,7 +2429,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | J15 |  | 0 |  |
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
-| M49 |  | 45897 |  |
+| M49 |  | 46262 |  |
 | D51 |  | 1257L |  |
 | F51 |  | Tom Davies |  |
 | M51 |  | 1500 |  |
@@ -2457,7 +2586,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H3 |  | May |  |
 | H4 |  | 48 |  |
 | L7 |  | MONTHLY PAYROLL |  |
-| I9 |  | 45805 |  |
+| I9 |  | 46170 |  |
 | I10 |  | 2 |  |
 | M8 |  | 1 |  |
 | G14 |  | 1500 |  |
@@ -2468,7 +2597,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H16 |  | 181 |  |
 | I16 |  | 72.4 |  |
 | M16 |  | 2746.6 |  |
-| M18 |  | 45805 |  |
+| M18 |  | 46170 |  |
 
 ### Payslips.xlsx!Admin
 

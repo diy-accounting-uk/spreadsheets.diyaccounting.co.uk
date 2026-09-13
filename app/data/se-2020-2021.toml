@@ -35,6 +35,7 @@ class2_small_profits_threshold = 6475
 [capital_allowances]
 annual_investment_allowance = 1.00
 writing_down_allowance = 0.18
+writing_down_allowance_special = 0.06
 
 [depreciation]
 land_and_property = 0.00

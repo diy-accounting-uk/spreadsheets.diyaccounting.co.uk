@@ -68,8 +68,10 @@ describe("SA103F box 44 leaves the loss on disposal out of the disallowable tota
     const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
     expect(advancedRow.pass).toBe(false);
     expect(advancedRow.severity).toBe("warning");
-    expect(advancedRow.actual).toBeCloseTo(13740, 2);
-    expect(advancedRow.expected).toBeCloseTo(13912, 2);
+    // 13,740 of depreciation on the van, the laptop and the year's purchases
+    // plus the estate car's 4,000; box 29 adds the 172 loss on the van.
+    expect(advancedRow.actual).toBeCloseTo(17740, 2);
+    expect(advancedRow.expected).toBeCloseTo(17912, 2);
     expect(advancedRow.diff).toBeCloseTo(-172, 2);
 
     for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {

@@ -1164,6 +1164,9 @@ const SCHEDULE_ASSET_COLUMNS = {
   taxWrittenDownValue: "O",
 };
 const SCHEDULE_DISPOSAL_COLUMNS = { disposedDate: "U", disposalProceeds: "V" };
+// Column AB, "S" on a row whose tax written-down value sits in the special
+// rate pool (the Self Employed Schedule's AC column, SA103F box 51).
+const SCHEDULE_SPECIAL_RATE_POOL_MARKER = { column: "AB", value: "S" };
 
 // The single-file products keep one Fixed Assets sheet inside the workbook
 // and their writers fill only its in-year addition block: BST the Plant &
@@ -1256,6 +1259,9 @@ async function fixedAssetRegisterFrom(set, product) {
       const cost = numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.cost}${row}`, sharedStrings);
       if (cost === undefined || cost === 0) continue;
       const asset = { class: assetClass, cost };
+      if (textAt(xml, `${SCHEDULE_SPECIAL_RATE_POOL_MARKER.column}${row}`, sharedStrings) === SCHEDULE_SPECIAL_RATE_POOL_MARKER.value) {
+        asset.capitalAllowancePool = "special";
+      }
       assign(asset, "description", textAt(xml, `${SCHEDULE_ASSET_COLUMNS.description}${row}`, sharedStrings));
       assign(asset, "accumulatedDepreciation", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.accumulatedDepreciation}${row}`, sharedStrings));
       assign(asset, "taxWrittenDownValue", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.taxWrittenDownValue}${row}`, sharedStrings));
@@ -1681,6 +1687,21 @@ const SE_DISALLOWABLE_PERCENT_CELLS = {
   otherExpenses: "I50",
 };
 
+// The SA103F boxes the trader states by hand, the same cells app/products/
+// se.js writes from ANNUAL_ALLOWANCE_CELLS and ANNUAL_ADJUSTMENT_CELLS, and
+// the Business Details cell both returns read box 60 from.
+const SE_ANNUAL_ALLOWANCE_CELLS = {
+  zeroEmissionsGoodsVehicleAllowance: "D152",
+  zeroEmissionsCarAllowance: "D156",
+  structuredBuildingAllowance: "D160",
+  electricChargePointAllowance: "O139",
+};
+const SE_ANNUAL_ADJUSTMENT_CELLS = {
+  includedNonTaxableProfits: "D179",
+  accountingAdjustment: "D210",
+};
+const SE_GOODS_FOR_OWN_USE_CELL = "O50";
+
 const ENTITY_CELLS = {
   bst: {
     file: null,
@@ -2028,12 +2049,20 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
 //   unmapped rather than assumed to be today's £1,000,000.
 // - Class 1 employee NI (main/upper rate, primary threshold, UEL): no
 //   app/data/*.toml carries the employee side, only Ltd's employer_ni block.
+// - tax.capitalAllowances.specialRateWDA: only for a product whose schedule
+//   keeps a special rate pool (SPECIAL_RATE_POOL_PRODUCTS below).
 // - tax.vat.*: only for a product whose sheets carry a VAT rate cell of
 //   their own (VAT_RATE_CELLS). BST and Taxi have none -- their book's own
 //   entityInformation.diya-gl:vatRegistered stays absent for the same
 //   reason -- so restating the year file's VAT rates on their books would
 //   carry a rate the package never entered.
-function taxTablesFromRateData(raw, { includeVat = true } = {}) {
+// The products whose fixed asset schedule keeps a special rate pool of its
+// own: Ltd's two-pool Schedule and the Self Employed Schedule's AC column at
+// Admin!G6. The BST and Taxi sheets keep one pool at one rate, so the year
+// file's special rate is not a rate their package entered.
+const SPECIAL_RATE_POOL_PRODUCTS = new Set(["se", "ltd"]);
+
+function taxTablesFromRateData(raw, { includeVat = true, includeSpecialRate = true } = {}) {
   const tax = {};
   const set = (table, field, value) => {
     if (value === undefined) return;
@@ -2096,7 +2125,7 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   const ca = raw.capital_allowances;
   if (ca) {
     set("capitalAllowances", "mainRateWDA", ca.writing_down_allowance_main ?? ca.writing_down_allowance);
-    set("capitalAllowances", "specialRateWDA", ca.writing_down_allowance_special);
+    if (includeSpecialRate) set("capitalAllowances", "specialRateWDA", ca.writing_down_allowance_special);
     set("capitalAllowances", "firstYearAllowanceRate", ca.full_expensing_rate);
   }
 
@@ -2142,7 +2171,10 @@ export async function taxTablesForPackage(adminXml, adminSharedStrings, product,
   if (!fileName) return {};
   const text = await readRateData(fileName);
   if (text === null) return {};
-  return taxTablesFromRateData(parseTOML(text), { includeVat: Boolean(VAT_RATE_CELLS[product]) });
+  return taxTablesFromRateData(parseTOML(text), {
+    includeVat: Boolean(VAT_RATE_CELLS[product]),
+    includeSpecialRate: SPECIAL_RATE_POOL_PRODUCTS.has(product),
+  });
 }
 
 function numberAt(xml, cellRef, sharedStrings) {
@@ -2500,15 +2532,34 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
   // tax on a larger profit than the sheet does: box 46 loses every category's
   // share and keeps only the wholly disallowable pair.
   if (product === "se") {
+    const selfEmployment = {};
     const vitalTax = await openSheet(hubZip, "VitalTax");
     if (vitalTax) {
-      const percentages = {};
       for (const [field, cell] of Object.entries(SE_DISALLOWABLE_PERCENT_CELLS)) {
         const value = numberAt(vitalTax.xml, cell, vitalTax.sharedStrings);
-        if (value !== undefined) percentages[field] = value;
+        if (value !== undefined) selfEmployment[field] = value;
       }
-      if (Object.keys(percentages).length > 0) tax.selfEmployment = percentages;
     }
+    // The annual SA103F figures the trader stated by hand on SE Full and
+    // Business Details. Each cell is empty until a book states it, so only a
+    // number counts; a blank is a figure the book never had.
+    const seFull = await openSheet(hubZip, "SE Full");
+    const readStated = (sheet, cells) => {
+      const figures = {};
+      for (const [field, cell] of Object.entries(cells)) {
+        const value = numberAt(sheet.xml, cell, sheet.sharedStrings);
+        if (value !== undefined) figures[field] = value;
+      }
+      return figures;
+    };
+    if (seFull) {
+      const allowances = readStated(seFull, SE_ANNUAL_ALLOWANCE_CELLS);
+      const adjustments = readStated(seFull, SE_ANNUAL_ADJUSTMENT_CELLS);
+      if (entitySheet) Object.assign(adjustments, readStated(entitySheet, { goodsAndServicesOwnUse: SE_GOODS_FOR_OWN_USE_CELL }));
+      if (Object.keys(allowances).length > 0) selfEmployment.allowances = allowances;
+      if (Object.keys(adjustments).length > 0) selfEmployment.adjustments = adjustments;
+    }
+    if (Object.keys(selfEmployment).length > 0) tax.selfEmployment = selfEmployment;
   }
 
   // The two Corporation Tax figures the company enters rather than the year's

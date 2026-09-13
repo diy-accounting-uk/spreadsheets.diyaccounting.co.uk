@@ -27,6 +27,10 @@ import {
   STOCK_CLOSING_COUNT_CELL,
   BUSINESS_DESCRIPTION_CELL,
   DISALLOWABLE_PERCENT_CELLS,
+  ANNUAL_ALLOWANCE_CELLS,
+  ANNUAL_ADJUSTMENT_CELLS,
+  GOODS_FOR_OWN_USE_CELL,
+  SPECIAL_RATE_POOL_MARKER_COLUMN,
   SALESINVOICE_VAT_REG_CELL,
   SALESINVOICE_TELEPHONE_CELL,
   SALESINVOICE_PRODUCT_DETAILS_COLUMNS,
@@ -352,13 +356,13 @@ function isPayslipsInputCell(sheet, cellRef) {
 }
 
 // Schedule: an opening asset's description/cost/acc-dep/tax-wdv (C, E, F, O)
-// on its existing-asset row, or an in-year disposal's date/proceeds (U, V) on
-// that same row; a new purchase's date/supplier/cost (B, C, E) on a New
-// Plant & Machinery row. See app/products/se.js's cellWrites() Schedule
-// writer.
+// and its special rate pool marker (AB) on its existing-asset row, or an
+// in-year disposal's date/proceeds (U, V) on that same row; a new purchase's
+// date/supplier/cost (B, C, E) on a New Plant & Machinery row. See
+// app/products/se.js's cellWrites() Schedule writer.
 const EXISTING_SCHEDULE_ROWS = new Set([...EXISTING_ASSET_ROWS.motor, ...EXISTING_ASSET_ROWS.computer]);
 const NEW_SCHEDULE_ROWS = new Set(NEW_PLANT_ROWS);
-const EXISTING_SCHEDULE_COLUMNS = ["C", "E", "F", "O", "U", "V"];
+const EXISTING_SCHEDULE_COLUMNS = ["C", "E", "F", "O", "U", "V", SPECIAL_RATE_POOL_MARKER_COLUMN];
 const NEW_SCHEDULE_COLUMNS = ["B", "C", "E"];
 const HP_ROWS = new Set(HP_AGREEMENT_ROWS);
 const HP_COLUMNS = ["B", "C", "D", "E", "F", "G", "H", "L"];
@@ -389,11 +393,15 @@ function isVatInputCell(sheet, cellRef) {
   return false;
 }
 
-// The hub's own business name and description, and the two stock counts.
+// The hub's own business name, description and goods for own use, the two
+// stock counts, the disallowable percentages and the SA103F boxes the book
+// states by hand.
+const SE_FULL_STATED_CELLS = new Set([...Object.values(ANNUAL_ALLOWANCE_CELLS), ...Object.values(ANNUAL_ADJUSTMENT_CELLS)]);
 function isHubInputCell(sheet, cellRef) {
-  if (sheet === "Business Details") return cellRef === "C5" || cellRef === BUSINESS_DESCRIPTION_CELL;
+  if (sheet === "Business Details") return cellRef === "C5" || cellRef === BUSINESS_DESCRIPTION_CELL || cellRef === GOODS_FOR_OWN_USE_CELL;
   if (sheet === "StockControl") return cellRef === STOCK_OPENING_COUNT_CELL || cellRef === STOCK_CLOSING_COUNT_CELL;
   if (sheet === "VitalTax") return Object.values(DISALLOWABLE_PERCENT_CELLS).includes(cellRef);
+  if (sheet === "SE Full") return SE_FULL_STATED_CELLS.has(cellRef);
   return false;
 }
 

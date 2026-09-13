@@ -279,8 +279,8 @@
     },
     {
       "path": "tax.capitalAllowances.specialRateWDA",
-      "products": ["bst", "taxi", "se"],
-      "reason": "The self-employment year files declare one writing_down_allowance rate. The special rate pool is a Company distinction their capital allowance block does not draw."
+      "products": ["bst", "taxi"],
+      "reason": "The Basic Sole Trader and Taxi Driver Fixed Assets sheets keep one writing down pool at Admin's single rate. The Self Employed Schedule keeps a special rate pool at Admin!G6, which the year files state as writing_down_allowance_special."
     },
     {
       "path": "tax.incomeTax.additionalRate",

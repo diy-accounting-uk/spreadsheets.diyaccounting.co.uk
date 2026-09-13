@@ -138,7 +138,7 @@ accountMainDescription = "General admin (telephone, postage, stationery)"
 
 [accounts.purchases."5502"]
 accountMainDescription = "Business entertainment"
-"diya-gl:column" = "Z"
+"diya-gl:column" = "AJ"
 
 [accounts.purchases."5600"]
 accountMainDescription = "Travel and hotel expenses"
@@ -302,6 +302,15 @@ description = "Laptop (0.5 years old)"
 cost = 3000.00
 accumulatedDepreciation = 270.00
 
+[[fixedAssets]]
+assetID = "SE-FA-1"
+class = "motorVehicles"
+capitalAllowancePool = "special"
+description = "Estate car (CO2 over 50g/km, 1.5 years old)"
+cost = 16000.00
+accumulatedDepreciation = 4000.00
+taxWrittenDownValue = 9000.00
+
 [[hpAgreements]]
 agreementID = "HP-2025-01"
 financeCompany = "Close Brothers Asset Finance"
@@ -366,6 +375,15 @@ financeCharges = 0.1000
 irrecoverableDebts = 0.1100
 professionalFees = 0.1200
 otherExpenses = 0.1300
+
+[tax.selfEmployment.allowances]
+zeroEmissionsCarAllowance = 2500.00
+structuredBuildingAllowance = 1800.00
+
+[tax.selfEmployment.adjustments]
+goodsAndServicesOwnUse = 640.00
+includedNonTaxableProfits = 350.00
+accountingAdjustment = 90.00
 
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000.00

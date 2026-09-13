@@ -2405,7 +2405,7 @@ account = "5800"
 date = 2025-08-12
 supplier = "The Ivy"
 description = "Client dinner, project kickoff"
-code = "a"
+code = "e"
 amount = 350
 account = "5502"
 

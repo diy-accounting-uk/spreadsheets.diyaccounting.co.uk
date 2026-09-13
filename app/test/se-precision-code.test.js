@@ -95,15 +95,18 @@ describeCalc(
 
     // ── Income Tax assertions ─────────────────────────────────────────────
 
-    it("Income Tax: profit = SE Short tax-basis profit for tax calc", () => {
+    it("Income Tax: profit = SE Full tax-basis profit, which the short return restates less its own missing boxes", () => {
       // Income Tax!E5 reads 'SE Full'!O210, the tax-basis profit -- P&L!B39
       // is the accounting profit, which is not the same figure once real
       // capital allowances and depreciation are in play (accounting
       // depreciation is added back and replaced by capital allowances for
-      // income tax purposes). SE Short!D106 independently derives the same
-      // tax-basis figure through the SA103S boxes; the two staying equal is
-      // the live cross-check, not equality with the accounting P&L.
-      expect(results["Income Tax"].E5).toBe(results["SE Short"].D106);
+      // income tax purposes). SE Short!D106 derives the same figure through
+      // the SA103S boxes, except that the short return has no box for the
+      // zero-emission car allowance (2,500), the Structures and Buildings
+      // Allowance (1,800) or the non-taxable income adjustment (350) the
+      // book states on SE Full alone.
+      expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
+      expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + 350, 6);
     });
 
     it("Income Tax: the taper takes the whole allowance once half the excess passes 12,570", () => {
@@ -147,16 +150,21 @@ describeCalc(
     //   tax and NI                      = 48,819.419995
     it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
       const tax = results["Income Tax"];
-      expect(tax.E5).toBeCloseTo(130552.8085, 4);
+      // 130,552.81 before the book's own SA103F statements: plus 640 goods
+      // for own use (box 60), less 2,500 + 1,800 of allowances (boxes 52.1
+      // and 53), 350 of non-taxable income (box 62) and the estate car's 540
+      // special rate allowance (box 51, 9,000 at 6%). The car's 4,000
+      // depreciation leaves the net profit and comes back as box 44.
+      expect(tax.E5).toBeCloseTo(126002.8085, 4);
       expect(tax.E6).toBe(0);
-      expect(tax.E7).toBeCloseTo(130552.8085, 4);
+      expect(tax.E7).toBeCloseTo(126002.8085, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
       expect(tax.E9).toBeCloseTo(34976, 2);
-      expect(tax.E10).toBeCloseTo(2435.763825, 2);
-      expect(tax.E11).toBeCloseTo(44951.763825, 2);
+      expect(tax.E10).toBeCloseTo(388.263825, 2);
+      expect(tax.E11).toBeCloseTo(42904.263825, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1605.65617, 2);
-      expect(tax.E18).toBeCloseTo(48819.419995, 2);
+      expect(tax.E16).toBeCloseTo(1514.65617, 2);
+      expect(tax.E18).toBeCloseTo(46680.919995, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees
@@ -174,11 +182,14 @@ describeCalc(
     // book value instead of carrying its cost and depreciation forever.
     it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
       const sched = results["Fixedassets.xlsx!Schedule"];
-      expect(sched.E1).toBe(85500);
-      expect(sched.J1).toBe(23838);
+      // The van (30,000), the estate car (16,000) and the laptop (3,000)
+      // brought forward, plus 36,500 bought in the year; depreciation carried
+      // forward adds the car's 4,000 brought forward and its 4,000 charge.
+      expect(sched.E1).toBe(101500);
+      expect(sched.J1).toBe(31838);
       expect(sched.W1).toBe(30000);
       expect(sched.X1).toBe(17328);
-      expect(sched.K1).toBe(48990);
+      expect(sched.K1).toBe(56990);
     });
 
     // ── Bank closing balance (6k) ────────────────────────────────────────
