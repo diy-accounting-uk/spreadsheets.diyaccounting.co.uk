@@ -8,15 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `58e9f23a` and green: `test`, `deploy` and `codeql` pass on `2386171c` (PR #108) and prod
-serves it. Since the last render #107 (FUNDING.yml header), #108 (ci donate links), #109
-(support issue template) and #110 (homebrew dispatch) merged, and `diya-gl` 1.2.9 published.
-
-Batch `claude/b14-board` (worktree `../.worktrees/spreadsheets/b14-board`, at `aed1ebf2`, main
-merged in) carries one wave: all six rows are merged into it; one Sonnet agent in `se-render` adds the SE page
-rendering of the SET-4/SET-5 cells the render-coverage gate wants. Push when all six
-land; one PR; then `generate-ltd` and `generate-se` on the branch regenerate the packages the
-template changes made stale, and `test` re-runs on that commit.
+Main is `d1a68377`: PR #111 (`claude/b14-board`) merged with CQ-20, CQ-21, CQ-25, SET-4, SET-5 and
+SB-2, the Ltd and SE packages regenerated on the branch, and the parity fixtures refreshed. The
+prod deploy of that merge is the next thing to read.
 
 ## Context for the open rows
 
@@ -44,13 +38,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-20 | `app/lib/calculators/ltd.js` carries no disallowable treatment, so the Company computation deducts client entertaining in full. SET-2 and SET-3 have just closed the same gap for Self Employed, and the shared master fixture now carries the £350 client dinner that exercises it | none | machine-only | — | in-flight | merged to `claude/b14-board` (8cd6c25c); 5502 chart remainder; Ltd packages regenerate on the branch |
-| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | in-flight | merged to `claude/b14-board` (32b8b8c8) |
 | CQ-28 | Dependabot #83: `extract-zip` ≤2.0.1 (GHSA-7pqw-9j4j-h8q3, symlink write), dev-only, reached through `@axe-core/cli` → `chromedriver@147` and `pa11y-ci` → `puppeteer@24` → `@puppeteer/browsers@2.13`. No patched `extract-zip` exists; both upstreams have already left it: `chromedriver@153` unzips with `adm-zip`, `@puppeteer/browsers@3.2.2` with `modern-tar`. Refresh the lockfile so `chromedriver` resolves to 153 (`@axe-core/cli` pins `latest`) and add a `package.json` `overrides` entry for `@puppeteer/browsers` at `^3.2.2` (or move `pa11y-ci` to a release that carries it) so the alert closes on its own | none | machine-only | — | ready-to-start | lockfile plus one override; run the accessibility scripts once to prove the drivers still launch; Haiku |
-| CQ-25 | The Self Employed page's P&L view carries a memo block under the statement: the disallowable percentage per expense row (`VitalTax!I36` to `I50`), the add-back each produces (`SE Full!O66` to `O118`), the entertainment memo (`Profit & Loss Account!B49`, its months behind the existing toggle) and the box 46 total. The SA103F view already prints boxes 32 to 46, 61 and 64; the P&L is where the trader sees the expense and today it stops at B39. The percentages and row 49 are written by the generator but not in the page's read scope, and `render-unrepresentable/se.json` declares row 49 unrenderable, so that entry goes | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | merged to `claude/b14-board` (1300e2b2); its `npm test` still running |
-| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | merged to `claude/b14-board`: box 51 built; 53.1 and 73.3 wait on a book record (plan 3.4) |
-| SET-5 | The nine SED-7 and SED-8 fields that already print a cell the engine reads as blank (`SE Full!D147`, `D152`, `D156`, `D160`, `O139`, `D169`, `D179`) need a `book.toml` field and a writer each, so a book can fill them; book-schema work, not template work (`PLAN_SE_TEMPLATE_GAPS.md` 3.4). Box 68 and 73.3 stay blank until an overlap-profit record exists (section 7) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | merged to `claude/b14-board`; SE render remainder in `../.worktrees/spreadsheets/se-render` |
-| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | merged to `claude/b14-board` (9f787491): events fire; one stale comment fixed |
 
 ## Plans not tracked here
 
