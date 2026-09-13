@@ -166,7 +166,9 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   author imagined, which is how a product's writer reaches the parity fixtures, the `*-anchors`
   test, the roundtrip budget and the page's render-key coverage without any of them running. Say
   `npm test` in the brief and let the router pick. No behaviour tier inside a worktree: that needs
-  a live environment and belongs to the deploy.
+  a live environment and belongs to the deploy. Give the worktree a real branch with
+  `origin/main` reachable, so the router scopes to the diff instead of escalating to the full
+  set. An agent verifies its own diff only; the coordinator's one full pass is in "Pushing".
 - **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
   `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
   item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
@@ -211,9 +213,10 @@ Before any push, check **every** deploy workflow for that branch — `deploy` an
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
 
-Before the first push of a batch, run the full local suite once: `npm test`, plus
-`npm run test:browser` and the relevant behaviour target when the change reaches the site or a
-package. That is the moment the change becomes someone else's problem.
+Before the first push of a batch, run the full local suite once: `npm test -- --all` (every tier,
+every product, the full browser suite), plus the relevant behaviour target when the change reaches
+the site or a package. That is the moment the change becomes someone else's problem, and it is the
+batch's one full pass: sub-agents verify their own diff.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's
