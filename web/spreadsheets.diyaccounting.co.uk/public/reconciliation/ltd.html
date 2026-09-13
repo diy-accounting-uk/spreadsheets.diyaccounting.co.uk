@@ -79,13 +79,16 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> ltd-scenario-full (Precision Code Ltd - full)</li>
           <li><strong>Year end:</strong> 2027-10-31</li>
-          <li><strong>Checks:</strong> 1101 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 1103 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 93</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>All indicators align with the headline. The company is VAT-registered with non-zero VAT boxes in all reported quarters, balance sheet balances, profit bridge residues at zero, and corporation tax correctly charged against taxable profit. Minor timing differences (e.g., VAT returns beyond year end, stock valuation variance of £102) are noted but do not contradict the headline.</p>
-          <p class="recon-verdict-meta">Read back by us.amazon.nova-2-lite-v1:0, 2026-09-12. The arithmetic checks below run first and decide the status.</p>
+          <p>All indicators align with the headline: VAT-registered boxes are non-zero, balance sheet matches, profit bridge residue is zero, and corporation tax calculation is consistent. Only a minor stock valuation timing difference exists, which does not contradict the headline.</p>
+          <ul>
+            <li><strong>Stock at the year end 6,000.00 counted vs 6,102.00 calculated</strong> (Stock indicator): Calculated stock exceeds counted stock by £102, but balance sheet agrees and residue is zero - timing difference note [note]</li>
+          </ul>
+          <p class="recon-verdict-meta">Read back by us.amazon.nova-2-lite-v1:0, 2026-09-13. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -193,7 +196,7 @@
 <thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Diff</th><th>Result</th></tr></thead>
 <tbody>
 <tr><td>Total Sales</td><td>341283</td><td>341283.333333333</td><td>+0.3333333330228925</td><td>PASS</td></tr>
-<tr><td>Trial Balance: audit accuracy (EJ91)</td><td>0</td><td>3.25599103234708e-10</td><td>+3.25599103234708e-10</td><td>PASS</td></tr>
+<tr><td>Trial Balance: audit accuracy (EJ91)</td><td>0</td><td>2.96665803034557e-10</td><td>+2.96665803034557e-10</td><td>PASS</td></tr>
 <tr><td>Opening balance sheet: accuracy check (E37)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: opening balances audit check (D91)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance opening: fixed asset cost</td><td>233000</td><td>233000</td><td>0</td><td>PASS</td></tr>
@@ -482,7 +485,7 @@
 <tr><td>Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV</td><td>9077.459999999992</td><td>9077.45500000003</td><td>-0.004999999961000867</td><td>PASS</td></tr>
 <tr><td>Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT</td><td>29599.84503484759</td><td>29599.8450348476</td><td>+1.0913936421275139e-11</td><td>PASS</td></tr>
+<tr><td>Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT</td><td>29676.08577591389</td><td>29676.0857759139</td><td>+1.0913936421275139e-11</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule additions = Purchases.xlsx fixed asset total</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total</td><td>12500</td><td>12500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule additions = fixed asset purchases net of VAT</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
@@ -586,7 +589,7 @@
 <tr><td>P&amp;L Nov C24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Nov C25 = Purchases.xlsx &quot;m&quot; net</td><td>100</td><td>100</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Nov C26 = Purchases.xlsx &quot;u&quot; net</td><td>130.83</td><td>130.833333333333</td><td>+0.003333333332989241</td><td>PASS</td></tr>
-<tr><td>P&amp;L Nov C27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Nov C27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Nov C28 = Purchases.xlsx &quot;g&quot; net</td><td>112.5</td><td>112.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Nov C29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Nov C30 = Purchases.xlsx &quot;v&quot; net</td><td>501.88</td><td>501.875</td><td>-0.0049999999999954525</td><td>PASS</td></tr>
@@ -603,7 +606,7 @@
 <tr><td>P&amp;L Dec D24 = Purchases.xlsx &quot;q&quot; net</td><td>200</td><td>200</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Dec D25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Dec D26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Dec D27 = Purchases.xlsx &quot;a&quot; net</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Dec D27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>500</td><td>500</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Dec D28 = Purchases.xlsx &quot;g&quot; net</td><td>127.5</td><td>127.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Dec D29 = Purchases.xlsx &quot;h&quot; net</td><td>126.67</td><td>126.666666666667</td><td>-0.003333333333003452</td><td>PASS</td></tr>
 <tr><td>P&amp;L Dec D30 = Purchases.xlsx &quot;v&quot; net</td><td>555</td><td>555</td><td>0</td><td>PASS</td></tr>
@@ -620,7 +623,7 @@
 <tr><td>P&amp;L Jan E24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jan E25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jan E26 = Purchases.xlsx &quot;u&quot; net</td><td>120.83</td><td>120.833333333333</td><td>+0.003333333333003452</td><td>PASS</td></tr>
-<tr><td>P&amp;L Jan E27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Jan E27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jan E28 = Purchases.xlsx &quot;g&quot; net</td><td>192.5</td><td>192.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jan E29 = Purchases.xlsx &quot;h&quot; net</td><td>226.67</td><td>226.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jan E30 = Purchases.xlsx &quot;v&quot; net</td><td>545</td><td>545</td><td>0</td><td>PASS</td></tr>
@@ -637,7 +640,7 @@
 <tr><td>P&amp;L Feb F24 = Purchases.xlsx &quot;q&quot; net</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Feb F25 = Purchases.xlsx &quot;m&quot; net</td><td>150</td><td>150</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Feb F26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Feb F27 = Purchases.xlsx &quot;a&quot; net</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Feb F27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Feb F28 = Purchases.xlsx &quot;g&quot; net</td><td>132.5</td><td>132.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Feb F29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Feb F30 = Purchases.xlsx &quot;v&quot; net</td><td>486.88</td><td>486.875</td><td>-0.0049999999999954525</td><td>PASS</td></tr>
@@ -654,7 +657,7 @@
 <tr><td>P&amp;L Mar G24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Mar G25 = Purchases.xlsx &quot;m&quot; net</td><td>200</td><td>200</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Mar G26 = Purchases.xlsx &quot;u&quot; net</td><td>135.83</td><td>135.833333333333</td><td>+0.003333333332989241</td><td>PASS</td></tr>
-<tr><td>P&amp;L Mar G27 = Purchases.xlsx &quot;a&quot; net</td><td>291.67</td><td>291.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
+<tr><td>P&amp;L Mar G27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>291.67</td><td>291.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
 <tr><td>P&amp;L Mar G28 = Purchases.xlsx &quot;g&quot; net</td><td>112.5</td><td>112.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Mar G29 = Purchases.xlsx &quot;h&quot; net</td><td>116.67</td><td>116.666666666667</td><td>-0.003333333333003452</td><td>PASS</td></tr>
 <tr><td>P&amp;L Mar G30 = Purchases.xlsx &quot;v&quot; net</td><td>501.88</td><td>501.875</td><td>-0.0049999999999954525</td><td>PASS</td></tr>
@@ -671,7 +674,7 @@
 <tr><td>P&amp;L Apr H24 = Purchases.xlsx &quot;q&quot; net</td><td>300</td><td>300</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Apr H25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Apr H26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Apr H27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Apr H27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Apr H28 = Purchases.xlsx &quot;g&quot; net</td><td>122.5</td><td>122.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Apr H29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Apr H30 = Purchases.xlsx &quot;v&quot; net</td><td>590</td><td>590</td><td>0</td><td>PASS</td></tr>
@@ -688,7 +691,7 @@
 <tr><td>P&amp;L May I24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L May I25 = Purchases.xlsx &quot;m&quot; net</td><td>80</td><td>80</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L May I26 = Purchases.xlsx &quot;u&quot; net</td><td>125.83</td><td>125.833333333333</td><td>+0.003333333333003452</td><td>PASS</td></tr>
-<tr><td>P&amp;L May I27 = Purchases.xlsx &quot;a&quot; net</td><td>2500</td><td>2500</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L May I27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>2500</td><td>2500</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L May I28 = Purchases.xlsx &quot;g&quot; net</td><td>112.5</td><td>112.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L May I29 = Purchases.xlsx &quot;h&quot; net</td><td>176.67</td><td>176.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
 <tr><td>P&amp;L May I30 = Purchases.xlsx &quot;v&quot; net</td><td>505.63</td><td>505.625</td><td>-0.0049999999999954525</td><td>PASS</td></tr>
@@ -705,7 +708,7 @@
 <tr><td>P&amp;L Jun J24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jun J25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jun J26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Jun J27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Jun J27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jun J28 = Purchases.xlsx &quot;g&quot; net</td><td>137.5</td><td>137.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jun J29 = Purchases.xlsx &quot;h&quot; net</td><td>136.67</td><td>136.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jun J30 = Purchases.xlsx &quot;v&quot; net</td><td>537.5</td><td>537.5</td><td>0</td><td>PASS</td></tr>
@@ -722,7 +725,7 @@
 <tr><td>P&amp;L Jul K24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jul K25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jul K26 = Purchases.xlsx &quot;u&quot; net</td><td>115.83</td><td>115.833333333333</td><td>+0.003333333333003452</td><td>PASS</td></tr>
-<tr><td>P&amp;L Jul K27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Jul K27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jul K28 = Purchases.xlsx &quot;g&quot; net</td><td>212.5</td><td>212.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jul K29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Jul K30 = Purchases.xlsx &quot;v&quot; net</td><td>511.25</td><td>511.25</td><td>0</td><td>PASS</td></tr>
@@ -739,7 +742,7 @@
 <tr><td>P&amp;L Aug L24 = Purchases.xlsx &quot;q&quot; net</td><td>150</td><td>150</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Aug L25 = Purchases.xlsx &quot;m&quot; net</td><td>120</td><td>120</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Aug L26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Aug L27 = Purchases.xlsx &quot;a&quot; net</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Aug L27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Aug L28 = Purchases.xlsx &quot;g&quot; net</td><td>127.5</td><td>127.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Aug L29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Aug L30 = Purchases.xlsx &quot;v&quot; net</td><td>531.88</td><td>531.875</td><td>-0.0049999999999954525</td><td>PASS</td></tr>
@@ -756,7 +759,7 @@
 <tr><td>P&amp;L Sep M24 = Purchases.xlsx &quot;q&quot; net</td><td>300</td><td>300</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Sep M25 = Purchases.xlsx &quot;m&quot; net</td><td>300</td><td>300</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Sep M26 = Purchases.xlsx &quot;u&quot; net</td><td>110.83</td><td>110.833333333333</td><td>+0.003333333333003452</td><td>PASS</td></tr>
-<tr><td>P&amp;L Sep M27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Sep M27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Sep M28 = Purchases.xlsx &quot;g&quot; net</td><td>112.5</td><td>112.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Sep M29 = Purchases.xlsx &quot;h&quot; net</td><td>306.67</td><td>306.666666666667</td><td>-0.003333333332989241</td><td>PASS</td></tr>
 <tr><td>P&amp;L Sep M30 = Purchases.xlsx &quot;v&quot; net</td><td>496.25</td><td>496.25</td><td>0</td><td>PASS</td></tr>
@@ -773,7 +776,7 @@
 <tr><td>P&amp;L Oct N24 = Purchases.xlsx &quot;q&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Oct N25 = Purchases.xlsx &quot;m&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Oct N26 = Purchases.xlsx &quot;u&quot; net</td><td>95.83</td><td>95.8333333333333</td><td>+0.00333333333330188</td><td>PASS</td></tr>
-<tr><td>P&amp;L Oct N27 = Purchases.xlsx &quot;a&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L Oct N27 = Purchases.xlsx &quot;a&quot; and &quot;e&quot; net</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Oct N28 = Purchases.xlsx &quot;g&quot; net</td><td>132.5</td><td>132.5</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L Oct N29 = Purchases.xlsx &quot;h&quot; net</td><td>76.67</td><td>76.6666666666667</td><td>-0.00333333333330188</td><td>PASS</td></tr>
 <tr><td>P&amp;L Oct N30 = Purchases.xlsx &quot;v&quot; net</td><td>568.75</td><td>568.75</td><td>0</td><td>PASS</td></tr>
@@ -1198,55 +1201,57 @@
 <tr><td>CT: operating profit = published P&amp;L operating profit</td><td>171548.725</td><td>171548.725</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: depreciation add-back = P&amp;L depreciation</td><td>13740</td><td>13740</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: goodwill add-back = P&amp;L goodwill written off</td><td>2500</td><td>2500</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: add-backs = depreciation + goodwill</td><td>16240</td><td>16240</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: profit plus add-backs</td><td>187788.725</td><td>187788.725</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT: entertainment add-back = Purchases.xlsx &quot;e&quot; net</td><td>291.6666666666667</td><td>291.666666666667</td><td>+3.410605131648481e-13</td><td>PASS</td></tr>
+<tr><td>Trial balance: business entertainment = Purchases.xlsx &quot;e&quot; net</td><td>291.6666666666667</td><td>291.666666666667</td><td>+3.410605131648481e-13</td><td>PASS</td></tr>
+<tr><td>CT: add-backs = depreciation + goodwill + entertainment</td><td>16531.666666666668</td><td>16531.6666666667</td><td>+3.2741809263825417e-11</td><td>PASS</td></tr>
+<tr><td>CT: profit plus add-backs</td><td>188080.39166666672</td><td>188080.391666666</td><td>-7.275957614183426e-10</td><td>PASS</td></tr>
 <tr><td>CT: annual investment allowance = Schedule annual investment allowance</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: writing down allowances = Schedule writing down allowances</td><td>3360</td><td>3360</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge</td><td>8140</td><td>8140</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: capital allowances = the allowance lines</td><td>64000</td><td>64000</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: profit after capital allowances</td><td>123788.725</td><td>123788.725</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: chargeable profit = profit after allowances + interest - losses brought forward</td><td>124128.23117283951</td><td>124128.231172839</td><td>-5.093170329928398e-10</td><td>PASS</td></tr>
-<tr><td>CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses</td><td>124128.23117283951</td><td>124128.231172839</td><td>-5.093170329928398e-10</td><td>PASS</td></tr>
+<tr><td>CT: profit after capital allowances</td><td>124080.391666666</td><td>124080.391666666</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT: chargeable profit = profit after allowances + interest - losses brought forward</td><td>124419.8978395055</td><td>124419.897839506</td><td>+4.94765117764473e-10</td><td>PASS</td></tr>
+<tr><td>CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses</td><td>124419.89783950623</td><td>124419.897839506</td><td>-2.3283064365386963e-10</td><td>PASS</td></tr>
 <tr><td>CT600: turnover = published P&amp;L turnover</td><td>341283.333333333</td><td>341283.333333333</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: trading profits = CT profit after capital allowances</td><td>123788.725</td><td>123788.725</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: trading profits = CT profit after capital allowances</td><td>124080.391666666</td><td>124080.391666666</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: losses brought forward = CT losses brought forward</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: net trading profits = trading profits - losses brought forward</td><td>123788.725</td><td>123788.725</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: net trading profits = trading profits - losses brought forward</td><td>124080.391666666</td><td>124080.391666666</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: interest received = CT interest received</td><td>339.506172839506</td><td>339.506172839506</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: profits before deductions = trading profits + interest</td><td>124128.23117283951</td><td>124128.231172839</td><td>-5.093170329928398e-10</td><td>PASS</td></tr>
-<tr><td>CT600: profits chargeable = CT chargeable profit</td><td>124128.231172839</td><td>124128.231172839</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: profits before deductions = trading profits + interest</td><td>124419.8978395055</td><td>124419.897839506</td><td>+4.94765117764473e-10</td><td>PASS</td></tr>
+<tr><td>CT600: profits chargeable = CT chargeable profit</td><td>124419.897839506</td><td>124419.897839506</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: financial year = first tax row financial year</td><td>2026</td><td>2026</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: amount of profit = first tax row profit</td><td>51351.6791975307</td><td>51351.6791975307</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: amount of profit = first tax row profit</td><td>51472.3412979873</td><td>51472.3412979873</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: tax rate = first tax row rate</td><td>25</td><td>25</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: corporation tax = first tax row gross tax</td><td>12837.9197993827</td><td>12837.9197993827</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: second financial year tax = second tax row gross tax</td><td>18194.1379938271</td><td>18194.1379938271</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: corporation tax = first tax row gross tax</td><td>12868.0853244968</td><td>12868.0853244968</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: second financial year tax = second tax row gross tax</td><td>18236.8891353796</td><td>18236.8891353796</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: second financial year = second tax row financial year</td><td>2027</td><td>2027</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: second financial year profit = second tax row profit</td><td>72776.5519753084</td><td>72776.5519753084</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: second financial year profit = second tax row profit</td><td>72947.5565415185</td><td>72947.5565415185</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: second financial year rate = second tax row rate</td><td>25</td><td>25</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: franked investment income = the working sheet's figure</td><td>20000</td><td>20000</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: associated companies, first financial year = Admin P14</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT600: associated companies, second financial year = Admin P14</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: tax payable = tax chargeable</td><td>31032.0577932098</td><td>31032.0577932098</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: marginal rate relief = the working sheet's relief</td><td>1367.706585522686</td><td>1367.70658552269</td><td>+3.865352482534945e-12</td><td>PASS</td></tr>
-<tr><td>CT600: tax net of marginal relief = the working sheet's charge</td><td>29664.3512076871</td><td>29664.3512076871</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: corporation tax chargeable = tax net of marginal relief</td><td>29664.3512076871</td><td>29664.3512076871</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable</td><td>23.89815026557639</td><td>23.8981502655764</td><td>+1.0658141036401503e-14</td><td>PASS</td></tr>
-<tr><td>CT600: tax outstanding</td><td>29599.8450348476</td><td>29599.8450348476</td><td>0</td><td>PASS</td></tr>
-<tr><td>Fixed asset note: corporation tax for the year = CT charge</td><td>29664.3512076871</td><td>29664.3512076871</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: tax payable = tax chargeable</td><td>31104.9744598764</td><td>31104.9744598764</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: marginal rate relief = the working sheet's relief</td><td>1364.3825111230499</td><td>1364.38251112305</td><td>+2.2737367544323206e-13</td><td>PASS</td></tr>
+<tr><td>CT600: tax net of marginal relief = the working sheet's charge</td><td>29740.5919487534</td><td>29740.5919487534</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: corporation tax chargeable = tax net of marginal relief</td><td>29740.5919487534</td><td>29740.5919487534</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable</td><td>23.90340489357814</td><td>23.9034048935782</td><td>+6.039613253960852e-14</td><td>PASS</td></tr>
+<tr><td>CT600: tax outstanding</td><td>29676.0857759139</td><td>29676.0857759139</td><td>0</td><td>PASS</td></tr>
+<tr><td>Fixed asset note: corporation tax for the year = CT charge</td><td>29740.5919487534</td><td>29740.5919487534</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed asset note: directors emoluments = trial balance directors wages</td><td>16742.6666666667</td><td>16742.6666666667</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: franked investment income = the exempt distributions entered on the opening accounts</td><td>20000</td><td>20000</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: augmented profits = the chargeable profit and the franked investment income</td><td>144128.231172839</td><td>144128.231172839</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT: augmented profits = the chargeable profit and the franked investment income</td><td>144419.89783950598</td><td>144419.897839506</td><td>+2.9103830456733704e-11</td><td>PASS</td></tr>
 <tr><td>CT: the two tax rows together span the days the charge is spread over</td><td>365</td><td>365</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: first tax row profit = chargeable profit by its share of those days</td><td>51351.679197530655</td><td>51351.6791975307</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
-<tr><td>CT: second tax row profit = chargeable profit by its share of those days</td><td>72776.55197530835</td><td>72776.5519753084</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
-<tr><td>CT: first tax row gross tax = its profit at its rate</td><td>12837.919799382675</td><td>12837.9197993827</td><td>+2.546585164964199e-11</td><td>PASS</td></tr>
-<tr><td>CT: second tax row gross tax = its profit at its rate</td><td>18194.1379938271</td><td>18194.1379938271</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: first tax row tax = its gross tax less its marginal relief</td><td>12272.10145852263</td><td>12272.1014585226</td><td>-2.9103830456733704e-11</td><td>PASS</td></tr>
-<tr><td>CT: second tax row tax = its gross tax less its marginal relief</td><td>17392.249749164483</td><td>17392.2497491645</td><td>+1.8189894035458565e-11</td><td>PASS</td></tr>
-<tr><td>CT: charge for the year = the two tax rows</td><td>29664.3512076871</td><td>29664.3512076871</td><td>0</td><td>PASS</td></tr>
+<tr><td>CT: first tax row profit = chargeable profit by its share of those days</td><td>51472.34129798741</td><td>51472.3412979873</td><td>-1.0913936421275139e-10</td><td>PASS</td></tr>
+<tr><td>CT: second tax row profit = chargeable profit by its share of those days</td><td>72947.55654151858</td><td>72947.5565415185</td><td>-8.731149137020111e-11</td><td>PASS</td></tr>
+<tr><td>CT: first tax row gross tax = its profit at its rate</td><td>12868.085324496824</td><td>12868.0853244968</td><td>-2.3646862246096134e-11</td><td>PASS</td></tr>
+<tr><td>CT: second tax row gross tax = its profit at its rate</td><td>18236.889135379624</td><td>18236.8891353796</td><td>-2.546585164964199e-11</td><td>PASS</td></tr>
+<tr><td>CT: first tax row tax = its gross tax less its marginal relief</td><td>12303.642148662333</td><td>12303.6421486624</td><td>+6.730260793119669e-11</td><td>PASS</td></tr>
+<tr><td>CT: second tax row tax = its gross tax less its marginal relief</td><td>17436.949800091017</td><td>17436.949800091</td><td>-1.8189894035458565e-11</td><td>PASS</td></tr>
+<tr><td>CT: charge for the year = the two tax rows</td><td>29740.591948753397</td><td>29740.5919487534</td><td>+3.637978807091713e-12</td><td>PASS</td></tr>
 <tr><td>CT: first tax row rate = the rate its share of the augmented profits falls in</td><td>25</td><td>25</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: second tax row rate = the rate its share of the augmented profits falls in</td><td>25</td><td>25</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: first tax row marginal relief = its share of the augmented profits against its share of the limits</td><td>565.8183408600711</td><td>565.81834086007</td><td>-1.1368683772161603e-12</td><td>PASS</td></tr>
-<tr><td>CT: second tax row marginal relief = its share of the augmented profits against its share of the limits</td><td>801.8882446626171</td><td>801.888244662616</td><td>-1.1368683772161603e-12</td><td>PASS</td></tr>
+<tr><td>CT: first tax row marginal relief = its share of the augmented profits against its share of the limits</td><td>564.4431758344646</td><td>564.443175834467</td><td>+2.3874235921539366e-12</td><td>PASS</td></tr>
+<tr><td>CT: second tax row marginal relief = its share of the augmented profits against its share of the limits</td><td>799.93933528858</td><td>799.939335288583</td><td>+3.069544618483633e-12</td><td>PASS</td></tr>
 <tr><td>CT: first tax row small profits rate = what its own financial year charged</td><td>19</td><td>19</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: first tax row main rate = what its own financial year charged</td><td>25</td><td>25</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: first tax row marginal relief fraction = what its own financial year charged</td><td>0.015</td><td>0.015</td><td>0</td><td>PASS</td></tr>
@@ -1257,9 +1262,9 @@
 <tr><td>CT: second tax row marginal relief fraction = what its own financial year charged</td><td>0.015</td><td>0.015</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: second tax row marginal relief lower limit = what its own financial year charged</td><td>50000</td><td>50000</td><td>0</td><td>PASS</td></tr>
 <tr><td>CT: second tax row marginal relief upper limit = what its own financial year charged</td><td>250000</td><td>250000</td><td>0</td><td>PASS</td></tr>
-<tr><td>CT: charge for the year = the statutory computation with marginal relief</td><td>29664.35120768707</td><td>29664.3512076871</td><td>+3.2741809263825417e-11</td><td>PASS</td></tr>
-<tr><td>CT: Tax outstanding = CT less tax deducted at source</td><td>29599.845034847596</td><td>29599.8450348476</td><td>+3.637978807091713e-12</td><td>PASS</td></tr>
-<tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>5.093170329928398e-10</td><td>+5.093170329928398e-10</td><td>PASS</td></tr>
+<tr><td>CT: charge for the year = the statutory computation with marginal relief</td><td>29740.591948753452</td><td>29740.5919487534</td><td>-5.093170329928398e-11</td><td>PASS</td></tr>
+<tr><td>CT: Tax outstanding = CT less tax deducted at source</td><td>29676.085775913896</td><td>29676.0857759139</td><td>+3.637978807091713e-12</td><td>PASS</td></tr>
+<tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>1.7462298274040222e-10</td><td>+1.7462298274040222e-10</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product A (sales a) net reaches MnthP&amp;L!B4 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product B (sales b) net reaches MnthP&amp;L!B5 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product C (sales c) net reaches MnthP&amp;L!B6 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
@@ -1274,7 +1279,7 @@
 <tr><td>Category netting: Equipment Tools &amp; Plant Hire (purchases q) net reaches MnthP&amp;L!B24 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Repairs &amp; Maintenance (purchases m) net reaches MnthP&amp;L!B25 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Consumable Materials (purchases u) net reaches MnthP&amp;L!B26 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Category netting: Advertising &amp; Promotion (purchases a) net reaches MnthP&amp;L!B27 with no residue</td><td>0</td><td>-3.183231456205249e-12</td><td>-3.183231456205249e-12</td><td>PASS</td></tr>
+<tr><td>Category netting: Advertising, Promotion &amp; Entertainment (purchases a) net reaches MnthP&amp;L!B27 with no residue</td><td>0</td><td>-3.637978807091713e-12</td><td>-3.637978807091713e-12</td><td>PASS</td></tr>
 <tr><td>Category netting: Telephone Postage &amp; Stationery (purchases g) net reaches MnthP&amp;L!B28 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Travel &amp; Hotel Expenses (purchases h) net reaches MnthP&amp;L!B29 with no residue</td><td>0</td><td>2.2737367544323206e-13</td><td>+2.2737367544323206e-13</td><td>PASS</td></tr>
 <tr><td>Category netting: Motor Vehicle Expenses (purchases v) net reaches MnthP&amp;L!B30 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
@@ -1716,7 +1721,7 @@
 <tr><td>2025-08-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Manchester</td><td>v</td><td class="num">38.25</td></tr>
 <tr><td>2025-08-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td></tr>
 <tr><td>2025-08-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2025-08-12</td><td>The Ivy</td><td>5502</td><td>Client dinner, project kickoff</td><td>a</td><td class="num">350.00</td></tr>
+<tr><td>2025-08-12</td><td>The Ivy</td><td>5502</td><td>Client dinner, project kickoff</td><td>e</td><td class="num">350.00</td></tr>
 </tbody>
 </table></div>
 <h5>Sep</h5>
@@ -2353,11 +2358,12 @@
 <tr><td>Less bank interest received, net of tax deducted at source</td><td>MnthP&amp;L!B44</td><td class="num">-275</td></tr>
 <tr><td>Add back goodwill written off</td><td>CorporationTax!I7</td><td class="num">2,500</td></tr>
 <tr><td>Add back depreciation charged in the year</td><td>CorporationTax!I8</td><td class="num">13,740</td></tr>
+<tr><td>Add back business entertainment</td><td>CorporationTax!I9</td><td class="num">291.67</td></tr>
 <tr><td>Less capital allowances</td><td>CorporationTax!K20</td><td class="num">-64,000</td></tr>
 <tr><td>Add gross bank interest received</td><td>CorporationTax!K24</td><td class="num">339.51</td></tr>
 <tr><td>Less losses brought forward</td><td>CorporationTax!K26</td><td class="num">0</td></tr>
-<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>124,128.23</strong></td></tr>
-<tr><td>Tax profit the sheet carries</td><td>CorporationTax!K28</td><td class="num">124,128.23</td></tr>
+<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>124,419.9</strong></td></tr>
+<tr><td>Tax profit the sheet carries</td><td>CorporationTax!K28</td><td class="num">124,419.9</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
 </tbody>
 </table></div>
@@ -2380,7 +2386,7 @@
 <tr><td>Equipment Tools &amp; Plant Hire (purchases q)</td><td class="num">1,620</td><td class="num">270</td><td class="num">1,350</td><td>MnthP&amp;L!B24</td><td class="num">1,350</td><td class="num">0</td></tr>
 <tr><td>Repairs &amp; Maintenance (purchases m)</td><td class="num">1,140</td><td class="num">190</td><td class="num">950</td><td>MnthP&amp;L!B25</td><td class="num">950</td><td class="num">0</td></tr>
 <tr><td>Consumable Materials (purchases u)</td><td class="num">1,578</td><td class="num">263</td><td class="num">1,315</td><td>MnthP&amp;L!B26</td><td class="num">1,315</td><td class="num">0</td></tr>
-<tr><td>Advertising &amp; Promotion (purchases a)</td><td class="num">4,910</td><td class="num">818.33</td><td class="num">4,091.67</td><td>MnthP&amp;L!B27</td><td class="num">4,091.67</td><td class="num">0</td></tr>
+<tr><td>Advertising, Promotion &amp; Entertainment (purchases a)</td><td class="num">4,910</td><td class="num">818.33</td><td class="num">4,091.67</td><td>MnthP&amp;L!B27</td><td class="num">4,091.67</td><td class="num">0</td></tr>
 <tr><td>Telephone Postage &amp; Stationery (purchases g)</td><td class="num">1,962</td><td class="num">327</td><td class="num">1,635</td><td>MnthP&amp;L!B28</td><td class="num">1,635</td><td class="num">0</td></tr>
 <tr><td>Travel &amp; Hotel Expenses (purchases h)</td><td class="num">1,860</td><td class="num">310</td><td class="num">1,550</td><td>MnthP&amp;L!B29</td><td class="num">1,550</td><td class="num">0</td></tr>
 <tr><td>Motor Vehicle Expenses (purchases v)</td><td class="num">7,598.25</td><td class="num">1,266.38</td><td class="num">6,331.88</td><td>MnthP&amp;L!B30</td><td class="num">6,331.88</td><td class="num">0</td></tr>
@@ -2452,7 +2458,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Equipment Hire (code q)</td><td class="num">1,350</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Maintenance (code m)</td><td class="num">950</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Consumables (code u)</td><td class="num">1,315</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a)</td><td class="num">4,091.67</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Advertising &amp; Entertainment (codes a, e)</td><td class="num">4,091.67</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage &amp; Stationery (code g)</td><td class="num">1,635</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Travel &amp; Hotel (code h)</td><td class="num">1,550</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v)</td><td class="num">6,331.88</td></tr>
@@ -2477,16 +2483,16 @@
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year</td><td class="num">2,026</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit</td><td class="num">51,351.68</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit</td><td class="num">51,472.34</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax</td><td class="num">25</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax</td><td class="num">12,837.92</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax</td><td class="num">12,868.09</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year</td><td class="num">2,027</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit</td><td class="num">72,776.55</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit</td><td class="num">72,947.56</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax</td><td class="num">25</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax</td><td class="num">18,194.14</td></tr>
-<tr><td><strong>Box 430: corporation tax</strong></td><td class="num">31,032.06</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief</td><td class="num">1,367.71</td></tr>
-<tr><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td class="num">29,664.35</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax</td><td class="num">18,236.89</td></tr>
+<tr><td><strong>Box 430: corporation tax</strong></td><td class="num">31,104.97</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief</td><td class="num">1,364.38</td></tr>
+<tr><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td class="num">29,740.59</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 327: associated companies, first financial year</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 328: associated companies, second financial year</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Box 620: franked investment income</td><td class="num">20,000</td></tr>
@@ -2504,10 +2510,10 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses</td><td class="num">150,947.94</td></tr>
 <tr><td><strong>Operating Profit</strong></td><td class="num">171,548.73</td></tr>
 <tr><td><strong>Profit Before Tax</strong></td><td class="num">171,888.23</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation tax</td><td class="num">29,664.35</td></tr>
-<tr><td><strong>Profit after Tax</strong></td><td class="num">142,223.88</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation tax</td><td class="num">29,740.59</td></tr>
+<tr><td><strong>Profit after Tax</strong></td><td class="num">142,147.64</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Dividends</td><td class="num">15,000</td></tr>
-<tr><td><strong>Retained Profit for the year</strong></td><td class="num">127,223.88</td></tr>
+<tr><td><strong>Retained Profit for the year</strong></td><td class="num">127,147.64</td></tr>
 </tbody>
 </table></div>
 <h4>Published Balance Sheet</h4>
@@ -2520,17 +2526,17 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand</td><td class="num">192,995.43</td></tr>
 <tr><td>Current Assets</td><td class="num">206,895.43</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors</td><td class="num">11,182.25</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax</td><td class="num">29,599.85</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax</td><td class="num">29,676.09</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security</td><td class="num">9,077.46</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities</td><td class="num">49,859.55</td></tr>
-<tr><td><strong>Net Current Assets</strong></td><td class="num">157,035.88</td></tr>
-<tr><td><strong>Total Assets less CL</strong></td><td class="num">366,025.88</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities</td><td class="num">49,935.79</td></tr>
+<tr><td><strong>Net Current Assets</strong></td><td class="num">156,959.64</td></tr>
+<tr><td><strong>Total Assets less CL</strong></td><td class="num">365,949.64</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Directors Loan</td><td class="num">13,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Creditors due after more than one year</td><td class="num">45,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Creditors</td><td class="num">58,000</td></tr>
-<tr><td><strong>Net Assets</strong></td><td class="num">308,025.88</td></tr>
+<tr><td><strong>Net Assets</strong></td><td class="num">307,949.64</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Called up share capital</td><td class="num">100</td></tr>
-<tr><td><strong>Shareholders' Funds</strong></td><td class="num">308,025.88</td></tr>
+<tr><td><strong>Shareholders' Funds</strong></td><td class="num">307,949.64</td></tr>
 </tbody>
 </table></div>
 <h4>Fixed Asset Note</h4>
@@ -2547,7 +2553,7 @@
 <tr><td><strong>Depreciation carried forward</strong></td><td class="num">46,510</td></tr>
 <tr><td><strong>Net book value</strong></td><td class="num">208,990</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments</td><td class="num">16,742.67</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year</td><td class="num">29,664.35</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year</td><td class="num">29,740.59</td></tr>
 </tbody>
 </table></div>
 <h4>Directors' Report</h4>
@@ -2615,6 +2621,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account</td><td class="num">-13,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term</td><td class="num">-45,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends declared</td><td class="num">15,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Final: Business Entertainment (code e)</td><td class="num">291.67</td></tr>
 <tr><td><strong>Audit Accuracy Check</strong></td><td class="num">0</td></tr>
 </tbody>
 </table></div>
@@ -2710,7 +2717,7 @@
 <tr><td>B24</td><td>Equipment Hire (code q)</td><td>1350</td><td>accounts.purchases.5301</td></tr>
 <tr><td>B25</td><td>Repairs &amp; Maintenance (code m)</td><td>950</td><td>accounts.purchases.5400</td></tr>
 <tr><td>B26</td><td>Consumables (code u)</td><td>1315</td><td>accounts.purchases.5401</td></tr>
-<tr><td>B27</td><td>Advertising (code a)</td><td>4091.66666666667</td><td>accounts.purchases.5500</td></tr>
+<tr><td>B27</td><td>Advertising &amp; Entertainment (codes a, e)</td><td>4091.66666666667</td><td>accounts.purchases.5500 + 5502</td></tr>
 <tr><td>B28</td><td>Telephone, Postage &amp; Stationery (code g)</td><td>1635</td><td>accounts.purchases.5501</td></tr>
 <tr><td>B29</td><td>Travel &amp; Hotel (code h)</td><td>1550</td><td>accounts.purchases.5600</td></tr>
 <tr><td>B30</td><td>Motor Vehicle (code v)</td><td>6331.875</td><td>accounts.purchases.5601</td></tr>
@@ -3049,17 +3056,18 @@
 <tr><td>K5</td><td>Operating Profit</td><td>171548.725</td><td>gl-cor:amount (ct600.box145)</td></tr>
 <tr><td>I7</td><td>Add back: Goodwill</td><td>2500</td><td>gl-cor:amount (ct600.addBackGoodwill)</td></tr>
 <tr><td>I8</td><td>Add back: Depreciation</td><td>13740</td><td>gl-cor:amount (ct600.addBackDepreciation)</td></tr>
-<tr><td>K10</td><td>Add back: total</td><td>16240</td><td>gl-cor:amount (ct600.addBack)</td></tr>
-<tr><td>K12</td><td>Operational profit chargeable</td><td>187788.725</td><td>gl-cor:amount (ct600.adjustedProfit)</td></tr>
+<tr><td>I9</td><td>Add back: Business entertainment</td><td>291.666666666667</td><td>gl-cor:amount (ct600.addBackEntertaining)</td></tr>
+<tr><td>K10</td><td>Add back: total</td><td>16531.6666666667</td><td>gl-cor:amount (ct600.addBack)</td></tr>
+<tr><td>K12</td><td>Operational profit chargeable</td><td>188080.391666666</td><td>gl-cor:amount (ct600.adjustedProfit)</td></tr>
 <tr><td>K20</td><td>Less: Capital Allowances</td><td>64000</td><td>tax.capitalAllowances (ct600)</td></tr>
-<tr><td>K22</td><td>Profit after capital allowances</td><td>123788.725</td><td>gl-cor:amount (ct600.afterAllowances)</td></tr>
+<tr><td>K22</td><td>Profit after capital allowances</td><td>124080.391666666</td><td>gl-cor:amount (ct600.afterAllowances)</td></tr>
 <tr><td>K24</td><td>Add: gross bank interest</td><td>339.506172839506</td><td>gl-cor:amount (ct600.interest)</td></tr>
 <tr><td>K26</td><td>Less: losses brought forward</td><td>0</td><td>gl-cor:amount (ct600.lossesBf)</td></tr>
-<tr><td>K28</td><td><strong>Profit Chargeable to CT</strong></td><td>124128.231172839</td><td>gl-cor:amount (ct600.box315)</td></tr>
+<tr><td>K28</td><td><strong>Profit Chargeable to CT</strong></td><td>124419.897839506</td><td>gl-cor:amount (ct600.box315)</td></tr>
 <tr><td>K29</td><td>Add: franked investment income</td><td>20000</td><td>gl-cor:amount (ct600.box620)</td></tr>
-<tr><td>K30</td><td><strong>Augmented profits</strong></td><td>144128.231172839</td><td>gl-cor:amount (ct600.augmentedProfits)</td></tr>
-<tr><td>K35</td><td><strong>Corporation Tax</strong></td><td>29664.3512076871</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
-<tr><td>K39</td><td>Tax Outstanding</td><td>29599.8450348476</td><td>gl-cor:taxAmount (ct600.box600)</td></tr>
+<tr><td>K30</td><td><strong>Augmented profits</strong></td><td>144419.897839506</td><td>gl-cor:amount (ct600.augmentedProfits)</td></tr>
+<tr><td>K35</td><td><strong>Corporation Tax</strong></td><td>29740.5919487534</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
+<tr><td>K39</td><td>Tax Outstanding</td><td>29676.0857759139</td><td>gl-cor:taxAmount (ct600.box600)</td></tr>
 <tr><td>E5</td><td></td><td>46327</td><td></td></tr>
 <tr><td>H5</td><td></td><td>46691</td><td></td></tr>
 <tr><td>I15</td><td></td><td>52500</td><td></td></tr>
@@ -3071,16 +3079,16 @@
 <tr><td>A35</td><td></td><td>365</td><td></td></tr>
 <tr><td>E33</td><td></td><td>2026</td><td></td></tr>
 <tr><td>E34</td><td></td><td>2027</td><td></td></tr>
-<tr><td>F33</td><td></td><td>51351.6791975307</td><td></td></tr>
-<tr><td>F34</td><td></td><td>72776.5519753084</td><td></td></tr>
+<tr><td>F33</td><td></td><td>51472.3412979873</td><td></td></tr>
+<tr><td>F34</td><td></td><td>72947.5565415185</td><td></td></tr>
 <tr><td>G33</td><td></td><td>25</td><td></td></tr>
 <tr><td>G34</td><td></td><td>25</td><td></td></tr>
-<tr><td>J33</td><td></td><td>12837.9197993827</td><td></td></tr>
-<tr><td>J34</td><td></td><td>18194.1379938271</td><td></td></tr>
-<tr><td>L33</td><td></td><td>565.81834086007</td><td></td></tr>
-<tr><td>L34</td><td></td><td>801.888244662616</td><td></td></tr>
-<tr><td>I33</td><td></td><td>12272.1014585226</td><td></td></tr>
-<tr><td>I34</td><td></td><td>17392.2497491645</td><td></td></tr>
+<tr><td>J33</td><td></td><td>12868.0853244968</td><td></td></tr>
+<tr><td>J34</td><td></td><td>18236.8891353796</td><td></td></tr>
+<tr><td>L33</td><td></td><td>564.443175834467</td><td></td></tr>
+<tr><td>L34</td><td></td><td>799.939335288583</td><td></td></tr>
+<tr><td>I33</td><td></td><td>12303.6421486624</td><td></td></tr>
+<tr><td>I34</td><td></td><td>17436.949800091</td><td></td></tr>
 <tr><td>K37</td><td></td><td>64.5061728395062</td><td></td></tr>
 </tbody>
 </table></div>
@@ -3089,32 +3097,32 @@
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
 <tr><td>C126</td><td>Box 330: financial year</td><td>2026</td><td>gl-cor:period (ct600.box330)</td></tr>
-<tr><td>N126</td><td>Box 335: amount of profit</td><td>51351.6791975307</td><td>gl-cor:amount (ct600.box335)</td></tr>
+<tr><td>N126</td><td>Box 335: amount of profit</td><td>51472.3412979873</td><td>gl-cor:amount (ct600.box335)</td></tr>
 <tr><td>AA126</td><td>Box 340: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box340)</td></tr>
-<tr><td>AJ126</td><td>Box 345: tax</td><td>12837.9197993827</td><td>gl-cor:taxAmount (ct600.box345)</td></tr>
+<tr><td>AJ126</td><td>Box 345: tax</td><td>12868.0853244968</td><td>gl-cor:taxAmount (ct600.box345)</td></tr>
 <tr><td>C128</td><td>Box 380: financial year</td><td>2027</td><td>gl-cor:period (ct600.box380)</td></tr>
-<tr><td>N128</td><td>Box 385: amount of profit</td><td>72776.5519753084</td><td>gl-cor:amount (ct600.box385)</td></tr>
+<tr><td>N128</td><td>Box 385: amount of profit</td><td>72947.5565415185</td><td>gl-cor:amount (ct600.box385)</td></tr>
 <tr><td>AA128</td><td>Box 390: rate of tax</td><td>25</td><td>gl-cor:rate (ct600.box390)</td></tr>
-<tr><td>AJ128</td><td>Box 395: tax</td><td>18194.1379938271</td><td>gl-cor:taxAmount (ct600.box395)</td></tr>
-<tr><td>AJ131</td><td><strong>Box 430: corporation tax</strong></td><td>31032.0577932098</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
-<tr><td>Y133</td><td>Box 435: marginal rate relief</td><td>1367.70658552269</td><td>gl-cor:taxAmount (ct600.box435)</td></tr>
-<tr><td>Y135</td><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td>29664.3512076871</td><td>gl-cor:taxAmount (ct600.box440)</td></tr>
+<tr><td>AJ128</td><td>Box 395: tax</td><td>18236.8891353796</td><td>gl-cor:taxAmount (ct600.box395)</td></tr>
+<tr><td>AJ131</td><td><strong>Box 430: corporation tax</strong></td><td>31104.9744598764</td><td>gl-cor:taxAmount (ct600.box430)</td></tr>
+<tr><td>Y133</td><td>Box 435: marginal rate relief</td><td>1364.38251112305</td><td>gl-cor:taxAmount (ct600.box435)</td></tr>
+<tr><td>Y135</td><td><strong>Box 440: corporation tax net of marginal rate relief</strong></td><td>29740.5919487534</td><td>gl-cor:taxAmount (ct600.box440)</td></tr>
 <tr><td>Y118</td><td>Box 327: associated companies, first financial year</td><td>0</td><td>gl-cor:count (ct600.box327)</td></tr>
 <tr><td>Y120</td><td>Box 328: associated companies, second financial year</td><td>0</td><td>gl-cor:count (ct600.box328)</td></tr>
 <tr><td>Z114</td><td>Box 620: franked investment income</td><td>20000</td><td>gl-cor:amount (ct600.box620)</td></tr>
 <tr><td>B33</td><td></td><td>46327</td><td></td></tr>
 <tr><td>M33</td><td></td><td>46691</td><td></td></tr>
-<tr><td>W137</td><td></td><td>23.8981502655764</td><td></td></tr>
+<tr><td>W137</td><td></td><td>23.9034048935782</td><td></td></tr>
 <tr><td>AK66</td><td></td><td>341283.333333333</td><td></td></tr>
-<tr><td>Z70</td><td></td><td>123788.725</td><td></td></tr>
-<tr><td>AJ74</td><td></td><td>123788.725</td><td></td></tr>
+<tr><td>Z70</td><td></td><td>124080.391666666</td><td></td></tr>
+<tr><td>AJ74</td><td></td><td>124080.391666666</td><td></td></tr>
 <tr><td>AJ76</td><td></td><td>339.506172839506</td><td></td></tr>
-<tr><td>AJ92</td><td></td><td>124128.231172839</td><td></td></tr>
-<tr><td>AJ110</td><td></td><td>124128.231172839</td><td></td></tr>
-<tr><td>AJ145</td><td></td><td>29664.3512076871</td><td></td></tr>
+<tr><td>AJ92</td><td></td><td>124419.897839506</td><td></td></tr>
+<tr><td>AJ110</td><td></td><td>124419.897839506</td><td></td></tr>
+<tr><td>AJ145</td><td></td><td>29740.5919487534</td><td></td></tr>
 <tr><td>AJ154</td><td></td><td>64.5061728395062</td><td></td></tr>
-<tr><td>AJ159</td><td></td><td>29599.8450348476</td><td></td></tr>
-<tr><td>AJ166</td><td></td><td>29599.8450348476</td><td></td></tr>
+<tr><td>AJ159</td><td></td><td>29676.0857759139</td><td></td></tr>
+<tr><td>AJ166</td><td></td><td>29676.0857759139</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>PubP&amp;L</h5>
@@ -3129,10 +3137,10 @@
 <tr><td>F44</td><td>Administrative Expenses</td><td>150947.941666667</td><td>gl-cor:amount (pubPL.admin)</td></tr>
 <tr><td>F46</td><td><strong>Operating Profit</strong></td><td>171548.725</td><td>gl-cor:amount (pubPL.operating)</td></tr>
 <tr><td>F49</td><td><strong>Profit Before Tax</strong></td><td>171888.231172839</td><td>gl-cor:amount (pubPL.pbt)</td></tr>
-<tr><td>F50</td><td>Corporation tax</td><td>29664.3512076871</td><td>gl-cor:taxAmount (pubPL.tax)</td></tr>
-<tr><td>F51</td><td><strong>Profit after Tax</strong></td><td>142223.879965152</td><td>gl-cor:amount (pubPL.pat)</td></tr>
+<tr><td>F50</td><td>Corporation tax</td><td>29740.5919487534</td><td>gl-cor:taxAmount (pubPL.tax)</td></tr>
+<tr><td>F51</td><td><strong>Profit after Tax</strong></td><td>142147.639224086</td><td>gl-cor:amount (pubPL.pat)</td></tr>
 <tr><td>F52</td><td>Dividends</td><td>15000</td><td>gl-cor:amount (pubPL.dividends)</td></tr>
-<tr><td>F54</td><td><strong>Retained Profit for the year</strong></td><td>127223.879965152</td><td>gl-cor:amount (pubPL.retained)</td></tr>
+<tr><td>F54</td><td><strong>Retained Profit for the year</strong></td><td>127147.639224086</td><td>gl-cor:amount (pubPL.retained)</td></tr>
 <tr><td>D3</td><td></td><td>46691</td><td></td></tr>
 <tr><td>B9</td><td></td><td>0</td><td></td></tr>
 <tr><td>B14</td><td></td><td>0</td><td></td></tr>
@@ -3151,17 +3159,17 @@
 <tr><td>E12</td><td>Cash at bank and in hand</td><td>192995.43</td><td>gl-cor:amount (pubBS.bankCash)</td></tr>
 <tr><td>E13</td><td>Current Assets</td><td>206895.43</td><td>gl-cor:amount (pubBS.currentAssets)</td></tr>
 <tr><td>E16</td><td>Trade Creditors</td><td>11182.25</td><td>accounts.liabilities.2100 (pubBS)</td></tr>
-<tr><td>E17</td><td>Corporation Tax</td><td>29599.8450348476</td><td>accounts.liabilities.2300 (pubBS)</td></tr>
+<tr><td>E17</td><td>Corporation Tax</td><td>29676.0857759139</td><td>accounts.liabilities.2300 (pubBS)</td></tr>
 <tr><td>E18</td><td>Taxation and Social Security</td><td>9077.45500000003</td><td>gl-cor:amount (pubBS.taxAndSocial)</td></tr>
-<tr><td>E20</td><td>Current Liabilities</td><td>49859.5500348476</td><td>gl-cor:amount (pubBS.creditors)</td></tr>
-<tr><td>F22</td><td><strong>Net Current Assets</strong></td><td>157035.879965152</td><td>gl-cor:amount (pubBS.netCurrent)</td></tr>
-<tr><td>F26</td><td><strong>Total Assets less CL</strong></td><td>366025.879965152</td><td>gl-cor:amount (pubBS.totalAssetsLessCL)</td></tr>
+<tr><td>E20</td><td>Current Liabilities</td><td>49935.7907759139</td><td>gl-cor:amount (pubBS.creditors)</td></tr>
+<tr><td>F22</td><td><strong>Net Current Assets</strong></td><td>156959.639224086</td><td>gl-cor:amount (pubBS.netCurrent)</td></tr>
+<tr><td>F26</td><td><strong>Total Assets less CL</strong></td><td>365949.639224086</td><td>gl-cor:amount (pubBS.totalAssetsLessCL)</td></tr>
 <tr><td>E29</td><td>Directors Loan</td><td>13000</td><td>accounts.liabilities.2500 (pubBS)</td></tr>
 <tr><td>E30</td><td>Creditors due after more than one year</td><td>45000</td><td>accounts.liabilities.2600 (pubBS)</td></tr>
 <tr><td>F31</td><td>Other Creditors</td><td>58000</td><td>gl-cor:amount (pubBS.otherCred)</td></tr>
-<tr><td>F33</td><td><strong>Net Assets</strong></td><td>308025.879965152</td><td>gl-cor:amount (pubBS.netAssets)</td></tr>
+<tr><td>F33</td><td><strong>Net Assets</strong></td><td>307949.639224086</td><td>gl-cor:amount (pubBS.netAssets)</td></tr>
 <tr><td>F36</td><td>Called up share capital</td><td>100</td><td>accounts.capital.3000 (pubBS)</td></tr>
-<tr><td>F39</td><td><strong>Shareholders' Funds</strong></td><td>308025.879965152</td><td>gl-cor:amount (pubBS.equity)</td></tr>
+<tr><td>F39</td><td><strong>Shareholders' Funds</strong></td><td>307949.639224086</td><td>gl-cor:amount (pubBS.equity)</td></tr>
 <tr><td>D2</td><td></td><td>46691</td><td></td></tr>
 </tbody>
 </table></div>
@@ -3179,7 +3187,7 @@
 <tr><td>G17</td><td><strong>Depreciation carried forward</strong></td><td>46510</td><td>gl-cor:amount (note1.depCf)</td></tr>
 <tr><td>G20</td><td><strong>Net book value</strong></td><td>208990</td><td>gl-cor:amount (note1.nbv)</td></tr>
 <tr><td>D35</td><td>Directors emoluments</td><td>16742.6666666667</td><td>gl-cor:amount (note2.emoluments)</td></tr>
-<tr><td>D41</td><td>Corporation tax for the year</td><td>29664.3512076871</td><td>gl-cor:taxAmount (note4.ct)</td></tr>
+<tr><td>D41</td><td>Corporation tax for the year</td><td>29740.5919487534</td><td>gl-cor:taxAmount (note4.ct)</td></tr>
 <tr><td>B8</td><td></td><td>200000</td><td></td></tr>
 <tr><td>B9</td><td></td><td>0</td><td></td></tr>
 <tr><td>B10</td><td></td><td>0</td><td></td></tr>
@@ -3302,13 +3310,14 @@
 <tr><td>EJ39</td><td>Final: Directors Loan Account</td><td>-13000</td><td>accounts.liabilities.2500 (final)</td></tr>
 <tr><td>EJ40</td><td>Final: Creditor Long Term</td><td>-45000</td><td>accounts.liabilities.2600 (final)</td></tr>
 <tr><td>EJ48</td><td>Final: Dividends declared</td><td>15000</td><td>gl-cor:amount (dividendsDeclared)</td></tr>
-<tr><td>EJ91</td><td><strong>Audit Accuracy Check</strong></td><td>3.25599103234708e-10</td><td>gl-cor:amount (trialBalanceCheck)</td></tr>
+<tr><td>EJ90</td><td>Final: Business Entertainment (code e)</td><td>291.666666666667</td><td>accounts.purchases.5502 (final)</td></tr>
+<tr><td>EJ91</td><td><strong>Audit Accuracy Check</strong></td><td>2.96665803034557e-10</td><td>gl-cor:amount (trialBalanceCheck)</td></tr>
 <tr><td>EJ66</td><td></td><td>16742.6666666667</td><td></td></tr>
 <tr><td>EJ28</td><td></td><td>-11182.25</td><td></td></tr>
 <tr><td>EJ32</td><td></td><td>0</td><td></td></tr>
 <tr><td>EJ33</td><td></td><td>-9077.45500000003</td><td></td></tr>
 <tr><td>EJ34</td><td></td><td>0</td><td></td></tr>
-<tr><td>EJ35</td><td></td><td>-29599.8450348476</td><td></td></tr>
+<tr><td>EJ35</td><td></td><td>-29676.0857759139</td><td></td></tr>
 <tr><td>EH35</td><td></td><td>64.5061728395062</td><td></td></tr>
 <tr><td>L34</td><td></td><td>-1673.2</td><td></td></tr>
 </tbody>
@@ -4678,17 +4687,18 @@
 <tr><td>Operating Profit</td><td class="num">171,548.73</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill</td><td class="num">2,500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation</td><td class="num">13,740</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add back: total</td><td class="num">16,240</td></tr>
-<tr><td>Operational profit chargeable</td><td class="num">187,788.73</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add back: Business entertainment</td><td class="num">291.67</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add back: total</td><td class="num">16,531.67</td></tr>
+<tr><td>Operational profit chargeable</td><td class="num">188,080.39</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances</td><td class="num">64,000</td></tr>
-<tr><td>Profit after capital allowances</td><td class="num">123,788.73</td></tr>
+<tr><td>Profit after capital allowances</td><td class="num">124,080.39</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest</td><td class="num">339.51</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward</td><td class="num">0</td></tr>
-<tr><td><strong>Profit Chargeable to CT</strong></td><td class="num">124,128.23</td></tr>
+<tr><td><strong>Profit Chargeable to CT</strong></td><td class="num">124,419.9</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add: franked investment income</td><td class="num">20,000</td></tr>
-<tr><td><strong>Augmented profits</strong></td><td class="num">144,128.23</td></tr>
-<tr><td><strong>Corporation Tax</strong></td><td class="num">29,664.35</td></tr>
-<tr><td>Tax Outstanding</td><td class="num">29,599.85</td></tr>
+<tr><td><strong>Augmented profits</strong></td><td class="num">144,419.9</td></tr>
+<tr><td><strong>Corporation Tax</strong></td><td class="num">29,740.59</td></tr>
+<tr><td>Tax Outstanding</td><td class="num">29,676.09</td></tr>
 </tbody>
 </table></div>
       </section>

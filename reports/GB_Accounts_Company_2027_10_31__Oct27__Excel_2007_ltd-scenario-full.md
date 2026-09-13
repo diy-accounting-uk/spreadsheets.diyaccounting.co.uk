@@ -14,7 +14,7 @@ Trade: IT consultancy and software development
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 3.25599103234708e-10 | +3.25599103234708e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 2.96665803034557e-10 | +2.96665803034557e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 233000 | 233000 | 0 | PASS |
@@ -303,7 +303,7 @@ Trade: IT consultancy and software development
 | Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | 0 | 0 | 0 | PASS |
 | Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 9077.459999999992 | 9077.45500000003 | -0.004999999961000867 | PASS |
 | Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC | 0 | 0 | 0 | PASS |
-| Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 29599.84503484759 | 29599.8450348476 | +1.0913936421275139e-11 | PASS |
+| Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 29676.08577591389 | 29676.0857759139 | +1.0913936421275139e-11 | PASS |
 | Fixed assets: Schedule additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
 | Fixed assets: Schedule additions = fixed asset purchases net of VAT | 52500 | 52500 | 0 | PASS |
@@ -407,7 +407,7 @@ Trade: IT consultancy and software development
 | P&L Nov C24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Nov C25 = Purchases.xlsx "m" net | 100 | 100 | 0 | PASS |
 | P&L Nov C26 = Purchases.xlsx "u" net | 130.83 | 130.833333333333 | +0.003333333332989241 | PASS |
-| P&L Nov C27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Nov C27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Nov C28 = Purchases.xlsx "g" net | 112.5 | 112.5 | 0 | PASS |
 | P&L Nov C29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Nov C30 = Purchases.xlsx "v" net | 501.88 | 501.875 | -0.0049999999999954525 | PASS |
@@ -424,7 +424,7 @@ Trade: IT consultancy and software development
 | P&L Dec D24 = Purchases.xlsx "q" net | 200 | 200 | 0 | PASS |
 | P&L Dec D25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Dec D26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Dec D27 = Purchases.xlsx "a" net | 500 | 500 | 0 | PASS |
+| P&L Dec D27 = Purchases.xlsx "a" and "e" net | 500 | 500 | 0 | PASS |
 | P&L Dec D28 = Purchases.xlsx "g" net | 127.5 | 127.5 | 0 | PASS |
 | P&L Dec D29 = Purchases.xlsx "h" net | 126.67 | 126.666666666667 | -0.003333333333003452 | PASS |
 | P&L Dec D30 = Purchases.xlsx "v" net | 555 | 555 | 0 | PASS |
@@ -441,7 +441,7 @@ Trade: IT consultancy and software development
 | P&L Jan E24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jan E25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jan E26 = Purchases.xlsx "u" net | 120.83 | 120.833333333333 | +0.003333333333003452 | PASS |
-| P&L Jan E27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jan E27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Jan E28 = Purchases.xlsx "g" net | 192.5 | 192.5 | 0 | PASS |
 | P&L Jan E29 = Purchases.xlsx "h" net | 226.67 | 226.666666666667 | -0.003333333332989241 | PASS |
 | P&L Jan E30 = Purchases.xlsx "v" net | 545 | 545 | 0 | PASS |
@@ -458,7 +458,7 @@ Trade: IT consultancy and software development
 | P&L Feb F24 = Purchases.xlsx "q" net | 400 | 400 | 0 | PASS |
 | P&L Feb F25 = Purchases.xlsx "m" net | 150 | 150 | 0 | PASS |
 | P&L Feb F26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Feb F27 = Purchases.xlsx "a" net | 400 | 400 | 0 | PASS |
+| P&L Feb F27 = Purchases.xlsx "a" and "e" net | 400 | 400 | 0 | PASS |
 | P&L Feb F28 = Purchases.xlsx "g" net | 132.5 | 132.5 | 0 | PASS |
 | P&L Feb F29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Feb F30 = Purchases.xlsx "v" net | 486.88 | 486.875 | -0.0049999999999954525 | PASS |
@@ -475,7 +475,7 @@ Trade: IT consultancy and software development
 | P&L Mar G24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Mar G25 = Purchases.xlsx "m" net | 200 | 200 | 0 | PASS |
 | P&L Mar G26 = Purchases.xlsx "u" net | 135.83 | 135.833333333333 | +0.003333333332989241 | PASS |
-| P&L Mar G27 = Purchases.xlsx "a" net | 291.67 | 291.666666666667 | -0.003333333332989241 | PASS |
+| P&L Mar G27 = Purchases.xlsx "a" and "e" net | 291.67 | 291.666666666667 | -0.003333333332989241 | PASS |
 | P&L Mar G28 = Purchases.xlsx "g" net | 112.5 | 112.5 | 0 | PASS |
 | P&L Mar G29 = Purchases.xlsx "h" net | 116.67 | 116.666666666667 | -0.003333333333003452 | PASS |
 | P&L Mar G30 = Purchases.xlsx "v" net | 501.88 | 501.875 | -0.0049999999999954525 | PASS |
@@ -492,7 +492,7 @@ Trade: IT consultancy and software development
 | P&L Apr H24 = Purchases.xlsx "q" net | 300 | 300 | 0 | PASS |
 | P&L Apr H25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Apr H26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Apr H27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Apr H27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Apr H28 = Purchases.xlsx "g" net | 122.5 | 122.5 | 0 | PASS |
 | P&L Apr H29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Apr H30 = Purchases.xlsx "v" net | 590 | 590 | 0 | PASS |
@@ -509,7 +509,7 @@ Trade: IT consultancy and software development
 | P&L May I24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L May I25 = Purchases.xlsx "m" net | 80 | 80 | 0 | PASS |
 | P&L May I26 = Purchases.xlsx "u" net | 125.83 | 125.833333333333 | +0.003333333333003452 | PASS |
-| P&L May I27 = Purchases.xlsx "a" net | 2500 | 2500 | 0 | PASS |
+| P&L May I27 = Purchases.xlsx "a" and "e" net | 2500 | 2500 | 0 | PASS |
 | P&L May I28 = Purchases.xlsx "g" net | 112.5 | 112.5 | 0 | PASS |
 | P&L May I29 = Purchases.xlsx "h" net | 176.67 | 176.666666666667 | -0.003333333332989241 | PASS |
 | P&L May I30 = Purchases.xlsx "v" net | 505.63 | 505.625 | -0.0049999999999954525 | PASS |
@@ -526,7 +526,7 @@ Trade: IT consultancy and software development
 | P&L Jun J24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jun J25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jun J26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Jun J27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jun J27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Jun J28 = Purchases.xlsx "g" net | 137.5 | 137.5 | 0 | PASS |
 | P&L Jun J29 = Purchases.xlsx "h" net | 136.67 | 136.666666666667 | -0.003333333332989241 | PASS |
 | P&L Jun J30 = Purchases.xlsx "v" net | 537.5 | 537.5 | 0 | PASS |
@@ -543,7 +543,7 @@ Trade: IT consultancy and software development
 | P&L Jul K24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Jul K25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jul K26 = Purchases.xlsx "u" net | 115.83 | 115.833333333333 | +0.003333333333003452 | PASS |
-| P&L Jul K27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jul K27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Jul K28 = Purchases.xlsx "g" net | 212.5 | 212.5 | 0 | PASS |
 | P&L Jul K29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Jul K30 = Purchases.xlsx "v" net | 511.25 | 511.25 | 0 | PASS |
@@ -560,7 +560,7 @@ Trade: IT consultancy and software development
 | P&L Aug L24 = Purchases.xlsx "q" net | 150 | 150 | 0 | PASS |
 | P&L Aug L25 = Purchases.xlsx "m" net | 120 | 120 | 0 | PASS |
 | P&L Aug L26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Aug L27 = Purchases.xlsx "a" net | 400 | 400 | 0 | PASS |
+| P&L Aug L27 = Purchases.xlsx "a" and "e" net | 400 | 400 | 0 | PASS |
 | P&L Aug L28 = Purchases.xlsx "g" net | 127.5 | 127.5 | 0 | PASS |
 | P&L Aug L29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Aug L30 = Purchases.xlsx "v" net | 531.88 | 531.875 | -0.0049999999999954525 | PASS |
@@ -577,7 +577,7 @@ Trade: IT consultancy and software development
 | P&L Sep M24 = Purchases.xlsx "q" net | 300 | 300 | 0 | PASS |
 | P&L Sep M25 = Purchases.xlsx "m" net | 300 | 300 | 0 | PASS |
 | P&L Sep M26 = Purchases.xlsx "u" net | 110.83 | 110.833333333333 | +0.003333333333003452 | PASS |
-| P&L Sep M27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Sep M27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Sep M28 = Purchases.xlsx "g" net | 112.5 | 112.5 | 0 | PASS |
 | P&L Sep M29 = Purchases.xlsx "h" net | 306.67 | 306.666666666667 | -0.003333333332989241 | PASS |
 | P&L Sep M30 = Purchases.xlsx "v" net | 496.25 | 496.25 | 0 | PASS |
@@ -594,7 +594,7 @@ Trade: IT consultancy and software development
 | P&L Oct N24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Oct N25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Oct N26 = Purchases.xlsx "u" net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
-| P&L Oct N27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Oct N27 = Purchases.xlsx "a" and "e" net | 0 | 0 | 0 | PASS |
 | P&L Oct N28 = Purchases.xlsx "g" net | 132.5 | 132.5 | 0 | PASS |
 | P&L Oct N29 = Purchases.xlsx "h" net | 76.67 | 76.6666666666667 | -0.00333333333330188 | PASS |
 | P&L Oct N30 = Purchases.xlsx "v" net | 568.75 | 568.75 | 0 | PASS |
@@ -1019,55 +1019,57 @@ Trade: IT consultancy and software development
 | CT: operating profit = published P&L operating profit | 171548.725 | 171548.725 | 0 | PASS |
 | CT: depreciation add-back = P&L depreciation | 13740 | 13740 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 2500 | 2500 | 0 | PASS |
-| CT: add-backs = depreciation + goodwill | 16240 | 16240 | 0 | PASS |
-| CT: profit plus add-backs | 187788.725 | 187788.725 | 0 | PASS |
+| CT: entertainment add-back = Purchases.xlsx "e" net | 291.6666666666667 | 291.666666666667 | +3.410605131648481e-13 | PASS |
+| Trial balance: business entertainment = Purchases.xlsx "e" net | 291.6666666666667 | 291.666666666667 | +3.410605131648481e-13 | PASS |
+| CT: add-backs = depreciation + goodwill + entertainment | 16531.666666666668 | 16531.6666666667 | +3.2741809263825417e-11 | PASS |
+| CT: profit plus add-backs | 188080.39166666672 | 188080.391666666 | -7.275957614183426e-10 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 52500 | 52500 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 3360 | 3360 | 0 | PASS |
 | CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 8140 | 8140 | 0 | PASS |
 | CT: capital allowances = the allowance lines | 64000 | 64000 | 0 | PASS |
-| CT: profit after capital allowances | 123788.725 | 123788.725 | 0 | PASS |
-| CT: chargeable profit = profit after allowances + interest - losses brought forward | 124128.23117283951 | 124128.231172839 | -5.093170329928398e-10 | PASS |
-| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 124128.23117283951 | 124128.231172839 | -5.093170329928398e-10 | PASS |
+| CT: profit after capital allowances | 124080.391666666 | 124080.391666666 | 0 | PASS |
+| CT: chargeable profit = profit after allowances + interest - losses brought forward | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 124419.89783950623 | 124419.897839506 | -2.3283064365386963e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
-| CT600: trading profits = CT profit after capital allowances | 123788.725 | 123788.725 | 0 | PASS |
+| CT600: trading profits = CT profit after capital allowances | 124080.391666666 | 124080.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
-| CT600: net trading profits = trading profits - losses brought forward | 123788.725 | 123788.725 | 0 | PASS |
+| CT600: net trading profits = trading profits - losses brought forward | 124080.391666666 | 124080.391666666 | 0 | PASS |
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 124128.23117283951 | 124128.231172839 | -5.093170329928398e-10 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 124128.231172839 | 124128.231172839 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 124419.897839506 | 124419.897839506 | 0 | PASS |
 | CT600: financial year = first tax row financial year | 2026 | 2026 | 0 | PASS |
-| CT600: amount of profit = first tax row profit | 51351.6791975307 | 51351.6791975307 | 0 | PASS |
+| CT600: amount of profit = first tax row profit | 51472.3412979873 | 51472.3412979873 | 0 | PASS |
 | CT600: tax rate = first tax row rate | 25 | 25 | 0 | PASS |
-| CT600: corporation tax = first tax row gross tax | 12837.9197993827 | 12837.9197993827 | 0 | PASS |
-| CT600: second financial year tax = second tax row gross tax | 18194.1379938271 | 18194.1379938271 | 0 | PASS |
+| CT600: corporation tax = first tax row gross tax | 12868.0853244968 | 12868.0853244968 | 0 | PASS |
+| CT600: second financial year tax = second tax row gross tax | 18236.8891353796 | 18236.8891353796 | 0 | PASS |
 | CT600: second financial year = second tax row financial year | 2027 | 2027 | 0 | PASS |
-| CT600: second financial year profit = second tax row profit | 72776.5519753084 | 72776.5519753084 | 0 | PASS |
+| CT600: second financial year profit = second tax row profit | 72947.5565415185 | 72947.5565415185 | 0 | PASS |
 | CT600: second financial year rate = second tax row rate | 25 | 25 | 0 | PASS |
 | CT600: franked investment income = the working sheet's figure | 20000 | 20000 | 0 | PASS |
 | CT600: associated companies, first financial year = Admin P14 | 0 | 0 | 0 | PASS |
 | CT600: associated companies, second financial year = Admin P14 | 0 | 0 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 31032.0577932098 | 31032.0577932098 | 0 | PASS |
-| CT600: marginal rate relief = the working sheet's relief | 1367.706585522686 | 1367.70658552269 | +3.865352482534945e-12 | PASS |
-| CT600: tax net of marginal relief = the working sheet's charge | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
-| CT600: corporation tax chargeable = tax net of marginal relief | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
-| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.89815026557639 | 23.8981502655764 | +1.0658141036401503e-14 | PASS |
-| CT600: tax outstanding | 29599.8450348476 | 29599.8450348476 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 31104.9744598764 | 31104.9744598764 | 0 | PASS |
+| CT600: marginal rate relief = the working sheet's relief | 1364.3825111230499 | 1364.38251112305 | +2.2737367544323206e-13 | PASS |
+| CT600: tax net of marginal relief = the working sheet's charge | 29740.5919487534 | 29740.5919487534 | 0 | PASS |
+| CT600: corporation tax chargeable = tax net of marginal relief | 29740.5919487534 | 29740.5919487534 | 0 | PASS |
+| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.90340489357814 | 23.9034048935782 | +6.039613253960852e-14 | PASS |
+| CT600: tax outstanding | 29676.0857759139 | 29676.0857759139 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 29740.5919487534 | 29740.5919487534 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 16742.6666666667 | 16742.6666666667 | 0 | PASS |
 | CT: franked investment income = the exempt distributions entered on the opening accounts | 20000 | 20000 | 0 | PASS |
-| CT: augmented profits = the chargeable profit and the franked investment income | 144128.231172839 | 144128.231172839 | 0 | PASS |
+| CT: augmented profits = the chargeable profit and the franked investment income | 144419.89783950598 | 144419.897839506 | +2.9103830456733704e-11 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
-| CT: first tax row profit = chargeable profit by its share of those days | 51351.679197530655 | 51351.6791975307 | +4.3655745685100555e-11 | PASS |
-| CT: second tax row profit = chargeable profit by its share of those days | 72776.55197530835 | 72776.5519753084 | +4.3655745685100555e-11 | PASS |
-| CT: first tax row gross tax = its profit at its rate | 12837.919799382675 | 12837.9197993827 | +2.546585164964199e-11 | PASS |
-| CT: second tax row gross tax = its profit at its rate | 18194.1379938271 | 18194.1379938271 | 0 | PASS |
-| CT: first tax row tax = its gross tax less its marginal relief | 12272.10145852263 | 12272.1014585226 | -2.9103830456733704e-11 | PASS |
-| CT: second tax row tax = its gross tax less its marginal relief | 17392.249749164483 | 17392.2497491645 | +1.8189894035458565e-11 | PASS |
-| CT: charge for the year = the two tax rows | 29664.3512076871 | 29664.3512076871 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 51472.34129798741 | 51472.3412979873 | -1.0913936421275139e-10 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 72947.55654151858 | 72947.5565415185 | -8.731149137020111e-11 | PASS |
+| CT: first tax row gross tax = its profit at its rate | 12868.085324496824 | 12868.0853244968 | -2.3646862246096134e-11 | PASS |
+| CT: second tax row gross tax = its profit at its rate | 18236.889135379624 | 18236.8891353796 | -2.546585164964199e-11 | PASS |
+| CT: first tax row tax = its gross tax less its marginal relief | 12303.642148662333 | 12303.6421486624 | +6.730260793119669e-11 | PASS |
+| CT: second tax row tax = its gross tax less its marginal relief | 17436.949800091017 | 17436.949800091 | -1.8189894035458565e-11 | PASS |
+| CT: charge for the year = the two tax rows | 29740.591948753397 | 29740.5919487534 | +3.637978807091713e-12 | PASS |
 | CT: first tax row rate = the rate its share of the augmented profits falls in | 25 | 25 | 0 | PASS |
 | CT: second tax row rate = the rate its share of the augmented profits falls in | 25 | 25 | 0 | PASS |
-| CT: first tax row marginal relief = its share of the augmented profits against its share of the limits | 565.8183408600711 | 565.81834086007 | -1.1368683772161603e-12 | PASS |
-| CT: second tax row marginal relief = its share of the augmented profits against its share of the limits | 801.8882446626171 | 801.888244662616 | -1.1368683772161603e-12 | PASS |
+| CT: first tax row marginal relief = its share of the augmented profits against its share of the limits | 564.4431758344646 | 564.443175834467 | +2.3874235921539366e-12 | PASS |
+| CT: second tax row marginal relief = its share of the augmented profits against its share of the limits | 799.93933528858 | 799.939335288583 | +3.069544618483633e-12 | PASS |
 | CT: first tax row small profits rate = what its own financial year charged | 19 | 19 | 0 | PASS |
 | CT: first tax row main rate = what its own financial year charged | 25 | 25 | 0 | PASS |
 | CT: first tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
@@ -1078,9 +1080,9 @@ Trade: IT consultancy and software development
 | CT: second tax row marginal relief fraction = what its own financial year charged | 0.015 | 0.015 | 0 | PASS |
 | CT: second tax row marginal relief lower limit = what its own financial year charged | 50000 | 50000 | 0 | PASS |
 | CT: second tax row marginal relief upper limit = what its own financial year charged | 250000 | 250000 | 0 | PASS |
-| CT: charge for the year = the statutory computation with marginal relief | 29664.35120768707 | 29664.3512076871 | +3.2741809263825417e-11 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 29599.845034847596 | 29599.8450348476 | +3.637978807091713e-12 | PASS |
-| Accounting profit to tax profit bridge closes to zero | 0 | 5.093170329928398e-10 | +5.093170329928398e-10 | PASS |
+| CT: charge for the year = the statutory computation with marginal relief | 29740.591948753452 | 29740.5919487534 | -5.093170329928398e-11 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 29676.085775913896 | 29676.0857759139 | +3.637978807091713e-12 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 1.7462298274040222e-10 | +1.7462298274040222e-10 | PASS |
 | Category netting: Sales Product A (sales a) net reaches MnthP&L!B4 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product B (sales b) net reaches MnthP&L!B5 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product C (sales c) net reaches MnthP&L!B6 with no residue | 0 | 0 | 0 | PASS |
@@ -1095,7 +1097,7 @@ Trade: IT consultancy and software development
 | Category netting: Equipment Tools & Plant Hire (purchases q) net reaches MnthP&L!B24 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Repairs & Maintenance (purchases m) net reaches MnthP&L!B25 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Consumable Materials (purchases u) net reaches MnthP&L!B26 with no residue | 0 | 0 | 0 | PASS |
-| Category netting: Advertising & Promotion (purchases a) net reaches MnthP&L!B27 with no residue | 0 | -3.183231456205249e-12 | -3.183231456205249e-12 | PASS |
+| Category netting: Advertising, Promotion & Entertainment (purchases a) net reaches MnthP&L!B27 with no residue | 0 | -3.637978807091713e-12 | -3.637978807091713e-12 | PASS |
 | Category netting: Telephone Postage & Stationery (purchases g) net reaches MnthP&L!B28 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Travel & Hotel Expenses (purchases h) net reaches MnthP&L!B29 with no residue | 0 | 2.2737367544323206e-13 | +2.2737367544323206e-13 | PASS |
 | Category netting: Motor Vehicle Expenses (purchases v) net reaches MnthP&L!B30 with no residue | 0 | 0 | 0 | PASS |
@@ -1123,11 +1125,12 @@ Trade: IT consultancy and software development
 | Less bank interest received, net of tax deducted at source | MnthP&L!B44 | -275 |
 | Add back goodwill written off | CorporationTax!I7 | 2,500 |
 | Add back depreciation charged in the year | CorporationTax!I8 | 13,740 |
+| Add back business entertainment | CorporationTax!I9 | 291.67 |
 | Less capital allowances | CorporationTax!K20 | -64,000 |
 | Add gross bank interest received | CorporationTax!K24 | 339.51 |
 | Less losses brought forward | CorporationTax!K26 | 0 |
-| **Tax profit the bridge computes** | | **124,128.23** |
-| Tax profit the sheet carries | CorporationTax!K28 | 124,128.23 |
+| **Tax profit the bridge computes** | | **124,419.9** |
+| Tax profit the sheet carries | CorporationTax!K28 | 124,419.9 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -1150,7 +1153,7 @@ Journal amounts include VAT at 20%.
 | Equipment Tools & Plant Hire (purchases q) | 1,620 | 270 | 1,350 | MnthP&L!B24 | 1,350 | 0 |
 | Repairs & Maintenance (purchases m) | 1,140 | 190 | 950 | MnthP&L!B25 | 950 | 0 |
 | Consumable Materials (purchases u) | 1,578 | 263 | 1,315 | MnthP&L!B26 | 1,315 | 0 |
-| Advertising & Promotion (purchases a) | 4,910 | 818.33 | 4,091.67 | MnthP&L!B27 | 4,091.67 | 0 |
+| Advertising, Promotion & Entertainment (purchases a) | 4,910 | 818.33 | 4,091.67 | MnthP&L!B27 | 4,091.67 | 0 |
 | Telephone Postage & Stationery (purchases g) | 1,962 | 327 | 1,635 | MnthP&L!B28 | 1,635 | 0 |
 | Travel & Hotel Expenses (purchases h) | 1,860 | 310 | 1,550 | MnthP&L!B29 | 1,550 | 0 |
 | Motor Vehicle Expenses (purchases v) | 7,598.25 | 1,266.38 | 6,331.88 | MnthP&L!B30 | 6,331.88 | 0 |
@@ -1219,7 +1222,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Equipment Hire (code q) | 1,350 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance (code m) | 950 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Consumables (code u) | 1,315 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 4,091.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising & Entertainment (codes a, e) | 4,091.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage & Stationery (code g) | 1,635 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Hotel (code h) | 1,550 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v) | 6,331.88 |
@@ -1245,33 +1248,34 @@ Journal amounts include VAT at 20%.
 | Operating Profit | 171,548.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 13,740 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 16,240 |
-| Operational profit chargeable | 187,788.73 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Business entertainment | 291.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 16,531.67 |
+| Operational profit chargeable | 188,080.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 64,000 |
-| Profit after capital allowances | 123,788.73 |
+| Profit after capital allowances | 124,080.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 339.51 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | 124,128.23 |
+| **Profit Chargeable to CT** | 124,419.9 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: franked investment income | 20,000 |
-| **Augmented profits** | 144,128.23 |
-| **Corporation Tax** | 29,664.35 |
-| Tax Outstanding | 29,599.85 |
+| **Augmented profits** | 144,419.9 |
+| **Corporation Tax** | 29,740.59 |
+| Tax Outstanding | 29,676.09 |
 
 ## CT600 as filed
 
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year | 2,026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 51,351.68 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 51,472.34 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 12,837.92 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 12,868.09 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year | 2,027 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 72,776.55 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 72,947.56 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 18,194.14 |
-| **Box 430: corporation tax** | 31,032.06 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 1,367.71 |
-| **Box 440: corporation tax net of marginal rate relief** | 29,664.35 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 18,236.89 |
+| **Box 430: corporation tax** | 31,104.97 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 1,364.38 |
+| **Box 440: corporation tax net of marginal rate relief** | 29,740.59 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 327: associated companies, first financial year | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 328: associated companies, second financial year | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 620: franked investment income | 20,000 |
@@ -1288,10 +1292,10 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 150,947.94 |
 | **Operating Profit** | 171,548.73 |
 | **Profit Before Tax** | 171,888.23 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 29,664.35 |
-| **Profit after Tax** | 142,223.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 29,740.59 |
+| **Profit after Tax** | 142,147.64 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Dividends | 15,000 |
-| **Retained Profit for the year** | 127,223.88 |
+| **Retained Profit for the year** | 127,147.64 |
 
 ## Published Balance Sheet
 
@@ -1303,17 +1307,17 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 192,995.43 |
 | Current Assets | 206,895.43 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 11,182.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 29,599.85 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 29,676.09 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 9,077.46 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 49,859.55 |
-| **Net Current Assets** | 157,035.88 |
-| **Total Assets less CL** | 366,025.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 49,935.79 |
+| **Net Current Assets** | 156,959.64 |
+| **Total Assets less CL** | 365,949.64 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Creditors due after more than one year | 45,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 58,000 |
-| **Net Assets** | 308,025.88 |
+| **Net Assets** | 307,949.64 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| **Shareholders' Funds** | 308,025.88 |
+| **Shareholders' Funds** | 307,949.64 |
 
 ## Fixed Asset Note
 
@@ -1329,7 +1333,7 @@ Journal amounts include VAT at 20%.
 | **Depreciation carried forward** | 46,510 |
 | **Net book value** | 208,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 16,742.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 29,664.35 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 29,740.59 |
 
 ## Directors' Report
 
@@ -1394,6 +1398,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Creditor Long Term | -45,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Dividends declared | 15,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Business Entertainment (code e) | 291.67 |
 | **Audit Accuracy Check** | 0 |
 
 ## VAT Returns
@@ -1488,7 +1493,7 @@ Journal amounts include VAT at 20%.
 | B24 | Equipment Hire (code q) | 1350 | accounts.purchases.5301 |
 | B25 | Repairs & Maintenance (code m) | 950 | accounts.purchases.5400 |
 | B26 | Consumables (code u) | 1315 | accounts.purchases.5401 |
-| B27 | Advertising (code a) | 4091.66666666667 | accounts.purchases.5500 |
+| B27 | Advertising & Entertainment (codes a, e) | 4091.66666666667 | accounts.purchases.5500 + 5502 |
 | B28 | Telephone, Postage & Stationery (code g) | 1635 | accounts.purchases.5501 |
 | B29 | Travel & Hotel (code h) | 1550 | accounts.purchases.5600 |
 | B30 | Motor Vehicle (code v) | 6331.875 | accounts.purchases.5601 |
@@ -1826,17 +1831,18 @@ Journal amounts include VAT at 20%.
 | K5 | Operating Profit | 171548.725 | gl-cor:amount (ct600.box145) |
 | I7 | Add back: Goodwill | 2500 | gl-cor:amount (ct600.addBackGoodwill) |
 | I8 | Add back: Depreciation | 13740 | gl-cor:amount (ct600.addBackDepreciation) |
-| K10 | Add back: total | 16240 | gl-cor:amount (ct600.addBack) |
-| K12 | Operational profit chargeable | 187788.725 | gl-cor:amount (ct600.adjustedProfit) |
+| I9 | Add back: Business entertainment | 291.666666666667 | gl-cor:amount (ct600.addBackEntertaining) |
+| K10 | Add back: total | 16531.6666666667 | gl-cor:amount (ct600.addBack) |
+| K12 | Operational profit chargeable | 188080.391666666 | gl-cor:amount (ct600.adjustedProfit) |
 | K20 | Less: Capital Allowances | 64000 | tax.capitalAllowances (ct600) |
-| K22 | Profit after capital allowances | 123788.725 | gl-cor:amount (ct600.afterAllowances) |
+| K22 | Profit after capital allowances | 124080.391666666 | gl-cor:amount (ct600.afterAllowances) |
 | K24 | Add: gross bank interest | 339.506172839506 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
-| K28 | **Profit Chargeable to CT** | 124128.231172839 | gl-cor:amount (ct600.box315) |
+| K28 | **Profit Chargeable to CT** | 124419.897839506 | gl-cor:amount (ct600.box315) |
 | K29 | Add: franked investment income | 20000 | gl-cor:amount (ct600.box620) |
-| K30 | **Augmented profits** | 144128.231172839 | gl-cor:amount (ct600.augmentedProfits) |
-| K35 | **Corporation Tax** | 29664.3512076871 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 29599.8450348476 | gl-cor:taxAmount (ct600.box600) |
+| K30 | **Augmented profits** | 144419.897839506 | gl-cor:amount (ct600.augmentedProfits) |
+| K35 | **Corporation Tax** | 29740.5919487534 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 29676.0857759139 | gl-cor:taxAmount (ct600.box600) |
 | E5 |  | 46327 |  |
 | H5 |  | 46691 |  |
 | I15 |  | 52500 |  |
@@ -1848,16 +1854,16 @@ Journal amounts include VAT at 20%.
 | A35 |  | 365 |  |
 | E33 |  | 2026 |  |
 | E34 |  | 2027 |  |
-| F33 |  | 51351.6791975307 |  |
-| F34 |  | 72776.5519753084 |  |
+| F33 |  | 51472.3412979873 |  |
+| F34 |  | 72947.5565415185 |  |
 | G33 |  | 25 |  |
 | G34 |  | 25 |  |
-| J33 |  | 12837.9197993827 |  |
-| J34 |  | 18194.1379938271 |  |
-| L33 |  | 565.81834086007 |  |
-| L34 |  | 801.888244662616 |  |
-| I33 |  | 12272.1014585226 |  |
-| I34 |  | 17392.2497491645 |  |
+| J33 |  | 12868.0853244968 |  |
+| J34 |  | 18236.8891353796 |  |
+| L33 |  | 564.443175834467 |  |
+| L34 |  | 799.939335288583 |  |
+| I33 |  | 12303.6421486624 |  |
+| I34 |  | 17436.949800091 |  |
 | K37 |  | 64.5061728395062 |  |
 
 ### CT600
@@ -1865,32 +1871,32 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C126 | Box 330: financial year | 2026 | gl-cor:period (ct600.box330) |
-| N126 | Box 335: amount of profit | 51351.6791975307 | gl-cor:amount (ct600.box335) |
+| N126 | Box 335: amount of profit | 51472.3412979873 | gl-cor:amount (ct600.box335) |
 | AA126 | Box 340: rate of tax | 25 | gl-cor:rate (ct600.box340) |
-| AJ126 | Box 345: tax | 12837.9197993827 | gl-cor:taxAmount (ct600.box345) |
+| AJ126 | Box 345: tax | 12868.0853244968 | gl-cor:taxAmount (ct600.box345) |
 | C128 | Box 380: financial year | 2027 | gl-cor:period (ct600.box380) |
-| N128 | Box 385: amount of profit | 72776.5519753084 | gl-cor:amount (ct600.box385) |
+| N128 | Box 385: amount of profit | 72947.5565415185 | gl-cor:amount (ct600.box385) |
 | AA128 | Box 390: rate of tax | 25 | gl-cor:rate (ct600.box390) |
-| AJ128 | Box 395: tax | 18194.1379938271 | gl-cor:taxAmount (ct600.box395) |
-| AJ131 | **Box 430: corporation tax** | 31032.0577932098 | gl-cor:taxAmount (ct600.box430) |
-| Y133 | Box 435: marginal rate relief | 1367.70658552269 | gl-cor:taxAmount (ct600.box435) |
-| Y135 | **Box 440: corporation tax net of marginal rate relief** | 29664.3512076871 | gl-cor:taxAmount (ct600.box440) |
+| AJ128 | Box 395: tax | 18236.8891353796 | gl-cor:taxAmount (ct600.box395) |
+| AJ131 | **Box 430: corporation tax** | 31104.9744598764 | gl-cor:taxAmount (ct600.box430) |
+| Y133 | Box 435: marginal rate relief | 1364.38251112305 | gl-cor:taxAmount (ct600.box435) |
+| Y135 | **Box 440: corporation tax net of marginal rate relief** | 29740.5919487534 | gl-cor:taxAmount (ct600.box440) |
 | Y118 | Box 327: associated companies, first financial year | 0 | gl-cor:count (ct600.box327) |
 | Y120 | Box 328: associated companies, second financial year | 0 | gl-cor:count (ct600.box328) |
 | Z114 | Box 620: franked investment income | 20000 | gl-cor:amount (ct600.box620) |
 | B33 |  | 46327 |  |
 | M33 |  | 46691 |  |
-| W137 |  | 23.8981502655764 |  |
+| W137 |  | 23.9034048935782 |  |
 | AK66 |  | 341283.333333333 |  |
-| Z70 |  | 123788.725 |  |
-| AJ74 |  | 123788.725 |  |
+| Z70 |  | 124080.391666666 |  |
+| AJ74 |  | 124080.391666666 |  |
 | AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 124128.231172839 |  |
-| AJ110 |  | 124128.231172839 |  |
-| AJ145 |  | 29664.3512076871 |  |
+| AJ92 |  | 124419.897839506 |  |
+| AJ110 |  | 124419.897839506 |  |
+| AJ145 |  | 29740.5919487534 |  |
 | AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 29599.8450348476 |  |
-| AJ166 |  | 29599.8450348476 |  |
+| AJ159 |  | 29676.0857759139 |  |
+| AJ166 |  | 29676.0857759139 |  |
 
 ### PubP&L
 
@@ -1904,10 +1910,10 @@ Journal amounts include VAT at 20%.
 | F44 | Administrative Expenses | 150947.941666667 | gl-cor:amount (pubPL.admin) |
 | F46 | **Operating Profit** | 171548.725 | gl-cor:amount (pubPL.operating) |
 | F49 | **Profit Before Tax** | 171888.231172839 | gl-cor:amount (pubPL.pbt) |
-| F50 | Corporation tax | 29664.3512076871 | gl-cor:taxAmount (pubPL.tax) |
-| F51 | **Profit after Tax** | 142223.879965152 | gl-cor:amount (pubPL.pat) |
+| F50 | Corporation tax | 29740.5919487534 | gl-cor:taxAmount (pubPL.tax) |
+| F51 | **Profit after Tax** | 142147.639224086 | gl-cor:amount (pubPL.pat) |
 | F52 | Dividends | 15000 | gl-cor:amount (pubPL.dividends) |
-| F54 | **Retained Profit for the year** | 127223.879965152 | gl-cor:amount (pubPL.retained) |
+| F54 | **Retained Profit for the year** | 127147.639224086 | gl-cor:amount (pubPL.retained) |
 | D3 |  | 46691 |  |
 | B9 |  | 0 |  |
 | B14 |  | 0 |  |
@@ -1925,17 +1931,17 @@ Journal amounts include VAT at 20%.
 | E12 | Cash at bank and in hand | 192995.43 | gl-cor:amount (pubBS.bankCash) |
 | E13 | Current Assets | 206895.43 | gl-cor:amount (pubBS.currentAssets) |
 | E16 | Trade Creditors | 11182.25 | accounts.liabilities.2100 (pubBS) |
-| E17 | Corporation Tax | 29599.8450348476 | accounts.liabilities.2300 (pubBS) |
+| E17 | Corporation Tax | 29676.0857759139 | accounts.liabilities.2300 (pubBS) |
 | E18 | Taxation and Social Security | 9077.45500000003 | gl-cor:amount (pubBS.taxAndSocial) |
-| E20 | Current Liabilities | 49859.5500348476 | gl-cor:amount (pubBS.creditors) |
-| F22 | **Net Current Assets** | 157035.879965152 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 366025.879965152 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| E20 | Current Liabilities | 49935.7907759139 | gl-cor:amount (pubBS.creditors) |
+| F22 | **Net Current Assets** | 156959.639224086 | gl-cor:amount (pubBS.netCurrent) |
+| F26 | **Total Assets less CL** | 365949.639224086 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | E30 | Creditors due after more than one year | 45000 | accounts.liabilities.2600 (pubBS) |
 | F31 | Other Creditors | 58000 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 308025.879965152 | gl-cor:amount (pubBS.netAssets) |
+| F33 | **Net Assets** | 307949.639224086 | gl-cor:amount (pubBS.netAssets) |
 | F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
-| F39 | **Shareholders' Funds** | 308025.879965152 | gl-cor:amount (pubBS.equity) |
+| F39 | **Shareholders' Funds** | 307949.639224086 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 46691 |  |
 
 ### PubNotes
@@ -1952,7 +1958,7 @@ Journal amounts include VAT at 20%.
 | G17 | **Depreciation carried forward** | 46510 | gl-cor:amount (note1.depCf) |
 | G20 | **Net book value** | 208990 | gl-cor:amount (note1.nbv) |
 | D35 | Directors emoluments | 16742.6666666667 | gl-cor:amount (note2.emoluments) |
-| D41 | Corporation tax for the year | 29664.3512076871 | gl-cor:taxAmount (note4.ct) |
+| D41 | Corporation tax for the year | 29740.5919487534 | gl-cor:taxAmount (note4.ct) |
 | B8 |  | 200000 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
@@ -2072,13 +2078,14 @@ Journal amounts include VAT at 20%.
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
 | EJ48 | Final: Dividends declared | 15000 | gl-cor:amount (dividendsDeclared) |
-| EJ91 | **Audit Accuracy Check** | 3.25599103234708e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ90 | Final: Business Entertainment (code e) | 291.666666666667 | accounts.purchases.5502 (final) |
+| EJ91 | **Audit Accuracy Check** | 2.96665803034557e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 16742.6666666667 |  |
 | EJ28 |  | -11182.25 |  |
 | EJ32 |  | 0 |  |
 | EJ33 |  | -9077.45500000003 |  |
 | EJ34 |  | 0 |  |
-| EJ35 |  | -29599.8450348476 |  |
+| EJ35 |  | -29676.0857759139 |  |
 | EH35 |  | 64.5061728395062 |  |
 | L34 |  | -1673.2 |  |
 
