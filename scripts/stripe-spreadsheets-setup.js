@@ -31,7 +31,8 @@ const DONATE_LINKS_TOML_PATH = resolve(__dirname, "..", "web", "spreadsheets.diy
 
 // Rewrites only the named [section]'s key = "value" lines in donate-links.toml,
 // leaving every other section, comment and blank line untouched -- and drops
-// any "# PLACEHOLDER" guidance comment from that section now that it is filled.
+// the "# PLACEHOLDER" guidance comment, and the comment lines that continue it,
+// from that section now that it is filled.
 function writeDonateLinksSection(section, values) {
   const text = readFileSync(DONATE_LINKS_TOML_PATH, "utf8");
   const headerMatch = text.match(new RegExp(`(^|\\n)\\[${section}\\][^\\n]*\\n`));
@@ -49,11 +50,15 @@ function writeDonateLinksSection(section, values) {
     const keyRe = new RegExp(`^${key}\\s*=.*$`, "m");
     body = keyRe.test(body) ? body.replace(keyRe, line) : body + `${line}\n`;
   }
-  body = body
-    .split("\n")
-    .filter((line) => !line.trim().startsWith("# PLACEHOLDER"))
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n");
+  const kept = [];
+  let inPlaceholderComment = false;
+  for (const line of body.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("# PLACEHOLDER")) inPlaceholderComment = true;
+    else if (!trimmed.startsWith("#")) inPlaceholderComment = false;
+    if (!inPlaceholderComment) kept.push(line);
+  }
+  body = kept.join("\n").replace(/\n{3,}/g, "\n\n");
 
   writeFileSync(DONATE_LINKS_TOML_PATH, text.slice(0, sectionStart) + body + text.slice(sectionEnd), "utf8");
 }

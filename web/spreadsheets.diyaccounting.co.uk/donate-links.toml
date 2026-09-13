@@ -20,10 +20,7 @@ amount45 = "https://buy.stripe.com/8x23cueOB0EM4qdaQr4F202"
 custom = "https://buy.stripe.com/3cI28qbCpfzGf4RcYz4F204"
 
 [ci]
-# PLACEHOLDER -- not a real Stripe link, will 404 if clicked. Fill in by running:
-#   STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js
-# which mints test-mode Payment Links and writes this section.
-amount10 = "https://buy.stripe.com/test_00000000000010"
-amount20 = "https://buy.stripe.com/test_00000000000020"
-amount45 = "https://buy.stripe.com/test_00000000000045"
-custom = "https://buy.stripe.com/test_00000000000099"
+amount10 = "https://buy.stripe.com/test_14AcN53C39anbqO90s3VC01"
+amount20 = "https://buy.stripe.com/test_3cI8wP5Kb9an8eCekM3VC02"
+amount45 = "https://buy.stripe.com/test_28EcN54G75Yb52qa4w3VC03"
+custom = "https://buy.stripe.com/test_fZu00j4G75Yb1QedgI3VC04"
