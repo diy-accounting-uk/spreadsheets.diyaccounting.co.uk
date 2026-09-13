@@ -1809,6 +1809,19 @@ Journal amounts include VAT at 20%.
 | E7 | Q3 Expenses | 2182.5 | gl-cor:amount (vitalTax.q3Exp) |
 | F7 | Q4 Expenses | 6402.5 | gl-cor:amount (vitalTax.q4Exp) |
 | G7 | **Annual Expenses** | 13470 | gl-cor:amount (vitalTax.annualExp) |
+| I36 |  | 0.02 |  |
+| I37 |  | 0.03 |  |
+| I38 |  | 0.04 |  |
+| I39 |  | 0.25 |  |
+| I40 |  | 0.05 |  |
+| I41 |  | 0.06 |  |
+| I42 |  | 0.07 |  |
+| I43 |  | 0.08 |  |
+| I45 |  | 0.09 |  |
+| I46 |  | 0.1 |  |
+| I47 |  | 0.11 |  |
+| I48 |  | 0.12 |  |
+| I50 |  | 0.13 |  |
 
 ### Admin
 
