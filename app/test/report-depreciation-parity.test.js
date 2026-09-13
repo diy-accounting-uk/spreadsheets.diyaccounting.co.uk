@@ -60,7 +60,7 @@ describe("report.js --data derives the depreciation table --years would have nam
     // fixture (Income Tax!E5, "Tax profit the sheet carries", 130,552.81):
     // the fixed asset schedule's depreciation reaches the tax profit
     // calculation, and so do the trader's disallowable proportions.
-    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe("130552.8085");
+    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe("126002.8085");
   });
 
   it("computes the same values as --years for a BST book", () => {

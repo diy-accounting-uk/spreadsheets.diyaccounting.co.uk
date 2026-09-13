@@ -2049,12 +2049,20 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
 //   unmapped rather than assumed to be today's £1,000,000.
 // - Class 1 employee NI (main/upper rate, primary threshold, UEL): no
 //   app/data/*.toml carries the employee side, only Ltd's employer_ni block.
+// - tax.capitalAllowances.specialRateWDA: only for a product whose schedule
+//   keeps a special rate pool (SPECIAL_RATE_POOL_PRODUCTS below).
 // - tax.vat.*: only for a product whose sheets carry a VAT rate cell of
 //   their own (VAT_RATE_CELLS). BST and Taxi have none -- their book's own
 //   entityInformation.diya-gl:vatRegistered stays absent for the same
 //   reason -- so restating the year file's VAT rates on their books would
 //   carry a rate the package never entered.
-function taxTablesFromRateData(raw, { includeVat = true } = {}) {
+// The products whose fixed asset schedule keeps a special rate pool of its
+// own: Ltd's two-pool Schedule and the Self Employed Schedule's AC column at
+// Admin!G6. The BST and Taxi sheets keep one pool at one rate, so the year
+// file's special rate is not a rate their package entered.
+const SPECIAL_RATE_POOL_PRODUCTS = new Set(["se", "ltd"]);
+
+function taxTablesFromRateData(raw, { includeVat = true, includeSpecialRate = true } = {}) {
   const tax = {};
   const set = (table, field, value) => {
     if (value === undefined) return;
@@ -2117,7 +2125,7 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   const ca = raw.capital_allowances;
   if (ca) {
     set("capitalAllowances", "mainRateWDA", ca.writing_down_allowance_main ?? ca.writing_down_allowance);
-    set("capitalAllowances", "specialRateWDA", ca.writing_down_allowance_special);
+    if (includeSpecialRate) set("capitalAllowances", "specialRateWDA", ca.writing_down_allowance_special);
     set("capitalAllowances", "firstYearAllowanceRate", ca.full_expensing_rate);
   }
 
@@ -2163,7 +2171,10 @@ export async function taxTablesForPackage(adminXml, adminSharedStrings, product,
   if (!fileName) return {};
   const text = await readRateData(fileName);
   if (text === null) return {};
-  return taxTablesFromRateData(parseTOML(text), { includeVat: Boolean(VAT_RATE_CELLS[product]) });
+  return taxTablesFromRateData(parseTOML(text), {
+    includeVat: Boolean(VAT_RATE_CELLS[product]),
+    includeSpecialRate: SPECIAL_RATE_POOL_PRODUCTS.has(product),
+  });
 }
 
 function numberAt(xml, cellRef, sharedStrings) {
