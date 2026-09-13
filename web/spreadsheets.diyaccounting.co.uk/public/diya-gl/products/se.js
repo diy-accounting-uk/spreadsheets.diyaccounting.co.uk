@@ -706,6 +706,80 @@
 
   // ============================== the views ==============================
 
+  // The Profit & Loss Account's own entertainment memo row (verified against
+  // the template: A49 = "Business Entertainment (memo)"). Wholly
+  // disallowable, so VitalTax row 44 echoes it rather than taking a
+  // percentage of its own -- see PLAN_SE_TEMPLATE_GAPS.md section 3.2.
+  var ENTERTAINMENT_MEMO_CELL = "B49";
+  var ENTERTAINMENT_MEMO_LABEL = "Business Entertainment (memo)";
+
+  // The disallowable percentage per expense category (VitalTax column I,
+  // DISALLOWABLE_PERCENT_CELLS in app/products/se.js) and the SA103F box
+  // each one's share is added back through (SE Full, boxes 32 to 45 --
+  // app/data/hmrc/form-layouts/se.json). Box 39 combines advertising with
+  // business entertainment, which is wholly disallowable and carries no
+  // percentage of its own; box 44 (depreciation) carries no percentage
+  // either -- the sheet reads the whole depreciation charge automatically.
+  var DISALLOWABLE_BOXES = [
+    { box: 32, field: "costOfGoods", label: "Cost of goods bought for resale or goods used", cell: "O66" },
+    { box: 33, field: "paymentsToSubcontractors", label: "Construction industry, payments to subcontractors", cell: "O70" },
+    { box: 34, field: "wagesAndStaffCosts", label: "Wages, salaries and other staff costs", cell: "O74" },
+    { box: 35, field: "carVanTravelExpenses", label: "Car, van and travel expenses", cell: "O78" },
+    { box: 36, field: "premisesRunningCosts", label: "Rent, rates, power and insurance costs", cell: "O82" },
+    { box: 37, field: "maintenanceCosts", label: "Repairs and maintenance of property and equipment", cell: "O86" },
+    { box: 38, field: "adminCosts", label: "Phone, fax, stationery and other office costs", cell: "O90" },
+    { box: 39, field: "advertisingCosts", label: "Advertising and business entertainment costs", cell: "O94" },
+    { box: 40, field: "interestOnBankOtherLoans", label: "Interest on bank and other loans", cell: "O98" },
+    { box: 41, field: "financeCharges", label: "Bank, credit card and other financial charges", cell: "O102" },
+    { box: 42, field: "irrecoverableDebts", label: "Irrecoverable debts written off", cell: "O106" },
+    { box: 43, field: "professionalFees", label: "Accountancy, legal and other professional fees", cell: "O110" },
+    { box: 44, field: null, label: "Depreciation and loss or profit on sale of assets", cell: "O114" },
+    { box: 45, field: "otherExpenses", label: "Other business expenses", cell: "O118" },
+  ];
+
+  // The memo block under the statement: the trader's own disallowable
+  // percentage per category, the business entertainment total it does not
+  // apply to, what each category's share adds back to the accounting
+  // profit, and the two totals that show what the add-back does to the tax.
+  function renderDisallowableMemo(snap, helpers, productMod) {
+    var percentCells = productMod.DISALLOWABLE_PERCENT_CELLS;
+    // cellValue() defaults a missing cell to nil, which the statement above
+    // relies on because every one of its own cells is always populated. Not
+    // every cell here is: the JS engine does not yet expose VitalTax's own
+    // percentage cells (only the amounts they drive), so this reads the raw
+    // value and lets formatByUnit's own em dash stand for "not computed"
+    // rather than print a false 0%.
+    var kvRow = function (sheet, cell, label, total) {
+      var raw = snap.results[sheet] && snap.results[sheet][cell];
+      return {
+        label: label,
+        text: formatByUnit(raw, unitOf(productMod, sheet, cell), helpers),
+        rKeyAttr: cellRk(snap, helpers, sheet, cell),
+        total: !!total,
+      };
+    };
+    var percentRows = DISALLOWABLE_BOXES.filter(function (row) {
+      return row.field;
+    }).map(function (row) {
+      return kvRow("VitalTax", percentCells[row.field], row.label);
+    });
+    var entertainmentRow = kvRow(PL_SHEET, ENTERTAINMENT_MEMO_CELL, ENTERTAINMENT_MEMO_LABEL);
+    var addBackRows = DISALLOWABLE_BOXES.map(function (row) {
+      return kvRow("SE Full", row.cell, row.label + " (box " + row.box + ")");
+    });
+    var totalRows = [
+      kvRow("SE Full", "O122", "Total disallowable expenses (box 46)", true),
+      kvRow("SE Full", "O174", "Net business profit for tax purposes (box 64)", true),
+    ];
+    return (
+      "<h3>Disallowable expenses (memo)</h3>" +
+      '<p class="view-lede">The trader\'s own percentage of each expense category that is private use or otherwise disallowable, and what each category adds back to the accounting profit above.</p>' +
+      '<div class="panel-card panel-form-width">' +
+      helpers.kvRows(percentRows.concat([entertainmentRow], addBackRows, totalRows)) +
+      "</div>"
+    );
+  }
+
   // The statement's own rows, in the order the sheet prints them: the year
   // table's columns are the same list, so the two views never disagree about
   // which rows the account has.
@@ -740,13 +814,16 @@
       '">' +
       (view.monthsOpen ? "Hide the months" : "Show the months") +
       "</button>" +
-      (view.monthsOpen ? renderProfitLossMonths(snap, helpers, productMod, rows) : "")
+      (view.monthsOpen ? renderProfitLossMonths(snap, helpers, productMod, rows) : "") +
+      renderDisallowableMemo(snap, helpers, productMod)
     );
   }
 
   // The statement's own month columns, C through N, for the rows that carry
-  // them. The rows the read scope only totals for the year -- cost of sales,
-  // the expense total and the profit lines -- have no month cell to print.
+  // them, plus the entertainment memo row (row 49), which sits outside the
+  // statement's own rows because it is not part of it. The rows the read
+  // scope only totals for the year -- cost of sales, the expense total and
+  // the profit lines -- have no month cell to print.
   function renderProfitLossMonths(snap, helpers, productMod, rows) {
     var months = snap.months;
     var head =
@@ -757,11 +834,17 @@
         })
         .join("") +
       "</tr>";
-    var body = rows
+    var allRows = rows.concat([{ label: ENTERTAINMENT_MEMO_LABEL, sheet: PL_SHEET, cell: ENTERTAINMENT_MEMO_CELL }]);
+    var body = allRows
       .map(function (row) {
         var cells = months
           .map(function (month) {
-            var pair = monthlyCell(month.label, productMod, row.key);
+            var pair = row.key
+              ? monthlyCell(month.label, productMod, row.key)
+              : (function () {
+                  var column = MONTH_COLUMNS[month.label];
+                  return column ? [row.sheet, column + rowNumber(row.cell)] : null;
+                })();
             if (!pair) return '<td class="num">—</td>';
             var value = snap.results[pair[0]] && snap.results[pair[0]][pair[1]];
             if (value === undefined) return '<td class="num">—</td>';
