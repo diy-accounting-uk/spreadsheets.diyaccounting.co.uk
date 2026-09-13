@@ -8,17 +8,15 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `8f32709d`. PR #107 put the licence header on `.github/FUNDING.yml`, which had failed
-`test` and `update` on `193777cc`; `test` and `codeql` are running on the merge. Prod serves
-`2c047a2a`; `deploy` fires on the next push that reaches its paths filter or at 07:17 UTC. The
-four generate workflows pass with tests enabled, and `diya-gl` publishes again -- 1.2.7 and 1.2.8
-both released, tagged and rolled.
+Main is `58e9f23a` and green: `test`, `deploy` and `codeql` pass on `2386171c` (PR #108) and prod
+serves it. Since the last render #107 (FUNDING.yml header), #108 (ci donate links), #109
+(support issue template) and #110 (homebrew dispatch) merged, and `diya-gl` 1.2.9 published.
 
-`claude/ops-donate-ci-links` (PR #108) is the only branch off main: the ci donate links, checks
-running.
-
-Batch `claude/b14-board` (worktree `../.worktrees/spreadsheets/b14-board`) carries one wave: four
-agents on CQ-20, CQ-21 + SET-5 + SET-4, CQ-25 and SB-2. Push when all six land; one PR.
+Batch `claude/b14-board` (worktree `../.worktrees/spreadsheets/b14-board`, at `aed1ebf2`, main
+merged in) carries one wave: CQ-20, CQ-25 and SB-2 are merged into it; the SE engine agent (CQ-21,
+SET-5, SET-4) is still in its worktree. Push when all six
+land; one PR; then `generate-ltd` and `generate-se` on the branch regenerate the packages the
+template changes made stale, and `test` re-runs on that commit.
 
 ## Context for the open rows
 
@@ -47,11 +45,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | CQ-20 | `app/lib/calculators/ltd.js` carries no disallowable treatment, so the Company computation deducts client entertaining in full. SET-2 and SET-3 have just closed the same gap for Self Employed, and the shared master fixture now carries the £350 client dinner that exercises it | none | machine-only | — | in-flight | merged to `claude/b14-board` (8cd6c25c); 5502 chart remainder; Ltd packages regenerate on the branch |
-| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | in-flight | the SE engine agent, `../.worktrees/spreadsheets/se-engine`, first commit; Opus |
+| CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | in-flight | committed on `claude/wt-se-engine` (669197169); its `npm test` in the browser tier |
 | CQ-25 | The Self Employed page's P&L view carries a memo block under the statement: the disallowable percentage per expense row (`VitalTax!I36` to `I50`), the add-back each produces (`SE Full!O66` to `O118`), the entertainment memo (`Profit & Loss Account!B49`, its months behind the existing toggle) and the box 46 total. The SA103F view already prints boxes 32 to 46, 61 and 64; the P&L is where the trader sees the expense and today it stops at B39. The percentages and row 49 are written by the generator but not in the page's read scope, and `render-unrepresentable/se.json` declares row 49 unrenderable, so that entry goes | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | merged to `claude/b14-board` (1300e2b2); its `npm test` still running |
-| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | the SE engine agent, `../.worktrees/spreadsheets/se-engine`, after SET-5; Opus |
-| SET-5 | The nine SED-7 and SED-8 fields that already print a cell the engine reads as blank (`SE Full!D147`, `D152`, `D156`, `D160`, `O139`, `D169`, `D179`) need a `book.toml` field and a writer each, so a book can fill them; book-schema work, not template work (`PLAN_SE_TEMPLATE_GAPS.md` 3.4). Box 68 and 73.3 stay blank until an overlap-profit record exists (section 7) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | the SE engine agent, `../.worktrees/spreadsheets/se-engine`, after CQ-21; Opus |
-| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | the site events agent, `../.worktrees/spreadsheets/site-events`; Sonnet |
+| SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | box 51 pool built, 53.1/73.3 decision in the plan; same run |
+| SET-5 | The nine SED-7 and SED-8 fields that already print a cell the engine reads as blank (`SE Full!D147`, `D152`, `D156`, `D160`, `O139`, `D169`, `D179`) need a `book.toml` field and a writer each, so a book can fill them; book-schema work, not template work (`PLAN_SE_TEMPLATE_GAPS.md` 3.4). Box 68 and 73.3 stay blank until an overlap-profit record exists (section 7) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | committed on `claude/wt-se-engine`; same run |
+| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | merged to `claude/b14-board` (9f787491): events fire; one stale comment fixed |
 
 ## Plans not tracked here
 
