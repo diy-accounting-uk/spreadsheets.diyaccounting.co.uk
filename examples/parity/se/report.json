@@ -5,9 +5,9 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.6+8f36b1c6",
-    "taxDataHash": "84585062cad8",
-    "templateHash": "185e5ad6b61d",
+    "engineVersion": "1.2.9+49222c17",
+    "taxDataHash": "4ecdbe985d22",
+    "templateHash": "2d5629384e82",
     "templateScorecard": "7692 passed, 0 warnings, 0 failed",
     "reconciledCommit": "1839cf9537c130410e2a180626e7729aca82ffc9"
   },
@@ -86,6 +86,11 @@
       "key": "cell/Financialaccounts.xlsx!Admin!G5",
       "unit": "rate",
       "value": "0.14"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Admin!G6",
+      "unit": "money",
+      "value": "0.06"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!L16",
@@ -2013,6 +2018,11 @@
       "value": "3360"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!SE Full!D147",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!SE Full!D169",
       "unit": "money",
       "value": "0"
@@ -2761,6 +2771,16 @@
       "key": "cell/Fixedassets.xlsx!HPfinance!K8",
       "unit": "money",
       "value": "90"
+    },
+    {
+      "key": "cell/Fixedassets.xlsx!Schedule!AC1",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Fixedassets.xlsx!Schedule!AC4",
+      "unit": "money",
+      "value": "0.06"
     },
     {
       "key": "cell/Fixedassets.xlsx!Schedule!E1",
@@ -6262,11 +6282,27 @@
       "tolerance": "0.0001"
     },
     {
+      "key": "check/Admin: special rate WDA = tax data",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.06",
+      "actual": "0.06",
+      "tolerance": "0.0001"
+    },
+    {
       "key": "check/Bank.xlsx closing balance (Mar!A2)",
       "unit": "verdict",
       "value": "pass",
       "expected": "181215.43",
       "actual": "181215.43",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O50 goods and services for own use = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -6483,6 +6519,22 @@
       "value": "pass",
       "expected": "52500",
       "actual": "52500",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed assets: Schedule special rate (AC4) = Admin special rate WDA",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0.06",
+      "actual": "0.06",
+      "tolerance": "0.0001"
+    },
+    {
+      "key": "check/Fixed assets: Schedule special rate pool allowance (AC1) = the scenario's special rate assets at the year's special rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -10524,7 +10576,47 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 51 capital allowances at 6% (D147) is nil",
+      "key": "check/SA103F box 51 capital allowances at 6% (D147) = Schedule AC1",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 54 electric charge-point allowance (O139) = the figure the book states",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -10564,11 +10656,19 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25",
+      "key": "check/SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54",
       "unit": "verdict",
       "value": "pass",
       "expected": "64000",
       "actual": "64000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -10581,6 +10681,14 @@
     },
     {
       "key": "check/SA103F box 59 balancing charge: full return (O160) = short return (O85)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -10604,11 +10712,35 @@
       "tolerance": "1"
     },
     {
+      "key": "check/SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 62 income included but not taxable as business profits (D179) = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
       "unit": "verdict",
       "value": "pass",
       "expected": "64000",
       "actual": "64000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -10620,7 +10752,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99)",
+      "key": "check/SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62",
       "unit": "verdict",
       "value": "pass",
       "expected": "128469.475166667",
@@ -10636,12 +10768,28 @@
       "tolerance": "1"
     },
     {
+      "key": "check/SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/SA103F box 73 adjusted profit (O194) = box 64",
       "unit": "verdict",
       "value": "pass",
       "expected": "128469.475166667",
       "actual": "128469.475166667",
       "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "128469.475166667",
+      "actual": "128469.475166667",
+      "tolerance": "0.01"
     },
     {
       "key": "check/SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94)",
@@ -10676,11 +10824,19 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 76 total taxable profits: full return (O210) = short return (D106)",
+      "key": "check/SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off",
       "unit": "verdict",
       "value": "pass",
       "expected": "130552.8085",
       "actual": "130552.8085",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -10732,6 +10888,22 @@
       "tolerance": "0.0001"
     },
     {
+      "key": "check/SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "11500",
+      "actual": "11500",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "128469.475166667",
+      "actual": "128469.475166667",
+      "tolerance": "0.01"
+    },
+    {
       "key": "check/SA103S: Capital allowances (AIA/FYA) = Schedule Q1",
       "unit": "verdict",
       "value": "pass",
@@ -10740,7 +10912,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103S: Profit for tax = Income Tax E5",
+      "key": "check/SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5",
       "unit": "verdict",
       "value": "pass",
       "expected": "130552.8085",
@@ -12798,6 +12970,30 @@
       "source": "cell/Financialaccounts.xlsx!SE Full!D179"
     },
     {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-electric-charge-point-allowance-box-54",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!O139"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-structures-and-buildings-allowance-box-53",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D160"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-car-allowance-box-52-1",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D156"
+    },
+    {
+      "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-goods-vehicle-allowance-box-52",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D152"
+    },
+    {
       "key": "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
       "unit": "money",
       "value": "171481.35",
@@ -12821,6 +13017,10 @@
         "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-25",
         "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-26",
         "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
+        "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-goods-vehicle-allowance-box-52",
+        "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-car-allowance-box-52-1",
+        "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-structures-and-buildings-allowance-box-53",
+        "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-electric-charge-point-allowance-box-54",
         "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-box-62-adjustment",
         "section/accounting-profit-to-tax-profit-bridge/add-back-the-year-s-loss-carried-forward-rather-than-reducing-tax-below-nil",
         "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29",
@@ -12946,6 +13146,12 @@
       "unit": "money",
       "value": "100000",
       "source": "cell/Financialaccounts.xlsx!Admin!N5"
+    },
+    {
+      "key": "section/admin-generator-injected/special-rate-writing-down-allowance-rate",
+      "unit": "money",
+      "value": "0.06",
+      "source": "cell/Financialaccounts.xlsx!Admin!G6"
     },
     {
       "key": "section/admin-generator-injected/vat-registration-threshold",
@@ -14257,6 +14463,12 @@
       "unit": "money",
       "value": "3360",
       "source": "cell/Financialaccounts.xlsx!SE Full!D144"
+    },
+    {
+      "key": "section/self-assessment-sa103f/capital-allowances-at-6-box-51",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D147"
     },
     {
       "key": "section/self-assessment-sa103f/car-van-and-travel-expenses-box-20",
