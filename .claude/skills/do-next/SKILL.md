@@ -160,6 +160,12 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
+- **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
+  it with `run_in_background`, do other work or stop, and act on the notification when it lands.
+- **Never stop a run by matching a command name.** `pkill -f vitest` kills every worktree's
+  process, a sibling agent's included, not just yours. Stop only your own worktree's run: `scripts/
+  test-scope.mjs` gives each tier its own process group, so a Ctrl-C or `kill` on that process
+  stops the whole tier there and nothing outside it.
 - **`npm test`, and nothing narrower.** The command routes itself: it reads the diff, derives the
   radius through the import graph and the routing table in `scripts/test-scope.mjs`, and runs the
   tiers that diff reaches. A brief that names a narrower command caps the scope at whatever its
