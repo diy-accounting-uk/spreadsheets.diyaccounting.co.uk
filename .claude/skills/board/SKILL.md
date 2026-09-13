@@ -48,7 +48,7 @@ a task can be stopped, and a completed one stops notifying.
 
 ## Part 1 — the board table
 
-| # | Item | Source | Needs | Precursors | State | Status |
+| # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 
 - `#`: a stable id. Machine tasks keep the plan's task id (`T3`). Human steps are `H1`,
   `H2`, … Rows finished in the current session are `D1`, `D2`, … Rows the GitHub scan
@@ -88,6 +88,11 @@ a task can be stopped, and a completed one stops notifying.
   Started means evidence, not intent: check `git branch -a`, `git worktree list` and
   `gh pr list` for the row's branch or PR before calling it resumable. Operator-owned
   work with no open precursor is `ready-to-start`, not blocked.
+- `Size`: the estimated number of files the change touches, `~n files`, from the plan's task
+  or the row's own estimate; `—` when nothing has estimated it. Row order reads this column.
+- `Model`: the proposed sub-agent tier for the row, one of `Fable`, `Opus`, `Sonnet`, `Haiku`,
+  picked as `do-next` picks it (lowest that fits); `operator` for a `human-only` row; `—` when
+  not yet chosen.
 - `Status`: one clause, 12 words or fewer, current as of this render. In-flight rows name
   the current step; started rows name the branch or PR; done rows name the commit; a
   tier or a rebase note fits here. The narrative lives in the plan, never here.
@@ -102,7 +107,7 @@ a task can be stopped, and a completed one stops notifying.
   4. blocked rows of any class: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
   5. rows gated by a date, whatever their class.
   Within a band: `in-flight` rows first; then the rows that can start, by the size of the change,
-  fewest files first, read from the `~n files` count in `Status` (a row without a count follows
+  fewest files first, read from `Size` (a row without a count follows
   the counted ones); a precursor stays ahead of its dependants whatever their sizes; equal sizes
   run `CQ-n` rows first, then product order BST, SE, Taxi, Ltd. `D` rows follow the four bands in
   the render and are never written back.
@@ -164,7 +169,7 @@ Dependabot alert, and per code-scanning rule family (one row per rule id, files 
   `Board row` reads `parked`. Otherwise, a finding whose action is `fix`, `bump` or
   `investigate` belongs to an existing row (a row whose worktree already touches that
   file, or a plan task that covers it) or gets a new `CQ-n` row (`Source` `none`,
-  `Needs` `machine-only`, the model tier in `Status`). `keep open and watch` and `close as
+  `Needs` `machine-only`, `Size` and `Model` filled in). `keep open and watch` and `close as
   stale` need no row; `close as stale` findings are listed for the operator in the
   render. Never close, label or comment on an issue or alert from this skill; the
   operator does.
