@@ -2458,6 +2458,71 @@
       "value": "13470"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I36",
+      "unit": "rate",
+      "value": "0.02"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I37",
+      "unit": "rate",
+      "value": "0.03"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I38",
+      "unit": "rate",
+      "value": "0.04"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I39",
+      "unit": "rate",
+      "value": "0.25"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I40",
+      "unit": "rate",
+      "value": "0.05"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I41",
+      "unit": "rate",
+      "value": "0.06"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I42",
+      "unit": "rate",
+      "value": "0.07"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I43",
+      "unit": "rate",
+      "value": "0.08"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I45",
+      "unit": "rate",
+      "value": "0.09"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I46",
+      "unit": "rate",
+      "value": "0.1"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I47",
+      "unit": "rate",
+      "value": "0.11"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I48",
+      "unit": "rate",
+      "value": "0.12"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!VitalTax!I50",
+      "unit": "rate",
+      "value": "0.13"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Wagesinterface!C10",
       "unit": "money",
       "value": "6748"
