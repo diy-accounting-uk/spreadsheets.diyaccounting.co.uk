@@ -1416,12 +1416,26 @@ export function standardReads() {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
-  // Boxes 32 to 45, the cells box 46 (O122) totals. Every one is empty
-  // until a later change gives it a source; reading them now lets the
-  // box 46 total be checked as the exact sum the sheet computes rather
-  // than a sum with terms left out.
+  // Boxes 32 to 45, the cells box 46 (O122) totals. VitalTax's disallowable
+  // percentages give each one a source; reading them lets the box 46 total
+  // be checked as the exact sum the sheet computes rather than a sum with
+  // terms left out.
   for (const cell of ["O66", "O70", "O74", "O78", "O82", "O86", "O90", "O94", "O98", "O102", "O106", "O110", "O118"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
+  }
+
+  // VitalTax column I, the percentage per category behind the boxes just
+  // above, and Profit & Loss Account row 49, the business entertainment
+  // memo behind box 39's share of box 24. Neither is a box or a CELL_MAP
+  // row of its own, so nothing else in this file reads them; the page's
+  // disallowable-expenses memo (products/se.js on the DIYA-GL page) is the
+  // only consumer.
+  reads.VitalTax = reads.VitalTax || [];
+  for (const cell of Object.values(DISALLOWABLE_PERCENT_CELLS)) {
+    if (!reads.VitalTax.includes(cell)) reads.VitalTax.push(cell);
+  }
+  for (const cell of ["B49", ...MONTH_COLS.map((col) => `${col}49`)]) {
+    if (!reads["Profit & Loss Account"].includes(cell)) reads["Profit & Loss Account"].push(cell);
   }
 
   // The Admin sheet's tax year start, end and filing deadline. Everything
@@ -1680,6 +1694,11 @@ export function unitFor(sheet, cell) {
       if (cell === "Q2" || cell === "V2") return "date";
       if (cell === "G141") return "rate";
       return "money";
+    case "VitalTax":
+      // Column I, rows 36 to 50, is the disallowable percentage per
+      // category (DISALLOWABLE_PERCENT_CELLS); every other column on the
+      // sheet is a money figure.
+      return column === "I" ? "rate" : "money";
     case "Wagesinterface":
       return column === "B" ? "date" : "money";
     default:
