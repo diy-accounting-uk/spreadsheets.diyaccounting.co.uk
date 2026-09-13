@@ -387,6 +387,11 @@ The confirming measurement, once the cap and the fixture cache land: one full `n
 `maxWorkers=4` with LibreOffice present. Target is at or under CI's 19 minutes, on faster hardware
 with more workers.
 
+Measured 2026-09-13: `npm test -- --all` (`maxWorkers=4`, cache and cap both in place) finished
+`VERDICT: GREEN` in 56m58s, against the 19-minute target -- but under a load average of 26.20 at
+the start (other batch sessions' concurrent worktree agents on the same machine), falling to 4.48
+by the end, so this run's wall clock is not read as the number the cache and cap alone produce.
+
 ---
 
 ## 9. Order of work

@@ -3,13 +3,12 @@
 //
 // The writer on the Self Employed package: nine workbooks composed from the
 // templates the way the CLI composes a generated package, the entries none of
-// those workbooks has a cell for, and the three things a saved package has to
-// survive — being read back as the book it came from, agreeing with the
-// engine on every cell the writer filled, and recalculating in a real
-// spreadsheet app to the same figures the JS engine computes. Most of this
-// file needs no LibreOffice: the workbooks are read as they are written, and
-// each asks the spreadsheet app to recalculate on open. The last describe
-// block does open one, and is skipped where none is installed.
+// those workbooks has a cell for, and the two things a saved package has to
+// survive — being read back as the book it came from, and agreeing with the
+// engine on every cell the writer filled. None of this needs LibreOffice: the
+// workbooks are read as they are written, with no recalculation. The
+// roundtrip-se CI job covers recalculating the saved package in a real
+// spreadsheet app and scoring it against the roundtrip budget.
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { execFileSync } from "child_process";
@@ -22,7 +21,7 @@ import JSZip from "jszip";
 
 import { saveWorkbookFiles, savePackageZip, taxYearFileName } from "../lib/product-workbook.js";
 import { generateSpreadsheet, applyYearEndSequence, setFullCalcOnLoad, applyCoreProperties } from "../lib/generator.js";
-import { applyCellWrites, hasLibreOffice } from "../lib/spreadsheet-runner.js";
+import { applyCellWrites } from "../lib/spreadsheet-runner.js";
 import { LINK_ORDER, refreshWorkbookLinkCaches, resultsReader } from "../lib/link-caches.js";
 import { calculateLinkCells } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
@@ -476,65 +475,5 @@ describe("the package the writer saves", () => {
       expect(byKey.has(value.key), `${value.key} is in the package's report and not the book's`).toBe(true);
       expect(value.value, `${value.key} differs between the saved package and the book`).toEqual(byKey.get(value.key));
     }
-  }, 600000);
-});
-
-const describeCalc = hasLibreOffice() ? describe : describe.skip;
-
-describeCalc("the saved package recalculates and agrees with the engine", () => {
-  it("scores within the roundtrip budget once a spreadsheet app has recalculated it", async () => {
-    const { book, lines } = bookAt(ADVANCED);
-    const { zip: zipBuffer } = await savePackageZip(book, lines);
-    const zip = await JSZip.loadAsync(zipBuffer);
-
-    const zipRoot = scratchDir("se-recalc-package-");
-    for (const [name, entry] of Object.entries(zip.files)) {
-      if (entry.dir) continue;
-      const bytes = await entry.async("nodebuffer");
-      const dest = resolve(zipRoot, name);
-      mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, bytes);
-    }
-    const packageDir = resolve(zipRoot, DIR_NAME);
-
-    const reportBin = resolve(ROOT, "app/bin/report.js");
-    const excelDir = scratchDir("se-recalc-excel-");
-    const jsDir = scratchDir("se-recalc-js-");
-
-    const excelOut = execFileSync(
-      NODE,
-      [
-        reportBin,
-        "--package",
-        "se",
-        "--source-dir",
-        packageDir,
-        "--mode",
-        "recalculate",
-        "--year-end",
-        "2026-04-05",
-        "--output-dir",
-        excelDir,
-      ],
-      { cwd: ROOT, encoding: "utf8" },
-    );
-    console.log(excelOut);
-
-    const jsOut = execFileSync(NODE, [reportBin, "--package", "se", "--data", ADVANCED, "--years", "se-2025-2026", "--output-dir", jsDir], {
-      cwd: ROOT,
-      encoding: "utf8",
-    });
-    console.log(jsOut);
-
-    const verifyBin = resolve(ROOT, "app/bin/verify-roundtrip.js");
-    const budgetPath = resolve(ROOT, "app/data/roundtrip-matrix-budget.json");
-    // execFileSync throws on a non-zero exit, which is the "exit 0" assertion:
-    // verify-roundtrip.js exits 1 the moment a budgeted count is exceeded.
-    const verifyOut = execFileSync(NODE, [verifyBin, "--package", "se", "--excel", excelDir, "--js", jsDir, "--budget", budgetPath], {
-      cwd: ROOT,
-      encoding: "utf8",
-    });
-    console.log(verifyOut);
-    expect(verifyOut).toContain('Within budget for "se"');
   }, 600000);
 });

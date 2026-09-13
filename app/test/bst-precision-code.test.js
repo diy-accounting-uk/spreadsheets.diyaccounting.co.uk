@@ -14,8 +14,9 @@ import { fileURLToPath } from "url";
 import { runSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as bstCellWrites, standardReads as bstStandardReads } from "../products/bst.js";
+import { cellWrites as bstCellWrites, standardReads as bstStandardReads, checkCompliance as bstCheckCompliance } from "../products/bst.js";
 import { parse as parseTOML } from "smol-toml";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
 const SKIP = !hasLibreOffice();
 const describeCalc = SKIP ? describe.skip : describe;
@@ -41,11 +42,13 @@ beforeAll(async () => {
 
 describeCalc("BST end-to-end: Precision Code basic scenario", () => {
   let results;
+  let checks;
 
   beforeAll(async () => {
     const writes = bstCellWrites(scenario);
     const reads = bstStandardReads();
     results = await runSpreadsheet(generatedXlsx, writes, reads);
+    checks = bstCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
   }, 120000);
 
   // ── P&L assertions ───────────────────────────────────────────────────
@@ -127,6 +130,30 @@ describeCalc("BST end-to-end: Precision Code basic scenario", () => {
     expect(tax.E15).toBeCloseTo(2262, 2);
     expect(tax.E16).toBeCloseTo(3524.76, 2);
     expect(tax.E18).toBeCloseTo(93918.36, 2);
+  });
+
+  // ── Compliance check assertions ────────────────────────────────────────
+  // checkCompliance() derives its own expected figures from taxData and
+  // scenario.expected rather than reading the sheet's own cells, so these
+  // prove the check function agrees with the recalculated workbook on top
+  // of the hand-worked cell assertions above.
+
+  it("Income Tax check passes", () => {
+    const taxCheck = checks.find((c) => c.name === "Income Tax");
+    expect(taxCheck).toBeDefined();
+    expect(taxCheck.pass).toBe(true);
+  });
+
+  it("NI Class 4 check passes", () => {
+    const niCheck = checks.find((c) => c.name === "NI Class 4 (lower)");
+    expect(niCheck).toBeDefined();
+    expect(niCheck.pass).toBe(true);
+  });
+
+  it("total tax + NI check passes", () => {
+    const totalCheck = checks.find((c) => c.name === "Total Tax + NI, less the CIS already deducted");
+    expect(totalCheck).toBeDefined();
+    expect(totalCheck.pass).toBe(true);
   });
 
   // ── Stock assertions ──────────────────────────────────────────────────

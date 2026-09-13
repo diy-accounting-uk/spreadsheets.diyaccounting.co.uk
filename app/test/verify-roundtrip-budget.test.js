@@ -40,3 +40,37 @@ describe("the EQ1 exact gate", () => {
     expect(budgetBreaches(score, EXACT_BUDGET_ENTRY)).toEqual([]);
   });
 });
+
+// budgetBreaches() itself is never called by any other test: the four
+// roundtrip-<product> CI jobs are the only thing that exercises the
+// comparison this gate makes. These pin the comparison down directly against
+// synthetic counts, with no report document or package run involved.
+describe("budgetBreaches", () => {
+  it("passes a count under a nonzero budget", () => {
+    expect(budgetBreaches({ differing: 3 }, { differing: 5 })).toEqual([]);
+  });
+
+  it("passes a count exactly at a nonzero budget, since the limit is inclusive", () => {
+    expect(budgetBreaches({ differing: 5 }, { differing: 5 })).toEqual([]);
+  });
+
+  it("breaches the moment a count exceeds a nonzero budget", () => {
+    expect(budgetBreaches({ differing: 6 }, { differing: 5 })).toEqual([["differing", 5]]);
+  });
+
+  it("treats a metric absent from the counts as zero", () => {
+    expect(budgetBreaches({}, { differing: 0 })).toEqual([]);
+    expect(budgetBreaches({}, { differing: 1 })).toEqual([]);
+  });
+
+  it("breaches on nothing for an empty budget, however large the counts are", () => {
+    expect(budgetBreaches({ differing: 1000, noJsValue: 1000 }, {})).toEqual([]);
+  });
+
+  it("names every metric that breaches, not just the first", () => {
+    expect(budgetBreaches({ differing: 1, noJsValue: 2, noExcelValue: 0 }, { differing: 0, noJsValue: 0, noExcelValue: 0 })).toEqual([
+      ["differing", 0],
+      ["noJsValue", 0],
+    ]);
+  });
+});

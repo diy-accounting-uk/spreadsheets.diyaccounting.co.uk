@@ -24,6 +24,17 @@ export default defineConfig({
           outputFile: "./target/test-results/vitest-results.json",
         },
       },
+      {
+        // Specs outside the default include glob (suffixed .ci.spec.js, not
+        // .test.js) so neither this project nor scripts/test-scope.mjs's
+        // file-discovery regex reaches them from the default local run. CI's
+        // app-test job runs this project explicitly.
+        test: {
+          name: "ci-only",
+          environment: "node",
+          include: ["app/test/**/*.ci.spec.js"],
+        },
+      },
     ],
   },
 });

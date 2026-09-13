@@ -31,14 +31,14 @@ const FORECAST_SHEET = "Wages Forecast";
 const READ_CELLS = ["C35", "C36", "C37", "C38", "C39", "C40", "C41"];
 
 // profit, allowance, taxable, basic, higher, additional, NI, total
+//
+// Trimmed to the 110,000 row and its two neighbours: the fixtures already
+// reach the full taper and the additional rate, so this table's remaining
+// job is the partial taper the 110,000 row proves.
 const BAND_TABLE = [
-  [8000, 12570, 0, 0, 0, 0, 0, 0],
-  [30000, 12570, 17430, 3486, 0, 0, 1045.8, 4531.8],
   [60000, 12570, 47430, 7540, 3892, 0, 2456.6, 13888.6],
   [110000, 7570, 102430, 7540, 25892, 0, 3456.6, 36888.6],
   [125140, 0, 125140, 7540, 34976, 0, 3759.4, 46275.4],
-  [144878, 0, 144878, 7540, 34976, 8882.1, 4154.16, 55552.26],
-  [226508, 0, 226508, 7540, 34976, 45615.6, 5786.76, 93918.36],
 ];
 
 describeCalc("Taxi wages forecast tax bands", () => {

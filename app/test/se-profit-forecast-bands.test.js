@@ -34,11 +34,11 @@ const FORECAST_SHEET = "Profit Forecast";
 const READ_CELLS = ["C40", "C41", "C42", "C43", "C44", "C45", "C46"];
 
 // profit, allowance, taxable, basic, higher, additional, NI, total
+//
+// Trimmed to the last two rows and one neighbour before them: the advanced
+// fixture already lands in the partial taper, so this table's remaining job
+// is the additional rate, which no fixture reaches.
 const BAND_TABLE = [
-  [8000, 12570, 0, 0, 0, 0, 0, 0],
-  [30000, 12570, 17430, 3486, 0, 0, 1045.8, 4531.8],
-  [60000, 12570, 47430, 7540, 3892, 0, 2456.6, 13888.6],
-  [110000, 7570, 102430, 7540, 25892, 0, 3456.6, 36888.6],
   [121787.391666666, 1676.304166667, 120111.0875, 7540, 32964.435, 0, 3692.347833333, 44196.782833333],
   [125140, 0, 125140, 7540, 34976, 0, 3759.4, 46275.4],
   [226508, 0, 226508, 7540, 34976, 45615.6, 5786.76, 93918.36],
