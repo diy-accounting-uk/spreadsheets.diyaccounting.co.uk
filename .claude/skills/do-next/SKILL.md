@@ -215,6 +215,9 @@ deploy of the same head in its first minute (before any stack job): two deploys 
 pure cost and contention. A local sync with `main` costs nothing and can happen any time; only the
 push waits.
 
+A push is also the natural pause for the one fenced block of commands only the operator can run;
+see this repo's `CLAUDE.md`.
+
 Before any push, check **every** deploy workflow for that branch — `deploy` and `deploy-holding`
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
