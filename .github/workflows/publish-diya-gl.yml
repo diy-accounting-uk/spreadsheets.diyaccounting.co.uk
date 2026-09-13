@@ -76,16 +76,6 @@ jobs:
             echo "finish=true" | tee -a "$GITHUB_OUTPUT"
           fi
 
-      - name: Check the npm publish token is configured
-        if: ${{ steps.version.outputs.publish == 'true' }}
-        run: |
-          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::error::The NPM_TOKEN repository secret is not set. Add an npm granular token for the @diy-accounting-uk scope."
-            exit 1
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Node dependencies
         # Also on a finish-only run: the release record and the version roll both
         # need the install, and they run when the publish steps do not.
@@ -107,11 +97,13 @@ jobs:
         if: ${{ steps.version.outputs.publish == 'true' }}
         run: diya-gl/smoke.sh target/diya-gl-smoke
 
+      - name: Update npm to latest
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        run: npm install -g npm@latest
+
       - name: Publish to npm
         if: ${{ steps.version.outputs.publish == 'true' }}
         run: cd diya-gl && npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Notify the homebrew tap of the new release
         if: ${{ steps.version.outputs.publish == 'true' }}
