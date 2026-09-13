@@ -677,7 +677,6 @@ function computeLtd(book, lines, taxData, scenario) {
       R1: purchaseMonths[tab].R1,
       S1: purchaseMonths[tab].S1,
       AI1: purchaseMonths[tab].AI1,
-      AJ1: purchaseMonths[tab].AJ1,
     };
     link(`Sales.xlsx!${tab}`, linkOnlyCells(salesMonths[tab], results[`Sales.xlsx!${tab}`]));
     link(`Purchases.xlsx!${tab}`, linkOnlyCells(purchaseMonths[tab], results[`Purchases.xlsx!${tab}`]));
