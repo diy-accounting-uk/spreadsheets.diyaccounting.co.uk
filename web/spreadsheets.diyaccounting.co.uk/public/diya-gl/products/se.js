@@ -34,6 +34,10 @@
   var WAGES_SHEET = "Wagesinterface";
   var BUSINESS_DETAILS_SHEET = "Business Details";
   var BUSINESS_DETAILS_SECTION = "Business Details";
+  // Business Details!O50, box 24's own "goods and services for own use"
+  // figure -- app/products/se.js's GOODS_FOR_OWN_USE_CELL, restated here
+  // because this page names its own cells rather than importing that module.
+  var GOODS_FOR_OWN_USE_CELL = "O50";
   var QUARTERLY_SECTION = "Quarterly Summary";
   var FORECAST_SECTION = "Profit Forecast";
   var ADMIN_SECTION = "Admin (Generator Injected)";
@@ -147,8 +151,19 @@
 
   // The schedule's totals row, in the order a fixed asset note reads: cost
   // first, then the depreciation that takes it to net book value, then the
-  // capital allowances the return claims, then the year's disposals.
-  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "X1", "Y1", "Z1"];
+  // capital allowances the return claims, then the year's disposals. AC1 and
+  // AC4 are the special rate pool's own WDA total and rate, printed beside
+  // the main pool's R1 the way the schedule itself pairs the two columns.
+  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "AC1", "AC4", "S1", "V1", "X1", "Y1", "Z1"];
+  // FIXED_ASSET_CELL_LABELS (app/products/se.js) has no entry for these two
+  // -- they are the special rate pool's own cells, added after that map was
+  // written -- so the page names them itself rather than falling back to
+  // the bare sheet!cell reference every other schedule row's fallback would
+  // otherwise never need.
+  var SCHEDULE_CELL_LABEL_OVERRIDES = {
+    AC1: "Total special rate writing down allowance claimed",
+    AC4: "Special rate writing down allowance rate",
+  };
   // The schedule against the journals: what the register lists, what the
   // sales and purchase journals carry, and the difference between them.
   var FA_RECONCILIATION_SHEET = "Fixedassets.xlsx!FAreconciliation";
@@ -473,6 +488,7 @@
         cost: num(asset.cost),
         accumulatedDepreciation: num(asset.accumulatedDepreciation),
         writtenDownValue: num(asset.cost) - num(asset.accumulatedDepreciation),
+        pool: asset.capitalAllowancePool === "special" ? "special" : "main",
       };
     });
     var additions = ctx.lines
@@ -1012,9 +1028,14 @@
     var productMod = snap.context.productMod;
     var assets = snap.fixedAssets;
 
+    // The schedule's own special rate, read once for every asset row: column
+    // AB marks an asset "S" for the special rate pool (higher-emission cars
+    // among them), AC2 pairs it with this rate rather than the main pool's.
+    var specialRateWDA = cellValue(snap.results, SCHEDULE_SHEET, "AC4");
     var broughtForward = assets.broughtForward.length
       ? assets.broughtForward
           .map(function (asset) {
+            var isSpecial = asset.pool === "special";
             return (
               "<tr><td>" +
               helpers.esc(asset.description) +
@@ -1024,11 +1045,15 @@
               helpers.fmtMoney(asset.accumulatedDepreciation) +
               '</td><td class="num">' +
               helpers.fmtMoney(asset.writtenDownValue) +
+              '</td><td class="num">' +
+              (isSpecial ? "S" : "") +
+              '</td><td class="num">' +
+              (isSpecial ? helpers.fmtRate(specialRateWDA) : "—") +
               "</td></tr>"
             );
           })
           .join("")
-      : '<tr><td colspan="4">This book brought no assets into the year.</td></tr>';
+      : '<tr><td colspan="6">This book brought no assets into the year.</td></tr>';
 
     var additions = assets.additions.length
       ? assets.additions
@@ -1047,11 +1072,15 @@
       : '<tr><td colspan="3">This book bought no assets during the year.</td></tr>';
 
     var scheduleRows = SCHEDULE_CELLS.map(function (cell) {
-      return {
-        label: labelFor(productMod, SCHEDULE_SHEET, cell, SCHEDULE_SHEET + "!" + cell),
-        value: cellValue(snap.results, SCHEDULE_SHEET, cell),
-        rKeyAttr: cellRk(snap, helpers, SCHEDULE_SHEET, cell),
-      };
+      var label = labelFor(productMod, SCHEDULE_SHEET, cell, SCHEDULE_CELL_LABEL_OVERRIDES[cell] || SCHEDULE_SHEET + "!" + cell);
+      var rKeyAttr = cellRk(snap, helpers, SCHEDULE_SHEET, cell);
+      // AC4 is a rate (the special rate pool's 6%), not a money figure --
+      // every other row on this table is money, so this one alone carries
+      // its own formatted text.
+      if (cell === "AC4") {
+        return { label: label, text: helpers.fmtRate(cellValue(snap.results, SCHEDULE_SHEET, cell)), rKeyAttr: rKeyAttr };
+      }
+      return { label: label, value: cellValue(snap.results, SCHEDULE_SHEET, cell), rKeyAttr: rKeyAttr };
     });
 
     var reconciliationRows = FA_RECONCILIATION_CELLS.map(function (cell) {
@@ -1101,7 +1130,7 @@
       scrollBox(
         helpers,
         "Assets brought into the year",
-        '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th></tr></thead><tbody>' +
+        '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>Depreciation</th><th>Written down</th><th>Pool</th><th>Special rate WDA</th></tr></thead><tbody>' +
           broughtForward +
           "</tbody></table>",
       ) +
@@ -1633,6 +1662,7 @@
   // ============================== book details ==============================
 
   function renderBusinessDetails(snap, state, helpers) {
+    var productMod = snap.context.productMod;
     var details = snap.businessDetails;
     var entity = snap.book.entityInformation || {};
     var nameRow = helpers
@@ -1645,6 +1675,17 @@
         return helpers.field(row.label, bookField, details[bookField] || "", { rKeyAttr: cellRk(snap, helpers, row.sheet, row.cell) });
       })
       .join("");
+    // The trader's own stated book figure for goods and services taken for
+    // private use, which the SA103F full return reads on to box 60
+    // (SE Full!D169) -- a tax adjustment, not an entity field, so it sits
+    // beside the book details rather than among the editable ones above.
+    var ownUseRow = helpers.kvRows([
+      {
+        label: labelFor(productMod, BUSINESS_DETAILS_SHEET, GOODS_FOR_OWN_USE_CELL, "Value of goods and services for own use (box 24)"),
+        value: cellValue(snap.results, BUSINESS_DETAILS_SHEET, GOODS_FOR_OWN_USE_CELL),
+        rKeyAttr: cellRk(snap, helpers, BUSINESS_DETAILS_SHEET, GOODS_FOR_OWN_USE_CELL),
+      },
+    ]);
     return (
       "<h2>Book details</h2>" +
       '<div class="panel-card panel-form-width">' +
@@ -1659,6 +1700,9 @@
       }) +
       helpers.readOnlyField("Basis of accounting", details.basisOfAccounting) +
       helpers.readOnlyField("VAT registered", details.vatRegistered ? "Yes" : "No") +
+      "</div>" +
+      '<div class="panel-card"><h3>Tax return adjustments</h3>' +
+      ownUseRow +
       "</div>"
     );
   }
