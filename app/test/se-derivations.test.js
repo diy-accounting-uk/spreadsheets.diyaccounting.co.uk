@@ -808,4 +808,11 @@ describe("setPath — a mapping field name cannot reach the prototype chain", ()
     setPath(target, "periodIncome.turnover", 123.45);
     expect(target).toEqual({ periodIncome: { turnover: 123.45 } });
   });
+
+  it("never reuses an inherited property as an intermediate node", () => {
+    const target = {};
+    setPath(target, "toString.polluted", "evil");
+    expect(Object.prototype.toString.polluted).toBeUndefined();
+    expect(target.toString).toEqual({ polluted: "evil" });
+  });
 });
