@@ -65,7 +65,8 @@ Note: Read the relevant skill when working on that product or technique. They co
 
 ## Git Workflow
 
-See `../CLAUDE.md` for full rules.
+See `../CLAUDE.md` for full rules. Merge strategy — squash at the worktree, `--merge` to `main`, rebase only on a conflict or an
+overlap, one deploy per head — is in `../CLAUDE.md` under Git Workflow.
 
 Branch naming: `claude/<ns>-<n>-<topic>` for one of a series, `claude/<ns>-<topic>` otherwise.
 `<ns>` is a short tag for the area (`ltd`, `itsa`, `vat`, `ops`, `cdk`, `docs`; `b` for a board
