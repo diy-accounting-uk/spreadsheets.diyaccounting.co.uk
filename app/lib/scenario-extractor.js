@@ -1278,6 +1278,10 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push("# an asset sold in the year needs one for its balancing allowance.");
         parts.push(`tax_wdv = ${asset.tax_wdv}`);
       }
+      if (asset.pool === "special") {
+        parts.push("# The special rate (6%) pool, SA103F box 51; the Schedule marks the row S in column AB.");
+        parts.push(`pool = "special"`);
+      }
       parts.push("");
     }
   }

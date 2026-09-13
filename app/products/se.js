@@ -268,6 +268,13 @@ export const GOODS_FOR_OWN_USE_CELL = "O50";
 // totals -- the workbook's own note-vs-schedule tie-out.
 export const EXISTING_ASSET_ROWS = { motor: [38, 39, 40, 41, 42], computer: [30, 31, 32, 33, 34] };
 export const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
+// Column AB on an asset row: "S" puts the row's tax written-down value in
+// the special rate pool, so its writing down allowance lands in column AC
+// at Admin!G6 instead of column R at Admin!G5. Verified against the template:
+// R38 = IF(AND(O38>0,AB38<>"S"),O38*R$4*(1-M38)," "), AC38 the same with
+// AB38="S" and AC$4, S38 = IF(O38>0,O38-N(R38)-N(AC38)," "), AC1 = AC57+AC110.
+export const SPECIAL_RATE_POOL_MARKER_COLUMN = "AB";
+export const SPECIAL_RATE_POOL_MARKER = "S";
 
 // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
 // rows are available for scenario agreements before the sheet's own
@@ -679,6 +686,7 @@ function composeWrites(scenario, targetStartYear) {
       // so an asset sold in the year without one leaves the whole capital
       // allowance block, and every figure downstream of it, in error.
       if (asset.tax_wdv) fa[`O${row}`] = asset.tax_wdv;
+      if (asset.pool === "special") fa[`${SPECIAL_RATE_POOL_MARKER_COLUMN}${row}`] = SPECIAL_RATE_POOL_MARKER;
       existingAssetRowsUsed[asset.category].push(row);
     }
   }
@@ -1016,6 +1024,7 @@ export const CELL_MAP = [
   ["SE Full", "O129", "Net loss (box 48)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
   ["SE Full", "D139", "Annual investment allowance (box 49)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
   ["SE Full", "D144", "Capital allowances at 18% (box 50)",    "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D147", "Capital allowances at 6% (box 51)",     "tax.capitalAllowances.specialRateWDA (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "D152", "Zero-emission goods vehicle allowance (box 52)", "tax.selfEmployment.allowances.zeroEmissionsGoodsVehicleAllowance", "Self Assessment (SA103F)", 1],
   ["SE Full", "D156", "Zero-emission car allowance (box 52.1)", "tax.selfEmployment.allowances.zeroEmissionsCarAllowance", "Self Assessment (SA103F)", 1],
   ["SE Full", "D160", "Structures and Buildings Allowance (box 53)", "tax.selfEmployment.allowances.structuredBuildingAllowance", "Self Assessment (SA103F)", 1],
@@ -1091,6 +1100,7 @@ export const CELL_MAP = [
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits", "Admin (Generator Injected)", 0],
   ["Admin", "G4",  "Annual Investment Allowance Rate",     "",                                        "Admin (Generator Injected)", 0],
   ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0],
+  ["Admin", "G6",  "Special Rate Writing Down Allowance Rate", "tax.capitalAllowances.specialRateWDA",  "Admin (Generator Injected)", 0],
   ["Admin", "F21", "Mileage Higher Rate Limit",            "",                                        "Admin (Generator Injected)", 0],
   ["Admin", "G21", "Mileage Higher Rate Pence",            "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0],
   ["Admin", "F22", "Mileage Lower Rate Start",             "",                                        "Admin (Generator Injected)", 0],
@@ -1250,7 +1260,7 @@ export function multiFileOptions() {
         // E57 and E110 are the schedule's own existing-asset and new-asset
         // cost subtotals; row 1 adds the two. Reading both lets the report
         // state the year's asset movement rather than one closing total.
-        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"],
+        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "AC1", "AC4", "E57", "E110"],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
         // E2 is the long-term-creditors total for the "New Hire Purchase
         // Agreements" block (SUM(E8:E14)); I/J/K on rows 8 and 10 are the
@@ -1453,11 +1463,9 @@ export function standardReads() {
   // are the online filing deadline banner (G1, "...by 31st January "&TEXT
   // (Admin!B21,"yyyy")), the period the return covers (Q2 = Admin!B4, V2 =
   // Admin!B17) and the writing down rate and Class 4 threshold it prints in
-  // its captions (G141 = Admin!G5, J280 = Admin!N20). D147 is box 51, empty
-  // until the schedule computes a special rate pool; reading it lets the box
-  // 57 total be checked as the exact sum the sheet computes.
+  // its captions (G141 = Admin!G5, J280 = Admin!N20).
   reads["SE Full"] = reads["SE Full"] || [];
-  for (const cell of ["G1", "Q2", "V2", "G141", "J280", "D147"]) {
+  for (const cell of ["G1", "Q2", "V2", "G141", "J280"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
@@ -2312,7 +2320,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(
           "Forecast: capital allowances = the fixed asset schedule",
           num(forecast.C38),
-          num(schedule.Q1) + num(schedule.R1) + num(schedule.Y1) - num(schedule.Z1),
+          num(schedule.Q1) + num(schedule.R1) + num(schedule.AC1) + num(schedule.Y1) - num(schedule.Z1),
         );
       }
       check(
@@ -2493,6 +2501,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (returnSchedule) {
       check("SA103F box 49 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
       check("SA103F box 50 capital allowances at 18% (D144) = Schedule R1", num(seFull.D144), num(returnSchedule.R1));
+      check("SA103F box 51 capital allowances at 6% (D147) = Schedule AC1", num(seFull.D147), num(returnSchedule.AC1));
       check(
         "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000",
         num(seFull.O144),
@@ -2508,19 +2517,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // brought forward at, whatever it cost, so a car whose allowance is capped
     // again, or diverted into another allowance box, leaves box 50 short of
     // what the scenario's assets are entitled to.
+    // Each pool against the scenario's own assets: the main pool's boxes 50
+    // and the special rate pool's box 51, each at its own year's rate, so an
+    // asset marked for one pool that lands in the other moves both boxes.
     if (taxData?.capital_allowances && expected.opening_fixed_assets) {
-      const openingTaxWdv = expected.opening_fixed_assets.reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
+      const poolTaxWdv = (pool) =>
+        expected.opening_fixed_assets
+          .filter((asset) => (asset.pool === "special") === (pool === "special"))
+          .reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
       check(
         "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate",
         num(seFull.D144),
-        openingTaxWdv * taxData.capital_allowances.writing_down_allowance,
+        poolTaxWdv("main") * taxData.capital_allowances.writing_down_allowance,
+      );
+      check(
+        "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate",
+        num(seFull.D147),
+        poolTaxWdv("special") * (taxData.capital_allowances.writing_down_allowance_special || 0),
       );
     }
-
-    // Box 51 takes the special rate pool at 6%. The fixed asset schedule
-    // keeps a single main pool at the 18% rate, so the box carries nothing
-    // and box 50 carries the whole writing down claim.
-    check("SA103F box 51 capital allowances at 6% (D147) is nil", num(seFull.D147), 0);
 
     // The boxes the trader states by hand, each against the scenario's own
     // stated figure rather than against the sheet. A box the scenario does
@@ -2556,8 +2571,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       .filter(([box]) => box !== "62" && box !== "71")
       .reduce((total, [, , , stated]) => total + (stated || 0), 0);
     check(
-      "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)",
-      num(seFull.O154) - num(seFull.D139) - num(seFull.D144) - num(seFull.O144) - num(seFull.O149),
+      "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)",
+      num(seFull.O154) - num(seFull.D139) - num(seFull.D144) - num(seFull.D147) - num(seFull.O144) - num(seFull.O149),
       statedAllowanceTotal,
     );
     check(
@@ -2774,6 +2789,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       sched.E1 || 0,
       (sched.E57 || 0) + (sched.E110 || 0),
     );
+
+    // The special rate pool's rate reaches the Schedule across the link
+    // from Admin!G6 (AC4 = [1]Admin!$G$6), and the pool's allowance (AC1) is
+    // the marked assets' tax written-down values at that rate, so an asset
+    // whose marker was lost, or a row whose R formula still claims the main
+    // rate, moves this.
+    if (taxData?.capital_allowances && expected.opening_fixed_assets) {
+      check(
+        "Fixed assets: Schedule special rate (AC4) = Admin special rate WDA",
+        sched.AC4 || 0,
+        taxData.capital_allowances.writing_down_allowance_special || 0,
+        0.0001,
+      );
+      const specialPoolWdv = expected.opening_fixed_assets
+        .filter((asset) => asset.pool === "special")
+        .reduce((t, asset) => t + (asset.tax_wdv || 0), 0);
+      check(
+        "Fixed assets: Schedule special rate pool allowance (AC1) = the scenario's special rate assets at the year's special rate",
+        sched.AC1 || 0,
+        specialPoolWdv * (taxData.capital_allowances.writing_down_allowance_special || 0),
+      );
+    }
 
     // 3. P&L depreciation and disposal lines carry the Schedule's own
     //    annual totals across the cross-file link (each month books 1/12
@@ -3490,6 +3527,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
     check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
     check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
+    check("Admin: special rate WDA = tax data", admin.G6, ca.writing_down_allowance_special, 0.0001);
     check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
     check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
     check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);

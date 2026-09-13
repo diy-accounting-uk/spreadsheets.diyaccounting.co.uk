@@ -302,6 +302,15 @@ description = "Laptop (0.5 years old)"
 cost = 3000.00
 accumulatedDepreciation = 270.00
 
+[[fixedAssets]]
+assetID = "SE-FA-1"
+class = "motorVehicles"
+capitalAllowancePool = "special"
+description = "Estate car (CO2 over 50g/km, 1.5 years old)"
+cost = 16000.00
+accumulatedDepreciation = 4000.00
+taxWrittenDownValue = 9000.00
+
 [[hpAgreements]]
 agreementID = "HP-2025-01"
 financeCompany = "Close Brothers Asset Finance"

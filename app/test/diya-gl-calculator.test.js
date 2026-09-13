@@ -278,20 +278,24 @@ describe("calculateFromDiyaGl — SE", () => {
 
   it("B39: profit before tax is gross profit less the administrative expenses", () => {
     const pl = seResults()["Profit & Loss Account"];
-    expect(pl.B35).toBeCloseTo(149665.317, 3);
-    expect(pl.B39).toBeCloseTo(171481.35, 2);
+    // 4,000 of the administrative expenses is the estate car's depreciation.
+    expect(pl.B35).toBeCloseTo(153665.317, 3);
+    expect(pl.B39).toBeCloseTo(167481.35, 2);
   });
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
-    expect(results["Income Tax"].E5).toBeCloseTo(130552.81, 2);
+    // 130,552.81 before the book's own SA103F statements: plus 640 own use,
+    // less 2,500 + 1,800 stated allowances, 350 non-taxable income and the
+    // 540 special rate pool allowance.
+    expect(results["Income Tax"].E5).toBeCloseTo(126002.81, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the bands with the allowance tapered away entirely", () => {
     const tax = seResults()["Income Tax"];
     expect(tax.E6).toBeCloseTo(0, 2);
-    expect(tax.E11).toBeCloseTo(44951.76, 2);
+    expect(tax.E11).toBeCloseTo(42904.26, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 

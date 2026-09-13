@@ -1164,6 +1164,9 @@ const SCHEDULE_ASSET_COLUMNS = {
   taxWrittenDownValue: "O",
 };
 const SCHEDULE_DISPOSAL_COLUMNS = { disposedDate: "U", disposalProceeds: "V" };
+// Column AB, "S" on a row whose tax written-down value sits in the special
+// rate pool (the Self Employed Schedule's AC column, SA103F box 51).
+const SCHEDULE_SPECIAL_RATE_POOL_MARKER = { column: "AB", value: "S" };
 
 // The single-file products keep one Fixed Assets sheet inside the workbook
 // and their writers fill only its in-year addition block: BST the Plant &
@@ -1256,6 +1259,9 @@ async function fixedAssetRegisterFrom(set, product) {
       const cost = numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.cost}${row}`, sharedStrings);
       if (cost === undefined || cost === 0) continue;
       const asset = { class: assetClass, cost };
+      if (textAt(xml, `${SCHEDULE_SPECIAL_RATE_POOL_MARKER.column}${row}`, sharedStrings) === SCHEDULE_SPECIAL_RATE_POOL_MARKER.value) {
+        asset.capitalAllowancePool = "special";
+      }
       assign(asset, "description", textAt(xml, `${SCHEDULE_ASSET_COLUMNS.description}${row}`, sharedStrings));
       assign(asset, "accumulatedDepreciation", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.accumulatedDepreciation}${row}`, sharedStrings));
       assign(asset, "taxWrittenDownValue", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.taxWrittenDownValue}${row}`, sharedStrings));

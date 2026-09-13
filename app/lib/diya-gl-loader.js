@@ -562,6 +562,7 @@ export function diyaGlToScenario(book, lines, product) {
         }
         const opening = { category, description: asset.description, cost: asset.cost, acc_dep: asset.accumulatedDepreciation };
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+        if (asset.capitalAllowancePool === "special") opening.pool = "special";
         return opening;
       });
     if (openingFixedAssets.length > 0) scenario.opening_fixed_assets = openingFixedAssets;
@@ -794,11 +795,13 @@ export function extractTaxDataFromBook(book, product) {
       marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
     };
   } else {
-    // SE/BST/Taxi use a single writing_down_allowance key
+    // SE/BST/Taxi use a single writing_down_allowance key; the Self Employed
+    // schedule also keeps a special rate pool.
     baseTaxData.capital_allowances = {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
+    if (product === "se") baseTaxData.capital_allowances.writing_down_allowance_special = ca.specialRateWDA || 0.06;
   }
   const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
   baseTaxData.depreciation = taxYearFile.depreciation;

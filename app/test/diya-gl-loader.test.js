@@ -272,12 +272,12 @@ describe("extractTaxDataFromBook", () => {
     expect(taxData.national_insurance.class4_lower_limit).toBeDefined();
   });
 
-  it("emits SE capital_allowances shape with single writing_down_allowance key", () => {
+  it("emits SE capital_allowances shape with writing_down_allowance and the special rate pool's rate", () => {
     const { book } = loadDiyaGlData(BST_DATA);
     const taxData = extractTaxDataFromBook(book, "se");
     expect(taxData.capital_allowances.writing_down_allowance).toBeDefined();
+    expect(taxData.capital_allowances.writing_down_allowance_special).toBe(0.06);
     expect(taxData.capital_allowances.writing_down_allowance_main).toBeUndefined();
-    expect(taxData.capital_allowances.writing_down_allowance_special).toBeUndefined();
     expect(taxData.capital_allowances.full_expensing_rate).toBeUndefined();
   });
 

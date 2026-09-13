@@ -574,7 +574,7 @@
       "form": "SA103F",
       "box": "68",
       "label": "Adjustment where your accounting period ended before 31 March 2026 or where your accounting period was not 12 months long – if the adjustment needs to be taken off the profit figure, put a minus sign in the box",
-      "cell": "SE Full!D197",
+      "cell": null,
       "field": "adjustments.basisAdjustment",
       "route": "annual"
     },

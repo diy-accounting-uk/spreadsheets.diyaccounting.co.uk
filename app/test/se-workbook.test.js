@@ -264,17 +264,20 @@ describe("an entry none of the nine workbooks has a cell for", () => {
       taxRate: 0.2,
     });
     const { book, lines } = bookAt(ADVANCED);
-    const seated = [...lines, disposal("TXN-9003", "INV-9903")];
+    // The book brings three assets forward (the van, the estate car and the
+    // laptop) and its own lines already dispose of the van, so two more
+    // disposals seat and a third has no row.
+    const seated = [...lines, disposal("TXN-9003", "INV-9903"), disposal("TXN-9005", "INV-9905")];
     const oneTooMany = [...seated, disposal("TXN-9004", "INV-9904")];
 
     const skips = writerSkips(diyaGlToScenario(book, oneTooMany, "se"));
     expect(skips).toHaveLength(1);
     expect(skips[0]).toMatchObject({ kind: "assetDisposal", date: "2025-12-01", code: "fs", amount: 900 });
 
-    // The second of the three lands on the computer row, the third on
-    // nothing: the Schedule's own content is the same with it and without
-    // it, though its cache of Sales's running disposal total (which the
-    // third disposal does move) is refreshed regardless.
+    // The second and third of the four land on the car and computer rows,
+    // the fourth on nothing: the Schedule's own content is the same with it
+    // and without it, though its cache of Sales's running disposal total
+    // (which the fourth disposal does move) is refreshed regardless.
     const withTwo = await saveWorkbookFiles(book, seated);
     const withThree = await saveWorkbookFiles(book, oneTooMany);
     const schedule = "Fixedassets.xlsx";
@@ -303,16 +306,16 @@ describe("an entry none of the nine workbooks has a cell for", () => {
       cost: 1000 + index,
       accumulatedDepreciation: 0,
     });
-    const extra = [1, 2, 3, 4, 5].map(spare);
+    const extra = [1, 2, 3, 4].map(spare);
     const { skips, unmoved } = await savedWith(ADVANCED, ({ book, lines }) => ({
       book: { ...book, fixedAssets: [...book.fixedAssets, ...extra] },
       lines,
     }));
 
-    // The motor block holds five: the van already brought forward and the
-    // first four spares, leaving the fifth with no row.
+    // The motor block holds five: the van and the estate car already brought
+    // forward and the first three spares, leaving the fourth with no row.
     expect(skips).toHaveLength(1);
-    expect(skips[0]).toMatchObject({ kind: "openingFixedAsset", code: "motor", amount: 1005 });
+    expect(skips[0]).toMatchObject({ kind: "openingFixedAsset", code: "motor", amount: 1004 });
     expect(skips[0].why).toContain("motor block");
     expect(unmoved).not.toContain("Fixedassets.xlsx");
   }, 600000);

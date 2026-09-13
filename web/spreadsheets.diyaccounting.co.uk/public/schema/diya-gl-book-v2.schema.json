@@ -477,6 +477,12 @@
             "enum": ["landBuildings", "plantMachinery", "fixturesFittings", "computerTechnology", "motorVehicles"],
             "description": "The Schedule block this asset belongs to (Self Employed and Company only)."
           },
+          "capitalAllowancePool": {
+            "type": "string",
+            "enum": ["main", "special"],
+            "default": "main",
+            "description": "Which writing down pool the asset's tax written-down value sits in. special is the 6% pool (cars with higher CO2 emissions, integral features, long-life assets), SA103F box 51; the Self Employed Schedule marks the row S in column AB and claims the allowance in column AC. Absent means the main pool, box 50."
+          },
           "description": {
             "type": "string"
           },

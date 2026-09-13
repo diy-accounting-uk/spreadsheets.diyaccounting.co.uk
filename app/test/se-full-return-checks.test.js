@@ -141,7 +141,7 @@ const TAXABLE_PROFIT = "SA103F box 64 net business profit for tax purposes (O174
 const ADJUSTED_PROFIT = "SA103F box 73 adjusted profit (O194) = box 64";
 const TOTAL_TAXABLE_PROFITS = "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75";
 const STATED_ALLOWANCES =
-  "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)";
+  "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)";
 const STATED_BOX_62 = "SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states";
 const STATED_BOX_60 = "SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states";
 const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states";

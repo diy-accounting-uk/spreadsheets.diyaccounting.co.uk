@@ -588,6 +588,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
           "annualInvestmentAllowance",
           "allowanceOnSales",
           "capitalAllowanceMainPool",
+          "capitalAllowanceSpecialRatePool",
           "enhancedCapitalAllowance",
           ...(statesAnnualFigures ? ["zeroEmissionsCarAllowance", "structuredBuildingAllowance"] : []),
         ].sort(),
@@ -602,7 +603,6 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       );
       const warningFields = annual.warnings.map((w) => w.field);
       const neverSourced = [
-        "allowances.capitalAllowanceSpecialRatePool",
         "allowances.capitalAllowanceSingleAssetPool",
         "allowances.enhancedStructuredBuildingAllowance",
         "allowances.businessPremisesRenovationAllowance",
@@ -644,6 +644,19 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
     });
   }
 
+  it("box 51 files the special rate pool the schedule computes: the marked asset's tax written-down value at the special rate", () => {
+    const { annual, scenario } = derive("se-scenario-advanced", TAX_APR27);
+    const specialAssets = scenario.opening_fixed_assets.filter((asset) => asset.pool === "special");
+    expect(specialAssets).toHaveLength(1);
+    const expected = specialAssets[0].tax_wdv * TAX_APR27.capital_allowances.writing_down_allowance_special;
+    expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeCloseTo(expected, 2);
+    expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeGreaterThan(0);
+    // The main pool no longer carries the marked asset.
+    const mainWdv = scenario.opening_fixed_assets.filter((asset) => asset.pool !== "special").reduce((t, a) => t + (a.tax_wdv || 0), 0);
+    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(mainWdv * TAX_APR27.capital_allowances.writing_down_allowance, 2);
+    expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSpecialRatePool");
+  });
+
   it("a box 52 figure stated for a year whose schema dropped the field is not filed, and the warning carries it", () => {
     const { book, lines, scenario } = loadFixture("se-scenario-advanced");
     const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, zeroEmissionsGoodsVehicleAllowance: 900 } };
@@ -669,12 +682,11 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
 
 describe("the derivations — the boxes with no cell really do read blank in the engine", () => {
   for (const fixture of FIXTURES) {
-    it(`${fixture}: SE Full D147 is blank, and the stated boxes are blank only where the book states nothing`, () => {
+    it(`${fixture}: the stated boxes are blank only where the book states nothing`, () => {
       const { book, lines, scenario: fixtureScenario } = loadFixture(fixture);
       const scenario = fixtureScenario || undefined;
       const results = calculateSeCells(book, lines, TAX_APR27, scenario);
       const seFull = results["SE Full"];
-      expect(typeof seFull.D147).not.toBe("number");
       const stated = fixture === "se-scenario-advanced";
       for (const cell of ["D152", "O139"]) expect(typeof seFull[cell]).not.toBe("number");
       for (const cell of ["D156", "D160", "D179", "D210"]) expect(typeof seFull[cell] === "number").toBe(stated);

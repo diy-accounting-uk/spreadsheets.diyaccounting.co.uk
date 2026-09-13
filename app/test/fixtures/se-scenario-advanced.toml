@@ -6317,6 +6317,17 @@ description = "Laptop (0.5 years old)"
 cost = 3000
 acc_dep = 270
 
+[[opening_fixed_assets]]
+category = "motor"
+description = "Estate car (CO2 over 50g/km, 1.5 years old)"
+cost = 16000
+acc_dep = 4000
+# Written down TAX value brought forward (asset schedule column O);
+# an asset sold in the year needs one for its balancing allowance.
+tax_wdv = 9000
+# The special rate (6%) pool, SA103F box 51; the Schedule marks the row S in column AB.
+pool = "special"
+
 [[vat_straddling_sales]]
 period = "02Y1"
 date = 2025-02-14
