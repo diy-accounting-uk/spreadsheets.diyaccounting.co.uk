@@ -13,8 +13,8 @@ serves it. Since the last render #107 (FUNDING.yml header), #108 (ci donate link
 (support issue template) and #110 (homebrew dispatch) merged, and `diya-gl` 1.2.9 published.
 
 Batch `claude/b14-board` (worktree `../.worktrees/spreadsheets/b14-board`, at `aed1ebf2`, main
-merged in) carries one wave: CQ-20 and CQ-25 are merged into it; the SE engine agent (CQ-21,
-SET-5, SET-4) and the site events agent (SB-2) are still in their worktrees. Push when all six
+merged in) carries one wave: CQ-20, CQ-25 and SB-2 are merged into it; the SE engine agent (CQ-21,
+SET-5, SET-4) is still in its worktree. Push when all six
 land; one PR; then `generate-ltd` and `generate-se` on the branch regenerate the packages the
 template changes made stale, and `test` re-runs on that commit.
 
@@ -49,7 +49,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | CQ-25 | The Self Employed page's P&L view carries a memo block under the statement: the disallowable percentage per expense row (`VitalTax!I36` to `I50`), the add-back each produces (`SE Full!O66` to `O118`), the entertainment memo (`Profit & Loss Account!B49`, its months behind the existing toggle) and the box 46 total. The SA103F view already prints boxes 32 to 46, 61 and 64; the P&L is where the trader sees the expense and today it stops at B39. The percentages and row 49 are written by the generator but not in the page's read scope, and `render-unrepresentable/se.json` declares row 49 unrenderable, so that entry goes | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | merged to `claude/b14-board` (1300e2b2); its `npm test` still running |
 | SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | box 51 pool built, 53.1/73.3 decision in the plan; same run |
 | SET-5 | The nine SED-7 and SED-8 fields that already print a cell the engine reads as blank (`SE Full!D147`, `D152`, `D156`, `D160`, `O139`, `D169`, `D179`) need a `book.toml` field and a writer each, so a book can fill them; book-schema work, not template work (`PLAN_SE_TEMPLATE_GAPS.md` 3.4). Box 68 and 73.3 stay blank until an overlap-profit record exists (section 7) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | committed on `claude/wt-se-engine`; same run |
-| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | uncommitted in `../.worktrees/spreadsheets/site-events`; agent asked to commit and report |
+| SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | merged to `claude/b14-board` (9f787491): events fire; one stale comment fixed |
 
 ## Plans not tracked here
 
