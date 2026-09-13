@@ -74,7 +74,10 @@ a task can be stopped, and a completed one stops notifying.
   activity names the human row here; the human activity is its own row.
 - `State`: exactly one of seven values, derived from the precursors and the evidence:
   - `done` — finished in the current session, and only then.
-  - `in-flight` — being worked right now by an agent or the operator.
+  - `in-flight` — evidence of work in motion, checked this render: an agent on the row now (a
+    worktree with its branch), the row's change on a branch or open pull request not yet on
+    `main`, or a run the row waits on in progress. A change on `main` waiting for a passive
+    event is not in flight.
   - `ready-to-start` — never started; every precursor is done.
   - `ready-to-resume` — started earlier (a branch, worktree, PR or partial commit exists,
     or the row says so), paused, and every precursor is done.
@@ -106,6 +109,10 @@ a task can be stopped, and a completed one stops notifying.
   3. `human-only` rows that can be done now: `ready-to-start`, `ready-to-resume`;
   4. blocked rows of any class: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
   5. rows gated by a date, whatever their class.
+  **In-flight rows come first in the whole table, ahead of every band**, each with its branch,
+  pull request and any running run in `Status` (`claude/b15-tests, PR #112, deploy 3478…`),
+  read from `git worktree list`, `gh pr list` and `gh run list`, never from the row's prose;
+  the `## In flight` section names the same branches and PRs. Then the bands.
   Within a band: `in-flight` rows first; then the rows that can start, by the size of the change,
   fewest files first, read from `Size` (a row without a count follows
   the counted ones); a precursor stays ahead of its dependants whatever their sizes; equal sizes
