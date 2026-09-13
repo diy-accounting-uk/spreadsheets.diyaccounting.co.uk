@@ -10,6 +10,17 @@ of the base64 SHA-256 of the session id.
 and plans current, cool-down on.** 39 commits; 101 hand-written files (+3,204/−1,106) plus 436
 regenerated package files.
 
+## Method
+
+I use Claude Code as a coordinator. I write the plan and the rules into the repo, it dispatches
+several agents in parallel on separate branches, merges what passes the tests, and I make the
+decisions it can't (which design, what gets merged, anything that spends money or deletes
+things). In this session that landed six features across two accounting products in one working
+day for roughly $100 of tokens. I spend my time reviewing evidence and fixing the process when it
+wastes cycles, not writing code or even looking at it. Today the auto-merge skill just became
+reliable and my next areas to develop are to tune the session's wasteful test runs and local
+machine contention.
+
 ## What worked
 
 | Efficiency | Figure | Why it was good |
@@ -37,11 +48,11 @@ operator input per item median band, upper on decisions alone. Anchors: METR's 2
 experienced developers 19%), Microsoft's 2026 CLI-agent rollout (+24% merged PRs), Vantage's
 $27–39 per merged PR.
 
-## Method
+## Recommended optimisations, on the board
 
-Coordinator plans, briefs, merges, fixes CI and writes status; agents write code in their own
-worktrees off one batch branch, never push, never touch `NEXT.md`. Tier per track (Opus for
-template and engine, Sonnet for pages). Every "done" is checked with `git status` in the worktree
-and a screenshot opened. Status commits land on `main` as each row moves. CI is the second
-reviewer, and the package-regeneration dependency is declared in the PR and worked through in
-cycles rather than hidden.
+- CQ-29: one `test`/`codeql` trigger per branch; `paths-ignore: ['**.md']`.
+- CQ-30: agents verify their own diff; one full router pass per batch.
+- CQ-31: `generate-*` regenerate before their tests run.
+- CQ-32: per-worktree process groups, no `pkill`, notification waits in place of poll loops.
+- CQ-33: guidance for classifier blocks and SSO refresh: batches sized to the token window,
+  blocked commands collected into one block, never pre-authorised.
