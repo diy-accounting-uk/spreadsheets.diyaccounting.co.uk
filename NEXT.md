@@ -8,6 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
+**COOL-DOWN is on since 2026-09-13T19:41:41Z.** No new board rows except a degradation. Agents commit
+and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
+
 Main is `d1a68377`: PR #111 (`claude/b14-board`) merged with CQ-20, CQ-21, CQ-25, SET-4, SET-5 and
 SB-2, the Ltd and SE packages regenerated on the branch, and the parity fixtures refreshed. The
 prod deploy of that merge is the next thing to read.
