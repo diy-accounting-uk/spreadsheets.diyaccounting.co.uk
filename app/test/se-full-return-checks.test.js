@@ -117,6 +117,7 @@ const SA103F_BOXES_WITH_A_FIGURE = [
   "D129",
   "D139",
   "D144",
+  "D147",
   "O149",
   "O154",
   "D156",
@@ -305,7 +306,16 @@ const SA103F_CORRUPTIONS = [
       STATED_ALLOWANCES,
     ],
   ],
-  ["D147", 4000, [TOTAL_CAPITAL_ALLOWANCES, "SA103F box 51 capital allowances at 6% (D147) is nil"]],
+  [
+    "D147",
+    4000,
+    [
+      TOTAL_CAPITAL_ALLOWANCES,
+      "SA103F box 51 capital allowances at 6% (D147) = Schedule AC1",
+      "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate",
+      STATED_ALLOWANCES,
+    ],
+  ],
   [
     "D152",
     4000,

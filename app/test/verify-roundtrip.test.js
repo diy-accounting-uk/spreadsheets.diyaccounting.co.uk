@@ -971,11 +971,21 @@ describe.skipIf(!hasLibreOffice())("The fixed asset register across a double rou
 
     // The register the first export recovers, in the order it declares it:
     // the van the year disposes of comes first, so the disposal has an asset
-    // to land on when the register is read back.
+    // to land on when the register is read back; the estate car keeps its
+    // special rate pool marker.
     const register = parseTOML(readFileSync(join(firstData, "book.toml"), "utf8")).fixedAssets;
-    expect(register?.map((asset) => [asset.class, asset.cost, asset.accumulatedDepreciation, asset.taxWrittenDownValue])).toEqual([
-      ["motorVehicles", 30000, 9828, 24000],
-      ["computerTechnology", 3000, 270, undefined],
+    expect(
+      register?.map((asset) => [
+        asset.class,
+        asset.cost,
+        asset.accumulatedDepreciation,
+        asset.taxWrittenDownValue,
+        asset.capitalAllowancePool,
+      ]),
+    ).toEqual([
+      ["motorVehicles", 30000, 9828, 24000, undefined],
+      ["computerTechnology", 3000, 270, undefined, undefined],
+      ["motorVehicles", 16000, 4000, 9000, "special"],
     ]);
 
     generate(firstData, secondPackage);
