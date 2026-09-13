@@ -1681,6 +1681,21 @@ const SE_DISALLOWABLE_PERCENT_CELLS = {
   otherExpenses: "I50",
 };
 
+// The SA103F boxes the trader states by hand, the same cells app/products/
+// se.js writes from ANNUAL_ALLOWANCE_CELLS and ANNUAL_ADJUSTMENT_CELLS, and
+// the Business Details cell both returns read box 60 from.
+const SE_ANNUAL_ALLOWANCE_CELLS = {
+  zeroEmissionsGoodsVehicleAllowance: "D152",
+  zeroEmissionsCarAllowance: "D156",
+  structuredBuildingAllowance: "D160",
+  electricChargePointAllowance: "O139",
+};
+const SE_ANNUAL_ADJUSTMENT_CELLS = {
+  includedNonTaxableProfits: "D179",
+  accountingAdjustment: "D210",
+};
+const SE_GOODS_FOR_OWN_USE_CELL = "O50";
+
 const ENTITY_CELLS = {
   bst: {
     file: null,
@@ -2500,15 +2515,34 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
   // tax on a larger profit than the sheet does: box 46 loses every category's
   // share and keeps only the wholly disallowable pair.
   if (product === "se") {
+    const selfEmployment = {};
     const vitalTax = await openSheet(hubZip, "VitalTax");
     if (vitalTax) {
-      const percentages = {};
       for (const [field, cell] of Object.entries(SE_DISALLOWABLE_PERCENT_CELLS)) {
         const value = numberAt(vitalTax.xml, cell, vitalTax.sharedStrings);
-        if (value !== undefined) percentages[field] = value;
+        if (value !== undefined) selfEmployment[field] = value;
       }
-      if (Object.keys(percentages).length > 0) tax.selfEmployment = percentages;
     }
+    // The annual SA103F figures the trader stated by hand on SE Full and
+    // Business Details. Each cell is empty until a book states it, so only a
+    // number counts; a blank is a figure the book never had.
+    const seFull = await openSheet(hubZip, "SE Full");
+    const readStated = (sheet, cells) => {
+      const figures = {};
+      for (const [field, cell] of Object.entries(cells)) {
+        const value = numberAt(sheet.xml, cell, sheet.sharedStrings);
+        if (value !== undefined) figures[field] = value;
+      }
+      return figures;
+    };
+    if (seFull) {
+      const allowances = readStated(seFull, SE_ANNUAL_ALLOWANCE_CELLS);
+      const adjustments = readStated(seFull, SE_ANNUAL_ADJUSTMENT_CELLS);
+      if (entitySheet) Object.assign(adjustments, readStated(entitySheet, { goodsAndServicesOwnUse: SE_GOODS_FOR_OWN_USE_CELL }));
+      if (Object.keys(allowances).length > 0) selfEmployment.allowances = allowances;
+      if (Object.keys(adjustments).length > 0) selfEmployment.adjustments = adjustments;
+    }
+    if (Object.keys(selfEmployment).length > 0) tax.selfEmployment = selfEmployment;
   }
 
   // The two Corporation Tax figures the company enters rather than the year's

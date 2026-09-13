@@ -451,7 +451,15 @@ export function diyaGlToScenario(book, lines, product) {
   // The disallowable proportions the SA103F boxes are computed from. Without
   // them the calculator adds back only the wholly disallowable pair and
   // charges tax on a larger profit than the package's own sheet does.
-  if (book.tax?.selfEmployment) scenario.disallowable = { ...book.tax.selfEmployment };
+  if (book.tax?.selfEmployment) {
+    const { allowances, adjustments, ...disallowable } = book.tax.selfEmployment;
+    if (Object.keys(disallowable).length > 0) scenario.disallowable = disallowable;
+    // The annual SA103F figures the trader states by hand, keyed by HMRC's
+    // own field names: the writer puts each on its SE Full box and the
+    // derivation files it from there.
+    if (allowances) scenario.annual_allowances = { ...allowances };
+    if (adjustments) scenario.annual_adjustments = { ...adjustments };
+  }
   if (book.debtors) {
     scenario.opening_debtors = ledgerListing(book.debtors, "opening", "customer");
     scenario.closing_debtors = ledgerListing(book.debtors, "closing", "customer");

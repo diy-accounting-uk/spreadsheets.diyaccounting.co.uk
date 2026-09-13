@@ -1146,6 +1146,19 @@ export function formatScenarioToml(metadata, grouped, expected) {
     parts.push("");
   }
 
+  // The annual SA103F figures the trader states by hand (boxes 52, 52.1, 53,
+  // 54, 60, 62 and 71), keyed by HMRC's own API field names. Book settings,
+  // not transactions.
+  for (const [table, figures] of [
+    ["annual_allowances", expected.annual_allowances],
+    ["annual_adjustments", expected.annual_adjustments],
+  ]) {
+    if (!figures) continue;
+    parts.push(`[${table}]`);
+    for (const [key, amount] of Object.entries(figures)) parts.push(`${key} = ${amount}`);
+    parts.push("");
+  }
+
   // Charges and debentures registered over the company's assets (Ltd). Each
   // one secures a creditor falling due after more than one year.
   if (expected.charges) {

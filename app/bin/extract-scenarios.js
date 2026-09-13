@@ -422,6 +422,22 @@ const SE_ADVANCED_DISALLOWABLE = {
   otherExpenses: 0.13,
 };
 
+// The SA103F boxes the trader states by hand, each a different figure so a
+// writer or a check wired to the wrong cell fails. Boxes 52 and 54 stay
+// unstated: HMRC's schema dropped their fields from 2025-26 and the featured
+// package files a later year.
+const SE_ADVANCED_ANNUAL = {
+  allowances: {
+    zeroEmissionsCarAllowance: 2500,
+    structuredBuildingAllowance: 1800,
+  },
+  adjustments: {
+    goodsAndServicesOwnUse: 640,
+    includedNonTaxableProfits: 350,
+    accountingAdjustment: 90,
+  },
+};
+
 const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book)));
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
@@ -472,6 +488,8 @@ const advToml = formatScenarioToml(
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     disallowable: SE_ADVANCED_DISALLOWABLE,
+    annual_allowances: SE_ADVANCED_ANNUAL.allowances,
+    annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: seOpeningFixedAssets,
@@ -504,7 +522,7 @@ const advDiya = writeSubset(
   {
     entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
     taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage", "selfEmployment"],
-    taxOverrides: { selfEmployment: SE_ADVANCED_DISALLOWABLE },
+    taxOverrides: { selfEmployment: { ...SE_ADVANCED_DISALLOWABLE, ...SE_ADVANCED_ANNUAL } },
     accountFilter: seAccountFilter,
     employees: book.employees,
     tables: advV2,

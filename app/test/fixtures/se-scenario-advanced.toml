@@ -6203,6 +6203,15 @@ irrecoverableDebts = 0.11
 professionalFees = 0.12
 otherExpenses = 0.13
 
+[annual_allowances]
+zeroEmissionsCarAllowance = 2500
+structuredBuildingAllowance = 1800
+
+[annual_adjustments]
+goodsAndServicesOwnUse = 640
+includedNonTaxableProfits = 350
+accountingAdjustment = 90
+
 [[hp_agreements]]
 date = 2025-06-01
 finance_company = "Close Brothers Asset Finance"

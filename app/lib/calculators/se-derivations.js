@@ -459,27 +459,33 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
   };
 }
 
-// Every annual field this book can source, and a warning naming the box for
-// every one it cannot -- section 8 of the design records why each is out of
-// reach today: no cell in the template, a cell the customer fills by hand,
-// or a box the schema has no field for. Three of these boxes (52, 54, 69)
-// carry a field that also moves in and out of HMRC's own schema by tax
+// The annual boxes with no formula behind them that the book can state
+// (tax.selfEmployment.allowances / .adjustments, keyed by the API field
+// name): the writer puts each figure on its SE Full cell and the derivation
+// reads it back from there, so the payload carries what the return prints.
+// A box the book does not state stays blank and warns.
+const BOOK_STATED_ANNUAL_BOXES = [
+  { box: "52", cell: "D152", table: "allowances" }, // zeroEmissionsGoodsVehicleAllowance -- gone from 2025-26
+  { box: "52.1", cell: "D156", table: "allowances" }, // zeroEmissionsCarAllowance
+  { box: "53", cell: "D160", table: "allowances" }, // structuredBuildingAllowance
+  { box: "62", cell: "D179", table: "adjustments" }, // includedNonTaxableProfits
+  { box: "71", cell: "D210", table: "adjustments" }, // accountingAdjustment
+];
+
+// Every annual field no cell and no book field can source, and a warning
+// naming the box for each -- section 8 of the design records why each is
+// out of reach today: no cell in the template, or a figure the book has no
+// record for. Box 69's field also moves out of HMRC's own schema by tax
 // year -- annualFieldsUnavailableForYear() below is what keeps a year that
 // no longer accepts a field from warning about it as if it still did.
 const NO_SOURCE_ANNUAL_BOXES = [
   { box: "51", pick: 0 }, // allowances.capitalAllowanceSpecialRatePool
   { box: "51", pick: 1 }, // allowances.capitalAllowanceSingleAssetPool (shared with box 50)
-  { box: "52", pick: 0 }, // allowances.zeroEmissionsGoodsVehicleAllowance -- gone from 2025-26
-  { box: "52.1", pick: 0 }, // allowances.zeroEmissionsCarAllowance
-  { box: "53", pick: 0 }, // allowances.structuredBuildingAllowance
   { box: "53.1", pick: 0 }, // allowances.enhancedStructuredBuildingAllowance
-  { box: "54", pick: 1 }, // allowances.electricChargePointAllowance -- gone from 2025-26 (shared with box 55's enhancedCapitalAllowance)
   { box: "55", pick: 1 }, // allowances.businessPremisesRenovationAllowance (shared with enhancedCapitalAllowance)
   { box: "59", pick: 1 }, // adjustments.balancingChargeBpra (shared with balancingChargeOther)
-  { box: "62", pick: 0 }, // adjustments.includedNonTaxableProfits
   { box: "68", pick: 0 }, // adjustments.basisAdjustment
   { box: "69", pick: 0 }, // adjustments.overlapReliefUsed -- gone from 2026-27
-  { box: "71", pick: 0 }, // adjustments.accountingAdjustment
   { box: "73.3", pick: 0 }, // adjustments.transitionProfitAmount -- added in 2024-25
   { box: "73.3", pick: 1 }, // adjustments.transitionProfitAccelerationAmount -- added in 2024-25
 ];
@@ -534,9 +540,14 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   // ...), so both branches land on one shared root and fall out of it rather
   // than being built separately and then walked into again.
   const root = {};
+  const cellNumber = (cell) => (typeof seFull[cell] === "number" ? seFull[cell] : 0);
   setPath(root, primaryField(boxes, "49"), round2(seFull.D139));
   setPath(root, primaryField(boxes, "50"), round2(seFull.D144));
-  setPath(root, primaryField(boxes, "55"), round2(seFull.O144));
+  // HMRC's mapping files box 54 and box 55 under one field: the small pools
+  // write-off the sheet computes at O144 and the charge-point figure the book
+  // states at O139 both reach it.
+  const enhancedCapitalAllowanceField = primaryField(boxes, "55");
+  setPath(root, enhancedCapitalAllowanceField, round2(seFull.O144 + cellNumber("O139")));
   setPath(root, primaryField(boxes, "56"), round2(seFull.O149));
 
   setPath(root, primaryField(boxes, "59"), round2(seFull.O160));
@@ -544,21 +555,63 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   setPath(root, ownUseField, round2(seFull.D169));
   setPath(root, primaryField(boxes, "75"), round2(seFull.O204));
 
-  const allowances = root.allowances || {};
-  const adjustments = root.adjustments || {};
-
-  const enhancedCapitalAllowanceField = primaryField(boxes, "55");
   const warnings = [
-    {
-      field: ownUseField,
-      reason: "Business Details!O50 is a customer input cell the book schema has no field for; the template always carries nil here.",
-    },
     {
       field: enhancedCapitalAllowanceField,
       reason:
         "SA103F box 55 is the small pools write-off (Schedule S1, once the pool balance and the writing down allowance together are under £1,000), not a genuine 100% or enhanced capital allowance; HMRC's own field mapping still files it here.",
     },
   ];
+  if (typeof rawResults["Business Details"]?.O50 !== "number") {
+    warnings.push({
+      field: ownUseField,
+      reason: "the book states no tax.selfEmployment.adjustments.goodsAndServicesOwnUse, so Business Details!O50 and box 60 carry nil.",
+    });
+  }
+  for (const { box: boxNumber, cell, table } of BOOK_STATED_ANNUAL_BOXES) {
+    const field = primaryField(boxes, boxNumber);
+    const leaf = field.split(".").pop();
+    if (unavailableFields.has(field)) {
+      if (cellNumber(cell) !== 0) {
+        warnings.push({
+          field,
+          reason: `the book states ${cellNumber(cell)} for SA103F box ${boxNumber}, which the sheet totals, but HMRC's schema for ${taxYear} no longer accepts the field; nothing is filed for it.`,
+          handComputed: round2(cellNumber(cell)),
+        });
+      }
+      continue;
+    }
+    if (typeof seFull[cell] === "number") {
+      setPath(root, field, round2(seFull[cell]));
+      continue;
+    }
+    warnings.push({
+      field,
+      reason: `SA103F box ${boxNumber} has no formula behind it and the book states no tax.selfEmployment.${table}.${leaf}; the box stays blank.`,
+    });
+  }
+  const electricChargePointField = fieldsOf(boxEntry(boxes, "54"))[1];
+  if (cellNumber("O139") !== 0) {
+    warnings.push({
+      field: electricChargePointField,
+      reason: `SA103F box 54 (SE Full!O139) is filed under ${enhancedCapitalAllowanceField}, HMRC's primary field for the box, together with box 55.`,
+      handComputed: round2(cellNumber("O139")),
+    });
+  } else if (!unavailableFields.has(electricChargePointField)) {
+    warnings.push({
+      field: electricChargePointField,
+      reason:
+        "SA103F box 54 has no formula behind it and the book states no tax.selfEmployment.allowances.electricChargePointAllowance; the box stays blank.",
+    });
+  }
+  if (cellNumber("D210") !== 0) {
+    warnings.push({
+      field: primaryField(boxes, "71"),
+      reason:
+        "SE Full carries box 71 into box 77 (D219 = O179+E197+D210+P190) and not into box 73 (O194 = O174); HMRC computes the adjusted profit from the filed field, so the sheet's printed box 73 and its Income Tax sheet leave it out.",
+      handComputed: round2(seFull.O174 + cellNumber("D210")),
+    });
+  }
   for (const { box: boxNumber, pick } of NO_SOURCE_ANNUAL_BOXES) {
     const entry = boxEntry(boxes, boxNumber);
     const field = fieldsOf(entry)[pick];
@@ -568,6 +621,9 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
       reason: `SA103F box ${boxNumber} has no cell the template computes; the customer fills it in by hand.`,
     });
   }
+
+  const allowances = root.allowances || {};
+  const adjustments = root.adjustments || {};
 
   const result = { taxYear };
   if (Object.keys(allowances).length > 0) result.allowances = allowances;

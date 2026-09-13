@@ -988,11 +988,16 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   });
 
   // ── The two self assessment returns ──
-  // Short return boxes 27, 29 and 35 and full return boxes 50, 52, 53, 57 and
-  // 61 have no formula behind them: the customer fills them in on the Business
-  // Details sheet or on the return, and nothing the scenario carries reaches
-  // them.
-  const goodsForOwnUse = 0;
+  // Short return boxes 29 and 35 have no formula behind them and nothing the
+  // scenario carries reaches them. Goods and services for own use is the one
+  // hand-entered figure both returns read (Business Details!O50), so it
+  // comes from the book's own statement.
+  const annualAllowances = scenario.annual_allowances || {};
+  const annualAdjustments = scenario.annual_adjustments || {};
+  const stated = (value) => (value === undefined ? SHEET_BLANK : value);
+  // D169 and D94 reference O50 directly, and a reference to an empty cell
+  // reads as 0, not as the blank the cell itself shows.
+  const goodsForOwnUse = annualAdjustments.goodsAndServicesOwnUse ?? 0;
   const lossesBroughtForward = 0;
   const lossToCarryForward = 0;
   // Turnover at or below the VAT threshold lets the short return state one
@@ -1121,22 +1126,22 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
   seFull.G141 = admin.G5;
   seFull.D139 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
-  // Boxes the customer fills in by hand, with no formula to compute them. The
-  // schedule keeps one main pool at the 18% writing down rate, so the special
-  // rate pool (box 51), the zero-emission and structures-and-buildings claims
-  // (boxes 52, 52.1 and 53) and the electric charge-point claim (box 54) have
-  // nothing feeding them.
+  // Boxes with no formula behind them, carrying whatever figure the book
+  // states and blank otherwise. The schedule keeps one main pool at the 18%
+  // writing down rate, so the special rate pool (box 51) has nothing feeding
+  // it yet.
   seFull.D147 = SHEET_BLANK;
-  seFull.D152 = SHEET_BLANK;
-  seFull.D156 = SHEET_BLANK;
-  seFull.D160 = SHEET_BLANK;
-  seFull.O139 = SHEET_BLANK;
-  seFull.D179 = SHEET_BLANK;
+  seFull.D152 = stated(annualAllowances.zeroEmissionsGoodsVehicleAllowance);
+  seFull.D156 = stated(annualAllowances.zeroEmissionsCarAllowance);
+  seFull.D160 = stated(annualAllowances.structuredBuildingAllowance);
+  seFull.O139 = stated(annualAllowances.electricChargePointAllowance);
+  seFull.D179 = stated(annualAdjustments.includedNonTaxableProfits);
+  seFull.D210 = stated(annualAdjustments.accountingAdjustment);
   // Box 50 carries the whole writing down allowance the schedule claims.
   seFull.D144 = carry([scheduleR], () => scheduleR);
   seFull.O144 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
   seFull.O149 = scheduleY;
-  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O144, seFull.O149], () =>
+  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.O144, seFull.O149], () =>
     sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
   );
   seFull.O160 = scheduleZ;
@@ -1158,7 +1163,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O204 = pl.B11;
   seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
-  seFull.D219 = carry([seFull.O179], () => seFull.O179);
+  // Box 77 is O179+E197+D210+P190: the box 68 and 72 terms read the blank
+  // cell beside each printed dash, so only box 71 joins the loss.
+  seFull.D219 = carry([seFull.O179], () => seFull.O179 + sheetNumber(seFull.D210));
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
   seFull.J280 = admin.N20;
@@ -1239,7 +1246,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
 
   // ── The results, keyed the way the reconciliation reads them ──
   const results = {
-    "Business Details": { C5: businessName(scenario) },
+    "Business Details": { C5: businessName(scenario), O50: stated(annualAdjustments.goodsAndServicesOwnUse) },
     "Profit & Loss Account": pl,
     "Income Tax": incomeTax,
     "Profit Forecast": forecast,

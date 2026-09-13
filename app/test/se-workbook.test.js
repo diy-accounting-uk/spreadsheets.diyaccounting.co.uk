@@ -418,7 +418,25 @@ describe("the package the writer saves", () => {
     expect(asPosted(reimported.lines)).toEqual(asPosted(representableLines));
     const asDay = (value) => new Date(value).toISOString().slice(0, 10);
     expect(asDay(reimported.book.documentInfo.periodCoveredEnd)).toBe(asDay(book.documentInfo.periodCoveredEnd));
+
+    // The annual SA103F figures the book states by hand come back off the
+    // SE Full and Business Details cells the writer put them on.
+    expect(reimported.book.tax.selfEmployment.allowances).toEqual(book.tax.selfEmployment.allowances);
+    expect(reimported.book.tax.selfEmployment.adjustments).toEqual(book.tax.selfEmployment.adjustments);
   }, 600000);
+
+  it("puts each stated SA103F figure on the box the return prints for it", () => {
+    const { book, lines } = bookAt(ADVANCED);
+    const scenario = diyaGlToScenario(book, lines, "se");
+    expect(scenario.disallowable.allowances).toBeUndefined();
+    const hub = cellWrites(scenario, targetStartYearOf(book))["Financialaccounts.xlsx"];
+    expect(hub["SE Full"]).toEqual({ D156: 2500, D160: 1800, D179: 350, D210: 90 });
+    expect(hub["Business Details"].O50).toBe(640);
+
+    const unstated = cellWrites({ ...scenario, annual_allowances: undefined, annual_adjustments: undefined }, targetStartYearOf(book));
+    expect(unstated["Financialaccounts.xlsx"]["SE Full"]).toBeUndefined();
+    expect(unstated["Financialaccounts.xlsx"]["Business Details"].O50).toBeUndefined();
+  });
 
   it("agrees with the engine on every cell the writer filled", async () => {
     const { book, lines } = bookAt(ADVANCED);

@@ -832,9 +832,50 @@
         },
         "selfEmployment": {
           "type": "object",
-          "description": "The trader's own disallowable proportion of each expense category -- private use or otherwise not allowable -- behind SA103F boxes 32 to 45. Entered on the package's VitalTax sheet, not a rate any year file carries. Business entertainment and depreciation take no proportion: they are wholly disallowable and have their own boxes.",
+          "description": "The trader's own self-assessment inputs, none of them a rate any year file carries. The scalar fields are the disallowable proportion of each expense category -- private use or otherwise not allowable -- behind SA103F boxes 32 to 45, entered on the package's VitalTax sheet. Business entertainment and depreciation take no proportion: they are wholly disallowable and have their own boxes. allowances and adjustments hold the annual figures the trader states by hand on the SE Full sheet, keyed by HMRC's own Self Employment Business API field names.",
           "additionalProperties": false,
           "properties": {
+            "allowances": {
+              "type": "object",
+              "description": "Capital allowance claims the fixed asset schedule does not compute, written to the SA103F boxes the trader would otherwise fill by hand: box 52 (zeroEmissionsGoodsVehicleAllowance, SE Full!D152), box 52.1 (zeroEmissionsCarAllowance, D156), box 53 (structuredBuildingAllowance, D160) and box 54 (electricChargePointAllowance, O139). Box 57 totals them. HMRC's schema dropped the box 52 and box 54 fields from 2025-26; the sheet still totals a stated figure, and the derivation warns.",
+              "additionalProperties": false,
+              "properties": {
+                "zeroEmissionsGoodsVehicleAllowance": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "zeroEmissionsCarAllowance": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "structuredBuildingAllowance": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "electricChargePointAllowance": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "adjustments": {
+              "type": "object",
+              "description": "Adjustments to the net profit the books do not compute: box 60 goods and services for own use (goodsAndServicesOwnUse, Business Details!O50, read by SE Full!D169 and SE Short!D94), box 62 income included but not taxable as business profits (includedNonTaxableProfits, SE Full!D179) and box 71 adjustment for change of accounting practice (accountingAdjustment, SE Full!D210; the sheet carries it into box 77 only, so the derivation warns when it is set).",
+              "additionalProperties": false,
+              "properties": {
+                "goodsAndServicesOwnUse": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "includedNonTaxableProfits": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "accountingAdjustment": {
+                  "type": "number"
+                }
+              }
+            },
             "costOfGoods": {
               "type": "number",
               "minimum": 0,

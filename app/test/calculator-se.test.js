@@ -48,9 +48,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 886 },
-  { name: "se-brickwork-pro-vat", checkCount: 819 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 808 },
+  { name: "se-scenario-advanced", checkCount: 901 },
+  { name: "se-brickwork-pro-vat", checkCount: 834 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 823 },
 ];
 
 function loadFixture(name) {
@@ -471,6 +471,7 @@ describe("Self Employed engine: a loss-making book with no [expected] table", ()
     expect(broken.sort()).toEqual(
       [
         "Accounting profit to tax profit bridge closes to zero",
+        "SA103F box 62 income included but not taxable as business profits (D179) = the figure the book states",
         "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
       ].sort(),
     );
@@ -508,9 +509,6 @@ describe("Self Employed engine: the read scope", () => {
       [
         "SE Full!D147",
         "SE Full!D152",
-        "SE Full!D156",
-        "SE Full!D160",
-        "SE Full!D179",
         "SE Full!O139",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",

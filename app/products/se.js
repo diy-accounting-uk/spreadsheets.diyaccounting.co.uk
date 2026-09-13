@@ -227,6 +227,27 @@ export const DISALLOWABLE_PERCENT_CELLS = {
   otherExpenses: "I50",
 };
 
+// The SA103F boxes the trader states by hand, keyed by HMRC's own API field
+// names. Verified against the template: SE Full!O154 (box 57) reads
+// D139+D144+D147+D152+D156+D160+O139+O144+O149, so every allowance cell here
+// is a term of the total; O169 (box 63) reads O154+D179; D219 (box 77) reads
+// O179+E197+D210+P190. Box 54's caption at N136 is "Electric charge-point
+// allowance" (L136 = 54); box 55's cell O144 is the small pools formula, so
+// the enhanced-allowance figure has no input cell of its own.
+export const ANNUAL_ALLOWANCE_CELLS = {
+  zeroEmissionsGoodsVehicleAllowance: "D152",
+  zeroEmissionsCarAllowance: "D156",
+  structuredBuildingAllowance: "D160",
+  electricChargePointAllowance: "O139",
+};
+export const ANNUAL_ADJUSTMENT_CELLS = {
+  includedNonTaxableProfits: "D179",
+  accountingAdjustment: "D210",
+};
+// Business Details!O50, the "ENTER: Value of goods and services for your own
+// use" cell (label at N48), read by SE Full!D169 and SE Short!D94.
+export const GOODS_FOR_OWN_USE_CELL = "O50";
+
 // Fixedassets.xlsx Schedule sheet -- verified against the template:
 //   Existing assets (bought before the year start): rows 8-10 land,
 //   14-18 plant, 22-26 fixtures, 30-34 computers, 38-54 motor. Each row:
@@ -510,6 +531,24 @@ function composeWrites(scenario, targetStartYear) {
     // "Description of business" and C17:J17 is the merged box under it, in
     // the same entry style C5 carries.
     if (biz.description) bd[BUSINESS_DESCRIPTION_CELL] = biz.description;
+  }
+  // The annual SA103F figures the trader states rather than the books
+  // compute. Each lands on the box the return prints for it; the sheet's own
+  // totals (boxes 57, 61, 63 and 77) carry it from there.
+  const ownUse = scenario.annual_adjustments?.goodsAndServicesOwnUse;
+  if (ownUse !== undefined) {
+    hubWrites["Business Details"] = hubWrites["Business Details"] || {};
+    hubWrites["Business Details"][GOODS_FOR_OWN_USE_CELL] = ownUse;
+  }
+  for (const [figures, cells] of [
+    [scenario.annual_allowances, ANNUAL_ALLOWANCE_CELLS],
+    [scenario.annual_adjustments, ANNUAL_ADJUSTMENT_CELLS],
+  ]) {
+    for (const [field, cell] of Object.entries(cells)) {
+      if (figures?.[field] === undefined) continue;
+      hubWrites["SE Full"] = hubWrites["SE Full"] || {};
+      hubWrites["SE Full"][cell] = figures[field];
+    }
   }
 
   // Payslips.xlsx employee details
@@ -844,6 +883,7 @@ export const FORECAST_SHEET = "Profit Forecast";
 export const CELL_MAP = [
   // ── Business Details ──
   ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["Business Details", "O50", "Value of goods and services for own use (box 24)", "tax.selfEmployment.adjustments.goodsAndServicesOwnUse", "Business Details", 1],
   // ── Profit & Loss Account ──
   ["Profit & Loss Account", "B5",  "Product A sales (code a)",  "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B6",  "Product B sales (code b)",  "accounts.sales.4001",            "Profit & Loss Account", 1],
@@ -976,15 +1016,21 @@ export const CELL_MAP = [
   ["SE Full", "O129", "Net loss (box 48)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
   ["SE Full", "D139", "Annual investment allowance (box 49)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
   ["SE Full", "D144", "Capital allowances at 18% (box 50)",    "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D152", "Zero-emission goods vehicle allowance (box 52)", "tax.selfEmployment.allowances.zeroEmissionsGoodsVehicleAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D156", "Zero-emission car allowance (box 52.1)", "tax.selfEmployment.allowances.zeroEmissionsCarAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D160", "Structures and Buildings Allowance (box 53)", "tax.selfEmployment.allowances.structuredBuildingAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O139", "Electric charge-point allowance (box 54)", "tax.selfEmployment.allowances.electricChargePointAllowance", "Self Assessment (SA103F)", 1],
   ["SE Full", "O144", "100% and other enhanced capital allowances (box 55)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O149", "Allowances on sale or cessation (box 56)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O154", "**Total capital allowances (box 57)**", "tax.capitalAllowances (sa103f)",             "Self Assessment (SA103F)", 0],
   ["SE Full", "O160", "Balancing charge (box 59)",             "tax.capitalAllowances.balancingCharge (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "D169", "Goods and services for own use (box 60)", "gl-cor:amount (sa103f.ownUse)",            "Self Assessment (SA103F)", 1],
   ["SE Full", "D174", "**Total additions to net profit (box 61)**", "gl-cor:amount (sa103f.totalAdditions)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "D179", "Income included but not taxable as business profits (box 62)", "tax.selfEmployment.adjustments.includedNonTaxableProfits", "Self Assessment (SA103F)", 1],
   ["SE Full", "O169", "**Total deductions from net profit (box 63)**", "gl-cor:amount (sa103f.totalDeductions)", "Self Assessment (SA103F)", 0],
   ["SE Full", "O174", "**Net business profit for tax purposes (box 64)**", "gl-cor:amount (sa103f.taxableProfit)", "Self Assessment (SA103F)", 0],
   ["SE Full", "O179", "Net business loss for tax purposes (box 65)", "gl-cor:amount (sa103f.taxableLoss)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "D210", "Adjustment for change of accounting practice (box 71)", "tax.selfEmployment.adjustments.accountingAdjustment", "Self Assessment (SA103F)", 1],
   ["SE Full", "O194", "**Adjusted profit (box 73)**",          "gl-cor:amount (sa103f.adjustedProfit)",      "Self Assessment (SA103F)", 0],
   ["SE Full", "O199", "Loss brought forward set against this year (box 74)", "gl-cor:amount (sa103f.lossBroughtForward)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O204", "Other business income not in boxes 15, 16 or 60 (box 75)", "gl-cor:amount (sa103f.otherBusinessIncome)", "Self Assessment (SA103F)", 1],
@@ -1407,12 +1453,11 @@ export function standardReads() {
   // are the online filing deadline banner (G1, "...by 31st January "&TEXT
   // (Admin!B21,"yyyy")), the period the return covers (Q2 = Admin!B4, V2 =
   // Admin!B17) and the writing down rate and Class 4 threshold it prints in
-  // its captions (G141 = Admin!G5, J280 = Admin!N20). The empty ones are
-  // boxes 51, 52, 52.1, 53, 54 and 62, which a customer fills in by hand;
-  // reading them lets the box 57 and 63 totals be checked as the exact sums
-  // the sheet computes rather than sums with terms left out.
+  // its captions (G141 = Admin!G5, J280 = Admin!N20). D147 is box 51, empty
+  // until the schedule computes a special rate pool; reading it lets the box
+  // 57 total be checked as the exact sum the sheet computes.
   reads["SE Full"] = reads["SE Full"] || [];
-  for (const cell of ["G1", "Q2", "V2", "G141", "J280", "D147", "D152", "D156", "D160", "O139", "D179"]) {
+  for (const cell of ["G1", "Q2", "V2", "G141", "J280", "D147"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
@@ -1765,6 +1810,10 @@ export function profitBridge(results) {
     { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
     { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
     { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Less the full return's own zero-emission goods vehicle allowance (box 52)", cell: "SE Full!D152", value: -num(seFull?.D152) },
+    { label: "Less the full return's own zero-emission car allowance (box 52.1)", cell: "SE Full!D156", value: -num(seFull?.D156) },
+    { label: "Less the full return's own Structures and Buildings Allowance (box 53)", cell: "SE Full!D160", value: -num(seFull?.D160) },
+    { label: "Less the full return's own electric charge-point allowance (box 54)", cell: "SE Full!O139", value: -num(seFull?.O139) },
     { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
     {
       label: "Add back the year's loss, carried forward rather than reducing tax below nil",
@@ -2200,7 +2249,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(seShort.O71),
         Math.max(0, num(seShort.O64) - num(seShort.D38) - num(seShort.O38)),
       );
-      if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
+      // Income Tax!E5 reads 'SE Full'!O210, so the short return's box 31
+      // reaches it only through the full return: the two agree exactly when
+      // no box the trader states on SE Full alone (52, 52.1, 53, 54, 62)
+      // carries a figure, and stand apart by those figures otherwise.
+      const fullOnly = results["SE Full"] || {};
+      const fullReturnOnlyBoxes = num(fullOnly.D152) + num(fullOnly.D156) + num(fullOnly.D160) + num(fullOnly.O139) + num(fullOnly.D179);
+      if (seShort.D106) {
+        check(
+          "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5",
+          Math.max(0, num(seShort.D106) - fullReturnOnlyBoxes),
+          tax.E5,
+        );
+      }
 
       // Capital allowances carry from Schedule to SA103S across the
       // cross-file external link (Fixedassets.xlsx -> Financialaccounts.xlsx).
@@ -2461,6 +2522,71 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // and box 50 carries the whole writing down claim.
     check("SA103F box 51 capital allowances at 6% (D147) is nil", num(seFull.D147), 0);
 
+    // The boxes the trader states by hand, each against the scenario's own
+    // stated figure rather than against the sheet. A box the scenario does
+    // not state stays nil, and a stated one moves the total it feeds by
+    // exactly itself.
+    const statedAllowances = expected.annual_allowances || {};
+    const statedAdjustments = expected.annual_adjustments || {};
+    const annualBoxes = [
+      ["52", "zero-emission goods vehicle allowance", "D152", statedAllowances.zeroEmissionsGoodsVehicleAllowance],
+      ["52.1", "zero-emission car allowance", "D156", statedAllowances.zeroEmissionsCarAllowance],
+      ["53", "Structures and Buildings Allowance", "D160", statedAllowances.structuredBuildingAllowance],
+      ["54", "electric charge-point allowance", "O139", statedAllowances.electricChargePointAllowance],
+      ["62", "income included but not taxable as business profits", "D179", statedAdjustments.includedNonTaxableProfits],
+      ["71", "adjustment for change of accounting practice", "D210", statedAdjustments.accountingAdjustment],
+    ];
+    for (const [box, caption, cell, stated] of annualBoxes) {
+      check(`SA103F box ${box} ${caption} (${cell}) = the figure the book states`, num(seFull[cell]), stated || 0);
+    }
+    const ownUseStated = statedAdjustments.goodsAndServicesOwnUse || 0;
+    check(
+      "SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50",
+      num(seFull.D169),
+      ownUseStated,
+    );
+    if (results["Business Details"]) {
+      check(
+        "Business Details!O50 goods and services for own use = the figure the book states",
+        num(results["Business Details"].O50),
+        ownUseStated,
+      );
+    }
+    const statedAllowanceTotal = annualBoxes
+      .filter(([box]) => box !== "62" && box !== "71")
+      .reduce((total, [, , , stated]) => total + (stated || 0), 0);
+    check(
+      "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)",
+      num(seFull.O154) - num(seFull.D139) - num(seFull.D144) - num(seFull.O144) - num(seFull.O149),
+      statedAllowanceTotal,
+    );
+    check(
+      "SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states",
+      num(seFull.O169) - num(seFull.O154),
+      statedAdjustments.includedNonTaxableProfits || 0,
+    );
+    check(
+      "SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states",
+      num(seFull.D174) - num(seFull.O122) - num(seFull.O160),
+      ownUseStated,
+    );
+    // Box 77's formula is O179+E197+D210+P190: box 65 plus box 71, with the
+    // box 68 and 72 terms reading the blank cell beside each dash.
+    check(
+      "SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states",
+      num(seFull.D219),
+      num(seFull.O179) + (statedAdjustments.accountingAdjustment || 0),
+    );
+    // Box 73 reads box 64 alone (O194 = O174). HMRC's working sheet adds box
+    // 71 to the adjusted profit; the sheet carries box 71 into box 77 only.
+    check(
+      "SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64",
+      num(seFull.O194),
+      num(seFull.O174) + num(seFull.D210),
+      0.01,
+      "warning",
+    );
+
     if (sa103s) {
       // Boxes the two returns carry identically.
       const sa103fCounterparts = [
@@ -2471,13 +2597,33 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         ["O144", "D85", "box 55 100% and other enhanced capital allowances"],
         ["O160", "O85", "box 59 balancing charge"],
         ["D169", "D94", "box 60 goods and services for own use"],
-        ["O174", "D99", "box 64 net business profit for tax purposes"],
         ["O179", "O106", "box 65 net business loss for tax purposes"],
         ["O199", "O94", "box 74 loss brought forward set against this year"],
         ["O204", "O99", "box 75 other business income"],
-        ["O210", "D106", "box 76 total taxable profits"],
         ["D231", "O124", "box 81 contractor deductions taken off"],
       ];
+      // The short return reads the fixed asset schedule and Business Details
+      // directly, so the boxes the trader states on SE Full alone (52, 52.1,
+      // 53, 54 and 62) never reach it: its taxable profit stands higher than
+      // the full return's by exactly those figures.
+      const fullReturnOnlyDeductions = num(seFull.D152) + num(seFull.D156) + num(seFull.D160) + num(seFull.O139) + num(seFull.D179);
+      check(
+        "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62",
+        num(seFull.O174),
+        Math.max(0, num(sa103s.D99) - fullReturnOnlyDeductions),
+      );
+      check(
+        "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off",
+        num(seFull.O210),
+        Math.max(0, num(sa103s.D106) - fullReturnOnlyDeductions + num(sa103s.O94) - num(seFull.O199)),
+      );
+      check(
+        "SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone",
+        num(sa103s.D99),
+        num(seFull.O174),
+        0.01,
+        "warning",
+      );
       // Six of these read the short return's expense analysis, which the sheet
       // leaves blank when turnover is under the VAT threshold. There is
       // nothing to compare then; the total expenses box below still stands.
@@ -2525,9 +2671,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(sa103s.D71) - num(seFull.O122),
       );
       check(
-        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25",
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54",
         num(seFull.O154),
-        num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80),
+        num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80) + num(seFull.D152) + num(seFull.D156) + num(seFull.D160) + num(seFull.O139),
+      );
+      check(
+        "SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54)",
+        num(sa103s.O80),
+        num(seFull.O154) - num(sa103s.D80) - num(sa103s.D85),
+        0.01,
+        "warning",
       );
     }
 

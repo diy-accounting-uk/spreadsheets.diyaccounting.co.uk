@@ -95,15 +95,18 @@ describeCalc(
 
     // ── Income Tax assertions ─────────────────────────────────────────────
 
-    it("Income Tax: profit = SE Short tax-basis profit for tax calc", () => {
+    it("Income Tax: profit = SE Full tax-basis profit, which the short return restates less its own missing boxes", () => {
       // Income Tax!E5 reads 'SE Full'!O210, the tax-basis profit -- P&L!B39
       // is the accounting profit, which is not the same figure once real
       // capital allowances and depreciation are in play (accounting
       // depreciation is added back and replaced by capital allowances for
-      // income tax purposes). SE Short!D106 independently derives the same
-      // tax-basis figure through the SA103S boxes; the two staying equal is
-      // the live cross-check, not equality with the accounting P&L.
-      expect(results["Income Tax"].E5).toBe(results["SE Short"].D106);
+      // income tax purposes). SE Short!D106 derives the same figure through
+      // the SA103S boxes, except that the short return has no box for the
+      // zero-emission car allowance (2,500), the Structures and Buildings
+      // Allowance (1,800) or the non-taxable income adjustment (350) the
+      // book states on SE Full alone.
+      expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
+      expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + 350, 6);
     });
 
     it("Income Tax: the taper takes the whole allowance once half the excess passes 12,570", () => {
@@ -147,16 +150,19 @@ describeCalc(
     //   tax and NI                      = 48,819.419995
     it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
       const tax = results["Income Tax"];
-      expect(tax.E5).toBeCloseTo(130552.8085, 4);
+      // 130,552.81 before the book's own SA103F statements: plus 640 goods
+      // for own use (box 60), less 2,500 + 1,800 of allowances (boxes 52.1
+      // and 53) and 350 of non-taxable income (box 62).
+      expect(tax.E5).toBeCloseTo(126542.8085, 4);
       expect(tax.E6).toBe(0);
-      expect(tax.E7).toBeCloseTo(130552.8085, 4);
+      expect(tax.E7).toBeCloseTo(126542.8085, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
       expect(tax.E9).toBeCloseTo(34976, 2);
-      expect(tax.E10).toBeCloseTo(2435.763825, 2);
-      expect(tax.E11).toBeCloseTo(44951.763825, 2);
+      expect(tax.E10).toBeCloseTo(631.263825, 2);
+      expect(tax.E11).toBeCloseTo(43147.263825, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1605.65617, 2);
-      expect(tax.E18).toBeCloseTo(48819.419995, 2);
+      expect(tax.E16).toBeCloseTo(1525.45617, 2);
+      expect(tax.E18).toBeCloseTo(46934.719995, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees
