@@ -107,7 +107,7 @@ accountMainDescription = "General admin (telephone, postage, stationery)"
 
 [accounts.purchases."5502"]
 accountMainDescription = "Business entertainment"
-"diya-gl:column" = "Z"
+"diya-gl:column" = "AJ"
 
 [accounts.purchases."5600"]
 accountMainDescription = "Travel and hotel expenses"

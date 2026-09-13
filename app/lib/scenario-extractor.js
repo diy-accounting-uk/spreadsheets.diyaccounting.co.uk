@@ -37,7 +37,7 @@ export const LTD_PURCHASE_CODE_MAP = {
   5401: "u",
   5500: "a",
   5501: "g",
-  5502: "a", // business entertainment -> Advertising, the same category Ltd's own book.toml column folds it into
+  5502: "e", // business entertainment -> its own Purchases analysis column, which the CT working sheet adds back
   5600: "h",
   5601: "v",
   5700: "n",
