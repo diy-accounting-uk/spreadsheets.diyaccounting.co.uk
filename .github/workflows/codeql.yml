@@ -13,8 +13,7 @@ on:
     - cron: '47 1,2,6 * * *'
   push:
     branches:
-      - '**'
-      - '!gh_pages'
+      - main
     paths:
       - 'app/**'
       - 'infra/**'
