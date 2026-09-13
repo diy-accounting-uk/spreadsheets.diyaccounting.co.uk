@@ -19,6 +19,7 @@ export default defineConfig({
       testDir: "web/browser-tests",
       testMatch: [
         "**/spreadsheets-content.browser.test.js",
+        "**/site-ecommerce-events.browser.test.js",
         "**/diya-gl-bst.browser.test.js",
         "**/diya-gl-bst-edits.browser.test.js",
         "**/diya-gl-warnings.browser.test.js",
