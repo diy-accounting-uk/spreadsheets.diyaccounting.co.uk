@@ -134,7 +134,24 @@ describe("the SE Profit & Loss view's disallowable-expenses memo (CQ-25)", () =>
 
   it("shows the engine's own figure for every box 32-45 add-back, the box 46 total and the box 64 taxable profit", () => {
     const html = profitLossView.render(snap, {}, helpers);
-    for (const cell of ["O66", "O70", "O74", "O78", "O82", "O86", "O90", "O94", "O98", "O102", "O106", "O110", "O114", "O118", "O122", "O174"]) {
+    for (const cell of [
+      "O66",
+      "O70",
+      "O74",
+      "O78",
+      "O82",
+      "O86",
+      "O90",
+      "O94",
+      "O98",
+      "O102",
+      "O106",
+      "O110",
+      "O114",
+      "O118",
+      "O122",
+      "O174",
+    ]) {
       const rKey = ' data-r-key="cell/Financialaccounts.xlsx!SE Full!' + cell + '"';
       expect(html, `${cell} carries its own r-key`).toContain(rKey);
       expect(html, `${cell} shows the engine's own figure`).toContain(">" + helpers.fmtMoney(results["SE Full"][cell]) + "<");
