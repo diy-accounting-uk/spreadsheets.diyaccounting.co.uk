@@ -635,6 +635,7 @@ if (willRun("calc", chosenCalc.length > 0)) {
 
 if (willRun("browser", chosenSpecs.length > 0)) {
   const steps = [
+    ["packages", "node", ["app/bin/build-packages.js", "--years", "2"]],
     ["sitemaps", "node", ["app/bin/build-sitemaps.js"]],
     ["donate page", "node", ["scripts/build-donate-page.mjs"]],
     ["provenance data", "node", ["scripts/build-provenance-data.mjs"]],
