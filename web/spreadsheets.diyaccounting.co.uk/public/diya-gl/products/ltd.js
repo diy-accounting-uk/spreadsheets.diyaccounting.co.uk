@@ -254,6 +254,9 @@
   // The chart a new Limited Company book starts from: one account per P&L
   // row the sales and purchase journals feed, plus the four bank books the
   // package carries. The descriptions are the statement's own captions.
+  // Business entertainment names its Purchases column, AJ, because it is the
+  // one purchase account the profit and loss row it lands on (advertising)
+  // does not tell apart, and the corporation tax computation adds it back.
   var STANDARD_NEW_BOOK_CHART = {
     sales: {
       4000: { accountMainDescription: "Sales Product A" },
@@ -268,6 +271,7 @@
       5200: { accountMainDescription: "Premises" },
       5400: { accountMainDescription: "Repairs & Maintenance" },
       5500: { accountMainDescription: "Advertising" },
+      5502: { "accountMainDescription": "Business entertainment", "diya-gl:column": "AJ" },
       5600: { accountMainDescription: "Travel & Hotel" },
       5700: { accountMainDescription: "Insurance" },
       5800: { accountMainDescription: "Legal & Professional" },
