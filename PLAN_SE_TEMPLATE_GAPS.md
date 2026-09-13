@@ -391,6 +391,16 @@ as blanks. What they need is a book field.
 
 ## 7. Open problems
 
+**Box 77 (`SE Full!D219`) reads the wrong cells.** Its formula is `O179+E197+D210+P190`: it adds
+box 71 (`D210`) to the loss and takes `E197` and `P190`, the blank cells beside the box 68 and
+box 72 dashes, rather than the printed cells. `app/lib/calculators/se.js` models the sheet as it
+is and a warning check carries the true figure. On the board as SET-11.
+
+**The small-pools test spans both pools.** `SE Full!O144` sums `Schedule!R1+S1` over one S column,
+so a special-rate balance counts towards the £1,000 test with the main pool; HMRC applies it per
+pool. On the board as SET-10.
+
+
 **The basis period adjustment (box 68) and the transition profit spread (box 73.3).** Both belong
 to the basis period reform. A book covering 6 April to 5 April has no adjustment to make, which is
 why the template prints a dash. A book with another accounting date does, and computing it needs
