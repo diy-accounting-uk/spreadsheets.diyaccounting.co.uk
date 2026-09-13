@@ -473,8 +473,8 @@ here until their phase opens.
 | LP-16 | Submit repo: the storage API in submit-prod (bucket, four routes, authoriser, metadata sidecar) | 3 | — | Opus design, then Sonnet, the storage-api agent | `../submit.diyaccounting.co.uk/infra/.../ApiStack.java`, a new storage stack, its Lambdas |
 | LP-17 | Sign-in and "save to my account" on the DIYA-GL pages | 3 | LP-15, LP-16, H9 | Opus design, then Sonnet, the cloud-page agent | `public/books/shell.js`, `public/books/cloud.js` (new), the CSP |
 | LP-18 | Billing: the subscribe button, Submit's billing webhook, the entitlement check, the portal link | 3 | LP-16, LP-21 | Sonnet, the billing agent | `../submit.diyaccounting.co.uk/.../BillingWebhookStack.java`, LP-16's put route, the DIYA-GL pages |
-| LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window | 5 | LP-17 | operator | — |
-| LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action | 5 | LP-19 | per a filing plan | Submit repo |
+| LP-19 | The HMRC Developer Hub application for Income Tax, 2027–28 window: a dependency on `../submit.diyaccounting.co.uk`, which holds the HMRC credentials and files; its plan carries the application | 5 | LP-17 | Submit repo | `../submit.diyaccounting.co.uk` |
+| LP-20 | Quarterly updates from the stored book through Submit; the "send this quarter" action: a dependency on `../submit.diyaccounting.co.uk` | 5 | LP-19 | Submit repo | `../submit.diyaccounting.co.uk` |
 | LP-21 | The `resident-diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's B54, done 2026-09-08 in test and live) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | 2 | — | Sonnet | `.github/workflows/publish-diya-gl.yml`, `.github/workflows/deploy.yml` |
 | LP-23 | The ci behaviour job mints its Cognito test user per run through Submit's cross-account role | 3 | Submit's role | Sonnet | `.github/workflows/deploy.yml` |
@@ -659,7 +659,6 @@ changed from us rather than from the release.
 
 | # | Task | Gates | Owner | Where |
 | --- | --- | --- | --- | --- |
-| H-LU-5 | Register `diya-gl.co.uk` and `diya-gl.com`. Both were checked available in Route 53 on 2026-09-10, at USD 9 and USD 16 a year. Neither needs a hosted zone — Route 53 creates one on registration and charges monthly for it, so delete it within twelve hours and the zone costs nothing. Neither domain has to resolve; this is brand ownership, not a service. The operator approved the registration on 2026-09-10 to USD 25 a domain, so this is a session task now: register in the management account beside `diyaccounting.co.uk`, copying that registration's contact block | — | machine | Route 53 Domains, management account |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
 `BRIEF_OPERATOR_TASKS_2026-09-10.md` writes the HMRC note out in full — the address, what changed,
