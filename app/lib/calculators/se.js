@@ -1179,9 +1179,11 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O204 = pl.B11;
   seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
-  // Box 77 is O179+E197+D210+P190: the box 68 and 72 terms read the blank
-  // cell beside each printed dash, so only box 71 joins the loss.
-  seFull.D219 = carry([seFull.O179], () => seFull.O179 + sheetNumber(seFull.D210));
+  // Box 77 is O179-N(D197)-D210-N(O190): box 65 reduced by boxes 68, 71 and
+  // 72. Boxes 68 and 72 have no input cell on this template, so their
+  // printed dash cells (D197, O190) always contribute nil; box 71 (D210)
+  // is the only one that moves the figure.
+  seFull.D219 = carry([seFull.O179], () => seFull.O179 - sheetNumber(seFull.D210));
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
   seFull.J280 = admin.N20;

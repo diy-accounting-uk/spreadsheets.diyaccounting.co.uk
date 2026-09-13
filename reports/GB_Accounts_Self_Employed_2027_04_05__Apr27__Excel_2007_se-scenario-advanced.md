@@ -138,7 +138,7 @@ Trade: IT consultancy and software development
 | SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54) | 4300 | 4300 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 350 | 350 | 0 | PASS |
 | SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 640 | 640 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states | 90 | 90 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states | -90 | -90 | 0 | PASS |
 | SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64 | 124009.475166666 | 123919.475166666 | -90 | **WARNING** |
 | SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 | 123919.475166666 | 123919.475166666 | 0 | PASS |
 | SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off | 126002.8085 | 126002.8085 | 0 | PASS |
@@ -1132,8 +1132,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 2,083.33 |
 | **Total taxable profits from this business (box 76)** | 126,002.81 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | 90 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | 90 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | -90 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | -90 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 0 |
 
 ## Payroll Summary
@@ -1720,8 +1720,8 @@ Journal amounts include VAT at 20%.
 | O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
 | O210 | **Total taxable profits from this business (box 76)** | 126002.8085 | gl-cor:amount (sa103f.profitForTax) |
-| D219 | Adjusted loss (box 77) | 90 | gl-cor:amount (sa103f.adjustedLoss) |
-| O224 | Total loss to carry forward (box 80) | 90 | gl-cor:amount (sa103f.lossCarriedForward) |
+| D219 | Adjusted loss (box 77) | -90 | gl-cor:amount (sa103f.adjustedLoss) |
+| O224 | Total loss to carry forward (box 80) | -90 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
 | G1 |  | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 |  |
 | Q2 |  | 46118 |  |
