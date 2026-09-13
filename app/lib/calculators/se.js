@@ -913,6 +913,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     const percent = disallowablePercent[key] || 0;
     for (const [col] of QUARTER_COLS) vitalTax[`${col}${row}`] = vitalTax[`${col}${allowableRow}`] * percent;
     vitalTax[`G${row}`] = vitalTax[`C${row}`] + vitalTax[`D${row}`] + vitalTax[`E${row}`] + vitalTax[`F${row}`];
+    // Column I is the input itself (VitalTax!I36-I50): the trader's own
+    // percentage, read back rather than only spent on the row it multiplies.
+    vitalTax[`I${row}`] = percent;
   }
   for (const [col] of QUARTER_COLS) vitalTax[`${col}44`] = vitalTax[`${col}25`];
   vitalTax.G44 = vitalTax.C44 + vitalTax.D44 + vitalTax.E44 + vitalTax.F44;

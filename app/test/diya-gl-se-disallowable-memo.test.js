@@ -91,27 +91,9 @@ function loadFixtureResults(name) {
 describe("the SE Profit & Loss view's disallowable-expenses memo (CQ-25)", () => {
   const { scenario, results } = loadFixtureResults("se-scenario-advanced");
 
-  // The JS calculator computes VitalTax's disallowable percentages
-  // internally (app/lib/calculators/se.js, the DISALLOWABLE_ROWS loop) but
-  // does not yet assign them onto its own I36-I50 the way it assigns the
-  // boxes they drive, so calculateSeResults' read-scoped VitalTax carries no
-  // "I" cell at all. Patched in here from the same fixture the calculator
-  // itself read its percentages from, so the memo's percentage row is
-  // proved against the real input independently of that calculator gap; the
-  // add-back, entertainment and total rows below need no patch, since the
-  // calculator already exposes SE Full and the Profit & Loss Account in
-  // full.
-  const patchedResults = {
-    ...results,
-    VitalTax: {
-      ...results.VitalTax,
-      ...Object.fromEntries(Object.entries(se.DISALLOWABLE_PERCENT_CELLS).map(([field, cell]) => [cell, scenario.disallowable[field]])),
-    },
-  };
-
   const helpers = makeHelpers();
   const months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"].map((label) => ({ label }));
-  const snap = { results: patchedResults, context: { productMod: se }, months };
+  const snap = { results, context: { productMod: se }, months };
 
   it("prints the memo heading and a plain-language row per disallowable category", () => {
     const html = profitLossView.render(snap, {}, helpers);
@@ -122,7 +104,22 @@ describe("the SE Profit & Loss view's disallowable-expenses memo (CQ-25)", () =>
     expect(html).toContain("Depreciation and loss or profit on sale of assets (box 44)");
   });
 
-  it("carries the fixture's own percentage against each category, in the box 32-45 form (VitalTax reads the fraction, not the whole number)", () => {
+  // The engine now assigns VitalTax's own I36-I50 (app/lib/calculators/se.js,
+  // the DISALLOWABLE_ROWS loop), the same fraction it multiplies the
+  // allowable row by, so a real book's percentage must show as a real rate
+  // -- never the em dash "not computed" reads as -- and carry the cell's own
+  // r-key. carVanTravelExpenses is the fixture's steepest rate (25%), the
+  // one likeliest to expose a stale zero-default if the read regresses.
+  it("shows the fixture's own non-zero percentage against its category, not a dash", () => {
+    const html = profitLossView.render(snap, {}, helpers);
+    const cell = se.DISALLOWABLE_PERCENT_CELLS.carVanTravelExpenses;
+    const rKey = ' data-r-key="cell/Financialaccounts.xlsx!VitalTax!' + cell + '"';
+    expect(scenario.disallowable.carVanTravelExpenses).toBe(0.25);
+    expect(html, `${cell} carries its own r-key`).toContain(rKey);
+    expect(html, `${cell} shows 25%, not a dash`).toContain(">25%<");
+  });
+
+  it("carries the fixture's own percentage against every category, in the same row as its own add-back", () => {
     const html = profitLossView.render(snap, {}, helpers);
     for (const [field, cell] of Object.entries(se.DISALLOWABLE_PERCENT_CELLS)) {
       const rate = helpers.fmtRate(scenario.disallowable[field]);
@@ -158,6 +155,17 @@ describe("the SE Profit & Loss view's disallowable-expenses memo (CQ-25)", () =>
     }
   });
 
+  // Box 44 (depreciation) has no percentage cell of its own -- see
+  // DISALLOWABLE_PERCENT_CELLS in app/products/se.js -- so its row shows a
+  // dash in the percentage column with no r-key, rather than a manufactured
+  // zero.
+  it("shows depreciation's row with no percentage cell of its own", () => {
+    const html = profitLossView.render(snap, {}, helpers);
+    const depreciationRow = html.split("<tr>").find((row) => row.includes("Depreciation and loss or profit on sale of assets"));
+    expect(depreciationRow).toContain(">—<");
+    expect(depreciationRow).not.toContain("VitalTax");
+  });
+
   it("shows the entertainment memo's own annual total, read from Profit & Loss Account row 49", () => {
     const html = profitLossView.render(snap, {}, helpers);
     const rKey = ' data-r-key="' + helpers.esc("cell/Financialaccounts.xlsx!Profit & Loss Account!B49") + '"';
@@ -172,21 +180,5 @@ describe("the SE Profit & Loss view's disallowable-expenses memo (CQ-25)", () =>
     expect(html).toContain(rKey);
     expect(html).toContain(">" + helpers.fmtMoney(results["Profit & Loss Account"].C49) + "<");
     helpers.setMonthsOpen(false);
-  });
-
-  // Unpatched: the JS engine as it stands today, with no "I" cell of its own
-  // on VitalTax at all (see the comment above patchedResults). A percentage
-  // row must read as "not computed" rather than a false 0%, which is what
-  // would show if the row read through cellValue()'s zero-default the way
-  // the statement above it does.
-  it("reads a percentage as not computed, not zero, while the engine carries no VitalTax I cell of its own", () => {
-    const unpatchedSnap = { results, context: { productMod: se }, months: [] };
-    const html = profitLossView.render(unpatchedSnap, {}, helpers);
-    for (const cell of Object.values(se.DISALLOWABLE_PERCENT_CELLS)) {
-      const rKey = ' data-r-key="cell/Financialaccounts.xlsx!VitalTax!' + cell + '"';
-      expect(html, `${cell} carries no r-key while its own cell is absent`).not.toContain(rKey);
-    }
-    expect(html).toContain(">—<");
-    expect(html).not.toContain(">0%<");
   });
 });

@@ -737,18 +737,41 @@
     { box: 45, field: "otherExpenses", label: "Other business expenses", cell: "O118" },
   ];
 
-  // The memo block under the statement: the trader's own disallowable
-  // percentage per category, the business entertainment total it does not
-  // apply to, what each category's share adds back to the accounting
-  // profit, and the two totals that show what the add-back does to the tax.
+  // A figure cell for the category table: raw, not cellValue()'s
+  // zero-defaulted read, and no cell at all for box 44 (depreciation, which
+  // carries no percentage of its own) rather than a manufactured dash cell
+  // with an r-key nothing backs.
+  function memoCell(snap, helpers, productMod, sheet, cell) {
+    if (!cell) return '<td class="num">—</td>';
+    var raw = snap.results[sheet] && snap.results[sheet][cell];
+    var text = formatByUnit(raw, unitOf(productMod, sheet, cell), helpers);
+    return '<td class="num"' + cellRk(snap, helpers, sheet, cell) + ">" + text + "</td>";
+  }
+
+  // One row per disallowable category, its own percentage beside its own
+  // add-back, rather than the two lists a reader would otherwise have to
+  // match by label. Business entertainment (box 39's other half) and the two
+  // totals are not per-category figures, so they sit below in the
+  // statement's own kv-table idiom instead.
   function renderDisallowableMemo(snap, helpers, productMod) {
     var percentCells = productMod.DISALLOWABLE_PERCENT_CELLS;
-    // cellValue() defaults a missing cell to nil, which the statement above
-    // relies on because every one of its own cells is always populated. Not
-    // every cell here is: the JS engine does not yet expose VitalTax's own
-    // percentage cells (only the amounts they drive), so this reads the raw
-    // value and lets formatByUnit's own em dash stand for "not computed"
-    // rather than print a false 0%.
+    var head = "<tr><th>Category</th><th>Disallowable %</th><th>Added back</th></tr>";
+    var body = DISALLOWABLE_BOXES.map(function (row) {
+      var percentCell = row.field ? percentCells[row.field] : null;
+      return (
+        "<tr><th>" +
+        helpers.esc(row.label + " (box " + row.box + ")") +
+        "</th>" +
+        memoCell(snap, helpers, productMod, "VitalTax", percentCell) +
+        memoCell(snap, helpers, productMod, "SE Full", row.cell) +
+        "</tr>"
+      );
+    }).join("");
+    var categoryTable = scrollBox(
+      helpers,
+      "Disallowable expenses by category",
+      '<table class="register-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>",
+    );
     var kvRow = function (sheet, cell, label, total) {
       var raw = snap.results[sheet] && snap.results[sheet][cell];
       return {
@@ -758,24 +781,17 @@
         total: !!total,
       };
     };
-    var percentRows = DISALLOWABLE_BOXES.filter(function (row) {
-      return row.field;
-    }).map(function (row) {
-      return kvRow("VitalTax", percentCells[row.field], row.label);
-    });
-    var entertainmentRow = kvRow(PL_SHEET, ENTERTAINMENT_MEMO_CELL, ENTERTAINMENT_MEMO_LABEL);
-    var addBackRows = DISALLOWABLE_BOXES.map(function (row) {
-      return kvRow("SE Full", row.cell, row.label + " (box " + row.box + ")");
-    });
-    var totalRows = [
+    var summaryRows = [
+      kvRow(PL_SHEET, ENTERTAINMENT_MEMO_CELL, ENTERTAINMENT_MEMO_LABEL),
       kvRow("SE Full", "O122", "Total disallowable expenses (box 46)", true),
       kvRow("SE Full", "O174", "Net business profit for tax purposes (box 64)", true),
     ];
     return (
       "<h3>Disallowable expenses (memo)</h3>" +
       '<p class="view-lede">The trader\'s own percentage of each expense category that is private use or otherwise disallowable, and what each category adds back to the accounting profit above.</p>' +
+      categoryTable +
       '<div class="panel-card panel-form-width">' +
-      helpers.kvRows(percentRows.concat([entertainmentRow], addBackRows, totalRows)) +
+      helpers.kvRows(summaryRows) +
       "</div>"
     );
   }
