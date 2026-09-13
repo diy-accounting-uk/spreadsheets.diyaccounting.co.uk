@@ -8,16 +8,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Main is `193777cc` and red: `test` and `update` both fail on it because `.github/FUNDING.yml`
-landed without the licence header the tracked-file check requires. PR #107
-(`claude/ops-funding-header`) carries the two-line fix; `deploy` did not run on the commit and
-prod still serves `2c047a2a`, whose `test`, `deploy` and `codeql` all passed. The four generate
-workflows pass with tests enabled, and `diya-gl` publishes again -- 1.2.7 and 1.2.8 both released,
-tagged and rolled.
+Main is `712594a5` and green again: PR #107 put the licence header on `.github/FUNDING.yml`, which
+had failed `test` and `update` on `193777cc`. Prod serves `2c047a2a`; `deploy` fires on the next
+push that reaches its paths filter or at 07:17 UTC. The four generate workflows pass with tests
+enabled, and `diya-gl` publishes again -- 1.2.7 and 1.2.8 both released, tagged and rolled.
 
-No other branch holds unlanded work. `claude/docs-test-strategy` is fully on main but
-`git branch -d` refuses it, and twelve merged branches sit on the remote; deleting either is the
-operator's.
+No branch holds unlanded work. `claude/docs-test-strategy` is fully on main but `git branch -d`
+refuses it, and thirteen merged branches sit on the remote; deleting either is the operator's.
 
 ## Context for the open rows
 
@@ -45,10 +42,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| CQ-27 | Main is red on `193777cc`: `.github/FUNDING.yml` landed with no SPDX identifier or copyright line, and `licence-headers.test.js` fails `test` and `update` on every push until it carries them | none | machine-only | — | in-flight | fixed on `claude/ops-funding-header`, PR #107; needs the merge |
 | CQ-20 | `app/lib/calculators/ltd.js` carries no disallowable treatment, so the Company computation deducts client entertaining in full. SET-2 and SET-3 have just closed the same gap for Self Employed, and the shared master fixture now carries the £350 client dinner that exercises it | none | machine-only | — | ready-to-start | follow SET-2 and SET-3's landed shape; Sonnet |
 | CQ-21 | Code scanning opens `js/prototype-pollution-utility` on `app/lib/calculators/se-derivations.js:76`, a file #97 changed. Read the site and either guard the key or say why the input cannot reach it | none | machine-only | — | ready-to-start | one file; Haiku |
 | SET-4 | Boxes 51, 53.1 and 73.3 are the three that genuinely have no cell. Box 51 needs a second pool on `Fixedassets.xlsx!Schedule` plus a rate cell at the free `Admin!G6`; box 53.1 cannot be dropped in, because `O160` is box 59 today and the rows below need laying out afresh. The other seven of SED-7 and SED-8's twelve already print a cell the engine reads as blank, so they need a book field and a writer, not a template change | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | three boxes each need a decision written into the plan's 3.4 |
+| SET-5 | The nine SED-7 and SED-8 fields that already print a cell the engine reads as blank (`SE Full!D147`, `D152`, `D156`, `D160`, `O139`, `D169`, `D179`) need a `book.toml` field and a writer each, so a book can fill them; book-schema work, not template work (`PLAN_SE_TEMPLATE_GAPS.md` 3.4). Box 68 and 73.3 stay blank until an overlap-profit record exists (section 7) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | schema, writer, reads and a breakability proof per field; Sonnet |
 | CQ-25 | Nothing on the Self Employed page shows the disallowable figures SET-2 and SET-3 added. The entertainment memo at `Profit & Loss Account!B49` and its twelve months, box 46's add-back, and the two journal categories are all declared unrenderable in `app/data/render-unrepresentable/se.json`, which is accurate today and is why the render-coverage gate passes: the P&L view renders the statement B5 to B39 and stops, and the page has no profit-bridge or VAT-netting view at all. A trader who enters client entertaining sees the money leave and never sees what it does to the tax. Either the P&L view carries a memo block under the statement, or the SA103F view carries the bridge | PLAN_SE_TEMPLATE_GAPS.md | human and machine | — | ready-to-start | the operator picks which view carries it; building it is a session's |
 | H-SB-1a | Fill `donate-links.toml`'s `[ci]` section with real test-mode Payment Links: `STRIPE_SECRET_KEY=sk_test_... node scripts/stripe-spreadsheets-setup.js`, which mints them and writes the section. Until then ci's donate page carries placeholder URLs that 404 rather than live links that take a real payment | PLAN_DIYA_GL_LAUNCH.md | human and machine | — | ready-to-start | the operator holds the test-mode key; the script does the rest |
 | SB-2 | Confirm the GA4 e-commerce events `ecommerce-events.js` and `download-page.js` fire on a download and a donation, and that nothing was lost when the pages moved to `/diya-gl/`. Verification, with code changes only if it finds something | PLAN_DIYA_GL_LAUNCH.md | machine-only | H-SB-1a | blocked-to-start | needs real test-mode links before a donation can be driven |
@@ -60,10 +57,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 - `PLAN_DIYA_GL_LAUNCH.md`: carries the launch posts, the Rust port, the operator's research, and
   now the two rows the uplift handed over — the domain registrations (H-LU-5, on the board) and the
   HMRC licence note (H-LU-9) — plus the donation sandbox and events, `SB-1` and `SB-2`.
-- `PLAN_LTD_MARGINAL_RELIEF.md`: the three gaps in the Corporation Tax relief, on the board as
-  `MR-1` to `MR-3`. MR-1 is the one a customer feels.
-- `PLAN_ITSA_SE_DERIVATIONS.md`: its section 8 findings carry `SED-n` ids, the same ids the board
-  uses. SED-1, 4, 5, 6 and 9 are closed there; SED-2, 3, 7, 8 and 10 are the open ones.
+- `PLAN_LTD_MARGINAL_RELIEF.md`: describes the relief as built; no open item.
+- `PLAN_ITSA_SE_DERIVATIONS.md`: its section 8 findings carry `SED-n` ids. SED-7 and SED-8 are the
+  open ones, carried by `SET-4` and `SET-5`; SED-10 is Submit's.
 - `BRIEF_OPERATOR_TASKS_2026-09-10.md`: the two that need drafting rather than doing, written out
   with the addresses and the facts.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan

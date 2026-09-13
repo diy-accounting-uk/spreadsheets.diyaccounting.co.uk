@@ -473,15 +473,15 @@ came from name the same thing.
 | # | Finding | State |
 | --- | --- | --- |
 | SED-1 | Loss on disposal in box 29 but not box 44 | closed — a warning check carries the true figure |
-| SED-2 | Fourteen disallowable categories have no source | **open**, on the board |
-| SED-3 | Business entertainment cannot be separated from advertising | **open**, on the board |
+| SED-2 | Fourteen disallowable categories have no source | closed — SET-2 landed the percentages and boxes 32 to 45 |
+| SED-3 | Business entertainment cannot be separated from advertising | closed — SET-3 landed the entertainment column |
 | SED-4 | VitalTax turnover excludes sales code d | closed — a warning check carries the true figure |
 | SED-5 | VitalTax other income folds in grants | closed — a warning check carries the true figure |
 | SED-6 | Small pools allowance filed in box 55 | closed — the derivation warns at source |
-| SED-7 | Seven annual fields have no box and no cell | **open**, on the board |
-| SED-8 | Four adjustments have no box a book can fill | **open**, on the board |
+| SED-7 | Seven annual fields have no box and no cell | **open** — SET-4 (the template gaps) and SET-5 (the book fields) on the board |
+| SED-8 | Four adjustments have no box a book can fill | **open** — SET-4 and SET-5 on the board; box 68 and 73.3 wait on an overlap record |
 | SED-9 | CIS deductions do not belong here | closed — a boundary, not a defect |
-| SED-10 | The field set changes by tax year | **open**, on the board |
+| SED-10 | The field set changes by tax year | Submit's — the endpoint choice lives in its handler, not here |
 
 Each of these is a field the plan names that the shipped template cannot source today. None is
 guessed and none is filled with a number the books do not hold. Each carries the figure computed
