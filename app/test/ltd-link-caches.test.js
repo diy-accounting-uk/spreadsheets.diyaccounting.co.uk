@@ -385,7 +385,7 @@ describe("the committed package's caches equal the calculator", () => {
     const pkg = await committedPackage();
     const { disagreements, keys, readings, uncached } = cacheAgreement(pkg);
     expect(disagreements).toEqual([]);
-    expect([keys, readings]).toEqual([2079, 2198]);
+    expect([keys, readings]).toEqual([2091, 2210]);
     // The 26 the package caches nothing for are the capital allowance cells
     // of the Schedule rows that hold no asset: the sheet's own formula
     // returns a space there, and a space is not a value to cache.
@@ -401,7 +401,7 @@ describe("the committed package's caches equal the calculator", () => {
     pkg.caches = await packageLinkCaches(pkg.zips, LINK_ORDER.ltd);
     const { disagreements, keys, readings } = cacheAgreement(pkg);
     expect(disagreements).toEqual([`${HUB} caches ${key} as 1, the calculator holds ${pkg.engine.get(key)}`]);
-    expect([keys, readings]).toEqual([2079, 2198]);
+    expect([keys, readings]).toEqual([2091, 2210]);
   }, 300000);
 
   it("caches a declared blank only where the package's own inputs fill it", async () => {
