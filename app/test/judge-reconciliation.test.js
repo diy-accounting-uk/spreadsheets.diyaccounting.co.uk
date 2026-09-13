@@ -197,7 +197,7 @@ describe("parseReport", () => {
 
   it("reads the status line and the compliance check rows", () => {
     expect(parsed.status).toBe("RECONCILES");
-    expect(checkCounts(parsed)).toEqual({ passed: 1020, warnings: 0, failed: 0 });
+    expect(checkCounts(parsed)).toEqual({ passed: 1032, warnings: 0, failed: 0 });
   });
 
   it("indexes each section by its row label, indentation and bold stripped", () => {
@@ -242,7 +242,7 @@ describe("buildIndicators for the Limited Company", () => {
   const text = indicatorText("ltd", "ltdVat", { vatRegistered: true });
 
   it("states the run status and the check counts", () => {
-    expect(text).toContain("Deterministic run: RECONCILES. Checks: 1020 passed, 0 warnings, 0 failed.");
+    expect(text).toContain("Deterministic run: RECONCILES. Checks: 1032 passed, 0 warnings, 0 failed.");
     expect(text).not.toContain("Warned:");
   });
 
@@ -348,7 +348,7 @@ describe("buildIndicators for the Self Employed", () => {
 
   it("states the personal allowance that explains a nil charge on a small profit", () => {
     const small = indicatorText("se", "seNonVat", { vatRegistered: false });
-    expect(small).toContain("charged on a profit of 3,530.00; a personal allowance of 12,570.00 leaves taxable income of 0.00");
+    expect(small).toContain("charged on a profit of 4,010.00; a personal allowance of 12,570.00 leaves taxable income of 0.00");
     expect(small).toContain("income tax 0.00");
   });
 
