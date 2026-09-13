@@ -468,7 +468,7 @@ From Financialaccounts.xlsx after recalculation:
 the month columns and the working-sheet rows the checks need:
 
 - **MnthP&L:** B4-B9, B11-B14, B16, B18-B45 (annual totals), and C-N on every row that ties to a Sales or Purchases month total
-- **CorporationTax:** K5, I7, I8, K10, K12, K20, K22, K24, K26, K28, K35, K39, plus I15-I18 (allowance lines) and A33-A35/F33/F34/G33/G34/I33/I34/K37 (the two dated tax rows)
+- **CorporationTax:** K5, I7, I8, I9, K10, K12, K20, K22, K24, K26, K28, K35, K39, plus I15-I18 (allowance lines) and A33-A35/F33/F34/G33/G34/I33/I34/K37 (the two dated tax rows)
 - **PubP&L, PubBalSht, PubNotes, Report, CT600, Stock, TrialBalance, OpenAccounts, Admin, WagesInterface:** the cells in the tables below
 
 Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals, the five VATQtr sheets and Vatinterface, the Fixedassets Schedule and FAreconciliation, Payslips Payment and Admin, the four bank workbooks' closing balances, and Companysecretary's RegisterofMembers (F1, G1 and each member row's A and G), Boardmeeting (F2, E4) and Charges&Debentures.
@@ -564,6 +564,7 @@ D2 carries the balance sheet date (`='PubP&L'!D3`).
 | K5 | Operating Profit | `gl-cor:amount (ct600.box145)` | `ct-comp:ProfitLossPerAccounts` | 145 |
 | I7 | Add back: Goodwill | `gl-cor:amount (ct600.addBackGoodwill)` | `ct-comp:AdjustmentsAmortisation` | — |
 | I8 | Add back: Depreciation | `gl-cor:amount (ct600.addBackDepreciation)` | `ct-comp:AdjustmentsDepreciation` | — |
+| I9 | Add back: Business entertainment | `gl-cor:amount (ct600.addBackEntertaining)` | `ct-comp:AdjustmentsEntertaining` | — |
 | K10 | Add back: total | `gl-cor:amount (ct600.addBack)` | `ct-comp:TotalAdjustments` | — |
 | K12 | Operational profit chargeable | `gl-cor:amount (ct600.adjustedProfit)` | `ct-comp:AdjustedProfitForThePeriod` | — |
 | K20 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
@@ -627,7 +628,7 @@ Column B is the annual total (`=SUM(C:N)`); C to N are the twelve months in acco
 | B20 | Employers National Insurance | `dpl:SocialSecurityCosts` | `dpl:SocialSecurityCosts` |
 | B21 | Premises (code r) | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
 | B22 | Light, Heat, Power (code p) | `accounts.purchases.5201` | `dpl:RentRatesAndServicesCosts` |
-| B27 | Advertising (code a) | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
+| B27 | Advertising & Entertainment (codes a, e) | `accounts.purchases.5500` + `5502` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
 | B33 | Legal & Professional (code l) | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
 | B34 | Bad Debts (from Sales) | `accounts.sales.4005` | `dpl:BadDebtsWrittenOff` |
 | B35 | Bank Interest Paid | `accounts.purchases.5701` | `dpl:InterestPayable` |

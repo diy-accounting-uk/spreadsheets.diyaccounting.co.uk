@@ -184,6 +184,9 @@
               "line": "1.3/Trading debits in respect of intangible fixed assets"
             },
             {
+              "line": "1.3/Entertaining"
+            },
+            {
               "line": "1.3/Donations",
               "outsideTotal": true,
               "note": "The working sheet does not add charitable donations back. The figure is shown for checking and is not in the total below."
