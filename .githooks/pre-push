@@ -18,6 +18,12 @@
 # minutes, and prints what it did not run. It is there so the fast path is a
 # recorded partial run rather than --no-verify, which runs nothing and says
 # nothing.
+#
+# Before any of that: if the router already left a GREEN marker for the
+# exact tree being pushed (target/test-scope/green-<tree-hash>, written by
+# a prior `npm test` run against a base at or behind this push's own base),
+# the run below is skipped outright — a suite that just passed is not
+# repeated for the push that follows it.
 
 set -uo pipefail
 
@@ -41,6 +47,35 @@ fi
 
 if [ -z "$base" ]; then
   base="origin/main"
+fi
+
+# A GREEN marker vouches for this push only if it was written for the exact
+# tree being pushed (local_sha's own committed tree, not this worktree's
+# possibly-dirty one) AND its recorded base is this push's own merge base
+# (or the marker was a full --all/escalated pass, recorded as "ALL"). A
+# marker from a narrower or differently-based run never counts.
+tree_hash="$(git rev-parse --quiet --verify "${local_sha}^{tree}" 2>/dev/null || true)"
+marker=""
+if [ -n "$tree_hash" ] && [ -f "target/test-scope/green-${tree_hash}" ]; then
+  marker="target/test-scope/green-${tree_hash}"
+fi
+
+if [ -n "$marker" ]; then
+  marker_base="$(sed -n 's/^mergeBase=\([^ ]*\).*/\1/p' "$marker")"
+  marker_tiers="$(sed -n 's/.*tiers=\([^ ]*\).*/\1/p' "$marker")"
+  marker_at="$(sed -n 's/.*at=\([^ ]*\).*/\1/p' "$marker")"
+  push_merge_base="$(git merge-base "$local_sha" "$base" 2>/dev/null || true)"
+  match=0
+  if [ "$marker_base" = "ALL" ]; then
+    match=1
+  elif [ -n "$push_merge_base" ] && [ "$marker_base" = "$push_merge_base" ]; then
+    match=1
+  fi
+  if [ "$match" = "1" ]; then
+    echo "pre-push: tree ${tree_hash} passed GREEN at ${marker_at} (base ${marker_base}, tiers ${marker_tiers}); skipping the run."
+    exit 0
+  fi
+  echo "pre-push: a GREEN marker exists for tree ${tree_hash} but its base (${marker_base}) does not cover this push's base (${push_merge_base:-unresolved}); running anyway."
 fi
 
 unset SKIP_LIBREOFFICE

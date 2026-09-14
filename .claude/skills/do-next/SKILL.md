@@ -162,6 +162,20 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   the products, or anything that rebuilds the templates.
 - **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
   it with `run_in_background`, do other work or stop, and act on the notification when it lands.
+  Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
+  macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
+  does not split an unquoted variable.
+
+  ```bash
+  # Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
+  nohup <cmd> > <log> 2>&1 < /dev/null & disown
+  echo $! > <log>.pid
+  # At the top of any zsh monitor script, so an unquoted $var of names splits into words:
+  setopt shwordsplit
+  # Fire on the verdict OR on the process having exited, so an empty log never waits forever:
+  until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
+  ```
+
 - **Never stop a run by matching a command name.** `pkill -f vitest` kills every worktree's
   process, a sibling agent's included, not just yours. Stop only your own worktree's run: `scripts/
   test-scope.mjs` gives each tier its own process group, so a Ctrl-C or `kill` on that process
@@ -197,6 +211,18 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
 - Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
   once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless
   it is genuinely separate work — then say so explicitly rather than deciding quietly.
+
+When a landed workstream's diff touches only Markdown files (`.md` anywhere: `.claude/**/SKILL.md`,
+`CLAUDE.md`, `PLAN_*.md`, `README.md`), land it on `main` directly under the docs exception in
+`../CLAUDE.md` ("commits touching ONLY `.md` files may be pushed directly to `main`"), from the
+batch worktree or a cherry-pick onto `main`. The batch and `main` both edit those files between
+batches, so a docs row on the batch is a merge conflict waiting for the PR, and the conflict costs
+a rebase, a second deploy and the PR's checks (PR #112, 2026-09-14,
+`.claude/skills/do-next/SKILL.md`). The diff is docs-only when
+`git diff --name-only <batch>...<agent-branch> | grep -v '\.md$'` prints nothing. When the
+operator has asked for a named set of rows in one PR, the operator's instruction wins and the row
+rides the batch.
+
 - Remove the worktree and delete its branch as the merge lands, not in a later sweep. After a
   squash `git branch -d` refuses, because it cannot see the squash; prove the content landed
   (`git diff <agent-branch> <batch> -- $(git diff --name-only <batch>...<agent-branch>)` is empty)
