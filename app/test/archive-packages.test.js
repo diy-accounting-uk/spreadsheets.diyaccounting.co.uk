@@ -38,8 +38,12 @@ afterEach(() => {
   while (tempDirs.length > 0) rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
+// A git hook exports GIT_DIR to its children; a `git init` that inherits it re-initialises
+// the real repository instead of the temporary one, so every child git gets a scrubbed env.
+const GIT_ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+
 function git(cwd, ...args) {
-  return execFileSync("git", args, { cwd, encoding: "utf8" });
+  return execFileSync("git", args, { cwd, encoding: "utf8", env: GIT_ENV });
 }
 
 function gitInit(dir) {
@@ -97,7 +101,11 @@ function bst(date, shortLabel) {
 
 function run(sourceRoot, args) {
   try {
-    const stdout = execFileSync(NODE, [join(sourceRoot, "scripts", "archive-packages.js"), ...args], { cwd: sourceRoot, encoding: "utf8" });
+    const stdout = execFileSync(NODE, [join(sourceRoot, "scripts", "archive-packages.js"), ...args], {
+      cwd: sourceRoot,
+      encoding: "utf8",
+      env: GIT_ENV,
+    });
     return { status: 0, stdout, stderr: "" };
   } catch (err) {
     return { status: err.status ?? 1, stdout: err.stdout ?? "", stderr: err.stderr ?? "" };

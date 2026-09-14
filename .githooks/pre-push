@@ -44,6 +44,11 @@ if [ -z "$base" ]; then
 fi
 
 unset SKIP_LIBREOFFICE
+# git exports GIT_DIR (and on some paths GIT_WORK_TREE and GIT_INDEX_FILE) to a hook. A
+# test that runs `git init` in a temporary directory then re-initialises THIS repository
+# and commits onto the pushed branch. Measured 2026-09-14: the archive-packages tests
+# under this hook turned the checkout bare and put four "Test" commits on the batch.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_PREFIX
 
 if [ "${SKIP_PUSH_TESTS:-}" = "1" ]; then
   echo "pre-push: SKIP_PUSH_TESTS=1, running the gates tier only."
