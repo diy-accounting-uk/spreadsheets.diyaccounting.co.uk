@@ -153,8 +153,32 @@
   // first, then the depreciation that takes it to net book value, then the
   // capital allowances the return claims, then the year's disposals. AC1 and
   // AC4 are the special rate pool's own WDA total and rate, printed beside
-  // the main pool's R1 the way the schedule itself pairs the two columns.
-  var SCHEDULE_CELLS = ["E57", "E110", "W1", "E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "AC1", "AC4", "S1", "V1", "X1", "Y1", "Z1"];
+  // the main pool's R1 the way the schedule itself pairs the two columns;
+  // AE1, AF1 and AG1 are the single asset pools' allowances by rate and
+  // their written-down value, the rows the small pools test leaves out.
+  var SCHEDULE_CELLS = [
+    "E57",
+    "E110",
+    "W1",
+    "E1",
+    "F1",
+    "G1",
+    "I1",
+    "J1",
+    "K1",
+    "Q1",
+    "R1",
+    "AC1",
+    "AC4",
+    "AE1",
+    "AF1",
+    "AG1",
+    "S1",
+    "V1",
+    "X1",
+    "Y1",
+    "Z1",
+  ];
   // FIXED_ASSET_CELL_LABELS (app/products/se.js) has no entry for these two
   // -- they are the special rate pool's own cells, added after that map was
   // written -- so the page names them itself rather than falling back to
