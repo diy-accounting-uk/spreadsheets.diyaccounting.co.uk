@@ -11,12 +11,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 **COOL-DOWN is on since 2026-09-14T13:40:18Z.** No new board rows except a degradation. Agents commit
 and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
 
-Batch `claude/b16-board` (worktree `../.worktrees/spreadsheets/b16`, from `main` `8c065650`), one
-PR #113 carries the ready rows CQ-37, CQ-35, CQ-36 and CQ-34 (full local suite GREEN, 36m39s,
-pushed once, the pre-push marker skip's first live use); a watch monitor is armed over `main` and
-PR #113. `claude/b16-se` (worktree `b16-se`) holds SET-12 and SET-8, nine
-commits on `main` `8c065650`, local and never pushed until wake; its agent stopped clean at the
-SET-8/SET-10 boundary. Main is `8c065650`, green on `test` and `codeql`; prod serves `63028313`.
+Batch `claude/b16-board` (worktree `../.worktrees/spreadsheets/b16`, from `main` `8c065650`) is
+PR #113, carrying the ready rows CQ-37, CQ-35, CQ-36 and CQ-34: full local suite GREEN (36m39s),
+pushed once, the pre-push marker skip's first live use; a watch monitor is armed over `main` and
+PR #113. `claude/b16-se` (worktree `b16-se`) holds SET-12 and SET-8, nine commits on `main`
+`8c065650`, local and never pushed until wake; its agent stopped clean at the SET-8/SET-10
+boundary. Prod serves `63028313`.
 
 ## Context for the open rows
 
