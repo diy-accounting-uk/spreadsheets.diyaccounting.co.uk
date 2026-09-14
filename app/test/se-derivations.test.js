@@ -590,7 +590,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
           "capitalAllowanceMainPool",
           "capitalAllowanceSpecialRatePool",
           "enhancedCapitalAllowance",
-          ...(statesAnnualFigures ? ["zeroEmissionsCarAllowance", "structuredBuildingAllowance"] : []),
+          ...(statesAnnualFigures ? ["capitalAllowanceSingleAssetPool", "zeroEmissionsCarAllowance", "structuredBuildingAllowance"] : []),
         ].sort(),
       );
       expect(Object.keys(annual.adjustments).sort()).toEqual(
@@ -603,7 +603,6 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       );
       const warningFields = annual.warnings.map((w) => w.field);
       const neverSourced = [
-        "allowances.capitalAllowanceSingleAssetPool",
         "allowances.enhancedStructuredBuildingAllowance",
         "allowances.businessPremisesRenovationAllowance",
         "adjustments.balancingChargeBpra",
@@ -652,10 +651,32 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
     const expected = specialAssets[0].tax_wdv * TAX_APR27.capital_allowances.writing_down_allowance_special;
     expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeCloseTo(expected, 2);
     expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeGreaterThan(0);
-    // The main pool no longer carries the marked asset.
-    const mainWdv = scenario.opening_fixed_assets.filter((asset) => asset.pool !== "special").reduce((t, a) => t + (a.tax_wdv || 0), 0);
+    // The main pool no longer carries the marked asset, nor the single asset pool.
+    const mainWdv = scenario.opening_fixed_assets
+      .filter((asset) => asset.pool !== "special" && !asset.single_asset_pool)
+      .reduce((t, a) => t + (a.tax_wdv || 0), 0);
     expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(mainWdv * TAX_APR27.capital_allowances.writing_down_allowance, 2);
     expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSpecialRatePool");
+  });
+
+  it("the single asset pool files apart from both rate pools: the marked car's tax written-down value at the main rate, less its private use", () => {
+    const { annual, scenario, book, lines } = derive("se-scenario-advanced", TAX_APR27);
+    const singleAssets = scenario.opening_fixed_assets.filter((asset) => asset.single_asset_pool);
+    expect(singleAssets).toHaveLength(1);
+    const [car] = singleAssets;
+    expect(car.pool).toBeUndefined();
+    // 8,000 at the year's main rate on the 70% business share: 1,008 at the
+    // 18% of 2025-26, 784 at the 14% of 2026-27.
+    const wda = TAX_APR27.capital_allowances.writing_down_allowance;
+    const expected = car.tax_wdv * wda * (1 - car.private_use);
+    expect(expected).toBeCloseTo(8000 * wda * 0.7, 6);
+    expect(annual.allowances.capitalAllowanceSingleAssetPool).toBeCloseTo(expected, 2);
+    // The printed box 50 still carries it beside the main pool.
+    const seFull = calculateSeCells(book, lines, TAX_APR27, scenario)["SE Full"];
+    expect(seFull.D144).toBeCloseTo(annual.allowances.capitalAllowanceMainPool + expected, 2);
+    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(24000 * wda, 2);
+    expect(annual.allowances.capitalAllowanceSpecialRatePool).toBe(540);
+    expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSingleAssetPool");
   });
 
   it("a box 52 figure stated for a year whose schema dropped the field is not filed, and the warning carries it", () => {

@@ -483,6 +483,17 @@
             "default": "main",
             "description": "Which writing down pool the asset's tax written-down value sits in. special is the 6% pool (cars with higher CO2 emissions, integral features, long-life assets), SA103F box 51; the Self Employed Schedule marks the row S in column AB and claims the allowance in column AC. Absent means the main pool, box 50."
           },
+          "singleAssetPool": {
+            "type": "boolean",
+            "default": false,
+            "description": "The asset's tax written-down value is its own pool: an asset with private use (CAA 2001 s.206) or under a short-life asset election (ss.83-86). Its writing down allowance still prints in SA103F box 50 or 51 by rate, but the API files it as capitalAllowanceSingleAssetPool and the small pools allowance never applies to it. The Self Employed Schedule marks the row P in column AD and carries the allowance and the written-down value in columns AE to AG. Self Employed only."
+          },
+          "privateUseProportion": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "The share of the asset's use that is not business use, which reduces its writing down and balancing allowances (the Self Employed Schedule's column M on the car rows). An asset with private use is a single asset pool, so singleAssetPool must be true whenever this is above nil. Self Employed motor vehicles only."
+          },
           "description": {
             "type": "string"
           },

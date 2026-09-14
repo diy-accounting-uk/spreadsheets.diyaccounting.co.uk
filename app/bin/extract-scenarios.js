@@ -308,6 +308,8 @@ const openingFixedAssets = book.fixedAssets.map((asset) => {
   };
   if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
   if (asset.capitalAllowancePool === "special") opening.pool = "special";
+  if (asset.singleAssetPool) opening.single_asset_pool = true;
+  if (asset.privateUseProportion > 0) opening.private_use = asset.privateUseProportion;
   return opening;
 });
 
@@ -328,6 +330,21 @@ const SE_SPECIAL_RATE_CAR = {
   accumulatedDepreciation: 4000,
   taxWrittenDownValue: 9000,
 };
+// A third car with private use sits in a single asset pool (CAA 2001
+// s.206): its main rate allowance prints in box 50 with the van's, reduced
+// by the private use share, and the API files it apart as
+// capitalAllowanceSingleAssetPool. Another fact about the subset the Company
+// package does not carry.
+const SE_SINGLE_ASSET_POOL_CAR = {
+  assetID: "SE-FA-2",
+  class: "motorVehicles",
+  singleAssetPool: true,
+  privateUseProportion: 0.3,
+  description: "Hatchback (30% private use, 2 years old)",
+  cost: 12500,
+  accumulatedDepreciation: 5000,
+  taxWrittenDownValue: 8000,
+};
 const seOpeningFixedAssets = [
   ...openingFixedAssets.filter((asset) => asset.category !== "land"),
   {
@@ -337,6 +354,15 @@ const seOpeningFixedAssets = [
     acc_dep: SE_SPECIAL_RATE_CAR.accumulatedDepreciation,
     tax_wdv: SE_SPECIAL_RATE_CAR.taxWrittenDownValue,
     pool: "special",
+  },
+  {
+    category: OPENING_ASSET_CATEGORIES[SE_SINGLE_ASSET_POOL_CAR.class],
+    description: SE_SINGLE_ASSET_POOL_CAR.description,
+    cost: SE_SINGLE_ASSET_POOL_CAR.cost,
+    acc_dep: SE_SINGLE_ASSET_POOL_CAR.accumulatedDepreciation,
+    tax_wdv: SE_SINGLE_ASSET_POOL_CAR.taxWrittenDownValue,
+    single_asset_pool: true,
+    private_use: SE_SINGLE_ASSET_POOL_CAR.privateUseProportion,
   },
 ];
 
@@ -496,8 +522,41 @@ const SE_SPECIAL_RATE_CAR_LINES = [
     taxRate: 0,
   },
 ];
+// The single asset pool car's opening lines follow the estate car's.
+const SE_SINGLE_ASSET_POOL_CAR_LINES = [
+  {
+    entryNumber: "TXN-0004P",
+    lineNumber: 4,
+    sourceJournalID: "journal",
+    postingDate: "2025-04-01",
+    accountMainID: "0040",
+    debitCreditCode: "D",
+    amount: SE_SINGLE_ASSET_POOL_CAR.cost,
+    documentType: "journal",
+    documentReference: "OB-001",
+    detailComment: "Opening balances",
+    lineItemComment: "Hatchback cost (single asset pool, 30% private use)",
+    taxCode: "OS",
+    taxRate: 0,
+  },
+  {
+    entryNumber: "TXN-0005P",
+    lineNumber: 5,
+    sourceJournalID: "journal",
+    postingDate: "2025-04-01",
+    accountMainID: "0040",
+    debitCreditCode: "C",
+    amount: SE_SINGLE_ASSET_POOL_CAR.accumulatedDepreciation,
+    documentType: "journal",
+    documentReference: "OB-001",
+    detailComment: "Opening balances",
+    lineItemComment: "Hatchback accumulated depreciation",
+    taxCode: "OS",
+    taxRate: 0,
+  },
+];
 const advLines = seDrawingsFromDividends(filterAdvanced(mapLtdBankCodesForSe(allLines, book))).flatMap((line) =>
-  line.entryNumber === "TXN-0005" ? [line, ...SE_SPECIAL_RATE_CAR_LINES] : [line],
+  line.entryNumber === "TXN-0005" ? [line, ...SE_SPECIAL_RATE_CAR_LINES, ...SE_SINGLE_ASSET_POOL_CAR_LINES] : [line],
 );
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
@@ -570,7 +629,7 @@ const advV2 = {
   // Same restriction as seOpeningFixedAssets above: SE's Schedule has no
   // land block, so a land & buildings asset the master book holds is a Ltd
   // fact, not one this subset can carry.
-  fixedAssets: [...book.fixedAssets.filter((asset) => asset.class !== "landBuildings"), SE_SPECIAL_RATE_CAR],
+  fixedAssets: [...book.fixedAssets.filter((asset) => asset.class !== "landBuildings"), SE_SPECIAL_RATE_CAR, SE_SINGLE_ASSET_POOL_CAR],
   hpAgreements: book.hpAgreements,
 };
 

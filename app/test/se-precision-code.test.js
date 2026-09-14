@@ -110,10 +110,10 @@ describeCalc(
       expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + 350 - 90, 6);
     });
 
-    it("Income Tax: the taper takes the whole allowance once half the excess passes 12,570", () => {
-      // 130,552.81 is 30,552.81 over the 100,000 threshold. Half of that is
-      // 15,276.40, more than the 12,570 allowance itself, so none survives.
-      expect(results["Income Tax"].E6).toBe(0);
+    it("Income Tax: the taper takes all but 27.60 of the allowance, half the excess over 100,000 being 12,542.40", () => {
+      // 125,084.81 is 25,084.81 over the 100,000 threshold. Half of that is
+      // 12,542.40, so 27.60 of the 12,570 allowance survives.
+      expect(results["Income Tax"].E6).toBeCloseTo(27.59575, 4);
     });
 
     it("Income Tax: taxable income = profit - allowance", () => {
@@ -139,35 +139,35 @@ describeCalc(
     });
 
     // The statutory charge on this fixture's profit, worked out by hand from
-    // the 2025-26 rates rather than from anything the sheet computes:
-    //   profit                  130,552.808500
-    //   allowance               0              (12,570 - 15,276.40 is negative)
-    //   taxable   130,552.808500
-    //   basic      37,700.000000 x 0.20 =  7,540.000000
-    //   higher     87,440.000000 x 0.40 = 34,976.000000   (125,140 - 37,700)
-    //   additional  5,412.808500 x 0.45 =  2,435.763825   (130,552.81 - 125,140)
-    //   income tax                      = 44,951.763825
-    //   NI         37,700 x 0.06 = 2,262.00, 80,282.808500 x 0.02 = 1,605.656170
-    //   tax and NI                      = 48,819.419995
+    // the 2025-26 rates rather than from anything the sheet computes.
     it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
       const tax = results["Income Tax"];
       // 130,552.81 before the book's own SA103F statements: plus 640 goods
       // for own use (box 60), less 2,500 + 1,800 of allowances (boxes 52.1
-      // and 53), 350 of non-taxable income (box 62) and the estate car's 540
-      // special rate allowance (box 51, 9,000 at 6%), plus the 90 adjustment
-      // for change of accounting practice (box 71) that box 73 adds. The
-      // car's 4,000 depreciation leaves the net profit and comes back as
-      // box 44.
-      expect(tax.E5).toBeCloseTo(126092.8085, 4);
-      expect(tax.E6).toBe(0);
-      expect(tax.E7).toBeCloseTo(126092.8085, 4);
+      // and 53), 350 of non-taxable income (box 62), the estate car's 540
+      // special rate allowance (box 51, 9,000 at 6%) and the hatchback's
+      // 1,008 single asset pool allowance (box 50, 8,000 at 18% on its 70%
+      // business share), plus the 90 adjustment for change of accounting
+      // practice (box 71) that box 73 adds. The two cars' 4,000 and 3,125
+      // depreciation leaves the net profit and comes back as box 44.
+      //   profit                  125,084.808500
+      //   allowance                    27.595750   (12,570 - 12,542.40)
+      //   taxable                 125,057.212750
+      //   basic      37,700.000000 x 0.20 =  7,540.000000
+      //   higher     87,357.212750 x 0.40 = 34,942.885100
+      //   income tax                      = 42,482.885100
+      //   NI         37,700 x 0.06 = 2,262.00, 74,814.808500 x 0.02 = 1,496.296170
+      //   tax and NI                      = 46,241.181270
+      expect(tax.E5).toBeCloseTo(125084.8085, 4);
+      expect(tax.E6).toBeCloseTo(27.59575, 4);
+      expect(tax.E7).toBeCloseTo(125057.21275, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
-      expect(tax.E9).toBeCloseTo(34976, 2);
-      expect(tax.E10).toBeCloseTo(428.763825, 2);
-      expect(tax.E11).toBeCloseTo(42944.763825, 2);
+      expect(tax.E9).toBeCloseTo(34942.8851, 2);
+      expect(tax.E10).toBe(0);
+      expect(tax.E11).toBeCloseTo(42482.8851, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1516.45617, 2);
-      expect(tax.E18).toBeCloseTo(46723.219995, 2);
+      expect(tax.E16).toBeCloseTo(1496.29617, 2);
+      expect(tax.E18).toBeCloseTo(46241.18127, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees
@@ -185,14 +185,15 @@ describeCalc(
     // book value instead of carrying its cost and depreciation forever.
     it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
       const sched = results["Fixedassets.xlsx!Schedule"];
-      // The van (30,000), the estate car (16,000) and the laptop (3,000)
-      // brought forward, plus 36,500 bought in the year; depreciation carried
-      // forward adds the car's 4,000 brought forward and its 4,000 charge.
-      expect(sched.E1).toBe(101500);
-      expect(sched.J1).toBe(31838);
+      // The van (30,000), the estate car (16,000), the hatchback (12,500)
+      // and the laptop (3,000) brought forward, plus 36,500 bought in the
+      // year; depreciation carried forward adds the two cars' 4,000 and
+      // 5,000 brought forward and their 4,000 and 3,125 charges.
+      expect(sched.E1).toBe(114000);
+      expect(sched.J1).toBe(39963);
       expect(sched.W1).toBe(30000);
       expect(sched.X1).toBe(17328);
-      expect(sched.K1).toBe(56990);
+      expect(sched.K1).toBe(61365);
     });
 
     // ── Bank closing balance (6k) ────────────────────────────────────────

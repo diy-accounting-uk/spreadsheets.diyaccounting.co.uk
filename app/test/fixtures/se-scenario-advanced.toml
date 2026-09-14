@@ -6328,6 +6328,20 @@ tax_wdv = 9000
 # The special rate (6%) pool, SA103F box 51; the Schedule marks the row S in column AB.
 pool = "special"
 
+[[opening_fixed_assets]]
+category = "motor"
+description = "Hatchback (30% private use, 2 years old)"
+cost = 12500
+acc_dep = 5000
+# Written down TAX value brought forward (asset schedule column O);
+# an asset sold in the year needs one for its balancing allowance.
+tax_wdv = 8000
+# A single asset pool (private use or a short-life asset election): the Schedule marks the row P in
+# column AD, and the API files its allowance as capitalAllowanceSingleAssetPool.
+single_asset_pool = true
+# The share of use that is private, which reduces the allowances (Schedule column M on the car rows).
+private_use = 0.3
+
 [[vat_straddling_sales]]
 period = "02Y1"
 date = 2025-02-14

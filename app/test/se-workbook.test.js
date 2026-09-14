@@ -263,26 +263,27 @@ describe("an entry none of the nine workbooks has a cell for", () => {
       taxRate: 0.2,
     });
     const { book, lines } = bookAt(ADVANCED);
-    // The book brings three assets forward (the van, the estate car and the
-    // laptop) and its own lines already dispose of the van, so two more
-    // disposals seat and a third has no row.
-    const seated = [...lines, disposal("TXN-9003", "INV-9903"), disposal("TXN-9005", "INV-9905")];
+    // The book brings four assets forward (the van, the estate car, the
+    // hatchback and the laptop) and its own lines already dispose of the
+    // van, so three more disposals seat and a fourth has no row.
+    const seated = [...lines, disposal("TXN-9003", "INV-9903"), disposal("TXN-9005", "INV-9905"), disposal("TXN-9006", "INV-9906")];
     const oneTooMany = [...seated, disposal("TXN-9004", "INV-9904")];
 
     const skips = writerSkips(diyaGlToScenario(book, oneTooMany, "se"));
     expect(skips).toHaveLength(1);
     expect(skips[0]).toMatchObject({ kind: "assetDisposal", date: "2025-12-01", code: "fs", amount: 900 });
 
-    // The second and third of the four land on the car and computer rows,
-    // the fourth on nothing: the Schedule's own content is the same with it
-    // and without it, though its cache of Sales's running disposal total
-    // (which the fourth disposal does move) is refreshed regardless.
-    const withTwo = await saveWorkbookFiles(book, seated);
-    const withThree = await saveWorkbookFiles(book, oneTooMany);
+    // The second to fourth of the five land on the two car rows and the
+    // computer row, the fifth on nothing: the Schedule's own content is the
+    // same with it and without it, though its cache of Sales's running
+    // disposal total (which the fifth disposal does move) is refreshed
+    // regardless.
+    const withThree = await saveWorkbookFiles(book, seated);
+    const withFour = await saveWorkbookFiles(book, oneTooMany);
     const schedule = "Fixedassets.xlsx";
-    const scheduleSame = await sameExceptLinkCaches(workbookNamed(withTwo.files, schedule), workbookNamed(withThree.files, schedule));
+    const scheduleSame = await sameExceptLinkCaches(workbookNamed(withThree.files, schedule), workbookNamed(withFour.files, schedule));
     expect(scheduleSame, `${schedule} differs outside its link caches`).toBe(true);
-    expect(Buffer.compare(workbookNamed(withTwo.files, "Sales.xlsx"), workbookNamed(withThree.files, "Sales.xlsx"))).not.toBe(0);
+    expect(Buffer.compare(workbookNamed(withThree.files, "Sales.xlsx"), workbookNamed(withFour.files, "Sales.xlsx"))).not.toBe(0);
   }, 600000);
 
   it("leaves out an asset brought forward whose class has no block on the Schedule", async () => {
@@ -305,16 +306,17 @@ describe("an entry none of the nine workbooks has a cell for", () => {
       cost: 1000 + index,
       accumulatedDepreciation: 0,
     });
-    const extra = [1, 2, 3, 4].map(spare);
+    const extra = [1, 2, 3].map(spare);
     const { skips, unmoved } = await savedWith(ADVANCED, ({ book, lines }) => ({
       book: { ...book, fixedAssets: [...book.fixedAssets, ...extra] },
       lines,
     }));
 
-    // The motor block holds five: the van and the estate car already brought
-    // forward and the first three spares, leaving the fourth with no row.
+    // The motor block holds five: the van, the estate car and the hatchback
+    // already brought forward and the first two spares, leaving the third
+    // with no row.
     expect(skips).toHaveLength(1);
-    expect(skips[0]).toMatchObject({ kind: "openingFixedAsset", code: "motor", amount: 1004 });
+    expect(skips[0]).toMatchObject({ kind: "openingFixedAsset", code: "motor", amount: 1003 });
     expect(skips[0].why).toContain("motor block");
     expect(unmoved).not.toContain("Fixedassets.xlsx");
   }, 600000);

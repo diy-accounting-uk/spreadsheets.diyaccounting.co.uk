@@ -311,6 +311,16 @@ cost = 16000.00
 accumulatedDepreciation = 4000.00
 taxWrittenDownValue = 9000.00
 
+[[fixedAssets]]
+assetID = "SE-FA-2"
+class = "motorVehicles"
+singleAssetPool = true
+privateUseProportion = 0.3000
+description = "Hatchback (30% private use, 2 years old)"
+cost = 12500.00
+accumulatedDepreciation = 5000.00
+taxWrittenDownValue = 8000.00
+
 [[hpAgreements]]
 agreementID = "HP-2025-01"
 financeCompany = "Close Brothers Asset Finance"

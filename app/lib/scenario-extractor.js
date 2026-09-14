@@ -1282,6 +1282,15 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push("# The special rate (6%) pool, SA103F box 51; the Schedule marks the row S in column AB.");
         parts.push(`pool = "special"`);
       }
+      if (asset.single_asset_pool) {
+        parts.push("# A single asset pool (private use or a short-life asset election): the Schedule marks the row P in");
+        parts.push("# column AD, and the API files its allowance as capitalAllowanceSingleAssetPool.");
+        parts.push("single_asset_pool = true");
+      }
+      if (asset.private_use !== undefined) {
+        parts.push("# The share of use that is private, which reduces the allowances (Schedule column M on the car rows).");
+        parts.push(`private_use = ${asset.private_use}`);
+      }
       parts.push("");
     }
   }

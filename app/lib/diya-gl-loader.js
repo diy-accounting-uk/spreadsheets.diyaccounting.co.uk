@@ -563,6 +563,30 @@ export function diyaGlToScenario(book, lines, product) {
         const opening = { category, description: asset.description, cost: asset.cost, acc_dep: asset.accumulatedDepreciation };
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
         if (asset.capitalAllowancePool === "special") opening.pool = "special";
+        // A single asset pool is a fact the book states, never one the loader
+        // infers: private use puts an asset in its own pool (CAA 2001 s.206),
+        // so a private use share without the marker is a contradiction. The
+        // Schedule applies the private use share on the motor rows only, and
+        // the Company Schedule has neither column.
+        if (asset.singleAssetPool || asset.privateUseProportion > 0) {
+          if (product !== "se") {
+            throw new Error(
+              `Fixed asset ${asset.assetID} states a single asset pool or private use, which the Company Schedule has no column for`,
+            );
+          }
+          if (category !== "motor") {
+            throw new Error(
+              `Fixed asset ${asset.assetID} states a single asset pool or private use on class "${asset.class}", which the Schedule applies to motor vehicles only`,
+            );
+          }
+          if (!asset.singleAssetPool) {
+            throw new Error(
+              `Fixed asset ${asset.assetID} states privateUseProportion without singleAssetPool; a privately used asset is its own pool`,
+            );
+          }
+          opening.single_asset_pool = true;
+          if (asset.privateUseProportion > 0) opening.private_use = asset.privateUseProportion;
+        }
         return opening;
       });
     if (openingFixedAssets.length > 0) scenario.opening_fixed_assets = openingFixedAssets;
