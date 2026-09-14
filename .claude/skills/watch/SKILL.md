@@ -62,6 +62,20 @@ and another session's repository state is never yours to inspect, report or wait
 
 One background monitor, polling every 60-90s, emitting one line per newly finished run.
 
+Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
+macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
+does not split an unquoted variable.
+
+```bash
+# Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
+nohup <cmd> > <log> 2>&1 < /dev/null & disown
+echo $! > <log>.pid
+# At the top of any zsh monitor script, so an unquoted $var of names splits into words:
+setopt shwordsplit
+# Fire on the verdict OR on the process having exited, so an empty log never waits forever:
+until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
+```
+
 - **Report every terminal state**: success, failure, cancelled, timed out, skipped. A monitor
   that greps only for failure is silent when a run is cancelled, and silence is
   indistinguishable from still running. Ask before arming: if this went red right now, would

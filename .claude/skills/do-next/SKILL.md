@@ -162,6 +162,20 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   the products, or anything that rebuilds the templates.
 - **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
   it with `run_in_background`, do other work or stop, and act on the notification when it lands.
+  Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
+  macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
+  does not split an unquoted variable.
+
+  ```bash
+  # Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
+  nohup <cmd> > <log> 2>&1 < /dev/null & disown
+  echo $! > <log>.pid
+  # At the top of any zsh monitor script, so an unquoted $var of names splits into words:
+  setopt shwordsplit
+  # Fire on the verdict OR on the process having exited, so an empty log never waits forever:
+  until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
+  ```
+
 - **Never stop a run by matching a command name.** `pkill -f vitest` kills every worktree's
   process, a sibling agent's included, not just yours. Stop only your own worktree's run: `scripts/
   test-scope.mjs` gives each tier its own process group, so a Ctrl-C or `kill` on that process
