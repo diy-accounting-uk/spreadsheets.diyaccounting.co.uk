@@ -8,10 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #116 (SET-8) merged as `af6a69fa`; `main`'s `test`, `codeql` and the prod `deploy` are
-running on it. `claude/b16-se` (worktree `b16-se`) holds only SET-10's design scratch
-`9cca0ceb`. A watch monitor is armed over `main`. Prod serves `c692a372` until that deploy
-lands; the publish job landed diya-gl 1.2.13 as `7c754ed1`.
+Nothing. `main` is green on `af6a69fa` (SET-8); prod serves it and the publish job landed diya-gl
+1.2.14 as `2759b82c`. `claude/b16-se` (worktree `b16-se`) holds only SET-10's design scratch
+`9cca0ceb`. No watch monitor is armed; the scope is green.
 
 ## Context for the open rows
 
