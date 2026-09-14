@@ -8,6 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
+**COOL-DOWN is on since 2026-09-14T13:40:18Z.** No new board rows except a degradation. Agents commit
+and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
+
 Batch `claude/b16-board` (worktree `../.worktrees/spreadsheets/b16`, from `main` `8c065650`), one
 PR for eight rows in one wave. CQ-37 and CQ-35 are on the batch; two worktrees still run:
 `b16-router` (`claude/b16-router`, Sonnet: CQ-36 then CQ-34) and `b16-se` (`claude/b16-se`, Opus:
