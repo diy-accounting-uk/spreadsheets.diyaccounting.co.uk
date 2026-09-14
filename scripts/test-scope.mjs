@@ -6,11 +6,12 @@
 // merge base with origin/main, maps the changed paths through the routing
 // table below, and runs the tiers that diff reaches in cost order.
 //
-//   npm test                    escalate on the diff
-//   npm test -- --all           every tier, every product, full browser suite
-//   npm test -- --base HEAD~1   a different comparison point
-//   npm test -- --plan          print the selection and the estimate, run nothing
-//   npm test -- --tree-hash     print the GREEN marker's key for the current tree, run nothing
+//   npm test                       escalate on the diff
+//   npm test -- --all              every tier, every product, full browser suite
+//   npm test -- --base HEAD~1      a different comparison point
+//   npm test -- --plan             print the selection and the estimate, run nothing
+//   npm test -- --tree-hash        print the GREEN marker's key for the current tree, run nothing
+//   npm test -- --code-tree-hash   print the same key with every *.md path dropped, run nothing
 //
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
@@ -23,6 +24,12 @@
 // the merge base it diffed against. .githooks/pre-push looks this marker
 // up before running anything, so a suite that just passed on this exact
 // tree is not repeated for the push. PARTIAL never writes one.
+//
+// --code-tree-hash is the same idea one layer up, for CI: test.yml's
+// green-check job hashes the tree with every *.md path removed and looks
+// for a workflow artifact recording an earlier green run at that hash, so
+// a docs-only difference between a PR's merge ref and the merge commit
+// later pushed to main is not run twice.
 
 import { spawn, spawnSync } from "child_process";
 import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync, unlinkSync, copyFileSync } from "fs";
@@ -203,7 +210,15 @@ const MARKER_DIR = join(ROOT, "target", "test-scope");
 // untracked-but-not-ignored content, exactly what `git add -A` would stage.
 // Built in a throwaway index so the real index (and any partial `git add`
 // the operator has staged) is never touched.
-function workingTreeHash() {
+//
+// withoutDocs: true drops every *.md path from the throwaway index before
+// writing the tree, so a tree that differs from another only in Markdown
+// hashes the same. This is the key CI's green-check job hashes a commit by
+// (see .github/workflows/test.yml): a PR's merge ref and the merge commit
+// later pushed to main differ only in NEXT.md board updates (the docs
+// exception lands those on main directly), so the two runs should count as
+// the same tree and share one GREEN record.
+function workingTreeHash({ withoutDocs = false } = {}) {
   const tmpIndex = join(tmpdir(), `test-scope-index-${process.pid}-${Date.now()}`);
   const env = { ...process.env, GIT_INDEX_FILE: tmpIndex };
   try {
@@ -225,6 +240,10 @@ function workingTreeHash() {
     if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
     const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
     if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    if (withoutDocs) {
+      const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
+      if (rm.status !== 0) throw new Error(`git rm --cached *.md (throwaway index) failed: ${(rm.stderr || "").toString().trim()}`);
+    }
     const wt = spawnSync("git", ["write-tree"], { cwd: ROOT, env, encoding: "utf8" });
     if (wt.status !== 0) throw new Error(`git write-tree (throwaway index) failed: ${(wt.stderr || "").trim()}`);
     return wt.stdout.trim();
@@ -611,6 +630,13 @@ async function main() {
     // `git rev-parse HEAD^{tree}`; on a dirty one it does not, which is
     // exactly how .githooks/pre-push tells a dirty-tree pass from a real one.
     console.log(workingTreeHash());
+    process.exit(0);
+  }
+
+  if (argv.includes("--code-tree-hash")) {
+    // Same hash, with every *.md path dropped first -- see the comment
+    // above workingTreeHash() and the one above the GREEN marker section.
+    console.log(workingTreeHash({ withoutDocs: true }));
     process.exit(0);
   }
 

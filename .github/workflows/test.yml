@@ -92,7 +92,59 @@ jobs:
       - name: Check deploy.yml's paths filter covers the DIYA-GL bundle's reads
         run: npm run gate:deploy-filter
 
+  green-check:
+    # A hit here means: this exact non-Markdown tree already ran the whole
+    # suite green once, either as a PR's merge ref whose merge commit later
+    # landed on main with only NEXT.md board lines added (the docs
+    # exception), or as a scheduled run landing on a hash a recent push
+    # already covered. Either way the tree the tiers below would exercise
+    # is one already proven, so they are skipped and this run inherits that
+    # result instead of re-paying for it.
+    #
+    # actions/cache is not used for the record: a cache written by a
+    # pull_request run is scoped to that PR's merge ref and invisible to
+    # the later push run on main that carries the same tree. A workflow
+    # artifact is visible across branches through the API, so the record
+    # survives the ref boundary a docs-only PR merge crosses.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      green: ${{ steps.check.outputs.green }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Hash the tree with every Markdown path removed
+        id: hash
+        run: echo "hash=$(node scripts/test-scope.mjs --code-tree-hash)" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Look for a prior GREEN record at this hash
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HASH: ${{ steps.hash.outputs.hash }}
+        run: |
+          FOUND=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=green-${HASH}&per_page=5" \
+            --jq '[.artifacts[] | select(.expired == false)][0] // empty')
+          if [ -n "$FOUND" ]; then
+            echo "green=true" | tee -a "$GITHUB_OUTPUT"
+            echo "$FOUND" | jq -r '"reusing run " + (.workflow_run.id | tostring) + " (head " + .workflow_run.head_sha[0:9] + ", recorded " + .created_at + ")"'
+          else
+            echo "green=false" | tee -a "$GITHUB_OUTPUT"
+            echo "no prior GREEN record for $HASH"
+          fi
+
   build:
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -118,6 +170,8 @@ jobs:
           npm run generate -- --package bst --years "$LATEST"
 
   deployment:
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -161,6 +215,8 @@ jobs:
         run: npm run cdk:synth
 
   infra-test:
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -177,6 +233,8 @@ jobs:
         run: ./mvnw --errors clean verify -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
 
   app-test:
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -219,6 +277,8 @@ jobs:
 
   roundtrip-bst:
     name: 'roundtrip fidelity (BST)'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -270,6 +330,8 @@ jobs:
 
   roundtrip-taxi:
     name: 'roundtrip fidelity (Taxi)'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -321,6 +383,8 @@ jobs:
 
   roundtrip-se:
     name: 'roundtrip fidelity (SE)'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -372,6 +436,8 @@ jobs:
 
   roundtrip-ltd:
     name: 'roundtrip fidelity (Ltd)'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -422,6 +488,8 @@ jobs:
         run: diff target/ltd-excel/data/lines.jsonl target/ltd-exported-data2/lines.jsonl
 
   browser-test:
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -456,6 +524,8 @@ jobs:
 
   behaviour-test:
     name: 'behaviour test (local)'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -522,6 +592,8 @@ jobs:
 
   pack-diya-gl:
     name: 'pack diya-gl, smoke and parity'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     steps:
 
@@ -573,6 +645,8 @@ jobs:
 
   reconciliation-check:
     name: 'check reconciliation reports'
+    needs: [green-check]
+    if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
     permissions: {}
     steps:
@@ -598,3 +672,61 @@ jobs:
             exit 1
           fi
           echo "All reconciliation reports are RECONCILES"
+
+  green-record:
+    name: 'record this GREEN run'
+    # Every job the workflow runs, gated or not: a failure anywhere means
+    # this tree is not GREEN, whether the job that failed was skippable on
+    # a hit or not. `needs.*.result` sees 'skipped' for a job green-check
+    # gated off (the hash matched, so build/deployment/... never ran) --
+    # that is not a failure, so it does not block the record. It cannot
+    # both be true that green-check found a hit (skipping every gated job)
+    # and that this job's own `green != 'true'` condition passes, so this
+    # never re-uploads a record that already exists.
+    needs:
+      - green-check
+      - lint-workflows
+      - deploy-filter-coverage
+      - build
+      - deployment
+      - infra-test
+      - app-test
+      - roundtrip-bst
+      - roundtrip-taxi
+      - roundtrip-se
+      - roundtrip-ltd
+      - browser-test
+      - behaviour-test
+      - pack-diya-gl
+      - reconciliation-check
+    if: ${{ !cancelled() && needs.green-check.outputs.green != 'true' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Hash the tree with every Markdown path removed
+        id: hash
+        run: echo "hash=$(node scripts/test-scope.mjs --code-tree-hash)" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Write the record
+        run: |
+          mkdir -p target/green-record
+          {
+            echo "run_id=${{ github.run_id }}"
+            echo "head_sha=${{ github.sha }}"
+            echo "recorded_at=$(date -u +%FT%TZ)"
+          } > target/green-record/record.txt
+
+      - name: Upload the GREEN record
+        uses: actions/upload-artifact@v7
+        with:
+          name: green-${{ steps.hash.outputs.hash }}
+          path: target/green-record/record.txt
+          retention-days: 30
