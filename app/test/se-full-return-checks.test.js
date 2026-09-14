@@ -393,19 +393,19 @@ const SA103F_CORRUPTIONS = [
   ["D174", 12740, [TOTAL_ADDITIONS, TAXABLE_PROFIT, STATED_BOX_60]],
   ["O169", 45000, [TOTAL_DEDUCTIONS, TAXABLE_PROFIT, STATED_BOX_62]],
   ["O174", 143632.058333333, [TAXABLE_PROFIT, ADJUSTED_PROFIT, ADJUSTED_PROFIT_STATED, SHORT_TAXABLE_PROFIT]],
+  // A box 65 figure smaller than box 64 leaves the working sheet's figure
+  // positive, so box 73 moves and box 77 stays at nil.
   [
     "O179",
     1000,
     [
       ADJUSTED_PROFIT,
       ADJUSTED_PROFIT_STATED,
-      ADJUSTED_LOSS,
-      ADJUSTED_LOSS_STATED,
       "SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106)",
       BRIDGE,
     ],
   ],
-  ["O194", 143632.058333333, [ADJUSTED_PROFIT, ADJUSTED_PROFIT_STATED, TOTAL_TAXABLE_PROFITS]],
+  ["O194", 143632.058333333, [ADJUSTED_PROFIT, TOTAL_TAXABLE_PROFITS, ADJUSTED_PROFIT_STATED]],
   [
     "O199",
     1000,
