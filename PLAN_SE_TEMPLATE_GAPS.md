@@ -243,8 +243,13 @@ block on it is special-rate by nature.
 | Checks | box 51 = the fixture's special-rate opening tax written-down value at the year's special rate; box 50 = the main-pool values alone; box 57 still the sum of boxes 49 to 56. |
 
 The small pools write-off (`O144`) keeps reading `R1+S1` over one S column, so a special-rate
-balance counts towards the £1,000 test alongside the main pool. HMRC applies the test per pool;
-splitting S into two columns is the follow-on if a book ever needs it.
+balance counts towards the £1,000 test alongside the main pool. HMRC applies the test per pool.
+SET-10 splits it: columns AH (main) and AI (special rate) after AG carry each pool's written-down
+balance, because S feeds the 80 Y/Z balancing formulas and two hub cells and a new column moves no
+reference; `O144` and `SE Short!D85` become
+`IF((R1-AE1+AH1)<1000,AH1,0)+IF((AC1-AF1+AI1)<1000,AI1,0)`; the link cache swaps `S1`/`AG1` for
+`AH1`/`AI1`; the corruption rows for `AH1`/`AI1` write negative values, the only way to pull a pool
+under £1,000.
 
 **Three records the book does not hold yet.** Each of the three designs below follows the box 51
 table: the book field, the cell or column each figure feeds, the formula, the read-back, the
@@ -459,9 +464,10 @@ Three more commits close the records in 3.4, in this order.
 `SE Full` formula (`O144`), two book fields and one fixture car. It moves no `SE Full` row and
 it settles the small-pools formula SET-10 builds on, so it goes first. _Verification:_ box 50
 rises by exactly 1,008 and box 51 does not move; `AE1 = 1008`, `AF1 = 0`, `AG1 = 6992`; `O144`
-stays 0; the 2026-27 payload files `capitalAllowanceMainPool` 4,320,
-`capitalAllowanceSpecialRatePool` 540 and `capitalAllowanceSingleAssetPool` 1,008; no Ltd report
-moves; the corruption proofs in 3.4.
+stays 0; the 2025-26 payload files `capitalAllowanceMainPool` 4,320,
+`capitalAllowanceSpecialRatePool` 540 and `capitalAllowanceSingleAssetPool` 1,008 (the 2026-27
+file's 14% main rate makes them 3,360, 540 and 784, box 50 4,144); no Ltd report moves; the
+corruption proofs in 3.4.
 
 **Step 6. SET-9, the SBA claim record.** It moves three stated cells and changes the shape of
 one book field, so it touches the most references, and it lands its Schedule block on the sheet
