@@ -197,6 +197,18 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
 - Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
   once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless
   it is genuinely separate work — then say so explicitly rather than deciding quietly.
+
+When a landed workstream's diff touches only Markdown files (`.md` anywhere: `.claude/**/SKILL.md`,
+`CLAUDE.md`, `PLAN_*.md`, `README.md`), land it on `main` directly under the docs exception in
+`../CLAUDE.md` ("commits touching ONLY `.md` files may be pushed directly to `main`"), from the
+batch worktree or a cherry-pick onto `main`. The batch and `main` both edit those files between
+batches, so a docs row on the batch is a merge conflict waiting for the PR, and the conflict costs
+a rebase, a second deploy and the PR's checks (PR #112, 2026-09-14,
+`.claude/skills/do-next/SKILL.md`). The diff is docs-only when
+`git diff --name-only <batch>...<agent-branch> | grep -v '\.md$'` prints nothing. When the
+operator has asked for a named set of rows in one PR, the operator's instruction wins and the row
+rides the batch.
+
 - Remove the worktree and delete its branch as the merge lands, not in a later sweep. After a
   squash `git branch -d` refuses, because it cannot see the squash; prove the content landed
   (`git diff <agent-branch> <batch> -- $(git diff --name-only <batch>...<agent-branch>)` is empty)
