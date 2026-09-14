@@ -1,6 +1,6 @@
 ---
 name: session-report
-description: Write the session's report as REPORT_SESSION_<id>_<date>.md at the repo root — what the session landed, the mechanisms that made it efficient, where it lost time or money, and one board row per recommended optimisation — from measured figures (git, GitHub Actions job minutes, agent token counts, the transcript), never from memory. Invoke when the operator asks for a session report, an account of the session, or "how did this session do".
+description: Write the session's report as REPORT_SESSION_<id>_<date>.md at the repo root — what the session landed, the mechanisms that made it efficient, where it lost time or money, and the improvements it suggests, each with its value, ranked most impactful first — from measured figures (git, GitHub Actions job minutes, agent token counts, the transcript), never from memory. Invoke when the operator asks for a session report, an account of the session, or "how did this session do".
 ---
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
@@ -8,8 +8,8 @@ description: Write the session's report as REPORT_SESSION_<id>_<date>.md at the 
 # session-report
 
 One file per session, at the repo root: `REPORT_SESSION_<id>_<YYYY-MM-DD>.md`. It leads with the
-result and the mechanisms that produced it, then the losses, each loss tied to a board row that
-would remove it. Every figure in it is measured in this session; nothing is recalled.
+result and the mechanisms that produced it, then the losses, each loss tied to a suggested
+improvement and its value. Every figure in it is measured in this session; nothing is recalled.
 
 ## The file name
 
@@ -96,31 +96,35 @@ read on.
    it. Mechanisms are named things the next session can repeat: a skill, a rule, a brief shape, a
    file boundary.
 4. **Room for improvement**: one table, a row per loss, the measured size of the loss, the cause,
-   and the board row that removes it. A loss with no board row is not finished being reported.
+   and the improvement that would remove it. A loss with no suggested improvement is not finished
+   being reported.
 5. **Placement**: where the session sits on each efficiency against published anchors, with the
    anchors cited and the scales labelled as constructed. Do a web search for anchors dated within
    the last three months; do not reuse last report's numbers.
-6. **Recommended optimisations**: the board rows this report opened, by id, one line each.
+6. **Suggested improvements**: one line each, ranked most impactful first: what to change, its
+   value (the measured loss it removes, in the losses table's unit), and the board row that already
+   covers it, if one does.
 
-## The board rows
+## The suggested improvements
 
-Every loss in the "Room for improvement" table gets a `CQ-n` row on the board (`Source` `none`,
-`Needs` `machine-only`, tier in `Status`) unless a row already covers it, in which case name that
-row. Write them with the `/board` skill's row format and its order rules. Rows that the operator
-has said stay theirs (a command that spends money, deletes, or refreshes a credential) become a
-guidance row about handling the block efficiently, never a row that pre-authorises the command.
-
-Under cool-down the board is closed: the rows go to `PARKED.md` with the report naming them,
-unless the operator asks for them on the board in their own words.
+The report suggests; it opens no board row. Every loss in the "Room for improvement" table
+gets one suggestion: what to change, in one line, and its value as the measured loss it would
+remove (minutes, dollars, job-minutes, operator messages), in the unit the losses table used.
+Rank the list by value, most impactful first; where two values are in different units, say which
+ranks higher and why. Name any board row that already covers a suggestion. A loss whose remedy is
+an action the operator has kept for themselves (a command that spends money, deletes, files, or
+refreshes a credential) gets a suggestion about handling the block efficiently, never one that
+pre-authorises the command. The operator picks which suggestions become rows.
 
 ## Write-back
 
 Prettier the report and `NEXT.md`, run `app/test/licence-headers.test.js` (the report needs the
-header comment), commit the report and the board rows together as a docs-only commit to `main`,
-and push. Then say, in the reply: the file name, the result line, and the rows opened.
+header comment), commit the report alone as a docs-only commit to `main`, and push. Then say, in the
+reply: the file name and the result line, and end the reply with the ranked suggestions and their
+values as its last block, so the operator's choice sits where they stop reading.
 
 ## What the report is not
 
 Not a transcript, not a log of tool calls, not a place for the session to grade itself in prose.
-Figures, mechanisms, losses, rows. Where a figure could not be measured, the report says
+Figures, mechanisms, losses, suggestions. Where a figure could not be measured, the report says
 "estimated" beside it and how; it never fills the gap with a confident number.
