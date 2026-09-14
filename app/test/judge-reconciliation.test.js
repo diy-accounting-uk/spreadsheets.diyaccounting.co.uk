@@ -33,6 +33,7 @@ import {
   verdictRecord,
 } from "../bin/judge-reconciliation.js";
 import { buildIndicators, checkActual, checkCounts, parseReport, requireValue, toNumber, value } from "../lib/report-indicators.js";
+import { loadScenario } from "../lib/scenario-loader.js";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "..", "..", "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -308,6 +309,9 @@ describe("buildIndicators for the Self Employed", () => {
   // is built on, so a fixture change that moves these figures moves the
   // expectation with it rather than leaving a stale literal behind.
   const parsed = parseReport(report("seAdvanced"));
+  // The fixture the report was generated from, for the figures the book
+  // states by hand.
+  const advancedScenario = loadScenario(resolve(ROOT, "app", "test", "fixtures", "se-scenario-advanced.toml"));
   const SA103S = "Self Assessment (SA103S)";
   const SA103F = "Self Assessment (SA103F)";
   const money = new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -353,6 +357,14 @@ describe("buildIndicators for the Self Employed", () => {
       0,
     );
     const accountingAdjustment = requireValue(parsed, SA103F, "Adjustment for change of accounting practice (box 71)");
+    const taxableProfit = requireValue(parsed, SA103F, "Net business profit for tax purposes (box 64)");
+    const adjustedProfit = requireValue(parsed, SA103F, "Adjusted profit (box 73)");
+    // The sentence's arithmetic is anchored on the rule HMRC's working sheet
+    // states, box 73 = box 64 plus box 71, with box 71 read from the
+    // fixture the report was generated from, so a report whose box 73 and
+    // box 71 agree with each other but not with the book fails here.
+    expect(accountingAdjustment).toBe(advancedScenario.annual_adjustments.accountingAdjustment);
+    expect(adjustedProfit).toBeCloseTo(taxableProfit + accountingAdjustment, 2);
 
     expect(text).toContain(
       "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
@@ -360,8 +372,7 @@ describe("buildIndicators for the Self Employed", () => {
         `net profit (box 47) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)}; ` +
         `total capital allowances (box 57) ${amount(capitalAllowances)} = the short return's allowance boxes ${amount(shortAllowances)} plus the allowances stated on the full return alone, ` +
         `which the short return has no box for (${fullOnlyAllowances.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}). ` +
-        `The sheet carries the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; ` +
-        "adjusted profit (box 73) repeats box 64, and the warning names the figure HMRC's working sheet would add.",
+        `Adjusted profit (box 73) ${amount(adjustedProfit)} = net business profit for tax purposes (box 64) ${amount(taxableProfit)} plus the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71), as HMRC's working sheet adds it.`,
     );
   });
 
@@ -380,12 +391,19 @@ describe("buildIndicators for the Self Employed", () => {
       .filter((box) => box.figure !== null && box.figure !== 0);
     const fullForTax = requireValue(parsed, SA103F, "Total taxable profits from this business (box 76)");
     const chargedProfit = requireValue(parsed, "Income Tax Calculation", "Profit from Self Employment");
+    const accountingAdjustment = requireValue(parsed, SA103F, "Adjustment for change of accounting practice (box 71)");
+    const deducted = fullOnly.reduce((sum, box) => sum + box.figure, 0);
+    // The full-only boxes take the short return's figure down and box 71
+    // takes it back up; the gap the sentence closes on is the net of the two.
+    expect(shortForTax - fullForTax).toBeCloseTo(deducted - accountingAdjustment, 2);
 
     expect(text).toContain(
       `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(shortForTax)} on the short return; ` +
         `the income tax computation charges the full return's total taxable profits (box 76) of ${amount(fullForTax)}, ` +
-        `${amount(shortForTax - fullForTax)} below it by the boxes stated on the full return alone ` +
-        `(${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}).`,
+        `${amount(deducted)} below it by the boxes stated on the full return alone ` +
+        `(${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}) ` +
+        `and ${amount(accountingAdjustment)} above it by the Adjustment for change of accounting practice (box 71) ${amount(accountingAdjustment)} the working sheet adds to box 64, ` +
+        `which is ${amount(Math.abs(shortForTax - fullForTax))} ${shortForTax >= fullForTax ? "below" : "above"} it in all.`,
     );
     expect(text).toContain(`Income tax: charged on a profit of ${amount(chargedProfit)}`);
   });

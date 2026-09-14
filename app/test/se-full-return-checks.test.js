@@ -131,7 +131,6 @@ const SA103F_BOXES_WITH_A_FIGURE = [
   "O204",
   "O210",
   "D210",
-  "D219",
 ];
 
 const TOTAL_CAPITAL_ALLOWANCES = "SA103F box 57 total capital allowances (O154) = boxes 49 to 56";
@@ -139,20 +138,25 @@ const NET_PROFIT = "SA103F box 47 net profit (D129) = boxes 15 and 16 less box 3
 const TOTAL_ADDITIONS = "SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60";
 const TOTAL_DEDUCTIONS = "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62";
 const TAXABLE_PROFIT = "SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63";
-const ADJUSTED_PROFIT = "SA103F box 73 adjusted profit (O194) = box 64";
+const ADJUSTED_PROFIT = "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil";
+const ADJUSTED_PROFIT_STATED =
+  "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil";
 const TOTAL_TAXABLE_PROFITS = "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75";
 const STATED_ALLOWANCES =
   "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)";
 const STATED_BOX_62 = "SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states";
 const STATED_BOX_60 = "SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states";
-const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states";
+const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil";
+const ADJUSTED_LOSS_STATED =
+  "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil";
 const SHORT_TAXABLE_PROFIT =
   "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62";
 const SHORT_TOTAL_TAXABLE_PROFITS =
-  "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off";
+  "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off";
 const SHORT_CAPITAL_ALLOWANCES =
   "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54";
-const SHORT_PROFIT_FOR_TAX = "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5";
+const SHORT_PROFIT_FOR_TAX =
+  "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5";
 const BRIDGE = "Accounting profit to tax profit bridge closes to zero";
 // A cell the trader states on SE Full alone reaches the full return's
 // totals, the short-return relations that subtract it, the tax profit the
@@ -340,8 +344,21 @@ const SA103F_CORRUPTIONS = [
       BRIDGE,
     ],
   ],
-  ["D210", 4000, ["SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states"]],
-  ["D219", 4000, [ADJUSTED_LOSS]],
+  // Box 71 reaches box 73 and, through boxes 76 and Income Tax!E5, every
+  // relation that ends on the tax profit; box 77 stays floored at nil on a
+  // profit year whatever box 71 holds.
+  [
+    "D210",
+    4000,
+    [
+      SHORT_PROFIT_FOR_TAX,
+      ADJUSTED_PROFIT,
+      "SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states",
+      SHORT_TOTAL_TAXABLE_PROFITS,
+      BRIDGE,
+    ],
+  ],
+  ["D219", 4000, [ADJUSTED_LOSS, ADJUSTED_LOSS_STATED]],
   [
     "O144",
     1000,
@@ -375,9 +392,20 @@ const SA103F_CORRUPTIONS = [
   ],
   ["D174", 12740, [TOTAL_ADDITIONS, TAXABLE_PROFIT, STATED_BOX_60]],
   ["O169", 45000, [TOTAL_DEDUCTIONS, TAXABLE_PROFIT, STATED_BOX_62]],
-  ["O174", 143632.058333333, [TAXABLE_PROFIT, ADJUSTED_PROFIT, SHORT_TAXABLE_PROFIT]],
-  ["O179", 1000, [ADJUSTED_LOSS, "SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106)", BRIDGE]],
-  ["O194", 143632.058333333, [ADJUSTED_PROFIT, TOTAL_TAXABLE_PROFITS]],
+  ["O174", 143632.058333333, [TAXABLE_PROFIT, ADJUSTED_PROFIT, ADJUSTED_PROFIT_STATED, SHORT_TAXABLE_PROFIT]],
+  // A box 65 figure smaller than box 64 leaves the working sheet's figure
+  // positive, so box 73 moves and box 77 stays at nil.
+  [
+    "O179",
+    1000,
+    [
+      ADJUSTED_PROFIT,
+      ADJUSTED_PROFIT_STATED,
+      "SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106)",
+      BRIDGE,
+    ],
+  ],
+  ["O194", 143632.058333333, [ADJUSTED_PROFIT, TOTAL_TAXABLE_PROFITS, ADJUSTED_PROFIT_STATED]],
   [
     "O199",
     1000,
@@ -472,7 +500,6 @@ describeCalc("SA103F checks catch a broken full return", () => {
     const raised = checks.filter((c) => c.name.startsWith("SA103F") && c.severity === "warning" && !c.pass).map((c) => c.name);
     expect(raised).toEqual([
       "SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries",
-      "SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64",
     ]);
   });
 

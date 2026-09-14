@@ -56,22 +56,22 @@ Trade: IT consultancy and software development
 | Closing Debtors total | 7900 | 7900 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
-| Income Tax | 42904.263825 | 42904.2638249998 | -2.0372681319713593e-10 | PASS |
+| Income Tax | 42944.763825 | 42944.7638249998 | -2.0372681319713593e-10 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 46680.919995000004 | 46680.9199949998 | -2.0372681319713593e-10 | PASS |
+| Total Tax + NI, less the CIS already deducted | 46723.219995 | 46723.2199949998 | -1.964508555829525e-10 | PASS |
 | Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
-| Tax at additional rate | 388.26382499999966 | 388.263824999816 | -1.836610863392707e-10 | PASS |
+| Tax at additional rate | 428.76382499999966 | 428.763824999816 | -1.836610863392707e-10 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
 | Tax: sheet splits the higher and additional bands at the higher band end | 125140 | 125140 | 0 | PASS |
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 126002.8085 | 126002.8085 | 0 | PASS |
-| Tax: IT = Basic + Higher + Additional | 42904.26382499981 | 42904.2638249998 | -1.4551915228366852e-11 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 46680.919994999786 | 46680.9199949998 | +1.4551915228366852e-11 | PASS |
+| Tax: Taxable = Profit - Allowance | 126092.8085 | 126092.8085 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 42944.76382499981 | 42944.7638249998 | -1.4551915228366852e-11 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 46723.21999499979 | 46723.2199949998 | +1.4551915228366852e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 146730.52483333368 | 146730.524833333 | -6.693881005048752e-10 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 192469.475166667 | 192469.475166666 | -9.89530235528946e-10 | PASS |
 | SA103S: net loss = total expenses - turnover - other business income | 0 | 0 | 0 | PASS |
-| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5 | 126002.8085 | 126002.8085 | 0 | PASS |
+| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5 | 126092.8085 | 126092.8085 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
 | Forecast: turnover = P&L turnover | 339200 | 339200 | 0 | PASS |
@@ -117,8 +117,9 @@ Trade: IT consultancy and software development
 | SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 27711.4585 | 27711.4585 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 69190 | 69190 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 123919.475166666 | 123919.475166666 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 | 123919.475166666 | 123919.475166666 | 0 | PASS |
-| SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 126002.80849999933 | 126002.8085 | +6.693881005048752e-10 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil | 124009.475166666 | 124009.475166666 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil | 0 | 0 | 0 | PASS |
+| SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 126092.80849999933 | 126092.8085 | +6.693881005048752e-10 | PASS |
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 3360 | 3360 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 540 | 540 | 0 | PASS |
@@ -138,10 +139,10 @@ Trade: IT consultancy and software development
 | SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54) | 4300 | 4300 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 350 | 350 | 0 | PASS |
 | SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 640 | 640 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states | -90 | -90 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64 | 124009.475166666 | 123919.475166666 | -90 | **WARNING** |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil | 124009.475166666 | 124009.475166666 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 | 123919.475166666 | 123919.475166666 | 0 | PASS |
-| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off | 126002.8085 | 126002.8085 | 0 | PASS |
+| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off | 126092.8085 | 126092.8085 | 0 | PASS |
 | SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone | 123919.475166666 | 128569.475166666 | +4650 | **WARNING** |
 | SA103F box 15 turnover: full return (D55) = short return (D38) | 339200 | 339200 | 0 | PASS |
 | SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
@@ -936,11 +937,12 @@ Trade: IT consultancy and software development
 | Less the full return's own Structures and Buildings Allowance (box 53) | SE Full!D160 | -1,800 |
 | Less the full return's own electric charge-point allowance (box 54) | SE Full!O139 | 0 |
 | Less the full return's own box 62 adjustment | SE Full!D179 | -350 |
+| Add the full return's own box 71 adjustment for change of accounting practice | SE Full!D210 | 90 |
 | Add back the year's loss, carried forward rather than reducing tax below nil | SE Full!O179 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
 | Add grants as other business income (box 30) | SE Short!O99 | 2,083.33 |
-| **Tax profit the bridge computes** | | **126,002.81** |
-| Tax profit the sheet carries | Income Tax!E5 | 126,002.81 |
+| **Tax profit the bridge computes** | | **126,092.81** |
+| Tax profit the sheet carries | Income Tax!E5 | 126,092.81 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -1014,20 +1016,20 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 126,002.81 |
+| Profit from Self Employment | 126,092.81 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 0 |
-| Taxable Income | 126,002.81 |
+| Taxable Income | 126,092.81 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 34,976 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 125,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 388.26 |
-| **Total Income Tax** | 42,904.26 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 428.76 |
+| **Total Income Tax** | 42,944.76 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,514.66 |
-| **Total Tax + NI** | 46,680.92 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,516.46 |
+| **Total Tax + NI** | 46,723.22 |
 
 ## Profit Forecast
 
@@ -1128,12 +1130,12 @@ Journal amounts include VAT at 20%.
 | **Net business profit for tax purposes (box 64)** | 123,919.48 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71) | 90 |
-| **Adjusted profit (box 73)** | 123,919.48 |
+| **Adjusted profit (box 73)** | 124,009.48 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 2,083.33 |
-| **Total taxable profits from this business (box 76)** | 126,002.81 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | -90 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | -90 |
+| **Total taxable profits from this business (box 76)** | 126,092.81 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 0 |
 
 ## Payroll Summary
@@ -1604,20 +1606,20 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 126002.8085 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 126092.8085 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 0 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 126002.8085 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 126092.8085 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7540 | tax.incomeTax.basicRate |
 | C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicBandEnd (applied) |
 | E9 | Tax at Higher Rate (40%) | 34976 | tax.incomeTax.higherRate |
 | C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherBandEnd (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
-| E10 | Tax at Additional Rate (45%) | 388.263824999816 | tax.incomeTax.additionalRate |
-| E11 | **Total Income Tax** | 42904.2638249998 | tax.incomeTax (total) |
+| E10 | Tax at Additional Rate (45%) | 428.763824999816 | tax.incomeTax.additionalRate |
+| E11 | **Total Income Tax** | 42944.7638249998 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 2262 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1514.65616999999 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 46680.9199949998 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1516.45616999999 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 46723.2199949998 | gl-cor:taxAmount (totalTaxNI) |
 
 ### Profit Forecast
 
@@ -1716,12 +1718,12 @@ Journal amounts include VAT at 20%.
 | O174 | **Net business profit for tax purposes (box 64)** | 123919.475166666 | gl-cor:amount (sa103f.taxableProfit) |
 | O179 | Net business loss for tax purposes (box 65) | 0 | gl-cor:amount (sa103f.taxableLoss) |
 | D210 | Adjustment for change of accounting practice (box 71) | 90 | tax.selfEmployment.adjustments.accountingAdjustment |
-| O194 | **Adjusted profit (box 73)** | 123919.475166666 | gl-cor:amount (sa103f.adjustedProfit) |
+| O194 | **Adjusted profit (box 73)** | 124009.475166666 | gl-cor:amount (sa103f.adjustedProfit) |
 | O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
-| O210 | **Total taxable profits from this business (box 76)** | 126002.8085 | gl-cor:amount (sa103f.profitForTax) |
-| D219 | Adjusted loss (box 77) | -90 | gl-cor:amount (sa103f.adjustedLoss) |
-| O224 | Total loss to carry forward (box 80) | -90 | gl-cor:amount (sa103f.lossCarriedForward) |
+| O210 | **Total taxable profits from this business (box 76)** | 126092.8085 | gl-cor:amount (sa103f.profitForTax) |
+| D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
+| O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
 | G1 |  | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 |  |
 | Q2 |  | 46118 |  |

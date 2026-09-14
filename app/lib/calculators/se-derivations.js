@@ -605,14 +605,6 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
         "SA103F box 54 has no formula behind it and the book states no tax.selfEmployment.allowances.electricChargePointAllowance; the box stays blank.",
     });
   }
-  if (cellNumber("D210") !== 0) {
-    warnings.push({
-      field: primaryField(boxes, "71"),
-      reason:
-        "SE Full carries box 71 into box 77 (D219 = O179+E197+D210+P190) and not into box 73 (O194 = O174); HMRC computes the adjusted profit from the filed field, so the sheet's printed box 73 and its Income Tax sheet leave it out.",
-      handComputed: round2(seFull.O174 + cellNumber("D210")),
-    });
-  }
   for (const { box: boxNumber, pick } of NO_SOURCE_ANNUAL_BOXES) {
     const entry = boxEntry(boxes, boxNumber);
     const field = fieldsOf(entry)[pick];

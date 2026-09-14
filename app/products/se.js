@@ -230,10 +230,12 @@ export const DISALLOWABLE_PERCENT_CELLS = {
 // The SA103F boxes the trader states by hand, keyed by HMRC's own API field
 // names. Verified against the template: SE Full!O154 (box 57) reads
 // D139+D144+D147+D152+D156+D160+O139+O144+O149, so every allowance cell here
-// is a term of the total; O169 (box 63) reads O154+D179; D219 (box 77) reads
-// O179-N(D197)-D210-N(O190). Box 54's caption at N136 is "Electric
-// charge-point allowance" (L136 = 54); box 55's cell O144 is the small pools
-// formula, so the enhanced-allowance figure has no input cell of its own.
+// is a term of the total; O169 (box 63) reads O154+D179; O194 (box 73) and
+// D219 (box 77) each floor the working sheet's one figure,
+// O174-O179+N(D197)+D210+N(O190), at nil from its own side. Box 54's caption
+// at N136 is "Electric charge-point allowance" (L136 = 54); box 55's cell
+// O144 is the small pools formula, so the enhanced-allowance figure has no
+// input cell of its own.
 export const ANNUAL_ALLOWANCE_CELLS = {
   zeroEmissionsGoodsVehicleAllowance: "D152",
   zeroEmissionsCarAllowance: "D156",
@@ -1843,6 +1845,11 @@ export function profitBridge(results) {
     { label: "Less the full return's own electric charge-point allowance (box 54)", cell: "SE Full!O139", value: -num(seFull?.O139) },
     { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
     {
+      label: "Add the full return's own box 71 adjustment for change of accounting practice",
+      cell: "SE Full!D210",
+      value: num(seFull?.D210),
+    },
+    {
       label: "Add back the year's loss, carried forward rather than reducing tax below nil",
       cell: "SE Full!O179",
       value: num(seFull?.O179),
@@ -2278,13 +2285,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       // Income Tax!E5 reads 'SE Full'!O210, so the short return's box 31
       // reaches it only through the full return: the two agree exactly when
-      // no box the trader states on SE Full alone (52, 52.1, 53, 54, 62)
-      // carries a figure, and stand apart by those figures otherwise.
+      // no box the trader states on SE Full alone (52, 52.1, 53, 54, 62 and
+      // 71) carries a figure, and stand apart by those figures otherwise.
       const fullOnly = results["SE Full"] || {};
-      const fullReturnOnlyBoxes = num(fullOnly.D152) + num(fullOnly.D156) + num(fullOnly.D160) + num(fullOnly.O139) + num(fullOnly.D179);
+      const fullReturnOnlyBoxes =
+        num(fullOnly.D152) + num(fullOnly.D156) + num(fullOnly.D160) + num(fullOnly.O139) + num(fullOnly.D179) - num(fullOnly.D210);
       if (seShort.D106) {
         check(
-          "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5",
+          "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5",
           Math.max(0, num(seShort.D106) - fullReturnOnlyBoxes),
           tax.E5,
         );
@@ -2507,7 +2515,21 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(seFull.O174),
       taxProfitFromNetProfit > 0 ? taxProfitFromNetProfit : Math.max(0, taxProfitFromNetLoss),
     );
-    check("SA103F box 73 adjusted profit (O194) = box 64", num(seFull.O194), num(seFull.O174));
+    // HMRC's working sheet for boxes 73 and 77 takes one figure, box 64 less
+    // box 65 plus boxes 68, 71 and 72; box 73 is it when positive, box 77 its
+    // negation when not. Boxes 68 (D197) and 72 (O190) print a dash on this
+    // template and contribute nil, so box 71 is the only adjustment here.
+    const adjustedProfitBeforeFloor = num(seFull.O174) - num(seFull.O179) + num(seFull.D210);
+    check(
+      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil",
+      num(seFull.O194),
+      Math.max(0, adjustedProfitBeforeFloor),
+    );
+    check(
+      "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil",
+      num(seFull.D219),
+      Math.max(0, -adjustedProfitBeforeFloor),
+    );
     check(
       "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75",
       num(seFull.O210),
@@ -2604,22 +2626,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(seFull.D174) - num(seFull.O122) - num(seFull.O160),
       ownUseStated,
     );
-    // Box 77's formula is O179-N(D197)-D210-N(O190): box 65 reduced by box
-    // 71, with the box 68 and 72 terms reading each printed dash (always
-    // nil -- neither box has an input cell on this template).
+    // The same two boxes anchored on the figure the book states, so a sheet
+    // whose box 71 cell and adjusted figures agree with each other but not
+    // with the book fails here.
+    const statedAccountingAdjustment = statedAdjustments.accountingAdjustment || 0;
     check(
-      "SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states",
-      num(seFull.D219),
-      num(seFull.O179) - (statedAdjustments.accountingAdjustment || 0),
-    );
-    // Box 73 reads box 64 alone (O194 = O174). HMRC's working sheet adds box
-    // 71 to the adjusted profit; the sheet carries box 71 into box 77 only.
-    check(
-      "SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64",
+      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil",
       num(seFull.O194),
-      num(seFull.O174) + num(seFull.D210),
-      0.01,
-      "warning",
+      Math.max(0, num(seFull.O174) - num(seFull.O179) + statedAccountingAdjustment),
+    );
+    check(
+      "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil",
+      num(seFull.D219),
+      Math.max(0, num(seFull.O179) - num(seFull.O174) - statedAccountingAdjustment),
     );
 
     if (sa103s) {
@@ -2647,10 +2666,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(seFull.O174),
         Math.max(0, num(sa103s.D99) - fullReturnOnlyDeductions),
       );
+      // Box 71 is the one SE Full-only figure that adds to the taxable
+      // profit; the short return has no box for it either.
       check(
-        "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off",
+        "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off",
         num(seFull.O210),
-        Math.max(0, num(sa103s.D106) - fullReturnOnlyDeductions + num(sa103s.O94) - num(seFull.O199)),
+        Math.max(0, num(sa103s.D106) - fullReturnOnlyDeductions + num(seFull.D210) + num(sa103s.O94) - num(seFull.O199)),
       );
       check(
         "SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone",

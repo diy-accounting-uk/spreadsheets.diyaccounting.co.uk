@@ -273,8 +273,10 @@ function sa103fLine(report) {
   }
   const accountingAdjustment = value(report, SA103F, SE_ACCOUNTING_ADJUSTMENT);
   if (accountingAdjustment !== null && accountingAdjustment !== 0) {
+    const taxableProfit = requireValue(report, SA103F, "Net business profit for tax purposes (box 64)");
+    const adjustedProfit = requireValue(report, SA103F, "Adjusted profit (box 73)");
     parts.push(
-      `The sheet carries the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; adjusted profit (box 73) repeats box 64, and the warning names the figure HMRC's working sheet would add.`,
+      `Adjusted profit (box 73) ${amount(adjustedProfit)} = net business profit for tax purposes (box 64) ${amount(taxableProfit)} plus the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71), as HMRC's working sheet adds it.`,
     );
   }
   return parts.join(" ");
@@ -286,11 +288,26 @@ function sa103fLine(report) {
 function profitForTaxLine(report, grants, shortForTax) {
   const opening = `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(shortForTax)}`;
   const fullOnly = report.sections.has(SA103F) ? statedBoxes(report, [...SE_FULL_ONLY_ALLOWANCES, SE_FULL_ONLY_DEDUCTION]) : [];
-  if (fullOnly.length === 0) return `${opening}, which is the profit the income tax computation charges.`;
+  const accountingAdjustment = report.sections.has(SA103F) ? statedBoxes(report, [SE_ACCOUNTING_ADJUSTMENT]) : [];
+  if (fullOnly.length === 0 && accountingAdjustment.length === 0)
+    return `${opening}, which is the profit the income tax computation charges.`;
   const fullForTax = requireValue(report, SA103F, "Total taxable profits from this business (box 76)");
+  const deducted = fullOnly.reduce((sum, box) => sum + box.figure, 0);
+  const added = accountingAdjustment.reduce((sum, box) => sum + box.figure, 0);
+  const relations = [];
+  if (fullOnly.length > 0) {
+    relations.push(
+      `${amount(deducted)} below it by the boxes stated on the full return alone (${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")})`,
+    );
+  }
+  if (accountingAdjustment.length > 0) {
+    relations.push(
+      `${amount(added)} above it by the ${accountingAdjustment.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")} the working sheet adds to box 64`,
+    );
+  }
   return (
     `${opening} on the short return; the income tax computation charges the full return's total taxable profits (box 76) of ${amount(fullForTax)}, ` +
-    `${amount(shortForTax - fullForTax)} below it by the boxes stated on the full return alone (${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}).`
+    `${relations.join(" and ")}, which is ${amount(Math.abs(shortForTax - fullForTax))} ${shortForTax >= fullForTax ? "below" : "above"} it in all.`
   );
 }
 
