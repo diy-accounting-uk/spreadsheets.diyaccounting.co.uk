@@ -1167,6 +1167,11 @@ const SCHEDULE_DISPOSAL_COLUMNS = { disposedDate: "U", disposalProceeds: "V" };
 // Column AB, "S" on a row whose tax written-down value sits in the special
 // rate pool (the Self Employed Schedule's AC column, SA103F box 51).
 const SCHEDULE_SPECIAL_RATE_POOL_MARKER = { column: "AB", value: "S" };
+// The single asset pool marker beside it, and the private use share the car
+// rows carry in column M. The Company Schedule has neither column, so its
+// register never sets either field.
+const SCHEDULE_SINGLE_ASSET_POOL_MARKER = { column: "AD", value: "P" };
+const SCHEDULE_PRIVATE_USE_COLUMN = "M";
 
 // The single-file products keep one Fixed Assets sheet inside the workbook
 // and their writers fill only its in-year addition block: BST the Plant &
@@ -1261,6 +1266,13 @@ async function fixedAssetRegisterFrom(set, product) {
       const asset = { class: assetClass, cost };
       if (textAt(xml, `${SCHEDULE_SPECIAL_RATE_POOL_MARKER.column}${row}`, sharedStrings) === SCHEDULE_SPECIAL_RATE_POOL_MARKER.value) {
         asset.capitalAllowancePool = "special";
+      }
+      if (textAt(xml, `${SCHEDULE_SINGLE_ASSET_POOL_MARKER.column}${row}`, sharedStrings) === SCHEDULE_SINGLE_ASSET_POOL_MARKER.value) {
+        asset.singleAssetPool = true;
+      }
+      if (assetClass === "motorVehicles") {
+        const privateUse = numberAt(xml, `${SCHEDULE_PRIVATE_USE_COLUMN}${row}`, sharedStrings);
+        if (privateUse > 0) asset.privateUseProportion = privateUse;
       }
       assign(asset, "description", textAt(xml, `${SCHEDULE_ASSET_COLUMNS.description}${row}`, sharedStrings));
       assign(asset, "accumulatedDepreciation", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.accumulatedDepreciation}${row}`, sharedStrings));

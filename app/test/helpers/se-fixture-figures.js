@@ -161,14 +161,19 @@ export function depreciationAndDisposalLoss(scenario, taxData, rate) {
  * coded transactions and the tax year's allowance rates: a new asset
  * claims the Annual Investment Allowance in full; an existing asset with a
  * tax written down value claims a writing down allowance at the main rate,
- * or the special rate on the special-rate pool; a disposed asset's
- * allowance pool residual (its tax written down value less the writing
- * down allowance just claimed on it) is compared against the sale
- * proceeds for a balancing allowance or charge.
+ * or the special rate on the special-rate pool, on its business share (one
+ * less the private use proportion a motor asset states); an asset marked
+ * single_asset_pool is its own pool, so its allowance is counted apart
+ * from the main and special rate pools it would otherwise join, while the
+ * printed boxes 50 and 51 (R1 and AC1) still carry it by rate; a disposed
+ * asset's allowance pool residual (its tax written down value less the
+ * writing down allowance just claimed on it) is compared against the sale
+ * proceeds for a balancing allowance or charge, again on the business
+ * share.
  * @param {Object} scenario - a loaded scenario
  * @param {Object} taxData - the tax year's data (app/data/<year>.toml)
  * @param {number} rate - the VAT fraction capital transactions were entered gross of
- * @returns {{aia: number, mainPoolWda: number, specialPoolWda: number, balancingAllowance: number, balancingCharge: number, total: number}}
+ * @returns {{aia: number, mainPoolWda: number, specialPoolWda: number, singleAssetMainWda: number, singleAssetSpecialWda: number, singleAssetWrittenDown: number, balancingAllowance: number, balancingCharge: number, total: number}}
  */
 export function capitalAllowancesFromSchedule(scenario, taxData, rate) {
   const wdaRate = taxData?.capital_allowances?.writing_down_allowance ?? 0;
@@ -180,22 +185,32 @@ export function capitalAllowancesFromSchedule(scenario, taxData, rate) {
 
   let mainPoolWda = 0;
   let specialPoolWda = 0;
+  let singleAssetMainWda = 0;
+  let singleAssetSpecialWda = 0;
+  let singleAssetWrittenDown = 0;
   let balancingAllowance = 0;
   let balancingCharge = 0;
-  for (const assets of Object.values(byCategory)) {
+  for (const [category, assets] of Object.entries(byCategory)) {
     for (const asset of assets) {
       const taxWdv = asset.tax_wdv;
       if (typeof taxWdv !== "number" || taxWdv <= 0) continue;
       const special = asset.pool === "special";
-      const wda = taxWdv * (special ? specialRate : wdaRate);
-      if (special) specialPoolWda += wda;
+      // The Schedule applies the private use share (column M) on the motor
+      // rows only.
+      const businessShare = category === "motor" ? 1 - (asset.private_use || 0) : 1;
+      const wda = taxWdv * (special ? specialRate : wdaRate) * businessShare;
+      if (asset.single_asset_pool === true) {
+        if (special) singleAssetSpecialWda += wda;
+        else singleAssetMainWda += wda;
+        singleAssetWrittenDown += taxWdv - wda;
+      } else if (special) specialPoolWda += wda;
       else mainPoolWda += wda;
 
       const proceeds = disposals.get(asset);
       if (proceeds === undefined) continue;
       const poolResidual = taxWdv - wda;
-      if (proceeds < poolResidual) balancingAllowance += poolResidual - proceeds;
-      else if (proceeds > poolResidual) balancingCharge += proceeds - poolResidual;
+      if (proceeds < poolResidual) balancingAllowance += (poolResidual - proceeds) * businessShare;
+      else if (proceeds > poolResidual) balancingCharge += (proceeds - poolResidual) * businessShare;
     }
   }
 
@@ -205,8 +220,11 @@ export function capitalAllowancesFromSchedule(scenario, taxData, rate) {
     aia,
     mainPoolWda,
     specialPoolWda,
+    singleAssetMainWda,
+    singleAssetSpecialWda,
+    singleAssetWrittenDown,
     balancingAllowance,
     balancingCharge,
-    total: aia + mainPoolWda + specialPoolWda + balancingAllowance - balancingCharge,
+    total: aia + mainPoolWda + specialPoolWda + singleAssetMainWda + singleAssetSpecialWda + balancingAllowance - balancingCharge,
   };
 }

@@ -440,9 +440,24 @@ function payrollMonths(payroll) {
  * That is what the sheet reports for a disposal with no tax value entered, so
  * it is what this reports too.
  */
-function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, specialRate = 0, pool, disposal }) {
+function scheduleRow({
+  cost,
+  accDep = 0,
+  taxWdv,
+  depRate,
+  aiaRate,
+  wdaRate,
+  specialRate = 0,
+  pool,
+  singleAssetPool = false,
+  privateUse = 0,
+  disposal,
+}) {
   const written = cost > 0;
   const isNewAsset = aiaRate !== undefined;
+  // The car rows multiply the allowances by (1-M), the business share; M is
+  // nil on every other row, so the factor is 1 there.
+  const businessShare = 1 - privateUse;
   const row = { E: cost, F: accDep, H: depRate };
   // A New asset block has no opening net book value column at all, so the row
   // shows nothing there and the depreciation charge below is not capped.
@@ -459,8 +474,8 @@ function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, spec
     row.O = taxWdv === undefined ? SHEET_BLANK : taxWdv;
     row.Q = SHEET_BLANK;
     const claimsWritingDown = typeof row.O === "number" && row.O > 0;
-    row.R = claimsWritingDown && !specialPool ? row.O * wdaRate : SHEET_BLANK;
-    row.AC = claimsWritingDown && specialPool ? row.O * specialRate : SHEET_BLANK;
+    row.R = claimsWritingDown && !specialPool ? row.O * wdaRate * businessShare : SHEET_BLANK;
+    row.AC = claimsWritingDown && specialPool ? row.O * specialRate * businessShare : SHEET_BLANK;
     row.S = claimsWritingDown ? row.O - sheetNumber(row.R) - sheetNumber(row.AC) : SHEET_BLANK;
   } else {
     row.O = SHEET_BLANK;
@@ -470,6 +485,12 @@ function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, spec
     row.AC = SHEET_BLANK;
     row.S = written ? cost - sheetNumber(row.Q) : SHEET_BLANK;
   }
+  // Column AD marks a row "P" for a single asset pool: AE and AF repeat its
+  // allowance by rate and AG its written-down value, so the small pools
+  // test can leave the row out. The row's own R, AC and S do not change.
+  row.AE = singleAssetPool && !specialPool ? sheetNumber(row.R) : SHEET_BLANK;
+  row.AF = singleAssetPool && specialPool ? sheetNumber(row.AC) : SHEET_BLANK;
+  row.AG = singleAssetPool ? sheetNumber(row.S) : SHEET_BLANK;
 
   row.V = disposal ? disposal.proceeds : SHEET_BLANK;
   row.W = disposal ? cost : SHEET_BLANK;
@@ -481,8 +502,8 @@ function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, spec
     row.Y = SHEET_ERROR;
     row.Z = SHEET_BLANK;
   } else {
-    row.Y = disposal.proceeds < row.S ? row.S - disposal.proceeds : SHEET_BLANK;
-    row.Z = disposal.proceeds > row.S ? disposal.proceeds - row.S : SHEET_BLANK;
+    row.Y = disposal.proceeds < row.S ? (row.S - disposal.proceeds) * businessShare : SHEET_BLANK;
+    row.Z = disposal.proceeds > row.S ? (disposal.proceeds - row.S) * businessShare : SHEET_BLANK;
   }
   return row;
 }
@@ -500,7 +521,7 @@ function carry(inputs, compute) {
   return inputs.some((value) => value === SHEET_ERROR) ? SHEET_ERROR : compute();
 }
 
-const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC"];
+const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC", "AE", "AF", "AG"];
 
 function scheduleTotals(rows) {
   const totals = {};
@@ -546,21 +567,34 @@ function buildSchedule(scenario, taxData, rate) {
   });
 
   const existingRows = [];
+  // The motor rows' own single asset pool cells, keyed by cell reference:
+  // the private use share the writer puts in M, the marker in AD, and the
+  // row's AE and AG, so a reconciliation that reads the marked row finds
+  // the same figures here.
+  const motorRowCells = {};
   for (const [category, block] of Object.entries(EXISTING_ASSET_BLOCKS)) {
-    for (const asset of assetsByCategory[category].slice(0, block.rows.length)) {
-      existingRows.push(
-        scheduleRow({
-          cost: asset.cost,
-          accDep: asset.acc_dep || 0,
-          taxWdv: asset.tax_wdv,
-          depRate: depreciation[block.rateKey] ?? 0,
-          wdaRate,
-          specialRate,
-          pool: asset.pool,
-          disposal: disposalByAsset.get(asset),
-        }),
-      );
-    }
+    assetsByCategory[category].slice(0, block.rows.length).forEach((asset, index) => {
+      const row = scheduleRow({
+        cost: asset.cost,
+        accDep: asset.acc_dep || 0,
+        taxWdv: asset.tax_wdv,
+        depRate: depreciation[block.rateKey] ?? 0,
+        wdaRate,
+        specialRate,
+        pool: asset.pool,
+        singleAssetPool: asset.single_asset_pool === true,
+        privateUse: category === "motor" ? asset.private_use || 0 : 0,
+        disposal: disposalByAsset.get(asset),
+      });
+      existingRows.push(row);
+      if (category === "motor") {
+        const rowNumber = block.rows[index];
+        motorRowCells[`M${rowNumber}`] = asset.private_use || 0;
+        motorRowCells[`AD${rowNumber}`] = asset.single_asset_pool ? "P" : SHEET_BLANK;
+        motorRowCells[`AE${rowNumber}`] = row.AE;
+        motorRowCells[`AG${rowNumber}`] = row.AG;
+      }
+    });
   }
 
   const newRows = capitalPurchases
@@ -569,7 +603,7 @@ function buildSchedule(scenario, taxData, rate) {
 
   const existing = scheduleTotals(existingRows);
   const additions = scheduleTotals(newRows);
-  return { existing, additions, totals: addScheduleTotals(existing, additions) };
+  return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells };
 }
 
 // ── Hire purchase ──────────────────────────────────────────────────────────
@@ -960,7 +994,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const boxes32to45Total = sheetSum(Object.values(seFullDisallowable)) + pl.B34;
 
   // ── The fixed asset workbook ──
-  const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E, AC4: admin.G6 };
+  const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E, AC4: admin.G6, ...schedule.motorRowCells };
   for (const column of SCHEDULE_TOTAL_COLUMNS) scheduleCells[`${column}1`] = schedule.totals[column];
   const faReconciliation = {
     E11: schedule.additions.E,
@@ -1024,6 +1058,16 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const scheduleR = schedule.totals.R;
   const scheduleAC = schedule.totals.AC;
   const scheduleS = schedule.totals.S;
+  // The small pools write-off runs over the pooled balance alone: the
+  // single asset pool rows (AE, AF, AG) come out of both the £1,000 test
+  // and the figure written off. The sheet reads
+  // IF((R1+S1-AE1-AF1-AG1)<1000,S1-AG1,0) on SE Full!O144 and SE Short!D85.
+  const scheduleAE = schedule.totals.AE;
+  const scheduleAF = schedule.totals.AF;
+  const scheduleAG = schedule.totals.AG;
+  const smallPoolsWriteOff = carry([scheduleR, scheduleS, scheduleAE, scheduleAF, scheduleAG], () =>
+    scheduleR + scheduleS - scheduleAE - scheduleAF - scheduleAG < 1000 ? scheduleS - scheduleAG : 0,
+  );
   const scheduleY = schedule.totals.Y;
   const scheduleZ = schedule.totals.Z;
 
@@ -1073,7 +1117,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seShort.O80 = carry([scheduleR, scheduleY, scheduleAC], () =>
     scheduleR + scheduleY + scheduleAC > 0 ? scheduleR + scheduleY + scheduleAC : 0,
   );
-  seShort.D85 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
+  seShort.D85 = smallPoolsWriteOff;
   seShort.O85 = carry([scheduleZ], () => (scheduleZ > 0 ? scheduleZ : 0));
   seShort.D94 = goodsForOwnUse;
   const shortAllowances = [seShort.D71, seShort.O85, seShort.D94, seShort.O71, seShort.D80, seShort.D85, seShort.O80];
@@ -1155,7 +1199,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.D210 = stated(annualAdjustments.accountingAdjustment);
   // Box 50 carries the whole writing down allowance the schedule claims.
   seFull.D144 = carry([scheduleR], () => scheduleR);
-  seFull.O144 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
+  seFull.O144 = smallPoolsWriteOff;
   seFull.O149 = scheduleY;
   seFull.O154 = carry([seFull.D139, seFull.D144, seFull.O144, seFull.O149], () =>
     sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),

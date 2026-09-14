@@ -31,6 +31,8 @@ import {
   ANNUAL_ADJUSTMENT_CELLS,
   GOODS_FOR_OWN_USE_CELL,
   SPECIAL_RATE_POOL_MARKER_COLUMN,
+  SINGLE_ASSET_POOL_MARKER_COLUMN,
+  PRIVATE_USE_COLUMN,
   SALESINVOICE_VAT_REG_CELL,
   SALESINVOICE_TELEPHONE_CELL,
   SALESINVOICE_PRODUCT_DETAILS_COLUMNS,
@@ -355,14 +357,25 @@ function isPayslipsInputCell(sheet, cellRef) {
   return isPayslipsMonthInputCell(sheet, cellRef);
 }
 
-// Schedule: an opening asset's description/cost/acc-dep/tax-wdv (C, E, F, O)
-// and its special rate pool marker (AB) on its existing-asset row, or an
+// Schedule: an opening asset's description/cost/acc-dep/tax-wdv (C, E, F, O),
+// its private use share (M), its special rate pool marker (AB) and its single
+// asset pool marker (AD) on its existing-asset row, or an
 // in-year disposal's date/proceeds (U, V) on that same row; a new purchase's
 // date/supplier/cost (B, C, E) on a New Plant & Machinery row. See
 // app/products/se.js's cellWrites() Schedule writer.
 const EXISTING_SCHEDULE_ROWS = new Set([...EXISTING_ASSET_ROWS.motor, ...EXISTING_ASSET_ROWS.computer]);
 const NEW_SCHEDULE_ROWS = new Set(NEW_PLANT_ROWS);
-const EXISTING_SCHEDULE_COLUMNS = ["C", "E", "F", "O", "U", "V", SPECIAL_RATE_POOL_MARKER_COLUMN];
+const EXISTING_SCHEDULE_COLUMNS = [
+  "C",
+  "E",
+  "F",
+  PRIVATE_USE_COLUMN,
+  "O",
+  "U",
+  "V",
+  SPECIAL_RATE_POOL_MARKER_COLUMN,
+  SINGLE_ASSET_POOL_MARKER_COLUMN,
+];
 const NEW_SCHEDULE_COLUMNS = ["B", "C", "E"];
 const HP_ROWS = new Set(HP_AGREEMENT_ROWS);
 const HP_COLUMNS = ["B", "C", "D", "E", "F", "G", "H", "L"];

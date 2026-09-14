@@ -479,7 +479,6 @@ const BOOK_STATED_ANNUAL_BOXES = [
 // year -- annualFieldsUnavailableForYear() below is what keeps a year that
 // no longer accepts a field from warning about it as if it still did.
 const NO_SOURCE_ANNUAL_BOXES = [
-  { box: "51", pick: 1 }, // allowances.capitalAllowanceSingleAssetPool (shared with box 50)
   { box: "53.1", pick: 0 }, // allowances.enhancedStructuredBuildingAllowance
   { box: "55", pick: 1 }, // allowances.businessPremisesRenovationAllowance (shared with enhancedCapitalAllowance)
   { box: "59", pick: 1 }, // adjustments.balancingChargeBpra (shared with balancingChargeOther)
@@ -541,9 +540,19 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
   const root = {};
   const cellNumber = (cell) => (typeof seFull[cell] === "number" ? seFull[cell] : 0);
   setPath(root, primaryField(boxes, "49"), round2(seFull.D139));
-  setPath(root, primaryField(boxes, "50"), round2(seFull.D144));
+  // The printed boxes 50 and 51 hold every writing down allowance by rate,
+  // single asset pools included; the API files the single asset pools
+  // (Schedule AE and AF, the rows marked P) under their own field and the
+  // pooled balance under each rate's field.
+  const schedule = rawResults["Fixedassets.xlsx!Schedule"];
+  const singleAssetMain = typeof schedule?.AE1 === "number" ? schedule.AE1 : 0;
+  const singleAssetSpecial = typeof schedule?.AF1 === "number" ? schedule.AF1 : 0;
+  setPath(root, primaryField(boxes, "50"), round2(seFull.D144 - singleAssetMain));
   // Box 51 is the schedule's special rate pool (column AC, the rows marked S).
-  setPath(root, primaryField(boxes, "51"), round2(seFull.D147));
+  setPath(root, primaryField(boxes, "51"), round2(seFull.D147 - singleAssetSpecial));
+  if (singleAssetMain + singleAssetSpecial !== 0) {
+    setPath(root, fieldsOf(boxEntry(boxes, "50"))[1], round2(singleAssetMain + singleAssetSpecial));
+  }
   // HMRC's mapping files box 54 and box 55 under one field: the small pools
   // write-off the sheet computes at O144 and the charge-point figure the book
   // states at O139 both reach it.

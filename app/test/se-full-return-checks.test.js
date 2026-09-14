@@ -158,6 +158,16 @@ const SHORT_CAPITAL_ALLOWANCES =
 const SHORT_PROFIT_FOR_TAX =
   "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5";
 const BRIDGE = "Accounting profit to tax profit bridge closes to zero";
+const SMALL_POOLS_RULE =
+  "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000";
+const SMALL_POOLS_FIXTURE =
+  "SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed from the scenario's own pooled assets";
+const SINGLE_ASSET_MAIN =
+  "Fixed assets: Schedule single asset pool main rate allowance (AE1) = the scenario's single asset pool main rate assets at the year's rate, less private use";
+const SINGLE_ASSET_SPECIAL =
+  "Fixed assets: Schedule single asset pool special rate allowance (AF1) = the scenario's single asset pool special rate assets at the year's special rate, less private use";
+const SINGLE_ASSET_WRITTEN_DOWN =
+  "Fixed assets: Schedule single asset pool written down value (AG1) = the scenario's single asset pool assets' tax written-down values less this year's allowance";
 // A cell the trader states on SE Full alone reaches the full return's
 // totals, the short-return relations that subtract it, the tax profit the
 // Income Tax sheet reads and the bridge onto it.
@@ -306,7 +316,7 @@ const SA103F_CORRUPTIONS = [
     [
       TOTAL_CAPITAL_ALLOWANCES,
       "SA103F box 50 capital allowances at 18% (D144) = Schedule R1",
-      "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate",
+      "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate, less private use",
       STATED_ALLOWANCES,
     ],
   ],
@@ -316,7 +326,7 @@ const SA103F_CORRUPTIONS = [
     [
       TOTAL_CAPITAL_ALLOWANCES,
       "SA103F box 51 capital allowances at 6% (D147) = Schedule AC1",
-      "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate",
+      "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate, less private use",
       STATED_ALLOWANCES,
     ],
   ],
@@ -364,7 +374,8 @@ const SA103F_CORRUPTIONS = [
     1000,
     [
       TOTAL_CAPITAL_ALLOWANCES,
-      "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000",
+      SMALL_POOLS_RULE,
+      SMALL_POOLS_FIXTURE,
       STATED_ALLOWANCES,
       "SA103F box 55 100% and other enhanced capital allowances: full return (O144) = short return (D85)",
     ],
@@ -526,6 +537,43 @@ describeCalc("SA103F checks catch a broken full return", () => {
       "Business Details!O50 goods and services for own use = the figure the book states",
     ]);
   });
+
+  // The single asset pool columns on the fixed asset schedule, corrupted in
+  // Fixedassets.xlsx itself. A total large enough to pull the pooled balance
+  // under £1,000 flips the small pools rule as well as its own anchor; the
+  // marked row's own cells flip their own anchors alone, because box 50 on
+  // the hub is already recalculated from them.
+  const SCHEDULE_CORRUPTIONS = [
+    ["AE1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_MAIN]],
+    ["AF1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_SPECIAL]],
+    ["AG1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_WRITTEN_DOWN]],
+    ["M40", 0.5, ["Fixed assets: Schedule private use share (M40) = the scenario's motor asset 3 private use"]],
+    ["AD40", "S", ["Fixed assets: Schedule single asset pool marker (AD40) = P for the scenario's motor asset 3"]],
+  ];
+
+  it("carries the single asset pool car on Schedule row 40: marked P, 30% private use, 1,008 allowance and 6,992 written down", () => {
+    const schedule = results["Fixedassets.xlsx!Schedule"];
+    expect(schedule.AD40.trim()).toBe("P");
+    expect(schedule.M40).toBe(0.3);
+    expect(schedule.AE40).toBeCloseTo(1008, 6);
+    expect(schedule.AG40).toBeCloseTo(6992, 6);
+    expect(schedule.AE1).toBeCloseTo(1008, 6);
+    expect(schedule.AF1).toBe(0);
+    expect(schedule.AG1).toBeCloseTo(6992, 6);
+    expect(results["SE Full"].O144).toBe(0);
+  });
+
+  it.each(SCHEDULE_CORRUPTIONS)(
+    "corrupting Fixedassets.xlsx!Schedule!%s via JSZip fails exactly the checks that read it",
+    async (cellRef, corruptedValue, expectedFailures) => {
+      for (const name of expectedFailures) {
+        expect(checks.find((c) => c.name === name)?.pass, `${name} was already failing`).toBe(true);
+      }
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", cellRef, corruptedValue);
+      expect(value).toBe(corruptedValue);
+      expect(failureNames(checksWithCorruptedCell("Fixedassets.xlsx!Schedule", cellRef, value))).toEqual(expectedFailures);
+    },
+  );
 
   it.each(SA103F_CORRUPTIONS)(
     "corrupting SE Full!%s via JSZip fails exactly the checks that read it",

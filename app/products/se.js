@@ -277,6 +277,17 @@ export const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
 // AB38="S" and AC$4, S38 = IF(O38>0,O38-N(R38)-N(AC38)," "), AC1 = AC57+AC110.
 export const SPECIAL_RATE_POOL_MARKER_COLUMN = "AB";
 export const SPECIAL_RATE_POOL_MARKER = "S";
+// Column AD on an asset row: "P" keeps the row's tax written-down value in a
+// single asset pool. R, AC and S stay as they are; AE and AF repeat the
+// row's writing down allowance by rate and AG its written-down value, so the
+// small pools test on SE Full!O144 can leave the marked rows out. Column M
+// on the car rows (38 to 48, 91 to 101) is the private use share the R, AC,
+// Y and Z formulas multiply by (1-M). Verified against the template:
+// AE38 = IF(AND(AD38="P",AB38<>"S"),N(R38)," "), AF38 the same with AB38="S"
+// and N(AC38), AG38 = IF(AD38="P",N(S38)," "), AE1 = AE57+AE110.
+export const SINGLE_ASSET_POOL_MARKER_COLUMN = "AD";
+export const SINGLE_ASSET_POOL_MARKER = "P";
+export const PRIVATE_USE_COLUMN = "M";
 
 // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
 // rows are available for scenario agreements before the sheet's own
@@ -670,7 +681,7 @@ function composeWrites(scenario, targetStartYear) {
         skips.push(skipped("openingFixedAsset", assetEntry, why));
         continue;
       }
-      // Written left-to-right (C, then E, then F). setCellValue/setCellString
+      // Written left-to-right (C, E, F, M, O, AB, AD). setCellValue/setCellString
       // in spreadsheet-runner.js replaces a matched cell together with every
       // self-closing sibling up to the row's next already-closed cell -- an
       // earlier write onto a later (rightward) column silently deletes any
@@ -682,6 +693,9 @@ function composeWrites(scenario, targetStartYear) {
       if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      // The private use share reads on the car rows alone; the loader has
+      // already refused it on any other class.
+      if (asset.private_use !== undefined && asset.category === "motor") fa[`${PRIVATE_USE_COLUMN}${row}`] = asset.private_use;
       // Column O is the written down TAX value brought forward, the figure
       // the capital allowance columns work from. The schedule computes a
       // disposal's balancing allowance as that value less the sale proceeds,
@@ -689,6 +703,7 @@ function composeWrites(scenario, targetStartYear) {
       // allowance block, and every figure downstream of it, in error.
       if (asset.tax_wdv) fa[`O${row}`] = asset.tax_wdv;
       if (asset.pool === "special") fa[`${SPECIAL_RATE_POOL_MARKER_COLUMN}${row}`] = SPECIAL_RATE_POOL_MARKER;
+      if (asset.single_asset_pool) fa[`${SINGLE_ASSET_POOL_MARKER_COLUMN}${row}`] = SINGLE_ASSET_POOL_MARKER;
       existingAssetRowsUsed[asset.category].push(row);
     }
   }
@@ -1262,7 +1277,37 @@ export function multiFileOptions() {
         // E57 and E110 are the schedule's own existing-asset and new-asset
         // cost subtotals; row 1 adds the two. Reading both lets the report
         // state the year's asset movement rather than one closing total.
-        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "AC1", "AC4", "E57", "E110"],
+        // AE1, AF1 and AG1 are the single asset pool totals; M40, AD40, AE40
+        // and AG40 are the fixture's marked car row (van 38, estate car 39,
+        // hatchback 40), read so its marker and private use share are proved
+        // on the row itself.
+        Schedule: [
+          "E1",
+          "F1",
+          "G1",
+          "I1",
+          "J1",
+          "K1",
+          "Q1",
+          "R1",
+          "S1",
+          "V1",
+          "W1",
+          "X1",
+          "Y1",
+          "Z1",
+          "AC1",
+          "AC4",
+          "AE1",
+          "AF1",
+          "AG1",
+          "E57",
+          "E110",
+          "M40",
+          "AD40",
+          "AE40",
+          "AG40",
+        ],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
         // E2 is the long-term-creditors total for the "New Hire Purchase
         // Agreements" block (SUM(E8:E14)); I/J/K on rows 8 and 10 are the
@@ -1653,6 +1698,15 @@ const FIXED_ASSET_CELL_LABELS = {
     X1: "Accumulated depreciation on the assets sold in the year",
     Y1: "Balancing allowance on the disposals",
     Z1: "Balancing charge on the disposals",
+    AC1: "Total special rate writing down allowance claimed (the rows marked S in column AB)",
+    AC4: "Special rate writing down allowance rate, read from Admin",
+    AE1: "Single asset pool writing down allowance at the main rate (the rows marked P in column AD)",
+    AF1: "Single asset pool writing down allowance at the special rate (the rows marked P and S)",
+    AG1: "Single asset pool tax written down value carried forward",
+    M40: "Private use share of the third motor vehicle brought forward",
+    AD40: "Single asset pool marker on the third motor vehicle brought forward (P)",
+    AE40: "Single asset pool main rate allowance on the third motor vehicle brought forward",
+    AG40: "Single asset pool tax written down value on the third motor vehicle brought forward",
     E57: "Cost of the assets owned at the start of the year",
     E110: "Cost of the assets bought during the year",
   },
@@ -1859,6 +1913,56 @@ export function profitBridge(results) {
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
+}
+
+// ── The Schedule's capital allowance pools, from the fixture ───────────────
+
+// The opening tax written-down values that claim a writing down allowance in
+// one rate pool, each reduced to its business share: a privately used car
+// claims on (1 - M), which the Schedule applies on the car rows.
+function openingPoolAllowance(expected, pool) {
+  return (expected.opening_fixed_assets || [])
+    .filter((asset) => (asset.pool === "special") === (pool === "special"))
+    .reduce((total, asset) => total + (asset.tax_wdv || 0) * (1 - (asset.private_use || 0)), 0);
+}
+
+// The small pools write-off the way SE Full!O144 and SE Short!D85 state it:
+// IF((R1+S1-AE1-AF1-AG1)<1000,S1-AG1,0). The single asset pool rows leave
+// both the £1,000 test and the figure written off.
+function smallPoolsWriteOff(schedule) {
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const pooledBalance = num(schedule.R1) + num(schedule.S1) - num(schedule.AE1) - num(schedule.AF1) - num(schedule.AG1);
+  return pooledBalance < 1000 ? num(schedule.S1) - num(schedule.AG1) : 0;
+}
+
+// The same two figures from the fixture's own assets. A pooled opening asset
+// puts its whole tax written-down value into the test (R + S = O on a main
+// rate row, O less the special rate allowance on a special rate row) and its
+// written-down balance after this year's allowance into the write-off; a
+// single asset pool row puts nothing into either; an asset bought in the year
+// puts its cost less the annual investment allowance into both.
+function fixtureSmallPools(expected, taxData, rate) {
+  const wda = taxData.capital_allowances.writing_down_allowance;
+  const specialWda = taxData.capital_allowances.writing_down_allowance_special || 0;
+  const aia = taxData.capital_allowances.annual_investment_allowance ?? 0;
+  let pooledBalance = 0;
+  let pooledWrittenDown = 0;
+  for (const asset of expected.opening_fixed_assets || []) {
+    if (asset.single_asset_pool || !(asset.tax_wdv > 0)) continue;
+    const share = 1 - (asset.private_use || 0);
+    const allowance = asset.tax_wdv * (asset.pool === "special" ? specialWda : wda) * share;
+    pooledBalance += asset.pool === "special" ? asset.tax_wdv - allowance : asset.tax_wdv;
+    pooledWrittenDown += asset.tax_wdv - allowance;
+  }
+  for (const transactions of Object.values(expected.purchases || {})) {
+    for (const tx of transactions) {
+      if (tx.code !== "fa") continue;
+      const cost = netOfVat(tx.amount, rate);
+      pooledBalance += cost - cost * aia;
+      pooledWrittenDown += cost - cost * aia;
+    }
+  }
+  return { pooledBalance, pooledWrittenDown };
 }
 
 // ── Journal category VAT netting ───────────────────────────────────────────
@@ -2543,10 +2647,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("SA103F box 49 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
       check("SA103F box 50 capital allowances at 18% (D144) = Schedule R1", num(seFull.D144), num(returnSchedule.R1));
       check("SA103F box 51 capital allowances at 6% (D147) = Schedule AC1", num(seFull.D147), num(returnSchedule.AC1));
+      // The small pools write-off runs over the pooled balance alone: the
+      // single asset pool rows (AE1, AF1, AG1) leave both the £1,000 test
+      // and the figure written off (O144 = IF((R1+S1-AE1-AF1-AG1)<1000,S1-AG1,0)).
       check(
-        "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000",
+        "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000",
         num(seFull.O144),
-        num(returnSchedule.R1) + num(returnSchedule.S1) < 1000 ? num(returnSchedule.S1) : 0,
+        smallPoolsWriteOff(returnSchedule),
       );
       check("SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1", num(seFull.O149), num(returnSchedule.Y1));
       check("SA103F box 59 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
@@ -2561,20 +2668,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // Each pool against the scenario's own assets: the main pool's boxes 50
     // and the special rate pool's box 51, each at its own year's rate, so an
     // asset marked for one pool that lands in the other moves both boxes.
+    // A privately used car claims its allowance on the business share alone
+    // (Schedule column M), single asset pool or not, so the anchor carries
+    // that factor row by row.
     if (taxData?.capital_allowances && expected.opening_fixed_assets) {
-      const poolTaxWdv = (pool) =>
-        expected.opening_fixed_assets
-          .filter((asset) => (asset.pool === "special") === (pool === "special"))
-          .reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
       check(
-        "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate",
+        "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate, less private use",
         num(seFull.D144),
-        poolTaxWdv("main") * taxData.capital_allowances.writing_down_allowance,
+        openingPoolAllowance(expected, "main") * taxData.capital_allowances.writing_down_allowance,
       );
       check(
-        "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate",
+        "SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate, less private use",
         num(seFull.D147),
-        poolTaxWdv("special") * (taxData.capital_allowances.writing_down_allowance_special || 0),
+        openingPoolAllowance(expected, "special") * (taxData.capital_allowances.writing_down_allowance_special || 0),
+      );
+      // The same rule the sheet applies, run over the fixture's own pools:
+      // a sheet whose R1, S1 and AE1 to AG1 agree with each other but not
+      // with the assets fails here.
+      const pools = fixtureSmallPools(expected, taxData, rate);
+      check(
+        "SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed from the scenario's own pooled assets",
+        num(seFull.O144),
+        pools.pooledBalance < 1000 ? pools.pooledWrittenDown : 0,
       );
     }
 
@@ -2843,14 +2958,55 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         taxData.capital_allowances.writing_down_allowance_special || 0,
         0.0001,
       );
-      const specialPoolWdv = expected.opening_fixed_assets
-        .filter((asset) => asset.pool === "special")
-        .reduce((t, asset) => t + (asset.tax_wdv || 0), 0);
       check(
-        "Fixed assets: Schedule special rate pool allowance (AC1) = the scenario's special rate assets at the year's special rate",
+        "Fixed assets: Schedule special rate pool allowance (AC1) = the scenario's special rate assets at the year's special rate, less private use",
         sched.AC1 || 0,
-        specialPoolWdv * (taxData.capital_allowances.writing_down_allowance_special || 0),
+        openingPoolAllowance(expected, "special") * (taxData.capital_allowances.writing_down_allowance_special || 0),
       );
+
+      // The single asset pools (column AD marked P): each marked asset's
+      // allowance at its own rate on its business share, and its written-down
+      // value less that allowance, anchored on the fixture's assets.
+      const wda = taxData.capital_allowances.writing_down_allowance;
+      const specialWda = taxData.capital_allowances.writing_down_allowance_special || 0;
+      const singleAssets = expected.opening_fixed_assets.filter((asset) => asset.single_asset_pool);
+      const singleAllowance = (asset) =>
+        (asset.tax_wdv || 0) * (asset.pool === "special" ? specialWda : wda) * (1 - (asset.private_use || 0));
+      check(
+        "Fixed assets: Schedule single asset pool main rate allowance (AE1) = the scenario's single asset pool main rate assets at the year's rate, less private use",
+        sched.AE1 || 0,
+        singleAssets.filter((asset) => asset.pool !== "special").reduce((t, asset) => t + singleAllowance(asset), 0),
+      );
+      check(
+        "Fixed assets: Schedule single asset pool special rate allowance (AF1) = the scenario's single asset pool special rate assets at the year's special rate, less private use",
+        sched.AF1 || 0,
+        singleAssets.filter((asset) => asset.pool === "special").reduce((t, asset) => t + singleAllowance(asset), 0),
+      );
+      check(
+        "Fixed assets: Schedule single asset pool written down value (AG1) = the scenario's single asset pool assets' tax written-down values less this year's allowance",
+        sched.AG1 || 0,
+        singleAssets.reduce((t, asset) => t + (asset.tax_wdv || 0) - singleAllowance(asset), 0),
+      );
+      // The marker and the private use share on the row itself, for each
+      // motor asset the fixture declares, in the order the writer fills the
+      // block.
+      expected.opening_fixed_assets
+        .filter((asset) => asset.category === "motor")
+        .forEach((asset, index) => {
+          const row = EXISTING_ASSET_ROWS.motor[index];
+          if (row === undefined || !(`AD${row}` in sched)) return;
+          checkText(
+            `Fixed assets: Schedule single asset pool marker (AD${row}) = ${asset.single_asset_pool ? "P" : "blank"} for the scenario's motor asset ${index + 1}`,
+            typeof sched[`AD${row}`] === "string" ? sched[`AD${row}`].trim() : "",
+            asset.single_asset_pool ? SINGLE_ASSET_POOL_MARKER : "",
+          );
+          check(
+            `Fixed assets: Schedule private use share (M${row}) = the scenario's motor asset ${index + 1} private use`,
+            num(sched[`M${row}`]),
+            asset.private_use || 0,
+            0.0001,
+          );
+        });
     }
 
     // 3. P&L depreciation and disposal lines carry the Schedule's own

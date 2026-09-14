@@ -94,7 +94,7 @@
         the framework is named in either schema. The framework's nested tuples are flattened: an entry header and its detail are one line,
         and <code>gl-cor:account</code> becomes the pair <code>accountMainID</code> and <code>accountMainDescription</code>. Where a UK
         small business needs something the framework has no element for, the schema declares a diya-gl extension: a
-        <code>diya-gl:</code> prefix on a field, or a whole table marked as one. There are 136 extension fields, and the tables
+        <code>diya-gl:</code> prefix on a field, or a whole table marked as one. There are 138 extension fields, and the tables
         below mark every one.
       </p>
       <p>
@@ -227,6 +227,8 @@
             <tr><td><code>fixedAssets[].assetID</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Identifier matched by diya-gl:assetID on the lines that buy or dispose of this asset.</td><td>required</td></tr>
             <tr><td><code>fixedAssets[].class</code></td><td>string, one of 5</td><td><em>diya-gl extension</em></td><td>The Schedule block this asset belongs to (Self Employed and Company only).</td><td>optional</td></tr>
             <tr><td><code>fixedAssets[].capitalAllowancePool</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>Which writing down pool the asset's tax written-down value sits in. special is the 6% pool (cars with higher CO2 emissions, integral features, long-life assets), SA103F box 51; the Self Employed Schedule marks the row S in column AB and claims the allowance in column AC. Absent means the main pool, box 50.</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].singleAssetPool</code></td><td>boolean</td><td><em>diya-gl extension</em></td><td>The asset's tax written-down value is its own pool: an asset with private use (CAA 2001 s.206) or under a short-life asset election (ss.83-86). Its writing down allowance still prints in SA103F box 50 or 51 by rate, but the API files it as capitalAllowanceSingleAssetPool and the small pools allowance never applies to it. The Self Employed Schedule marks the row P in column AD and carries the allowance and the written-down value in columns AE to AG. Self Employed only.</td><td>optional</td></tr>
+            <tr><td><code>fixedAssets[].privateUseProportion</code></td><td>number</td><td><em>diya-gl extension</em></td><td>The share of the asset's use that is not business use, which reduces its writing down and balancing allowances (the Self Employed Schedule's column M on the car rows). An asset with private use is a single asset pool, so singleAssetPool must be true whenever this is above nil. Self Employed motor vehicles only.</td><td>optional</td></tr>
             <tr><td><code>fixedAssets[].description</code></td><td>string</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
             <tr><td><code>fixedAssets[].cost</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>required</td></tr>
             <tr><td><code>fixedAssets[].accumulatedDepreciation</code></td><td>number</td><td><em>diya-gl extension</em></td><td>&mdash;</td><td>optional</td></tr>
