@@ -27,7 +27,7 @@ import JSZip from "jszip";
 import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { calculateIncomeTax, calculateExpectedTax } from "../lib/tax/income-tax.js";
 import {
   cellWrites as seCellWrites,
   standardReads as seReads,
@@ -35,6 +35,7 @@ import {
   checkCompliance as seCheckCompliance,
 } from "../products/se.js";
 import { parse as parseTOML } from "smol-toml";
+import { vatRateForScenario, depreciationAndDisposalLoss, capitalAllowancesFromSchedule } from "./helpers/se-fixture-figures.js";
 
 const SKIP = !hasLibreOffice();
 const describeCalc = SKIP ? describe.skip : describe;
@@ -59,48 +60,19 @@ const sePackageYearEnd = (taxData) => `${seTaxYearStart(taxData) + 1}-04-05`;
 
 const FORECAST_SHEET = "Profit Forecast";
 
-// The taxable profit is the same in both years: the forecast's 167,481.35
-// accounting profit, plus 17,912 of disposal loss and depreciation added back,
-// less 64,540 of capital allowances (64,000 on the main pool and the new
-// assets, 540 on the special rate pool), so 120,853.35. So is every income
-// tax figure, because the allowance, the taper threshold and the bands have
-// not moved between them: the allowance is 12,570 less half of the 20,853.35
-// above the 100,000 taper threshold, so 2,143.33; that leaves 118,710.03
-// taxable; 37,700 at 20% is 7,540; the remaining 81,010.03 at 40% is
-// 32,404.01; nothing reaches the additional rate.
-//
-// Class 4 is what separates the two. On the 2025-26 rates it is 6% between
-// 12,570 and 50,270 (2,262) plus 2% on the 70,583.35 above (1,411.67). On the
-// 2023-24 rates the main rate is still 9%, so the same band gives 3,393.
+// The taxable profit (C39) is the accounting profit the P&L carries (B39)
+// plus the disposal loss and depreciation added back (B33 + B34) less the
+// capital allowances the fixed asset schedule carries (Schedule!Q1 + R1 +
+// AC1 + Y1 - Z1). It is the same in both rate years, because neither
+// figure depends on the tax year's own rates; every income tax and Class 4
+// figure below it (C40-C46) is derived off the same taxable profit through
+// income-tax.js's own calculators, independent of the SE engine under
+// test. C39 is anchored on the recalculated book's own P&L and schedule
+// cells (results, not a JS mirror of them); C40-C46 read the tax year's
+// own rate tables, so both years move together whenever the fixture does.
 const RATE_YEARS = [
-  {
-    label: "2025-26",
-    taxDataFile: "se-2025-2026.toml",
-    forecast: {
-      C39: 120853.35,
-      C40: 2143.325,
-      C41: 118710.025,
-      C42: 7540,
-      C43: 32404.01,
-      C44: 0,
-      C45: 3673.667,
-      C46: 43617.677,
-    },
-  },
-  {
-    label: "2023-24",
-    taxDataFile: "se-2023-2024.toml",
-    forecast: {
-      C39: 120853.35,
-      C40: 2143.325,
-      C41: 118710.025,
-      C42: 7540,
-      C43: 32404.01,
-      C44: 0,
-      C45: 4804.667,
-      C46: 44748.677,
-    },
-  },
+  { label: "2025-26", taxDataFile: "se-2025-2026.toml" },
+  { label: "2023-24", taxDataFile: "se-2023-2024.toml" },
 ];
 
 function corruptCellValue(xml, cellRef, newValue) {
@@ -164,6 +136,7 @@ for (const rateYear of RATE_YEARS) {
     let checks;
     let taxData;
     let expected;
+    let scenario;
     let saveDir;
 
     function checksWithCorruptedCell(resultKey, cellRef, value) {
@@ -186,7 +159,7 @@ for (const rateYear of RATE_YEARS) {
             : templateBuffer;
       }
 
-      const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
+      scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
       expected = { ...scenario, ...scenario.expected };
 
       saveDir = mkdtempSync(join(tmpdir(), "se-profit-forecast-"));
@@ -220,14 +193,29 @@ for (const rateYear of RATE_YEARS) {
 
     it("charges the forecast profit the statutory amount", () => {
       const forecast = results[FORECAST_SHEET];
-      expect(forecast.C39).toBeCloseTo(rateYear.forecast.C39, 4);
-      expect(forecast.C40).toBeCloseTo(rateYear.forecast.C40, 4);
-      expect(forecast.C41).toBeCloseTo(rateYear.forecast.C41, 4);
-      expect(forecast.C42).toBeCloseTo(rateYear.forecast.C42, 2);
-      expect(forecast.C43).toBeCloseTo(rateYear.forecast.C43, 2);
-      expect(forecast.C44).toBe(rateYear.forecast.C44);
-      expect(forecast.C45).toBeCloseTo(rateYear.forecast.C45, 4);
-      expect(forecast.C46).toBeCloseTo(rateYear.forecast.C46, 4);
+      const pl = results["Profit & Loss Account"];
+
+      // C39: the recalculated book's own accounting profit (B39) plus its
+      // own disposal loss and depreciation add-back (B33 + B34), less the
+      // capital allowances derived independently from the fixture's asset
+      // and disposal rows (not read back off Schedule.xlsx).
+      const rate = vatRateForScenario(scenario, taxData);
+      const { totalDepreciation, disposalLoss } = depreciationAndDisposalLoss(scenario, taxData, rate);
+      const capitalAllowances = capitalAllowancesFromSchedule(scenario, taxData, rate).total;
+      const expectedC39 = pl.B39 + totalDepreciation + disposalLoss - capitalAllowances;
+      expect(forecast.C39).toBeCloseTo(expectedC39, 4);
+
+      // C40-C46: income-tax.js's own calculators, independent of the SE
+      // engine, run on that same taxable profit and the tax year's rates.
+      const incomeTax = calculateIncomeTax(expectedC39, taxData.income_tax);
+      const expectedTax = calculateExpectedTax(expectedC39, taxData);
+      expect(forecast.C40).toBeCloseTo(incomeTax.personalAllowance, 4);
+      expect(forecast.C41).toBeCloseTo(incomeTax.taxableIncome, 4);
+      expect(forecast.C42).toBeCloseTo(incomeTax.basicRateTax, 2);
+      expect(forecast.C43).toBeCloseTo(incomeTax.higherRateTax, 2);
+      expect(forecast.C44).toBeCloseTo(incomeTax.additionalRateTax, 2);
+      expect(forecast.C45).toBeCloseTo(expectedTax.ni_class4_lower + expectedTax.ni_class4_upper, 4);
+      expect(forecast.C46).toBeCloseTo(expectedTax.total_tax_and_ni, 4);
     });
 
     it.each([

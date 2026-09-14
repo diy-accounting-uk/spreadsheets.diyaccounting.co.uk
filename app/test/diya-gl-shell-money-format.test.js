@@ -6,13 +6,16 @@
 // would round on its own.
 //
 // The Self Employed engine's own Profit Forecast!C41 (forecast.taxableIncome,
-// the advanced fixture) lands on 118710.02499999992: close enough to the
-// exact 118710.025 that Excel's own recalculation prints that a naive
-// Intl.NumberFormat rounds it down to the penny below, while canonicalForUnit
-// (which every reconciliation comparison already goes through) rounds it up
-// to 118710.03, matching the sheet. shell.js's fmtMoney calls canonicalForUnit
-// before formatting for exactly this reason; this test proves the gap it
-// closes and pins the value it must resolve to.
+// the advanced fixture) lands a hair below an exact half-penny: close enough
+// that Excel's own recalculation would print the intended figure, while a
+// naive Intl.NumberFormat reads the noise as a genuine value just below the
+// boundary and rounds down. canonicalForUnit (which every reconciliation
+// comparison already goes through) absorbs the noise first and rounds up,
+// matching the sheet. shell.js's fmtMoney calls canonicalForUnit before
+// formatting for exactly this reason; this test proves the gap it closes.
+// It pins the property C41 must carry for the gap to exist — landing a hair
+// below an exact half-penny — rather than C41's own value, so a fixture
+// change that keeps that property keeps this test green without editing it.
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
@@ -40,14 +43,29 @@ describe("the DIYA-GL page formats a money figure at the reconciliation's own pr
     const scenario = loadScenario(resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml"));
     const c41 = calculateSeCells({}, [], TAX_DATA, scenario)["Profit Forecast"].C41;
 
-    expect(c41).toBe(118710.02499999992);
+    // The property this test pins, not the number: C41's third decimal
+    // digit is 5 (an exact half-penny), but the stored double lands a hair
+    // below that exact figure — close enough (under 1e-9) that the gap is
+    // float noise, not a genuine value below the boundary. A fixture change
+    // that stops producing this shape fails here, plainly, rather than
+    // silently passing on a stale literal.
+    const thousandths = Math.round(c41 * 1000);
+    const noise = thousandths / 1000 - c41;
+    expect(noise).toBeGreaterThan(0);
+    expect(noise).toBeLessThan(1e-9);
+    expect(thousandths % 10).toBe(5);
+
+    const lowerPennies = (thousandths - 5) / 10;
+    const lowerPounds = lowerPennies / 100;
+    const upperPounds = (lowerPennies + 1) / 100;
+
     // A naive Intl.NumberFormat reads that noise as a genuine value just
     // below the half-penny boundary and rounds down.
-    expect(moneyFmt.format(c41)).toBe("£118,710.02");
+    expect(moneyFmt.format(c41)).toBe(moneyFmt.format(lowerPounds));
     // canonicalForUnit absorbs the noise at a working precision first, so it
     // rounds the same way the reconciliation's own Excel-side figure does.
-    expect(canonicalForUnit(String(c41), "money")).toBe("118710.03");
-    expect(fmtMoney(c41)).toBe("£118,710.03");
+    expect(canonicalForUnit(String(c41), "money")).toBe(upperPounds.toFixed(2));
+    expect(fmtMoney(c41)).toBe(moneyFmt.format(upperPounds));
   });
 
   it("still resolves a clean value the same way with or without the working-precision pass", () => {
