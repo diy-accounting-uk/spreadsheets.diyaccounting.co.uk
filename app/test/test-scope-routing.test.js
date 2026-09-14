@@ -6,8 +6,14 @@
 // than through the CLI. Each case is a single changed path, matching how
 // CQ-36 measured the router's --plan output for the same paths.
 
-import { describe, it, expect } from "vitest";
-import { PRODUCTS, REPRESENTATIVE_CALC, select } from "../../scripts/test-scope.mjs";
+import { describe, it, expect, afterEach } from "vitest";
+import { execFileSync } from "child_process";
+import { existsSync, readFileSync, rmSync } from "fs";
+import { resolve, dirname, join } from "path";
+import { fileURLToPath } from "url";
+import { MARKER_DIR, PRODUCTS, REPRESENTATIVE_CALC, select, workingTreeHash, writeGreenMarker } from "../../scripts/test-scope.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 describe("routing table: docs, skills, lockfile, dependency and router-script paths", () => {
   it("adds nothing for a root markdown file", () => {
@@ -62,14 +68,67 @@ describe("routing table: docs, skills, lockfile, dependency and router-script pa
     expect(sel.unitAll).toBe(false);
   });
 
-  it("names one calc file per product, and every named file exists in the repo's test files", async () => {
-    const { readFileSync } = await import("fs");
-    const { resolve, dirname } = await import("path");
-    const { fileURLToPath } = await import("url");
-    const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  it("names one calc file per product, and every named file exists in the repo's test files", () => {
     expect(Object.keys(REPRESENTATIVE_CALC).sort()).toEqual([...PRODUCTS].sort());
     for (const file of Object.values(REPRESENTATIVE_CALC)) {
       expect(() => readFileSync(resolve(ROOT, file), "utf8")).not.toThrow();
     }
+  });
+});
+
+// CQ-34: the GREEN marker .githooks/pre-push looks up before re-running a
+// suite that just passed on this exact tree.
+describe("writeGreenMarker", () => {
+  let written = null;
+
+  afterEach(() => {
+    if (written && existsSync(written)) rmSync(written);
+    written = null;
+  });
+
+  it("writes target/test-scope/green-<hash> with the base and tiers on one line", () => {
+    // workingTreeHash() runs a real `git add -A` into a throwaway index,
+    // which walks this repo's whole tree (examples/, packages/) and can
+    // take several seconds -- the default 5s test timeout is too tight.
+    const hash = writeGreenMarker({ hash: workingTreeHash(), mergeBase: "deadbeef", ranTierNames: ["gates", "unit"] });
+    written = join(MARKER_DIR, `green-${hash}`);
+    expect(existsSync(written)).toBe(true);
+    const body = readFileSync(written, "utf8");
+    expect(body).toContain("mergeBase=deadbeef");
+    expect(body).toContain("tiers=gates,unit");
+    expect(body.split("\n").filter(Boolean)).toHaveLength(1);
+  }, 20_000);
+
+  const dirty = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" }).trim().length > 0;
+
+  it.skipIf(dirty)(
+    "equals HEAD's committed tree hash on a clean tree, so the marker a push checks for actually exists",
+    () => {
+      // Regression case for a real bug: seeding the throwaway index empty
+      // (rather than from the real index) silently dropped paths that are
+      // tracked but also match .gitignore (reports/judge-verdict-*.json,
+      // *.svg under web/.../diya-gl/ in this repo) and re-hashed mvnw.cmd
+      // through its text-conversion filter, producing a hash that could
+      // never equal HEAD^{tree} even on a perfectly clean tree -- which
+      // would have made .githooks/pre-push's marker lookup never match.
+      const headTree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: ROOT, encoding: "utf8" }).trim();
+      expect(workingTreeHash()).toBe(headTree);
+    },
+    20_000,
+  );
+
+  it("is only ever called from main() behind a GREEN verdict check, never for RED or PARTIAL", () => {
+    // writeGreenMarker itself has no notion of verdict; main() is what must
+    // never call it except on the GREEN branch. Asserted at the source
+    // level because exercising main()'s RED/PARTIAL branches means running
+    // the calc/browser/infra tiers for real, which belongs in the router's
+    // own end-to-end verification, not the unit tier.
+    const src = readFileSync(resolve(ROOT, "scripts/test-scope.mjs"), "utf8");
+    // The assignment form, not `function writeGreenMarker(`, which would
+    // match the definition rather than the call site.
+    const callSite = src.indexOf("= writeGreenMarker(");
+    expect(callSite).toBeGreaterThan(-1);
+    const guard = src.slice(Math.max(0, callSite - 120), callSite);
+    expect(guard).toMatch(/verdict === "GREEN"/);
   });
 });

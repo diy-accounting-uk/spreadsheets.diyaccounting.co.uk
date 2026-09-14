@@ -10,17 +10,25 @@
 //   npm test -- --all           every tier, every product, full browser suite
 //   npm test -- --base HEAD~1   a different comparison point
 //   npm test -- --plan          print the selection and the estimate, run nothing
+//   npm test -- --tree-hash     print the GREEN marker's key for the current tree, run nothing
 //
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
 // origin/main, a shallow clone or an empty diff all escalate to --all and
 // say so. Running nothing because git printed nothing is the failure this
 // design exists to prevent.
+//
+// A GREEN verdict writes target/test-scope/green-<tree-hash>, keyed by a
+// hash of the working tree's actual content (not the index) and carrying
+// the merge base it diffed against. .githooks/pre-push looks this marker
+// up before running anything, so a suite that just passed on this exact
+// tree is not repeated for the push. PARTIAL never writes one.
 
 import { spawn, spawnSync } from "child_process";
-import { readFileSync, existsSync, statSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync, unlinkSync, copyFileSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { tmpdir } from "os";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -185,6 +193,68 @@ function lines(text) {
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+// -------------------------------------------------------- the GREEN marker
+
+const MARKER_DIR = join(ROOT, "target", "test-scope");
+
+// The hash of what the tests actually ran against: tracked content plus
+// untracked-but-not-ignored content, exactly what `git add -A` would stage.
+// Built in a throwaway index so the real index (and any partial `git add`
+// the operator has staged) is never touched.
+function workingTreeHash() {
+  const tmpIndex = join(tmpdir(), `test-scope-index-${process.pid}-${Date.now()}`);
+  const env = { ...process.env, GIT_INDEX_FILE: tmpIndex };
+  try {
+    // Seed the throwaway index from the real one rather than starting
+    // empty. `git add -A` on a fresh empty index treats every path as new
+    // and consults .gitignore, which silently drops a path that is
+    // tracked but also matches .gitignore -- this repo has several
+    // (reports/judge-verdict-*.json, *.svg under web/.../diya-gl/) even
+    // though they are exactly as tracked as everything else. Starting
+    // from a copy of the real index means `git add -A` only has to layer
+    // working-tree changes on top, exactly as it would against the real
+    // one, so an unchanged file keeps the real index's already-correct
+    // blob hash instead of being re-hashed -- which also fixes a CRLF/LF
+    // mismatch measured on mvnw.cmd: adding it as if new re-runs the
+    // text-conversion filters and produces a different blob than the one
+    // actually committed, where adding it as an unchanged tracked file is
+    // a no-op.
+    const realIndex = resolve(ROOT, git(["rev-parse", "--git-path", "index"]).trim());
+    if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
+    const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
+    if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    const wt = spawnSync("git", ["write-tree"], { cwd: ROOT, env, encoding: "utf8" });
+    if (wt.status !== 0) throw new Error(`git write-tree (throwaway index) failed: ${(wt.stderr || "").trim()}`);
+    return wt.stdout.trim();
+  } finally {
+    try {
+      unlinkSync(tmpIndex);
+    } catch {
+      // nothing to clean up
+    }
+  }
+}
+
+// A dirty tree hashes differently from HEAD's committed tree, and the
+// marker is keyed on the working-tree hash: a run on a dirty tree
+// therefore writes a marker HEAD's own tree hash can never match, so it
+// can never vouch for a push (which carries HEAD's committed content, not
+// the dirty tree). The hash is taken before any tier runs: the browser
+// tier rebuilds the packages' LICENCE and README files and
+// provenance-data.js, so a hash taken afterwards never equals HEAD's tree
+// even when the run started clean.
+function writeGreenMarker({ hash, mergeBase, ranTierNames }) {
+  try {
+    mkdirSync(MARKER_DIR, { recursive: true });
+    const body = `mergeBase=${mergeBase} tiers=${ranTierNames.join(",") || "none"} at=${new Date().toISOString()}\n`;
+    writeFileSync(join(MARKER_DIR, `green-${hash}`), body);
+    return hash;
+  } catch (err) {
+    console.log(`  NOTE     could not write the GREEN marker: ${err.message}`);
+    return null;
+  }
 }
 
 // Returns { paths, base, mergeBase } or { escalate: "<reason>" }.
@@ -529,12 +599,21 @@ async function runSteps(steps, env) {
 // Exported for app/test/test-scope-routing.test.js: the routing table is
 // pure (no git, no filesystem beyond reading the module itself), so it is
 // tested directly rather than through a subprocess.
-export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn };
+export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn, MARKER_DIR, workingTreeHash, writeGreenMarker };
 
 // ------------------------------------------------------------------ main
 
 async function main() {
   const argv = process.argv.slice(2);
+  if (argv.includes("--tree-hash")) {
+    // The same hash the GREEN marker is keyed by: tracked content plus
+    // untracked-but-not-ignored content. On a clean tree this equals
+    // `git rev-parse HEAD^{tree}`; on a dirty one it does not, which is
+    // exactly how .githooks/pre-push tells a dirty-tree pass from a real one.
+    console.log(workingTreeHash());
+    process.exit(0);
+  }
+
   const wantAll = argv.includes("--all");
   const planOnly = argv.includes("--plan");
   const baseIdx = argv.indexOf("--base");
@@ -547,16 +626,23 @@ async function main() {
   let changed = [];
   let escalated = null;
   let baseLine = "";
+  // What the marker records this run diffed against: the actual merge-base
+  // commit, or "ALL" for a run that covered the full set regardless of any
+  // diff (--all, or an escalation). A narrower run is never marked "ALL".
+  let markerBase = null;
 
   if (wantAll) {
     escalated = "--all was asked for";
+    markerBase = "ALL";
   } else {
     const diff = changedPaths(baseRef);
     if (diff.escalate) {
       escalated = diff.escalate;
+      markerBase = "ALL";
     } else {
       changed = diff.paths;
       baseLine = `base ${diff.base} (merge base ${diff.mergeBase.slice(0, 9)}), ${changed.length} changed path(s)`;
+      markerBase = diff.mergeBase;
     }
   }
 
@@ -688,6 +774,7 @@ async function main() {
     process.exit(0);
   }
 
+  const treeHash = workingTreeHash();
   const results = [];
   const delegatedTiers = [];
 
@@ -771,6 +858,11 @@ async function main() {
 
   const verdict = failed.length ? "RED" : partial.length ? `PARTIAL (${partial.join("; ")})` : "GREEN";
   const summary = results.map(([name, code]) => `${name} ${code === 0 ? "ok" : "FAILED"}`).join(", ");
+  if (verdict === "GREEN") {
+    const ranTierNames = results.map(([name]) => name.split("(")[0]);
+    const markerHash = writeGreenMarker({ hash: treeHash, mergeBase: markerBase, ranTierNames });
+    if (markerHash) console.log(`  marker   target/test-scope/green-${markerHash} (base ${markerBase}, tiers ${ranTierNames.join(",")})`);
+  }
   console.log(`\nVERDICT: ${verdict}  ${summary || "nothing ran"}  ${fmt(Date.now() - started)}`);
   if (failed.includes("gates")) console.log("A parity failure is fixed at source, or refreshed deliberately with npm run parity:refresh.");
   process.exit(exitCode);
