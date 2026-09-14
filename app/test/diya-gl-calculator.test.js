@@ -287,15 +287,16 @@ describe("calculateFromDiyaGl — SE", () => {
     const results = seResults();
     // 130,552.81 before the book's own SA103F statements: plus 640 own use,
     // less 2,500 + 1,800 stated allowances, 350 non-taxable income and the
-    // 540 special rate pool allowance.
-    expect(results["Income Tax"].E5).toBeCloseTo(126002.81, 2);
+    // 540 special rate pool allowance, plus the 90 adjustment for change of
+    // accounting practice (box 71) that box 73 adds to box 64.
+    expect(results["Income Tax"].E5).toBeCloseTo(126092.81, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the bands with the allowance tapered away entirely", () => {
     const tax = seResults()["Income Tax"];
     expect(tax.E6).toBeCloseTo(0, 2);
-    expect(tax.E11).toBeCloseTo(42904.26, 2);
+    expect(tax.E11).toBeCloseTo(42944.76, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 

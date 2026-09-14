@@ -622,9 +622,10 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
         if (statesAnnualFigures) expect(warningFields).not.toContain(field);
         else expect(warningFields).toContain(field);
       }
-      // Box 71 is warned either way: unstated it stays blank; stated, the
-      // sheet carries it into box 77 but not box 73.
-      expect(warningFields).toContain("adjustments.accountingAdjustment");
+      // Box 71 reaches box 73 and box 77 through the working sheet's one
+      // figure, so a stated figure is filed without a warning.
+      if (statesAnnualFigures) expect(warningFields).not.toContain("adjustments.accountingAdjustment");
+      else expect(warningFields).toContain("adjustments.accountingAdjustment");
     });
 
     it(`${fixture}: the stated annual figures come through as the book states them`, () => {
@@ -638,9 +639,9 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       expect(annual.adjustments.includedNonTaxableProfits).toBe(stated.adjustments.includedNonTaxableProfits);
       expect(annual.adjustments.accountingAdjustment).toBe(stated.adjustments.accountingAdjustment);
       expect(annual.adjustments.goodsAndServicesOwnUse).toBe(stated.adjustments.goodsAndServicesOwnUse);
-      const box71 = annual.warnings.find((w) => w.field === "adjustments.accountingAdjustment");
       const seFull = calculateSeCells(book, lines, TAX_APR27, scenario)["SE Full"];
-      expect(box71.handComputed).toBeCloseTo(seFull.O174 + stated.adjustments.accountingAdjustment, 2);
+      expect(seFull.O194).toBeCloseTo(seFull.O174 + stated.adjustments.accountingAdjustment, 2);
+      expect(seFull.D219).toBe(0);
     });
   }
 

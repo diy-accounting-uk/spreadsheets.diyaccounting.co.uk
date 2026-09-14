@@ -103,10 +103,11 @@ describeCalc(
       // income tax purposes). SE Short!D106 derives the same figure through
       // the SA103S boxes, except that the short return has no box for the
       // zero-emission car allowance (2,500), the Structures and Buildings
-      // Allowance (1,800) or the non-taxable income adjustment (350) the
-      // book states on SE Full alone.
+      // Allowance (1,800), the non-taxable income adjustment (350) or the
+      // adjustment for change of accounting practice (90, added) the book
+      // states on SE Full alone.
       expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
-      expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + 350, 6);
+      expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + 350 - 90, 6);
     });
 
     it("Income Tax: the taper takes the whole allowance once half the excess passes 12,570", () => {
@@ -153,18 +154,20 @@ describeCalc(
       // 130,552.81 before the book's own SA103F statements: plus 640 goods
       // for own use (box 60), less 2,500 + 1,800 of allowances (boxes 52.1
       // and 53), 350 of non-taxable income (box 62) and the estate car's 540
-      // special rate allowance (box 51, 9,000 at 6%). The car's 4,000
-      // depreciation leaves the net profit and comes back as box 44.
-      expect(tax.E5).toBeCloseTo(126002.8085, 4);
+      // special rate allowance (box 51, 9,000 at 6%), plus the 90 adjustment
+      // for change of accounting practice (box 71) that box 73 adds. The
+      // car's 4,000 depreciation leaves the net profit and comes back as
+      // box 44.
+      expect(tax.E5).toBeCloseTo(126092.8085, 4);
       expect(tax.E6).toBe(0);
-      expect(tax.E7).toBeCloseTo(126002.8085, 4);
+      expect(tax.E7).toBeCloseTo(126092.8085, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
       expect(tax.E9).toBeCloseTo(34976, 2);
-      expect(tax.E10).toBeCloseTo(388.263825, 2);
-      expect(tax.E11).toBeCloseTo(42904.263825, 2);
+      expect(tax.E10).toBeCloseTo(428.763825, 2);
+      expect(tax.E11).toBeCloseTo(42944.763825, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1514.65617, 2);
-      expect(tax.E18).toBeCloseTo(46680.919995, 2);
+      expect(tax.E16).toBeCloseTo(1516.45617, 2);
+      expect(tax.E18).toBeCloseTo(46723.219995, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees

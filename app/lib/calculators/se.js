@@ -1175,15 +1175,18 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     const fromNetLoss = -seFull.O129 + seFull.D174 - seFull.O169;
     return fromNetLoss < 0 ? -fromNetLoss : 0;
   });
-  seFull.O194 = seFull.O174;
+  // HMRC's SA103F working sheet for boxes 73 and 77 takes one figure, box
+  // 64 less box 65 plus boxes 68, 71 and 72: box 73 is that figure when it
+  // is positive and box 77 is its negation when it is not. The sheet reads
+  // O174-O179+N(D197)+D210+N(O190); boxes 68 and 72 have no input cell on
+  // this template, so their printed dash cells (D197, O190) contribute nil
+  // and box 71 (D210) is the only adjustment that moves either figure.
+  const adjustedProfitBeforeFloor = carry([seFull.O174, seFull.O179], () => seFull.O174 - seFull.O179 + sheetNumber(seFull.D210));
+  seFull.O194 = carry([adjustedProfitBeforeFloor], () => Math.max(0, adjustedProfitBeforeFloor));
   seFull.O204 = pl.B11;
   seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
-  // Box 77 is O179-N(D197)-D210-N(O190): box 65 reduced by boxes 68, 71 and
-  // 72. Boxes 68 and 72 have no input cell on this template, so their
-  // printed dash cells (D197, O190) always contribute nil; box 71 (D210)
-  // is the only one that moves the figure.
-  seFull.D219 = carry([seFull.O179], () => seFull.O179 - sheetNumber(seFull.D210));
+  seFull.D219 = carry([adjustedProfitBeforeFloor], () => Math.max(0, -adjustedProfitBeforeFloor));
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
   seFull.J280 = admin.N20;
