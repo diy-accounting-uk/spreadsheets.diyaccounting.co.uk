@@ -76,6 +76,19 @@ the first characters after `claude/`, so they carry the distinction: `claude/ltd
 or a series number at the end (`claude/a-few-batches-1`,
 `claude/consistent-preamble-hiding-specificity`).
 
+## Commands only the operator can run
+
+An SSO refresh with 2FA, `git branch -D`, `git push --delete`, and a Stripe test key stay the
+operator's: they need a factor the session does not hold, or they spend money or delete things.
+
+- Size a batch to fit inside one SSO window (~8-12h) and take every AWS read early in the
+  session, while the token is fresh.
+- Collect every classifier-blocked or operator-only command from the session into one fenced
+  block, presented once at a natural pause (a wave landing, a push), each line `!`-prefixed so
+  the operator can paste it into the chat.
+- Never pre-authorise a command on the operator's behalf, and never describe one in place of
+  showing it verbatim.
+
 ## Build Commands
 
 ```bash

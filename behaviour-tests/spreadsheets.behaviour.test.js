@@ -441,17 +441,30 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log(" Donate page content is present");
 
     // ============================================================
-    // STEP 3: Verify Stripe donate link (primary)
+    // STEP 3: Verify Stripe donate links (primary)
     // ============================================================
     console.log("\n" + "=".repeat(60));
-    console.log("STEP 3: Verify Stripe donate link");
+    console.log("STEP 3: Verify Stripe donate links");
     console.log("=".repeat(60));
 
     const stripeLinks = page.locator(".stripe-donate-link");
     const stripeLinkCount = await stripeLinks.count();
     expect(stripeLinkCount).toBeGreaterThanOrEqual(3);
-    const stripeHref = await stripeLinks.first().getAttribute("href");
-    expect(stripeHref).toContain("buy.stripe.com");
+
+    const isProd =
+      spreadsheetsBaseUrl === "https://spreadsheets.diyaccounting.co.uk" ||
+      spreadsheetsBaseUrl === "https://prod-spreadsheets.diyaccounting.co.uk";
+
+    for (let i = 0; i < stripeLinkCount; i++) {
+      const link = stripeLinks.nth(i);
+      const href = await link.getAttribute("href");
+      if (isProd) {
+        expect(href).toMatch(/^https:\/\/buy\.stripe\.com\/[^/]+$/);
+        expect(href).not.toContain("/test_");
+      } else {
+        expect(href).toMatch(/^https:\/\/buy\.stripe\.com\/test_/);
+      }
+    }
     console.log(` ${stripeLinkCount} Stripe donate links visible with correct URLs`);
 
     // ============================================================

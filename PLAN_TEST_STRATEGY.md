@@ -165,30 +165,19 @@ and from every brief; it is now wrong in both directions.
 ## 3. The blast-radius command
 
 ```
-node scripts/blast-radius.mjs [--base <ref>] [--json]
+npm run blast-radius [-- --base <ref>]
 ```
 
-One command, no judgement, prints the test files and specs to run.
+The diff-to-tier logic (the import graph, the fixture-name matching, the routing table) lives
+entirely in `scripts/test-scope.mjs`, which already has a `--plan` mode that computes the full
+tier selection and prints it without running anything. `scripts/blast-radius.mjs` is a thin
+wrapper around that: it forwards `--base` and runs `node scripts/test-scope.mjs --plan`. There is
+one implementation; the command is a named, discoverable view onto it for an agent who wants the
+list without running `npm test` itself.
 
-How it works:
-
-1. `git diff --name-only $(git merge-base HEAD <base>) HEAD` plus `git diff --name-only` and
-   `git ls-files --others --exclude-standard`, so uncommitted and untracked work counts.
-2. Build the ESM import graph across `app/**`, `web/**`, `diya-gl/**` by parsing `from "..."` and
-   `import("...")` specifiers, invert it, and walk transitively from each changed module to every
-   test file that reaches it.
-3. Match changed non-JS files (xlsx, toml, json, html, fixtures) by basename against every test
-   file's literal strings, which is how fixture and template dependencies show up.
-4. Apply the section 1 routing table for the gates no import graph can see: parity, roundtrip
-   verify, browser specs.
-5. Print, grouped by tier, with a cost estimate per group.
-
-Guessing gave 2 files where `grep -rl` gave 17. The import graph gives the 17 without anyone
-choosing, and the routing table adds the parity and browser gates that the 17 still miss.
-
-**It belongs in `package.json`**, as `"blast-radius": "node scripts/blast-radius.mjs"`, for the
-times an agent wants the list without running it. The wrapper in section 1 calls the same module
-directly, so there is one implementation and the npm script is a thin view of it.
+Guessing gave 2 files where `grep -rl` gave 17. The import graph in `test-scope.mjs` gives the 17
+without anyone choosing, and its routing table adds the parity and browser gates that the 17 still
+miss.
 
 ---
 
@@ -397,6 +386,11 @@ override. Four sits above CI's effective 3 and inside the proven-safe 6, and vit
 The confirming measurement, once the cap and the fixture cache land: one full `npm test` at
 `maxWorkers=4` with LibreOffice present. Target is at or under CI's 19 minutes, on faster hardware
 with more workers.
+
+Measured 2026-09-13: `npm test -- --all` (`maxWorkers=4`, cache and cap both in place) finished
+`VERDICT: GREEN` in 56m58s, against the 19-minute target -- but under a load average of 26.20 at
+the start (other batch sessions' concurrent worktree agents on the same machine), falling to 4.48
+by the end, so this run's wall clock is not read as the number the cache and cap alone produce.
 
 ---
 

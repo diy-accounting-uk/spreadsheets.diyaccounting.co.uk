@@ -231,9 +231,9 @@ export const DISALLOWABLE_PERCENT_CELLS = {
 // names. Verified against the template: SE Full!O154 (box 57) reads
 // D139+D144+D147+D152+D156+D160+O139+O144+O149, so every allowance cell here
 // is a term of the total; O169 (box 63) reads O154+D179; D219 (box 77) reads
-// O179+E197+D210+P190. Box 54's caption at N136 is "Electric charge-point
-// allowance" (L136 = 54); box 55's cell O144 is the small pools formula, so
-// the enhanced-allowance figure has no input cell of its own.
+// O179-N(D197)-D210-N(O190). Box 54's caption at N136 is "Electric
+// charge-point allowance" (L136 = 54); box 55's cell O144 is the small pools
+// formula, so the enhanced-allowance figure has no input cell of its own.
 export const ANNUAL_ALLOWANCE_CELLS = {
   zeroEmissionsGoodsVehicleAllowance: "D152",
   zeroEmissionsCarAllowance: "D156",
@@ -2604,12 +2604,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(seFull.D174) - num(seFull.O122) - num(seFull.O160),
       ownUseStated,
     );
-    // Box 77's formula is O179+E197+D210+P190: box 65 plus box 71, with the
-    // box 68 and 72 terms reading the blank cell beside each dash.
+    // Box 77's formula is O179-N(D197)-D210-N(O190): box 65 reduced by box
+    // 71, with the box 68 and 72 terms reading each printed dash (always
+    // nil -- neither box has an input cell on this template).
     check(
-      "SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states",
+      "SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states",
       num(seFull.D219),
-      num(seFull.O179) + (statedAdjustments.accountingAdjustment || 0),
+      num(seFull.O179) - (statedAdjustments.accountingAdjustment || 0),
     );
     // Box 73 reads box 64 alone (O194 = O174). HMRC's working sheet adds box
     // 71 to the adjusted profit; the sheet carries box 71 into box 77 only.

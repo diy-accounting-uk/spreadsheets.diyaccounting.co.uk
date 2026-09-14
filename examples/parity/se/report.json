@@ -5,9 +5,9 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.10+32b8b8c8",
+    "engineVersion": "1.2.12+6513290ce",
     "taxDataHash": "4ecdbe985d22",
-    "templateHash": "2d5629384e82",
+    "templateHash": "4decdcb12664",
     "templateScorecard": "7952 passed, 0 warnings, 0 failed",
     "reconciledCommit": "c910fdeefbe4f2f71ae9ec5f5d4a713783a1c0c7"
   },
@@ -2060,7 +2060,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D219",
       "unit": "money",
-      "value": "90"
+      "value": "-90"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D231",
@@ -2225,7 +2225,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O224",
       "unit": "money",
-      "value": "90"
+      "value": "-90"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O55",
@@ -10922,11 +10922,11 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states",
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states",
       "unit": "verdict",
       "value": "pass",
-      "expected": "90",
-      "actual": "90",
+      "expected": "-90",
+      "actual": "-90",
       "tolerance": "1"
     },
     {
@@ -14515,7 +14515,7 @@
     {
       "key": "section/self-assessment-sa103f/adjusted-loss-box-77",
       "unit": "money",
-      "value": "90",
+      "value": "-90",
       "source": "cell/Financialaccounts.xlsx!SE Full!D219"
     },
     {
@@ -14737,7 +14737,7 @@
     {
       "key": "section/self-assessment-sa103f/total-loss-to-carry-forward-box-80",
       "unit": "money",
-      "value": "90",
+      "value": "-90",
       "source": "cell/Financialaccounts.xlsx!SE Full!O224"
     },
     {

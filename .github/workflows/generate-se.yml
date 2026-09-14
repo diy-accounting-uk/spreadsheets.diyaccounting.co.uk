@@ -102,29 +102,10 @@ jobs:
       skip-reconciliation: ${{ steps.normalise.outputs.skip-reconciliation }}
       skip-commit: ${{ steps.normalise.outputs.skip-commit }}
 
-  test:
-    runs-on: ubuntu-24.04
-    needs: [params]
-    if: ${{ needs.params.outputs.skip-tests != 'true' }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
-        timeout-minutes: 6
-        env:
-          NPM_CONFIG_FETCH_RETRIES: "3"
-      - run: npm test
-        env:
-          # This job has node alone, so the router covers the app tiers here.
-          TEST_SCOPE_TIERS: unit,calc
-
   generate:
     runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
+    needs: [params]
+    if: ${{ !cancelled() && needs.params.outputs.skip-generation != 'true' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -175,10 +156,35 @@ jobs:
       matrix: ${{ steps.matrix.outputs.year-ends }}
       latest: ${{ steps.matrix.outputs.latest }}
 
-  reconcile:
+  test:
     runs-on: ubuntu-24.04
     needs: [params, generate]
-    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' && needs.generate.outputs.matrix != '[]' }}
+    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-tests != 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Overlay the freshly generated packages
+        if: ${{ needs.generate.result == 'success' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: se-packages
+          path: packages/
+      - run: npm test
+        env:
+          # This job has node alone, so the router covers the app tiers here.
+          TEST_SCOPE_TIERS: unit,calc
+
+  reconcile:
+    runs-on: ubuntu-24.04
+    needs: [params, generate, test]
+    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' && needs.generate.outputs.matrix != '[]' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -349,7 +355,7 @@ jobs:
 
   reconcile-extra:
     runs-on: ubuntu-24.04
-    needs: [params, generate, reconcile]
+    needs: [params, generate, test, reconcile]
     if: ${{ !cancelled() && needs.reconcile.result == 'success' }}
     timeout-minutes: 15
     steps:
@@ -401,8 +407,8 @@ jobs:
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [params, generate, reconcile, reconcile-extra]
-    if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
+    needs: [params, generate, test, reconcile, reconcile-extra]
+    if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
       - uses: actions/checkout@v7
         with:

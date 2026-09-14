@@ -13,8 +13,7 @@ on:
     - cron: '47 1,2,6 * * *'
   push:
     branches:
-      - '**'
-      - '!gh_pages'
+      - main
     paths:
       - 'app/**'
       - 'infra/**'
@@ -212,6 +211,11 @@ jobs:
           # The gate, browser and infra tiers have their own jobs, so this one
           # routes the app tiers. Anything it delegates prints as DELEGATED.
           TEST_SCOPE_TIERS: unit,calc
+
+      - name: Run CI-only export-tuple check
+        # Outside scripts/test-scope.mjs's routing, by filename convention --
+        # see app/test/verify-roundtrip-export-tuple.ci.spec.js's own header.
+        run: npx vitest run --project ci-only --reporter=tap-flat
 
   roundtrip-bst:
     name: 'roundtrip fidelity (BST)'

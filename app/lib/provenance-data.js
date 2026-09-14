@@ -12,7 +12,7 @@
 
 export const PROVENANCE_DATA = {
   formatVersion: "diya-gl/1",
-  engineVersion: "1.2.10+32b8b8c8",
+  engineVersion: "1.2.12+6513290ce",
   taxDataHash: "4ecdbe985d22",
   reconciledCommit: "c910fdeefbe4f2f71ae9ec5f5d4a713783a1c0c7",
   templates: {
@@ -25,7 +25,7 @@ export const PROVENANCE_DATA = {
       scorecard: "686 passed, 0 warnings, 0 failed",
     },
     se: {
-      hash: "2d5629384e82",
+      hash: "4decdcb12664",
       scorecard: "7952 passed, 0 warnings, 0 failed",
     },
     ltd: {

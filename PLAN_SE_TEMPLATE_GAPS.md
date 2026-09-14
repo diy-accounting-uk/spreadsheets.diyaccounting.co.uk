@@ -215,7 +215,7 @@ Box 33 (subcontractor payments) has no short-return box of its own; SA103S folds
 Written this way, `box 31 = box 20 + box 46` and `box 47 = short net profit - box 46` stay exactly
 true, so the two cross-form checks at `app/products/se.js:2427` and `:2432` survive unchanged.
 
-### 3.4 SED-7 and SED-8: the book states nine boxes, the schedule computes one, two wait
+### 3.4 SED-7 and SED-8: the book states nine boxes, the schedule computes one, three records close the rest
 
 **The stated boxes (done).** `tax.selfEmployment.allowances` and `.adjustments` hold, keyed by
 HMRC's API field names, the figures the trader states by hand: boxes 52 (`D152`), 52.1 (`D156`),
@@ -246,16 +246,114 @@ The small pools write-off (`O144`) keeps reading `R1+S1` over one S column, so a
 balance counts towards the £1,000 test alongside the main pool. HMRC applies the test per pool;
 splitting S into two columns is the follow-on if a book ever needs it.
 
-**Boxes 53.1 and 73.3: no cell this wave.** Both wait on a record the book does not hold, and
-neither gets a book field before it. The Freeport SBA (53.1) is the enhanced-rate variant of the
-box 53 claim, and section 7 puts the claim record before either cell. The transition profit (73.3)
-is the basis period reform's spread, computed from the overlap record section 7 names for box 68.
-Filing a figure the printed return cannot show is the outcome SED-1 already ruled out, so until the
-record exists the derivation omits both fields and warns, and `sa103-mtd-mapping.json` keeps
-`cell: null` for both. When a record lands, the geometry is: 53.1 needs a label-and-value row pair
-laid out afresh between rows 146 and 161, and 73.3 can take the one free shaped slot, the 15pt
-label row 199 with the merged value box `D201:F201` under it, once the "Boxes 69 and 70 are not
-in use" notice moves.
+**Three records the book does not hold yet.** Each of the three designs below follows the box 51
+table: the book field, the cell or column each figure feeds, the formula, the read-back, the
+fixture, the checks and the corruption proof. The box 51 columns they build on are in the
+template now (`Schedule!AB2` "Pool (S = special rate)", `AC2` "Special Rate W Down Allowance",
+`AC4 = [1]Admin!$G$6`, `AC1 = AC57+AC110`), so the formulas quoted here are the shipped ones.
+
+**SET-7, the basis period record: boxes 68, 69 and 73.3.** The package writes every book onto the
+tax year (`Admin!B4` = 6 April, `B17` = 5 April; `periodShiftMonths` in `app/lib/period-shift.js`
+moves a July-to-June book's months onto the April-to-March tabs), so the sheet cannot see the
+book's accounting date. The record therefore holds the four figures the return needs and the
+book's own `documentInfo` dates supply the fifth. The rules applied, cited once here and quoted
+beside each formula below:
+
+- Tax year basis. `ITTOIA 2005 s.7A(2)-(3)` (inserted by `FA 2022 Sch 1`): the profits of a tax
+  year are the profits of the periods of account apportioned to it by days. `s.7C(1)(c)`: an
+  accounting date of 31 March or 1 to 4 April counts as the tax year's end, so box 68 is nil.
+- Overlap. `FA 2022 Sch 1 para 69(2)` (no transition part) and `para 70(2) Step 3` (with one):
+  the whole overlap profit is deducted on the 2023-24 return. Nothing is carried past it.
+- Transition profit. `para 72(3)-(4)`: 20% of the transition profits in each of 2023-24 to
+  2026-27, the balance in 2027-28. `para 73(1)-(4)`: the trader may elect an additional amount
+  in any year, and later years then take 20% of the profits reduced by `A x 5/T` (`T` the years
+  left after the election year). That formula is the same figure as "the untaxed balance divided
+  by the years left, this one included", which is how the SA103F notes for 2025-26 state it
+  ("Enter 33.3% of the remaining profits in box 73.3"), so the sheet computes it that way.
+- Tax on the spread. `para 75(2)`: the amount treated as arising is a separate component of
+  total income, left out of net income (so the personal allowance taper ignores it) and taxed as
+  the top slice. Class 4 follows the income tax charge (`SSCBA 1992 s.15(1)`; `para 72(3)` makes
+  the amount chargeable under Chapter 2 of Part 2 of ITTOIA), so the two Class 4 lines add it.
+  SA103F box 76 leaves it out ("Do not include any transition profits in this box").
+
+| Where | Change |
+| --- | --- |
+| `diya-gl-book-v2.schema.json` `tax.selfEmployment.basisPeriod` | New object, `additionalProperties: false`: `overlapProfitBroughtForward` (number, min 0), `transitionProfitBroughtForward` (number, min 0; the 2023-24 transition profits less every amount already treated as arising), `transitionProfitAccelerationAmount` (number, min 0; HMRC's own field name), `followingPeriodProfit` (number; the profit of the period of account that follows this one, a loss negative, provisional until its accounts are final; only read when the accounting date is outside 31 March to 5 April). TOML: `[tax.selfEmployment.basisPeriod]` with those four keys. `diyaGlToScenario` copies the object to `scenario.basis_period` verbatim; `extract-scenarios.js` emits `[basis_period]` the way it emits `[annual_allowances]`. |
+| `Financialaccounts.xlsx!Business Details` boxes 8 and 9 | The writer puts the book's own period on the printed boxes: `N27` (merged `N27:Q27`, box 8) = `periodCoveredStart`, `N32` (box 9, today the formula `=Admin!B17`, style 316) = `periodCoveredEnd`, both moved forward by whole years only, `targetStartYear` less the start year `taxYearFileName(periodCoveredEnd, "se")` names, so a 1 July 2025 to 30 June 2026 book generated for 2026-27 prints those dates and one generated for 2027-28 prints 2026 to 2027. Serials via `toExcelSerial`, the way the Schedule writer dates a new asset. `extractBook` reads both back into `documentInfo.periodCoveredStart` and `periodCoveredEnd` in place of `periodCovered()`'s guess. |
+| `Business Details` rows 57 to 75, the ENTER block under the losses block (rows 48 to 55 are the pattern: label style 208, note 201, "£" 209, input 328, computed 324, "." 210, pence 211, plain label 195, "Calculated no entry required" 216) | Row 57: `C57` "ENTER: Overlap profit brought forward from earlier years", `N57` "ENTER: Transition profit not yet treated as arising at the start of this tax year". Row 58 (ht 12): `C58` " - box 69; the 2023-24 return uses all of it", `N58` " - your 2023-24 transition profit less every amount already charged". Row 59 (ht 15): `C59` "£", `D59` input (merge `D59:F59`), `G59` ".", `H59` `I59` 0; `N59` "£", `O59` input (merge `O59:Q59`), `R59` ".", `S59` `T59` 0. Row 60 (ht 8). Row 61 (ht 12): `C61` "Overlap relief used this year", `N61` "Transition profit treated as arising this year, before any election". Row 62 (ht 12): `C62` and `N62` "Calculated no entry required". Row 63 (ht 4). Row 64 (ht 15): `D64 = IF(YEAR(Admin!$B$17)=2024,D59,0)` (merge `D64:F64`), `O64 = IF(YEAR(Admin!$B$17)<2024,0,O59/MAX(1,2029-YEAR(Admin!$B$17)))` (merge `O64:Q64`), each with its "£", "." and pence cells. Row 65 (ht 8). Row 66 (ht 12): `C66` "Overlap profit carried forward", `N66` "ENTER: Additional transition profit you elect to treat as arising this year". Row 67 (ht 12): `C67` "Calculated no entry required", `N67` " - the election itself goes in box 103". Row 68 (ht 4). Row 69 (ht 15): `D69 = D59-D64` (merge `D69:F69`), `O69` input (merge `O69:Q69`). Row 70 (ht 8). Row 71 (ht 12): `C71` "ENTER: Profit of your next accounting period, a loss with a minus sign, provisional until its accounts are final", `N71` "Transition profit carried forward to next year". Row 72 (ht 12): `C72` " - only if box 9 is not 31 March to 5 April; box 68 apportions both periods to the tax year by days", `N72` "Calculated no entry required". Row 73 (ht 4). Row 74 (ht 15): `D74` input (merge `D74:F74`), `O74 = O59-O64-O69` (merge `O74:Q74`). Row 75 (ht 8). Dimension `A1:W59` becomes `A1:W75`. `2029-YEAR(B17)` is the years left including this one: 5 for 2023-24, 2 for 2026-27, 1 for 2027-28 (the balance, `para 72(4)`); `MAX(1, ...)` makes any later year take the whole balance (`para 72(6)`, cessation, is the only route there). |
+| `app/products/se.js` writer | `BASIS_PERIOD_CELLS = { overlapProfitBroughtForward: "D59", transitionProfitBroughtForward: "O59", transitionProfitAccelerationAmount: "O69", followingPeriodProfit: "D74" }` on `Business Details`, written from `scenario.basis_period` in `composeWrites` beside `GOODS_FOR_OWN_USE_CELL`; `app/lib/anchors/se.js` `isHubInputCell` admits the four cells and `N27`, `N32`. |
+| `Financialaccounts.xlsx!SE Full` box 68, `D197` (today the literal text `" —"`, style 275, with the empty merge `E197:F197` beside it) | Drop the merge `E197:F197`, add `D197:F197`, style 356, and the formula `=IF(OR('Business Details'!N32="",'Business Details'!N32>=DATE(YEAR(Admin!$B$17),3,31)),0,('Business Details'!N32-MAX('Business Details'!N27,Admin!$B$4)+1)/('Business Details'!N32-'Business Details'!N27+1)*(O174-O179)+(Admin!$B$17-'Business Details'!N32)/(EDATE('Business Details'!N32,12)-'Business Details'!N32)*'Business Details'!D74-(O174-O179))`. Read left to right: nil under `s.7C`; otherwise this period's profit (box 64 less box 65) times the share of its days that fall in the tax year, plus the following period's profit times the share of the tax year it covers (its length is the twelve months after box 9, `EDATE`), less this period's whole profit. `s.7A(3)`. For 1 July 2025 to 30 June 2026 in 2026-27: 86/365 of this period and 279/365 of the next. |
+| `SE Full` boxes 73 and 77 | The working sheet in the notes puts box 68 into E (`box 64 - box 65 + box 68`), box 73 = E when positive, box 77 = -E when not. `O194` (today `=O174`) becomes `=MAX(0,O174-O179+D197)` plus whatever box 71 term SET-11 leaves on it; `D219` takes `MAX(0,-(O174-O179+D197))` in place of its `O179` term, on top of SET-11's corrected formula. `O199`, `O210` and `Income Tax!E5` read `O194` and `O210` unchanged, so the tax computation follows box 68 through them. |
+| `SE Full` box 73.3, rows 199 to 204 | `C199` (today "Boxes 69 and 70 are not in use") becomes `A199` = 73.3 (style 236), `C199` "Spread of the transition profit treated as arising in this" (227), `C200` (row 200, ht 12) "tax year - see the working sheet in the notes" (227). Row 201 (ht 16, merge `D201:F201` already there): `C201` "£" (217), `D201 = 'Business Details'!O64+'Business Details'!O69` (356), `G201` "." (218), `H201` `I201` 0 (219). The notice moves to `C204` (227; the row's left side is empty, `O204` is box 75 on the right). |
+| `Financialaccounts.xlsx!Income Tax` | Row 14 (empty today, ht 14): `B14` "Income Tax on transition profit (box 73.3), charged as the top slice" (108), `E14` (99) `=IF('SE Full'!D201>0,IF(E7+'SE Full'!D201<C9,(E7+'SE Full'!D201)*D8,C9*D8)+IF(E7+'SE Full'!D201>C9,(MIN(E7+'SE Full'!D201,C10)-C9)*D9,0)+IF(E7+'SE Full'!D201>C10,(E7+'SE Full'!D201-C10)*D10,0)-E11,0)`, the bands of `E8:E10` run over `E7` plus the spread, less the tax already in `E11` (`para 75(3)`). `E6` keeps tapering on `E5` alone (`para 75(2)(c)`). `E15` and `E16` replace each `E5` with `(E5+'SE Full'!D201)`. `E18 = SUM(E11:E17)` already adds row 14. `Profit Forecast` is untouched. |
+| `app/lib/calculators/se.js` | `businessDetails` gains `D59`, `O59`, `O69`, `D74` (stated) and `D64`, `O64`, `D69`, `O74` (the formulas above); `seFull.D197`, `D201`, `O194`, `D219` as above, with `book.documentInfo` and `taxData.tax_year` supplying the dates; `incomeTax.E14`, `E15`, `E16`. `results["Business Details"]` gains the eight cells. |
+| `app/lib/calculators/se-derivations.js` | Remove `68`, `69` and both `73.3` entries from `NO_SOURCE_ANNUAL_BOXES`. File `adjustments.basisAdjustment = round2(D197)` when it is not nil; `adjustments.overlapReliefUsed = round2(Business Details!D64)` when it is above nil and the field is live for the year; `adjustments.transitionProfitAmount = round2(O64)` and `adjustments.transitionProfitAccelerationAmount = round2(O69)` when above nil and live (`api.years` adds both in 2024-25). Warn when `O69 > O59 - O64`: an election cannot exceed the untaxed balance (`para 73(3)`). |
+| `sa103-mtd-mapping.json`, `app/data/hmrc/form-layouts/se.json`, `CELL_MAP` | Box 68 `SE Full!D197`, box 69 `Business Details!D64`, box 73.3 `SE Full!D201`. `CELL_MAP` gains the eight Business Details cells, `D197`, `D201` and `Income Tax!E14`; `standardReads()` follows. |
+| `app/lib/xlsx-exporter.js` | `SE_BASIS_PERIOD_CELLS`, the same four cells, read the way `SE_ANNUAL_ADJUSTMENT_CELLS` are, into `tax.selfEmployment.basisPeriod`; `N27` and `N32` into `documentInfo`. |
+| Fixture, `examples/precision-code-ltd/advanced/book.toml` | `[tax.selfEmployment.basisPeriod] overlapProfitBroughtForward = 2400, transitionProfitBroughtForward = 6000, transitionProfitAccelerationAmount = 1000`; no `followingPeriodProfit`, because the book's 31 March date is `s.7C` aligned. Book settings, no journal line, no trial balance movement. Across the packages the one fixture runs against: 2023-24 uses the 2,400 (box 69) and computes 6,000/5 = 1,200 plus the 1,000 election; 2025-26 files 2,000 and 1,000; 2026-27 (the featured package) files 3,000 and 1,000 and carries 2,000. `judge-reconciliation.js` gets one SE note saying the overlap figure is carried unused after 2023-24 because boxes 69 and 70 are not in use. Brickwork states nothing, so both figures stay nil there. |
+| Checks (`checkCompliance`, each anchored on the fixture and the year, so a self-consistent wrong figure fails) | `D59`, `O59`, `O69`, `D74` each = the fixture's stated figure (nil when unstated). `D64` = the fixture's overlap when `taxData.tax_year.end` is in 2024, else 0; `D69 = D59 - D64`. `O64` = the fixture's transition figure / (2029 - end year, floored at 1), 0 before 2023-24; `O74 = O59 - O64 - O69`; `O69 <= O59 - O64`. `D201 = O64 + O69` and, separately, = the same rule computed from the fixture. `D197` = the `s.7A` figure the check computes from the fixture's year-shifted period, `followingPeriodProfit` and `taxData.tax_year`, which is 0 for both fixtures. `O194 = MAX(0, O174 - O179 + D197)`. `Income Tax!E14` = `calculateIncomeTax(E7 + D201) - calculateIncomeTax(E7)` from `app/lib/tax/income-tax.js`; the two Class 4 checks gain `D201`. A calc-tier test (`app/test/se-basis-period-checks.test.js`) generates the advanced book with `documentInfo` overridden to 2025-07-01 to 2026-06-30 and `followingPeriodProfit = 36500`, and asserts `D197 = (36500 - (O174 - O179)) x 279/365` and box 73 moved by the same. |
+| Corruption proof (`app/test/se-full-return-checks.test.js`, the `SA103F_CORRUPTIONS` table and a `Business Details` table beside the `O50` case) | `SE Full!D197` fails exactly the box 68 anchor and the `O194` identity. `D201` fails its two checks, `E14` and the two Class 4 checks. `Business Details!D59` fails its anchor and `D69`'s identity; `O59` its anchor and `O74`'s; `O69` its anchor, `O74`'s identity, the election bound and `D201`'s identity; `D74` its anchor alone; `D64` its rule check and `D69`'s identity; `O64` its rule check, `O74`'s and `D201`'s identities. `Income Tax!E14` fails its own check only. A derivation test asserts the 2023-24 payload carries `overlapReliefUsed = 2400` and no transition fields, 2025-26 carries 2,000 and 1,000, 2026-27 carries 3,000 and 1,000 and no `overlapReliefUsed`. |
+
+**SET-8, the single asset pool marker: boxes 50 and 51 and the API's third pool.** The SA103F
+notes for box 51: "If you use equipment or cars for both business and private purposes, you must
+reduce the allowances you claim by the private use proportion. You must keep a separate pool of
+expenditure for each of the items you use for private purposes and apply the appropriate WDA rate
+(18% or 6%), this is called a single asset pool. The 'small pools allowance' does not apply to
+single asset pools." A short-life asset election (`CAA 2001 ss.83-86`) makes one too. The printed
+return keeps single asset pools inside boxes 50 and 51 by rate; the API files them under
+`capitalAllowanceSingleAssetPool` and takes them out of `capitalAllowanceMainPool` and
+`capitalAllowanceSpecialRatePool`. The pool marker is a second column, not a third value of
+`capitalAllowancePool`: the rate and the pooling are independent facts (a privately used car sits
+in a single asset pool at 18% or at 6%), and a second column leaves the forty `AB<>"S"` tests in
+column R and the forty `AB="S"` tests in AC exactly as they are. The Schedule already applies a
+private use proportion, column M, on the car rows, so the book gains that field with the marker;
+a single asset pool filed without its private use reduction is the wrong figure.
+
+| Where | Change |
+| --- | --- |
+| `diya-gl-book-v2.schema.json` `fixedAssets[]` | `singleAssetPool` (boolean, default false: the asset's tax written-down value is its own pool, `CAA 2001 s.206` private use or a short-life asset election) and `privateUseProportion` (number, 0 to 1, the share of use that is not business use). `diyaGlToScenario` carries them to `opening_fixed_assets[].single_asset_pool` and `.private_use`; `extract-scenarios.js` emits both with a comment each, as it emits `pool`. The loader throws when `privateUseProportion > 0` without `singleAssetPool` (`s.206` puts a privately used asset in its own pool; the book states it, the loader does not infer it) and when either is set on a `computerTechnology` asset (the Schedule reads M on the car rows only). |
+| `Fixedassets.xlsx!Schedule` columns AD to AG | `AD2` "Single asset pool (P = private use or short-life asset)" (style 130), `AE2` "Single Asset Pool W Down Allowance main rate", `AF2` "Single Asset Pool W Down Allowance special rate", `AG2` "Single Asset Pool Written Down Tax Value" (132). On the forty writing-down rows (14-18, 22-26, 30-34, 38-42, 44-48, 50-54, 91-95, 97-101), style 11 `t="str"` as R and AC: `AE14 = IF(AND(AD14="P",AB14<>"S"),N(R14)," ")`, `AF14 = IF(AND(AD14="P",AB14="S"),N(AC14)," ")`, `AG14 = IF(AD14="P",N(S14)," ")`. R, AC and S stay as shipped: `R38 = IF(AND(O38>0,AB38<>"S"),O38*R$4*(1-M38)," ")`, `AC38 = IF(AND(O38>0,AB38="S"),O38*AC$4*(1-M38)," ")`, `S38 = IF(O38>0,O38-N(R38)-N(AC38)," ")`, and on the plant rows the same without `(1-M)`. Block totals (style 17) on rows 11, 19, 27, 35, 55, 64, 72, 80, 88 and 108 over the same ranges AC sums (`AC55 = SUM(AC38:AC54)`); `AE57 = AE11+AE19+AE27+AE35+AE55`, `AE110 = AE64+AE72+AE80+AE88+AE108` (19); `AE1 = AE57+AE110` (20); AF and AG the same. Dimension `A1:AC111` becomes `A1:AG111`. |
+| `app/products/se.js` writer | `SINGLE_ASSET_POOL_MARKER_COLUMN = "AD"`, `SINGLE_ASSET_POOL_MARKER = "P"`, `PRIVATE_USE_COLUMN = "M"`. In the opening-asset loop the writes go C, E, F, M, O, AB, AD, left to right, because a later write onto an earlier column drops the unwritten cells between them (the comment on that loop says why). M only on `EXISTING_ASSET_ROWS.motor`. `app/lib/anchors/se.js` `EXISTING_SCHEDULE_COLUMNS` gains M and AD. |
+| `Financialaccounts.xlsx!SE Full` box 55, `O144` (today `=IF(([1]Schedule!$R$1+[1]Schedule!$S$1)<1000,[1]Schedule!$S$1,0)`) | `=IF(([1]Schedule!$R$1+[1]Schedule!$S$1-[1]Schedule!$AE$1-[1]Schedule!$AF$1-[1]Schedule!$AG$1)<1000,[1]Schedule!$S$1-[1]Schedule!$AG$1,0)`: the £1,000 test and the write-off run over the pooled balance alone. SET-10 splits the pooled figure by rate on top of this. `D144` and `D147` keep reading `R1` and `AC1`, because the printed boxes include single asset pools. `refreshLinkCaches` picks up `AE1`, `AF1` and `AG1` from the new formula. |
+| `app/lib/calculators/se.js` | `scheduleRow` takes `singleAssetPool` and `privateUse`; on the motor rows R and AC multiply by `(1 - privateUse)`, and Y and Z do too (`Y38 = IF((U38+V38)>0,IF(V38<S38,(S38-V38)*(1-M38)," ")," ")`); `AE`, `AF`, `AG` as the sheet; `SCHEDULE_TOTAL_COLUMNS` gains the three; `scheduleCells` exposes `AE1`, `AF1`, `AG1` as it does `AC1`; `seFull.O144` follows the new formula. |
+| `app/lib/calculators/se-derivations.js` | Remove `{ box: "51", pick: 1 }` from `NO_SOURCE_ANNUAL_BOXES`. `allowances.capitalAllowanceMainPool = round2(D144 - AE1)`, `capitalAllowanceSpecialRatePool = round2(D147 - AF1)`, `capitalAllowanceSingleAssetPool = round2(AE1 + AF1)` when any row is marked, read from `rawResults["Fixedassets.xlsx!Schedule"]`. |
+| `multiFileOptions()` reads, `CELL_MAP` | `Schedule` reads gain `AE1`, `AF1`, `AG1`, and `M40`, `AD40`, `AE40`, `AG40` for the fixture's marked row (the third motor asset lands on row 40: van 38, estate car 39). `CELL_MAP` gains the three totals. |
+| `app/lib/xlsx-exporter.js` | `SCHEDULE_SINGLE_ASSET_POOL_MARKER = { column: "AD", value: "P" }` read beside the AB marker into `singleAssetPool: true`; M read on the motor rows into `privateUseProportion` when above nil. |
+| Ltd | `app/templates/ltd/Fixedassets.xlsx!Schedule` is a different file (dimension `A1:AA111`, no AB or AC either) and does not change: a company has no private use and the CT600 has no single asset pool box. `fixedAssetRegisterFrom` is shared and reads the columns by letter, so on the Ltd sheet it finds no AD cell and blank M cells and sets neither field. `diyaGlToScenario(book, lines, "ltd")` throws on either field, the way it throws for a class the Schedule has no block for. Ltd tests in the blast radius, all expected unchanged: `ltd-anchors.test.js` (its Schedule input-cell list), `ltd-reconciliation-checks.test.js`, `book-checks-ltd.test.js`, `diya-gl-loader.test.js`; `verify-roundtrip.test.js`'s register table gains the hatchback row and the two new columns. The Ltd fixture does not carry the hatchback, so no Ltd report moves. |
+| Fixture, `app/bin/extract-scenarios.js` | `SE_SINGLE_ASSET_POOL_CAR = { assetID: "SE-FA-2", class: "motorVehicles", singleAssetPool: true, privateUseProportion: 0.3, description: "Hatchback (30% private use, 2 years old)", cost: 12500, accumulatedDepreciation: 5000, taxWrittenDownValue: 8000 }`, appended after `SE_SPECIAL_RATE_CAR` in `seOpeningFixedAssets` and `advV2.fixedAssets`, with its two opening lines `TXN-0004P` (D 0040 12,500) and `TXN-0005P` (C 0040 5,000) spliced after `TXN-0005S` in `advLines`. The SE subset's opening journal carries asset lines only (`filterAdvanced` passes 0030 and 0040), so it has no equity leg to balance and no trial balance cell; the Company fixture does not carry the car. Figures: `R40 = 8000 x 0.18 x 0.7 = 1008`, `AE40 = 1008`, `AG40 = 6992`, box 50 = 4,320 + 1,008 = 5,328, filed as `capitalAllowanceMainPool` 4,320 and `capitalAllowanceSingleAssetPool` 1,008; box 51 stays 540. The car's depreciation (`I40 = 3125`) moves box 29, box 44 and every total below them, so the committed reports regenerate. |
+| Checks | `AE1` = the fixture's single-asset main-rate assets' `tax_wdv x (1 - private_use) x` the year's writing down rate; `AF1` the same at the special rate; `AG1` = their `tax_wdv` less both; `AD40 = "P"`, `M40 = 0.3`; `D144 = R1` and the box 50 anchor gain the private use factor on marked rows; `O144` = the new rule computed from the fixture's pools; `capitalAllowanceMainPool = box 50 - AE1` and the single asset figure `= AE1 + AF1` in `se-derivations.test.js`. |
+| Corruption proof | `Fixedassets.xlsx!Schedule!AE1` (via `readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", ...)`, as `ltd-reconciliation-checks.test.js` does) fails its anchor and the `O144` rule; `AG1` fails its anchor and `O144`; `M40` fails its anchor and the box 50 anchor; `AD40` fails its own check. `SE Full!O144` fails the box 55 rule and the box 57 total. |
+
+**SET-9, the Structures and Buildings Allowance claim record: boxes 53 and 53.1.** The API takes
+two arrays, `allowances.structuredBuildingAllowance[]` and
+`allowances.enhancedStructuredBuildingAllowance[]`, each item `{ amount, firstYear: {
+qualifyingDate, qualifyingAmountExpenditure }, building: { name, number, postcode } }` with
+`amount` and `building` required and `postcode` mandatory inside it. The rule (`CAA 2001
+s.270AA(2)`, `(2A)`, `(5)`; `s.270EA(2)-(3)`): 3% a year of the qualifying expenditure, 10% for a
+special tax site (Freeport or Investment Zone), for each day of the chargeable period from the
+later of first qualifying use and the expenditure being incurred, for 33 1/3 years (10 for a tax
+site), reduced by days when entitlement covers part of the period. The 2% rate ended before every
+year file this package ships (2020-21 onwards). So the record holds the inputs and the sheet
+computes the amount; a stated amount cannot be anchored, and a rate is tax data, so it lives in
+the year file like every other rate. The claims sit on `Fixedassets.xlsx!Schedule` below the
+register, because that sheet is where the package computes capital allowances and box 51 already
+reads it across the link.
+
+| Where | Change |
+| --- | --- |
+| `diya-gl-book-v2.schema.json` `tax.selfEmployment.allowances` | `structuredBuildingAllowance` changes from a number to an array (no alias, every caller changes), and `enhancedStructuredBuildingAllowance` is added with the same item shape: `{ qualifyingDate (date, required), qualifyingAmountExpenditure (number, min 0, required), ceasedDate (date, the day qualifying use or the relevant interest ended), building: { name, number, postcode (required) } (required) }`, `additionalProperties: false` throughout. `diyaGlToScenario` merges the two arrays into `scenario.sba_claims[]` with `enhanced: true` on the second array's items; `extract-scenarios.js` emits `[[sba_claims]]`. |
+| `app/data/se-*.toml`, all seven, `[capital_allowances]` | `structures_and_buildings_allowance = 0.03`, `structures_and_buildings_allowance_enhanced = 0.10`. `tax.capitalAllowances` in the schema gains `structuresAndBuildingsAllowance` and `structuresAndBuildingsAllowanceEnhanced`; `extractTaxDataFromBook` maps them as it maps `specialRateWDA`. |
+| `Financialaccounts.xlsx!Admin` | `D9` "Structures and buildings allowance" (450), `G9` 0.03 (148); `D10` "Freeport and Investment Zone SBA" (450), `G10` 0.10 (148); rows 9 and 10 have D and G free (the right side of row 9 is the tax band heading). `generator.js` `numericEdits.G9`, `G10` beside `G6`; the calculator's Admin cells and the Admin echo checks follow. |
+| `Fixedassets.xlsx!Schedule` rows 113 to 121 (row 111, ht 7.5, is the sheet's last row today) | Row 113 (ht 13.5): `B113` "STRUCTURES AND BUILDINGS ALLOWANCE (SA103F boxes 53 and 53.1)" (152). Row 114 (ht 24, wrapped, style 130): `B114` "Date first in qualifying use", `C114` "Building name", `D114` "Number", `E114` "Qualifying expenditure", `F114` "Postcode", `G114` "Tax site (F = Freeport or Investment Zone)", `H114` "Rate", `I114` "Date qualifying use ceased", `J114` "Days claimed this year", `K114` "Allowance this year". Rows 115 to 119, one claim each: `H115 = IF(E115>0,IF(G115="F",[1]Admin!$G$10,[1]Admin!$G$9)," ")` (15), `J115 = IF(E115>0,MAX(0,MIN($S$4,IF(N(I115)>0,I115,$S$4),EDATE(B115,IF(G115="F",120,400))-1)-MAX($D$6,B115)+1)," ")` (11), `K115 = IF(E115>0,E115*H115*J115/($S$4-$D$6+1)," ")` (11). `$D$6 = [1]Admin!$B$4` and `$S$4 = [1]Admin!$B$17` are the period's ends, already on the sheet; 400 and 120 months are the 33 1/3 and 10 year limits. Row 120: `B120` "Structures and Buildings Allowance (box 53)" (117), `K120 = SUMIF(G115:G119,"<>F",K115:K119)` (17). Row 121: `B121` "Freeport and Investment Zone SBA (box 53.1)", `K121 = SUMIF(G115:G119,"F",K115:K119)`. Dimension grows to row 121. |
+| `app/products/se.js` writer | `SBA_CLAIM_ROWS = [115, 116, 117, 118, 119]`, columns `{ qualifyingDate: "B", name: "C", number: "D", qualifyingAmountExpenditure: "E", postcode: "F", enhanced: "G" ("F"), ceasedDate: "I" }`, written B to I left to right, dates through `shiftDate` and `toExcelSerial` as the new-asset writer does; a sixth claim is a `skipped()` entry like a sixth new asset. `app/lib/anchors/se.js` admits the block. |
+| `Financialaccounts.xlsx!SE Full` rows 146 to 161, laid out afresh so 53.1 has a shaped cell without inserting a row (every row from 162 down stays, so no reference below moves) | Today the left column is: 146 (ht 13) box 51 label, 147 (16) its value `D147`, 148 (6), 149 (16) box 52 label, 150 (12) empty, 151 (12.75) empty, 152 (16) value `D152`, 153 (6), 154 (16) box 52.1 label, 155 (6), 156 (16) value `D156`, 157 box 53 label, 158, 159 (6), 160 (16) value `D160`, 161 (8). The right column (box 56 at 147-149, 57 at 151-154, 59 at 156-160) does not move. New left column: row 150 becomes ht 16 and a value row, `C150` "£" (217), `D150` (356, new merge `D150:F150`), `G150` "." (218), `H150` `I150` 0 (219), box 52's value; row 151 takes box 52.1's label (`A151` = 52.1 in 236, `C151` "Zero-emission car allowance" in 227) and row 152 its value; row 154 takes box 53's label (`A154` = 53, `C154` "The Structures and Buildings Allowance") and row 156 its value; row 157 takes box 53.1 (`A157` = 53.1, `C157` "Freeport and Investment Zones Structures and Buildings Allowance") and row 160 its value. Rows 158 and 159 stay spacers. `A149`/`C149` stay. Formulas: `D150` and `D152` stated (boxes 52 and 52.1), `D156 = [1]Schedule!$K$120`, `D160 = [1]Schedule!$K$121`, `O154 = D139+D144+D147+D150+D152+D156+D160+O139+O144+O149`. |
+| Every reference to the moved cells | `ANNUAL_ALLOWANCE_CELLS` becomes `{ zeroEmissionsGoodsVehicleAllowance: "D150", zeroEmissionsCarAllowance: "D152", electricChargePointAllowance: "O139" }` (box 53 leaves it: the sheet computes it now); `SE_ANNUAL_ALLOWANCE_CELLS` in the exporter the same; `BOOK_STATED_ANNUAL_BOXES` becomes 52 `D150`, 52.1 `D152`, 62, 71; `sa103-mtd-mapping.json` and `form-layouts/se.json` cells 52 `D150`, 52.1 `D152`, 53 `D156`, 53.1 `D160`; `CELL_MAP`, the calculator's `seFull` keys, `se-workbook.test.js`, `calculator-se.test.js`, `se-derivations.test.js`, the `SA103F_CORRUPTIONS` table and the schema table in `diya-gl.html`. `grep -rn "D152\|D156\|D160" app web/spreadsheets.diyaccounting.co.uk/public` lists 46 lines outside fixtures today; every one moves. |
+| `app/lib/calculators/se.js` | `buildStructuresAndBuildings(scenario, taxData, periodStart, periodEnd)` returns the block's cells `B115:K119`, `K120`, `K121` by the formulas above; `results["Fixedassets.xlsx!Schedule"]` carries them; `seFull.D156 = K120`, `D160 = K121`. |
+| `app/lib/calculators/se-derivations.js` | Remove `{ box: "53.1", pick: 0 }` from `NO_SOURCE_ANNUAL_BOXES`. File `allowances.structuredBuildingAllowance` as one item per claim with `amount = round2(K_row)`, `building` as stated, and `firstYear` only when `qualifyingDate` falls inside the package's period (the API's first-year details; the notes ask for them once); `enhancedStructuredBuildingAllowance` the same for the `F` rows. A claim with `amount` nil (a `ceasedDate` before the period, or the 33 1/3 years up) is left out. |
+| `app/lib/xlsx-exporter.js` | Rows 115 to 119: `E` above nil is a claim; `B`, `C`, `D`, `E`, `F`, `I` read into the item, `G = "F"` puts it in `enhancedStructuredBuildingAllowance`, otherwise `structuredBuildingAllowance`. |
+| Fixture, `app/bin/extract-scenarios.js` `SE_ADVANCED_ANNUAL` | `structuredBuildingAllowance: 1800` becomes `structuredBuildingAllowance: [{ qualifyingDate: "2023-10-01", qualifyingAmountExpenditure: 60000, building: { name: "Unit 4 Trafford Park", postcode: "M17 1AA" } }]`, which is 60,000 x 3% for a whole year = 1,800, so box 53 and every total below it hold their committed figures; and `enhancedStructuredBuildingAllowance: [{ qualifyingDate: "2025-10-01", qualifyingAmountExpenditure: 20000, building: { number: "7", postcode: "L24 9AA" } }]`, a first-year claim: 1 October to 5 April is 187 days, 20,000 x 10% x 187/365 = 1,024.66 on box 53.1 (188/366 in 2027-28), so box 57 moves by that and the committed reports regenerate. Book settings, no journal line. The dates shift with the package year like a new asset's, so every package the fixture runs against sees the same day counts. |
+| Checks | `Schedule!H115 = Admin!G9`, `H116 = Admin!G10`; `J115`, `J116` = the day counts the check computes from the fixture's shifted dates and `Admin!B4`, `B17`; `K115`, `K116` = expenditure x rate x days / period days from the fixture; `K120` = the sum of the non-F rows, `K121` of the F rows; `SE Full!D156 = K120`, `D160 = K121`, and each = the fixture-computed figure; the box 57 identity ("less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the stated boxes 52, 52.1 and 54") follows the new cells; `se-derivations.test.js` asserts the two arrays item by item, `firstYear` present on the Freeport claim only. `SE Short!O80` (SA103S box 25) keeps reading the register's `R1`, `Y1` and `AC1` and no stated or SBA figure, as today. |
+| Corruption proof | `SE Full!D156` fails the link check, the fixture anchor, `TOTAL_CAPITAL_ALLOWANCES` and `STATED_ALLOWANCES`; `D160` the same four for 53.1; `D150` and `D152` inherit the old `D152`/`D156` rows of the table. `Fixedassets.xlsx!Schedule!K115` fails its anchor and `K120`'s sum; `K116` its anchor and `K121`'s; `J116` its anchor and `K116`'s; `H116` its echo and `K116`'s. |
 
 ## 4. What the change costs beyond the cells
 
@@ -355,6 +453,30 @@ Steps 2 and 3 can share a commit if the fixtures land together, because step 2's
 figure is also step 3's box 39 term. Step 1 must not, because its whole value is being provably
 value-neutral.
 
+Three more commits close the records in 3.4, in this order.
+
+**Step 5. SET-8, the single asset pool.** The smallest of the three: four Schedule columns, one
+`SE Full` formula (`O144`), two book fields and one fixture car. It moves no `SE Full` row and
+it settles the small-pools formula SET-10 builds on, so it goes first. _Verification:_ box 50
+rises by exactly 1,008 and box 51 does not move; `AE1 = 1008`, `AF1 = 0`, `AG1 = 6992`; `O144`
+stays 0; the 2026-27 payload files `capitalAllowanceMainPool` 4,320,
+`capitalAllowanceSpecialRatePool` 540 and `capitalAllowanceSingleAssetPool` 1,008; no Ltd report
+moves; the corruption proofs in 3.4.
+
+**Step 6. SET-9, the SBA claim record.** It moves three stated cells and changes the shape of
+one book field, so it touches the most references, and it lands its Schedule block on the sheet
+step 5 has already widened. _Verification:_ box 53 stays 1,800 exactly, so every figure below it
+that step 5 did not move is unchanged; box 53.1 = 1,024.66 and box 57 rises by the same; the
+payload's two arrays carry one item each, `firstYear` on the Freeport claim only; the
+corruption proofs in 3.4.
+
+**Step 7. SET-7, the basis period record.** Last, because it rewrites `O194` and `D219`, which
+SET-11 is correcting now, and it moves the "Boxes 69 and 70 are not in use" notice off the
+73.3 slot. _Verification:_ `D197 = 0` on both fixtures; the July-to-June calc-tier test carries
+the hand figure; box 73.3 = 4,000 on the featured package and `Income Tax!E14` is the top-slice
+tax on it; the 2023-24 payload files `overlapReliefUsed` 2,400 and the 2026-27 payload files
+3,000 and 1,000 with no `overlapReliefUsed`; the corruption proofs in 3.4.
+
 Each step's ladder: blast-radius tests serially, then the featured scenario reconciles, then full
 `npm test`, then the `generate-se` workflow dispatched with skip-commit on the branch, then merge,
 then the generate-commit refresh.
@@ -389,6 +511,67 @@ arithmetic in two sheets, which can drift. Take it if a later change makes `SE F
 **Printing boxes 51, 52, 52.1, 53, 62, 68 and 71 again.** They are already there and already read
 as blanks. What they need is a book field.
 
+**SET-7: a per-year transition schedule in the book (the 2023-24 total plus every year's amount).**
+The return needs three figures a year (brought forward, treated as arising, carried forward),
+which is what the losses block on `Business Details` already does for a loss, and the earlier
+years' figures live in the earlier years' books. A history table would be a second record of the
+same facts.
+
+**SET-7: deriving the overlap deduction from the sheet's own dates, with no book field.** The
+overlap profit is a figure from the year the trade started, not anything in this year's books.
+Only a stated figure can carry it.
+
+**SET-7: the basis period inputs on `SE Full`, in the columns to the right of the return.** The
+sheet has no print area, so anything past column W prints as an extra page of the return.
+`Business Details` is the sheet whose heading says ENTER and whose losses block is the shape.
+
+**SET-7: reading the accounting date off the month tabs.** `periodShiftMonths` moves every book
+onto April to March, so the tabs cannot tell a July book from an April one. Boxes 8 and 9 have
+to be written from `documentInfo`.
+
+**SET-7: adding box 73.3 into box 76.** The SA103F notes for box 76 say not to, and
+`FA 2022 Sch 1 para 75` taxes the spread as a separate top-slice component with the personal
+allowance taper left alone, which is what the `Income Tax` row 14 computes.
+
+**SET-8: a third and fourth value of `capitalAllowancePool` (`singleMain`, `singleSpecial`).** The
+rate and the pooling are independent, and four values encode two facts. Every one of the forty
+`AB<>"S"` tests in column R and the forty `AB="S"` tests in AC would change; a second column
+changes none of them.
+
+**SET-8: inferring the marker from a private use proportion above nil.** A short-life asset
+election has no private use and would have no way to be marked. The book states the pool and the
+loader refuses a privately used asset that is not marked, so the invariant is checked instead of
+inferred.
+
+**SET-8: taking single asset pools out of the printed boxes 50 and 51.** The notes for box 51 put
+them there by rate. Only the API separates them, so only the derivation does.
+
+**SET-8: the same columns on the Ltd `Fixedassets.xlsx`.** A company has no private use and the
+CT600 has no single asset pool box. The Ltd template already lacks the AB and AC pair for the
+same reason.
+
+**SET-9: keeping the scalar `structuredBuildingAllowance` beside the array.** Two sources for
+one box. The repo's rule is no compatibility alias; every caller moves to the array.
+
+**SET-9: a stated `amount` on each claim.** A stated amount can only be checked against itself.
+The expenditure, the date and the year file's rate give the check its own figure to anchor on.
+
+**SET-9: a `rate` field on the claim.** A rate is tax data, and every other rate the package
+applies comes from the year file into `Admin`. The Freeport array picks the second rate.
+
+**SET-9: the claims on the Schedule's Land & Property rows (8 to 10, 61 to 63).** The rows exist
+on the SE Schedule, but the SE writer and loader carry no land block, and a building on the
+register puts its cost and depreciation into the balance sheet and the opening journal. The
+claim is a capital allowance on expenditure, not an asset entry.
+
+**SET-9: inserting a row in `SE Full` for box 53.1.** Shifts rows 162 to 324 and every formula,
+`CELL_MAP` row and mapping entry that names one of them. Moving three stated cells up inside
+rows 146 to 161 costs 46 references and no formula below.
+
+**SET-9: a claims table on `SE Full` past column W.** Prints as an extra page of the return, as
+for SET-7. `Fixedassets.xlsx!Schedule` is where the package computes capital allowances and where
+box 51 already reads across the link.
+
 ## 7. Open problems
 
 **Box 77 (`SE Full!D219`) reads the wrong cells.** Its formula is `O179+E197+D210+P190`: it adds
@@ -401,21 +584,9 @@ so a special-rate balance counts towards the £1,000 test with the main pool; HM
 pool. On the board as SET-10.
 
 
-**The basis period adjustment (box 68) and the transition profit spread (box 73.3).** Both belong
-to the basis period reform. A book covering 6 April to 5 April has no adjustment to make, which is
-why the template prints a dash. A book with another accounting date does, and computing it needs
-the overlap profit carried forward from earlier years. Neither the diya-gl book schema nor any
-sheet in the package holds an overlap figure. Closing it means a book-level record of overlap
-profit brought forward and used, carried across tax years. Until that exists the derivation omits
-both fields and warns, and the boxes stay blank.
+**The basis period adjustment (box 68), overlap relief (box 69) and the transition profit spread
+(box 73.3).** Designed in 3.4; SET-7 builds it.
 
-**Single asset pools (box 50 and box 51).** `buildSchedule` allows per asset row, so every row is
-already its own pool. Telling a single-asset pool apart from the main pool needs the customer to
-mark a row, and nothing on `Schedule` marks one. A column on the asset rows plus a book field would
-close it.
+**Single asset pools (box 50 and box 51).** Designed in 3.4; SET-8 builds it.
 
-**The Structures and Buildings Allowance (boxes 53 and 53.1).** The API takes an array of claims,
-each with its own dates and rate. One cell on `SE Full` holds one number. The array shape has no
-home in the package or the book schema today, and the 5.0 annual operations are stubs, so the
-figure filed would be a single total. Deciding what a claim record looks like comes before the
-cell.
+**The Structures and Buildings Allowance (boxes 53 and 53.1).** Designed in 3.4; SET-9 builds it.

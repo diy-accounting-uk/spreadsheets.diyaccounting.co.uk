@@ -34,15 +34,16 @@ const TAX_SHEET = "Income Tax";
 const READ_CELLS = ["E6", "E7", "E8", "E9", "E10", "E11"];
 
 // profit, allowance, taxable, basic, higher, additional, total
+//
+// Trimmed to the 110,000 and 121,615.39 rows and their neighbours: the
+// basic/higher/additional band arithmetic away from the taper is proved
+// wherever a real fixture lands, so this table's remaining job is the
+// partial taper and the two figures that fix where it starts and ends.
 const BAND_TABLE = [
-  [8000, 12570, 0, 0, 0, 0, 0],
-  [30000, 12570, 17430, 3486, 0, 0, 3486],
   [60000, 12570, 47430, 7540, 3892, 0, 11432],
   [110000, 7570, 102430, 7540, 25892, 0, 33432],
   [121615.391666666, 1762.304166667, 119853.087499999, 7540, 32861.235, 0, 40401.235],
   [125140, 0, 125140, 7540, 34976, 0, 42516],
-  [144715.391666666, 0, 144715.391666666, 7540, 34976, 8808.92625, 51324.92625],
-  [226508, 0, 226508, 7540, 34976, 45615.6, 88131.6],
 ];
 
 describeCalc("SE income tax bands", () => {

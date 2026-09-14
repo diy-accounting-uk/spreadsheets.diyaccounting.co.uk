@@ -416,21 +416,46 @@ function fmt(ms) {
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m${String(s % 60).padStart(2, "0")}s`;
 }
 
+// Each tier's child gets its own process group (detached: true), so a signal
+// aimed at one router's tree never reaches a sibling agent's worktree. This
+// router forwards its own SIGINT/SIGTERM to the running child's group, so a
+// Ctrl-C or `kill <router pid>` still stops that tier's whole process tree —
+// and only that tree. Never send a signal by matching a command name
+// (`pkill -f vitest`): it cannot tell one worktree's process from another's.
+let currentChild = null;
+
+function forwardAndExit(signal) {
+  if (currentChild && currentChild.pid) {
+    try {
+      process.kill(-currentChild.pid, signal);
+    } catch {
+      // the child's group is already gone
+    }
+  }
+  process.exit(signal === "SIGINT" ? 130 : 143);
+}
+
+process.on("SIGINT", () => forwardAndExit("SIGINT"));
+process.on("SIGTERM", () => forwardAndExit("SIGTERM"));
+
 function runStep(label, command, args, env) {
   return new Promise((done) => {
     const started = Date.now();
     console.log(`\n--- ${label}: ${command} ${args.join(" ")}`);
-    const child = spawn(command, args, { cwd: ROOT, stdio: "inherit", env: { ...process.env, ...env } });
+    const child = spawn(command, args, { cwd: ROOT, stdio: "inherit", env: { ...process.env, ...env }, detached: true });
+    currentChild = child;
     const beat = setInterval(() => {
       console.log(`... ${label} still running, ${fmt(Date.now() - started)} elapsed`);
     }, 30_000);
     child.on("close", (code) => {
       clearInterval(beat);
+      currentChild = null;
       console.log(`--- ${label}: exit ${code} after ${fmt(Date.now() - started)}`);
       done(code ?? 1);
     });
     child.on("error", (err) => {
       clearInterval(beat);
+      currentChild = null;
       console.error(`--- ${label}: could not start: ${err.message}`);
       done(1);
     });

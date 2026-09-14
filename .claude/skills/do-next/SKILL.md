@@ -160,13 +160,21 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
+- **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
+  it with `run_in_background`, do other work or stop, and act on the notification when it lands.
+- **Never stop a run by matching a command name.** `pkill -f vitest` kills every worktree's
+  process, a sibling agent's included, not just yours. Stop only your own worktree's run: `scripts/
+  test-scope.mjs` gives each tier its own process group, so a Ctrl-C or `kill` on that process
+  stops the whole tier there and nothing outside it.
 - **`npm test`, and nothing narrower.** The command routes itself: it reads the diff, derives the
   radius through the import graph and the routing table in `scripts/test-scope.mjs`, and runs the
   tiers that diff reaches. A brief that names a narrower command caps the scope at whatever its
   author imagined, which is how a product's writer reaches the parity fixtures, the `*-anchors`
   test, the roundtrip budget and the page's render-key coverage without any of them running. Say
   `npm test` in the brief and let the router pick. No behaviour tier inside a worktree: that needs
-  a live environment and belongs to the deploy.
+  a live environment and belongs to the deploy. Give the worktree a real branch with
+  `origin/main` reachable, so the router scopes to the diff instead of escalating to the full
+  set. An agent verifies its own diff only; the coordinator's one full pass is in "Pushing".
 - **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
   `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
   item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
@@ -207,13 +215,17 @@ deploy of the same head in its first minute (before any stack job): two deploys 
 pure cost and contention. A local sync with `main` costs nothing and can happen any time; only the
 push waits.
 
+A push is also the natural pause for the one fenced block of commands only the operator can run;
+see this repo's `CLAUDE.md`.
+
 Before any push, check **every** deploy workflow for that branch — `deploy` and `deploy-holding`
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
 
-Before the first push of a batch, run the full local suite once: `npm test`, plus
-`npm run test:browser` and the relevant behaviour target when the change reaches the site or a
-package. That is the moment the change becomes someone else's problem.
+Before the first push of a batch, run the full local suite once: `npm test -- --all` (every tier,
+every product, the full browser suite), plus the relevant behaviour target when the change reaches
+the site or a package. That is the moment the change becomes someone else's problem, and it is the
+batch's one full pass: sub-agents verify their own diff.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's
