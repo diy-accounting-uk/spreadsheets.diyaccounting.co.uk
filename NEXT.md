@@ -14,7 +14,7 @@ and stop. One branch is driven green at a time. Lifted only by the operator in t
 PR #113 (`claude/b16-board`: CQ-37, CQ-35, CQ-36, CQ-34) merged as `fa351e91`, green on `test`
 and `codeql`; no deploy fires for its paths. `claude/b16-se` (worktree
 `b16-se`) holds SET-12 and SET-8, nine commits on `main` `8c065650`, local and never pushed until
-wake; its agent stopped clean at the SET-8/SET-10 boundary. No watch monitor is armed; the scope is green. Prod serves `63028313`.
+wake; its agent stopped clean at the SET-8/SET-10 boundary. No watch monitor is armed; the scope is green. Prod serves `740b0470`.
 
 ## Context for the open rows
 
