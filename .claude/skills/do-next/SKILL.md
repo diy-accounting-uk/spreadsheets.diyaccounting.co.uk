@@ -257,10 +257,11 @@ Before any push, check **every** deploy workflow for that branch — `deploy` an
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
 
-Before the first push of a batch, run the full local suite once: `npm test -- --all` (every tier,
-every product, the full browser suite), plus the relevant behaviour target when the change reaches
-the site or a package. That is the moment the change becomes someone else's problem, and it is the
-batch's one full pass: sub-agents verify their own diff.
+Before the first push of a batch, the routed run (`npm test`, what `.githooks/pre-push` runs) is the
+first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
+HEAD, missing `origin/main`, shallow clone, or empty diff) or the change touches a shared generated
+artifact whose radius the router cannot see; say so when that is why. Add the relevant behaviour
+target when the change reaches the site or a package.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's
