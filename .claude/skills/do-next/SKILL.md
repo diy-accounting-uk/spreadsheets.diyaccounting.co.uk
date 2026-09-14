@@ -128,6 +128,15 @@ next item would have to share a file with one already dispatched.
    You can extend a running agent rather than dispatching a second one. `SendMessage` to its id
    continues it with its context intact, which is cheaper than a fresh agent rebuilding the same
    understanding of the same files.
+
+   Rows that share files and land in series are a chain. When two or more rows in a chain are
+   each a real change (a row with its own `Size` of several files, its own tests and its own
+   regeneration), the chain gets one agent per row, each dispatched fresh from the previous row's
+   commit on the batch, with the previous agent's report-back pasted into the next brief. One
+   agent carrying the b16 SE chain (SET-12, SET-8, SET-10, SET-9) cost $81.29 for the two rows it
+   finished, 341 messages at 299k average context (session GcLg5i, 2026-09-14); a fresh agent per
+   row is about $40 per chained batch cheaper.
+
 3. **Run a design wave when the plan is not rich enough to execute.** A higher tier writes the
    design as a document at the repo root; cheaper, faster models then build from it. The test is
    whether a Sonnet or Haiku agent could pick up the document and build without asking a question.
