@@ -8,13 +8,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #114 (`claude/b17-cq`, the five CQ rows) merged as `cce753fd`; `test` on the merge commit hit
-the new GREEN record and finished in 37s. `claude/set-12-box73` (worktree `set-12`, four commits
-on `main` `cce753fd`) is pushing through the pre-push router; its PR opens when the push lands.
-`claude/set-8-single-pool` (worktree `set-8`, five commits on SET-12's pre-rebase tip `2886aef5`)
-is with its agent, `npm test` in the browser tier; it rebases onto the pushed SET-12 branch and
-opens a PR after SET-12 merges. `claude/b16-se` (worktree `b16-se`) stays until both land. A watch
-monitor is armed over `main` and every open PR head. Prod serves `740b0470`.
+PR #115 (`claude/set-12-box73`, worktree `set-12`, head `ed2fe367`, four commits on `cce753fd`)
+carries SET-12; `test`, `codeql`, `identity-guard`, the ci `deploy` and a `generate-se`
+skip-commit dispatch (run 34893905139) running. `claude/set-8-single-pool` (worktree `set-8`,
+five commits on SET-12's pre-rebase tip `2886aef5`) is with its agent, `npm test` in the browser
+tier; it rebases onto `claude/set-12-box73` and opens its PR after #115 merges. `claude/b16-se`
+(worktree `b16-se`) stays until both land. A watch monitor is armed over `main` and every open
+PR head. Prod serves `740b0470`.
 
 ## Context for the open rows
 
@@ -42,7 +42,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| SET-12 | Template defect: `SE Full!O194` (box 73, adjusted profit) is `=O174`, box 64 alone; HMRC's working sheet adds boxes 68, 71 and 72. Fix the formula, the engine (`app/lib/calculators/se.js:1178`), turn the box 73 warning check into a hard check, and refresh the SE fixtures: on the advanced scenario box 73 and box 76 move +90 and income tax +40.50, so `se-full-return-checks.test.js`, the SE report, `examples/se-latest` and the SE parity fixture all move | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~8 files | Opus | `claude/set-12-box73` `ed2fe367` on `cce753fd`, GREEN, RECONCILES; pushing, PR next |
+| SET-12 | Template defect: `SE Full!O194` (box 73, adjusted profit) is `=O174`, box 64 alone; HMRC's working sheet adds boxes 68, 71 and 72. Fix the formula, the engine (`app/lib/calculators/se.js:1178`), turn the box 73 warning check into a hard check, and refresh the SE fixtures: on the advanced scenario box 73 and box 76 move +90 and income tax +40.50, so `se-full-return-checks.test.js`, the SE report, `examples/se-latest` and the SE parity fixture all move | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~8 files | Opus | PR #115 `claude/set-12-box73` `ed2fe367`; test, deploy, generate-se running |
 | SET-8 | Boxes 50 and 51 single-asset pools: a marker column on `Fixedassets.xlsx!Schedule` asset rows plus its book field, `buildSchedule` keeping each marked row its own pool, `capitalAllowanceSingleAssetPool` filed; the Ltd package shares the register, so its schedule and checks move too | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~10 files | Opus | `claude/set-8-single-pool` `54cab5ae`, `npm test` browser tier; PR after SET-12 merges |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
 | SET-10 | The small-pools write-off (`SE Full!O144`, box 55) sums `Fixedassets.xlsx!Schedule` `R1+S1` over one S column, so a special-rate balance counts towards the £1,000 test alongside the main pool; HMRC applies the test per pool. Split S into a main-pool and a special-rate written-down column, point O144 and the calculator's small-pools check at each, and anchor the check on the fixture's estate car (tax WDV 9,000, special) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-8 | blocked-to-start | ~6 files | Sonnet | design scratch on `claude/b16-se` `9cca0ceb`: columns AH/AI after AG |
