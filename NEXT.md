@@ -8,9 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #115 (`claude/set-12-box73`, worktree `set-12`, head `ed2fe367`, four commits on `cce753fd`)
-carries SET-12; `test`, `codeql`, `identity-guard`, the ci `deploy` and a `generate-se`
-skip-commit dispatch (run 34893905139) running. `claude/set-8-single-pool` (worktree `set-8`,
+PR #115 (`claude/set-12-box73`, worktree `set-12`, head `2b371809`, five commits on `cce753fd`)
+carries SET-12; `generate-se` skip-commit green on `ed2fe367` (run 34893905139); `test`,
+`codeql`, `identity-guard` and the ci `deploy` running on the head. `claude/set-8-single-pool` (worktree `set-8`,
 five commits on SET-12's pre-rebase tip `2886aef5`) is GREEN (gates, unit 94, calc, browser 42) and RECONCILES; it rebases onto `claude/set-12-box73` and opens its PR after #115 merges. `claude/b16-se`
 (worktree `b16-se`) stays until both land. A watch monitor is armed over `main` and every open
 PR head. Prod serves `740b0470`.
@@ -41,7 +41,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| SET-12 | Template defect: `SE Full!O194` (box 73, adjusted profit) is `=O174`, box 64 alone; HMRC's working sheet adds boxes 68, 71 and 72. Fix the formula, the engine (`app/lib/calculators/se.js:1178`), turn the box 73 warning check into a hard check, and refresh the SE fixtures: on the advanced scenario box 73 and box 76 move +90 and income tax +40.50, so `se-full-return-checks.test.js`, the SE report, `examples/se-latest` and the SE parity fixture all move | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~8 files | Opus | PR #115: `test` red on the SE render-coverage spec; declaration fix pushing |
+| SET-12 | Template defect: `SE Full!O194` (box 73, adjusted profit) is `=O174`, box 64 alone; HMRC's working sheet adds boxes 68, 71 and 72. Fix the formula, the engine (`app/lib/calculators/se.js:1178`), turn the box 73 warning check into a hard check, and refresh the SE fixtures: on the advanced scenario box 73 and box 76 move +90 and income tax +40.50, so `se-full-return-checks.test.js`, the SE report, `examples/se-latest` and the SE parity fixture all move | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~8 files | Opus | PR #115 `2b371809`; generate-se green; test, deploy running |
 | SET-8 | Boxes 50 and 51 single-asset pools: a marker column on `Fixedassets.xlsx!Schedule` asset rows plus its book field, `buildSchedule` keeping each marked row its own pool, `capitalAllowanceSingleAssetPool` filed; the Ltd package shares the register, so its schedule and checks move too | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~10 files | Opus | `claude/set-8-single-pool` `54cab5ae` GREEN, RECONCILES; rebase and PR after #115 merges |
 | CQ-43 | The router's product-module route (`scripts/test-scope.mjs`, `chooseBrowserSpecs`) picks browser specs by product token in the file name, so `diya-gl-render-coverage.browser.test.js`, which walks every product's S2 keys, never runs for a change to `app/products/se.js`; SET-12's new profit-bridge row passed the routed run (browser 5 specs, 20m38s) and failed PR #115's `test` on three SE fixtures (run 34893892764). The product route adds the render-coverage spec whenever a product module changes, with a routing test | none | machine-only | — | ready-to-start | ~2 files | Haiku | 34 CI minutes and one PR cycle per product-module change |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
