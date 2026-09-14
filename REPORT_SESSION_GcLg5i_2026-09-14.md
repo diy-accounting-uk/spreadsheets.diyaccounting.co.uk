@@ -65,16 +65,15 @@ Dollar rows rank above minute rows because the session's tokens are the only cos
 pays directly; the minutes are agent and CI time that ran unattended.
 
 1. One agent per SE row, fresh context from the previous row's commit: about $40 of the $81.29
-   the chained agent cost. No board row covers it; a `do-next` rule for chained rows on shared
-   files would.
+   the chained agent cost. Board row CQ-38.
 2. Fixture-derived figures in `judge-reconciliation.test.js`, `report-depreciation-parity.test.js`,
    `se-profit-forecast-checks.test.js` and the three unit files: 66 min of agent time per SE
-   fixture change. No board row.
+   fixture change. Board row CQ-39.
 3. A tree-hash-keyed GREEN cache in `test.yml`, so the merge commit reuses the PR head's run when
-   only `.md` differs: 57 job-minutes per merge ($0.46 at the private rate). No board row.
+   only `.md` differs: 57 job-minutes per merge ($0.46 at the private rate). Board row CQ-40.
 4. `do-next`'s first-push rule reads "the router's routed run, `--all` only on escalation":
-   36 min per batch. No board row.
+   36 min per batch. Board row CQ-41.
 5. `.githooks/pre-push` exits before the router on an all-`.md` push: 4 min per session of docs
-   pushes. No board row.
+   pushes. Board row CQ-42.
 6. The coordinator launches any command it has seen run long with the CQ-35 recipe: 1 min. Landed
    in `do-next` this session (CQ-35).
