@@ -8,12 +8,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #115 (`claude/set-12-box73`, worktree `set-12`, head `2b371809`, five commits on `cce753fd`)
-carries SET-12; `generate-se` skip-commit green on `ed2fe367` (run 34893905139); `test`,
-`codeql`, `identity-guard` and the ci `deploy` running on the head. `claude/set-8-single-pool` (worktree `set-8`,
-five commits on SET-12's pre-rebase tip `2886aef5`) is GREEN (gates, unit 94, calc, browser 42) and RECONCILES; it rebases onto `claude/set-12-box73` and opens its PR after #115 merges. `claude/b16-se`
-(worktree `b16-se`) stays until both land. A watch monitor is armed over `main` and every open
-PR head. Prod serves `740b0470`.
+PR #115 (SET-12) merged as `c692a372`; `test` on the merge commit hit the GREEN record. The
+main-side `generate-se` refresh and the prod deploy are the operator's. `claude/set-8-single-pool`
+(worktree `set-8`, four commits on `c692a372`, rebased with the stamp and declaration conflicts
+resolved) is running its routed `npm test` (gates, unit 93, calc 41 files, browser 42 specs);
+it pushes and opens its PR on GREEN. `claude/b16-se` (worktree `b16-se`) stays until SET-8
+lands; its SET-10 scratch `9cca0ceb` is SET-10's. A watch monitor is armed over `main` and every
+open PR head. Prod serves `740b0470`.
 
 ## Context for the open rows
 
@@ -41,13 +42,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| SET-12 | Template defect: `SE Full!O194` (box 73, adjusted profit) is `=O174`, box 64 alone; HMRC's working sheet adds boxes 68, 71 and 72. Fix the formula, the engine (`app/lib/calculators/se.js:1178`), turn the box 73 warning check into a hard check, and refresh the SE fixtures: on the advanced scenario box 73 and box 76 move +90 and income tax +40.50, so `se-full-return-checks.test.js`, the SE report, `examples/se-latest` and the SE parity fixture all move | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~8 files | Opus | PR #115 `2b371809`; generate-se green; test, deploy running |
-| SET-8 | Boxes 50 and 51 single-asset pools: a marker column on `Fixedassets.xlsx!Schedule` asset rows plus its book field, `buildSchedule` keeping each marked row its own pool, `capitalAllowanceSingleAssetPool` filed; the Ltd package shares the register, so its schedule and checks move too | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~10 files | Opus | `claude/set-8-single-pool` `54cab5ae` GREEN, RECONCILES; rebase and PR after #115 merges |
+| SET-8 | Boxes 50 and 51 single-asset pools: a marker column on `Fixedassets.xlsx!Schedule` asset rows plus its book field, `buildSchedule` keeping each marked row its own pool, `capitalAllowanceSingleAssetPool` filed; the Ltd package shares the register, so its schedule and checks move too | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~10 files | Opus | `claude/set-8-single-pool` `4b08b2fe` on `c692a372`; routed `npm test` running; PR on GREEN |
 | CQ-43 | The router's product-module route (`scripts/test-scope.mjs`, `chooseBrowserSpecs`) picks browser specs by product token in the file name, so `diya-gl-render-coverage.browser.test.js`, which walks every product's S2 keys, never runs for a change to `app/products/se.js`; SET-12's new profit-bridge row passed the routed run (browser 5 specs, 20m38s) and failed PR #115's `test` on three SE fixtures (run 34893892764). The product route adds the render-coverage spec whenever a product module changes, with a routing test | none | machine-only | — | ready-to-start | ~2 files | Haiku | 34 CI minutes and one PR cycle per product-module change |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
 | SET-10 | The small-pools write-off (`SE Full!O144`, box 55) sums `Fixedassets.xlsx!Schedule` `R1+S1` over one S column, so a special-rate balance counts towards the £1,000 test alongside the main pool; HMRC applies the test per pool. Split S into a main-pool and a special-rate written-down column, point O144 and the calculator's small-pools check at each, and anchor the check on the fixture's estate car (tax WDV 9,000, special) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-8 | blocked-to-start | ~6 files | Sonnet | design scratch on `claude/b16-se` `9cca0ceb`: columns AH/AI after AG |
 | SET-9 | Boxes 53 and 53.1 Structures and Buildings Allowance: a claim record (dates, rate, amount, an array), the derivation filing the array, box 53's cell carrying the total, 53.1's label-and-value row pair laid out afresh between `SE Full` rows 146 and 161 | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-8 | blocked-to-start | ~10 files | Sonnet | from the 3.4 design; lands on the Schedule SET-8 widened |
-| SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-12 | blocked-to-start | ~12 files | Sonnet | from the 3.4 design; shares `O194` with SET-12 |
+| SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~12 files | Sonnet | SET-12 landed `c692a372`; shares `O194` |
 
 ## Plans not tracked here
 
