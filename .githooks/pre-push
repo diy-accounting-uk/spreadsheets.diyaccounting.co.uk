@@ -49,6 +49,20 @@ if [ -z "$base" ]; then
   base="origin/main"
 fi
 
+# A push whose every path is Markdown has nothing for the router: the docs
+# exception in ../CLAUDE.md sends .md-only commits straight to main, and no
+# tier reads a .md file. Measured 2026-09-14: twelve such pushes in one
+# session, about 21 seconds of gates tier each. An empty diff falls through
+# to the router, which escalates on it rather than hiding it.
+if diff_output=$(git diff --name-only "${base}...${local_sha}" 2>/dev/null) || \
+   diff_output=$(git diff --name-only "${base}" "${local_sha}" 2>/dev/null); then
+  if [ -n "$diff_output" ] && ! echo "$diff_output" | grep -v '\.md$' >/dev/null; then
+    md_count=$(echo "$diff_output" | grep -c .)
+    echo "pre-push: every path this push adds is Markdown (${md_count} files); nothing to test."
+    exit 0
+  fi
+fi
+
 # A GREEN marker vouches for this push only if it was written for the exact
 # tree being pushed (local_sha's own committed tree, not this worktree's
 # possibly-dirty one) AND its recorded base is this push's own merge base

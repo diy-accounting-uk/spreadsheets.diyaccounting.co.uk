@@ -20,11 +20,16 @@ import { readFileSync, mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
+import { loadScenario } from "../lib/scenario-loader.js";
+import { calculateSeCells } from "../lib/calculators/se.js";
+import { canonicalNumber } from "../lib/report-serializer.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(APP_DIR, "..");
 const NODE = process.execPath;
 const REPORT_BIN = resolve(ROOT, "app", "bin", "report.js");
+const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8"));
 
 function scratchDir(prefix) {
   return mkdtempSync(join(tmpdir(), prefix));
@@ -56,11 +61,16 @@ describe("report.js --data derives the depreciation table --years would have nam
 
     expect(diffShared(withoutYears, withYears)).toEqual([]);
 
-    // The reconciled figure the committed reports/*.md carries for this
-    // fixture (Income Tax!E5, "Tax profit the sheet carries", 130,552.81):
-    // the fixed asset schedule's depreciation reaches the tax profit
-    // calculation, and so do the trader's disallowable proportions.
-    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe("126002.8085");
+    // Income Tax!E5, "Tax profit the sheet carries": the fixed asset
+    // schedule's depreciation reaches the tax profit calculation, and so do
+    // the trader's disallowable proportions. Anchored against an
+    // independent run of the SE calculator on the fixture TOML
+    // extract-scenarios.js derives from the same master data as
+    // examples/precision-code-ltd/advanced (the diya-gl book report.js
+    // reads here), rather than a snapshot of report.js's own output.
+    const scenario = loadScenario(resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml"));
+    const taxableProfit = calculateSeCells({}, [], TAX_DATA, scenario)["Income Tax"].E5;
+    expect(withoutYears.get("cell/Financialaccounts.xlsx!Income Tax!E5")).toBe(canonicalNumber(taxableProfit));
   });
 
   it("computes the same values as --years for a BST book", () => {

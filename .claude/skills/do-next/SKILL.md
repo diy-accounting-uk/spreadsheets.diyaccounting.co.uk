@@ -128,6 +128,15 @@ next item would have to share a file with one already dispatched.
    You can extend a running agent rather than dispatching a second one. `SendMessage` to its id
    continues it with its context intact, which is cheaper than a fresh agent rebuilding the same
    understanding of the same files.
+
+   Rows that share files and land in series are a chain. When two or more rows in a chain are
+   each a real change (a row with its own `Size` of several files, its own tests and its own
+   regeneration), the chain gets one agent per row, each dispatched fresh from the previous row's
+   commit on the batch, with the previous agent's report-back pasted into the next brief. One
+   agent carrying the b16 SE chain (SET-12, SET-8, SET-10, SET-9) cost $81.29 for the two rows it
+   finished, 341 messages at 299k average context (session GcLg5i, 2026-09-14); a fresh agent per
+   row is about $40 per chained batch cheaper.
+
 3. **Run a design wave when the plan is not rich enough to execute.** A higher tier writes the
    design as a document at the repo root; cheaper, faster models then build from it. The test is
    whether a Sonnet or Haiku agent could pick up the document and build without asking a question.
@@ -248,10 +257,11 @@ Before any push, check **every** deploy workflow for that branch — `deploy` an
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
 
-Before the first push of a batch, run the full local suite once: `npm test -- --all` (every tier,
-every product, the full browser suite), plus the relevant behaviour target when the change reaches
-the site or a package. That is the moment the change becomes someone else's problem, and it is the
-batch's one full pass: sub-agents verify their own diff.
+Before the first push of a batch, the routed run (`npm test`, what `.githooks/pre-push` runs) is the
+first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
+HEAD, missing `origin/main`, shallow clone, or empty diff) or the change touches a shared generated
+artifact whose radius the router cannot see; say so when that is why. Add the relevant behaviour
+target when the change reaches the site or a package.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's

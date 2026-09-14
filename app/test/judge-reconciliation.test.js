@@ -303,37 +303,91 @@ describe("the VAT indicator", () => {
 
 describe("buildIndicators for the Self Employed", () => {
   const text = indicatorText("se", "seAdvanced", { vatRegistered: true });
+  // The report's own values, read independently of buildIndicators (which
+  // composes the sentences under test) via the same parsing primitives it
+  // is built on, so a fixture change that moves these figures moves the
+  // expectation with it rather than leaving a stale literal behind.
+  const parsed = parseReport(report("seAdvanced"));
+  const SA103S = "Self Assessment (SA103S)";
+  const SA103F = "Self Assessment (SA103F)";
+  const money = new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const amount = (n) => money.format(n);
 
-  // 192,469.48 less 52,500.00 and 12,040.00, plus 640.00 of own use, is 128,569.48. Naming
-  // only the 52,500.00 left a hole between two figures printed side by side, which is what
-  // a reviewer sees.
   it("itemises every capital allowance box so the drop to the net business profit is exact", () => {
+    const netProfit = requireValue(parsed, SA103S, "Net profit/loss");
+    const claimed = ["Capital allowances", "AIA / WDA claimed", "Other capital allowances"].map((label) => ({
+      label,
+      figure: requireValue(parsed, SA103S, label),
+    }));
+    const totalAllowances = claimed.reduce((sum, part) => sum + part.figure, 0);
+    const balancingCharges = requireValue(parsed, SA103S, "Balancing charges");
+    const otherAdjustments = requireValue(parsed, SA103S, "Other tax adjustments");
+    const netBusinessProfit = requireValue(parsed, SA103S, "Net business profit");
+
     expect(text).toContain(
-      "Self assessment: net profit 192,469.48, less 64,540.00 of capital allowances " +
-        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 12,040.00), " +
-        "plus balancing charges 0.00 and other tax adjustments 640.00, gives a net business profit of 128,569.48.",
+      `Self assessment: net profit ${amount(netProfit)}, less ${amount(totalAllowances)} of capital allowances ` +
+        `(${claimed.map((part) => `${part.label} ${amount(part.figure)}`).join(", ")}), ` +
+        `plus balancing charges ${amount(balancingCharges)} and other tax adjustments ${amount(otherAdjustments)}, ` +
+        `gives a net business profit of ${amount(netBusinessProfit)}.`,
     );
   });
 
   it("states the SA103F full return's relation to the short return's figures, naming the boxes stated on the full return alone", () => {
+    const shortExpenses = requireValue(parsed, SA103S, "Total expenses");
+    const shortNetProfit = requireValue(parsed, SA103S, "Net profit/loss");
+    const disallowable = requireValue(parsed, SA103F, "Total disallowable expenses (box 46)");
+    const fullExpenses = requireValue(parsed, SA103F, "Total expenses (box 31)");
+    const fullNetProfit = requireValue(parsed, SA103F, "Net profit (box 47)");
+    const capitalAllowances = requireValue(parsed, SA103F, "Total capital allowances (box 57)");
+    const fullOnlyAllowanceLabels = [
+      "Zero-emission goods vehicle allowance (box 52)",
+      "Zero-emission car allowance (box 52.1)",
+      "Structures and Buildings Allowance (box 53)",
+      "Electric charge-point allowance (box 54)",
+    ];
+    const fullOnlyAllowances = fullOnlyAllowanceLabels
+      .map((label) => ({ label, figure: value(parsed, SA103F, label) }))
+      .filter((box) => box.figure !== null && box.figure !== 0);
+    const shortAllowances = ["Capital allowances", "AIA / WDA claimed", "Other capital allowances"].reduce(
+      (sum, label) => sum + requireValue(parsed, SA103S, label),
+      0,
+    );
+    const accountingAdjustment = requireValue(parsed, SA103F, "Adjustment for change of accounting practice (box 71)");
+
     expect(text).toContain(
       "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
-        "Total expenses (box 31) 173,801.98 = the short return's total expenses 146,730.52 plus total disallowable expenses (box 46) 27,071.46; " +
-        "net profit (box 47) 165,398.02 = the short return's net profit 192,469.48 less that same 27,071.46; " +
-        "total capital allowances (box 57) 68,840.00 = the short return's allowance boxes 64,540.00 plus the allowances stated on the full return alone, " +
-        "which the short return has no box for (Zero-emission car allowance (box 52.1) 2,500.00, Structures and Buildings Allowance (box 53) 1,800.00). " +
-        "The sheet carries the 90.00 adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; " +
+        `Total expenses (box 31) ${amount(fullExpenses)} = the short return's total expenses ${amount(shortExpenses)} plus total disallowable expenses (box 46) ${amount(disallowable)}; ` +
+        `net profit (box 47) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)}; ` +
+        `total capital allowances (box 57) ${amount(capitalAllowances)} = the short return's allowance boxes ${amount(shortAllowances)} plus the allowances stated on the full return alone, ` +
+        `which the short return has no box for (${fullOnlyAllowances.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}). ` +
+        `The sheet carries the ${amount(accountingAdjustment)} adjustment for change of accounting practice (box 71) into adjusted loss (box 77) only; ` +
         "adjusted profit (box 73) repeats box 64, and the warning names the figure HMRC's working sheet would add.",
     );
   });
 
   it("carries the grants line from the short return's taxable profit to the full return's figure the tax is charged on", () => {
+    const grants = requireValue(parsed, SA103S, "Grants as other business income");
+    const shortForTax = requireValue(parsed, SA103S, "Net profit for tax calc");
+    const fullOnlyLabels = [
+      "Zero-emission goods vehicle allowance (box 52)",
+      "Zero-emission car allowance (box 52.1)",
+      "Structures and Buildings Allowance (box 53)",
+      "Electric charge-point allowance (box 54)",
+      "Income included but not taxable as business profits (box 62)",
+    ];
+    const fullOnly = fullOnlyLabels
+      .map((label) => ({ label, figure: value(parsed, SA103F, label) }))
+      .filter((box) => box.figure !== null && box.figure !== 0);
+    const fullForTax = requireValue(parsed, SA103F, "Total taxable profits from this business (box 76)");
+    const chargedProfit = requireValue(parsed, "Income Tax Calculation", "Profit from Self Employment");
+
     expect(text).toContain(
-      "Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 130,652.81 on the short return; " +
-        "the income tax computation charges the full return's total taxable profits (box 76) of 126,002.81, 4,650.00 below it by the boxes stated on the full return alone " +
-        "(Zero-emission car allowance (box 52.1) 2,500.00, Structures and Buildings Allowance (box 53) 1,800.00, Income included but not taxable as business profits (box 62) 350.00).",
+      `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(shortForTax)} on the short return; ` +
+        `the income tax computation charges the full return's total taxable profits (box 76) of ${amount(fullForTax)}, ` +
+        `${amount(shortForTax - fullForTax)} below it by the boxes stated on the full return alone ` +
+        `(${fullOnly.map((box) => `${box.label} ${amount(box.figure)}`).join(", ")}).`,
     );
-    expect(text).toContain("Income tax: charged on a profit of 126,002.81");
+    expect(text).toContain(`Income tax: charged on a profit of ${amount(chargedProfit)}`);
   });
 
   it("keeps the one-line form of both relations on a book that states nothing on the full return alone", () => {
@@ -359,7 +413,8 @@ describe("buildIndicators for the Self Employed", () => {
   });
 
   it("leaves the CIS clause out of a book with nothing deducted", () => {
-    expect(text).toContain("income tax and National Insurance together 46,680.92.");
+    const total = requireValue(parsed, "Income Tax Calculation", "Total Tax + NI");
+    expect(text).toContain(`income tax and National Insurance together ${amount(total)}.`);
     expect(text).not.toContain("under CIS");
   });
 });

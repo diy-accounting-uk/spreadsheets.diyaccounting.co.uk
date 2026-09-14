@@ -18,6 +18,7 @@ import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateSeResults } from "../lib/calculators/se.js";
 import { checkCompliance } from "../products/se.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { vatRateForScenario, salesNetByCode, bankReceiptsByCode, depreciationAndDisposalLoss } from "./helpers/se-fixture-figures.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -68,11 +69,16 @@ describe("SA103F box 44 leaves the loss on disposal out of the disallowable tota
     const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
     expect(advancedRow.pass).toBe(false);
     expect(advancedRow.severity).toBe("warning");
-    // 13,740 of depreciation on the van, the laptop and the year's purchases
-    // plus the estate car's 4,000; box 29 adds the 172 loss on the van.
-    expect(advancedRow.actual).toBeCloseTo(17740, 2);
-    expect(advancedRow.expected).toBeCloseTo(17912, 2);
-    expect(advancedRow.diff).toBeCloseTo(-172, 2);
+    // Box 44 (actual) is the year's depreciation charge alone; box 29
+    // (expected) adds the loss on disposal of the van, sold in October for
+    // less than its written down value. Both sides derived independently
+    // from the fixture's own asset and disposal rows, not read back off the
+    // engine.
+    const rate = vatRateForScenario(advanced.expected, TAX_DATA);
+    const { totalDepreciation, disposalLoss } = depreciationAndDisposalLoss(advanced.expected, TAX_DATA, rate);
+    expect(advancedRow.actual).toBeCloseTo(totalDepreciation, 2);
+    expect(advancedRow.expected).toBeCloseTo(totalDepreciation + disposalLoss, 2);
+    expect(advancedRow.diff).toBeCloseTo(-disposalLoss, 2);
 
     for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {
       const fixture = loadFixture(name);
@@ -111,9 +117,14 @@ describe("VitalTax annual sales excludes the Other Income sales that SA103F box 
     const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
     expect(advancedRow.pass).toBe(false);
     expect(advancedRow.severity).toBe("warning");
-    expect(advancedRow.actual).toBeCloseTo(335500, 2);
-    expect(advancedRow.expected).toBeCloseTo(339200, 2);
-    expect(advancedRow.diff).toBeCloseTo(-3700, 2);
+    // VitalTax (actual) pools sales codes a, b and c; box 15 (expected) adds
+    // code d, the "Other Income" turnover row. Derived independently from
+    // the fixture's own sales journal.
+    const rate = vatRateForScenario(advanced.expected, TAX_DATA);
+    const net = salesNetByCode(advanced.expected, rate);
+    expect(advancedRow.actual).toBeCloseTo((net.a || 0) + (net.b || 0) + (net.c || 0), 2);
+    expect(advancedRow.expected).toBeCloseTo((net.a || 0) + (net.b || 0) + (net.c || 0) + (net.d || 0), 2);
+    expect(advancedRow.diff).toBeCloseTo(-(net.d || 0), 2);
 
     for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {
       const fixture = loadFixture(name);
@@ -147,9 +158,17 @@ describe("VitalTax other income folds Investment Grants in where SA103F reports 
     const advancedRow = find(runChecks(advanced.results, advanced.expected), CHECK_NAME);
     expect(advancedRow.pass).toBe(false);
     expect(advancedRow.severity).toBe("warning");
-    expect(advancedRow.actual).toBeCloseTo(5783.33, 2);
-    expect(advancedRow.expected).toBeCloseTo(3700, 2);
-    expect(advancedRow.diff).toBeCloseTo(2083.33, 2);
+    // VitalTax's other-income row (actual) folds sales code d ("Other
+    // Income"), code g (Investment Grants) and Bank.xlsx code K (interest
+    // received) together; box 75/16 (expected) carries code d and the bank
+    // interest alone, so the gap is the Investment Grants sale. Derived
+    // independently from the fixture's own sales and bank journals.
+    const rate = vatRateForScenario(advanced.expected, TAX_DATA);
+    const net = salesNetByCode(advanced.expected, rate);
+    const bankInterest = bankReceiptsByCode(advanced.expected, "K");
+    expect(advancedRow.actual).toBeCloseTo((net.d || 0) + (net.g || 0) + bankInterest, 2);
+    expect(advancedRow.expected).toBeCloseTo((net.d || 0) + bankInterest, 2);
+    expect(advancedRow.diff).toBeCloseTo(net.g || 0, 2);
 
     for (const name of ["se-brickwork-pro-vat", "se-brickwork-pro-nonvat"]) {
       const fixture = loadFixture(name);
