@@ -120,7 +120,7 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 0 | 0 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 0 | 0 | 0 | PASS |
-| SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000 | 0 | 0 | 0 | PASS |
 | SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1 | 0 | 0 | 0 | PASS |
 | SA103F box 59 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
 | SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states | 0 | 0 | 0 | PASS |
@@ -2352,10 +2352,14 @@ Journal amounts include VAT at 20%.
 | X1 | Accumulated depreciation on the assets sold in the year | 0 |  |
 | Y1 | Balancing allowance on the disposals | 0 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
-| AC1 |  | 0 |  |
-| AC4 |  | 0.06 |  |
+| AC1 | Total special rate writing down allowance claimed (the rows marked S in column AB) | 0 |  |
+| AC4 | Special rate writing down allowance rate, read from Admin | 0.06 |  |
+| AE1 | Single asset pool writing down allowance at the main rate (the rows marked P in column AD) | 0 |  |
+| AF1 | Single asset pool writing down allowance at the special rate (the rows marked P and S) | 0 |  |
+| AG1 | Single asset pool tax written down value carried forward | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 0 |  |
 | E110 | Cost of the assets bought during the year | 12000 |  |
+| M40 | Private use share of the third motor vehicle brought forward | 0 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 

@@ -399,7 +399,9 @@ describe("buildSelfEmploymentAnnualSubmission — allowances against the schedul
       value(rpt, "Self Assessment (SA103F)", "Annual investment allowance (box 49)"),
       2,
     );
-    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(
+    // Box 50 prints the single asset pool's allowance beside the main
+    // pool's; the API files it apart, so the main pool is the box less it.
+    expect(annual.allowances.capitalAllowanceMainPool + annual.allowances.capitalAllowanceSingleAssetPool).toBeCloseTo(
       value(rpt, "Self Assessment (SA103F)", "Capital allowances at 18% (box 50)"),
       2,
     );
