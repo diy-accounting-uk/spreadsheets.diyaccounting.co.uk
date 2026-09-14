@@ -5,10 +5,10 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.12+6513290ce",
+    "engineVersion": "1.2.13+879793e97",
     "taxDataHash": "4ecdbe985d22",
-    "templateHash": "4decdcb12664",
-    "templateScorecard": "7952 passed, 0 warnings, 0 failed",
+    "templateHash": "15d3b753f7a4",
+    "templateScorecard": "7956 passed, 0 warnings, 0 failed",
     "reconciledCommit": "c910fdeefbe4f2f71ae9ec5f5d4a713783a1c0c7"
   },
   "values": [
@@ -190,12 +190,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E10",
       "unit": "money",
-      "value": "388.263825000013"
+      "value": "428.763825000013"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E11",
       "unit": "money",
-      "value": "42904.263825"
+      "value": "42944.763825"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E12",
@@ -210,17 +210,17 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E16",
       "unit": "money",
-      "value": "1514.65617"
+      "value": "1516.45617"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E18",
       "unit": "money",
-      "value": "46680.919995"
+      "value": "46723.219995"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E5",
       "unit": "money",
-      "value": "126002.8085"
+      "value": "126092.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E6",
@@ -230,7 +230,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E7",
       "unit": "money",
-      "value": "126002.8085"
+      "value": "126092.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E8",
@@ -2060,7 +2060,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D219",
       "unit": "money",
-      "value": "-90"
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D231",
@@ -2205,7 +2205,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O194",
       "unit": "money",
-      "value": "123919.475166667"
+      "value": "124009.475166667"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O199",
@@ -2220,12 +2220,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O210",
       "unit": "money",
-      "value": "126002.8085"
+      "value": "126092.8085"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O224",
       "unit": "money",
-      "value": "-90"
+      "value": "0"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!O55",
@@ -6815,8 +6815,8 @@
       "key": "check/Income Tax",
       "unit": "verdict",
       "value": "pass",
-      "expected": "42904.263825",
-      "actual": "42904.263825",
+      "expected": "42944.763825",
+      "actual": "42944.763825",
       "tolerance": "0.01"
     },
     {
@@ -10866,20 +10866,20 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 73 adjusted profit (O194) = box 64",
+      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil",
       "unit": "verdict",
       "value": "pass",
-      "expected": "123919.475166667",
-      "actual": "123919.475166667",
+      "expected": "124009.475166667",
+      "actual": "124009.475166667",
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64",
+      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil",
       "unit": "verdict",
-      "value": "warn",
+      "value": "pass",
       "expected": "124009.475166667",
-      "actual": "123919.475166667",
-      "tolerance": "0.01"
+      "actual": "124009.475166667",
+      "tolerance": "1"
     },
     {
       "key": "check/SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94)",
@@ -10909,24 +10909,32 @@
       "key": "check/SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75",
       "unit": "verdict",
       "value": "pass",
-      "expected": "126002.8085",
-      "actual": "126002.8085",
+      "expected": "126092.8085",
+      "actual": "126092.8085",
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off",
+      "key": "check/SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off",
       "unit": "verdict",
       "value": "pass",
-      "expected": "126002.8085",
-      "actual": "126002.8085",
+      "expected": "126092.8085",
+      "actual": "126092.8085",
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less the box 71 figure the book states",
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil",
       "unit": "verdict",
       "value": "pass",
-      "expected": "-90",
-      "actual": "-90",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
       "tolerance": "1"
     },
     {
@@ -11002,11 +11010,11 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5",
+      "key": "check/SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5",
       "unit": "verdict",
       "value": "pass",
-      "expected": "126002.8085",
-      "actual": "126002.8085",
+      "expected": "126092.8085",
+      "actual": "126092.8085",
       "tolerance": "1"
     },
     {
@@ -11397,8 +11405,8 @@
       "key": "check/Tax at additional rate",
       "unit": "verdict",
       "value": "pass",
-      "expected": "388.263825000013",
-      "actual": "388.263825000013",
+      "expected": "428.763825000013",
+      "actual": "428.763825000013",
       "tolerance": "1"
     },
     {
@@ -11413,8 +11421,8 @@
       "key": "check/Tax: IT = Basic + Higher + Additional",
       "unit": "verdict",
       "value": "pass",
-      "expected": "42904.263825",
-      "actual": "42904.263825",
+      "expected": "42944.763825",
+      "actual": "42944.763825",
       "tolerance": "1"
     },
     {
@@ -11429,16 +11437,16 @@
       "key": "check/Tax: Taxable = Profit - Allowance",
       "unit": "verdict",
       "value": "pass",
-      "expected": "126002.8085",
-      "actual": "126002.8085",
+      "expected": "126092.8085",
+      "actual": "126092.8085",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Total = IT + CIS deduction line + NI",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46680.919995",
-      "actual": "46680.919995",
+      "expected": "46723.219995",
+      "actual": "46723.219995",
       "tolerance": "1"
     },
     {
@@ -11477,8 +11485,8 @@
       "key": "check/Total Tax + NI, less the CIS already deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46680.919995",
-      "actual": "46680.919995",
+      "expected": "46723.219995",
+      "actual": "46723.219995",
       "tolerance": "0.01"
     },
     {
@@ -13024,6 +13032,12 @@
       "source": "cell/Financialaccounts.xlsx!SE Short!O99"
     },
     {
+      "key": "section/accounting-profit-to-tax-profit-bridge/add-the-full-return-s-own-box-71-adjustment-for-change-of-accounting-practice",
+      "unit": "money",
+      "value": "90",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D210"
+    },
+    {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
       "unit": "money",
       "value": "-52500",
@@ -13097,7 +13111,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
       "unit": "money",
-      "value": "126002.8085",
+      "value": "126092.8085",
       "derivedFrom": [
         "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
         "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
@@ -13112,6 +13126,7 @@
         "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-structures-and-buildings-allowance-box-53",
         "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-electric-charge-point-allowance-box-54",
         "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-box-62-adjustment",
+        "section/accounting-profit-to-tax-profit-bridge/add-the-full-return-s-own-box-71-adjustment-for-change-of-accounting-practice",
         "section/accounting-profit-to-tax-profit-bridge/add-back-the-year-s-loss-carried-forward-rather-than-reducing-tax-below-nil",
         "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29",
         "section/accounting-profit-to-tax-profit-bridge/add-grants-as-other-business-income-box-30"
@@ -13120,7 +13135,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
       "unit": "money",
-      "value": "126002.8085",
+      "value": "126092.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
@@ -13356,19 +13371,19 @@
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
       "unit": "money",
-      "value": "1514.65617",
+      "value": "1516.45617",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
       "unit": "money",
-      "value": "126002.8085",
+      "value": "126092.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate-45",
       "unit": "money",
-      "value": "388.263825000013",
+      "value": "428.763825000013",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E10"
     },
     {
@@ -13386,19 +13401,19 @@
     {
       "key": "section/income-tax-calculation/taxable-income",
       "unit": "money",
-      "value": "126002.8085",
+      "value": "126092.8085",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
       "unit": "money",
-      "value": "42904.263825",
+      "value": "42944.763825",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
       "unit": "money",
-      "value": "46680.919995",
+      "value": "46723.219995",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E18"
     },
     {
@@ -14515,13 +14530,13 @@
     {
       "key": "section/self-assessment-sa103f/adjusted-loss-box-77",
       "unit": "money",
-      "value": "-90",
+      "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D219"
     },
     {
       "key": "section/self-assessment-sa103f/adjusted-profit-box-73",
       "unit": "money",
-      "value": "123919.475166667",
+      "value": "124009.475166667",
       "source": "cell/Financialaccounts.xlsx!SE Full!O194"
     },
     {
@@ -14737,13 +14752,13 @@
     {
       "key": "section/self-assessment-sa103f/total-loss-to-carry-forward-box-80",
       "unit": "money",
-      "value": "-90",
+      "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O224"
     },
     {
       "key": "section/self-assessment-sa103f/total-taxable-profits-from-this-business-box-76",
       "unit": "money",
-      "value": "126002.8085",
+      "value": "126092.8085",
       "source": "cell/Financialaccounts.xlsx!SE Full!O210"
     },
     {

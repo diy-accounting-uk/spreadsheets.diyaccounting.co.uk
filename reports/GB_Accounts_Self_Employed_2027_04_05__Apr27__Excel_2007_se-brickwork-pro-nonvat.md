@@ -68,7 +68,7 @@ Trade: Bricklaying, plastering and general building
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 58990 | 58990 | 0 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 16010 | 16010 | 0 | PASS |
 | SA103S: net loss = total expenses - turnover - other business income | 0 | 0 | 0 | PASS |
-| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 = Income Tax E5 | 4010 | 4010 | 0 | PASS |
+| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5 | 4010 | 4010 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
 | Forecast: turnover = P&L turnover | 75000 | 75000 | 0 | PASS |
@@ -114,7 +114,8 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 1680 | 1680 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 12000 | 12000 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 4010 | 4010 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 | 4010 | 4010 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil | 4010 | 4010 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 4010 | 4010 | 0 | PASS |
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 0 | 0 | 0 | PASS |
@@ -133,10 +134,10 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54) | 0 | 0 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 plus the box 71 figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) leaves out box 71 (D210), which HMRC's working sheet adds to box 64 | 4010 | 4010 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil | 4010 | 4010 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 | 4010 | 4010 | 0 | PASS |
-| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62, with each return's own loss set-off | 4010 | 4010 | 0 | PASS |
+| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off | 4010 | 4010 | 0 | PASS |
 | SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone | 4010 | 4010 | 0 | PASS |
 | SA103F box 15 turnover: full return (D55) = short return (D38) | 75000 | 75000 | 0 | PASS |
 | SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
@@ -855,6 +856,7 @@ Trade: Bricklaying, plastering and general building
 | Less the full return's own Structures and Buildings Allowance (box 53) | SE Full!D160 | 0 |
 | Less the full return's own electric charge-point allowance (box 54) | SE Full!O139 | 0 |
 | Less the full return's own box 62 adjustment | SE Full!D179 | 0 |
+| Add the full return's own box 71 adjustment for change of accounting practice | SE Full!D210 | 0 |
 | Add back the year's loss, carried forward rather than reducing tax below nil | SE Full!O179 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
 | Add grants as other business income (box 30) | SE Short!O99 | 0 |
