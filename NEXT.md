@@ -8,12 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #116 (`claude/set-8-single-pool`, worktree `set-8`, head `4b08b2fe`, four commits on
-`c692a372`) carries SET-8; `test`, `codeql`, `identity-guard`, the ci `deploy` and a
-`generate-se` skip-commit dispatch (run 34907012759) running. `claude/b16-se` (worktree
-`b16-se`) holds only SET-10's design scratch `9cca0ceb` now. A watch monitor is armed over
-`main` and every open PR head. Prod serves `c692a372`; the publish job landed diya-gl 1.2.13 as
-`7c754ed1`.
+PR #116 (SET-8) merged as `af6a69fa`; `main`'s `test`, `codeql` and the prod `deploy` are
+running on it. `claude/b16-se` (worktree `b16-se`) holds only SET-10's design scratch
+`9cca0ceb`. A watch monitor is armed over `main`. Prod serves `c692a372` until that deploy
+lands; the publish job landed diya-gl 1.2.13 as `7c754ed1`.
 
 ## Context for the open rows
 
@@ -41,12 +39,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| SET-8 | Boxes 50 and 51 single-asset pools: a marker column on `Fixedassets.xlsx!Schedule` asset rows plus its book field, `buildSchedule` keeping each marked row its own pool, `capitalAllowanceSingleAssetPool` filed; the Ltd package shares the register, so its schedule and checks move too | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~10 files | Opus | PR #116 `4b08b2fe`; test, deploy, generate-se running |
 | CQ-43 | The router's product-module route (`scripts/test-scope.mjs`, `chooseBrowserSpecs`) picks browser specs by product token in the file name, so `diya-gl-render-coverage.browser.test.js`, which walks every product's S2 keys, never runs for a change to `app/products/se.js`; SET-12's new profit-bridge row passed the routed run (browser 5 specs, 20m38s) and failed PR #115's `test` on three SE fixtures (run 34893892764). The product route adds the render-coverage spec whenever a product module changes, with a routing test | none | machine-only | — | ready-to-start | ~2 files | Haiku | 34 CI minutes and one PR cycle per product-module change |
+| SET-10 | The small-pools write-off (`SE Full!O144`, box 55) sums `Fixedassets.xlsx!Schedule` `R1+S1` over one S column, so a special-rate balance counts towards the £1,000 test alongside the main pool; HMRC applies the test per pool. Split S into a main-pool and a special-rate written-down column, point O144 and the calculator's small-pools check at each, and anchor the check on the fixture's estate car (tax WDV 9,000, special) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~6 files | Sonnet | SET-8 landed `af6a69fa`; design scratch `9cca0ceb` on `claude/b16-se`: columns AH/AI after AG |
+| SET-9 | Boxes 53 and 53.1 Structures and Buildings Allowance: a claim record (dates, rate, amount, an array), the derivation filing the array, box 53's cell carrying the total, 53.1's label-and-value row pair laid out afresh between `SE Full` rows 146 and 161 | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~10 files | Sonnet | SET-8 landed `af6a69fa`; from the 3.4 design |
 | SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~12 files | Sonnet | SET-12 landed `c692a372`; shares `O194` |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
-| SET-10 | The small-pools write-off (`SE Full!O144`, box 55) sums `Fixedassets.xlsx!Schedule` `R1+S1` over one S column, so a special-rate balance counts towards the £1,000 test alongside the main pool; HMRC applies the test per pool. Split S into a main-pool and a special-rate written-down column, point O144 and the calculator's small-pools check at each, and anchor the check on the fixture's estate car (tax WDV 9,000, special) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-8 | blocked-to-start | ~6 files | Sonnet | design scratch on `claude/b16-se` `9cca0ceb`: columns AH/AI after AG |
-| SET-9 | Boxes 53 and 53.1 Structures and Buildings Allowance: a claim record (dates, rate, amount, an array), the derivation filing the array, box 53's cell carrying the total, 53.1's label-and-value row pair laid out afresh between `SE Full` rows 146 and 161 | PLAN_SE_TEMPLATE_GAPS.md | machine-only | SET-8 | blocked-to-start | ~10 files | Sonnet | from the 3.4 design; lands on the Schedule SET-8 widened |
 
 ## Plans not tracked here
 
