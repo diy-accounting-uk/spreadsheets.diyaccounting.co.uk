@@ -8,9 +8,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-CQ-44 on `claude/cq-44-admin-rates` (worktree `cq-44`), PR #120 open at `4507b18e`, its checks running. `main` is
-green on `9fb334c0` (SET-9); prod serves it and the publish job landed diya-gl 1.2.16 as `ffb122e0`.
-`claude/b16-se` (branch only) holds SET-10's superseded design scratch. No watch monitor is armed.
+PR #120 (CQ-44) merged as `5eb8a212`; `main`'s test and prod deploy on it in progress. `claude/b16-se`
+(branch only) holds SET-10's superseded design scratch. No watch monitor is armed.
 
 ## Context for the open rows
 
@@ -39,7 +38,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
 | SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~12 files | Sonnet | SET-12 landed `c692a372`; shares `O194` |
-| CQ-44 | `ADMIN_RATE_CELLS` in `app/products/se.js` (line 1738) omits `G6`, so the special-rate WDA renders as money on the DIYA-GL SE page; add `G6`, and `G9`/`G10` once SET-9 lands | none | machine-only | — | in-flight | ~1 file | Haiku | `claude/cq-44-admin-rates`, PR #120, checks running |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
 
 ## Plans not tracked here
