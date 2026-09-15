@@ -228,9 +228,18 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
 
 - **A sub-agent's "done" is not proof.** Run `git status --short` in its worktree before anything
   else. Uncommitted work is real and you get one look at it.
-- `git merge --squash <agent-branch>` into the batch worktree, then one commit naming the item:
-  one commit per task on the batch, the agent's fixing commits folded into the task they fix.
-  Keep the agent's commit message body where it explains the why.
+- `git merge --squash <agent-branch>` into the batch worktree, always against the branch's own
+  fork point (`git merge-base <batch> <agent-branch>`), never against `main`. Main moves under a
+  batch (board commits land there during every wave), and a squash against a moved `main` carries
+  intervening changes into the squash commit. Prove the squash carried nothing extra: run
+  `git diff --name-only <batch>...<agent-branch>` before the squash and verify it matches the files
+  in the squash commit.
+
+  Then one commit naming the item: one commit per task on the batch, the agent's fixing commits
+  folded into the task they fix. Keep the agent's commit message body where it explains the why.
+
+  The pre-push hook now refuses any branch push whose diff against `main` touches `NEXT.md`. If it
+  fires, fix it with `git checkout origin/main -- NEXT.md && git commit`.
 - Run that change's blast radius on the merged tree, not the agent's own report.
 - Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
   once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless
