@@ -9,8 +9,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Batch 18, `claude/b18-board`, worktree `../.worktrees/spreadsheets/b18`: one wave, one PR, carrying CQ-48, CQ-49,
-CQ-45, CQ-46, CQ-47 and SET-7 (operator, 2026-09-15). The five CQ rows are on the batch; SET-7 is
-on `claude/b18-set7` in `../.worktrees/spreadsheets/b18-set7`. `main` is green on `5eb8a212`
+CQ-45, CQ-46, CQ-47 and SET-7 (operator, 2026-09-15). All six rows are on the batch, 8 commits; the routed
+run on the merged tree precedes the first push. `main` is green on `5eb8a212`
 (CQ-44); prod serves it.
 
 ## Context for the open rows
@@ -44,7 +44,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | CQ-45 | `--tree-hash` in `scripts/test-scope.mjs` ignores the `engineVersion` stamp line in `app/lib/provenance-data.js` (as it ignores docs), or the brief restamps before the final `npm test`: every row's restamp after its GREEN run cost a second routed run before the push (SET-10 33 min, SET-9 62, CQ-44 15) | none | machine-only | — | in-flight | ~2 files | Sonnet | on `claude/b18-board` as `91ac65a3` |
 | CQ-46 | The router stops after a failed gates tier instead of running unit, calc and browser behind it (`scripts/test-scope.mjs`, with a routing test): SET-10's and SET-9's first full runs each ran 35 min to report a prettier failure known at minute 2 | none | machine-only | — | in-flight | ~2 files | Sonnet | on `claude/b18-board` as `746c97d8` |
 | CQ-47 | `.githooks/pre-push` refuses a branch push whose diff against `main` touches `NEXT.md`, and `do-next` squashes against the fork point (`git merge-base`) rather than `main`: PR #117 opened `CONFLICTING` because the squash carried the fork's `NEXT.md`, 72 job-minutes on the abandoned head | none | machine-only | — | in-flight | ~2 files | Sonnet | on `claude/b18-board` as `9fa84fa9` and `8e1435be` |
-| SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~12 files | Sonnet | `claude/b18-set7`, 9 commits; first `npm test` RED, unit 6, calc 2, agent fixing |
+| SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~12 files | Sonnet | on `claude/b18-board` as `80457d57`; batch routed run in progress |
 | H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
 
 ## Plans not tracked here
