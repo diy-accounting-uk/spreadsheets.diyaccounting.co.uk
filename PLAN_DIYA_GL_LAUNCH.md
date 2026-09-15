@@ -661,9 +661,8 @@ changed from us rather than from the release.
 | --- | --- | --- | --- | --- |
 | H-LU-9 | Tell HMRC's SDS team the licence changed, one paragraph | LU-8a | operator | email |
 
-`BRIEF_OPERATOR_TASKS_2026-09-10.md` writes the HMRC note out in full — the address, what changed,
-and the one thing that has not, which is that we still issue no licence keys so the
-`Gov-Vendor-License-IDs` header carries no data either way.
+The note says what changed and the one thing that has not: we still issue no licence keys, so the
+`Gov-Vendor-License-IDs` header carries no data either way. The operator holds the draft.
 
 ## Where this changes the DIYA-GL Cloud plan
 

@@ -8,10 +8,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Batch 18, `claude/b18-board`, worktree `../.worktrees/spreadsheets/b18`: one wave, one PR, carrying CQ-48, CQ-49,
-CQ-45, CQ-46, CQ-47 and SET-7 (operator, 2026-09-15). All six rows are on the batch as PR #121 (9 commits,
-routed run GREEN 37m32s); deploy, test, codeql and identity-guard run on the head `7677089e`. `main` is green on `5eb8a212`
-(CQ-44); prod serves it.
+Batch 18 merged as `af41a87a` (PR #121: CQ-45 to CQ-49, SET-7); its `main` deploy is running. No branch but
+`main`.
 
 ## Context for the open rows
 
@@ -39,13 +37,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| CQ-48 | The router prints each tier's duration in its heartbeat and `VERDICT:` line (`scripts/test-scope.mjs`), so a slow tier is measurable: SET-9's pre-push browser tier took 42 min against 20 in the agent's run of the same diff, cause unmeasured | none | machine-only | — | in-flight | ~1 file | Sonnet | PR #121, `claude/b18-board`; CI running |
-| CQ-49 | The `do-next` brief carries the exact `rm` loop for the browser tier's untracked `LICENCE.txt`/`README.txt` byproducts and one background waiter per long run (`.claude/skills/do-next/SKILL.md`); the SET-9 agent ran `git clean -fd packages/` and three agents stopped ~12 times without a report | none | machine-only | — | in-flight | ~1 file | Haiku | on `claude/b18-board` as `da8b65e1`; rides the batch (operator) |
-| CQ-45 | `--tree-hash` in `scripts/test-scope.mjs` ignores the `engineVersion` stamp line in `app/lib/provenance-data.js` (as it ignores docs), or the brief restamps before the final `npm test`: every row's restamp after its GREEN run cost a second routed run before the push (SET-10 33 min, SET-9 62, CQ-44 15) | none | machine-only | — | in-flight | ~2 files | Sonnet | PR #121, `claude/b18-board`; CI running |
-| CQ-46 | The router stops after a failed gates tier instead of running unit, calc and browser behind it (`scripts/test-scope.mjs`, with a routing test): SET-10's and SET-9's first full runs each ran 35 min to report a prettier failure known at minute 2 | none | machine-only | — | in-flight | ~2 files | Sonnet | PR #121, `claude/b18-board`; CI running |
-| CQ-47 | `.githooks/pre-push` refuses a branch push whose diff against `main` touches `NEXT.md`, and `do-next` squashes against the fork point (`git merge-base`) rather than `main`: PR #117 opened `CONFLICTING` because the squash carried the fork's `NEXT.md`, 72 job-minutes on the abandoned head | none | machine-only | — | in-flight | ~2 files | Sonnet | PR #121, `claude/b18-board`; CI running |
-| SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | in-flight | ~12 files | Sonnet | PR #121, `claude/b18-board`; CI running |
-| H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Facts and the two source documents are in `BRIEF_OPERATOR_TASKS_2026-09-10.md`; its gate, Submit's relabel (LU-8a), landed 2026-09-09 | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email; the draft is in the brief |
+| H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Its gate, Submit's relabel (LU-8a), landed 2026-09-09; the operator holds the draft | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email |
 
 ## Plans not tracked here
 
@@ -54,10 +46,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 - `PLAN_DIYA_GL_LAUNCH.md`: carries the launch posts (LP-10), the Rust port (LP-12 to LP-14), the
   Filing phase as a Submit dependency (LP-19, LP-20), the HMRC licence note (H-LU-9, on the board)
   and SB-1's last task (SB-3, on the board).
-- `PLAN_ITSA_SE_DERIVATIONS.md`: its section 8 findings carry `SED-n` ids. SED-7 and SED-8's
-  remainder (boxes 68, 73.3, 50/51, 53/53.1) is `SET-6` to `SET-9`; SED-10 is Submit's.
-- `BRIEF_OPERATOR_TASKS_2026-09-10.md`: the two that need drafting rather than doing, written out
-  with the addresses and the facts.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
   and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-diya-gl` bundle, LP-21 there, done) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
 
