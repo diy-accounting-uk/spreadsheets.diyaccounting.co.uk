@@ -10,8 +10,9 @@
 //   npm test -- --all              every tier, every product, full browser suite
 //   npm test -- --base HEAD~1      a different comparison point
 //   npm test -- --plan             print the selection and the estimate, run nothing
-//   npm test -- --tree-hash        print the GREEN marker's key for the current tree, run nothing
-//   npm test -- --code-tree-hash   print the same key with every *.md path dropped, run nothing
+//   npm test -- --tree-hash          print the GREEN marker's key for the current tree, run nothing
+//   npm test -- --tree-hash --rev X  print the same key for commit X's own tree, not the working tree
+//   npm test -- --code-tree-hash     print the same key with every *.md path dropped, run nothing
 //
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
@@ -24,6 +25,15 @@
 // the merge base it diffed against. .githooks/pre-push looks this marker
 // up before running anything, so a suite that just passed on this exact
 // tree is not repeated for the push. PARTIAL never writes one.
+//
+// Both hashes blank app/lib/provenance-data.js's engineVersion value first
+// (see normaliseEngineVersion below): that field names the last commit
+// that touched the shipped engine, so a code commit followed by a
+// restamp commit (the browser tier rewrites it via
+// scripts/build-provenance-data.mjs) are two trees that would otherwise
+// hash differently for no engine-relevant reason. Normalising it is what
+// lets a GREEN marker written before the restamp still vouch for the
+// commit pushed after it.
 //
 // --code-tree-hash is the same idea one layer up, for CI: test.yml's
 // green-check job hashes the tree with every *.md path removed and looks
@@ -213,6 +223,32 @@ function lines(text) {
 
 const MARKER_DIR = join(ROOT, "target", "test-scope");
 
+// app/lib/provenance-data.js's engineVersion value blanked before hashing
+// -- see the comment above workingTreeHash. Operates on the throwaway
+// index (env carries GIT_INDEX_FILE), so it never touches the real one.
+// A tree with no such path (an old commit that predates the file) is left
+// alone: cat-file exits non-zero and there is nothing to normalise.
+const PROVENANCE_FILE = "app/lib/provenance-data.js";
+const ENGINE_VERSION_PATTERN = /engineVersion:\s*"[^"]*"/;
+
+function normaliseEngineVersion(env) {
+  const show = spawnSync("git", ["cat-file", "-p", `:${PROVENANCE_FILE}`], { cwd: ROOT, env, encoding: "utf8" });
+  if (show.status !== 0) return;
+  const normalised = show.stdout.replace(ENGINE_VERSION_PATTERN, 'engineVersion: "0.0.0+000000000000"');
+  if (normalised === show.stdout) return;
+  const stage = spawnSync("git", ["ls-files", "--stage", "--", PROVENANCE_FILE], { cwd: ROOT, env, encoding: "utf8" });
+  const mode = stage.stdout.trim().split(/\s+/)[0] || "100644";
+  const hashObj = spawnSync("git", ["hash-object", "-w", "--stdin"], { cwd: ROOT, env, input: normalised, encoding: "utf8" });
+  if (hashObj.status !== 0)
+    throw new Error(`git hash-object (normalise engineVersion) failed: ${(hashObj.stderr || "").toString().trim()}`);
+  const upd = spawnSync("git", ["update-index", "--cacheinfo", `${mode},${hashObj.stdout.trim()},${PROVENANCE_FILE}`], {
+    cwd: ROOT,
+    env,
+  });
+  if (upd.status !== 0)
+    throw new Error(`git update-index --cacheinfo (normalise engineVersion) failed: ${(upd.stderr || "").toString().trim()}`);
+}
+
 // The hash of what the tests actually ran against: tracked content plus
 // untracked-but-not-ignored content, exactly what `git add -A` would stage.
 // Built in a throwaway index so the real index (and any partial `git add`
@@ -225,32 +261,42 @@ const MARKER_DIR = join(ROOT, "target", "test-scope");
 // later pushed to main differ only in NEXT.md board updates (the docs
 // exception lands those on main directly), so the two runs should count as
 // the same tree and share one GREEN record.
-function workingTreeHash({ withoutDocs = false } = {}) {
+//
+// rev: a specific commit rather than the working tree -- .githooks/pre-push
+// uses this to hash the commit it is about to push, which after a restamp
+// commit is never what HEAD's working tree currently holds.
+function workingTreeHash({ withoutDocs = false, rev = null } = {}) {
   const tmpIndex = join(tmpdir(), `test-scope-index-${process.pid}-${Date.now()}`);
   const env = { ...process.env, GIT_INDEX_FILE: tmpIndex };
   try {
-    // Seed the throwaway index from the real one rather than starting
-    // empty. `git add -A` on a fresh empty index treats every path as new
-    // and consults .gitignore, which silently drops a path that is
-    // tracked but also matches .gitignore -- this repo has several
-    // (reports/judge-verdict-*.json, *.svg under web/.../diya-gl/) even
-    // though they are exactly as tracked as everything else. Starting
-    // from a copy of the real index means `git add -A` only has to layer
-    // working-tree changes on top, exactly as it would against the real
-    // one, so an unchanged file keeps the real index's already-correct
-    // blob hash instead of being re-hashed -- which also fixes a CRLF/LF
-    // mismatch measured on mvnw.cmd: adding it as if new re-runs the
-    // text-conversion filters and produces a different blob than the one
-    // actually committed, where adding it as an unchanged tracked file is
-    // a no-op.
-    const realIndex = resolve(ROOT, git(["rev-parse", "--git-path", "index"]).trim());
-    if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
-    const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
-    if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    if (rev) {
+      const rt = spawnSync("git", ["read-tree", `${rev}^{tree}`], { cwd: ROOT, env });
+      if (rt.status !== 0) throw new Error(`git read-tree ${rev} failed: ${(rt.stderr || "").toString().trim()}`);
+    } else {
+      // Seed the throwaway index from the real one rather than starting
+      // empty. `git add -A` on a fresh empty index treats every path as new
+      // and consults .gitignore, which silently drops a path that is
+      // tracked but also matches .gitignore -- this repo has several
+      // (reports/judge-verdict-*.json, *.svg under web/.../diya-gl/) even
+      // though they are exactly as tracked as everything else. Starting
+      // from a copy of the real index means `git add -A` only has to layer
+      // working-tree changes on top, exactly as it would against the real
+      // one, so an unchanged file keeps the real index's already-correct
+      // blob hash instead of being re-hashed -- which also fixes a CRLF/LF
+      // mismatch measured on mvnw.cmd: adding it as if new re-runs the
+      // text-conversion filters and produces a different blob than the one
+      // actually committed, where adding it as an unchanged tracked file is
+      // a no-op.
+      const realIndex = resolve(ROOT, git(["rev-parse", "--git-path", "index"]).trim());
+      if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
+      const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
+      if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    }
     if (withoutDocs) {
       const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
       if (rm.status !== 0) throw new Error(`git rm --cached *.md (throwaway index) failed: ${(rm.stderr || "").toString().trim()}`);
     }
+    normaliseEngineVersion(env);
     const wt = spawnSync("git", ["write-tree"], { cwd: ROOT, env, encoding: "utf8" });
     if (wt.status !== 0) throw new Error(`git write-tree (throwaway index) failed: ${(wt.stderr || "").trim()}`);
     return wt.stdout.trim();
@@ -548,6 +594,14 @@ function chooseBrowserSpecs(sel, specs) {
 
 const TIER_ORDER = ["gates", "unit", "calc", "browser", "infra"];
 
+// The tiers a run still owes once gates has failed: every tier after gates
+// whose own selection said it would run. Pure (no git, no process state)
+// so the routing test can assert it directly, the way select() is tested,
+// rather than needing a real gates failure to exercise it.
+function tiersAfterGates(runFlags) {
+  return TIER_ORDER.filter((tier) => tier !== "gates" && runFlags[tier]);
+}
+
 function allowedTiers() {
   const raw = process.env.TEST_SCOPE_TIERS;
   if (!raw) return null;
@@ -590,14 +644,14 @@ function forwardAndExit(signal) {
 process.on("SIGINT", () => forwardAndExit("SIGINT"));
 process.on("SIGTERM", () => forwardAndExit("SIGTERM"));
 
-function runStep(label, command, args, env) {
+function runStep(label, command, args, env, heartbeatLabel = label) {
   return new Promise((done) => {
     const started = Date.now();
     console.log(`\n--- ${label}: ${command} ${args.join(" ")}`);
     const child = spawn(command, args, { cwd: ROOT, stdio: "inherit", env: { ...process.env, ...env }, detached: true });
     currentChild = child;
     const beat = setInterval(() => {
-      console.log(`... ${label} still running, ${fmt(Date.now() - started)} elapsed`);
+      console.log(`... ${heartbeatLabel} still running, ${fmt(Date.now() - started)} elapsed`);
     }, 30_000);
     child.on("close", (code) => {
       clearInterval(beat);
@@ -614,19 +668,38 @@ function runStep(label, command, args, env) {
   });
 }
 
-async function runSteps(steps, env) {
+// tierName prefixes the heartbeat (not the "--- label:" start/end lines)
+// when a tier has more than one step, so a long-running step says which
+// tier and which step: "... browser/packages still running, 2m30s
+// elapsed" rather than just "packages", which by itself does not say
+// whether it is the browser tier's packages step or another tier's.
+async function runSteps(steps, env, tierName) {
+  const start = Date.now();
+  const multiStep = steps.length > 1;
   let worst = 0;
   for (const [label, command, args] of steps) {
-    const code = await runStep(label, command, args, env);
+    const heartbeatLabel = multiStep && tierName ? `${tierName}/${label}` : label;
+    const code = await runStep(label, command, args, env, heartbeatLabel);
     if (code !== 0) worst = code;
   }
-  return worst;
+  return { code: worst, durationMs: Date.now() - start };
 }
 
 // Exported for app/test/test-scope-routing.test.js: the routing table is
 // pure (no git, no filesystem beyond reading the module itself), so it is
 // tested directly rather than through a subprocess.
-export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn, chooseBrowserSpecs, MARKER_DIR, workingTreeHash, writeGreenMarker };
+export {
+  ROUTES,
+  PRODUCTS,
+  REPRESENTATIVE_CALC,
+  select,
+  productsIn,
+  chooseBrowserSpecs,
+  MARKER_DIR,
+  workingTreeHash,
+  writeGreenMarker,
+  tiersAfterGates,
+};
 
 // ------------------------------------------------------------------ main
 
@@ -634,10 +707,17 @@ async function main() {
   const argv = process.argv.slice(2);
   if (argv.includes("--tree-hash")) {
     // The same hash the GREEN marker is keyed by: tracked content plus
-    // untracked-but-not-ignored content. On a clean tree this equals
-    // `git rev-parse HEAD^{tree}`; on a dirty one it does not, which is
-    // exactly how .githooks/pre-push tells a dirty-tree pass from a real one.
-    console.log(workingTreeHash());
+    // untracked-but-not-ignored content, with engineVersion blanked. On a
+    // clean tree with no --rev this equals --rev HEAD; on a dirty one it
+    // does not, which is exactly how .githooks/pre-push tells a
+    // dirty-tree pass from a real one.
+    //
+    // --rev X hashes commit X's own committed tree instead of the working
+    // tree -- what .githooks/pre-push asks for, since the commit being
+    // pushed is not necessarily what HEAD's working tree currently holds.
+    const revIdx = argv.indexOf("--rev");
+    const rev = revIdx !== -1 ? argv[revIdx + 1] : null;
+    console.log(workingTreeHash(rev ? { rev } : {}));
     process.exit(0);
   }
 
@@ -821,7 +901,26 @@ async function main() {
     return true;
   }
 
+  // Whether each tier after gates would run at all, and the label the
+  // VERDICT line and the summary use for it -- computed once, ahead of the
+  // gates tier, so a gates failure can name what it is not running without
+  // re-deriving the selection.
+  const runFlags = {
+    unit: true,
+    calc: chosenCalc.length > 0,
+    browser: chosenSpecs.length > 0,
+    infra: sel.infra,
+  };
+  const tierLabel = {
+    unit: `unit(${unitFiles.length})`,
+    calc: `calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`,
+    browser: `browser(${chosenSpecs.length})`,
+    infra: "infra",
+  };
+
   let exitCode = 0;
+  let gatesFailed = false;
+  const notRun = [];
 
   if (willRun("gates", true)) {
     const steps = [
@@ -832,12 +931,21 @@ async function main() {
       ["prettier", "npx", ["prettier", "--check", "."]],
     ];
     for (const extra of sel.extras) steps.push([extra, "npm", ["run", extra]]);
-    const code = await runSteps(steps, {});
-    results.push(["gates", code]);
-    if (code) exitCode = 1;
+    const gates = await runSteps(steps, {}, "gates");
+    results.push(["gates", gates.code, gates.durationMs]);
+    if (gates.code) {
+      exitCode = 1;
+      gatesFailed = true;
+      // Known RED at whatever the gates tier's own duration was. Measured
+      // twice: a full run spent 34m52s reporting a prettier failure that
+      // was known at minute 2, because unit, calc and browser ran to
+      // completion behind it. Stop here instead.
+      notRun.push(...tiersAfterGates(runFlags).map((t) => tierLabel[t]));
+      console.log(`\ngates FAILED; ${notRun.length ? `${notRun.join(", ")} not run` : "nothing else was going to run"}`);
+    }
   }
 
-  if (willRun("unit", true)) {
+  if (!gatesFailed && willRun("unit", true)) {
     const steps = [
       ["sitemaps", "node", ["app/bin/build-sitemaps.js"]],
       ["donate page", "node", ["scripts/build-donate-page.mjs"]],
@@ -847,18 +955,22 @@ async function main() {
     } else {
       console.log("\n--- unit: no test file in the repo reaches this diff");
     }
-    const code = await runSteps(steps, {});
-    results.push([`unit(${unitFiles.length})`, code]);
-    if (code) exitCode = 1;
+    const unit = await runSteps(steps, {}, "unit");
+    results.push([tierLabel.unit, unit.code, unit.durationMs]);
+    if (unit.code) exitCode = 1;
   }
 
-  if (willRun("calc", chosenCalc.length > 0)) {
-    const code = await runSteps([["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]], {});
-    results.push([`calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`, code]);
-    if (code) exitCode = 1;
+  if (!gatesFailed && willRun("calc", chosenCalc.length > 0)) {
+    const calc = await runSteps(
+      [["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]],
+      {},
+      "calc",
+    );
+    results.push([tierLabel.calc, calc.code, calc.durationMs]);
+    if (calc.code) exitCode = 1;
   }
 
-  if (willRun("browser", chosenSpecs.length > 0)) {
+  if (!gatesFailed && willRun("browser", chosenSpecs.length > 0)) {
     const steps = [
       ["packages", "node", ["app/bin/build-packages.js", "--years", "2"]],
       ["sitemaps", "node", ["app/bin/build-sitemaps.js"]],
@@ -868,21 +980,22 @@ async function main() {
       ["runners", "node", ["scripts/build-runner.mjs"]],
       ["browser", "npx", ["playwright", "test", "--project=browser-tests", "--reporter=line", ...chosenSpecs]],
     ];
-    const code = await runSteps(steps, {});
-    results.push([`browser(${chosenSpecs.length})`, code]);
-    if (code) exitCode = 1;
+    const browser = await runSteps(steps, {}, "browser");
+    results.push([tierLabel.browser, browser.code, browser.durationMs]);
+    if (browser.code) exitCode = 1;
   }
 
-  if (willRun("infra", sel.infra)) {
-    const code = await runSteps(
+  if (!gatesFailed && willRun("infra", sel.infra)) {
+    const infra = await runSteps(
       [
         ["maven verify", "./mvnw", ["--errors", "clean", "verify"]],
         ["cdk synth", "npm", ["run", "cdk:synth"]],
       ],
       {},
+      "infra",
     );
-    results.push(["infra", code]);
-    if (code) exitCode = 1;
+    results.push([tierLabel.infra, infra.code, infra.durationMs]);
+    if (infra.code) exitCode = 1;
   }
 
   const failed = results.filter(([, code]) => code !== 0).map(([name]) => name);
@@ -891,13 +1004,14 @@ async function main() {
   if (delegatedTiers.length) partial.push(`tiers delegated: ${delegatedTiers.join(", ")}`);
 
   const verdict = failed.length ? "RED" : partial.length ? `PARTIAL (${partial.join("; ")})` : "GREEN";
-  const summary = results.map(([name, code]) => `${name} ${code === 0 ? "ok" : "FAILED"}`).join(", ");
+  const summary = results.map(([name, code, durationMs]) => `${name} ${code === 0 ? "ok" : "FAILED"} ${fmt(durationMs)}`).join(", ");
   if (verdict === "GREEN") {
     const ranTierNames = results.map(([name]) => name.split("(")[0]);
     const markerHash = writeGreenMarker({ hash: treeHash, mergeBase: markerBase, ranTierNames });
     if (markerHash) console.log(`  marker   target/test-scope/green-${markerHash} (base ${markerBase}, tiers ${ranTierNames.join(",")})`);
   }
-  console.log(`\nVERDICT: ${verdict}  ${summary || "nothing ran"}  ${fmt(Date.now() - started)}`);
+  const notRunSuffix = notRun.length ? `; not run: ${notRun.join(", ")}` : "";
+  console.log(`\nVERDICT: ${verdict}  ${summary || "nothing ran"}${notRunSuffix}  ${fmt(Date.now() - started)}`);
   if (failed.includes("gates")) console.log("A parity failure is fixed at source, or refreshed deliberately with npm run parity:refresh.");
   process.exit(exitCode);
 }

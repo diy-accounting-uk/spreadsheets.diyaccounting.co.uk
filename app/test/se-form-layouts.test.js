@@ -116,14 +116,17 @@ describe("every SA103S and SA103F cell the layout names is in CELL_MAP or exists
   it("the SA103F balance sheet's leaf-file cells are declared, not asserted against this template", () => {
     // Fixedassets.xlsx, Sales.xlsx, Bank.xlsx, Cash.xlsx and Purchases.xlsx
     // are separate workbooks this test does not open; the boxes reading
-    // them directly (not through a rule) are 83, 85 to 88 and 91.
+    // them directly (not through a rule) are 83, 85 to 88 and 91. Box 69's
+    // own cell is on Business Details, a different sheet in the same
+    // workbook: the SE Full page itself prints it as not in use, and the
+    // real entry lives on the ENTER block instead.
     const leafBoxes = [];
     for (const section of layout.forms.sa103f.sections) {
       for (const box of section.boxes) {
         if (box.cell && parseRef(box.cell).sheet !== "SE Full") leafBoxes.push(box.box);
       }
     }
-    expect(leafBoxes.sort()).toEqual(["83", "85", "86", "87", "88", "91"]);
+    expect(leafBoxes.sort()).toEqual(["69", "83", "85", "86", "87", "88", "91"]);
   });
 });
 

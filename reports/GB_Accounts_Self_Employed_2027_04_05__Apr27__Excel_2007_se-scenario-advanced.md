@@ -57,8 +57,10 @@ Trade: IT consultancy and software development
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
 | Income Tax | 42002.4905794518 | 42002.4905794518 | 0 | PASS |
+| Income Tax on transition profit (box 73.3) | 1735.8113224316985 | 1735.81132243148 | -2.18506102100946e-10 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 45744.77359876686 | 45744.7735987669 | +4.3655745685100555e-11 | PASS |
+| NI Class 4 (upper) | 1560.28301931506 | 1560.28301931506 | 0 | PASS |
+| Total Tax + NI, less the CIS already deducted | 47560.584921198555 | 47560.5849211983 | -2.546585164964199e-10 | PASS |
 | Tax: Personal allowance after taper | 427.9245171235016 | 427.924517123494 | -7.560174708487466e-12 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
@@ -66,7 +68,7 @@ Trade: IT consultancy and software development
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 123856.2264486295 | 123856.22644863 | +4.94765117764473e-10 | PASS |
 | Tax: IT = Basic + Higher + Additional | 42002.4905794518 | 42002.4905794518 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 45744.77359876686 | 45744.7735987669 | +4.3655745685100555e-11 | PASS |
+| Tax: Total = IT + transition profit tax + CIS deduction line + NI | 47560.58492119834 | 47560.5849211983 | -3.637978807091713e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 146730.52483333368 | 146730.524833333 | -6.693881005048752e-10 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 192469.475166667 | 192469.475166666 | -9.89530235528946e-10 | PASS |
@@ -117,9 +119,20 @@ Trade: IT consultancy and software development
 | SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 30836.4585 | 30836.4585 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 70998.6575342466 | 70998.6575342466 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 122110.8176324194 | 122110.81763242 | +5.966285243630409e-10 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil | 122200.81763242 | 122200.81763242 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil | 0 | 0 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil | 122200.81763242 | 122200.81763242 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 124284.15096575333 | 124284.150965753 | -3.346940502524376e-10 | PASS |
+| Business Details!D59 overlap profit brought forward = the fixture's own figure | 2400 | 2400 | 0 | PASS |
+| Business Details!O59 transition profit not yet treated as arising = the fixture's own figure | 6000 | 6000 | 0 | PASS |
+| Business Details!O69 additional transition profit elected this year = the fixture's own figure | 1000 | 1000 | 0 | PASS |
+| Business Details!D74 following period's profit = the fixture's own figure | 0 | 0 | 0 | PASS |
+| Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil | 0 | 0 | 0 | PASS |
+| Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used | 2400 | 2400 | 0 | PASS |
+| Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left | 3000 | 3000 | 0 | PASS |
+| Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take | 2000 | 2000 | 0 | PASS |
+| Business Details!O69 election does not exceed the untaxed transition balance (para 73(3)) | 0 | 0 | 0 | PASS |
+| SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69 | 4000 | 4000 | 0 | PASS |
+| SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment | 0 | 0 | 0 | PASS |
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 4144 | 4144 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 540 | 540 | 0 | PASS |
@@ -143,8 +156,8 @@ Trade: IT consultancy and software development
 | SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54) | 2500 | 2500.0000000000146 | +1.4551915228366852e-11 | PASS |
 | SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 350 | 350 | 0 | PASS |
 | SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 640 | 640 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil | 122200.81763242 | 122200.81763242 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil | 0 | 0 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil | 122200.81763242 | 122200.81763242 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 | 122110.81763241942 | 122110.81763242 | +5.820766091346741e-10 | PASS |
 | SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off | 124284.15096575342 | 124284.150965753 | -4.220055416226387e-10 | PASS |
 | SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone | 122110.81763242 | 127785.475166666 | +5674.657534245998 | **WARNING** |
@@ -992,6 +1005,16 @@ Journal amounts include VAT at 20%.
 |---|------:|
 | Business Name | Precision Code Trading |
 | &nbsp;&nbsp;&nbsp;&nbsp;Value of goods and services for own use (box 24) | 640 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accounting period start date (box 8) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accounting period end date (box 9) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap profit brought forward (feeds box 69) | 2,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap relief used this year (box 69) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap profit carried forward | 2,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Following period's profit (feeds box 68) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit not yet treated as arising | 6,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit treated as arising this year, before election (feeds box 73.3) | 3,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional transition profit elected this year (feeds box 73.3) | 1,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit carried forward to next year | 2,000 |
 
 ## Profit & Loss Account
 
@@ -1041,9 +1064,10 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 0 |
 | **Total Income Tax** | 42,002.49 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax on transition profit (box 73.3), top-sliced | 1,735.81 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,480.28 |
-| **Total Tax + NI** | 45,744.77 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,560.28 |
+| **Total Tax + NI** | 47,560.58 |
 
 ## Profit Forecast
 
@@ -1144,8 +1168,10 @@ Journal amounts include VAT at 20%.
 | **Total deductions from net profit (box 63)** | 70,998.66 |
 | **Net business profit for tax purposes (box 64)** | 122,110.82 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjustment where accounting period was not 12 months long (box 68) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71) | 90 |
 | **Adjusted profit (box 73)** | 122,200.82 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Spread of the transition profit treated as arising this year (box 73.3) | 4,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 2,083.33 |
 | **Total taxable profits from this business (box 76)** | 124,284.15 |
@@ -1283,6 +1309,13 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | C5 | Business Name | Precision Code Trading | entityInformation.organizationIdentifier |
 | O50 | Value of goods and services for own use (box 24) | 640 | tax.selfEmployment.adjustments.goodsAndServicesOwnUse |
+| D59 | Overlap profit brought forward (feeds box 69) | 2400 | tax.selfEmployment.basisPeriod.overlapProfitBroughtForward |
+| D64 | Overlap relief used this year (box 69) | 0 | gl-cor:amount (basisPeriod.overlapReliefUsed) |
+| D69 | Overlap profit carried forward | 2400 | gl-cor:amount (basisPeriod.overlapCarriedForward) |
+| O59 | Transition profit not yet treated as arising | 6000 | tax.selfEmployment.basisPeriod.transitionProfitBroughtForward |
+| O64 | Transition profit treated as arising this year, before election (feeds box 73.3) | 3000 | gl-cor:amount (basisPeriod.transitionArisingBeforeElection) |
+| O69 | Additional transition profit elected this year (feeds box 73.3) | 1000 | tax.selfEmployment.basisPeriod.transitionProfitAccelerationAmount |
+| O74 | Transition profit carried forward to next year | 2000 | gl-cor:amount (basisPeriod.transitionCarriedForward) |
 
 ### Profit & Loss Account
 
@@ -1634,9 +1667,10 @@ Journal amounts include VAT at 20%.
 | E10 | Tax at Additional Rate (45%) | 0 | tax.incomeTax.additionalRate |
 | E11 | **Total Income Tax** | 42002.4905794518 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
+| E14 | Income Tax on transition profit (box 73.3), top-sliced | 1735.81132243148 | gl-cor:amount (transitionProfitTax) |
 | E15 | NI Class 4 (lower band) | 2262 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1480.28301931506 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 45744.7735987669 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1560.28301931506 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 47560.5849211983 | gl-cor:taxAmount (totalTaxNI) |
 
 ### Profit Forecast
 
@@ -1735,8 +1769,10 @@ Journal amounts include VAT at 20%.
 | O169 | **Total deductions from net profit (box 63)** | 70998.6575342466 | gl-cor:amount (sa103f.totalDeductions) |
 | O174 | **Net business profit for tax purposes (box 64)** | 122110.81763242 | gl-cor:amount (sa103f.taxableProfit) |
 | O179 | Net business loss for tax purposes (box 65) | 0 | gl-cor:amount (sa103f.taxableLoss) |
+| D197 | Adjustment where accounting period was not 12 months long (box 68) | 0 | gl-cor:amount (sa103f.basisAdjustment) |
 | D210 | Adjustment for change of accounting practice (box 71) | 90 | tax.selfEmployment.adjustments.accountingAdjustment |
 | O194 | **Adjusted profit (box 73)** | 122200.81763242 | gl-cor:amount (sa103f.adjustedProfit) |
+| D201 | Spread of the transition profit treated as arising this year (box 73.3) | 4000 | gl-cor:amount (sa103f.transitionProfitSpread) |
 | O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
 | O210 | **Total taxable profits from this business (box 76)** | 124284.150965753 | gl-cor:amount (sa103f.profitForTax) |

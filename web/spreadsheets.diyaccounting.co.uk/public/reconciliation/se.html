@@ -79,7 +79,7 @@
           <li><strong>Status:</strong> RECONCILES (with warnings)</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 914 passed, 5 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 927 passed, 5 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
@@ -157,8 +157,10 @@
 <tr><td>Opening Creditors total</td><td>2220</td><td>2220</td><td>0</td><td>PASS</td></tr>
 <tr><td>Closing Creditors total</td><td>1710</td><td>1710</td><td>0</td><td>PASS</td></tr>
 <tr><td>Income Tax</td><td>42002.4905794518</td><td>42002.4905794518</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax on transition profit (box 73.3)</td><td>1735.8113224316985</td><td>1735.81132243148</td><td>-2.18506102100946e-10</td><td>PASS</td></tr>
 <tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI, less the CIS already deducted</td><td>45744.77359876686</td><td>45744.7735987669</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
+<tr><td>NI Class 4 (upper)</td><td>1560.28301931506</td><td>1560.28301931506</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI, less the CIS already deducted</td><td>47560.584921198555</td><td>47560.5849211983</td><td>-2.546585164964199e-10</td><td>PASS</td></tr>
 <tr><td>Tax: Personal allowance after taper</td><td>427.9245171235016</td><td>427.924517123494</td><td>-7.560174708487466e-12</td><td>PASS</td></tr>
 <tr><td>Tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the basic and higher bands at the basic band end</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
@@ -166,7 +168,7 @@
 <tr><td>Tax: sheet applies the additional rate above the higher band</td><td>0.45</td><td>0.45</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: Taxable = Profit - Allowance</td><td>123856.2264486295</td><td>123856.22644863</td><td>+4.94765117764473e-10</td><td>PASS</td></tr>
 <tr><td>Tax: IT = Basic + Higher + Additional</td><td>42002.4905794518</td><td>42002.4905794518</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: Total = IT + CIS deduction line + NI</td><td>45744.77359876686</td><td>45744.7735987669</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT + transition profit tax + CIS deduction line + NI</td><td>47560.58492119834</td><td>47560.5849211983</td><td>-3.637978807091713e-11</td><td>PASS</td></tr>
 <tr><td>SA103S: Turnover = P&amp;L Sales</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: total expenses = cost of sales + admin expenses less depreciation</td><td>146730.52483333368</td><td>146730.524833333</td><td>-6.693881005048752e-10</td><td>PASS</td></tr>
 <tr><td>SA103S: net profit = turnover + other business income - total expenses</td><td>192469.475166667</td><td>192469.475166666</td><td>-9.89530235528946e-10</td><td>PASS</td></tr>
@@ -217,9 +219,20 @@
 <tr><td>SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60</td><td>30836.4585</td><td>30836.4585</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62</td><td>70998.6575342466</td><td>70998.6575342466</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63</td><td>122110.8176324194</td><td>122110.81763242</td><td>+5.966285243630409e-10</td><td>PASS</td></tr>
-<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75</td><td>124284.15096575333</td><td>124284.150965753</td><td>-3.346940502524376e-10</td><td>PASS</td></tr>
+<tr><td>Business Details!D59 overlap profit brought forward = the fixture's own figure</td><td>2400</td><td>2400</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!O59 transition profit not yet treated as arising = the fixture's own figure</td><td>6000</td><td>6000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!O69 additional transition profit elected this year = the fixture's own figure</td><td>1000</td><td>1000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!D74 following period's profit = the fixture's own figure</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used</td><td>2400</td><td>2400</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left</td><td>3000</td><td>3000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take</td><td>2000</td><td>2000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Business Details!O69 election does not exceed the untaxed transition balance (para 73(3))</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69</td><td>4000</td><td>4000</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 49 annual investment allowance (D139) = Schedule Q1</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 50 capital allowances at 18% (D144) = Schedule R1</td><td>4144</td><td>4144</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 51 capital allowances at 6% (D147) = Schedule AC1</td><td>540</td><td>540</td><td>0</td><td>PASS</td></tr>
@@ -243,8 +256,8 @@
 <tr><td>SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54)</td><td>2500</td><td>2500.0000000000146</td><td>+1.4551915228366852e-11</td><td>PASS</td></tr>
 <tr><td>SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states</td><td>350</td><td>350</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states</td><td>640</td><td>640</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62</td><td>122110.81763241942</td><td>122110.81763242</td><td>+5.820766091346741e-10</td><td>PASS</td></tr>
 <tr><td>SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off</td><td>124284.15096575342</td><td>124284.150965753</td><td>-4.220055416226387e-10</td><td>PASS</td></tr>
 <tr><td>SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone</td><td>122110.81763242</td><td>127785.475166666</td><td>+5674.657534245998</td><td><strong>WARNING</strong></td></tr>
@@ -2107,6 +2120,16 @@
 <tbody>
 <tr><td>Business Name</td><td class="num">Precision Code Trading</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Value of goods and services for own use (box 24)</td><td class="num">640</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Accounting period start date (box 8)</td><td class="num">—</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Accounting period end date (box 9)</td><td class="num">—</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Overlap profit brought forward (feeds box 69)</td><td class="num">2,400</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Overlap relief used this year (box 69)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Overlap profit carried forward</td><td class="num">2,400</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Following period's profit (feeds box 68)</td><td class="num">—</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Transition profit not yet treated as arising</td><td class="num">6,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Transition profit treated as arising this year, before election (feeds box 73.3)</td><td class="num">3,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional transition profit elected this year (feeds box 73.3)</td><td class="num">1,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Transition profit carried forward to next year</td><td class="num">2,000</td></tr>
 </tbody>
 </table></div>
 <h4>Profit &amp; Loss Account</h4>
@@ -2299,6 +2322,13 @@
 <tbody>
 <tr><td>C5</td><td>Business Name</td><td>Precision Code Trading</td><td>entityInformation.organizationIdentifier</td></tr>
 <tr><td>O50</td><td>Value of goods and services for own use (box 24)</td><td>640</td><td>tax.selfEmployment.adjustments.goodsAndServicesOwnUse</td></tr>
+<tr><td>D59</td><td>Overlap profit brought forward (feeds box 69)</td><td>2400</td><td>tax.selfEmployment.basisPeriod.overlapProfitBroughtForward</td></tr>
+<tr><td>D64</td><td>Overlap relief used this year (box 69)</td><td>0</td><td>gl-cor:amount (basisPeriod.overlapReliefUsed)</td></tr>
+<tr><td>D69</td><td>Overlap profit carried forward</td><td>2400</td><td>gl-cor:amount (basisPeriod.overlapCarriedForward)</td></tr>
+<tr><td>O59</td><td>Transition profit not yet treated as arising</td><td>6000</td><td>tax.selfEmployment.basisPeriod.transitionProfitBroughtForward</td></tr>
+<tr><td>O64</td><td>Transition profit treated as arising this year, before election (feeds box 73.3)</td><td>3000</td><td>gl-cor:amount (basisPeriod.transitionArisingBeforeElection)</td></tr>
+<tr><td>O69</td><td>Additional transition profit elected this year (feeds box 73.3)</td><td>1000</td><td>tax.selfEmployment.basisPeriod.transitionProfitAccelerationAmount</td></tr>
+<tr><td>O74</td><td>Transition profit carried forward to next year</td><td>2000</td><td>gl-cor:amount (basisPeriod.transitionCarriedForward)</td></tr>
 </tbody>
 </table></div>
 <h5>Profit &amp; Loss Account</h5>
@@ -2652,9 +2682,10 @@
 <tr><td>E10</td><td>Tax at Additional Rate (45%)</td><td>0</td><td>tax.incomeTax.additionalRate</td></tr>
 <tr><td>E11</td><td><strong>Total Income Tax</strong></td><td>42002.4905794518</td><td>tax.incomeTax (total)</td></tr>
 <tr><td>E12</td><td>Less: CIS Deducted</td><td>0</td><td>diya-gl:cisDeduction (total)</td></tr>
+<tr><td>E14</td><td>Income Tax on transition profit (box 73.3), top-sliced</td><td>1735.81132243148</td><td>gl-cor:amount (transitionProfitTax)</td></tr>
 <tr><td>E15</td><td>NI Class 4 (lower band)</td><td>2262</td><td>tax.nationalInsurance.class4MainRate</td></tr>
-<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>1480.28301931506</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
-<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>45744.7735987669</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>1560.28301931506</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>47560.5849211983</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>Profit Forecast</h5>
@@ -2756,8 +2787,10 @@
 <tr><td>O169</td><td><strong>Total deductions from net profit (box 63)</strong></td><td>70998.6575342466</td><td>gl-cor:amount (sa103f.totalDeductions)</td></tr>
 <tr><td>O174</td><td><strong>Net business profit for tax purposes (box 64)</strong></td><td>122110.81763242</td><td>gl-cor:amount (sa103f.taxableProfit)</td></tr>
 <tr><td>O179</td><td>Net business loss for tax purposes (box 65)</td><td>0</td><td>gl-cor:amount (sa103f.taxableLoss)</td></tr>
+<tr><td>D197</td><td>Adjustment where accounting period was not 12 months long (box 68)</td><td>0</td><td>gl-cor:amount (sa103f.basisAdjustment)</td></tr>
 <tr><td>D210</td><td>Adjustment for change of accounting practice (box 71)</td><td>90</td><td>tax.selfEmployment.adjustments.accountingAdjustment</td></tr>
 <tr><td>O194</td><td><strong>Adjusted profit (box 73)</strong></td><td>122200.81763242</td><td>gl-cor:amount (sa103f.adjustedProfit)</td></tr>
+<tr><td>D201</td><td>Spread of the transition profit treated as arising this year (box 73.3)</td><td>4000</td><td>gl-cor:amount (sa103f.transitionProfitSpread)</td></tr>
 <tr><td>O199</td><td>Loss brought forward set against this year (box 74)</td><td>0</td><td>gl-cor:amount (sa103f.lossBroughtForward)</td></tr>
 <tr><td>O204</td><td>Other business income not in boxes 15, 16 or 60 (box 75)</td><td>2083.33333333333</td><td>gl-cor:amount (sa103f.otherBusinessIncome)</td></tr>
 <tr><td>O210</td><td><strong>Total taxable profits from this business (box 76)</strong></td><td>124284.150965753</td><td>gl-cor:amount (sa103f.profitForTax)</td></tr>
@@ -3972,9 +4005,10 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%)</td><td class="num">0</td></tr>
 <tr><td><strong>Total Income Tax</strong></td><td class="num">42,002.49</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Income Tax on transition profit (box 73.3), top-sliced</td><td class="num">1,735.81</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">2,262</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">1,480.28</td></tr>
-<tr><td><strong>Total Tax + NI</strong></td><td class="num">45,744.77</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">1,560.28</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">47,560.58</td></tr>
 </tbody>
 </table></div>
 <h4>Self Assessment (SA103S)</h4>
@@ -4055,8 +4089,10 @@
 <tr><td><strong>Total deductions from net profit (box 63)</strong></td><td class="num">70,998.66</td></tr>
 <tr><td><strong>Net business profit for tax purposes (box 64)</strong></td><td class="num">122,110.82</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Adjustment where accounting period was not 12 months long (box 68)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71)</td><td class="num">90</td></tr>
 <tr><td><strong>Adjusted profit (box 73)</strong></td><td class="num">122,200.82</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Spread of the transition profit treated as arising this year (box 73.3)</td><td class="num">4,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75)</td><td class="num">2,083.33</td></tr>
 <tr><td><strong>Total taxable profits from this business (box 76)</strong></td><td class="num">124,284.15</td></tr>

@@ -1152,6 +1152,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   for (const [table, figures] of [
     ["annual_allowances", expected.annual_allowances],
     ["annual_adjustments", expected.annual_adjustments],
+    ["basis_period", expected.basis_period],
   ]) {
     if (!figures) continue;
     parts.push(`[${table}]`);

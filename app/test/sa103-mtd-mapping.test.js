@@ -129,9 +129,18 @@ describe("every SE Full and SE Short CELL_MAP box has an entry", () => {
 describe("every entry with a cell names a real CELL_MAP cell", () => {
   const seFullCells = allCellMapCells("SE Full");
   const seShortCells = allCellMapCells("SE Short");
+  const businessDetailsCells = allCellMapCells("Business Details");
 
-  it("every SA103F entry's cell is a real SE Full CELL_MAP cell", () => {
+  it("every SA103F entry's cell is a real SE Full or Business Details CELL_MAP cell", () => {
     for (const entry of mapping.boxes.filter((b) => b.form === "SA103F" && b.cell)) {
+      // Box 69's own entry moved off SE Full: the sheet prints "Boxes 69
+      // and 70 are not in use", so the real value lives on Business
+      // Details' ENTER block instead.
+      if (entry.cell.startsWith("Business Details!")) {
+        const cell = entry.cell.replace("Business Details!", "");
+        expect(businessDetailsCells.has(cell), `${entry.cell} (box ${entry.box}) is not in Business Details' CELL_MAP`).toBe(true);
+        continue;
+      }
       const cell = entry.cell.replace("SE Full!", "");
       expect(seFullCells.has(cell), `${entry.cell} (box ${entry.box}) is not in SE Full's CELL_MAP`).toBe(true);
     }

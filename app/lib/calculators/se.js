@@ -16,6 +16,7 @@
 
 import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
+import { taxYearFileName } from "../tax-year.js";
 import { standardReads, multiFileOptions, SE_YEAR_END_MONTH, SBA_CLAIM_ROWS } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -867,6 +868,35 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const paidOn = (entry) => excelSerial(shiftMonths(new Date(entry.date), monthOffset));
   const admin = buildAdmin(taxData, dateSerials);
 
+  // Business Details boxes 8, 9, and the basis period record (boxes 68, 69,
+  // 73.3): the writer's own whole-year shift, never the month-level one
+  // postings move by, and the sheet's own D64/O64/D69/O74 formulas.
+  const basisPeriodInput = (value) => (value === undefined ? SHEET_BLANK : value);
+  const basisPeriod = scenario.basis_period || {};
+  const businessDetails = {
+    D59: basisPeriodInput(basisPeriod.overlapProfitBroughtForward),
+    O59: basisPeriodInput(basisPeriod.transitionProfitBroughtForward),
+    O69: basisPeriodInput(basisPeriod.transitionProfitAccelerationAmount),
+    D74: basisPeriodInput(basisPeriod.followingPeriodProfit),
+  };
+  if (scenario.period_covered_start && scenario.period_covered_end) {
+    const naturalStartYear = parseInt(taxYearFileName(new Date(scenario.period_covered_end), "se").split("-")[1], 10);
+    const yearShift = startYear - naturalStartYear;
+    const shiftYears = (d) => shiftMonths(new Date(d), yearShift * 12);
+    businessDetails.N27 = excelSerial(shiftYears(scenario.period_covered_start));
+    businessDetails.N32 = excelSerial(shiftYears(scenario.period_covered_end));
+  } else {
+    // A flat scenario TOML (not a diya-gl book) carries no documentInfo, so
+    // the printed boxes stay the blank the template itself would show.
+    businessDetails.N27 = SHEET_BLANK;
+    businessDetails.N32 = SHEET_BLANK;
+  }
+  const b17Year = dateFromExcelSerial(admin.B17).getUTCFullYear();
+  businessDetails.D64 = b17Year === 2024 ? sheetNumber(businessDetails.D59) : 0;
+  businessDetails.O64 = b17Year < 2024 ? 0 : sheetNumber(businessDetails.O59) / Math.max(1, 2029 - b17Year);
+  businessDetails.D69 = sheetNumber(businessDetails.D59) - businessDetails.D64;
+  businessDetails.O74 = sheetNumber(businessDetails.O59) - businessDetails.O64 - sheetNumber(businessDetails.O69);
+
   const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a");
   const purchasesMonths = journalMonths(scenario.purchases, rate, PURCHASES_ANALYSIS_COLUMNS);
   const mileage = mileageMonths(scenario, taxData?.mileage);
@@ -1329,19 +1359,43 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     const fromNetLoss = -seFull.O129 + seFull.D174 - seFull.O169;
     return fromNetLoss < 0 ? -fromNetLoss : 0;
   });
+  // Box 68 (D197), s.7A(2)-(3): nil under s.7C(1)(c), an accounting date of
+  // 31 March to 5 April; otherwise this period's profit (box 64 less box
+  // 65) times the share of its days that fall in the tax year, plus the
+  // following period's profit (Business Details!D74) times the share of
+  // the tax year its own twelve months (EDATE) cover, less this period's
+  // whole profit.
+  const periodProfit = seFull.O174 - seFull.O179;
+  seFull.D197 = carry([seFull.O174, seFull.O179], () => {
+    const periodEnd = businessDetails.N32;
+    if (typeof periodEnd !== "number") return 0;
+    const marchThirtyFirst = excelSerial(new Date(Date.UTC(b17Year, 2, 31)));
+    if (periodEnd >= marchThirtyFirst) return 0;
+    const periodStart = businessDetails.N27;
+    const followingPeriodEnd = excelSerial(shiftMonths(dateFromExcelSerial(periodEnd), 12));
+    const thisPeriodShare = (periodEnd - Math.max(periodStart, admin.B4) + 1) / (periodEnd - periodStart + 1);
+    const nextPeriodShare = (admin.B17 - periodEnd) / (followingPeriodEnd - periodEnd);
+    return thisPeriodShare * periodProfit + nextPeriodShare * sheetNumber(businessDetails.D74) - periodProfit;
+  });
   // HMRC's SA103F working sheet for boxes 73 and 77 takes one figure, box
   // 64 less box 65 plus boxes 68, 71 and 72: box 73 is that figure when it
   // is positive and box 77 is its negation when it is not. The sheet reads
-  // O174-O179+N(D197)+D210+N(O190); boxes 68 and 72 have no input cell on
-  // this template, so their printed dash cells (D197, O190) contribute nil
-  // and box 71 (D210) is the only adjustment that moves either figure.
-  const adjustedProfitBeforeFloor = carry([seFull.O174, seFull.O179], () => seFull.O174 - seFull.O179 + sheetNumber(seFull.D210));
+  // O174-O179+N(D197)+D210+N(O190); box 72 has no input cell on this
+  // template, so its printed dash cell (O190) contributes nil.
+  const adjustedProfitBeforeFloor = carry(
+    [seFull.O174, seFull.O179, seFull.D197],
+    () => seFull.O174 - seFull.O179 + sheetNumber(seFull.D197) + sheetNumber(seFull.D210),
+  );
   seFull.O194 = carry([adjustedProfitBeforeFloor], () => Math.max(0, adjustedProfitBeforeFloor));
   seFull.O204 = pl.B11;
   seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
   seFull.D219 = carry([adjustedProfitBeforeFloor], () => Math.max(0, -adjustedProfitBeforeFloor));
   seFull.O224 = seFull.D219;
+  // Box 73.3 (D201), para 73(1)-(4): the transition profit treated as
+  // arising this year, before election (O64) plus the elected addition
+  // (O69).
+  seFull.D201 = sheetNumber(businessDetails.O64) + sheetNumber(businessDetails.O69);
   seFull.D231 = contractorDeductions;
   seFull.J280 = admin.N20;
 
@@ -1354,10 +1408,32 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   // The deduction line already holds the contractor deductions negated, and the
   // total below it adds every line up.
   const contractorDeductionLine = -contractorDeductions;
-  const niLower = carry([taxableProfit], () =>
-    taxableProfit > admin.N20 ? (Math.min(taxableProfit, admin.N23) - admin.N20) * admin.L20 : 0,
+  // Class 4 NIC follows the income tax charge (para 72(3) makes the spread
+  // chargeable under ITTOIA Ch 2 Pt 2; SSCBA 1992 s.15(1)), so both bands
+  // run over the taxable profit plus box 73.3's own spread (D201), even
+  // though box 73.3 sits outside net income and box 76 for income tax.
+  const transitionProfitSpread = sheetNumber(seFull.D201);
+  const profitWithSpread = taxableProfit + transitionProfitSpread;
+  const niLower = carry([taxableProfit, seFull.D201], () =>
+    profitWithSpread > admin.N20 ? (Math.min(profitWithSpread, admin.N23) - admin.N20) * admin.L20 : 0,
   );
-  const niUpper = carry([taxableProfit], () => (taxableProfit > admin.N23 ? (taxableProfit - admin.N23) * admin.L23 : 0));
+  const niUpper = carry([taxableProfit, seFull.D201], () =>
+    profitWithSpread > admin.N23 ? (profitWithSpread - admin.N23) * admin.L23 : 0,
+  );
+  const taxableIncome = chargedOn("taxableIncome");
+  const totalIncomeTax = chargedOn("totalIncomeTax");
+  // Box 73.3's own top-slice charge (para 75(2)-(3)): the personal
+  // allowance taper is left alone (the spread joins after E7, not before
+  // E6), and the three bands run again over taxable income plus the
+  // spread, less the tax E11 already charges on taxable income alone.
+  const transitionProfitTax = carry([charged, seFull.D201], () => {
+    if (transitionProfitSpread <= 0) return 0;
+    const spread = taxableIncome + transitionProfitSpread;
+    const basic = spread < admin.M11 ? spread * admin.N6 : admin.M11 * admin.N6;
+    const higher = spread > admin.M11 ? (Math.min(spread, admin.N13) - admin.M11) * admin.N7 : 0;
+    const additional = spread > admin.N13 ? (spread - admin.N13) * admin.N8 : 0;
+    return basic + higher + additional - totalIncomeTax;
+  });
   const incomeTax = {
     E5: taxableProfit,
     // E6 = IF(E5<=0,0,MAX(0,Admin!N$4-MAX(0,E5-Admin!N$5)/2)): a loss year
@@ -1365,7 +1441,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     // this at nil rather than showing the allowance unused -- the same floor
     // Profit Forecast!C40 already applies below.
     E6: carry([taxableProfit, charged], () => (taxableProfit <= 0 ? 0 : charged.personalAllowance)),
-    E7: chargedOn("taxableIncome"),
+    E7: taxableIncome,
     C8: admin.N11,
     D8: admin.N6,
     E8: chargedOn("basicRateTax"),
@@ -1375,14 +1451,18 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     C10: admin.N13,
     D10: admin.N8,
     E10: chargedOn("additionalRateTax"),
-    E11: chargedOn("totalIncomeTax"),
+    E11: totalIncomeTax,
     E12: contractorDeductionLine,
     C13: dateSerials[21],
+    E14: transitionProfitTax,
     D15: admin.L20,
     E15: niLower,
     D16: admin.L23,
     E16: niUpper,
-    E18: carry([charged, niLower, niUpper], () => charged.totalIncomeTax + contractorDeductionLine + niLower + niUpper),
+    E18: carry(
+      [charged, niLower, niUpper, transitionProfitTax],
+      () => totalIncomeTax + contractorDeductionLine + transitionProfitTax + niLower + niUpper,
+    ),
   };
 
   // ── Profit forecast ──
@@ -1424,7 +1504,11 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
 
   // ── The results, keyed the way the reconciliation reads them ──
   const results = {
-    "Business Details": { C5: businessName(scenario), O50: stated(annualAdjustments.goodsAndServicesOwnUse) },
+    "Business Details": {
+      C5: businessName(scenario),
+      O50: stated(annualAdjustments.goodsAndServicesOwnUse),
+      ...businessDetails,
+    },
     "Profit & Loss Account": pl,
     "Income Tax": incomeTax,
     "Profit Forecast": forecast,

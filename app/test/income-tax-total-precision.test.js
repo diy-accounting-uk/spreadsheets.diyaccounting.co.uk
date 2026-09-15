@@ -52,7 +52,17 @@ function seFixture() {
   const scenario = loadScenario(resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml"));
   const merged = { ...scenario, ...scenario.expected };
   const results = calculateSeResults({}, [], taxData, merged);
-  return { totalCell: "Income Tax!E18", profit: results["Income Tax"].E5, total: results["Income Tax"].E18 };
+  return {
+    totalCell: "Income Tax!E18",
+    profit: results["Income Tax"].E5,
+    total: results["Income Tax"].E18,
+    // Box 73.3's own spread: Class 4 NIC runs over profit plus it (para
+    // 72(3)), and its income tax is a separate top-slice component
+    // (Income Tax!E14) calculateExpectedTax's own taper does not model,
+    // since the spread never reaches E5/E6.
+    transitionProfitSpread: results["SE Full"].D201 || 0,
+    transitionProfitTax: results["Income Tax"].E14 || 0,
+  };
 }
 
 const CASES = [
@@ -64,10 +74,16 @@ const CASES = [
 
 describe("calculateExpectedTax's total_tax_and_ni matches the calculator's own total cell to the penny", () => {
   it.each(CASES)("%s", (_name, buildFixture) => {
-    const { totalCell, profit, total } = buildFixture();
-    const expectedTax = calculateExpectedTax(profit, taxData);
+    const { totalCell, profit, total, transitionProfitSpread = 0, transitionProfitTax = 0 } = buildFixture();
+    // Class 4 NIC runs over profit plus the spread; the base income tax
+    // does not, so a fixture with a nonzero spread anchors the two
+    // separately (SE, box 73.3) while every other fixture takes the same
+    // call twice and adds nothing.
+    const baseTax = calculateExpectedTax(profit, taxData);
+    const niTax = transitionProfitSpread > 0 ? calculateExpectedTax(profit + transitionProfitSpread, taxData) : baseTax;
+    const expectedTotal = baseTax.income_tax + transitionProfitTax + niTax.ni_class4_lower + niTax.ni_class4_upper;
 
-    expect(expectedTax.total_tax_and_ni, `${totalCell} (calculator) = ${total}`).toBeCloseTo(total, 2);
+    expect(expectedTotal, `${totalCell} (calculator) = ${total}`).toBeCloseTo(total, 2);
 
     // Proof the identity is not vacuous: at least one of the four fixtures
     // carries a fractional pound in its raw tax-plus-NI sum, so the old

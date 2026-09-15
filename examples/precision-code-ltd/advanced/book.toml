@@ -410,6 +410,11 @@ goodsAndServicesOwnUse = 640.00
 includedNonTaxableProfits = 350.00
 accountingAdjustment = 90.00
 
+[tax.selfEmployment.basisPeriod]
+overlapProfitBroughtForward = 2400.00
+transitionProfitBroughtForward = 6000.00
+transitionProfitAccelerationAmount = 1000.00
+
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000.00
 mainRateWDA = 0.1800

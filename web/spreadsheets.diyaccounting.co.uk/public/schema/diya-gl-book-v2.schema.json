@@ -897,6 +897,28 @@
                 }
               }
             },
+            "basisPeriod": {
+              "type": "object",
+              "description": "The basis period record behind SA103F boxes 68, 69 and 73.3, for a book whose accounting date is not 31 March to 5 April. overlapProfitBroughtForward is deducted in full on the 2023-24 return (box 69). transitionProfitBroughtForward is the 2023-24 transition profit left after every amount already treated as arising; each year 1/(years left, this one included) of it is treated as arising (box 73.3), unless transitionProfitAccelerationAmount elects an additional amount that year. followingPeriodProfit is the profit (a loss negative) of the accounting period after this one, read only when box 9 is outside 31 March to 5 April, and feeds the box 68 apportionment.",
+              "additionalProperties": false,
+              "properties": {
+                "overlapProfitBroughtForward": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "transitionProfitBroughtForward": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "transitionProfitAccelerationAmount": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "followingPeriodProfit": {
+                  "type": "number"
+                }
+              }
+            },
             "costOfGoods": {
               "type": "number",
               "minimum": 0,

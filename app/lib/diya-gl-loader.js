@@ -435,6 +435,12 @@ export function diyaGlToScenario(book, lines, product) {
     business,
     period_start_month: new Date(periodStart).getUTCMonth() + 1,
     period_start_year: new Date(periodStart).getUTCFullYear(),
+    // The book's own accounting period, carried through unshifted: cellWrites
+    // moves it onto the target package's own year the same way it moves
+    // every other date, when it prints boxes 8 and 9 and the box 68 formula
+    // reads it back off the printed cells (Business Details!N27, N32).
+    period_covered_start: periodStart,
+    period_covered_end: book.documentInfo?.periodCoveredEnd,
     sales: grouped.sales,
     purchases: grouped.purchases,
     expected,
@@ -452,8 +458,12 @@ export function diyaGlToScenario(book, lines, product) {
   // them the calculator adds back only the wholly disallowable pair and
   // charges tax on a larger profit than the package's own sheet does.
   if (book.tax?.selfEmployment) {
-    const { allowances, adjustments, ...disallowable } = book.tax.selfEmployment;
+    const { allowances, adjustments, basisPeriod, ...disallowable } = book.tax.selfEmployment;
     if (Object.keys(disallowable).length > 0) scenario.disallowable = disallowable;
+    // The basis period record (SA103F boxes 68, 69 and 73.3): copied
+    // verbatim, since every figure in it is a stated amount the writer puts
+    // straight onto its Business Details cell.
+    if (basisPeriod) scenario.basis_period = { ...basisPeriod };
     // The annual SA103F figures the trader states by hand, keyed by HMRC's
     // own field names: the writer puts each on its SE Full box and the
     // derivation files it from there.

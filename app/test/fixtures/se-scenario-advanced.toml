@@ -6211,6 +6211,11 @@ goodsAndServicesOwnUse = 640
 includedNonTaxableProfits = 350
 accountingAdjustment = 90
 
+[basis_period]
+overlapProfitBroughtForward = 2400
+transitionProfitBroughtForward = 6000
+transitionProfitAccelerationAmount = 1000
+
 [[sba_claims]]
 qualifyingDate = 2023-10-01
 qualifyingAmountExpenditure = 60000

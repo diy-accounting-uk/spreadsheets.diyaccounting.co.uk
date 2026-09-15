@@ -132,6 +132,7 @@ const SA103F_BOXES_WITH_A_FIGURE = [
   "O204",
   "O210",
   "D210",
+  "D201",
 ];
 
 const TOTAL_CAPITAL_ALLOWANCES = "SA103F box 57 total capital allowances (O154) = boxes 49 to 56";
@@ -139,17 +140,21 @@ const NET_PROFIT = "SA103F box 47 net profit (D129) = boxes 15 and 16 less box 3
 const TOTAL_ADDITIONS = "SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60";
 const TOTAL_DEDUCTIONS = "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62";
 const TAXABLE_PROFIT = "SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63";
-const ADJUSTED_PROFIT = "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil";
+const ADJUSTED_PROFIT = "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil";
 const ADJUSTED_PROFIT_STATED =
-  "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil";
+  "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil";
 const TOTAL_TAXABLE_PROFITS = "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75";
 const STATED_ALLOWANCES =
   "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54)";
 const STATED_BOX_62 = "SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states";
 const STATED_BOX_60 = "SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states";
-const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil";
-const ADJUSTED_LOSS_STATED =
-  "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil";
+const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil";
+const ADJUSTED_LOSS_STATED = "SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil";
+const BASIS_ADJUSTMENT = "SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment";
+const TRANSITION_PROFIT_SPREAD = "SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69";
+const TRANSITION_PROFIT_TAX = "Income Tax on transition profit (box 73.3)";
+const NI_CLASS4_UPPER = "NI Class 4 (upper)";
+const TOTAL_TAX_AND_NI = "Total Tax + NI, less the CIS already deducted";
 const SHORT_TAXABLE_PROFIT =
   "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62";
 const SHORT_TOTAL_TAXABLE_PROFITS =
@@ -404,6 +409,21 @@ const SA103F_CORRUPTIONS = [
     ],
   ],
   ["D219", 4000, [ADJUSTED_LOSS, ADJUSTED_LOSS_STATED]],
+  // Box 68 reaches box 73's own self-referential form (box 64 less box 65
+  // plus boxes 68 and 71) but not box 77: this fixture's a profit year, so
+  // box 77 is already floored at nil and stays there whatever box 68 holds
+  // -- the same reason box 71's own corruption above leaves it out. Neither
+  // book-stated pair moves: those anchor on the fixture's own s.7A figure
+  // (nil on this fixture's 31 March accounting date), not on this cell.
+  ["D197", 4000, [ADJUSTED_PROFIT, BASIS_ADJUSTMENT]],
+  // Box 73.3 reaches the top-slice income tax charge and the upper Class 4
+  // NIC band, both recomputed independently from this cell and raised
+  // earlier in the check order than box 73.3's own anchor. The lower band
+  // is already saturated by this fixture's own large profit alone -- the
+  // spread only ever lands above the upper limit, so it never moves. Not
+  // Income Tax!E18's own arithmetic check, which reads E14/E15/E16 off the
+  // sheet rather than recomputing the spread.
+  ["D201", 4000, [TRANSITION_PROFIT_TAX, NI_CLASS4_UPPER, TOTAL_TAX_AND_NI, TRANSITION_PROFIT_SPREAD]],
   [
     "O144",
     1000,
@@ -587,6 +607,52 @@ describeCalc("SA103F checks catch a broken full return", () => {
       "Business Details!O50 goods and services for own use = the figure the book states",
     ]);
   });
+
+  // The basis period record: each stated cell anchors on the fixture alone
+  // and each computed cell anchors on the s.7A/para 72 rule recomputed
+  // independently of the other Business Details cells, so none of these
+  // corruptions reaches another one's check -- proved here one cell at a
+  // time. O69's second corruption also pushes the election past the
+  // untaxed balance (para 73(3)), so it fails its own bound check too.
+  const BUSINESS_DETAILS_BASIS_PERIOD_CORRUPTIONS = [
+    ["D59", 9000, ["Business Details!D59 overlap profit brought forward = the fixture's own figure"]],
+    ["O59", 9000, ["Business Details!O59 transition profit not yet treated as arising = the fixture's own figure"]],
+    [
+      "O69",
+      5000,
+      [
+        "Business Details!O69 additional transition profit elected this year = the fixture's own figure",
+        "Business Details!O69 election does not exceed the untaxed transition balance (para 73(3))",
+      ],
+    ],
+    ["D74", 5000, ["Business Details!D74 following period's profit = the fixture's own figure"]],
+    ["D64", 500, ["Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil"]],
+    [
+      "O64",
+      2500,
+      [
+        "Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left",
+      ],
+    ],
+    ["D69", 100, ["Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used"]],
+    [
+      "O74",
+      100,
+      ["Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take"],
+    ],
+  ];
+
+  it.each(BUSINESS_DETAILS_BASIS_PERIOD_CORRUPTIONS)(
+    "corrupting Business Details!%s via JSZip fails exactly the checks that read it",
+    async (cellRef, corruptedValue, expectedFailures) => {
+      for (const name of expectedFailures) {
+        expect(checks.find((c) => c.name === name)?.pass, `${name} was already failing`).toBe(true);
+      }
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Business Details", cellRef, corruptedValue);
+      expect(value).toBe(corruptedValue);
+      expect(failureNames(checksWithCorruptedCell("Business Details", cellRef, value))).toEqual(expectedFailures);
+    },
+  );
 
   // The pool columns on the fixed asset schedule, corrupted in
   // Fixedassets.xlsx itself. A single asset pool total large enough, or a

@@ -112,6 +112,7 @@ export const PRODUCTS = {
     notes: [
       "Capital allowances come off the SA103S net profit to give the taxable profit, so a year of heavy asset buying leaves a taxable profit well below the accounting one.",
       "The income tax computation charges the taxable profit plus any grants recorded as other business income, so the two figures differ by exactly the grants line.",
+      "The Business Details sheet carries overlap profit brought forward and an overlap relief figure below the losses block. All of it is used on the 2023-24 return; a year after that, the relief-used box reads nil and the balance is carried forward unused, because boxes 69 and 70 print as not in use on every later year's SA103F.",
     ],
   },
   ltd: {

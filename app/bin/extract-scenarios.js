@@ -487,6 +487,17 @@ const SE_ADVANCED_ANNUAL = {
   },
 };
 
+// The basis period record (SA103F boxes 68, 69 and 73.3): the book's
+// accounting date is 31 March, so box 68 stays nil on every package year
+// (s.7C), and these figures only drive boxes 69 and 73.3. 2023-24 uses all
+// 2,400 of the overlap profit; the transition balance of 6,000 splits by
+// 1/(years left, this one included) plus the 1,000 election each year.
+const SE_ADVANCED_BASIS_PERIOD = {
+  overlapProfitBroughtForward: 2400,
+  transitionProfitBroughtForward: 6000,
+  transitionProfitAccelerationAmount: 1000,
+};
+
 // Structures and Buildings Allowance claims (SA103F boxes 53 and 53.1): a
 // standard-rate claim running the whole year (60,000 x 3% = 1,800, box 53
 // exactly, whatever package year the fixture runs against) and a Freeport
@@ -636,6 +647,7 @@ const advToml = formatScenarioToml(
     disallowable: SE_ADVANCED_DISALLOWABLE,
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,
     annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
+    basis_period: SE_ADVANCED_BASIS_PERIOD,
     sba_claims: SE_ADVANCED_SBA_CLAIMS,
     opening_stock: 10000,
     closing_stock: 6000,
@@ -670,7 +682,12 @@ const advDiya = writeSubset(
     entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
     taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage", "selfEmployment"],
     taxOverrides: {
-      selfEmployment: { ...SE_ADVANCED_DISALLOWABLE, ...SE_ADVANCED_ANNUAL, allowances: SE_ADVANCED_BOOK_ALLOWANCES },
+      selfEmployment: {
+        ...SE_ADVANCED_DISALLOWABLE,
+        ...SE_ADVANCED_ANNUAL,
+        allowances: SE_ADVANCED_BOOK_ALLOWANCES,
+        basisPeriod: SE_ADVANCED_BASIS_PERIOD,
+      },
     },
     accountFilter: seAccountFilter,
     employees: book.employees,

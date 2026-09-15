@@ -301,15 +301,28 @@
           "boxes": [
             { "box": "66", "label": "Not in use", "cell": null, "notInUse": true },
             { "box": "67", "label": "Not in use", "cell": null, "notInUse": true },
-            { "box": "68", "label": "Adjustment where your accounting period was not 12 months long", "cell": null },
-            { "box": "69", "label": "Not in use", "cell": null, "notInUse": true },
+            {
+              "box": "68",
+              "label": "Adjustment where your accounting period was not 12 months long",
+              "cell": "Financialaccounts.xlsx!SE Full!D197"
+            },
+            {
+              "box": "69",
+              "label": "Not in use",
+              "cell": "Financialaccounts.xlsx!Business Details!D64",
+              "notInUse": true
+            },
             { "box": "70", "label": "Not in use", "cell": null, "notInUse": true },
             { "box": "71", "label": "Adjustment for change of accounting practice", "cell": "Financialaccounts.xlsx!SE Full!D210" },
             { "box": "72", "label": "Averaging adjustment", "cell": null },
             { "box": "73", "label": "Adjusted profit for 2025-26", "cell": "Financialaccounts.xlsx!SE Full!O194" },
             { "box": "73.1", "label": "Not in use", "cell": null, "notInUse": true },
             { "box": "73.2", "label": "Not in use", "cell": null, "notInUse": true },
-            { "box": "73.3", "label": "Spread of the transition profit treated as arising in this tax year", "cell": null },
+            {
+              "box": "73.3",
+              "label": "Spread of the transition profit treated as arising in this tax year",
+              "cell": "Financialaccounts.xlsx!SE Full!D201"
+            },
             { "box": "73.4", "label": "Loss brought forward set against this year's spread of the transition profit", "cell": null },
             {
               "box": "74",

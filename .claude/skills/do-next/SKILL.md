@@ -171,6 +171,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   the products, or anything that rebuilds the templates.
 - **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
   it with `run_in_background`, do other work or stop, and act on the notification when it lands.
+  The brief pastes the launch and the waiter for each long run the agent will make, one waiter
+  per run, armed before the run starts. An agent whose turn ends on a promoted command stops
+  without reporting unless a waiter is armed.
+
   Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
   macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
   does not split an unquoted variable.
@@ -184,6 +188,17 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   # Fire on the verdict OR on the process having exited, so an empty log never waits forever:
   until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
   ```
+
+- **The exact clean-up for the browser tier's byproducts.** The browser tier's
+  `app/bin/build-packages.js --years 2` step leaves untracked `LICENCE.txt` and `README.txt`
+  files under `packages/`. Remove them with this loop, the only way:
+
+  ```bash
+  git status --short | awk '$1=="??" {print $2}' | grep -E '^packages/.*/(LICENCE|README)\.txt$' | while read -r f; do rm -- "$f"; done
+  ```
+
+  (Git clean is forbidden to agents; a brief that names the files without the command sends the
+  agent to it.) After the run, a restamped `app/lib/provenance-data.js` is committed, not discarded.
 
 - **Never stop a run by matching a command name.** `pkill -f vitest` kills every worktree's
   process, a sibling agent's included, not just yours. Stop only your own worktree's run: `scripts/
@@ -213,9 +228,18 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
 
 - **A sub-agent's "done" is not proof.** Run `git status --short` in its worktree before anything
   else. Uncommitted work is real and you get one look at it.
-- `git merge --squash <agent-branch>` into the batch worktree, then one commit naming the item:
-  one commit per task on the batch, the agent's fixing commits folded into the task they fix.
-  Keep the agent's commit message body where it explains the why.
+- `git merge --squash <agent-branch>` into the batch worktree, always against the branch's own
+  fork point (`git merge-base <batch> <agent-branch>`), never against `main`. Main moves under a
+  batch (board commits land there during every wave), and a squash against a moved `main` carries
+  intervening changes into the squash commit. Prove the squash carried nothing extra: run
+  `git diff --name-only <batch>...<agent-branch>` before the squash and verify it matches the files
+  in the squash commit.
+
+  Then one commit naming the item: one commit per task on the batch, the agent's fixing commits
+  folded into the task they fix. Keep the agent's commit message body where it explains the why.
+
+  The pre-push hook now refuses any branch push whose diff against `main` touches `NEXT.md`. If it
+  fires, fix it with `git checkout origin/main -- NEXT.md && git commit`.
 - Run that change's blast radius on the merged tree, not the agent's own report.
 - Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
   once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless

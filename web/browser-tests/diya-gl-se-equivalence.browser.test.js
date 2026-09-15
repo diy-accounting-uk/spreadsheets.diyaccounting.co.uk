@@ -256,12 +256,24 @@ test.describe("DIYA-GL page — the Self Employed diya-gl download (A1, A2)", ()
 // ── A3: the sheet agrees ─────────────────────────────────────────────────
 
 test.describe("DIYA-GL page — the sheet agrees (A3)", () => {
-  // Two key families S3 can never carry, because --source-dir --mode saved
+  // Key families S3 can never carry, because --source-dir --mode saved
   // reads the workbooks' own cached cells with no scenario alongside them: a
   // compliance verdict, and the journal-category VAT netting, which
   // report-generator.js builds from productMod.categoryNetting(results,
-  // scenario) -- the journal lines, which a saved read has none of.
-  const SAVED_MODE_CANNOT_CARRY = ["check/", "section/journal-category-vat-netting/"];
+  // scenario) -- the journal lines, which a saved read has none of. Boxes 8
+  // and 9 (Business Details!N27, N32) are a third: se-latest is generated
+  // from the flat se-scenario-advanced.toml fixture, which carries no
+  // documentInfo, so the writer leaves them blank on the saved package,
+  // while S2 is built from the diya-gl book at FEATURED.bookDir, which
+  // does carry one.
+  const SAVED_MODE_CANNOT_CARRY = [
+    "check/",
+    "section/journal-category-vat-netting/",
+    "cell/Financialaccounts.xlsx!Business Details!N27",
+    "cell/Financialaccounts.xlsx!Business Details!N32",
+    "section/business-details/accounting-period-start-date-box-8",
+    "section/business-details/accounting-period-end-date-box-9",
+  ];
 
   test("S3 (se-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const s3Map = s3Se();

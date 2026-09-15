@@ -125,8 +125,8 @@ const FRONT_SHEET = [
     "templates/se/Financialaccounts.xlsx",
     "Financialaccounts.xlsx",
     "Business Details",
-    "A58",
-    "A59",
+    "A76",
+    "A77",
   ],
   [
     "ltd",

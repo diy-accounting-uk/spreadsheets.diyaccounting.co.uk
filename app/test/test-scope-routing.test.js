@@ -19,6 +19,7 @@ import {
   chooseBrowserSpecs,
   workingTreeHash,
   writeGreenMarker,
+  tiersAfterGates,
 } from "../../scripts/test-scope.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -115,6 +116,24 @@ describe("browser spec routing: un-tokened specs that cover multiple products", 
   });
 });
 
+// CQ-46: the router stops after a failed gates tier instead of running
+// unit, calc, browser and infra behind it. tiersAfterGates is the pure
+// decision main() acts on; it is tested directly here rather than by
+// forcing a real gates failure through a subprocess.
+describe("tiersAfterGates", () => {
+  it("lists only the tiers flagged to run, in tier order, excluding gates", () => {
+    expect(tiersAfterGates({ unit: true, calc: false, browser: true, infra: false })).toEqual(["unit", "browser"]);
+  });
+
+  it("returns nothing when nothing after gates was going to run", () => {
+    expect(tiersAfterGates({ unit: false, calc: false, browser: false, infra: false })).toEqual([]);
+  });
+
+  it("returns every tier when everything was going to run", () => {
+    expect(tiersAfterGates({ unit: true, calc: true, browser: true, infra: true })).toEqual(["unit", "calc", "browser", "infra"]);
+  });
+});
+
 // CQ-34: the GREEN marker .githooks/pre-push looks up before re-running a
 // suite that just passed on this exact tree.
 describe("writeGreenMarker", () => {
@@ -141,17 +160,20 @@ describe("writeGreenMarker", () => {
   const dirty = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" }).trim().length > 0;
 
   it.skipIf(dirty)(
-    "equals HEAD's committed tree hash on a clean tree, so the marker a push checks for actually exists",
+    "equals the rev-based hash of HEAD on a clean tree, so a marker the router writes from the working tree still matches what --tree-hash --rev HEAD (used by .githooks/pre-push) reports for the same commit",
     () => {
       // Regression case for a real bug: seeding the throwaway index empty
       // (rather than from the real index) silently dropped paths that are
       // tracked but also match .gitignore (reports/judge-verdict-*.json,
       // *.svg under web/.../diya-gl/ in this repo) and re-hashed mvnw.cmd
       // through its text-conversion filter, producing a hash that could
-      // never equal HEAD^{tree} even on a perfectly clean tree -- which
-      // would have made .githooks/pre-push's marker lookup never match.
-      const headTree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: ROOT, encoding: "utf8" }).trim();
-      expect(workingTreeHash()).toBe(headTree);
+      // never equal HEAD^{tree} even on a perfectly clean tree. The
+      // rev-based path (git read-tree) is not built through `git add -A`
+      // at all, so it is not exposed to that bug the same way -- a
+      // regression in the working-tree path alone still shows up here as
+      // a mismatch between the two.
+      const headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+      expect(workingTreeHash()).toBe(workingTreeHash({ rev: headSha }));
     },
     20_000,
   );

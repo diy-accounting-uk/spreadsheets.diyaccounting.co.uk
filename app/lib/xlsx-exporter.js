@@ -1711,6 +1711,15 @@ const SE_ANNUAL_ADJUSTMENT_CELLS = {
   includedNonTaxableProfits: "D179",
   accountingAdjustment: "D210",
 };
+// The basis period record (SA103F boxes 68, 69 and 73.3), the four stated
+// cells app/products/se.js writes from BASIS_PERIOD_CELLS, all on
+// Business Details.
+const SE_BASIS_PERIOD_CELLS = {
+  overlapProfitBroughtForward: "D59",
+  transitionProfitBroughtForward: "O59",
+  transitionProfitAccelerationAmount: "O69",
+  followingPeriodProfit: "D74",
+};
 
 // Fixedassets.xlsx!Schedule rows 115 to 119, the Structures and Buildings
 // Allowance claims below the register (SA103F boxes 53 and 53.1); the same
@@ -2206,6 +2215,23 @@ function dateAt(xml, cellRef, sharedStrings) {
   return typeof value === "number" && value > 1 ? excelSerialToDate(value) : undefined;
 }
 
+// The SE package's own accounting period, read straight off the printed
+// boxes 8 and 9 (Business Details!N27, N32) rather than guessed from the
+// journal's posting dates: periodCovered()'s guess is always the twelve
+// whole months the package's own tab grid runs, which is right for every
+// other product but wrong for a book whose true accounting date sits
+// outside 31 March to 5 April.
+async function seAccountingPeriodFromSheet(set) {
+  const hubZip = await openWorkbook(set, "Financialaccounts.xlsx");
+  if (!hubZip) return null;
+  const sheet = await openSheet(hubZip, "Business Details");
+  if (!sheet) return null;
+  const start = dateAt(sheet.xml, "N27", sheet.sharedStrings);
+  const end = dateAt(sheet.xml, "N32", sheet.sharedStrings);
+  if (!start || !end) return null;
+  return { start, end };
+}
+
 function assign(target, key, value) {
   if (value !== undefined && value !== "" && value !== 0) target[key] = value;
 }
@@ -2602,6 +2628,10 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
       }
       if (Object.keys(allowances).length > 0) selfEmployment.allowances = allowances;
       if (Object.keys(adjustments).length > 0) selfEmployment.adjustments = adjustments;
+      if (entitySheet) {
+        const basisPeriod = readStated(entitySheet, SE_BASIS_PERIOD_CELLS);
+        if (Object.keys(basisPeriod).length > 0) selfEmployment.basisPeriod = basisPeriod;
+      }
     }
     if (Object.keys(selfEmployment).length > 0) tax.selfEmployment = selfEmployment;
   }
@@ -2629,7 +2659,11 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
     }
   }
 
-  const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
+  // SE reads its true accounting period off the printed boxes, since a book
+  // whose dates do not run April to March still has every posting written
+  // onto the package's own April-March tab grid.
+  const period =
+    (product === "se" && (await seAccountingPeriodFromSheet(set))) || periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {
     documentInfo: {
       entriesType: "journal",
