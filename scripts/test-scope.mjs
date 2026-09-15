@@ -936,10 +936,10 @@ async function main() {
     if (gates.code) {
       exitCode = 1;
       gatesFailed = true;
-      // Known RED at whatever the gates tier's own duration was -- SET-10's
-      // and SET-9's first full runs each spent 34m52s reporting a prettier
-      // failure that was known at minute 2, because unit, calc and browser
-      // ran to completion behind it. Stop here instead.
+      // Known RED at whatever the gates tier's own duration was. Measured
+      // twice: a full run spent 34m52s reporting a prettier failure that
+      // was known at minute 2, because unit, calc and browser ran to
+      // completion behind it. Stop here instead.
       notRun.push(...tiersAfterGates(runFlags).map((t) => tierLabel[t]));
       console.log(`\ngates FAILED; ${notRun.length ? `${notRun.join(", ")} not run` : "nothing else was going to run"}`);
     }

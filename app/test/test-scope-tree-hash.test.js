@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// test-scope-tree-hash.test.js — CQ-45: a GREEN marker written for a
+// test-scope-tree-hash.test.js: a GREEN marker written for a
 // commit before scripts/build-provenance-data.mjs restamps its
 // engineVersion field must still match the tree of the restamp commit
 // pushed afterward. Proved here against a throwaway git repository (never
@@ -85,7 +85,7 @@ function runHook(dir, stdin) {
   }
 }
 
-describe("--tree-hash blanks provenance-data.js's engineVersion (CQ-45)", () => {
+describe("--tree-hash blanks provenance-data.js's engineVersion", () => {
   it("hashes two commits the same when only engineVersion's value differs", () => {
     const dir = makeRepo();
     writeFileSync(join(dir, "app", "lib", "provenance-data.js"), provenanceSource("1.0.0+aaaaaaaaaa"));
@@ -119,7 +119,7 @@ describe("--tree-hash blanks provenance-data.js's engineVersion (CQ-45)", () => 
   }, 30_000);
 });
 
-describe(".githooks/pre-push skips a restamp-only push against a pre-restamp GREEN marker (CQ-45)", () => {
+describe(".githooks/pre-push skips a restamp-only push against a pre-restamp GREEN marker", () => {
   function writeMarker(dir, hash, mergeBase) {
     const markerDir = join(dir, "target", "test-scope");
     mkdirSync(markerDir, { recursive: true });
@@ -154,11 +154,11 @@ describe(".githooks/pre-push skips a restamp-only push against a pre-restamp GRE
   // proof.
 });
 
-// CQ-47: PR #117 opened CONFLICTING on 2026-09-15 because a squash carried
-// the fork point's NEXT.md onto a batch branch, reverting two board edits;
-// 72 job-minutes ran on the abandoned head. NEXT.md is maintained on main
-// alone, so a branch that changes it against main is always a mistake.
-describe(".githooks/pre-push refuses a branch push that changes NEXT.md against main (CQ-47)", () => {
+// A squash once carried the fork point's NEXT.md onto a batch branch,
+// reverting two board edits, and the PR opened CONFLICTING; 72 job-minutes
+// ran on the abandoned head. NEXT.md is maintained on main alone, so a
+// branch that changes it against main is always a mistake.
+describe(".githooks/pre-push refuses a branch push that changes NEXT.md against main", () => {
   it("refuses a branch push whose diff against main touches NEXT.md", () => {
     const dir = makeHookRepo();
     writeFileSync(join(dir, "NEXT.md"), "- item one\n");

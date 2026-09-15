@@ -52,9 +52,9 @@ fi
 # NEXT.md is maintained on main alone (the docs exception in ../CLAUDE.md
 # lands board edits there directly), so a branch that carries a NEXT.md
 # change against main is always a stale or reverted board, never a real
-# edit owed to this branch. PR #117 opened CONFLICTING on 2026-09-15
-# because a squash carried the fork point's NEXT.md onto the batch branch,
-# reverting two board edits; 72 job-minutes ran on the abandoned head.
+# edit owed to this branch. A squash once carried the fork point's NEXT.md
+# onto the batch branch, reverting two board edits; the PR opened
+# CONFLICTING and 72 job-minutes ran on the abandoned head.
 # Checked before the Markdown-only fast path below, because a branch
 # carrying only a NEXT.md change is exactly the case that path would
 # otherwise wave through.
