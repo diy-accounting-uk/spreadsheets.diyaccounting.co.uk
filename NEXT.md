@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-CQ-43 on `claude/cq-43-router` (worktree `cq-43`), the router agent working; no PR yet. `main` is
+CQ-43 on `claude/cq-43-router` (worktree `cq-43`), PR #117 open, its checks and ci deploy running. `main` is
 green on `af6a69fa` (SET-8); prod serves it. `claude/b16-se` (worktree `b16-se`) holds only SET-10's
 design scratch `9cca0ceb`. No watch monitor is armed.
 
@@ -38,7 +38,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| CQ-43 | The router's product-module route (`scripts/test-scope.mjs`, `chooseBrowserSpecs`) picks browser specs by product token in the file name, so `diya-gl-render-coverage.browser.test.js`, which walks every product's S2 keys, never runs for a change to `app/products/se.js`; SET-12's new profit-bridge row passed the routed run (browser 5 specs, 20m38s) and failed PR #115's `test` on three SE fixtures (run 34893892764). The product route adds the render-coverage spec whenever a product module changes, with a routing test | none | machine-only | — | in-flight | ~2 files | Haiku | `claude/cq-43-router`, worktree `cq-43`, agent working; PR to follow |
+| CQ-43 | The router's product-module route (`scripts/test-scope.mjs`, `chooseBrowserSpecs`) picks browser specs by product token in the file name, so `diya-gl-render-coverage.browser.test.js`, which walks every product's S2 keys, never runs for a change to `app/products/se.js`; SET-12's new profit-bridge row passed the routed run (browser 5 specs, 20m38s) and failed PR #115's `test` on three SE fixtures (run 34893892764). The product route adds the render-coverage spec whenever a product module changes, with a routing test | none | machine-only | — | in-flight | ~2 files | Haiku | `claude/cq-43-router`, PR #117, checks running |
 | SET-10 | The small-pools write-off (`SE Full!O144`, box 55) sums `Fixedassets.xlsx!Schedule` `R1+S1` over one S column, so a special-rate balance counts towards the £1,000 test alongside the main pool; HMRC applies the test per pool. Split S into a main-pool and a special-rate written-down column, point O144 and the calculator's small-pools check at each, and anchor the check on the fixture's estate car (tax WDV 9,000, special) | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~6 files | Sonnet | SET-8 landed `af6a69fa`; design scratch `9cca0ceb` on `claude/b16-se`: columns AH/AI after AG |
 | SET-9 | Boxes 53 and 53.1 Structures and Buildings Allowance: a claim record (dates, rate, amount, an array), the derivation filing the array, box 53's cell carrying the total, 53.1's label-and-value row pair laid out afresh between `SE Full` rows 146 and 161 | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~10 files | Sonnet | SET-8 landed `af6a69fa`; from the 3.4 design |
 | SET-7 | Box 68 basis adjustment and box 73.3 transition profit: a book-level overlap-profit record (brought forward, used, carried across tax years), the derivation filing both from it for a non-6-April year end, 73.3's cell in row 199's slot (`D201:F201`) once the boxes 69/70 notice moves, the box 77 formula (`D219`) reading the real cells | PLAN_SE_TEMPLATE_GAPS.md | machine-only | — | ready-to-start | ~12 files | Sonnet | SET-12 landed `c692a372`; shares `O194` |
