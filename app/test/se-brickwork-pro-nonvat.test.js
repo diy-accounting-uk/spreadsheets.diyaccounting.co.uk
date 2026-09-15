@@ -198,7 +198,7 @@ describeCalc(
         (c) => !c.pass && c.severity !== "warning",
       );
       expect(failures.map((c) => c.name)).toEqual([
-        "Tax: Total = IT + CIS deduction line + NI",
+        "Tax: Total = IT + transition profit tax + CIS deduction line + NI",
         "Tax: CIS deducted (E12) = the year's CIS suffered on the sales journal",
       ]);
     });

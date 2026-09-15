@@ -574,7 +574,7 @@
       "form": "SA103F",
       "box": "68",
       "label": "Adjustment where your accounting period ended before 31 March 2026 or where your accounting period was not 12 months long – if the adjustment needs to be taken off the profit figure, put a minus sign in the box",
-      "cell": null,
+      "cell": "SE Full!D197",
       "field": "adjustments.basisAdjustment",
       "route": "annual"
     },
@@ -582,7 +582,7 @@
       "form": "SA103F",
       "box": "69",
       "label": "Overlap relief used this year",
-      "cell": null,
+      "cell": "Business Details!D64",
       "field": "adjustments.overlapReliefUsed",
       "route": "annual",
       "caveat": "the CSV lists box 69 (overlapReliefUsed) as live even though the 2026 SA103F prints boxes 69 and 70 as not in use; the field is dropped from the API schema from 2026-27 (see api.years['2026-27'].fieldsGone)"
@@ -621,7 +621,7 @@
       "form": "SA103F",
       "box": "73.3",
       "label": "Spread of the transition profit treated as arising in this tax year",
-      "cell": null,
+      "cell": "SE Full!D201",
       "field": "adjustments.transitionProfitAmount | adjustments.transitionProfitAccelerationAmount",
       "route": "annual"
     },

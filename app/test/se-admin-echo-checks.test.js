@@ -222,7 +222,7 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
       "Income Tax!E11 (the income tax total)",
       "E11",
       1,
-      ["Income Tax", "Tax: IT = Basic + Higher + Additional", "Tax: Total = IT + CIS deduction line + NI"],
+      ["Income Tax", "Tax: IT = Basic + Higher + Additional", "Tax: Total = IT + transition profit tax + CIS deduction line + NI"],
     ],
     ["Income Tax!C9 (the basic band ceiling)", "C9", 1, ["Tax: sheet splits the basic and higher bands at the basic band end"]],
     [

@@ -8,8 +8,9 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
-import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, extractTaxYearStart } from "../lib/scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
+import { taxYearFileName } from "../lib/tax-year.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_DUE_DAY,
@@ -250,6 +251,27 @@ export const ANNUAL_ADJUSTMENT_CELLS = {
 // Business Details!O50, the "ENTER: Value of goods and services for your own
 // use" cell (label at N48), read by SE Full!D169 and SE Short!D94.
 export const GOODS_FOR_OWN_USE_CELL = "O50";
+
+// The basis period record behind SA103F boxes 68, 69 and 73.3, on
+// Business Details rows 57 to 75 (verified against the template): D59 box 69
+// (overlap profit brought forward), O59 the 2023-24 transition profit not
+// yet treated as arising, O69 the additional amount elected this year
+// (para 73(1)), D74 the following period's profit (only read when box 9 is
+// outside 31 March to 5 April). The sheet computes D64, O64, D69 and O74
+// itself; no book field carries them.
+export const BASIS_PERIOD_CELLS = {
+  overlapProfitBroughtForward: "D59",
+  transitionProfitBroughtForward: "O59",
+  transitionProfitAccelerationAmount: "O69",
+  followingPeriodProfit: "D74",
+};
+// Business Details boxes 8 and 9 (verified against the template: N27 merged
+// N27:Q27, N32 merged N32:Q32, N32 today the formula =Admin!B17), the
+// accounting period the trader's own books cover -- the sheet has nowhere
+// else to read it from, since every posting date is written onto the
+// package's own April-March tab grid regardless of the book's true dates.
+export const ACCOUNTING_PERIOD_START_CELL = "N27";
+export const ACCOUNTING_PERIOD_END_CELL = "N32";
 
 // Fixedassets.xlsx Schedule sheet -- verified against the template:
 //   Existing assets (bought before the year start): rows 8-10 land,
@@ -592,6 +614,38 @@ function composeWrites(scenario, targetStartYear) {
       hubWrites["SE Full"] = hubWrites["SE Full"] || {};
       hubWrites["SE Full"][cell] = figures[field];
     }
+  }
+  // The basis period record (boxes 68, 69 and 73.3): stated figures, each
+  // on its own Business Details cell.
+  if (scenario.basis_period) {
+    hubWrites["Business Details"] = hubWrites["Business Details"] || {};
+    for (const [field, cell] of Object.entries(BASIS_PERIOD_CELLS)) {
+      if (scenario.basis_period[field] === undefined) continue;
+      hubWrites["Business Details"][cell] = scenario.basis_period[field];
+    }
+  }
+  // Boxes 8 and 9: the book's own accounting period, moved forward by whole
+  // years only -- the gap between the package's own start year and the
+  // year the book's period would open in on its own, never the month-level
+  // shift that moves postings onto the package's April-March tab grid.
+  if (targetStartYear && scenario.period_covered_start && scenario.period_covered_end) {
+    const periodEnd = parseDate(scenario.period_covered_end);
+    const naturalStartYear = parseInt(taxYearFileName(periodEnd, "se").split("-")[1], 10);
+    const yearShift = targetStartYear - naturalStartYear;
+    const shiftYears = (d) => shiftMonths(d, yearShift * 12);
+    const periodStart = shiftYears(parseDate(scenario.period_covered_start));
+    const periodEndShifted = shiftYears(periodEnd);
+    hubWrites["Business Details"] = hubWrites["Business Details"] || {};
+    hubWrites["Business Details"][ACCOUNTING_PERIOD_START_CELL] = toExcelSerial(
+      periodStart.getUTCFullYear(),
+      periodStart.getUTCMonth() + 1,
+      periodStart.getUTCDate(),
+    );
+    hubWrites["Business Details"][ACCOUNTING_PERIOD_END_CELL] = toExcelSerial(
+      periodEndShifted.getUTCFullYear(),
+      periodEndShifted.getUTCMonth() + 1,
+      periodEndShifted.getUTCDate(),
+    );
   }
 
   // Payslips.xlsx employee details
@@ -971,6 +1025,16 @@ export const CELL_MAP = [
   // ── Business Details ──
   ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
   ["Business Details", "O50", "Value of goods and services for own use (box 24)", "tax.selfEmployment.adjustments.goodsAndServicesOwnUse", "Business Details", 1],
+  ["Business Details", "N27", "Accounting period start date (box 8)", "documentInfo.periodCoveredStart", "Business Details", 1],
+  ["Business Details", "N32", "Accounting period end date (box 9)", "documentInfo.periodCoveredEnd", "Business Details", 1],
+  ["Business Details", "D59", "Overlap profit brought forward (feeds box 69)", "tax.selfEmployment.basisPeriod.overlapProfitBroughtForward", "Business Details", 1],
+  ["Business Details", "D64", "Overlap relief used this year (box 69)", "gl-cor:amount (basisPeriod.overlapReliefUsed)", "Business Details", 1],
+  ["Business Details", "D69", "Overlap profit carried forward", "gl-cor:amount (basisPeriod.overlapCarriedForward)", "Business Details", 1],
+  ["Business Details", "D74", "Following period's profit (feeds box 68)", "tax.selfEmployment.basisPeriod.followingPeriodProfit", "Business Details", 1],
+  ["Business Details", "O59", "Transition profit not yet treated as arising", "tax.selfEmployment.basisPeriod.transitionProfitBroughtForward", "Business Details", 1],
+  ["Business Details", "O64", "Transition profit treated as arising this year, before election (feeds box 73.3)", "gl-cor:amount (basisPeriod.transitionArisingBeforeElection)", "Business Details", 1],
+  ["Business Details", "O69", "Additional transition profit elected this year (feeds box 73.3)", "tax.selfEmployment.basisPeriod.transitionProfitAccelerationAmount", "Business Details", 1],
+  ["Business Details", "O74", "Transition profit carried forward to next year", "gl-cor:amount (basisPeriod.transitionCarriedForward)", "Business Details", 1],
   // ── Profit & Loss Account ──
   ["Profit & Loss Account", "B5",  "Product A sales (code a)",  "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B6",  "Product B sales (code b)",  "accounts.sales.4001",            "Profit & Loss Account", 1],
@@ -1012,6 +1076,7 @@ export const CELL_MAP = [
   [TAX_SHEET, "E10", "Tax at Additional Rate (45%)", "tax.incomeTax.additionalRate",         "Income Tax Calculation", 1],
   [TAX_SHEET, "E11", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
   [TAX_SHEET, "E12", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "E14", "Income Tax on transition profit (box 73.3), top-sliced", "gl-cor:amount (transitionProfitTax)", "Income Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
@@ -1119,8 +1184,10 @@ export const CELL_MAP = [
   ["SE Full", "O169", "**Total deductions from net profit (box 63)**", "gl-cor:amount (sa103f.totalDeductions)", "Self Assessment (SA103F)", 0],
   ["SE Full", "O174", "**Net business profit for tax purposes (box 64)**", "gl-cor:amount (sa103f.taxableProfit)", "Self Assessment (SA103F)", 0],
   ["SE Full", "O179", "Net business loss for tax purposes (box 65)", "gl-cor:amount (sa103f.taxableLoss)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "D197", "Adjustment where accounting period was not 12 months long (box 68)", "gl-cor:amount (sa103f.basisAdjustment)", "Self Assessment (SA103F)", 1],
   ["SE Full", "D210", "Adjustment for change of accounting practice (box 71)", "tax.selfEmployment.adjustments.accountingAdjustment", "Self Assessment (SA103F)", 1],
   ["SE Full", "O194", "**Adjusted profit (box 73)**",          "gl-cor:amount (sa103f.adjustedProfit)",      "Self Assessment (SA103F)", 0],
+  ["SE Full", "D201", "Spread of the transition profit treated as arising this year (box 73.3)", "gl-cor:amount (sa103f.transitionProfitSpread)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O199", "Loss brought forward set against this year (box 74)", "gl-cor:amount (sa103f.lossBroughtForward)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O204", "Other business income not in boxes 15, 16 or 60 (box 75)", "gl-cor:amount (sa103f.otherBusinessIncome)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O210", "**Total taxable profits from this business (box 76)**", "gl-cor:amount (sa103f.profitForTax)", "Self Assessment (SA103F)", 0],
@@ -1892,6 +1959,8 @@ export function unitFor(sheet, cell) {
   }
   switch (sheet) {
     case "Business Details":
+      // Boxes 8 and 9, the book's own accounting period dates.
+      if (cell === ACCOUNTING_PERIOD_START_CELL || cell === ACCOUNTING_PERIOD_END_CELL) return "date";
       return "text";
     case "Admin":
       if (ADMIN_TAX_YEAR_LABEL_CELLS.has(cell)) return "text";
@@ -2461,16 +2530,45 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const tax = results[TAX_SHEET];
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
+    // Class 4 NIC follows the income tax charge onto box 73.3's own spread
+    // (FA 2022 Sch 1 para 72(3), SSCBA 1992 s.15(1)), even though the spread
+    // sits outside box 76 and net income for income tax purposes.
+    const transitionProfitSpread = num(results["SE Full"]?.D201);
+    const expectedTaxWithSpread = calculateExpectedTax(profit + transitionProfitSpread, taxData);
+    // Box 73.3's own top-slice charge (para 75(2)-(3)): the three bands run
+    // again over taxable income (E7) plus the spread, less the tax already
+    // charged on taxable income alone -- the personal allowance taper is
+    // left untouched, since the spread never reaches E5/E6.
+    const expectedTransitionProfitTax = (() => {
+      if (transitionProfitSpread <= 0) return 0;
+      const it = taxData.income_tax;
+      const spreadTop = (tax.E7 || 0) + transitionProfitSpread;
+      const basic = spreadTop < it.basic_band_end ? spreadTop * it.basic_rate : it.basic_band_end * it.basic_rate;
+      const higher = spreadTop > it.basic_band_end ? (Math.min(spreadTop, it.higher_band_end) - it.basic_band_end) * it.higher_rate : 0;
+      const additional = spreadTop > it.higher_band_end ? (spreadTop - it.higher_band_end) * it.additional_rate : 0;
+      return basic + higher + additional - expectedTax.income_tax;
+    })();
 
     check("Income Tax", tax.E11 || 0, expectedTax.income_tax, 0.01);
-    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower, 0.01);
+    check("Income Tax on transition profit (box 73.3)", tax.E14 || 0, expectedTransitionProfitTax, 0.01);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTaxWithSpread.ni_class4_lower, 0.01);
+    check("NI Class 4 (upper)", tax.E16 || 0, expectedTaxWithSpread.ni_class4_upper, 0.01);
     // E18 is the sheet's own SUM(E11:E17), and E12 (the CIS already deducted,
     // carried negative) sits inside that range, so the sheet's total is the
     // computed tax and NI less what the contractors have already paid over.
     const cisSuffered = Object.values(expected.sales || {})
       .flat()
       .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
-    check("Total Tax + NI, less the CIS already deducted", tax.E18 || 0, expectedTax.total_tax_and_ni - cisSuffered, 0.01);
+    check(
+      "Total Tax + NI, less the CIS already deducted",
+      tax.E18 || 0,
+      expectedTax.income_tax +
+        expectedTransitionProfitTax +
+        expectedTaxWithSpread.ni_class4_lower +
+        expectedTaxWithSpread.ni_class4_upper -
+        cisSuffered,
+      0.01,
+    );
 
     // The allowance the sheet hands out, not the headline one. Above 100,000
     // of profit it falls by a pound for every two, and reaches nil at 125,140.
@@ -2499,7 +2597,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // the sheet's own total is SUM(E11:E17), so the deduction line is added,
     // not subtracted. Every fixture so far carries nil CIS, which is why
     // subtracting it here passed.
-    check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E11 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+    check(
+      "Tax: Total = IT + transition profit tax + CIS deduction line + NI",
+      tax.E18,
+      (tax.E11 || 0) + (tax.E14 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0),
+    );
 
     // SA103S cross-check (6g)
     const seShort = results["SE Short"];
@@ -2782,16 +2884,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
     // HMRC's working sheet for boxes 73 and 77 takes one figure, box 64 less
     // box 65 plus boxes 68, 71 and 72; box 73 is it when positive, box 77 its
-    // negation when not. Boxes 68 (D197) and 72 (O190) print a dash on this
-    // template and contribute nil, so box 71 is the only adjustment here.
-    const adjustedProfitBeforeFloor = num(seFull.O174) - num(seFull.O179) + num(seFull.D210);
+    // negation when not. Box 72 (O190) prints a dash on this template and
+    // contributes nil.
+    const adjustedProfitBeforeFloor = num(seFull.O174) - num(seFull.O179) + num(seFull.D197) + num(seFull.D210);
     check(
-      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil",
+      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil",
       num(seFull.O194),
       Math.max(0, adjustedProfitBeforeFloor),
     );
     check(
-      "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil",
+      "SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil",
       num(seFull.D219),
       Math.max(0, -adjustedProfitBeforeFloor),
     );
@@ -2799,6 +2901,114 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75",
       num(seFull.O210),
       num(seFull.O194) - num(seFull.O199) + num(seFull.O204),
+    );
+
+    // The basis period record (boxes 68, 69 and 73.3), anchored on the
+    // fixture's own basisPeriod figures and the package's tax year --
+    // independent of the Business Details cells the s.7A formula itself
+    // reads, so a self-consistent-but-wrong sheet fails here.
+    const businessDetails = results["Business Details"] || {};
+    const basisPeriod = expected.basis_period || {};
+    const bpOverlapBroughtForward = basisPeriod.overlapProfitBroughtForward || 0;
+    const bpTransitionBroughtForward = basisPeriod.transitionProfitBroughtForward || 0;
+    const bpTransitionAcceleration = basisPeriod.transitionProfitAccelerationAmount || 0;
+    const bpFollowingPeriodProfit = basisPeriod.followingPeriodProfit || 0;
+    check(
+      "Business Details!D59 overlap profit brought forward = the fixture's own figure",
+      num(businessDetails.D59),
+      bpOverlapBroughtForward,
+    );
+    check(
+      "Business Details!O59 transition profit not yet treated as arising = the fixture's own figure",
+      num(businessDetails.O59),
+      bpTransitionBroughtForward,
+    );
+    check(
+      "Business Details!O69 additional transition profit elected this year = the fixture's own figure",
+      num(businessDetails.O69),
+      bpTransitionAcceleration,
+    );
+    check("Business Details!D74 following period's profit = the fixture's own figure", num(businessDetails.D74), bpFollowingPeriodProfit);
+
+    // The tax year this figure is computed for -- calculateSeCells' own
+    // source (taxData.tax_year.start, falling back to the scenario's own
+    // dates), not packageYearEnd: a caller checking a single computed
+    // result rather than a generated package directory passes no year end.
+    const basisPeriodStartYear = taxData?.tax_year?.start
+      ? new Date(taxData.tax_year.start).getUTCFullYear()
+      : extractTaxYearStart(expected);
+    const packageTaxYearEnd = basisPeriodStartYear ? basisPeriodStartYear + 1 : null;
+    // s.7A(2)(a): overlap relief is used in full on the 2023-24 return only.
+    const expectedOverlapReliefUsed = packageTaxYearEnd === 2024 ? bpOverlapBroughtForward : 0;
+    check(
+      "Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil",
+      num(businessDetails.D64),
+      expectedOverlapReliefUsed,
+    );
+    check(
+      "Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used",
+      num(businessDetails.D69),
+      bpOverlapBroughtForward - expectedOverlapReliefUsed,
+    );
+    // para 72(3)-(4): 1/(years left, this one included) of the untaxed
+    // transition balance, nil before 2023-24.
+    const expectedTransitionArising =
+      packageTaxYearEnd && packageTaxYearEnd >= 2024 ? bpTransitionBroughtForward / Math.max(1, 2029 - packageTaxYearEnd) : 0;
+    check(
+      "Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left",
+      num(businessDetails.O64),
+      expectedTransitionArising,
+    );
+    check(
+      "Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take",
+      num(businessDetails.O74),
+      bpTransitionBroughtForward - expectedTransitionArising - bpTransitionAcceleration,
+    );
+    // para 73(3): an election cannot exceed the untaxed balance left once
+    // this year's automatic slice is taken out of it -- checked against the
+    // sheet's own O69, not the fixture's, so a sheet that carries an
+    // over-large election fails here even when the fixture itself is fine.
+    check(
+      "Business Details!O69 election does not exceed the untaxed transition balance (para 73(3))",
+      Math.max(0, num(businessDetails.O69) - (bpTransitionBroughtForward - expectedTransitionArising)),
+      0,
+    );
+    // Box 73.3 (D201): this year's automatic slice plus the election.
+    check(
+      "SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69",
+      num(seFull.D201),
+      expectedTransitionArising + bpTransitionAcceleration,
+    );
+
+    // Box 68 (D197), s.7A: nil under s.7C for an accounting date of 31
+    // March to 5 April. Both fixtures ship one, so the independent figure
+    // is nil on every package year -- a book whose accounting date sits
+    // outside that window is covered by the calc-tier basis period test.
+    const periodProfit = num(seFull.O174) - num(seFull.O179);
+    const periodCoveredStart = expected.period_covered_start ? parseDate(expected.period_covered_start) : null;
+    const periodCoveredEnd = expected.period_covered_end ? parseDate(expected.period_covered_end) : null;
+    let expectedBasisAdjustment = 0;
+    if (periodCoveredStart && periodCoveredEnd && basisPeriodStartYear) {
+      const naturalStartYear = parseInt(taxYearFileName(periodCoveredEnd, "se").split("-")[1], 10);
+      const shiftYears = (d) => shiftMonths(d, (basisPeriodStartYear - naturalStartYear) * 12);
+      const shiftedStart = shiftYears(periodCoveredStart);
+      const shiftedEnd = shiftYears(periodCoveredEnd);
+      const marchThirtyFirst = new Date(Date.UTC(basisPeriodStartYear + 1, 2, 31));
+      if (shiftedEnd < marchThirtyFirst) {
+        const dayMs = 24 * 60 * 60 * 1000;
+        const taxYearStart = new Date(Date.UTC(basisPeriodStartYear, 3, 6));
+        const taxYearEnd = new Date(Date.UTC(basisPeriodStartYear + 1, 3, 5));
+        const followingPeriodEnd = shiftMonths(shiftedEnd, 12);
+        const thisPeriodShare = (shiftedEnd - Math.max(shiftedStart, taxYearStart) + dayMs) / (shiftedEnd - shiftedStart + dayMs);
+        const nextPeriodShare = (taxYearEnd - shiftedEnd) / (followingPeriodEnd - shiftedEnd);
+        expectedBasisAdjustment = thisPeriodShare * periodProfit + nextPeriodShare * bpFollowingPeriodProfit - periodProfit;
+      }
+    }
+    check(
+      "SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment",
+      num(seFull.D197),
+      expectedBasisAdjustment,
+      0.01,
     );
 
     // The capital allowance boxes have no profit and loss source: they read
@@ -2931,19 +3141,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(seFull.D174) - num(seFull.O122) - num(seFull.O160),
       ownUseStated,
     );
-    // The same two boxes anchored on the figure the book states, so a sheet
-    // whose box 71 cell and adjusted figures agree with each other but not
-    // with the book fails here.
+    // The same two boxes anchored on the figures the book states, so a
+    // sheet whose box 71 cell and adjusted figures agree with each other
+    // but not with the book fails here.
     const statedAccountingAdjustment = statedAdjustments.accountingAdjustment || 0;
     check(
-      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil",
+      "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil",
       num(seFull.O194),
-      Math.max(0, num(seFull.O174) - num(seFull.O179) + statedAccountingAdjustment),
+      Math.max(0, num(seFull.O174) - num(seFull.O179) + expectedBasisAdjustment + statedAccountingAdjustment),
     );
     check(
-      "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil",
+      "SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil",
       num(seFull.D219),
-      Math.max(0, num(seFull.O179) - num(seFull.O174) - statedAccountingAdjustment),
+      Math.max(0, num(seFull.O179) - num(seFull.O174) - expectedBasisAdjustment - statedAccountingAdjustment),
     );
 
     if (sa103s) {

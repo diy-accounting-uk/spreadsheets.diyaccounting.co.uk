@@ -5,10 +5,10 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.16+25abe637c",
+    "engineVersion": "1.2.18+16fb115d9",
     "taxDataHash": "3221a7c2f39c",
-    "templateHash": "107ff1b5c94a",
-    "templateScorecard": "7969 passed, 0 warnings, 0 failed",
+    "templateHash": "064605ae76ed",
+    "templateScorecard": "7982 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
   },
   "values": [
@@ -178,9 +178,54 @@
       "value": "Precision Code Trading"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Business Details!D59",
+      "unit": "text",
+      "value": "2400"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!D64",
+      "unit": "text",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!D69",
+      "unit": "text",
+      "value": "2400"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!N27",
+      "unit": "date",
+      "value": "46113"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!N32",
+      "unit": "date",
+      "value": "46477"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Business Details!O50",
       "unit": "text",
       "value": "640"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!O59",
+      "unit": "text",
+      "value": "6000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!O64",
+      "unit": "text",
+      "value": "3000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!O69",
+      "unit": "text",
+      "value": "1000"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!Business Details!O74",
+      "unit": "text",
+      "value": "2000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!C10",
@@ -213,6 +258,11 @@
       "value": "0"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!Income Tax!E14",
+      "unit": "money",
+      "value": "1735.81132243151"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E15",
       "unit": "money",
       "value": "2262"
@@ -220,12 +270,12 @@
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E16",
       "unit": "money",
-      "value": "1480.28301931507"
+      "value": "1560.28301931507"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E18",
       "unit": "money",
-      "value": "45744.7735987671"
+      "value": "47560.5849211986"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Income Tax!E5",
@@ -2066,6 +2116,16 @@
       "key": "cell/Financialaccounts.xlsx!SE Full!D179",
       "unit": "money",
       "value": "350"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!D197",
+      "unit": "money",
+      "value": "0"
+    },
+    {
+      "key": "cell/Financialaccounts.xlsx!SE Full!D201",
+      "unit": "money",
+      "value": "4000"
     },
     {
       "key": "cell/Financialaccounts.xlsx!SE Full!D210",
@@ -6533,11 +6593,83 @@
       "tolerance": "1"
     },
     {
+      "key": "check/Business Details!D59 overlap profit brought forward = the fixture's own figure",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "2400",
+      "actual": "2400",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "2400",
+      "actual": "2400",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!D74 following period's profit = the fixture's own figure",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/Business Details!O50 goods and services for own use = the figure the book states",
       "unit": "verdict",
       "value": "pass",
       "expected": "640",
       "actual": "640",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O59 transition profit not yet treated as arising = the fixture's own figure",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "6000",
+      "actual": "6000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "3000",
+      "actual": "3000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O69 additional transition profit elected this year = the fixture's own figure",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1000",
+      "actual": "1000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O69 election does not exceed the untaxed transition balance (para 73(3))",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "2000",
+      "actual": "2000",
       "tolerance": "1"
     },
     {
@@ -7036,6 +7168,14 @@
       "tolerance": "0.01"
     },
     {
+      "key": "check/Income Tax on transition profit (box 73.3)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1735.81132243151",
+      "actual": "1735.81132243151",
+      "tolerance": "0.01"
+    },
+    {
       "key": "check/Legal & Professional",
       "unit": "verdict",
       "value": "pass",
@@ -7057,6 +7197,14 @@
       "value": "pass",
       "expected": "2262",
       "actual": "2262",
+      "tolerance": "0.01"
+    },
+    {
+      "key": "check/NI Class 4 (upper)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1560.28301931507",
+      "actual": "1560.28301931507",
       "tolerance": "0.01"
     },
     {
@@ -11106,6 +11254,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "0.01"
+    },
+    {
       "key": "check/SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states",
       "unit": "verdict",
       "value": "pass",
@@ -11114,7 +11270,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil",
+      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil",
       "unit": "verdict",
       "value": "pass",
       "expected": "122200.81763242",
@@ -11122,11 +11278,19 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil",
+      "key": "check/SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil",
       "unit": "verdict",
       "value": "pass",
       "expected": "122200.81763242",
       "actual": "122200.81763242",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "4000",
+      "actual": "4000",
       "tolerance": "1"
     },
     {
@@ -11170,7 +11334,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil",
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -11178,7 +11342,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil",
+      "key": "check/SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -11690,11 +11854,11 @@
       "tolerance": "1"
     },
     {
-      "key": "check/Tax: Total = IT + CIS deduction line + NI",
+      "key": "check/Tax: Total = IT + transition profit tax + CIS deduction line + NI",
       "unit": "verdict",
       "value": "pass",
-      "expected": "45744.7735987671",
-      "actual": "45744.7735987671",
+      "expected": "47560.5849211986",
+      "actual": "47560.5849211986",
       "tolerance": "1"
     },
     {
@@ -11733,8 +11897,8 @@
       "key": "check/Total Tax + NI, less the CIS already deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "45744.7735987671",
-      "actual": "45744.7735987671",
+      "expected": "47560.5849211986",
+      "actual": "47560.5849211986",
       "tolerance": "0.01"
     },
     {
@@ -13544,10 +13708,64 @@
       "source": "cell/Financialaccounts.xlsx!Admin!G5"
     },
     {
+      "key": "section/business-details/accounting-period-end-date-box-9",
+      "unit": "date",
+      "value": "46477",
+      "source": "cell/Financialaccounts.xlsx!Business Details!N32"
+    },
+    {
+      "key": "section/business-details/accounting-period-start-date-box-8",
+      "unit": "date",
+      "value": "46113",
+      "source": "cell/Financialaccounts.xlsx!Business Details!N27"
+    },
+    {
+      "key": "section/business-details/additional-transition-profit-elected-this-year-feeds-box-73-3",
+      "unit": "text",
+      "value": "1000",
+      "source": "cell/Financialaccounts.xlsx!Business Details!O69"
+    },
+    {
       "key": "section/business-details/business-name",
       "unit": "text",
       "value": "Precision Code Trading",
       "source": "cell/Financialaccounts.xlsx!Business Details!C5"
+    },
+    {
+      "key": "section/business-details/overlap-profit-brought-forward-feeds-box-69",
+      "unit": "text",
+      "value": "2400",
+      "source": "cell/Financialaccounts.xlsx!Business Details!D59"
+    },
+    {
+      "key": "section/business-details/overlap-profit-carried-forward",
+      "unit": "text",
+      "value": "2400",
+      "source": "cell/Financialaccounts.xlsx!Business Details!D69"
+    },
+    {
+      "key": "section/business-details/overlap-relief-used-this-year-box-69",
+      "unit": "text",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!Business Details!D64"
+    },
+    {
+      "key": "section/business-details/transition-profit-carried-forward-to-next-year",
+      "unit": "text",
+      "value": "2000",
+      "source": "cell/Financialaccounts.xlsx!Business Details!O74"
+    },
+    {
+      "key": "section/business-details/transition-profit-not-yet-treated-as-arising",
+      "unit": "text",
+      "value": "6000",
+      "source": "cell/Financialaccounts.xlsx!Business Details!O59"
+    },
+    {
+      "key": "section/business-details/transition-profit-treated-as-arising-this-year-before-election-feeds-box-73-3",
+      "unit": "text",
+      "value": "3000",
+      "source": "cell/Financialaccounts.xlsx!Business Details!O64"
     },
     {
       "key": "section/business-details/value-of-goods-and-services-for-own-use-box-24",
@@ -13618,6 +13836,12 @@
       "source": "cell/Financialaccounts.xlsx!Income Tax!C9"
     },
     {
+      "key": "section/income-tax-calculation/income-tax-on-transition-profit-box-73-3-top-sliced",
+      "unit": "money",
+      "value": "1735.81132243151",
+      "source": "cell/Financialaccounts.xlsx!Income Tax!E14"
+    },
+    {
       "key": "section/income-tax-calculation/less-cis-deducted",
       "unit": "money",
       "value": "0",
@@ -13638,7 +13862,7 @@
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
       "unit": "money",
-      "value": "1480.28301931507",
+      "value": "1560.28301931507",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E16"
     },
     {
@@ -13680,7 +13904,7 @@
     {
       "key": "section/income-tax-calculation/total-tax-ni",
       "unit": "money",
-      "value": "45744.7735987671",
+      "value": "47560.5849211986",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E18"
     },
     {
@@ -14813,6 +15037,12 @@
       "source": "cell/Financialaccounts.xlsx!SE Full!D210"
     },
     {
+      "key": "section/self-assessment-sa103f/adjustment-where-accounting-period-was-not-12-months-long-box-68",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D197"
+    },
+    {
       "key": "section/self-assessment-sa103f/advertising-and-entertainment-box-24",
       "unit": "money",
       "value": "4091.66666666667",
@@ -14979,6 +15209,12 @@
       "unit": "money",
       "value": "950",
       "source": "cell/Financialaccounts.xlsx!SE Full!D86"
+    },
+    {
+      "key": "section/self-assessment-sa103f/spread-of-the-transition-profit-treated-as-arising-this-year-box-73-3",
+      "unit": "money",
+      "value": "4000",
+      "source": "cell/Financialaccounts.xlsx!SE Full!D201"
     },
     {
       "key": "section/self-assessment-sa103f/structures-and-buildings-allowance-box-53",

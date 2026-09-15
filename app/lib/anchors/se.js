@@ -30,6 +30,9 @@ import {
   ANNUAL_ALLOWANCE_CELLS,
   ANNUAL_ADJUSTMENT_CELLS,
   GOODS_FOR_OWN_USE_CELL,
+  BASIS_PERIOD_CELLS,
+  ACCOUNTING_PERIOD_START_CELL,
+  ACCOUNTING_PERIOD_END_CELL,
   SPECIAL_RATE_POOL_MARKER_COLUMN,
   SINGLE_ASSET_POOL_MARKER_COLUMN,
   PRIVATE_USE_COLUMN,
@@ -418,8 +421,19 @@ function isVatInputCell(sheet, cellRef) {
 // stock counts, the disallowable percentages and the SA103F boxes the book
 // states by hand.
 const SE_FULL_STATED_CELLS = new Set([...Object.values(ANNUAL_ALLOWANCE_CELLS), ...Object.values(ANNUAL_ADJUSTMENT_CELLS)]);
+const BUSINESS_DETAILS_BASIS_PERIOD_CELLS = new Set([
+  ...Object.values(BASIS_PERIOD_CELLS),
+  ACCOUNTING_PERIOD_START_CELL,
+  ACCOUNTING_PERIOD_END_CELL,
+]);
 function isHubInputCell(sheet, cellRef) {
-  if (sheet === "Business Details") return cellRef === "C5" || cellRef === BUSINESS_DESCRIPTION_CELL || cellRef === GOODS_FOR_OWN_USE_CELL;
+  if (sheet === "Business Details")
+    return (
+      cellRef === "C5" ||
+      cellRef === BUSINESS_DESCRIPTION_CELL ||
+      cellRef === GOODS_FOR_OWN_USE_CELL ||
+      BUSINESS_DETAILS_BASIS_PERIOD_CELLS.has(cellRef)
+    );
   if (sheet === "StockControl") return cellRef === STOCK_OPENING_COUNT_CELL || cellRef === STOCK_CLOSING_COUNT_CELL;
   if (sheet === "VitalTax") return Object.values(DISALLOWABLE_PERCENT_CELLS).includes(cellRef);
   if (sheet === "SE Full") return SE_FULL_STATED_CELLS.has(cellRef);

@@ -134,9 +134,9 @@ describeCalc(
       expect(results["Income Tax"].E18).toBeGreaterThan(0);
     });
 
-    it("Income Tax: total = income tax + NI", () => {
+    it("Income Tax: total = income tax + transition profit tax + NI", () => {
       const tax = results["Income Tax"];
-      expect(tax.E18).toBeCloseTo(tax.E11 + (tax.E15 || 0) + (tax.E16 || 0), 0);
+      expect(tax.E18).toBeCloseTo(tax.E11 + (tax.E14 || 0) + (tax.E15 || 0) + (tax.E16 || 0), 0);
     });
 
     // The statutory charge on this fixture's profit, worked out by hand from
@@ -154,14 +154,29 @@ describeCalc(
       // accounting practice (box 71) that box 73 adds. The two cars' 4,000
       // and 3,125 depreciation leaves the net profit and comes back as
       // box 44.
+      // The book also states a basis period record: box 69's overlap
+      // profit is used up on the 2023-24 return only, so nothing carries
+      // here; box 73.3's spread is the fixture's 6,000 transition balance
+      // divided by the 3 years left in 2025-26 (2,000), plus the 1,000
+      // election. Class 4 NIC runs over profit plus that spread (para
+      // 72(3)); the income tax on it is a separate top-slice component
+      // over taxable income plus the spread, run through the bands again
+      // and taxed less what E11 already charges on taxable income alone.
       //   profit                  124,060.150966
       //   allowance                   539.924517   (12,570 - 12,030.075483)
       //   taxable                 123,520.226449
       //   basic      37,700.000000 x 0.20 =  7,540.000000
       //   higher     85,820.226449 x 0.40 = 34,328.090580
       //   income tax                      = 41,868.090580
-      //   NI         37,700 x 0.06 = 2,262.00, 73,790.150966 x 0.02 = 1,475.803019
-      //   tax and NI                      = 45,605.893599
+      //   box 73.3 spread (2,000 + 1,000 election)        =  3,000.000000
+      //   taxable + spread                                = 126,520.226449
+      //   basic      37,700.000000 x 0.20 =   7,540.000000
+      //   higher     87,440.000000 x 0.40 =  34,976.000000
+      //   additional  1,380.226449 x 0.45 =     621.101902
+      //   less income tax on taxable alone       -41,868.090580
+      //   income tax on transition profit                 =  1,269.011322
+      //   NI         37,700 x 0.06 = 2,262.00, 76,790.150966 x 0.02 = 1,535.803019
+      //   tax and NI (income tax + transition profit tax + NI) = 46,934.904921
       expect(tax.E5).toBeCloseTo(124060.150966, 4);
       expect(tax.E6).toBeCloseTo(539.924517, 4);
       expect(tax.E7).toBeCloseTo(123520.226449, 4);
@@ -169,9 +184,11 @@ describeCalc(
       expect(tax.E9).toBeCloseTo(34328.09058, 2);
       expect(tax.E10).toBe(0);
       expect(tax.E11).toBeCloseTo(41868.09058, 2);
+      expect(results["SE Full"].D201).toBeCloseTo(3000, 2);
+      expect(tax.E14).toBeCloseTo(1269.011322, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1475.803019, 2);
-      expect(tax.E18).toBeCloseTo(45605.893599, 2);
+      expect(tax.E16).toBeCloseTo(1535.803019, 2);
+      expect(tax.E18).toBeCloseTo(46934.904921, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees

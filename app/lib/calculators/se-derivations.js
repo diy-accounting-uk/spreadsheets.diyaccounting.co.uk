@@ -474,18 +474,13 @@ const BOOK_STATED_ANNUAL_BOXES = [
 // Every annual field no cell and no book field can source, and a warning
 // naming the box for each -- section 8 of the design records why each is
 // out of reach today: no cell in the template, or a figure the book has no
-// record for. Box 69's field also moves out of HMRC's own schema by tax
-// year -- annualFieldsUnavailableForYear() below is what keeps a year that
-// no longer accepts a field from warning about it as if it still did. Boxes
-// 53 and 53.1 are not here: the Schedule's SBA block computes them, and
-// they are filed as arrays below, one item per claim.
+// record for. Boxes 53 and 53.1 are not here: the Schedule's SBA block
+// computes them, and they are filed as arrays below, one item per claim.
+// Boxes 68, 69 and 73.3 are not here either: the basis period record below
+// computes and files them.
 const NO_SOURCE_ANNUAL_BOXES = [
   { box: "55", pick: 1 }, // allowances.businessPremisesRenovationAllowance (shared with enhancedCapitalAllowance)
   { box: "59", pick: 1 }, // adjustments.balancingChargeBpra (shared with balancingChargeOther)
-  { box: "68", pick: 0 }, // adjustments.basisAdjustment
-  { box: "69", pick: 0 }, // adjustments.overlapReliefUsed -- gone from 2026-27
-  { box: "73.3", pick: 0 }, // adjustments.transitionProfitAmount -- added in 2024-25
-  { box: "73.3", pick: 1 }, // adjustments.transitionProfitAccelerationAmount -- added in 2024-25
 ];
 
 // api.years in sa103-mtd-mapping.json is the source of which annual fields
@@ -621,6 +616,43 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
     warnings.push({
       field,
       reason: `SA103F box ${boxNumber} has no cell the template computes; the customer fills it in by hand.`,
+    });
+  }
+
+  // The basis period record (boxes 68, 69 and 73.3): the sheet computes
+  // every one of these from the book's stated basis period figures, so each
+  // files only when it carries a genuine adjustment -- box 68 is nil for
+  // almost every trader (s.7C, an accounting date of 31 March to 5 April),
+  // and a trader who has already used all of their overlap or transition
+  // profit states nothing further for it.
+  const businessDetails = rawResults["Business Details"] || {};
+  const businessDetailsNumber = (cell) => (typeof businessDetails[cell] === "number" ? businessDetails[cell] : 0);
+  const basisAdjustmentField = primaryField(boxes, "68");
+  if (!unavailableFields.has(basisAdjustmentField) && cellNumber("D197") !== 0) {
+    setPath(root, basisAdjustmentField, round2(cellNumber("D197")));
+  }
+  const overlapReliefField = primaryField(boxes, "69");
+  const overlapReliefUsed = businessDetailsNumber("D64");
+  if (!unavailableFields.has(overlapReliefField) && overlapReliefUsed > 0) {
+    setPath(root, overlapReliefField, round2(overlapReliefUsed));
+  }
+  const transitionProfitField = fieldsOf(boxEntry(boxes, "73.3"))[0];
+  const transitionAccelerationField = fieldsOf(boxEntry(boxes, "73.3"))[1];
+  const transitionProfitArising = businessDetailsNumber("O64");
+  const transitionAcceleration = businessDetailsNumber("O69");
+  if (!unavailableFields.has(transitionProfitField) && transitionProfitArising > 0) {
+    setPath(root, transitionProfitField, round2(transitionProfitArising));
+  }
+  if (!unavailableFields.has(transitionAccelerationField) && transitionAcceleration > 0) {
+    setPath(root, transitionAccelerationField, round2(transitionAcceleration));
+  }
+  // FA 2022 Sch 1 para 73(3): an election cannot exceed the untaxed balance
+  // left once this year's automatic slice (O64) is taken out of it.
+  const transitionUntaxedBalance = businessDetailsNumber("O59") - transitionProfitArising;
+  if (transitionAcceleration > transitionUntaxedBalance) {
+    warnings.push({
+      field: transitionAccelerationField,
+      reason: `the elected transition profit acceleration (${round2(transitionAcceleration)}) exceeds the untaxed balance (${round2(transitionUntaxedBalance)}); an election cannot exceed it (FA 2022 Sch 1 para 73(3)).`,
     });
   }
 

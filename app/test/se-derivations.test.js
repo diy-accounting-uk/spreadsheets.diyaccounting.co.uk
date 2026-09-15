@@ -464,35 +464,23 @@ describe("buildSelfEmploymentAnnualSubmission — box 55 is warned as a small po
 describe("buildSelfEmploymentAnnualSubmission — the annual field set follows api.years, not a fixed list", () => {
   // Hand-read off sa103-mtd-mapping.json's own api.years block, independently
   // of se-derivations.js's own reading of it, so a derivation that only
-  // echoes its own logic back at itself cannot pass this. Only these five
-  // fields move by year; every other warned field (the seven no-box-and-
-  // no-cell allowances/adjustments, the fourteen disallowable categories,
-  // goodsAndServicesOwnUse, box 55's small-pools note) is year-invariant.
+  // echoes its own logic back at itself cannot pass this. These two
+  // allowance fields are warned (the template carries no cell for them once
+  // the book states nothing); every other warned field (the seven no-box-
+  // and-no-cell allowances/adjustments, the fourteen disallowable
+  // categories, goodsAndServicesOwnUse, box 55's small-pools note) is
+  // year-invariant.
   const EXPECT_PRESENT_BY_YEAR = {
-    "2023-24": [
-      "allowances.zeroEmissionsGoodsVehicleAllowance",
-      "allowances.electricChargePointAllowance",
-      "adjustments.overlapReliefUsed",
-    ],
-    "2024-25": [
-      "allowances.zeroEmissionsGoodsVehicleAllowance",
-      "allowances.electricChargePointAllowance",
-      "adjustments.overlapReliefUsed",
-      "adjustments.transitionProfitAmount",
-      "adjustments.transitionProfitAccelerationAmount",
-    ],
-    "2025-26": ["adjustments.overlapReliefUsed", "adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
-    "2026-27": ["adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
+    "2023-24": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"],
+    "2024-25": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"],
+    "2025-26": [],
+    "2026-27": [],
   };
   const EXPECT_ABSENT_BY_YEAR = {
-    "2023-24": ["adjustments.transitionProfitAmount", "adjustments.transitionProfitAccelerationAmount"],
+    "2023-24": [],
     "2024-25": [],
     "2025-26": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"],
-    "2026-27": [
-      "allowances.zeroEmissionsGoodsVehicleAllowance",
-      "allowances.electricChargePointAllowance",
-      "adjustments.overlapReliefUsed",
-    ],
+    "2026-27": ["allowances.zeroEmissionsGoodsVehicleAllowance", "allowances.electricChargePointAllowance"],
   };
 
   for (const year of Object.keys(TAX_DATA_BY_YEAR)) {
@@ -506,6 +494,42 @@ describe("buildSelfEmploymentAnnualSubmission — the annual field set follows a
       for (const field of EXPECT_ABSENT_BY_YEAR[year]) {
         expect(warningFields.has(field), `${year} should not mention ${field}`).toBe(false);
       }
+    });
+  }
+
+  // The basis period fields (boxes 68, 69 and 73.3) are filed, not
+  // warned -- computed straight off the fixture's own overlap and
+  // transition figures. overlapReliefUsed is only ever the whole of the
+  // 2023-24 return's overlap balance, and drops from the schema entirely
+  // from 2026-27; the transition fields are unavailable before 2024-25 and
+  // file the balance divided by the years left, plus the fixture's 1,000
+  // election, from then on. Box 68 (basisAdjustment) stays unfiled every
+  // year: this fixture's book carries no documentInfo.periodCoveredStart,
+  // so D197 is nil throughout (s.7C), matching "not nil" the filing rule
+  // requires.
+  const EXPECT_BASIS_PERIOD_ADJUSTMENTS_BY_YEAR = {
+    "2023-24": { overlapReliefUsed: 2400 },
+    "2024-25": { transitionProfitAmount: 1500, transitionProfitAccelerationAmount: 1000 },
+    "2025-26": { transitionProfitAmount: 2000, transitionProfitAccelerationAmount: 1000 },
+    "2026-27": { transitionProfitAmount: 3000, transitionProfitAccelerationAmount: 1000 },
+  };
+  const BASIS_PERIOD_ADJUSTMENT_FIELDS = [
+    "overlapReliefUsed",
+    "transitionProfitAmount",
+    "transitionProfitAccelerationAmount",
+    "basisAdjustment",
+  ];
+
+  for (const year of Object.keys(TAX_DATA_BY_YEAR)) {
+    it(`${year}: the basis period fields the payload files match the fixture's own figures for that year`, () => {
+      const { annual } = derive("se-scenario-advanced", TAX_DATA_BY_YEAR[year]);
+      const filed = Object.fromEntries(
+        BASIS_PERIOD_ADJUSTMENT_FIELDS.filter((field) => annual.adjustments[field] !== undefined).map((field) => [
+          field,
+          annual.adjustments[field],
+        ]),
+      );
+      expect(filed).toEqual(EXPECT_BASIS_PERIOD_ADJUSTMENTS_BY_YEAR[year]);
     });
   }
 
@@ -607,17 +631,16 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
           "balancingChargeOther",
           "goodsAndServicesOwnUse",
           "outstandingBusinessIncome",
-          ...(statesAnnualFigures ? ["includedNonTaxableProfits", "accountingAdjustment"] : []),
+          ...(statesAnnualFigures
+            ? ["includedNonTaxableProfits", "accountingAdjustment", "transitionProfitAmount", "transitionProfitAccelerationAmount"]
+            : []),
         ].sort(),
       );
       const warningFields = annual.warnings.map((w) => w.field);
-      const neverSourced = [
-        "allowances.businessPremisesRenovationAllowance",
-        "adjustments.balancingChargeBpra",
-        "adjustments.basisAdjustment",
-        "adjustments.transitionProfitAmount",
-        "adjustments.transitionProfitAccelerationAmount",
-      ];
+      // Boxes 68, 69 and 73.3 are not here: they are computed from the
+      // basis period record, not printed with no cell behind them, so a
+      // book that states nothing for them files nothing and warns nothing.
+      const neverSourced = ["allowances.businessPremisesRenovationAllowance", "adjustments.balancingChargeBpra"];
       const bookStated = [
         "allowances.zeroEmissionsCarAllowance",
         "adjustments.includedNonTaxableProfits",
