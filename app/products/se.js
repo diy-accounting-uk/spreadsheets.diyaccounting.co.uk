@@ -1847,6 +1847,7 @@ const ADMIN_RATE_CELLS = new Set([
   "L23",
   "G4",
   "G5",
+  "G6",
   "G9",
   "G10",
   "G13",

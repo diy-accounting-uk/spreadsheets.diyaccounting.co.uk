@@ -585,6 +585,14 @@ describe("Self Employed engine: the read scope", () => {
       expect(unitFor("Payslips.xlsx!Payment", `I${row}`)).toBe("money");
     }
   });
+
+  it("gives Admin sheet rate cells the rate unit and other cells the money unit", () => {
+    expect(unitFor("Admin", "G4")).toBe("rate");
+    expect(unitFor("Admin", "G5")).toBe("rate");
+    expect(unitFor("Admin", "G6")).toBe("rate");
+    expect(unitFor("Admin", "G8")).toBe("money");
+    expect(unitFor("Admin", "N6")).toBe("rate");
+  });
 });
 
 // The leaf cells a sibling workbook's link addresses, each anchored to the
