@@ -8,12 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**COOL-DOWN is on since 2026-09-15T16:46:02Z.** No new board rows except a degradation. Agents commit
-and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
-
-`main` is green on `5eb8a212` (CQ-44); prod serves it and the publish job landed diya-gl 1.2.17 as
-`ecd5dafb`.
-No branch but `main`; no watch monitor is armed.
+Batch 18, `claude/b18-board`, worktree `.worktrees/b18`: one wave, one PR, carrying CQ-48, CQ-49,
+CQ-45, CQ-46, CQ-47 and SET-7 (operator, 2026-09-15). `main` is green on `5eb8a212` (CQ-44); prod
+serves it.
 
 ## Context for the open rows
 
