@@ -159,15 +159,23 @@ const SHORT_PROFIT_FOR_TAX =
   "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5";
 const BRIDGE = "Accounting profit to tax profit bridge closes to zero";
 const SMALL_POOLS_RULE =
-  "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000";
+  "SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000";
 const SMALL_POOLS_FIXTURE =
-  "SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed from the scenario's own pooled assets";
+  "SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed per pool from the scenario's own pooled assets";
 const SINGLE_ASSET_MAIN =
   "Fixed assets: Schedule single asset pool main rate allowance (AE1) = the scenario's single asset pool main rate assets at the year's rate, less private use";
 const SINGLE_ASSET_SPECIAL =
   "Fixed assets: Schedule single asset pool special rate allowance (AF1) = the scenario's single asset pool special rate assets at the year's special rate, less private use";
 const SINGLE_ASSET_WRITTEN_DOWN =
   "Fixed assets: Schedule single asset pool written down value (AG1) = the scenario's single asset pool assets' tax written-down values less this year's allowance";
+const MAIN_POOL_WRITTEN_DOWN =
+  "Fixed assets: Schedule main pool written down value (AH1) = the scenario's pooled main rate assets' tax written-down values less this year's allowance, plus additions less their annual investment allowance";
+const SPECIAL_POOL_WRITTEN_DOWN =
+  "Fixed assets: Schedule special rate pool written down value (AI1) = the scenario's pooled special rate assets' tax written-down values less this year's allowance";
+const MAIN_POOL_BALANCE =
+  "Fixed assets: main pool balance before this year's allowance (R1 - AE1 + AH1) = the scenario's pooled main rate assets' tax written-down values plus additions less their annual investment allowance";
+const SPECIAL_POOL_BALANCE =
+  "Fixed assets: special rate pool balance before this year's allowance (AC1 - AF1 + AI1) = the scenario's pooled special rate assets' tax written-down values";
 // A cell the trader states on SE Full alone reaches the full return's
 // totals, the short-return relations that subtract it, the tax profit the
 // Income Tax sheet reads and the bridge onto it.
@@ -538,15 +546,18 @@ describeCalc("SA103F checks catch a broken full return", () => {
     ]);
   });
 
-  // The single asset pool columns on the fixed asset schedule, corrupted in
-  // Fixedassets.xlsx itself. A total large enough to pull the pooled balance
-  // under £1,000 flips the small pools rule as well as its own anchor; the
+  // The pool columns on the fixed asset schedule, corrupted in
+  // Fixedassets.xlsx itself. A single asset pool total large enough, or a
+  // pool's written-down value negative enough, to pull that pool's balance
+  // under £1,000 flips the small pools rule as well as its own anchors; the
   // marked row's own cells flip their own anchors alone, because box 50 on
   // the hub is already recalculated from them.
   const SCHEDULE_CORRUPTIONS = [
-    ["AE1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_MAIN]],
-    ["AF1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_SPECIAL]],
-    ["AG1", 100000, [SMALL_POOLS_RULE, SINGLE_ASSET_WRITTEN_DOWN]],
+    ["AE1", 100000, [SMALL_POOLS_RULE, MAIN_POOL_BALANCE, SINGLE_ASSET_MAIN]],
+    ["AF1", 100000, [SMALL_POOLS_RULE, SPECIAL_POOL_BALANCE, SINGLE_ASSET_SPECIAL]],
+    ["AG1", 100000, [SINGLE_ASSET_WRITTEN_DOWN]],
+    ["AH1", -25000, [SMALL_POOLS_RULE, MAIN_POOL_WRITTEN_DOWN, MAIN_POOL_BALANCE]],
+    ["AI1", -9000, [SMALL_POOLS_RULE, SPECIAL_POOL_WRITTEN_DOWN, SPECIAL_POOL_BALANCE]],
     ["M40", 0.5, ["Fixed assets: Schedule private use share (M40) = the scenario's motor asset 3 private use"]],
     ["AD40", "S", ["Fixed assets: Schedule single asset pool marker (AD40) = P for the scenario's motor asset 3"]],
   ];
@@ -560,6 +571,11 @@ describeCalc("SA103F checks catch a broken full return", () => {
     expect(schedule.AE1).toBeCloseTo(1008, 6);
     expect(schedule.AF1).toBe(0);
     expect(schedule.AG1).toBeCloseTo(6992, 6);
+    // The van's 24,000 less its 4,320 main pool allowance; the estate car's
+    // 9,000 less its 540 special rate allowance, each pool over the £1,000
+    // test on its own.
+    expect(schedule.AH1).toBeCloseTo(19680, 6);
+    expect(schedule.AI1).toBeCloseTo(8460, 6);
     expect(results["SE Full"].O144).toBe(0);
   });
 

@@ -2903,6 +2903,16 @@
       "value": "7216"
     },
     {
+      "key": "cell/Fixedassets.xlsx!Schedule!AH1",
+      "unit": "money",
+      "value": "20640"
+    },
+    {
+      "key": "cell/Fixedassets.xlsx!Schedule!AI1",
+      "unit": "money",
+      "value": "8460"
+    },
+    {
       "key": "cell/Fixedassets.xlsx!Schedule!E1",
       "unit": "money",
       "value": "114000"
@@ -6631,6 +6641,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/Fixed assets: Schedule main pool written down value (AH1) = the scenario's pooled main rate assets' tax written-down values less this year's allowance, plus additions less their annual investment allowance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "20640",
+      "actual": "20640",
+      "tolerance": "1"
+    },
+    {
       "key": "check/Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total",
       "unit": "verdict",
       "value": "pass",
@@ -6702,6 +6720,14 @@
       "tolerance": "1"
     },
     {
+      "key": "check/Fixed assets: Schedule special rate pool written down value (AI1) = the scenario's pooled special rate assets' tax written-down values less this year's allowance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "8460",
+      "actual": "8460",
+      "tolerance": "1"
+    },
+    {
       "key": "check/Fixed assets: Schedule total cost = existing assets plus assets bought in the year",
       "unit": "verdict",
       "value": "pass",
@@ -6715,6 +6741,22 @@
       "value": "pass",
       "expected": "61365",
       "actual": "61365",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed assets: main pool balance before this year's allowance (R1 - AE1 + AH1) = the scenario's pooled main rate assets' tax written-down values plus additions less their annual investment allowance",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "24000",
+      "actual": "24000",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Fixed assets: special rate pool balance before this year's allowance (AC1 - AF1 + AI1) = the scenario's pooled special rate assets' tax written-down values",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "9000",
+      "actual": "9000",
       "tolerance": "1"
     },
     {
@@ -10788,7 +10830,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000",
+      "key": "check/SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",
@@ -10796,7 +10838,7 @@
       "tolerance": "1"
     },
     {
-      "key": "check/SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed from the scenario's own pooled assets",
+      "key": "check/SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed per pool from the scenario's own pooled assets",
       "unit": "verdict",
       "value": "pass",
       "expected": "0",

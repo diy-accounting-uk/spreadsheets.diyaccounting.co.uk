@@ -123,12 +123,12 @@ Trade: IT consultancy and software development
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 4144 | 4144 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 540 | 540 | 0 | PASS |
-| SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000 | 0 | 0 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000 | 0 | 0 | 0 | PASS |
 | SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1 | 8140 | 8140 | 0 | PASS |
 | SA103F box 59 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate, less private use | 4144 | 4144 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate, less private use | 540 | 540 | 0 | PASS |
-| SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed from the scenario's own pooled assets | 0 | 0 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed per pool from the scenario's own pooled assets | 0 | 0 | 0 | PASS |
 | SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states | 2500 | 2500 | 0 | PASS |
 | SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states | 1800 | 1800 | 0 | PASS |
@@ -179,6 +179,10 @@ Trade: IT consultancy and software development
 | Fixed assets: Schedule total cost = existing assets plus assets bought in the year | 114000 | 114000 | 0 | PASS |
 | Fixed assets: Schedule special rate (AC4) = Admin special rate WDA | 0.06 | 0.06 | 0 | PASS |
 | Fixed assets: Schedule special rate pool allowance (AC1) = the scenario's special rate assets at the year's special rate, less private use | 540 | 540 | 0 | PASS |
+| Fixed assets: Schedule main pool written down value (AH1) = the scenario's pooled main rate assets' tax written-down values less this year's allowance, plus additions less their annual investment allowance | 20640 | 20640 | 0 | PASS |
+| Fixed assets: Schedule special rate pool written down value (AI1) = the scenario's pooled special rate assets' tax written-down values less this year's allowance | 8460 | 8460 | 0 | PASS |
+| Fixed assets: main pool balance before this year's allowance (R1 - AE1 + AH1) = the scenario's pooled main rate assets' tax written-down values plus additions less their annual investment allowance | 24000 | 24000 | 0 | PASS |
+| Fixed assets: special rate pool balance before this year's allowance (AC1 - AF1 + AI1) = the scenario's pooled special rate assets' tax written-down values | 9000 | 9000 | 0 | PASS |
 | Fixed assets: Schedule single asset pool main rate allowance (AE1) = the scenario's single asset pool main rate assets at the year's rate, less private use | 784 | 784 | 0 | PASS |
 | Fixed assets: Schedule single asset pool special rate allowance (AF1) = the scenario's single asset pool special rate assets at the year's special rate, less private use | 0 | 0 | 0 | PASS |
 | Fixed assets: Schedule single asset pool written down value (AG1) = the scenario's single asset pool assets' tax written-down values less this year's allowance | 7216 | 7216 | 0 | PASS |
@@ -2460,6 +2464,8 @@ Journal amounts include VAT at 20%.
 | AE1 | Single asset pool writing down allowance at the main rate (the rows marked P in column AD) | 784 |  |
 | AF1 | Single asset pool writing down allowance at the special rate (the rows marked P and S) | 0 |  |
 | AG1 | Single asset pool tax written down value carried forward | 7216 |  |
+| AH1 | Main pool tax written down value carried forward, single asset pool rows left out | 20640 |  |
+| AI1 | Special rate pool tax written down value carried forward (the rows marked S), single asset pool rows left out | 8460 |  |
 | E57 | Cost of the assets owned at the start of the year | 61500 |  |
 | E110 | Cost of the assets bought during the year | 52500 |  |
 | M40 | Private use share of the third motor vehicle brought forward | 0.3 |  |
