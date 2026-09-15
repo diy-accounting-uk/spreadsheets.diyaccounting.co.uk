@@ -157,7 +157,9 @@
   // AE1, AF1 and AG1 are the single asset pools' allowances by rate and
   // their written-down value, the rows the small pools test leaves out; AH1
   // and AI1 are the pooled written-down value by rate pool, single asset
-  // pool rows left out, which the small pools test now runs per pool.
+  // pool rows left out, which the small pools test now runs per pool. K120
+  // and K121 are the Structures and Buildings Allowance block's own totals
+  // (SA103F boxes 53 and 53.1), below the register on the same sheet.
   var SCHEDULE_CELLS = [
     "E57",
     "E110",
@@ -175,6 +177,8 @@
     "AE1",
     "AF1",
     "AG1",
+    "K120",
+    "K121",
     "AH1",
     "AI1",
     "S1",

@@ -265,16 +265,20 @@ function renderAccounts(bookSchema, accounts, lines) {
 // A plain object table (documentInfo, entityInformation, stock, tax's own
 // sub-sections, openingBalances' assetClassAmounts): every property in
 // schema order, scalars as `key = value`, a nested object recursed as
-// `[header.key]`, and a patternProperties dict (only openingBalances.
-// bankAccounts is one) as a table of bare account-code keys.
+// `[header.key]`, an array as `[[header.key]]` blocks (structuresBuildings
+// AllowanceClaim, tax.selfEmployment.allowances' own claim arrays), and a
+// patternProperties dict (only openingBalances.bankAccounts is one) as a
+// table of bare account-code keys.
 function renderObjectTable(bookSchema, header, value, objectSchema, lines) {
   const props = objectSchema?.properties || {};
   const scalarKeys = [];
   const nestedKeys = [];
+  const arrayKeys = [];
   for (const key of Object.keys(props)) {
     if (value[key] === undefined) continue;
     const propSchema = resolveRef(bookSchema, props[key]);
-    if (propSchema.type === "object") nestedKeys.push(key);
+    if (propSchema.type === "array") arrayKeys.push(key);
+    else if (propSchema.type === "object") nestedKeys.push(key);
     else scalarKeys.push(key);
   }
   if (scalarKeys.length > 0) {
@@ -292,16 +296,34 @@ function renderObjectTable(bookSchema, header, value, objectSchema, lines) {
       renderObjectTable(bookSchema, `${header}.${key}`, value[key], propSchema, lines);
     }
   }
+  for (const key of arrayKeys) {
+    const propSchema = resolveRef(bookSchema, props[key]);
+    renderArrayOfTables(bookSchema, `${header}.${key}`, value[key], resolveRef(bookSchema, propSchema.items), lines);
+  }
 }
 
-function renderArrayOfTables(key, items, itemSchema, lines) {
+// items is an array-of-tables ([[key]] blocks); an item field whose own
+// schema is an object (structuresBuildingsAllowanceClaim's building) prints
+// as a [key.field] table straight after that item's own [[key]] block,
+// rather than as a scalar -- the one shape "[[key]]" plus a following
+// object header can express without a nesting level of its own.
+function renderArrayOfTables(bookSchema, key, items, itemSchema, lines) {
   for (const item of sortById(items, itemSchema)) {
     lines.push(`[[${key}]]`);
+    const nestedFields = [];
     for (const field of Object.keys(itemSchema.properties)) {
       if (item[field] === undefined) continue;
-      lines.push(`${tomlKey(field)} = ${tomlScalar(item[field], itemSchema.properties[field])}`);
+      const fieldSchema = resolveRef(bookSchema, itemSchema.properties[field]);
+      if (fieldSchema.type === "object") {
+        nestedFields.push(field);
+        continue;
+      }
+      lines.push(`${tomlKey(field)} = ${tomlScalar(item[field], fieldSchema)}`);
     }
     lines.push("");
+    for (const field of nestedFields) {
+      renderObjectTable(bookSchema, `${key}.${field}`, item[field], resolveRef(bookSchema, itemSchema.properties[field]), lines);
+    }
   }
 }
 
@@ -326,7 +348,7 @@ export function canonicalBookToml(book) {
     }
     const propSchema = resolveRef(bookSchema, bookSchema.properties[key]);
     if (propSchema.type === "array") {
-      renderArrayOfTables(key, book[key], resolveRef(bookSchema, propSchema.items), lines);
+      renderArrayOfTables(bookSchema, key, book[key], resolveRef(bookSchema, propSchema.items), lines);
     } else {
       renderObjectTable(bookSchema, key, book[key], propSchema, lines);
     }

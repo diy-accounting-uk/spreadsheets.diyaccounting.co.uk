@@ -424,8 +424,17 @@ describe("the package the writer saves", () => {
     expect(asDay(reimported.book.documentInfo.periodCoveredEnd)).toBe(asDay(book.documentInfo.periodCoveredEnd));
 
     // The annual SA103F figures the book states by hand come back off the
-    // SE Full and Business Details cells the writer put them on.
-    expect(reimported.book.tax.selfEmployment.allowances).toEqual(book.tax.selfEmployment.allowances);
+    // SE Full and Business Details cells the writer put them on. TOML parses
+    // an unquoted date as a Date instance; the exporter reads a cell's date
+    // back as an ISO string -- both name the same day, so the SBA claims'
+    // dates compare as days rather than by instance type.
+    function dayNormalized(value) {
+      if (value instanceof Date) return asDay(value);
+      if (Array.isArray(value)) return value.map(dayNormalized);
+      if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, dayNormalized(v)]));
+      return value;
+    }
+    expect(dayNormalized(reimported.book.tax.selfEmployment.allowances)).toEqual(dayNormalized(book.tax.selfEmployment.allowances));
     expect(reimported.book.tax.selfEmployment.adjustments).toEqual(book.tax.selfEmployment.adjustments);
   }, 600000);
 
@@ -434,7 +443,9 @@ describe("the package the writer saves", () => {
     const scenario = diyaGlToScenario(book, lines, "se");
     expect(scenario.disallowable.allowances).toBeUndefined();
     const hub = cellWrites(scenario, targetStartYearOf(book))["Financialaccounts.xlsx"];
-    expect(hub["SE Full"]).toEqual({ D156: 2500, D160: 1800, D179: 350, D210: 90 });
+    // Box 53 (structuredBuildingAllowance) leaves ANNUAL_ALLOWANCE_CELLS: the
+    // Schedule's SBA block computes it now, so no stated cell carries it.
+    expect(hub["SE Full"]).toEqual({ D152: 2500, D179: 350, D210: 90 });
     expect(hub["Business Details"].O50).toBe(640);
 
     const unstated = cellWrites({ ...scenario, annual_allowances: undefined, annual_adjustments: undefined }, targetStartYearOf(book));

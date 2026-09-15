@@ -6205,12 +6205,28 @@ otherExpenses = 0.13
 
 [annual_allowances]
 zeroEmissionsCarAllowance = 2500
-structuredBuildingAllowance = 1800
 
 [annual_adjustments]
 goodsAndServicesOwnUse = 640
 includedNonTaxableProfits = 350
 accountingAdjustment = 90
+
+[[sba_claims]]
+qualifyingDate = 2023-10-01
+qualifyingAmountExpenditure = 60000
+
+[sba_claims.building]
+name = "Unit 4 Trafford Park"
+postcode = "M17 1AA"
+
+[[sba_claims]]
+qualifyingDate = 2025-10-01
+qualifyingAmountExpenditure = 20000
+enhanced = true
+
+[sba_claims.building]
+number = "7"
+postcode = "L24 9AA"
 
 [[hp_agreements]]
 date = 2025-06-01

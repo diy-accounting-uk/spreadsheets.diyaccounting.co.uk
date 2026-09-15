@@ -229,17 +229,18 @@ export const DISALLOWABLE_PERCENT_CELLS = {
 
 // The SA103F boxes the trader states by hand, keyed by HMRC's own API field
 // names. Verified against the template: SE Full!O154 (box 57) reads
-// D139+D144+D147+D152+D156+D160+O139+O144+O149, so every allowance cell here
-// is a term of the total; O169 (box 63) reads O154+D179; O194 (box 73) and
-// D219 (box 77) each floor the working sheet's one figure,
+// D139+D144+D147+D150+D152+D156+D160+O139+O144+O149, so every allowance cell
+// here is a term of the total; O169 (box 63) reads O154+D179; O194 (box 73)
+// and D219 (box 77) each floor the working sheet's one figure,
 // O174-O179+N(D197)+D210+N(O190), at nil from its own side. Box 54's caption
 // at N136 is "Electric charge-point allowance" (L136 = 54); box 55's cell
 // O144 is the small pools formula, so the enhanced-allowance figure has no
-// input cell of its own.
+// input cell of its own. Boxes 53 and 53.1 (D156, D160) are not stated here:
+// the Schedule's SBA block computes them from scenario.sba_claims, so they
+// carry no entry in this table.
 export const ANNUAL_ALLOWANCE_CELLS = {
-  zeroEmissionsGoodsVehicleAllowance: "D152",
-  zeroEmissionsCarAllowance: "D156",
-  structuredBuildingAllowance: "D160",
+  zeroEmissionsGoodsVehicleAllowance: "D150",
+  zeroEmissionsCarAllowance: "D152",
   electricChargePointAllowance: "O139",
 };
 export const ANNUAL_ADJUSTMENT_CELLS = {
@@ -288,6 +289,28 @@ export const SPECIAL_RATE_POOL_MARKER = "S";
 export const SINGLE_ASSET_POOL_MARKER_COLUMN = "AD";
 export const SINGLE_ASSET_POOL_MARKER = "P";
 export const PRIVATE_USE_COLUMN = "M";
+
+// Structures and Buildings Allowance claims, Fixedassets.xlsx Schedule rows
+// 115 to 119, below the register (SA103F boxes 53 and 53.1). Written left
+// to right: B the date first in qualifying use, C the building name, D its
+// number, E the qualifying expenditure, F the postcode, G "F" for a Freeport
+// or Investment Zone tax site, I the date qualifying use ceased. H (the
+// year's rate), J (days claimed) and K (the year's allowance) are the
+// sheet's own formulas. Verified against the template: H115 =
+// IF(E115>0,IF(G115="F",[1]Admin!$G$10,[1]Admin!$G$9)," "), K120 =
+// SUMIF(G115:G119,"<>F",K115:K119) (box 53), K121 the same with "F"
+// (box 53.1).
+export const SBA_CLAIM_ROWS = [115, 116, 117, 118, 119];
+export const SBA_CLAIM_COLUMNS = {
+  qualifyingDate: "B",
+  name: "C",
+  number: "D",
+  qualifyingAmountExpenditure: "E",
+  postcode: "F",
+  enhanced: "G",
+  ceasedDate: "I",
+};
+export const SBA_ENHANCED_MARKER = "F";
 
 // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
 // rows are available for scenario agreements before the sheet's own
@@ -764,6 +787,45 @@ function composeWrites(scenario, targetStartYear) {
     });
   }
 
+  // Structures and Buildings Allowance claims (SA103F boxes 53 and 53.1).
+  if (scenario.sba_claims) {
+    if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    for (const claim of scenario.sba_claims.slice(SBA_CLAIM_ROWS.length)) {
+      skips.push(
+        skipped(
+          "structuresBuildingsAllowanceClaim",
+          { date: claim.qualifyingDate, code: claim.enhanced ? "enhanced" : "standard", amount: claim.qualifyingAmountExpenditure },
+          `the Schedule holds ${SBA_CLAIM_ROWS.length} Structures and Buildings Allowance claims`,
+        ),
+      );
+    }
+    scenario.sba_claims.slice(0, SBA_CLAIM_ROWS.length).forEach((claim, i) => {
+      const row = SBA_CLAIM_ROWS[i];
+      const qualifyingDate = shiftDate(parseDate(claim.qualifyingDate));
+      // Left to right: B, C, D, E, F, G, I -- see the opening asset writer
+      // above for why the order matters. H and J are the sheet's formulas.
+      fa[`${SBA_CLAIM_COLUMNS.qualifyingDate}${row}`] = toExcelSerial(
+        qualifyingDate.getUTCFullYear(),
+        qualifyingDate.getUTCMonth() + 1,
+        qualifyingDate.getUTCDate(),
+      );
+      if (claim.building?.name) fa[`${SBA_CLAIM_COLUMNS.name}${row}`] = claim.building.name;
+      if (claim.building?.number) fa[`${SBA_CLAIM_COLUMNS.number}${row}`] = claim.building.number;
+      fa[`${SBA_CLAIM_COLUMNS.qualifyingAmountExpenditure}${row}`] = claim.qualifyingAmountExpenditure;
+      fa[`${SBA_CLAIM_COLUMNS.postcode}${row}`] = claim.building.postcode;
+      if (claim.enhanced) fa[`${SBA_CLAIM_COLUMNS.enhanced}${row}`] = SBA_ENHANCED_MARKER;
+      if (claim.ceasedDate) {
+        const ceasedDate = shiftDate(parseDate(claim.ceasedDate));
+        fa[`${SBA_CLAIM_COLUMNS.ceasedDate}${row}`] = toExcelSerial(
+          ceasedDate.getUTCFullYear(),
+          ceasedDate.getUTCMonth() + 1,
+          ceasedDate.getUTCDate(),
+        );
+      }
+    });
+  }
+
   if (scenario.hp_agreements) {
     if (!fixedAssetsWrites.HPfinance) fixedAssetsWrites.HPfinance = {};
     const hp = fixedAssetsWrites.HPfinance;
@@ -1042,9 +1104,10 @@ export const CELL_MAP = [
   ["SE Full", "D139", "Annual investment allowance (box 49)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
   ["SE Full", "D144", "Capital allowances at 18% (box 50)",    "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
   ["SE Full", "D147", "Capital allowances at 6% (box 51)",     "tax.capitalAllowances.specialRateWDA (sa103f)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D152", "Zero-emission goods vehicle allowance (box 52)", "tax.selfEmployment.allowances.zeroEmissionsGoodsVehicleAllowance", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D156", "Zero-emission car allowance (box 52.1)", "tax.selfEmployment.allowances.zeroEmissionsCarAllowance", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D160", "Structures and Buildings Allowance (box 53)", "tax.selfEmployment.allowances.structuredBuildingAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D150", "Zero-emission goods vehicle allowance (box 52)", "tax.selfEmployment.allowances.zeroEmissionsGoodsVehicleAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D152", "Zero-emission car allowance (box 52.1)", "tax.selfEmployment.allowances.zeroEmissionsCarAllowance", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D156", "Structures and Buildings Allowance (box 53)", "tax.capitalAllowances.structuresAndBuildingsAllowance (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D160", "Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)", "tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O139", "Electric charge-point allowance (box 54)", "tax.selfEmployment.allowances.electricChargePointAllowance", "Self Assessment (SA103F)", 1],
   ["SE Full", "O144", "100% and other enhanced capital allowances (box 55)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O149", "Allowances on sale or cessation (box 56)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
@@ -1118,6 +1181,8 @@ export const CELL_MAP = [
   ["Admin", "G4",  "Annual Investment Allowance Rate",     "",                                        "Admin (Generator Injected)", 0],
   ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0],
   ["Admin", "G6",  "Special Rate Writing Down Allowance Rate", "tax.capitalAllowances.specialRateWDA",  "Admin (Generator Injected)", 0],
+  ["Admin", "G9",  "Structures and Buildings Allowance Rate", "tax.capitalAllowances.structuresAndBuildingsAllowance", "Admin (Generator Injected)", 0],
+  ["Admin", "G10", "Freeport and Investment Zone SBA Rate", "tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced", "Admin (Generator Injected)", 0],
   ["Admin", "F21", "Mileage Higher Rate Limit",            "",                                        "Admin (Generator Injected)", 0],
   ["Admin", "G21", "Mileage Higher Rate Pence",            "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0],
   ["Admin", "F22", "Mileage Lower Rate Start",             "",                                        "Admin (Generator Injected)", 0],
@@ -1281,7 +1346,9 @@ export function multiFileOptions() {
         // pooled written-down value by rate pool, which the small pools test
         // now runs over per pool; M40, AD40, AE40 and AG40 are the fixture's
         // marked car row (van 38, estate car 39, hatchback 40), read so its
-        // marker and private use share are proved on the row itself.
+        // marker and private use share are proved on the row itself. B115 to
+        // K116 are the fixture's two SBA claim rows; K120 and K121 the SBA
+        // block's box 53 and box 53.1 totals.
         Schedule: [
           "E1",
           "F1",
@@ -1310,6 +1377,23 @@ export function multiFileOptions() {
           "AD40",
           "AE40",
           "AG40",
+          "B115",
+          "C115",
+          "E115",
+          "F115",
+          "H115",
+          "J115",
+          "K115",
+          "B116",
+          "D116",
+          "E116",
+          "F116",
+          "G116",
+          "H116",
+          "J116",
+          "K116",
+          "K120",
+          "K121",
         ],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
         // E2 is the long-term-creditors total for the "New Hire Purchase
@@ -1714,6 +1798,23 @@ const FIXED_ASSET_CELL_LABELS = {
     AG40: "Single asset pool tax written down value on the third motor vehicle brought forward",
     E57: "Cost of the assets owned at the start of the year",
     E110: "Cost of the assets bought during the year",
+    B115: "Date first in qualifying use, the fixture's standard-rate SBA claim",
+    C115: "Building name, the fixture's standard-rate SBA claim",
+    E115: "Qualifying expenditure, the fixture's standard-rate SBA claim",
+    F115: "Postcode, the fixture's standard-rate SBA claim",
+    H115: "Structures and Buildings Allowance rate applied to the standard-rate claim",
+    J115: "Days claimed this year, the fixture's standard-rate SBA claim",
+    K115: "Structures and Buildings Allowance claimed this year, the fixture's standard-rate claim",
+    B116: "Date first in qualifying use, the fixture's Freeport SBA claim",
+    D116: "Building number, the fixture's Freeport SBA claim",
+    E116: "Qualifying expenditure, the fixture's Freeport SBA claim",
+    F116: "Postcode, the fixture's Freeport SBA claim",
+    G116: "Tax site marker, the fixture's Freeport SBA claim (F)",
+    H116: "Structures and Buildings Allowance rate applied to the Freeport claim",
+    J116: "Days claimed this year, the fixture's Freeport SBA claim",
+    K116: "Structures and Buildings Allowance claimed this year, the fixture's Freeport claim",
+    K120: "Structures and Buildings Allowance (SA103F box 53), the non-Freeport claims summed",
+    K121: "Freeport and Investment Zone Structures and Buildings Allowance (SA103F box 53.1), the Freeport claims summed",
   },
   "Fixedassets.xlsx!FAreconciliation": {
     E11: "Additions the schedule lists, net of VAT",
@@ -1746,6 +1847,8 @@ const ADMIN_RATE_CELLS = new Set([
   "L23",
   "G4",
   "G5",
+  "G9",
+  "G10",
   "G13",
   "G14",
   "G15",
@@ -1898,9 +2001,14 @@ export function profitBridge(results) {
     { label: "Less other capital allowances (box 25)", cell: "SE Short!O80", value: -num(seShort.O80) },
     { label: "Add balancing charges (box 26)", cell: "SE Short!O85", value: num(seShort.O85) },
     { label: "Add goods and services for own use (box 27)", cell: "SE Short!D94", value: num(seShort.D94) },
-    { label: "Less the full return's own zero-emission goods vehicle allowance (box 52)", cell: "SE Full!D152", value: -num(seFull?.D152) },
-    { label: "Less the full return's own zero-emission car allowance (box 52.1)", cell: "SE Full!D156", value: -num(seFull?.D156) },
-    { label: "Less the full return's own Structures and Buildings Allowance (box 53)", cell: "SE Full!D160", value: -num(seFull?.D160) },
+    { label: "Less the full return's own zero-emission goods vehicle allowance (box 52)", cell: "SE Full!D150", value: -num(seFull?.D150) },
+    { label: "Less the full return's own zero-emission car allowance (box 52.1)", cell: "SE Full!D152", value: -num(seFull?.D152) },
+    { label: "Less the full return's own Structures and Buildings Allowance (box 53)", cell: "SE Full!D156", value: -num(seFull?.D156) },
+    {
+      label: "Less the full return's own Freeport and Investment Zone Structures and Buildings Allowance (box 53.1)",
+      cell: "SE Full!D160",
+      value: -num(seFull?.D160),
+    },
     { label: "Less the full return's own electric charge-point allowance (box 54)", cell: "SE Full!O139", value: -num(seFull?.O139) },
     { label: "Less the full return's own box 62 adjustment", cell: "SE Full!D179", value: -num(seFull?.D179) },
     {
@@ -1973,6 +2081,40 @@ function fixtureSmallPools(expected, taxData, rate) {
   }
   const writeOff = (pool) => (pool.balance < 1000 ? pool.writtenDown : 0);
   return { ...pools, writeOff: writeOff(pools.main) + writeOff(pools.special) };
+}
+
+// SA103F boxes 53 and 53.1 the way Fixedassets.xlsx!Schedule!K120 and K121
+// state them (Structures and Buildings Allowance), from the fixture's own
+// claims rather than from the sheet: each claim's expenditure at its own
+// year's rate (standard or the enhanced Freeport/Investment Zone rate),
+// over the days of the chargeable period it covers -- the later of the
+// period's own start and the claim's qualifying date, to the earlier of the
+// period's end, the claim's ceased date and the 33 1/3 (or 10) year limit.
+const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
+function toExcelSerialDate(date) {
+  return Math.round((date.getTime() - EXCEL_EPOCH_MS) / 86400000);
+}
+function fixtureStructuresAndBuildings(expected, taxData, periodStartSerial, periodEndSerial, shiftDate) {
+  const rateStandard = taxData.capital_allowances.structures_and_buildings_allowance ?? 0;
+  const rateEnhanced = taxData.capital_allowances.structures_and_buildings_allowance_enhanced ?? 0;
+  const periodDays = periodEndSerial - periodStartSerial + 1;
+  let box53 = 0;
+  let box53_1 = 0;
+  for (const claim of expected.sba_claims || []) {
+    const enhanced = claim.enhanced === true;
+    const qualifyingDate = shiftDate(parseDate(claim.qualifyingDate));
+    const qualifyingSerial = toExcelSerialDate(qualifyingDate);
+    const rate = enhanced ? rateEnhanced : rateStandard;
+    const limitMonths = enhanced ? 120 : 400;
+    let upperBound = Math.min(periodEndSerial, toExcelSerialDate(shiftMonths(qualifyingDate, limitMonths)) - 1);
+    if (claim.ceasedDate) upperBound = Math.min(upperBound, toExcelSerialDate(shiftDate(parseDate(claim.ceasedDate))));
+    const lowerBound = Math.max(periodStartSerial, qualifyingSerial);
+    const days = Math.max(0, upperBound - lowerBound + 1);
+    const allowance = (claim.qualifyingAmountExpenditure * rate * days) / periodDays;
+    if (enhanced) box53_1 += allowance;
+    else box53 += allowance;
+  }
+  return { box53, box53_1 };
 }
 
 // ── Journal category VAT netting ───────────────────────────────────────────
@@ -2399,11 +2541,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       // Income Tax!E5 reads 'SE Full'!O210, so the short return's box 31
       // reaches it only through the full return: the two agree exactly when
-      // no box the trader states on SE Full alone (52, 52.1, 53, 54, 62 and
-      // 71) carries a figure, and stand apart by those figures otherwise.
+      // no box the trader states or claims on SE Full alone (52, 52.1, 53,
+      // 53.1, 54, 62 and 71) carries a figure, and stand apart by those
+      // figures otherwise.
       const fullOnly = results["SE Full"] || {};
       const fullReturnOnlyBoxes =
-        num(fullOnly.D152) + num(fullOnly.D156) + num(fullOnly.D160) + num(fullOnly.O139) + num(fullOnly.D179) - num(fullOnly.D210);
+        num(fullOnly.D150) +
+        num(fullOnly.D152) +
+        num(fullOnly.D156) +
+        num(fullOnly.D160) +
+        num(fullOnly.O139) +
+        num(fullOnly.D179) -
+        num(fullOnly.D210);
       if (seShort.D106) {
         check(
           "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5",
@@ -2602,6 +2751,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(seFull.D139) +
         num(seFull.D144) +
         num(seFull.D147) +
+        num(seFull.D150) +
         num(seFull.D152) +
         num(seFull.D156) +
         num(seFull.D160) +
@@ -2709,9 +2859,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const statedAllowances = expected.annual_allowances || {};
     const statedAdjustments = expected.annual_adjustments || {};
     const annualBoxes = [
-      ["52", "zero-emission goods vehicle allowance", "D152", statedAllowances.zeroEmissionsGoodsVehicleAllowance],
-      ["52.1", "zero-emission car allowance", "D156", statedAllowances.zeroEmissionsCarAllowance],
-      ["53", "Structures and Buildings Allowance", "D160", statedAllowances.structuredBuildingAllowance],
+      ["52", "zero-emission goods vehicle allowance", "D150", statedAllowances.zeroEmissionsGoodsVehicleAllowance],
+      ["52.1", "zero-emission car allowance", "D152", statedAllowances.zeroEmissionsCarAllowance],
       ["54", "electric charge-point allowance", "O139", statedAllowances.electricChargePointAllowance],
       ["62", "income included but not taxable as business profits", "D179", statedAdjustments.includedNonTaxableProfits],
       ["71", "adjustment for change of accounting practice", "D210", statedAdjustments.accountingAdjustment],
@@ -2719,6 +2868,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const [box, caption, cell, stated] of annualBoxes) {
       check(`SA103F box ${box} ${caption} (${cell}) = the figure the book states`, num(seFull[cell]), stated || 0);
     }
+    // Boxes 53 and 53.1 are not stated: the Schedule's SBA block computes
+    // them from the fixture's own claims, each priced at its own rate over
+    // the days it covers within the package's period.
+    const sba = fixtureStructuresAndBuildings(expected, taxData, num(seFull.Q2), num(seFull.V2), shiftDate);
+    check("SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate", num(seFull.D156), sba.box53);
+    check(
+      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
+      num(seFull.D160),
+      sba.box53_1,
+    );
     const ownUseStated = statedAdjustments.goodsAndServicesOwnUse || 0;
     check(
       "SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50",
@@ -2736,8 +2895,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       .filter(([box]) => box !== "62" && box !== "71")
       .reduce((total, [, , , stated]) => total + (stated || 0), 0);
     check(
-      "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)",
-      num(seFull.O154) - num(seFull.D139) - num(seFull.D144) - num(seFull.D147) - num(seFull.O144) - num(seFull.O149),
+      "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54)",
+      num(seFull.O154) -
+        num(seFull.D139) -
+        num(seFull.D144) -
+        num(seFull.D147) -
+        num(seFull.D156) -
+        num(seFull.D160) -
+        num(seFull.O144) -
+        num(seFull.O149),
       statedAllowanceTotal,
     );
     check(
@@ -2781,19 +2947,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         ["D231", "O124", "box 81 contractor deductions taken off"],
       ];
       // The short return reads the fixed asset schedule and Business Details
-      // directly, so the boxes the trader states on SE Full alone (52, 52.1,
-      // 53, 54 and 62) never reach it: its taxable profit stands higher than
-      // the full return's by exactly those figures.
-      const fullReturnOnlyDeductions = num(seFull.D152) + num(seFull.D156) + num(seFull.D160) + num(seFull.O139) + num(seFull.D179);
+      // directly, so the boxes the trader states or claims on SE Full alone
+      // (52, 52.1, 53, 53.1, 54 and 62) never reach it: its taxable profit
+      // stands higher than the full return's by exactly those figures.
+      const fullReturnOnlyDeductions =
+        num(seFull.D150) + num(seFull.D152) + num(seFull.D156) + num(seFull.D160) + num(seFull.O139) + num(seFull.D179);
       check(
-        "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62",
+        "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62",
         num(seFull.O174),
         Math.max(0, num(sa103s.D99) - fullReturnOnlyDeductions),
       );
       // Box 71 is the one SE Full-only figure that adds to the taxable
       // profit; the short return has no box for it either.
       check(
-        "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off",
+        "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off",
         num(seFull.O210),
         Math.max(0, num(sa103s.D106) - fullReturnOnlyDeductions + num(seFull.D210) + num(sa103s.O94) - num(seFull.O199)),
       );
@@ -2851,12 +3018,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(sa103s.D71) - num(seFull.O122),
       );
       check(
-        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54",
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53, 53.1 and 54",
         num(seFull.O154),
-        num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80) + num(seFull.D152) + num(seFull.D156) + num(seFull.D160) + num(seFull.O139),
+        num(sa103s.D80) +
+          num(sa103s.D85) +
+          num(sa103s.O80) +
+          num(seFull.D150) +
+          num(seFull.D152) +
+          num(seFull.D156) +
+          num(seFull.D160) +
+          num(seFull.O139),
       );
       check(
-        "SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54)",
+        "SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states or claims on SE Full alone (boxes 52, 52.1, 53, 53.1 and 54)",
         num(sa103s.O80),
         num(seFull.O154) - num(sa103s.D80) - num(sa103s.D85),
         0.01,

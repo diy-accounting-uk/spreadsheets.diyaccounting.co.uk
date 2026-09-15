@@ -1159,6 +1159,26 @@ export function formatScenarioToml(metadata, grouped, expected) {
     parts.push("");
   }
 
+  // Structures and Buildings Allowance claims (boxes 53 and 53.1), the
+  // book's own two arrays merged with an enhanced flag the way
+  // diyaGlToScenario merges them. The Schedule's SBA block computes the
+  // year's allowance from these inputs; no amount is stated here.
+  if (expected.sba_claims) {
+    for (const claim of expected.sba_claims) {
+      parts.push("[[sba_claims]]");
+      parts.push(`qualifyingDate = ${claim.qualifyingDate}`);
+      parts.push(`qualifyingAmountExpenditure = ${claim.qualifyingAmountExpenditure}`);
+      if (claim.ceasedDate) parts.push(`ceasedDate = ${claim.ceasedDate}`);
+      if (claim.enhanced) parts.push(`enhanced = true`);
+      parts.push("");
+      parts.push("[sba_claims.building]");
+      if (claim.building?.name) parts.push(`name = "${escapeTomlString(claim.building.name)}"`);
+      if (claim.building?.number) parts.push(`number = "${escapeTomlString(claim.building.number)}"`);
+      parts.push(`postcode = "${escapeTomlString(claim.building.postcode)}"`);
+      parts.push("");
+    }
+  }
+
   // Charges and debentures registered over the company's assets (Ltd). Each
   // one secures a creditor falling due after more than one year.
   if (expected.charges) {

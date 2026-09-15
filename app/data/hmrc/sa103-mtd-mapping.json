@@ -452,7 +452,7 @@
       "form": "SA103F",
       "box": "52",
       "label": "Zero-emission goods vehicle allowance",
-      "cell": "SE Full!D152",
+      "cell": "SE Full!D150",
       "field": "allowances.zeroEmissionsGoodsVehicleAllowance",
       "route": "annual"
     },
@@ -460,7 +460,7 @@
       "form": "SA103F",
       "box": "52.1",
       "label": "Zero-emission car allowance",
-      "cell": "SE Full!D156",
+      "cell": "SE Full!D152",
       "field": "allowances.zeroEmissionsCarAllowance",
       "route": "annual"
     },
@@ -468,7 +468,7 @@
       "form": "SA103F",
       "box": "53",
       "label": "The Structures and Buildings Allowance",
-      "cell": "SE Full!D160",
+      "cell": "SE Full!D156",
       "field": "allowances.structuredBuildingAllowance",
       "route": "annual"
     },
@@ -476,7 +476,7 @@
       "form": "SA103F",
       "box": "53.1",
       "label": "Freeport Structures and Buildings Allowance",
-      "cell": null,
+      "cell": "SE Full!D160",
       "field": "allowances.enhancedStructuredBuildingAllowance",
       "route": "annual"
     },

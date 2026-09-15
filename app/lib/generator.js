@@ -462,10 +462,14 @@ export function buildSeCellEdits(taxData, startYear) {
 
   // Capital allowances — G4 and G5 as BST; G6 is the special rate pool's
   // writing down rate, which only the Self Employed schedule keeps
-  // (Fixedassets.xlsx Schedule!AC4 reads it).
+  // (Fixedassets.xlsx Schedule!AC4 reads it). G9 and G10 are the Structures
+  // and Buildings Allowance rates, which Fixedassets.xlsx Schedule's SBA
+  // block reads across the link ($G$9 and $G$10).
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
   numericEdits.G6 = ca.writing_down_allowance_special;
+  numericEdits.G9 = ca.structures_and_buildings_allowance;
+  numericEdits.G10 = ca.structures_and_buildings_allowance_enhanced;
 
   // Depreciation — same as BST
   numericEdits.G13 = dep.land_and_property;
