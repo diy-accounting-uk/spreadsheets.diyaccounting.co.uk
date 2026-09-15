@@ -5,10 +5,10 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.15+27b706deb",
-    "taxDataHash": "4ecdbe985d22",
-    "templateHash": "3c88a8ba129b",
-    "templateScorecard": "7966 passed, 0 warnings, 0 failed",
+    "engineVersion": "1.2.16+25abe637c",
+    "taxDataHash": "3221a7c2f39c",
+    "templateHash": "107ff1b5c94a",
+    "templateScorecard": "7969 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
   },
   "values": [
@@ -94,7 +94,7 @@
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!G6",
-      "unit": "money",
+      "unit": "rate",
       "value": "0.06"
     },
     {
@@ -13515,7 +13515,7 @@
     },
     {
       "key": "section/admin-generator-injected/special-rate-writing-down-allowance-rate",
-      "unit": "money",
+      "unit": "rate",
       "value": "0.06",
       "source": "cell/Financialaccounts.xlsx!Admin!G6"
     },
