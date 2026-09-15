@@ -618,7 +618,11 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
         "adjustments.transitionProfitAmount",
         "adjustments.transitionProfitAccelerationAmount",
       ];
-      const bookStated = ["allowances.zeroEmissionsCarAllowance", "adjustments.includedNonTaxableProfits", "adjustments.goodsAndServicesOwnUse"];
+      const bookStated = [
+        "allowances.zeroEmissionsCarAllowance",
+        "adjustments.includedNonTaxableProfits",
+        "adjustments.goodsAndServicesOwnUse",
+      ];
       for (const field of neverSourced) expect(warningFields).toContain(field);
       for (const field of bookStated) {
         if (statesAnnualFigures) expect(warningFields).not.toContain(field);

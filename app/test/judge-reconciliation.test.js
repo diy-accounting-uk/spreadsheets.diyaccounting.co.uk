@@ -347,6 +347,7 @@ describe("buildIndicators for the Self Employed", () => {
       "Zero-emission goods vehicle allowance (box 52)",
       "Zero-emission car allowance (box 52.1)",
       "Structures and Buildings Allowance (box 53)",
+      "Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)",
       "Electric charge-point allowance (box 54)",
     ];
     const fullOnlyAllowances = fullOnlyAllowanceLabels
@@ -383,6 +384,7 @@ describe("buildIndicators for the Self Employed", () => {
       "Zero-emission goods vehicle allowance (box 52)",
       "Zero-emission car allowance (box 52.1)",
       "Structures and Buildings Allowance (box 53)",
+      "Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)",
       "Electric charge-point allowance (box 54)",
       "Income included but not taxable as business profits (box 62)",
     ];

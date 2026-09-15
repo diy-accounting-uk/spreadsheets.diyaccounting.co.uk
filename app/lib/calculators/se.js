@@ -1301,7 +1301,18 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.O144 = smallPoolsWriteOff;
   seFull.O149 = scheduleY;
   seFull.O154 = carry([seFull.D139, seFull.D144, seFull.O144, seFull.O149], () =>
-    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D150, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
+    sheetSum([
+      seFull.D139,
+      seFull.D144,
+      seFull.D147,
+      seFull.D150,
+      seFull.D152,
+      seFull.D156,
+      seFull.D160,
+      seFull.O139,
+      seFull.O144,
+      seFull.O149,
+    ]),
   );
   seFull.O160 = scheduleZ;
   seFull.D169 = goodsForOwnUse;

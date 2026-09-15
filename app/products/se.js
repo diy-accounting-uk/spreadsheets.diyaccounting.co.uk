@@ -2876,14 +2876,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
     // Boxes 53 and 53.1 are not stated: the Schedule's SBA block computes
     // them from the fixture's own claims, each priced at its own rate over
-    // the days it covers within the package's period.
-    const sba = fixtureStructuresAndBuildings(expected, taxData, num(seFull.Q2), num(seFull.V2), shiftDate);
-    check("SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate", num(seFull.D156), sba.box53);
-    check(
-      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
-      num(seFull.D160),
-      sba.box53_1,
-    );
+    // the days it covers within the package's period. Only when a rate
+    // year's own tax data is in hand -- some callers check an isolated
+    // cell with none, and the rate is what fixes the fixture's own figure.
+    if (taxData?.capital_allowances) {
+      const sba = fixtureStructuresAndBuildings(expected, taxData, num(seFull.Q2), num(seFull.V2), shiftDate);
+      check(
+        "SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate",
+        num(seFull.D156),
+        sba.box53,
+      );
+      check(
+        "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
+        num(seFull.D160),
+        sba.box53_1,
+      );
+    }
     const ownUseStated = statedAdjustments.goodsAndServicesOwnUse || 0;
     check(
       "SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50",

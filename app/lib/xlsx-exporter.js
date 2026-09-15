@@ -2597,7 +2597,8 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
           (enhanced ? enhancedStructuredBuildingAllowance : structuredBuildingAllowance).push(claim);
         }
         if (structuredBuildingAllowance.length > 0) allowances.structuredBuildingAllowance = structuredBuildingAllowance;
-        if (enhancedStructuredBuildingAllowance.length > 0) allowances.enhancedStructuredBuildingAllowance = enhancedStructuredBuildingAllowance;
+        if (enhancedStructuredBuildingAllowance.length > 0)
+          allowances.enhancedStructuredBuildingAllowance = enhancedStructuredBuildingAllowance;
       }
       if (Object.keys(allowances).length > 0) selfEmployment.allowances = allowances;
       if (Object.keys(adjustments).length > 0) selfEmployment.adjustments = adjustments;
