@@ -53,6 +53,13 @@ const REPRESENTATIVE_CALC = {
   taxi: "app/test/taxi-sp-sixty.test.js",
 };
 
+// Un-tokened browser specs that need to run when certain products change.
+// The spec name carries no product token, so productsIn() cannot find it.
+// This table maps the spec basename to the products it covers.
+const UNTOKENED_SPEC_PRODUCTS = {
+  "diya-gl-render-coverage.browser.test.js": ["bst", "se"],
+};
+
 // A product name counts only as a whole path or filename segment, so
 // "salesinvoice" is not SE and "best-effort" is not BST.
 const PRODUCT_TOKEN = /(^|[/_-])(bst|se|ltd|taxi)([_.-]|$)/g;
@@ -521,6 +528,7 @@ function chooseBrowserSpecs(sel, specs) {
     if (sel.browserContent && name.startsWith("spreadsheets-content")) chosen.add(spec);
     for (const p of sel.browserProducts) {
       if (tokens.includes(p)) chosen.add(spec);
+      if (UNTOKENED_SPEC_PRODUCTS[name]?.includes(p)) chosen.add(spec);
     }
     for (const page of sel.browserPages) {
       if (name.includes(page)) chosen.add(spec);
@@ -618,7 +626,7 @@ async function runSteps(steps, env) {
 // Exported for app/test/test-scope-routing.test.js: the routing table is
 // pure (no git, no filesystem beyond reading the module itself), so it is
 // tested directly rather than through a subprocess.
-export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn, MARKER_DIR, workingTreeHash, writeGreenMarker };
+export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn, chooseBrowserSpecs, MARKER_DIR, workingTreeHash, writeGreenMarker };
 
 // ------------------------------------------------------------------ main
 

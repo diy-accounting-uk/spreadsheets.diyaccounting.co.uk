@@ -11,7 +11,15 @@ import { execFileSync } from "child_process";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { MARKER_DIR, PRODUCTS, REPRESENTATIVE_CALC, select, workingTreeHash, writeGreenMarker } from "../../scripts/test-scope.mjs";
+import {
+  MARKER_DIR,
+  PRODUCTS,
+  REPRESENTATIVE_CALC,
+  select,
+  chooseBrowserSpecs,
+  workingTreeHash,
+  writeGreenMarker,
+} from "../../scripts/test-scope.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -73,6 +81,37 @@ describe("routing table: docs, skills, lockfile, dependency and router-script pa
     for (const file of Object.values(REPRESENTATIVE_CALC)) {
       expect(() => readFileSync(resolve(ROOT, file), "utf8")).not.toThrow();
     }
+  });
+});
+
+describe("browser spec routing: un-tokened specs that cover multiple products", () => {
+  it("chooseBrowserSpecs selects diya-gl-render-coverage for se.js changes", () => {
+    const sel = select(["app/products/se.js"]);
+    const allSpecs = [
+      "web/browser-tests/diya-gl-render-coverage.browser.test.js",
+      "web/browser-tests/diya-gl-se.browser.test.js",
+      "web/browser-tests/diya-gl-bst.browser.test.js",
+      "web/browser-tests/diya-gl-ltd-render-coverage.browser.test.js",
+    ];
+    const chosen = chooseBrowserSpecs(sel, allSpecs);
+    expect(chosen).toContain("web/browser-tests/diya-gl-render-coverage.browser.test.js");
+    expect(chosen).toContain("web/browser-tests/diya-gl-se.browser.test.js");
+    expect(chosen).not.toContain("web/browser-tests/diya-gl-bst.browser.test.js");
+    expect(chosen).not.toContain("web/browser-tests/diya-gl-ltd-render-coverage.browser.test.js");
+  });
+
+  it("chooseBrowserSpecs does not select diya-gl-render-coverage for ltd.js changes", () => {
+    const sel = select(["app/products/ltd.js"]);
+    const allSpecs = [
+      "web/browser-tests/diya-gl-render-coverage.browser.test.js",
+      "web/browser-tests/diya-gl-se.browser.test.js",
+      "web/browser-tests/diya-gl-bst.browser.test.js",
+      "web/browser-tests/diya-gl-ltd-render-coverage.browser.test.js",
+    ];
+    const chosen = chooseBrowserSpecs(sel, allSpecs);
+    expect(chosen).not.toContain("web/browser-tests/diya-gl-render-coverage.browser.test.js");
+    expect(chosen).toContain("web/browser-tests/diya-gl-ltd-render-coverage.browser.test.js");
+    expect(chosen).not.toContain("web/browser-tests/diya-gl-se.browser.test.js");
   });
 });
 
