@@ -11,7 +11,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 **COOL-DOWN is on since 2026-09-15T16:46:02Z.** No new board rows except a degradation. Agents commit
 and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
 
-PR #120 (CQ-44) merged as `5eb8a212`; `main`'s test and prod deploy on it in progress. `claude/b16-se`
+`main` is green on `5eb8a212` (CQ-44); prod serves it and the publish job landed diya-gl 1.2.17 as
+`ecd5dafb`. `claude/b16-se`
 (branch only) holds SET-10's superseded design scratch. No watch monitor is armed.
 
 ## Context for the open rows
