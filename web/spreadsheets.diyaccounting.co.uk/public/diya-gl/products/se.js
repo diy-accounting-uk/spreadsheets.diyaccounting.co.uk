@@ -155,7 +155,9 @@
   // AC4 are the special rate pool's own WDA total and rate, printed beside
   // the main pool's R1 the way the schedule itself pairs the two columns;
   // AE1, AF1 and AG1 are the single asset pools' allowances by rate and
-  // their written-down value, the rows the small pools test leaves out.
+  // their written-down value, the rows the small pools test leaves out; AH1
+  // and AI1 are the pooled written-down value by rate pool, single asset
+  // pool rows left out, which the small pools test now runs per pool.
   var SCHEDULE_CELLS = [
     "E57",
     "E110",
@@ -173,6 +175,8 @@
     "AE1",
     "AF1",
     "AG1",
+    "AH1",
+    "AI1",
     "S1",
     "V1",
     "X1",

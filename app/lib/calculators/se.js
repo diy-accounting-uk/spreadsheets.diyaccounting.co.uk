@@ -525,7 +525,29 @@ function carry(inputs, compute) {
   return inputs.some((value) => value === SHEET_ERROR) ? SHEET_ERROR : compute();
 }
 
-const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC", "AE", "AF", "AG", "AH", "AI"];
+const SCHEDULE_TOTAL_COLUMNS = [
+  "E",
+  "F",
+  "G",
+  "I",
+  "J",
+  "K",
+  "O",
+  "Q",
+  "R",
+  "S",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "AC",
+  "AE",
+  "AF",
+  "AG",
+  "AH",
+  "AI",
+];
 
 function scheduleTotals(rows) {
   const totals = {};
@@ -1072,8 +1094,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const scheduleAF = schedule.totals.AF;
   const scheduleAH = schedule.totals.AH;
   const scheduleAI = schedule.totals.AI;
-  const smallPoolsWriteOff = carry([scheduleR, scheduleAC, scheduleAE, scheduleAF, scheduleAH, scheduleAI], () =>
-    (scheduleR - scheduleAE + scheduleAH < 1000 ? scheduleAH : 0) + (scheduleAC - scheduleAF + scheduleAI < 1000 ? scheduleAI : 0),
+  const smallPoolsWriteOff = carry(
+    [scheduleR, scheduleAC, scheduleAE, scheduleAF, scheduleAH, scheduleAI],
+    () => (scheduleR - scheduleAE + scheduleAH < 1000 ? scheduleAH : 0) + (scheduleAC - scheduleAF + scheduleAI < 1000 ? scheduleAI : 0),
   );
   const scheduleY = schedule.totals.Y;
   const scheduleZ = schedule.totals.Z;
