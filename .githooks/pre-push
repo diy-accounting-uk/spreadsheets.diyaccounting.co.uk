@@ -68,7 +68,13 @@ fi
 # possibly-dirty one) AND its recorded base is this push's own merge base
 # (or the marker was a full --all/escalated pass, recorded as "ALL"). A
 # marker from a narrower or differently-based run never counts.
-tree_hash="$(git rev-parse --quiet --verify "${local_sha}^{tree}" 2>/dev/null || true)"
+#
+# The hash comes from the router itself (--tree-hash --rev), not a plain
+# `git rev-parse ...^{tree}`: the router blanks provenance-data.js's
+# engineVersion value first, so a commit that only restamps that field
+# after the tested commit still hashes the same as the tree the marker was
+# written for.
+tree_hash="$(node scripts/test-scope.mjs --tree-hash --rev "${local_sha}" 2>/dev/null || true)"
 marker=""
 if [ -n "$tree_hash" ] && [ -f "target/test-scope/green-${tree_hash}" ]; then
   marker="target/test-scope/green-${tree_hash}"

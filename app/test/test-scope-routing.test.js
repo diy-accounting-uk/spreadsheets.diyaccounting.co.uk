@@ -141,17 +141,20 @@ describe("writeGreenMarker", () => {
   const dirty = execFileSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" }).trim().length > 0;
 
   it.skipIf(dirty)(
-    "equals HEAD's committed tree hash on a clean tree, so the marker a push checks for actually exists",
+    "equals the rev-based hash of HEAD on a clean tree, so a marker the router writes from the working tree still matches what --tree-hash --rev HEAD (used by .githooks/pre-push) reports for the same commit",
     () => {
       // Regression case for a real bug: seeding the throwaway index empty
       // (rather than from the real index) silently dropped paths that are
       // tracked but also match .gitignore (reports/judge-verdict-*.json,
       // *.svg under web/.../diya-gl/ in this repo) and re-hashed mvnw.cmd
       // through its text-conversion filter, producing a hash that could
-      // never equal HEAD^{tree} even on a perfectly clean tree -- which
-      // would have made .githooks/pre-push's marker lookup never match.
-      const headTree = execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: ROOT, encoding: "utf8" }).trim();
-      expect(workingTreeHash()).toBe(headTree);
+      // never equal HEAD^{tree} even on a perfectly clean tree. The
+      // rev-based path (git read-tree) is not built through `git add -A`
+      // at all, so it is not exposed to that bug the same way -- a
+      // regression in the working-tree path alone still shows up here as
+      // a mismatch between the two.
+      const headSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+      expect(workingTreeHash()).toBe(workingTreeHash({ rev: headSha }));
     },
     20_000,
   );

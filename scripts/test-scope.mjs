@@ -10,8 +10,9 @@
 //   npm test -- --all              every tier, every product, full browser suite
 //   npm test -- --base HEAD~1      a different comparison point
 //   npm test -- --plan             print the selection and the estimate, run nothing
-//   npm test -- --tree-hash        print the GREEN marker's key for the current tree, run nothing
-//   npm test -- --code-tree-hash   print the same key with every *.md path dropped, run nothing
+//   npm test -- --tree-hash          print the GREEN marker's key for the current tree, run nothing
+//   npm test -- --tree-hash --rev X  print the same key for commit X's own tree, not the working tree
+//   npm test -- --code-tree-hash     print the same key with every *.md path dropped, run nothing
 //
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
@@ -24,6 +25,15 @@
 // the merge base it diffed against. .githooks/pre-push looks this marker
 // up before running anything, so a suite that just passed on this exact
 // tree is not repeated for the push. PARTIAL never writes one.
+//
+// Both hashes blank app/lib/provenance-data.js's engineVersion value first
+// (see normaliseEngineVersion below): that field names the last commit
+// that touched the shipped engine, so a code commit followed by a
+// restamp commit (the browser tier rewrites it via
+// scripts/build-provenance-data.mjs) are two trees that would otherwise
+// hash differently for no engine-relevant reason. Normalising it is what
+// lets a GREEN marker written before the restamp still vouch for the
+// commit pushed after it.
 //
 // --code-tree-hash is the same idea one layer up, for CI: test.yml's
 // green-check job hashes the tree with every *.md path removed and looks
@@ -213,6 +223,32 @@ function lines(text) {
 
 const MARKER_DIR = join(ROOT, "target", "test-scope");
 
+// app/lib/provenance-data.js's engineVersion value blanked before hashing
+// -- see the comment above workingTreeHash. Operates on the throwaway
+// index (env carries GIT_INDEX_FILE), so it never touches the real one.
+// A tree with no such path (an old commit that predates the file) is left
+// alone: cat-file exits non-zero and there is nothing to normalise.
+const PROVENANCE_FILE = "app/lib/provenance-data.js";
+const ENGINE_VERSION_PATTERN = /engineVersion:\s*"[^"]*"/;
+
+function normaliseEngineVersion(env) {
+  const show = spawnSync("git", ["cat-file", "-p", `:${PROVENANCE_FILE}`], { cwd: ROOT, env, encoding: "utf8" });
+  if (show.status !== 0) return;
+  const normalised = show.stdout.replace(ENGINE_VERSION_PATTERN, 'engineVersion: "0.0.0+000000000000"');
+  if (normalised === show.stdout) return;
+  const stage = spawnSync("git", ["ls-files", "--stage", "--", PROVENANCE_FILE], { cwd: ROOT, env, encoding: "utf8" });
+  const mode = stage.stdout.trim().split(/\s+/)[0] || "100644";
+  const hashObj = spawnSync("git", ["hash-object", "-w", "--stdin"], { cwd: ROOT, env, input: normalised, encoding: "utf8" });
+  if (hashObj.status !== 0)
+    throw new Error(`git hash-object (normalise engineVersion) failed: ${(hashObj.stderr || "").toString().trim()}`);
+  const upd = spawnSync("git", ["update-index", "--cacheinfo", `${mode},${hashObj.stdout.trim()},${PROVENANCE_FILE}`], {
+    cwd: ROOT,
+    env,
+  });
+  if (upd.status !== 0)
+    throw new Error(`git update-index --cacheinfo (normalise engineVersion) failed: ${(upd.stderr || "").toString().trim()}`);
+}
+
 // The hash of what the tests actually ran against: tracked content plus
 // untracked-but-not-ignored content, exactly what `git add -A` would stage.
 // Built in a throwaway index so the real index (and any partial `git add`
@@ -225,32 +261,42 @@ const MARKER_DIR = join(ROOT, "target", "test-scope");
 // later pushed to main differ only in NEXT.md board updates (the docs
 // exception lands those on main directly), so the two runs should count as
 // the same tree and share one GREEN record.
-function workingTreeHash({ withoutDocs = false } = {}) {
+//
+// rev: a specific commit rather than the working tree -- .githooks/pre-push
+// uses this to hash the commit it is about to push, which after a restamp
+// commit is never what HEAD's working tree currently holds.
+function workingTreeHash({ withoutDocs = false, rev = null } = {}) {
   const tmpIndex = join(tmpdir(), `test-scope-index-${process.pid}-${Date.now()}`);
   const env = { ...process.env, GIT_INDEX_FILE: tmpIndex };
   try {
-    // Seed the throwaway index from the real one rather than starting
-    // empty. `git add -A` on a fresh empty index treats every path as new
-    // and consults .gitignore, which silently drops a path that is
-    // tracked but also matches .gitignore -- this repo has several
-    // (reports/judge-verdict-*.json, *.svg under web/.../diya-gl/) even
-    // though they are exactly as tracked as everything else. Starting
-    // from a copy of the real index means `git add -A` only has to layer
-    // working-tree changes on top, exactly as it would against the real
-    // one, so an unchanged file keeps the real index's already-correct
-    // blob hash instead of being re-hashed -- which also fixes a CRLF/LF
-    // mismatch measured on mvnw.cmd: adding it as if new re-runs the
-    // text-conversion filters and produces a different blob than the one
-    // actually committed, where adding it as an unchanged tracked file is
-    // a no-op.
-    const realIndex = resolve(ROOT, git(["rev-parse", "--git-path", "index"]).trim());
-    if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
-    const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
-    if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    if (rev) {
+      const rt = spawnSync("git", ["read-tree", `${rev}^{tree}`], { cwd: ROOT, env });
+      if (rt.status !== 0) throw new Error(`git read-tree ${rev} failed: ${(rt.stderr || "").toString().trim()}`);
+    } else {
+      // Seed the throwaway index from the real one rather than starting
+      // empty. `git add -A` on a fresh empty index treats every path as new
+      // and consults .gitignore, which silently drops a path that is
+      // tracked but also matches .gitignore -- this repo has several
+      // (reports/judge-verdict-*.json, *.svg under web/.../diya-gl/) even
+      // though they are exactly as tracked as everything else. Starting
+      // from a copy of the real index means `git add -A` only has to layer
+      // working-tree changes on top, exactly as it would against the real
+      // one, so an unchanged file keeps the real index's already-correct
+      // blob hash instead of being re-hashed -- which also fixes a CRLF/LF
+      // mismatch measured on mvnw.cmd: adding it as if new re-runs the
+      // text-conversion filters and produces a different blob than the one
+      // actually committed, where adding it as an unchanged tracked file is
+      // a no-op.
+      const realIndex = resolve(ROOT, git(["rev-parse", "--git-path", "index"]).trim());
+      if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
+      const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
+      if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+    }
     if (withoutDocs) {
       const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
       if (rm.status !== 0) throw new Error(`git rm --cached *.md (throwaway index) failed: ${(rm.stderr || "").toString().trim()}`);
     }
+    normaliseEngineVersion(env);
     const wt = spawnSync("git", ["write-tree"], { cwd: ROOT, env, encoding: "utf8" });
     if (wt.status !== 0) throw new Error(`git write-tree (throwaway index) failed: ${(wt.stderr || "").trim()}`);
     return wt.stdout.trim();
@@ -642,10 +688,17 @@ async function main() {
   const argv = process.argv.slice(2);
   if (argv.includes("--tree-hash")) {
     // The same hash the GREEN marker is keyed by: tracked content plus
-    // untracked-but-not-ignored content. On a clean tree this equals
-    // `git rev-parse HEAD^{tree}`; on a dirty one it does not, which is
-    // exactly how .githooks/pre-push tells a dirty-tree pass from a real one.
-    console.log(workingTreeHash());
+    // untracked-but-not-ignored content, with engineVersion blanked. On a
+    // clean tree with no --rev this equals --rev HEAD; on a dirty one it
+    // does not, which is exactly how .githooks/pre-push tells a
+    // dirty-tree pass from a real one.
+    //
+    // --rev X hashes commit X's own committed tree instead of the working
+    // tree -- what .githooks/pre-push asks for, since the commit being
+    // pushed is not necessarily what HEAD's working tree currently holds.
+    const revIdx = argv.indexOf("--rev");
+    const rev = revIdx !== -1 ? argv[revIdx + 1] : null;
+    console.log(workingTreeHash(rev ? { rev } : {}));
     process.exit(0);
   }
 
