@@ -19,6 +19,7 @@ import {
   chooseBrowserSpecs,
   workingTreeHash,
   writeGreenMarker,
+  tiersAfterGates,
 } from "../../scripts/test-scope.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -112,6 +113,24 @@ describe("browser spec routing: un-tokened specs that cover multiple products", 
     expect(chosen).not.toContain("web/browser-tests/diya-gl-render-coverage.browser.test.js");
     expect(chosen).toContain("web/browser-tests/diya-gl-ltd-render-coverage.browser.test.js");
     expect(chosen).not.toContain("web/browser-tests/diya-gl-se.browser.test.js");
+  });
+});
+
+// CQ-46: the router stops after a failed gates tier instead of running
+// unit, calc, browser and infra behind it. tiersAfterGates is the pure
+// decision main() acts on; it is tested directly here rather than by
+// forcing a real gates failure through a subprocess.
+describe("tiersAfterGates", () => {
+  it("lists only the tiers flagged to run, in tier order, excluding gates", () => {
+    expect(tiersAfterGates({ unit: true, calc: false, browser: true, infra: false })).toEqual(["unit", "browser"]);
+  });
+
+  it("returns nothing when nothing after gates was going to run", () => {
+    expect(tiersAfterGates({ unit: false, calc: false, browser: false, infra: false })).toEqual([]);
+  });
+
+  it("returns every tier when everything was going to run", () => {
+    expect(tiersAfterGates({ unit: true, calc: true, browser: true, infra: true })).toEqual(["unit", "calc", "browser", "infra"]);
   });
 });
 

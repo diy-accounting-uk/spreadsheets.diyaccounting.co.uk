@@ -594,6 +594,14 @@ function chooseBrowserSpecs(sel, specs) {
 
 const TIER_ORDER = ["gates", "unit", "calc", "browser", "infra"];
 
+// The tiers a run still owes once gates has failed: every tier after gates
+// whose own selection said it would run. Pure (no git, no process state)
+// so the routing test can assert it directly, the way select() is tested,
+// rather than needing a real gates failure to exercise it.
+function tiersAfterGates(runFlags) {
+  return TIER_ORDER.filter((tier) => tier !== "gates" && runFlags[tier]);
+}
+
 function allowedTiers() {
   const raw = process.env.TEST_SCOPE_TIERS;
   if (!raw) return null;
@@ -680,7 +688,18 @@ async function runSteps(steps, env, tierName) {
 // Exported for app/test/test-scope-routing.test.js: the routing table is
 // pure (no git, no filesystem beyond reading the module itself), so it is
 // tested directly rather than through a subprocess.
-export { ROUTES, PRODUCTS, REPRESENTATIVE_CALC, select, productsIn, chooseBrowserSpecs, MARKER_DIR, workingTreeHash, writeGreenMarker };
+export {
+  ROUTES,
+  PRODUCTS,
+  REPRESENTATIVE_CALC,
+  select,
+  productsIn,
+  chooseBrowserSpecs,
+  MARKER_DIR,
+  workingTreeHash,
+  writeGreenMarker,
+  tiersAfterGates,
+};
 
 // ------------------------------------------------------------------ main
 
@@ -882,7 +901,26 @@ async function main() {
     return true;
   }
 
+  // Whether each tier after gates would run at all, and the label the
+  // VERDICT line and the summary use for it -- computed once, ahead of the
+  // gates tier, so a gates failure can name what it is not running without
+  // re-deriving the selection.
+  const runFlags = {
+    unit: true,
+    calc: chosenCalc.length > 0,
+    browser: chosenSpecs.length > 0,
+    infra: sel.infra,
+  };
+  const tierLabel = {
+    unit: `unit(${unitFiles.length})`,
+    calc: `calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`,
+    browser: `browser(${chosenSpecs.length})`,
+    infra: "infra",
+  };
+
   let exitCode = 0;
+  let gatesFailed = false;
+  const notRun = [];
 
   if (willRun("gates", true)) {
     const steps = [
@@ -895,10 +933,19 @@ async function main() {
     for (const extra of sel.extras) steps.push([extra, "npm", ["run", extra]]);
     const gates = await runSteps(steps, {}, "gates");
     results.push(["gates", gates.code, gates.durationMs]);
-    if (gates.code) exitCode = 1;
+    if (gates.code) {
+      exitCode = 1;
+      gatesFailed = true;
+      // Known RED at whatever the gates tier's own duration was -- SET-10's
+      // and SET-9's first full runs each spent 34m52s reporting a prettier
+      // failure that was known at minute 2, because unit, calc and browser
+      // ran to completion behind it. Stop here instead.
+      notRun.push(...tiersAfterGates(runFlags).map((t) => tierLabel[t]));
+      console.log(`\ngates FAILED; ${notRun.length ? `${notRun.join(", ")} not run` : "nothing else was going to run"}`);
+    }
   }
 
-  if (willRun("unit", true)) {
+  if (!gatesFailed && willRun("unit", true)) {
     const steps = [
       ["sitemaps", "node", ["app/bin/build-sitemaps.js"]],
       ["donate page", "node", ["scripts/build-donate-page.mjs"]],
@@ -909,21 +956,21 @@ async function main() {
       console.log("\n--- unit: no test file in the repo reaches this diff");
     }
     const unit = await runSteps(steps, {}, "unit");
-    results.push([`unit(${unitFiles.length})`, unit.code, unit.durationMs]);
+    results.push([tierLabel.unit, unit.code, unit.durationMs]);
     if (unit.code) exitCode = 1;
   }
 
-  if (willRun("calc", chosenCalc.length > 0)) {
+  if (!gatesFailed && willRun("calc", chosenCalc.length > 0)) {
     const calc = await runSteps(
       [["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]],
       {},
       "calc",
     );
-    results.push([`calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`, calc.code, calc.durationMs]);
+    results.push([tierLabel.calc, calc.code, calc.durationMs]);
     if (calc.code) exitCode = 1;
   }
 
-  if (willRun("browser", chosenSpecs.length > 0)) {
+  if (!gatesFailed && willRun("browser", chosenSpecs.length > 0)) {
     const steps = [
       ["packages", "node", ["app/bin/build-packages.js", "--years", "2"]],
       ["sitemaps", "node", ["app/bin/build-sitemaps.js"]],
@@ -934,11 +981,11 @@ async function main() {
       ["browser", "npx", ["playwright", "test", "--project=browser-tests", "--reporter=line", ...chosenSpecs]],
     ];
     const browser = await runSteps(steps, {}, "browser");
-    results.push([`browser(${chosenSpecs.length})`, browser.code, browser.durationMs]);
+    results.push([tierLabel.browser, browser.code, browser.durationMs]);
     if (browser.code) exitCode = 1;
   }
 
-  if (willRun("infra", sel.infra)) {
+  if (!gatesFailed && willRun("infra", sel.infra)) {
     const infra = await runSteps(
       [
         ["maven verify", "./mvnw", ["--errors", "clean", "verify"]],
@@ -947,7 +994,7 @@ async function main() {
       {},
       "infra",
     );
-    results.push(["infra", infra.code, infra.durationMs]);
+    results.push([tierLabel.infra, infra.code, infra.durationMs]);
     if (infra.code) exitCode = 1;
   }
 
@@ -963,7 +1010,8 @@ async function main() {
     const markerHash = writeGreenMarker({ hash: treeHash, mergeBase: markerBase, ranTierNames });
     if (markerHash) console.log(`  marker   target/test-scope/green-${markerHash} (base ${markerBase}, tiers ${ranTierNames.join(",")})`);
   }
-  console.log(`\nVERDICT: ${verdict}  ${summary || "nothing ran"}  ${fmt(Date.now() - started)}`);
+  const notRunSuffix = notRun.length ? `; not run: ${notRun.join(", ")}` : "";
+  console.log(`\nVERDICT: ${verdict}  ${summary || "nothing ran"}${notRunSuffix}  ${fmt(Date.now() - started)}`);
   if (failed.includes("gates")) console.log("A parity failure is fixed at source, or refreshed deliberately with npm run parity:refresh.");
   process.exit(exitCode);
 }
