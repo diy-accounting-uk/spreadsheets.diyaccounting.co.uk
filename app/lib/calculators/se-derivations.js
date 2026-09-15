@@ -17,7 +17,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { diyaGlToScenario } from "../diya-gl-loader.js";
 import { calculateSeCells } from "./se.js";
-import { SE_YEAR_END_MONTH } from "../../products/se.js";
+import { SE_YEAR_END_MONTH, SBA_CLAIM_ROWS } from "../../products/se.js";
 import { extractTaxYearStart, parseDate } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
 import { splitVat } from "../tax/vat.js";
@@ -465,9 +465,8 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
 // reads it back from there, so the payload carries what the return prints.
 // A box the book does not state stays blank and warns.
 const BOOK_STATED_ANNUAL_BOXES = [
-  { box: "52", cell: "D152", table: "allowances" }, // zeroEmissionsGoodsVehicleAllowance -- gone from 2025-26
-  { box: "52.1", cell: "D156", table: "allowances" }, // zeroEmissionsCarAllowance
-  { box: "53", cell: "D160", table: "allowances" }, // structuredBuildingAllowance
+  { box: "52", cell: "D150", table: "allowances" }, // zeroEmissionsGoodsVehicleAllowance -- gone from 2025-26
+  { box: "52.1", cell: "D152", table: "allowances" }, // zeroEmissionsCarAllowance
   { box: "62", cell: "D179", table: "adjustments" }, // includedNonTaxableProfits
   { box: "71", cell: "D210", table: "adjustments" }, // accountingAdjustment
 ];
@@ -477,9 +476,10 @@ const BOOK_STATED_ANNUAL_BOXES = [
 // out of reach today: no cell in the template, or a figure the book has no
 // record for. Box 69's field also moves out of HMRC's own schema by tax
 // year -- annualFieldsUnavailableForYear() below is what keeps a year that
-// no longer accepts a field from warning about it as if it still did.
+// no longer accepts a field from warning about it as if it still did. Boxes
+// 53 and 53.1 are not here: the Schedule's SBA block computes them, and
+// they are filed as arrays below, one item per claim.
 const NO_SOURCE_ANNUAL_BOXES = [
-  { box: "53.1", pick: 0 }, // allowances.enhancedStructuredBuildingAllowance
   { box: "55", pick: 1 }, // allowances.businessPremisesRenovationAllowance (shared with enhancedCapitalAllowance)
   { box: "59", pick: 1 }, // adjustments.balancingChargeBpra (shared with balancingChargeOther)
   { box: "68", pick: 0 }, // adjustments.basisAdjustment
@@ -622,6 +622,44 @@ export function buildSelfEmploymentAnnualSubmission(book, lines, taxData, option
       field,
       reason: `SA103F box ${boxNumber} has no cell the template computes; the customer fills it in by hand.`,
     });
+  }
+
+  // Structures and Buildings Allowance (boxes 53 and 53.1): the Schedule's
+  // SBA block computes each claim's year allowance from the book's own
+  // inputs, so the claim files as one item per row, not a stated scalar. A
+  // claim whose allowance is nil this year (ceased before the period, or
+  // past the 33 1/3 year limit) carries nothing to file. firstYear is the
+  // API's first-year details, filed once, on the claim's own qualifying
+  // date -- a claim already running before this package's period does not
+  // repeat them.
+  const admin = rawResults["Admin"] || {};
+  const structuredBuildingAllowance = [];
+  const enhancedStructuredBuildingAllowance = [];
+  SBA_CLAIM_ROWS.forEach((row, index) => {
+    const claim = (scenario.sba_claims || [])[index];
+    if (!claim) return;
+    const amount = schedule?.[`K${row}`];
+    if (typeof amount !== "number" || amount === 0) return;
+    const item = { amount: round2(amount), building: { ...claim.building } };
+    const qualifyingSerial = schedule[`B${row}`];
+    if (typeof qualifyingSerial === "number" && typeof admin.B4 === "number" && qualifyingSerial >= admin.B4) {
+      // A book's own TOML date parses as a Date instance; the API payload
+      // states a date the same way every time, regardless of how the
+      // caller's scenario happened to carry it.
+      item.firstYear = {
+        qualifyingDate: parseDate(claim.qualifyingDate).toISOString().slice(0, 10),
+        qualifyingAmountExpenditure: claim.qualifyingAmountExpenditure,
+      };
+    }
+    (claim.enhanced ? enhancedStructuredBuildingAllowance : structuredBuildingAllowance).push(item);
+  });
+  const structuredBuildingField = primaryField(boxes, "53");
+  const enhancedStructuredBuildingField = primaryField(boxes, "53.1");
+  if (structuredBuildingAllowance.length > 0 && !unavailableFields.has(structuredBuildingField)) {
+    setPath(root, structuredBuildingField, structuredBuildingAllowance);
+  }
+  if (enhancedStructuredBuildingAllowance.length > 0 && !unavailableFields.has(enhancedStructuredBuildingField)) {
+    setPath(root, enhancedStructuredBuildingField, enhancedStructuredBuildingAllowance);
   }
 
   const allowances = root.allowances || {};

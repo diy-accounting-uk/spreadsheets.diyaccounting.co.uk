@@ -854,7 +854,7 @@
           "properties": {
             "allowances": {
               "type": "object",
-              "description": "Capital allowance claims the fixed asset schedule does not compute, written to the SA103F boxes the trader would otherwise fill by hand: box 52 (zeroEmissionsGoodsVehicleAllowance, SE Full!D152), box 52.1 (zeroEmissionsCarAllowance, D156), box 53 (structuredBuildingAllowance, D160) and box 54 (electricChargePointAllowance, O139). Box 57 totals them. HMRC's schema dropped the box 52 and box 54 fields from 2025-26; the sheet still totals a stated figure, and the derivation warns.",
+              "description": "Capital allowance claims the fixed asset schedule does not compute, written to the SA103F boxes the trader would otherwise fill by hand: box 52 (zeroEmissionsGoodsVehicleAllowance, SE Full!D150), box 52.1 (zeroEmissionsCarAllowance, D152), box 53 (structuredBuildingAllowance[], the Schedule's SBA block sums into D156) and box 53.1 (enhancedStructuredBuildingAllowance[], D160) and box 54 (electricChargePointAllowance, O139). Box 57 totals them. HMRC's schema dropped the box 52 and box 54 fields from 2025-26; the sheet still totals a stated figure, and the derivation warns.",
               "additionalProperties": false,
               "properties": {
                 "zeroEmissionsGoodsVehicleAllowance": {
@@ -866,8 +866,12 @@
                   "minimum": 0
                 },
                 "structuredBuildingAllowance": {
-                  "type": "number",
-                  "minimum": 0
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/structuresBuildingsAllowanceClaim" }
+                },
+                "enhancedStructuredBuildingAllowance": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/structuresBuildingsAllowanceClaim" }
                 },
                 "electricChargePointAllowance": {
                   "type": "number",
@@ -975,6 +979,16 @@
               "maximum": 1
             },
             "specialRateWDA": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "structuresAndBuildingsAllowance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "structuresAndBuildingsAllowanceEnhanced": {
               "type": "number",
               "minimum": 0,
               "maximum": 1
@@ -1103,6 +1117,44 @@
         "motorVehicles": {
           "type": "number",
           "minimum": 0
+        }
+      }
+    },
+    "structuresBuildingsAllowanceClaim": {
+      "type": "object",
+      "description": "One Structures and Buildings Allowance claim (CAA 2001 s.270AA onwards), SA103F boxes 53 and 53.1. The Self Employed Schedule computes the year's allowance from these inputs at the year file's rate (3%, or 10% for a Freeport or Investment Zone tax site in the enhanced array) over the days of the chargeable period the claim covers -- a stated amount is never carried here.",
+      "required": ["qualifyingAmountExpenditure", "qualifyingDate", "building"],
+      "additionalProperties": false,
+      "properties": {
+        "qualifyingDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The later of the building's first qualifying use and the qualifying expenditure being incurred."
+        },
+        "qualifyingAmountExpenditure": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ceasedDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The day qualifying use or the claimant's relevant interest ended, when it did so within the allowance's period."
+        },
+        "building": {
+          "type": "object",
+          "required": ["postcode"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "number": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "string"
+            }
+          }
         }
       }
     },

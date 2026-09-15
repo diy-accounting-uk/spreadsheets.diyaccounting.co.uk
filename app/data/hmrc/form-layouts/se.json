@@ -251,10 +251,14 @@
               "label": "Capital allowances at 6% on equipment, including cars with higher CO2 emissions",
               "cell": "Financialaccounts.xlsx!SE Full!D147"
             },
-            { "box": "52", "label": "Zero-emission goods vehicle allowance", "cell": "Financialaccounts.xlsx!SE Full!D152" },
-            { "box": "52.1", "label": "Zero-emission car allowance", "cell": "Financialaccounts.xlsx!SE Full!D156" },
-            { "box": "53", "label": "The Structures and Buildings Allowance", "cell": "Financialaccounts.xlsx!SE Full!D160" },
-            { "box": "53.1", "label": "Freeport and Investment Zones Structures and Buildings Allowance", "cell": null },
+            { "box": "52", "label": "Zero-emission goods vehicle allowance", "cell": "Financialaccounts.xlsx!SE Full!D150" },
+            { "box": "52.1", "label": "Zero-emission car allowance", "cell": "Financialaccounts.xlsx!SE Full!D152" },
+            { "box": "53", "label": "The Structures and Buildings Allowance", "cell": "Financialaccounts.xlsx!SE Full!D156" },
+            {
+              "box": "53.1",
+              "label": "Freeport and Investment Zones Structures and Buildings Allowance",
+              "cell": "Financialaccounts.xlsx!SE Full!D160"
+            },
             { "box": "54", "label": "Electric charge-point allowance", "cell": "Financialaccounts.xlsx!SE Full!O139" },
             { "box": "55", "label": "100% and other enhanced capital allowances", "cell": "Financialaccounts.xlsx!SE Full!O144" },
             { "box": "56", "label": "Allowances on sale or cessation of business use", "cell": "Financialaccounts.xlsx!SE Full!O149" },

@@ -388,7 +388,22 @@ otherExpenses = 0.1300
 
 [tax.selfEmployment.allowances]
 zeroEmissionsCarAllowance = 2500.00
-structuredBuildingAllowance = 1800.00
+
+[[tax.selfEmployment.allowances.structuredBuildingAllowance]]
+qualifyingDate = 2023-10-01
+qualifyingAmountExpenditure = 60000.00
+
+[tax.selfEmployment.allowances.structuredBuildingAllowance.building]
+name = "Unit 4 Trafford Park"
+postcode = "M17 1AA"
+
+[[tax.selfEmployment.allowances.enhancedStructuredBuildingAllowance]]
+qualifyingDate = 2025-10-01
+qualifyingAmountExpenditure = 20000.00
+
+[tax.selfEmployment.allowances.enhancedStructuredBuildingAllowance.building]
+number = "7"
+postcode = "L24 9AA"
 
 [tax.selfEmployment.adjustments]
 goodsAndServicesOwnUse = 640.00

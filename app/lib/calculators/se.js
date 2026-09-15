@@ -16,7 +16,7 @@
 
 import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
-import { standardReads, multiFileOptions, SE_YEAR_END_MONTH } from "../../products/se.js";
+import { standardReads, multiFileOptions, SE_YEAR_END_MONTH, SBA_CLAIM_ROWS } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateMileageAllowance } from "../tax/mileage.js";
@@ -632,6 +632,62 @@ function buildSchedule(scenario, taxData, rate) {
   return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells };
 }
 
+// ── Structures and Buildings Allowance (SA103F boxes 53 and 53.1) ──────────
+//
+// Fixedassets.xlsx!Schedule rows 115 to 119, below the fixed asset register.
+// The book states each claim's inputs; the sheet computes the year's
+// allowance from the year file's rate over the days of the chargeable
+// period the claim covers. Verified against the template:
+//   H115 = IF(E115>0,IF(G115="F",[1]Admin!$G$10,[1]Admin!$G$9)," ")
+//   J115 = IF(E115>0,MAX(0,MIN($S$4,IF(N(I115)>0,I115,$S$4),
+//            EDATE(B115,IF(G115="F",120,400))-1)-MAX($D$6,B115)+1)," ")
+//   K115 = IF(E115>0,E115*H115*J115/($S$4-$D$6+1)," ")
+// $D$6 = [1]Admin!$B$4 (period start) and $S$4 = [1]Admin!$B$17 (period
+// end); 400 and 120 months are the 33 1/3 and 10 year limits. K120 =
+// SUMIF(G115:G119,"<>F",K115:K119) (box 53), K121 the same with "F"
+// (box 53.1). A claim's dates shift by the same whole-year offset as every
+// other scenario date, so every package year sees the same day counts.
+function buildStructuresAndBuildings(scenario, admin, monthOffset) {
+  const periodStart = admin.B4;
+  const periodEnd = admin.B17;
+  const claims = scenario.sba_claims || [];
+  const cells = {};
+  let standardTotal = 0;
+  let enhancedTotal = 0;
+
+  SBA_CLAIM_ROWS.forEach((row, index) => {
+    const claim = claims[index];
+    if (!claim) return;
+    const enhanced = claim.enhanced === true;
+    const qualifyingDate = excelSerial(shiftMonths(new Date(claim.qualifyingDate), monthOffset));
+    cells[`B${row}`] = qualifyingDate;
+    if (claim.building?.name) cells[`C${row}`] = claim.building.name;
+    if (claim.building?.number) cells[`D${row}`] = claim.building.number;
+    cells[`E${row}`] = claim.qualifyingAmountExpenditure;
+    cells[`F${row}`] = claim.building.postcode;
+    if (enhanced) cells[`G${row}`] = "F";
+    let ceasedDate;
+    if (claim.ceasedDate) {
+      ceasedDate = excelSerial(shiftMonths(new Date(claim.ceasedDate), monthOffset));
+      cells[`I${row}`] = ceasedDate;
+    }
+    const rate = enhanced ? admin.G10 : admin.G9;
+    cells[`H${row}`] = rate;
+    const limitMonths = enhanced ? 120 : 400;
+    const limitEndSerial = excelSerial(shiftMonths(dateFromExcelSerial(qualifyingDate), limitMonths)) - 1;
+    const upperBound = Math.min(periodEnd, ceasedDate !== undefined ? ceasedDate : periodEnd, limitEndSerial);
+    const lowerBound = Math.max(periodStart, qualifyingDate);
+    const days = Math.max(0, upperBound - lowerBound + 1);
+    cells[`J${row}`] = days;
+    const allowance = (claim.qualifyingAmountExpenditure * rate * days) / (periodEnd - periodStart + 1);
+    cells[`K${row}`] = allowance;
+    if (enhanced) enhancedTotal += allowance;
+    else standardTotal += allowance;
+  });
+
+  return { cells, K120: standardTotal, K121: enhancedTotal };
+}
+
 // ── Hire purchase ──────────────────────────────────────────────────────────
 
 function buildHpFinance(scenario) {
@@ -750,6 +806,8 @@ function buildAdmin(taxData, dateSerials) {
   cells.G4 = ca.annual_investment_allowance;
   cells.G5 = ca.writing_down_allowance;
   cells.G6 = ca.writing_down_allowance_special;
+  cells.G9 = ca.structures_and_buildings_allowance;
+  cells.G10 = ca.structures_and_buildings_allowance_enhanced;
   cells.G13 = dep.land_and_property;
   cells.G14 = dep.plant_and_machinery;
   cells.G15 = dep.fixtures_and_fittings;
@@ -824,6 +882,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const payroll = payrollMonths(scenario.payroll);
   const schedule = buildSchedule(scenario, taxData, rate);
   const scheduleNumber = (column) => sheetNumber(schedule.totals[column]);
+  const sba = buildStructuresAndBuildings(scenario, admin, monthOffset);
 
   // The twelve monthly stock cells telescope, so whatever is counted between
   // them the year's movement is the difference between its two ends. A count at
@@ -1020,7 +1079,15 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const boxes32to45Total = sheetSum(Object.values(seFullDisallowable)) + pl.B34;
 
   // ── The fixed asset workbook ──
-  const scheduleCells = { E57: schedule.existing.E, E110: schedule.additions.E, AC4: admin.G6, ...schedule.motorRowCells };
+  const scheduleCells = {
+    E57: schedule.existing.E,
+    E110: schedule.additions.E,
+    AC4: admin.G6,
+    ...schedule.motorRowCells,
+    ...sba.cells,
+    K120: sba.K120,
+    K121: sba.K121,
+  };
   for (const column of SCHEDULE_TOTAL_COLUMNS) scheduleCells[`${column}1`] = schedule.totals[column];
   const faReconciliation = {
     E11: schedule.additions.E,
@@ -1221,18 +1288,31 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seFull.D147 = carry([scheduleAC], () => scheduleAC);
   // Boxes with no formula behind them, carrying whatever figure the book
   // states and blank otherwise.
-  seFull.D152 = stated(annualAllowances.zeroEmissionsGoodsVehicleAllowance);
-  seFull.D156 = stated(annualAllowances.zeroEmissionsCarAllowance);
-  seFull.D160 = stated(annualAllowances.structuredBuildingAllowance);
+  seFull.D150 = stated(annualAllowances.zeroEmissionsGoodsVehicleAllowance);
+  seFull.D152 = stated(annualAllowances.zeroEmissionsCarAllowance);
   seFull.O139 = stated(annualAllowances.electricChargePointAllowance);
   seFull.D179 = stated(annualAdjustments.includedNonTaxableProfits);
   seFull.D210 = stated(annualAdjustments.accountingAdjustment);
+  // Boxes 53 and 53.1: the Schedule's SBA block computes them, not the book.
+  seFull.D156 = sba.K120;
+  seFull.D160 = sba.K121;
   // Box 50 carries the whole writing down allowance the schedule claims.
   seFull.D144 = carry([scheduleR], () => scheduleR);
   seFull.O144 = smallPoolsWriteOff;
   seFull.O149 = scheduleY;
   seFull.O154 = carry([seFull.D139, seFull.D144, seFull.O144, seFull.O149], () =>
-    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
+    sheetSum([
+      seFull.D139,
+      seFull.D144,
+      seFull.D147,
+      seFull.D150,
+      seFull.D152,
+      seFull.D156,
+      seFull.D160,
+      seFull.O139,
+      seFull.O144,
+      seFull.O149,
+    ]),
   );
   seFull.O160 = scheduleZ;
   seFull.D169 = goodsForOwnUse;

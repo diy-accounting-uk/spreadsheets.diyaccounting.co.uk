@@ -592,7 +592,14 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
           "capitalAllowanceMainPool",
           "capitalAllowanceSpecialRatePool",
           "enhancedCapitalAllowance",
-          ...(statesAnnualFigures ? ["capitalAllowanceSingleAssetPool", "zeroEmissionsCarAllowance", "structuredBuildingAllowance"] : []),
+          ...(statesAnnualFigures
+            ? [
+                "capitalAllowanceSingleAssetPool",
+                "zeroEmissionsCarAllowance",
+                "structuredBuildingAllowance",
+                "enhancedStructuredBuildingAllowance",
+              ]
+            : []),
         ].sort(),
       );
       expect(Object.keys(annual.adjustments).sort()).toEqual(
@@ -605,7 +612,6 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       );
       const warningFields = annual.warnings.map((w) => w.field);
       const neverSourced = [
-        "allowances.enhancedStructuredBuildingAllowance",
         "allowances.businessPremisesRenovationAllowance",
         "adjustments.balancingChargeBpra",
         "adjustments.basisAdjustment",
@@ -614,7 +620,6 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       ];
       const bookStated = [
         "allowances.zeroEmissionsCarAllowance",
-        "allowances.structuredBuildingAllowance",
         "adjustments.includedNonTaxableProfits",
         "adjustments.goodsAndServicesOwnUse",
       ];
@@ -623,6 +628,10 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
         if (statesAnnualFigures) expect(warningFields).not.toContain(field);
         else expect(warningFields).toContain(field);
       }
+      // Boxes 53 and 53.1 are the Schedule's own computation, not a stated
+      // figure: a book with no claim carries a nil box, not a warning.
+      expect(warningFields).not.toContain("allowances.structuredBuildingAllowance");
+      expect(warningFields).not.toContain("allowances.enhancedStructuredBuildingAllowance");
       // Box 71 reaches box 73 and box 77 through the working sheet's one
       // figure, so a stated figure is filed without a warning.
       if (statesAnnualFigures) expect(warningFields).not.toContain("adjustments.accountingAdjustment");
@@ -636,7 +645,6 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
         : book.tax?.selfEmployment;
       if (!stated?.allowances) return;
       expect(annual.allowances.zeroEmissionsCarAllowance).toBe(stated.allowances.zeroEmissionsCarAllowance);
-      expect(annual.allowances.structuredBuildingAllowance).toBe(stated.allowances.structuredBuildingAllowance);
       expect(annual.adjustments.includedNonTaxableProfits).toBe(stated.adjustments.includedNonTaxableProfits);
       expect(annual.adjustments.accountingAdjustment).toBe(stated.adjustments.accountingAdjustment);
       expect(annual.adjustments.goodsAndServicesOwnUse).toBe(stated.adjustments.goodsAndServicesOwnUse);
@@ -681,6 +689,33 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
     expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSingleAssetPool");
   });
 
+  it("the Structures and Buildings Allowance claims file as one item each, firstYear only on the claim newly qualifying this period", () => {
+    const { annual } = derive("se-scenario-advanced", TAX_APR27);
+    // Every scenario date shifts by the same whole-year offset onto the
+    // 2026-27 package: the Trafford Park claim (2023-10-01) lands on
+    // 2024-10-01, well before the period opens on 2026-04-06, so it carries
+    // the whole year's allowance and no firstYear; 60,000 x 3% = 1,800
+    // exactly, box 53.
+    expect(annual.allowances.structuredBuildingAllowance).toEqual([
+      { amount: 1800, building: { name: "Unit 4 Trafford Park", postcode: "M17 1AA" } },
+    ]);
+    // The Freeport claim (2025-10-01) lands on 2026-10-01, inside the
+    // 2026-27 period, so this is the claim's first year on this package and
+    // firstYear carries its own qualifying details (unshifted, the book's
+    // real dates). 20,000 x 10% x 187 days (6 April to 5 April, a non-leap
+    // year) / 365 = 1,024.66, box 53.1.
+    expect(annual.allowances.enhancedStructuredBuildingAllowance).toEqual([
+      {
+        amount: 1024.66,
+        building: { number: "7", postcode: "L24 9AA" },
+        firstYear: { qualifyingDate: "2025-10-01", qualifyingAmountExpenditure: 20000 },
+      },
+    ]);
+    const warningFields = annual.warnings.map((w) => w.field);
+    expect(warningFields).not.toContain("allowances.structuredBuildingAllowance");
+    expect(warningFields).not.toContain("allowances.enhancedStructuredBuildingAllowance");
+  });
+
   it("a box 52 figure stated for a year whose schema dropped the field is not filed, and the warning carries it", () => {
     const { book, lines, scenario } = loadFixture("se-scenario-advanced");
     const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, zeroEmissionsGoodsVehicleAllowance: 900 } };
@@ -712,8 +747,12 @@ describe("the derivations — the boxes with no cell really do read blank in the
       const results = calculateSeCells(book, lines, TAX_APR27, scenario);
       const seFull = results["SE Full"];
       const stated = fixture === "se-scenario-advanced";
-      for (const cell of ["D152", "O139"]) expect(typeof seFull[cell]).not.toBe("number");
-      for (const cell of ["D156", "D160", "D179", "D210"]) expect(typeof seFull[cell] === "number").toBe(stated);
+      for (const cell of ["D150", "O139"]) expect(typeof seFull[cell]).not.toBe("number");
+      for (const cell of ["D152", "D179", "D210"]) expect(typeof seFull[cell] === "number").toBe(stated);
+      // Boxes 53 and 53.1 are the Schedule's own SBA block, not a stated
+      // figure: SUMIF over an all-blank claim block reads 0, a real number,
+      // whether or not the book carries any claim.
+      for (const cell of ["D156", "D160"]) expect(typeof seFull[cell]).toBe("number");
     });
   }
 });
@@ -843,8 +882,12 @@ describe("breakability — every check above can fail", () => {
     halved.opening_fixed_assets[halved.opening_fixed_assets.length - 1].tax_wdv = 2000;
     const halvedAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: halved });
 
+    // structuredBuildingAllowance and enhancedStructuredBuildingAllowance are
+    // arrays, rebuilt fresh on every call, so a strict !== always reads them
+    // as changed even when their contents agree; JSON.stringify compares
+    // what a claim actually carries instead.
     const changed = Object.keys(withExtraAnnual.allowances).filter(
-      (key) => withExtraAnnual.allowances[key] !== halvedAnnual.allowances[key],
+      (key) => JSON.stringify(withExtraAnnual.allowances[key]) !== JSON.stringify(halvedAnnual.allowances[key]),
     );
     expect(changed).toEqual(["capitalAllowanceMainPool"]);
     expect(withExtraAnnual.adjustments).toEqual(halvedAnnual.adjustments);
@@ -873,7 +916,15 @@ describe("breakability — every check above can fail", () => {
     expect(baseAnnual.adjustments.balancingChargeOther).toBe(0);
     expect(mutatedAnnual.adjustments.balancingChargeOther).toBeCloseTo(4360, 2);
     const otherAllowanceKeys = Object.keys(baseAnnual.allowances).filter((key) => key !== "allowanceOnSales");
-    for (const key of otherAllowanceKeys) expect(mutatedAnnual.allowances[key]).toBeCloseTo(baseAnnual.allowances[key], 2);
+    for (const key of otherAllowanceKeys) {
+      // The SBA claim arrays are unaffected by the disposal, so they compare
+      // by content rather than as a number toBeCloseTo expects.
+      if (Array.isArray(baseAnnual.allowances[key])) {
+        expect(mutatedAnnual.allowances[key]).toEqual(baseAnnual.allowances[key]);
+      } else {
+        expect(mutatedAnnual.allowances[key]).toBeCloseTo(baseAnnual.allowances[key], 2);
+      }
+    }
   });
 });
 

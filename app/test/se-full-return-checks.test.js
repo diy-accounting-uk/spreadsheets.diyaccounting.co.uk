@@ -120,6 +120,7 @@ const SA103F_BOXES_WITH_A_FIGURE = [
   "D147",
   "O149",
   "O154",
+  "D152",
   "D156",
   "D160",
   "D169",
@@ -143,20 +144,20 @@ const ADJUSTED_PROFIT_STATED =
   "SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil";
 const TOTAL_TAXABLE_PROFITS = "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75";
 const STATED_ALLOWANCES =
-  "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)";
+  "SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54)";
 const STATED_BOX_62 = "SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states";
 const STATED_BOX_60 = "SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states";
 const ADJUSTED_LOSS = "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil";
 const ADJUSTED_LOSS_STATED =
   "SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil";
 const SHORT_TAXABLE_PROFIT =
-  "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62";
+  "SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62";
 const SHORT_TOTAL_TAXABLE_PROFITS =
-  "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off";
+  "SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off";
 const SHORT_CAPITAL_ALLOWANCES =
-  "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54";
+  "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53, 53.1 and 54";
 const SHORT_PROFIT_FOR_TAX =
-  "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5";
+  "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71 = Income Tax E5";
 const BRIDGE = "Accounting profit to tax profit bridge closes to zero";
 const SMALL_POOLS_RULE =
   "SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000";
@@ -183,6 +184,21 @@ const FULL_RETURN_ONLY_ALLOWANCE_FAILURES = (ownCheck) => [
   SHORT_PROFIT_FOR_TAX,
   TOTAL_CAPITAL_ALLOWANCES,
   ownCheck,
+  SHORT_TAXABLE_PROFIT,
+  SHORT_TOTAL_TAXABLE_PROFITS,
+  SHORT_CAPITAL_ALLOWANCES,
+  BRIDGE,
+];
+// Box 53 and 53.1 are full-return-only like the stated boxes above, but
+// they are also schedule-fed (like boxes 50 and 51): a link check against
+// the Schedule's own total, a fixture anchor, and STATED_ALLOWANCES, whose
+// own left side subtracts them, join the same short-return bridge.
+const FULL_RETURN_ONLY_SBA_FAILURES = (linkCheck, fixtureAnchor) => [
+  SHORT_PROFIT_FOR_TAX,
+  TOTAL_CAPITAL_ALLOWANCES,
+  linkCheck,
+  fixtureAnchor,
+  STATED_ALLOWANCES,
   SHORT_TAXABLE_PROFIT,
   SHORT_TOTAL_TAXABLE_PROFITS,
   SHORT_CAPITAL_ALLOWANCES,
@@ -339,15 +355,26 @@ const SA103F_CORRUPTIONS = [
     ],
   ],
   [
-    "D152",
+    "D150",
     4000,
-    FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states"),
+    FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 52 zero-emission goods vehicle allowance (D150) = the figure the book states"),
   ],
-  ["D156", 4000, FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states")],
+  ["D152", 4000, FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 52.1 zero-emission car allowance (D152) = the figure the book states")],
+  [
+    "D156",
+    4000,
+    FULL_RETURN_ONLY_SBA_FAILURES(
+      "SA103F box 53 Structures and Buildings Allowance (D156) = Schedule K120",
+      "SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate",
+    ),
+  ],
   [
     "D160",
     4000,
-    FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states"),
+    FULL_RETURN_ONLY_SBA_FAILURES(
+      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = Schedule K121",
+      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
+    ),
   ],
   ["O139", 4000, FULL_RETURN_ONLY_ALLOWANCE_FAILURES("SA103F box 54 electric charge-point allowance (O139) = the figure the book states")],
   [
@@ -443,8 +470,23 @@ const SA103F_CORRUPTIONS = [
       "SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal",
     ],
   ],
-  ["Q2", 46753, ["SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)"]],
-  ["V2", 47117, ["SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)"]],
+  [
+    "Q2",
+    46753,
+    [
+      "SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate",
+      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
+      "SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)",
+    ],
+  ],
+  [
+    "V2",
+    47117,
+    [
+      "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate",
+      "SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)",
+    ],
+  ],
   ["G141", 1000.18, ["SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)"]],
   ["J280", 13570, ["SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20)"]],
   [

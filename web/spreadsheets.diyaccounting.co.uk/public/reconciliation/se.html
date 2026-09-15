@@ -79,7 +79,7 @@
           <li><strong>Status:</strong> RECONCILES (with warnings)</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 911 passed, 5 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 914 passed, 5 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
@@ -156,22 +156,22 @@
 <tr><td>Closing Debtors total</td><td>7900</td><td>7900</td><td>0</td><td>PASS</td></tr>
 <tr><td>Opening Creditors total</td><td>2220</td><td>2220</td><td>0</td><td>PASS</td></tr>
 <tr><td>Closing Creditors total</td><td>1710</td><td>1710</td><td>0</td><td>PASS</td></tr>
-<tr><td>Income Tax</td><td>42591.963825</td><td>42591.9638249998</td><td>-1.964508555829525e-10</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>42002.4905794518</td><td>42002.4905794518</td><td>0</td><td>PASS</td></tr>
 <tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI, less the CIS already deducted</td><td>46354.739994999996</td><td>46354.7399949998</td><td>-1.964508555829525e-10</td><td>PASS</td></tr>
-<tr><td>Tax: Personal allowance after taper</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax at additional rate</td><td>75.96382499999963</td><td>75.9638249998163</td><td>-1.8333423668082105e-10</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI, less the CIS already deducted</td><td>45744.77359876686</td><td>45744.7735987669</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
+<tr><td>Tax: Personal allowance after taper</td><td>427.9245171235016</td><td>427.924517123494</td><td>-7.560174708487466e-12</td><td>PASS</td></tr>
+<tr><td>Tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the basic and higher bands at the basic band end</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet splits the higher and additional bands at the higher band end</td><td>125140</td><td>125140</td><td>0</td><td>PASS</td></tr>
 <tr><td>Tax: sheet applies the additional rate above the higher band</td><td>0.45</td><td>0.45</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: Taxable = Profit - Allowance</td><td>125308.8085</td><td>125308.8085</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: IT = Basic + Higher + Additional</td><td>42591.96382499982</td><td>42591.9638249998</td><td>-1.4551915228366852e-11</td><td>PASS</td></tr>
-<tr><td>Tax: Total = IT + CIS deduction line + NI</td><td>46354.73999499979</td><td>46354.7399949998</td><td>+7.275957614183426e-12</td><td>PASS</td></tr>
+<tr><td>Tax: Taxable = Profit - Allowance</td><td>123856.2264486295</td><td>123856.22644863</td><td>+4.94765117764473e-10</td><td>PASS</td></tr>
+<tr><td>Tax: IT = Basic + Higher + Additional</td><td>42002.4905794518</td><td>42002.4905794518</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT + CIS deduction line + NI</td><td>45744.77359876686</td><td>45744.7735987669</td><td>+4.3655745685100555e-11</td><td>PASS</td></tr>
 <tr><td>SA103S: Turnover = P&amp;L Sales</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: total expenses = cost of sales + admin expenses less depreciation</td><td>146730.52483333368</td><td>146730.524833333</td><td>-6.693881005048752e-10</td><td>PASS</td></tr>
 <tr><td>SA103S: net profit = turnover + other business income - total expenses</td><td>192469.475166667</td><td>192469.475166666</td><td>-9.89530235528946e-10</td><td>PASS</td></tr>
 <tr><td>SA103S: net loss = total expenses - turnover - other business income</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5</td><td>125308.8085</td><td>125308.8085</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71 = Income Tax E5</td><td>124284.150965753</td><td>124284.15096575342</td><td>+4.220055416226387e-10</td><td>PASS</td></tr>
 <tr><td>SA103S: Capital allowances (AIA/FYA) = Schedule Q1</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: months of actual trade = P&amp;L months with turnover</td><td>12</td><td>12</td><td>0</td><td>PASS</td></tr>
 <tr><td>Forecast: turnover = P&amp;L turnover</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
@@ -212,39 +212,42 @@
 <tr><td>SA103F box 44 disallowable depreciation (O114) leaves the loss on disposal (row 33) out of the disallowable total that box 29 (D114) carries</td><td>21037</td><td>20865</td><td>-172</td><td><strong>WARNING</strong></td></tr>
 <tr><td>VitalTax annual sales (G5) excludes the Other Income sales that SA103F box 15 (D55) includes</td><td>339200</td><td>335500</td><td>-3700</td><td><strong>WARNING</strong></td></tr>
 <tr><td>VitalTax other income (rows 8, 11 and 38 folded together) treats Investment Grants as ordinary other income, while SA103F reports them apart at box 75 (O204) rather than box 16 (O55)</td><td>3700</td><td>5783.33333333333</td><td>+2083.3333333333303</td><td><strong>WARNING</strong></td></tr>
-<tr><td>SA103F box 57 total capital allowances (O154) = boxes 49 to 56</td><td>69624</td><td>69624</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 57 total capital allowances (O154) = boxes 49 to 56</td><td>70648.65753424658</td><td>70648.6575342466</td><td>+1.4551915228366852e-11</td><td>PASS</td></tr>
 <tr><td>SA103F box 47 net profit (D129) = boxes 15 and 16 less box 31</td><td>162273.016666667</td><td>162273.016666666</td><td>-1.0186340659856796e-9</td><td>PASS</td></tr>
 <tr><td>SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60</td><td>30836.4585</td><td>30836.4585</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62</td><td>69974</td><td>69974</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63</td><td>123135.475166666</td><td>123135.475166666</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil</td><td>123225.475166666</td><td>123225.475166666</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62</td><td>70998.6575342466</td><td>70998.6575342466</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63</td><td>122110.8176324194</td><td>122110.81763242</td><td>+5.966285243630409e-10</td><td>PASS</td></tr>
+<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75</td><td>125308.80849999933</td><td>125308.8085</td><td>+6.693881005048752e-10</td><td>PASS</td></tr>
+<tr><td>SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75</td><td>124284.15096575333</td><td>124284.150965753</td><td>-3.346940502524376e-10</td><td>PASS</td></tr>
 <tr><td>SA103F box 49 annual investment allowance (D139) = Schedule Q1</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 50 capital allowances at 18% (D144) = Schedule R1</td><td>4144</td><td>4144</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 51 capital allowances at 6% (D147) = Schedule AC1</td><td>540</td><td>540</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1</td><td>8140</td><td>8140</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 59 balancing charge (O160) = Schedule Z1</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 53 Structures and Buildings Allowance (D156) = Schedule K120</td><td>1800</td><td>1800</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = Schedule K121</td><td>1024.65753424658</td><td>1024.65753424658</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate, less private use</td><td>4144</td><td>4144</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 51 capital allowances at 6% (D147) = the scenario's special rate pool tax written-down values at the year's special rate, less private use</td><td>540</td><td>540</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 55 100% and other enhanced capital allowances (O144) = the small pools write-off computed per pool from the scenario's own pooled assets</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states</td><td>2500</td><td>2500</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states</td><td>1800</td><td>1800</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 52 zero-emission goods vehicle allowance (D150) = the figure the book states</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 52.1 zero-emission car allowance (D152) = the figure the book states</td><td>2500</td><td>2500</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 54 electric charge-point allowance (O139) = the figure the book states</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 62 income included but not taxable as business profits (D179) = the figure the book states</td><td>350</td><td>350</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states</td><td>90</td><td>90</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate</td><td>1800</td><td>1800</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate</td><td>1024.6575342465753</td><td>1024.65753424658</td><td>+4.774847184307873e-12</td><td>PASS</td></tr>
 <tr><td>SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50</td><td>640</td><td>640</td><td>0</td><td>PASS</td></tr>
 <tr><td>Business Details!O50 goods and services for own use = the figure the book states</td><td>640</td><td>640</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54)</td><td>4300</td><td>4300</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54)</td><td>2500</td><td>2500.0000000000146</td><td>+1.4551915228366852e-11</td><td>PASS</td></tr>
 <tr><td>SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states</td><td>350</td><td>350</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states</td><td>640</td><td>640</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil</td><td>123225.475166666</td><td>123225.475166666</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil</td><td>122200.81763242</td><td>122200.81763242</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62</td><td>123135.475166666</td><td>123135.475166666</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off</td><td>125308.8085</td><td>125308.8085</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone</td><td>123135.475166666</td><td>127785.475166666</td><td>+4650</td><td><strong>WARNING</strong></td></tr>
+<tr><td>SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62</td><td>122110.81763241942</td><td>122110.81763242</td><td>+5.820766091346741e-10</td><td>PASS</td></tr>
+<tr><td>SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off</td><td>124284.15096575342</td><td>124284.150965753</td><td>-4.220055416226387e-10</td><td>PASS</td></tr>
+<tr><td>SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone</td><td>122110.81763242</td><td>127785.475166666</td><td>+5674.657534245998</td><td><strong>WARNING</strong></td></tr>
 <tr><td>SA103F box 15 turnover: full return (D55) = short return (D38)</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 16 other business income: full return (O55) = short return (O38)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 48 net loss: full return (O129) = short return (O71)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
@@ -264,8 +267,8 @@
 <tr><td>SA103F box 28 accountancy, legal and professional fees: short return (O46) = full return (D110) less its own disallowable share (O110)</td><td>6094</td><td>6094</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back</td><td>176926.98333333302</td><td>176926.983333333</td><td>-2.9103830456733704e-11</td><td>PASS</td></tr>
 <tr><td>SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation</td><td>162273.016666666</td><td>162273.016666666</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54</td><td>69624</td><td>69624</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54)</td><td>17124</td><td>12824</td><td>-4300</td><td><strong>WARNING</strong></td></tr>
+<tr><td>SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53, 53.1 and 54</td><td>70648.65753424658</td><td>70648.6575342466</td><td>+1.4551915228366852e-11</td><td>PASS</td></tr>
+<tr><td>SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states or claims on SE Full alone (boxes 52, 52.1, 53, 53.1 and 54)</td><td>18148.657534246595</td><td>12824</td><td>-5324.657534246595</td><td><strong>WARNING</strong></td></tr>
 <tr><td>SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)</td><td>46118</td><td>46118</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)</td><td>46482</td><td>46482</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)</td><td>0.14</td><td>0.14</td><td>0</td><td>PASS</td></tr>
@@ -1002,7 +1005,7 @@
 <tr><td>Payslips!Payment C14 tax month 11 is due on the 19th after it</td><td>46465</td><td>46465</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment B15 tax month 12 ends on the last day of Mar</td><td>46477</td><td>46477</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment C15 tax month 12 is due on the 19th after it</td><td>46496</td><td>46496</td><td>0</td><td>PASS</td></tr>
-<tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>4.220055416226387e-10</td><td>+4.220055416226387e-10</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product A (sales a) net reaches Profit &amp; Loss Account!B5 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product B (sales b) net reaches Profit &amp; Loss Account!B6 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product C (sales c) net reaches Profit &amp; Loss Account!B7 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
@@ -2056,17 +2059,18 @@
 <tr><td>Less other capital allowances (box 25)</td><td>SE Short!O80</td><td class="num">-12,824</td></tr>
 <tr><td>Add balancing charges (box 26)</td><td>SE Short!O85</td><td class="num">0</td></tr>
 <tr><td>Add goods and services for own use (box 27)</td><td>SE Short!D94</td><td class="num">640</td></tr>
-<tr><td>Less the full return's own zero-emission goods vehicle allowance (box 52)</td><td>SE Full!D152</td><td class="num">0</td></tr>
-<tr><td>Less the full return's own zero-emission car allowance (box 52.1)</td><td>SE Full!D156</td><td class="num">-2,500</td></tr>
-<tr><td>Less the full return's own Structures and Buildings Allowance (box 53)</td><td>SE Full!D160</td><td class="num">-1,800</td></tr>
+<tr><td>Less the full return's own zero-emission goods vehicle allowance (box 52)</td><td>SE Full!D150</td><td class="num">0</td></tr>
+<tr><td>Less the full return's own zero-emission car allowance (box 52.1)</td><td>SE Full!D152</td><td class="num">-2,500</td></tr>
+<tr><td>Less the full return's own Structures and Buildings Allowance (box 53)</td><td>SE Full!D156</td><td class="num">-1,800</td></tr>
+<tr><td>Less the full return's own Freeport and Investment Zone Structures and Buildings Allowance (box 53.1)</td><td>SE Full!D160</td><td class="num">-1,024.66</td></tr>
 <tr><td>Less the full return's own electric charge-point allowance (box 54)</td><td>SE Full!O139</td><td class="num">0</td></tr>
 <tr><td>Less the full return's own box 62 adjustment</td><td>SE Full!D179</td><td class="num">-350</td></tr>
 <tr><td>Add the full return's own box 71 adjustment for change of accounting practice</td><td>SE Full!D210</td><td class="num">90</td></tr>
 <tr><td>Add back the year's loss, carried forward rather than reducing tax below nil</td><td>SE Full!O179</td><td class="num">0</td></tr>
 <tr><td>Less loss brought forward (box 29)</td><td>SE Short!O94</td><td class="num">0</td></tr>
 <tr><td>Add grants as other business income (box 30)</td><td>SE Short!O99</td><td class="num">2,083.33</td></tr>
-<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>125,308.81</strong></td></tr>
-<tr><td>Tax profit the sheet carries</td><td>Income Tax!E5</td><td class="num">125,308.81</td></tr>
+<tr><td><strong>Tax profit the bridge computes</strong></td><td></td><td class="num"><strong>124,284.15</strong></td></tr>
+<tr><td>Tax profit the sheet carries</td><td>Income Tax!E5</td><td class="num">124,284.15</td></tr>
 <tr><td><strong>Residue</strong></td><td></td><td class="num"><strong>0</strong></td></tr>
 </tbody>
 </table></div>
@@ -2221,6 +2225,8 @@
 <tr><td>Annual Investment Allowance Rate</td><td class="num">1</td></tr>
 <tr><td>Writing Down Allowance Rate</td><td class="num">0.14</td></tr>
 <tr><td>Special Rate Writing Down Allowance Rate</td><td class="num">0.06</td></tr>
+<tr><td>Structures and Buildings Allowance Rate</td><td class="num">0.03</td></tr>
+<tr><td>Freeport and Investment Zone SBA Rate</td><td class="num">0.1</td></tr>
 <tr><td>Mileage Higher Rate Limit</td><td class="num">10,000</td></tr>
 <tr><td>Mileage Higher Rate Pence</td><td class="num">0.45</td></tr>
 <tr><td>Mileage Lower Rate Start</td><td class="num">10,001</td></tr>
@@ -2635,20 +2641,20 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>E5</td><td>Profit from Self Employment</td><td>125308.8085</td><td>gl-cor:amount (profitSE)</td></tr>
-<tr><td>E6</td><td>Less: Personal Allowance</td><td>0</td><td>tax.incomeTax.personalAllowance</td></tr>
-<tr><td>E7</td><td>Taxable Income</td><td>125308.8085</td><td>gl-cor:amount (taxableIncome)</td></tr>
+<tr><td>E5</td><td>Profit from Self Employment</td><td>124284.150965753</td><td>gl-cor:amount (profitSE)</td></tr>
+<tr><td>E6</td><td>Less: Personal Allowance</td><td>427.924517123494</td><td>tax.incomeTax.personalAllowance</td></tr>
+<tr><td>E7</td><td>Taxable Income</td><td>123856.22644863</td><td>gl-cor:amount (taxableIncome)</td></tr>
 <tr><td>E8</td><td>Tax at Basic Rate (20%)</td><td>7540</td><td>tax.incomeTax.basicRate</td></tr>
 <tr><td>C9</td><td>Basic band ceiling the sheet applies</td><td>37700</td><td>tax.incomeTax.basicBandEnd (applied)</td></tr>
-<tr><td>E9</td><td>Tax at Higher Rate (40%)</td><td>34976</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>E9</td><td>Tax at Higher Rate (40%)</td><td>34462.4905794518</td><td>tax.incomeTax.higherRate</td></tr>
 <tr><td>C10</td><td>Additional rate threshold the sheet applies</td><td>125140</td><td>tax.incomeTax.higherBandEnd (applied)</td></tr>
 <tr><td>D10</td><td>Additional rate the sheet applies</td><td>0.45</td><td>tax.incomeTax.additionalRate (applied)</td></tr>
-<tr><td>E10</td><td>Tax at Additional Rate (45%)</td><td>75.9638249998163</td><td>tax.incomeTax.additionalRate</td></tr>
-<tr><td>E11</td><td><strong>Total Income Tax</strong></td><td>42591.9638249998</td><td>tax.incomeTax (total)</td></tr>
+<tr><td>E10</td><td>Tax at Additional Rate (45%)</td><td>0</td><td>tax.incomeTax.additionalRate</td></tr>
+<tr><td>E11</td><td><strong>Total Income Tax</strong></td><td>42002.4905794518</td><td>tax.incomeTax (total)</td></tr>
 <tr><td>E12</td><td>Less: CIS Deducted</td><td>0</td><td>diya-gl:cisDeduction (total)</td></tr>
 <tr><td>E15</td><td>NI Class 4 (lower band)</td><td>2262</td><td>tax.nationalInsurance.class4MainRate</td></tr>
-<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>1500.77616999999</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
-<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>46354.7399949998</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>1480.28301931506</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>45744.7735987669</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>Profit Forecast</h5>
@@ -2737,23 +2743,24 @@
 <tr><td>D139</td><td>Annual investment allowance (box 49)</td><td>52500</td><td>tax.capitalAllowances.aia (sa103f)</td></tr>
 <tr><td>D144</td><td>Capital allowances at 18% (box 50)</td><td>4144</td><td>tax.capitalAllowances.wda (sa103f)</td></tr>
 <tr><td>D147</td><td>Capital allowances at 6% (box 51)</td><td>540</td><td>tax.capitalAllowances.specialRateWDA (sa103f)</td></tr>
-<tr><td>D156</td><td>Zero-emission car allowance (box 52.1)</td><td>2500</td><td>tax.selfEmployment.allowances.zeroEmissionsCarAllowance</td></tr>
-<tr><td>D160</td><td>Structures and Buildings Allowance (box 53)</td><td>1800</td><td>tax.selfEmployment.allowances.structuredBuildingAllowance</td></tr>
+<tr><td>D152</td><td>Zero-emission car allowance (box 52.1)</td><td>2500</td><td>tax.selfEmployment.allowances.zeroEmissionsCarAllowance</td></tr>
+<tr><td>D156</td><td>Structures and Buildings Allowance (box 53)</td><td>1800</td><td>tax.capitalAllowances.structuresAndBuildingsAllowance (sa103f)</td></tr>
+<tr><td>D160</td><td>Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)</td><td>1024.65753424658</td><td>tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced (sa103f)</td></tr>
 <tr><td>O144</td><td>100% and other enhanced capital allowances (box 55)</td><td>0</td><td>tax.capitalAllowances.enhanced (sa103f)</td></tr>
 <tr><td>O149</td><td>Allowances on sale or cessation (box 56)</td><td>8140</td><td>tax.capitalAllowances.balancingAllowance (sa103f)</td></tr>
-<tr><td>O154</td><td><strong>Total capital allowances (box 57)</strong></td><td>69624</td><td>tax.capitalAllowances (sa103f)</td></tr>
+<tr><td>O154</td><td><strong>Total capital allowances (box 57)</strong></td><td>70648.6575342466</td><td>tax.capitalAllowances (sa103f)</td></tr>
 <tr><td>O160</td><td>Balancing charge (box 59)</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103f)</td></tr>
 <tr><td>D169</td><td>Goods and services for own use (box 60)</td><td>640</td><td>gl-cor:amount (sa103f.ownUse)</td></tr>
 <tr><td>D174</td><td><strong>Total additions to net profit (box 61)</strong></td><td>30836.4585</td><td>gl-cor:amount (sa103f.totalAdditions)</td></tr>
 <tr><td>D179</td><td>Income included but not taxable as business profits (box 62)</td><td>350</td><td>tax.selfEmployment.adjustments.includedNonTaxableProfits</td></tr>
-<tr><td>O169</td><td><strong>Total deductions from net profit (box 63)</strong></td><td>69974</td><td>gl-cor:amount (sa103f.totalDeductions)</td></tr>
-<tr><td>O174</td><td><strong>Net business profit for tax purposes (box 64)</strong></td><td>123135.475166666</td><td>gl-cor:amount (sa103f.taxableProfit)</td></tr>
+<tr><td>O169</td><td><strong>Total deductions from net profit (box 63)</strong></td><td>70998.6575342466</td><td>gl-cor:amount (sa103f.totalDeductions)</td></tr>
+<tr><td>O174</td><td><strong>Net business profit for tax purposes (box 64)</strong></td><td>122110.81763242</td><td>gl-cor:amount (sa103f.taxableProfit)</td></tr>
 <tr><td>O179</td><td>Net business loss for tax purposes (box 65)</td><td>0</td><td>gl-cor:amount (sa103f.taxableLoss)</td></tr>
 <tr><td>D210</td><td>Adjustment for change of accounting practice (box 71)</td><td>90</td><td>tax.selfEmployment.adjustments.accountingAdjustment</td></tr>
-<tr><td>O194</td><td><strong>Adjusted profit (box 73)</strong></td><td>123225.475166666</td><td>gl-cor:amount (sa103f.adjustedProfit)</td></tr>
+<tr><td>O194</td><td><strong>Adjusted profit (box 73)</strong></td><td>122200.81763242</td><td>gl-cor:amount (sa103f.adjustedProfit)</td></tr>
 <tr><td>O199</td><td>Loss brought forward set against this year (box 74)</td><td>0</td><td>gl-cor:amount (sa103f.lossBroughtForward)</td></tr>
 <tr><td>O204</td><td>Other business income not in boxes 15, 16 or 60 (box 75)</td><td>2083.33333333333</td><td>gl-cor:amount (sa103f.otherBusinessIncome)</td></tr>
-<tr><td>O210</td><td><strong>Total taxable profits from this business (box 76)</strong></td><td>125308.8085</td><td>gl-cor:amount (sa103f.profitForTax)</td></tr>
+<tr><td>O210</td><td><strong>Total taxable profits from this business (box 76)</strong></td><td>124284.150965753</td><td>gl-cor:amount (sa103f.profitForTax)</td></tr>
 <tr><td>D219</td><td>Adjusted loss (box 77)</td><td>0</td><td>gl-cor:amount (sa103f.adjustedLoss)</td></tr>
 <tr><td>O224</td><td>Total loss to carry forward (box 80)</td><td>0</td><td>gl-cor:amount (sa103f.lossCarriedForward)</td></tr>
 <tr><td>D231</td><td>Contractor deductions taken off (box 81)</td><td>0</td><td>diya-gl:cisDeduction (sa103f)</td></tr>
@@ -2881,6 +2888,8 @@
 <tr><td>G4</td><td>Annual Investment Allowance Rate</td><td>1</td><td></td></tr>
 <tr><td>G5</td><td>Writing Down Allowance Rate</td><td>0.14</td><td>tax.capitalAllowances.mainRateWDA</td></tr>
 <tr><td>G6</td><td>Special Rate Writing Down Allowance Rate</td><td>0.06</td><td>tax.capitalAllowances.specialRateWDA</td></tr>
+<tr><td>G9</td><td>Structures and Buildings Allowance Rate</td><td>0.03</td><td>tax.capitalAllowances.structuresAndBuildingsAllowance</td></tr>
+<tr><td>G10</td><td>Freeport and Investment Zone SBA Rate</td><td>0.1</td><td>tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced</td></tr>
 <tr><td>F21</td><td>Mileage Higher Rate Limit</td><td>10000</td><td></td></tr>
 <tr><td>G21</td><td>Mileage Higher Rate Pence</td><td>0.45</td><td>tax.mileage.carFirst10000</td></tr>
 <tr><td>F22</td><td>Mileage Lower Rate Start</td><td>10001</td><td></td></tr>
@@ -3535,6 +3544,23 @@
 <tr><td>AD40</td><td>Single asset pool marker on the third motor vehicle brought forward (P)</td><td>P</td><td></td></tr>
 <tr><td>AE40</td><td>Single asset pool main rate allowance on the third motor vehicle brought forward</td><td>784</td><td></td></tr>
 <tr><td>AG40</td><td>Single asset pool tax written down value on the third motor vehicle brought forward</td><td>7216</td><td></td></tr>
+<tr><td>B115</td><td>Date first in qualifying use, the fixture's standard-rate SBA claim</td><td>45566</td><td></td></tr>
+<tr><td>C115</td><td>Building name, the fixture's standard-rate SBA claim</td><td>Unit 4 Trafford Park</td><td></td></tr>
+<tr><td>E115</td><td>Qualifying expenditure, the fixture's standard-rate SBA claim</td><td>60000</td><td></td></tr>
+<tr><td>F115</td><td>Postcode, the fixture's standard-rate SBA claim</td><td>M17 1AA</td><td></td></tr>
+<tr><td>H115</td><td>Structures and Buildings Allowance rate applied to the standard-rate claim</td><td>0.03</td><td></td></tr>
+<tr><td>J115</td><td>Days claimed this year, the fixture's standard-rate SBA claim</td><td>365</td><td></td></tr>
+<tr><td>K115</td><td>Structures and Buildings Allowance claimed this year, the fixture's standard-rate claim</td><td>1800</td><td></td></tr>
+<tr><td>B116</td><td>Date first in qualifying use, the fixture's Freeport SBA claim</td><td>46296</td><td></td></tr>
+<tr><td>D116</td><td>Building number, the fixture's Freeport SBA claim</td><td>7</td><td></td></tr>
+<tr><td>E116</td><td>Qualifying expenditure, the fixture's Freeport SBA claim</td><td>20000</td><td></td></tr>
+<tr><td>F116</td><td>Postcode, the fixture's Freeport SBA claim</td><td>L24 9AA</td><td></td></tr>
+<tr><td>G116</td><td>Tax site marker, the fixture's Freeport SBA claim (F)</td><td>F</td><td></td></tr>
+<tr><td>H116</td><td>Structures and Buildings Allowance rate applied to the Freeport claim</td><td>0.1</td><td></td></tr>
+<tr><td>J116</td><td>Days claimed this year, the fixture's Freeport SBA claim</td><td>187</td><td></td></tr>
+<tr><td>K116</td><td>Structures and Buildings Allowance claimed this year, the fixture's Freeport claim</td><td>1024.65753424658</td><td></td></tr>
+<tr><td>K120</td><td>Structures and Buildings Allowance (SA103F box 53), the non-Freeport claims summed</td><td>1800</td><td></td></tr>
+<tr><td>K121</td><td>Freeport and Investment Zone Structures and Buildings Allowance (SA103F box 53.1), the Freeport claims summed</td><td>1024.65753424658</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Fixedassets.xlsx!FAreconciliation</h5>
@@ -3935,20 +3961,20 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Profit from Self Employment</td><td class="num">125,308.81</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">0</td></tr>
-<tr><td>Taxable Income</td><td class="num">125,308.81</td></tr>
+<tr><td>Profit from Self Employment</td><td class="num">124,284.15</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">427.92</td></tr>
+<tr><td>Taxable Income</td><td class="num">123,856.23</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%)</td><td class="num">7,540</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies</td><td class="num">37,700</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">34,976</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">34,462.49</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies</td><td class="num">125,140</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies</td><td class="num">0.45</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%)</td><td class="num">75.96</td></tr>
-<tr><td><strong>Total Income Tax</strong></td><td class="num">42,591.96</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%)</td><td class="num">0</td></tr>
+<tr><td><strong>Total Income Tax</strong></td><td class="num">42,002.49</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">2,262</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">1,500.78</td></tr>
-<tr><td><strong>Total Tax + NI</strong></td><td class="num">46,354.74</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">1,480.28</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">45,744.77</td></tr>
 </tbody>
 </table></div>
 <h4>Self Assessment (SA103S)</h4>
@@ -4017,22 +4043,23 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Zero-emission goods vehicle allowance (box 52)</td><td class="num">—</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Zero-emission car allowance (box 52.1)</td><td class="num">2,500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Structures and Buildings Allowance (box 53)</td><td class="num">1,800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)</td><td class="num">1,024.66</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Electric charge-point allowance (box 54)</td><td class="num">—</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;100% and other enhanced capital allowances (box 55)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 56)</td><td class="num">8,140</td></tr>
-<tr><td><strong>Total capital allowances (box 57)</strong></td><td class="num">69,624</td></tr>
+<tr><td><strong>Total capital allowances (box 57)</strong></td><td class="num">70,648.66</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 59)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 60)</td><td class="num">640</td></tr>
 <tr><td><strong>Total additions to net profit (box 61)</strong></td><td class="num">30,836.46</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Income included but not taxable as business profits (box 62)</td><td class="num">350</td></tr>
-<tr><td><strong>Total deductions from net profit (box 63)</strong></td><td class="num">69,974</td></tr>
-<tr><td><strong>Net business profit for tax purposes (box 64)</strong></td><td class="num">123,135.48</td></tr>
+<tr><td><strong>Total deductions from net profit (box 63)</strong></td><td class="num">70,998.66</td></tr>
+<tr><td><strong>Net business profit for tax purposes (box 64)</strong></td><td class="num">122,110.82</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71)</td><td class="num">90</td></tr>
-<tr><td><strong>Adjusted profit (box 73)</strong></td><td class="num">123,225.48</td></tr>
+<tr><td><strong>Adjusted profit (box 73)</strong></td><td class="num">122,200.82</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75)</td><td class="num">2,083.33</td></tr>
-<tr><td><strong>Total taxable profits from this business (box 76)</strong></td><td class="num">125,308.81</td></tr>
+<tr><td><strong>Total taxable profits from this business (box 76)</strong></td><td class="num">124,284.15</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80)</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81)</td><td class="num">0</td></tr>

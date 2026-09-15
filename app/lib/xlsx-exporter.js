@@ -1703,15 +1703,22 @@ const SE_DISALLOWABLE_PERCENT_CELLS = {
 // se.js writes from ANNUAL_ALLOWANCE_CELLS and ANNUAL_ADJUSTMENT_CELLS, and
 // the Business Details cell both returns read box 60 from.
 const SE_ANNUAL_ALLOWANCE_CELLS = {
-  zeroEmissionsGoodsVehicleAllowance: "D152",
-  zeroEmissionsCarAllowance: "D156",
-  structuredBuildingAllowance: "D160",
+  zeroEmissionsGoodsVehicleAllowance: "D150",
+  zeroEmissionsCarAllowance: "D152",
   electricChargePointAllowance: "O139",
 };
 const SE_ANNUAL_ADJUSTMENT_CELLS = {
   includedNonTaxableProfits: "D179",
   accountingAdjustment: "D210",
 };
+
+// Fixedassets.xlsx!Schedule rows 115 to 119, the Structures and Buildings
+// Allowance claims below the register (SA103F boxes 53 and 53.1); the same
+// rows and columns app/products/se.js writes from SBA_CLAIM_ROWS and
+// SBA_CLAIM_COLUMNS. E above nil is a claim; G = "F" puts it in the
+// enhanced (Freeport or Investment Zone) array, otherwise the standard one.
+const SCHEDULE_SBA_CLAIM_ROWS = [115, 116, 117, 118, 119];
+const SCHEDULE_SBA_ENHANCED_MARKER = "F";
 const SE_GOODS_FOR_OWN_USE_CELL = "O50";
 
 const ENTITY_CELLS = {
@@ -2568,6 +2575,31 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
       const allowances = readStated(seFull, SE_ANNUAL_ALLOWANCE_CELLS);
       const adjustments = readStated(seFull, SE_ANNUAL_ADJUSTMENT_CELLS);
       if (entitySheet) Object.assign(adjustments, readStated(entitySheet, { goodsAndServicesOwnUse: SE_GOODS_FOR_OWN_USE_CELL }));
+      // The Structures and Buildings Allowance claims (boxes 53 and 53.1)
+      // are not stated on SE Full: the Schedule's own claim rows carry them.
+      const scheduleForSba = await scheduleSheet(set);
+      if (scheduleForSba) {
+        const { xml: sbaXml, sharedStrings: sbaStrings } = scheduleForSba;
+        const structuredBuildingAllowance = [];
+        const enhancedStructuredBuildingAllowance = [];
+        for (const row of SCHEDULE_SBA_CLAIM_ROWS) {
+          const qualifyingAmountExpenditure = numberAt(sbaXml, `E${row}`, sbaStrings);
+          if (qualifyingAmountExpenditure === undefined || qualifyingAmountExpenditure === 0) continue;
+          const claim = { qualifyingAmountExpenditure };
+          assign(claim, "qualifyingDate", dateAt(sbaXml, `B${row}`, sbaStrings));
+          assign(claim, "ceasedDate", dateAt(sbaXml, `I${row}`, sbaStrings));
+          const building = {};
+          assign(building, "name", textAt(sbaXml, `C${row}`, sbaStrings));
+          assign(building, "number", textAt(sbaXml, `D${row}`, sbaStrings));
+          assign(building, "postcode", textAt(sbaXml, `F${row}`, sbaStrings));
+          claim.building = building;
+          const enhanced = textAt(sbaXml, `G${row}`, sbaStrings) === SCHEDULE_SBA_ENHANCED_MARKER;
+          (enhanced ? enhancedStructuredBuildingAllowance : structuredBuildingAllowance).push(claim);
+        }
+        if (structuredBuildingAllowance.length > 0) allowances.structuredBuildingAllowance = structuredBuildingAllowance;
+        if (enhancedStructuredBuildingAllowance.length > 0)
+          allowances.enhancedStructuredBuildingAllowance = enhancedStructuredBuildingAllowance;
+      }
       if (Object.keys(allowances).length > 0) selfEmployment.allowances = allowances;
       if (Object.keys(adjustments).length > 0) selfEmployment.adjustments = adjustments;
     }

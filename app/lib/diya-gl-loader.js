@@ -457,7 +457,18 @@ export function diyaGlToScenario(book, lines, product) {
     // The annual SA103F figures the trader states by hand, keyed by HMRC's
     // own field names: the writer puts each on its SE Full box and the
     // derivation files it from there.
-    if (allowances) scenario.annual_allowances = { ...allowances };
+    if (allowances) {
+      const { structuredBuildingAllowance, enhancedStructuredBuildingAllowance, ...restAllowances } = allowances;
+      if (Object.keys(restAllowances).length > 0) scenario.annual_allowances = { ...restAllowances };
+      // Structures and Buildings Allowance claims are inputs the Schedule's
+      // own SBA block computes the year's allowance from, not a stated
+      // figure, so they carry as claims rather than joining annual_allowances.
+      const sbaClaims = [
+        ...(structuredBuildingAllowance || []).map((claim) => ({ ...claim, enhanced: false })),
+        ...(enhancedStructuredBuildingAllowance || []).map((claim) => ({ ...claim, enhanced: true })),
+      ];
+      if (sbaClaims.length > 0) scenario.sba_claims = sbaClaims;
+    }
     if (adjustments) scenario.annual_adjustments = { ...adjustments };
   }
   if (book.debtors) {
@@ -825,7 +836,11 @@ export function extractTaxDataFromBook(book, product) {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
       writing_down_allowance: ca.mainRateWDA || 0.18,
     };
-    if (product === "se") baseTaxData.capital_allowances.writing_down_allowance_special = ca.specialRateWDA || 0.06;
+    if (product === "se") {
+      baseTaxData.capital_allowances.writing_down_allowance_special = ca.specialRateWDA || 0.06;
+      baseTaxData.capital_allowances.structures_and_buildings_allowance = ca.structuresAndBuildingsAllowance || 0.03;
+      baseTaxData.capital_allowances.structures_and_buildings_allowance_enhanced = ca.structuresAndBuildingsAllowanceEnhanced || 0.1;
+    }
   }
   const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
   baseTaxData.depreciation = taxYearFile.depreciation;

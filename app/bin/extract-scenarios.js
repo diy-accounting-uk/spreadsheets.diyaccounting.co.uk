@@ -479,13 +479,40 @@ const SE_ADVANCED_DISALLOWABLE = {
 const SE_ADVANCED_ANNUAL = {
   allowances: {
     zeroEmissionsCarAllowance: 2500,
-    structuredBuildingAllowance: 1800,
   },
   adjustments: {
     goodsAndServicesOwnUse: 640,
     includedNonTaxableProfits: 350,
     accountingAdjustment: 90,
   },
+};
+
+// Structures and Buildings Allowance claims (SA103F boxes 53 and 53.1): a
+// standard-rate claim running the whole year (60,000 x 3% = 1,800, box 53
+// exactly, whatever package year the fixture runs against) and a Freeport
+// claim in its first year (20,000 x 10% pro-rated over the days from
+// qualifying use to the year end, box 53.1). The book keeps the two arrays
+// apart (allowances.structuredBuildingAllowance and
+// .enhancedStructuredBuildingAllowance); diyaGlToScenario merges them into
+// scenario.sba_claims with an enhanced flag, so the fixture keeps them
+// apart the same way and merges them the same way for its own scenario TOML.
+const SE_ADVANCED_SBA_STANDARD = [
+  { qualifyingDate: "2023-10-01", qualifyingAmountExpenditure: 60000, building: { name: "Unit 4 Trafford Park", postcode: "M17 1AA" } },
+];
+const SE_ADVANCED_SBA_ENHANCED = [
+  { qualifyingDate: "2025-10-01", qualifyingAmountExpenditure: 20000, building: { number: "7", postcode: "L24 9AA" } },
+];
+const SE_ADVANCED_SBA_CLAIMS = [
+  ...SE_ADVANCED_SBA_STANDARD.map((claim) => ({ ...claim, enhanced: false })),
+  ...SE_ADVANCED_SBA_ENHANCED.map((claim) => ({ ...claim, enhanced: true })),
+];
+
+// The book-shaped allowances table (taxOverrides.selfEmployment.allowances),
+// the two SBA arrays kept apart the way the schema declares them.
+const SE_ADVANCED_BOOK_ALLOWANCES = {
+  ...SE_ADVANCED_ANNUAL.allowances,
+  structuredBuildingAllowance: SE_ADVANCED_SBA_STANDARD,
+  enhancedStructuredBuildingAllowance: SE_ADVANCED_SBA_ENHANCED,
 };
 
 // The special rate car's own opening balance lines, after the van's (TXN-0004
@@ -609,6 +636,7 @@ const advToml = formatScenarioToml(
     disallowable: SE_ADVANCED_DISALLOWABLE,
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,
     annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
+    sba_claims: SE_ADVANCED_SBA_CLAIMS,
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: seOpeningFixedAssets,
@@ -641,7 +669,9 @@ const advDiya = writeSubset(
   {
     entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
     taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage", "selfEmployment"],
-    taxOverrides: { selfEmployment: { ...SE_ADVANCED_DISALLOWABLE, ...SE_ADVANCED_ANNUAL } },
+    taxOverrides: {
+      selfEmployment: { ...SE_ADVANCED_DISALLOWABLE, ...SE_ADVANCED_ANNUAL, allowances: SE_ADVANCED_BOOK_ALLOWANCES },
+    },
     accountFilter: seAccountFilter,
     employees: book.employees,
     tables: advV2,

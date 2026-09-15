@@ -287,21 +287,23 @@ describe("calculateFromDiyaGl — SE", () => {
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
     // 130,552.81 before the book's own SA103F statements: plus 640 own use,
-    // less 2,500 + 1,800 stated allowances, 350 non-taxable income, the 540
-    // special rate pool allowance and the hatchback's 1,008 single asset
-    // pool allowance (8,000 at 18% on its 70% business share), plus the 90
+    // less the 2,500 stated zero-emission car allowance, the Schedule's own
+    // Structures and Buildings Allowance (1,800 standard, box 53, plus
+    // 1,024.66 Freeport, box 53.1), 350 non-taxable income, the 540 special
+    // rate pool allowance and the hatchback's 1,008 single asset pool
+    // allowance (8,000 at 18% on its 70% business share), plus the 90
     // adjustment for change of accounting practice (box 71) that box 73
     // adds to box 64.
-    expect(results["Income Tax"].E5).toBeCloseTo(125084.81, 2);
+    expect(results["Income Tax"].E5).toBeCloseTo(124060.15, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the bands with the allowance all but tapered away", () => {
     const tax = seResults()["Income Tax"];
-    // Half the 25,084.81 over the taper threshold is 12,542.40, so 27.60
+    // Half the 24,060.15 over the taper threshold is 12,030.08, so 539.92
     // of the 12,570 allowance survives.
-    expect(tax.E6).toBeCloseTo(27.6, 2);
-    expect(tax.E11).toBeCloseTo(42482.89, 2);
+    expect(tax.E6).toBeCloseTo(539.92, 2);
+    expect(tax.E11).toBeCloseTo(41868.09, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 
