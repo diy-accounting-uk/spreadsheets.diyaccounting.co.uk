@@ -590,14 +590,14 @@ function forwardAndExit(signal) {
 process.on("SIGINT", () => forwardAndExit("SIGINT"));
 process.on("SIGTERM", () => forwardAndExit("SIGTERM"));
 
-function runStep(label, command, args, env) {
+function runStep(label, command, args, env, heartbeatLabel = label) {
   return new Promise((done) => {
     const started = Date.now();
     console.log(`\n--- ${label}: ${command} ${args.join(" ")}`);
     const child = spawn(command, args, { cwd: ROOT, stdio: "inherit", env: { ...process.env, ...env }, detached: true });
     currentChild = child;
     const beat = setInterval(() => {
-      console.log(`... ${label} still running, ${fmt(Date.now() - started)} elapsed`);
+      console.log(`... ${heartbeatLabel} still running, ${fmt(Date.now() - started)} elapsed`);
     }, 30_000);
     child.on("close", (code) => {
       clearInterval(beat);
@@ -614,13 +614,21 @@ function runStep(label, command, args, env) {
   });
 }
 
-async function runSteps(steps, env) {
+// tierName prefixes the heartbeat (not the "--- label:" start/end lines)
+// when a tier has more than one step, so a long-running step says which
+// tier and which step: "... browser/packages still running, 2m30s
+// elapsed" rather than just "packages", which by itself does not say
+// whether it is the browser tier's packages step or another tier's.
+async function runSteps(steps, env, tierName) {
+  const start = Date.now();
+  const multiStep = steps.length > 1;
   let worst = 0;
   for (const [label, command, args] of steps) {
-    const code = await runStep(label, command, args, env);
+    const heartbeatLabel = multiStep && tierName ? `${tierName}/${label}` : label;
+    const code = await runStep(label, command, args, env, heartbeatLabel);
     if (code !== 0) worst = code;
   }
-  return worst;
+  return { code: worst, durationMs: Date.now() - start };
 }
 
 // Exported for app/test/test-scope-routing.test.js: the routing table is
@@ -832,9 +840,9 @@ async function main() {
       ["prettier", "npx", ["prettier", "--check", "."]],
     ];
     for (const extra of sel.extras) steps.push([extra, "npm", ["run", extra]]);
-    const code = await runSteps(steps, {});
-    results.push(["gates", code]);
-    if (code) exitCode = 1;
+    const gates = await runSteps(steps, {}, "gates");
+    results.push(["gates", gates.code, gates.durationMs]);
+    if (gates.code) exitCode = 1;
   }
 
   if (willRun("unit", true)) {
@@ -847,15 +855,19 @@ async function main() {
     } else {
       console.log("\n--- unit: no test file in the repo reaches this diff");
     }
-    const code = await runSteps(steps, {});
-    results.push([`unit(${unitFiles.length})`, code]);
-    if (code) exitCode = 1;
+    const unit = await runSteps(steps, {}, "unit");
+    results.push([`unit(${unitFiles.length})`, unit.code, unit.durationMs]);
+    if (unit.code) exitCode = 1;
   }
 
   if (willRun("calc", chosenCalc.length > 0)) {
-    const code = await runSteps([["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]], {});
-    results.push([`calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`, code]);
-    if (code) exitCode = 1;
+    const calc = await runSteps(
+      [["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]],
+      {},
+      "calc",
+    );
+    results.push([`calc(${[...new Set([...calcProducts, ...calcRepProducts])].join("+")})`, calc.code, calc.durationMs]);
+    if (calc.code) exitCode = 1;
   }
 
   if (willRun("browser", chosenSpecs.length > 0)) {
@@ -868,21 +880,22 @@ async function main() {
       ["runners", "node", ["scripts/build-runner.mjs"]],
       ["browser", "npx", ["playwright", "test", "--project=browser-tests", "--reporter=line", ...chosenSpecs]],
     ];
-    const code = await runSteps(steps, {});
-    results.push([`browser(${chosenSpecs.length})`, code]);
-    if (code) exitCode = 1;
+    const browser = await runSteps(steps, {}, "browser");
+    results.push([`browser(${chosenSpecs.length})`, browser.code, browser.durationMs]);
+    if (browser.code) exitCode = 1;
   }
 
   if (willRun("infra", sel.infra)) {
-    const code = await runSteps(
+    const infra = await runSteps(
       [
         ["maven verify", "./mvnw", ["--errors", "clean", "verify"]],
         ["cdk synth", "npm", ["run", "cdk:synth"]],
       ],
       {},
+      "infra",
     );
-    results.push(["infra", code]);
-    if (code) exitCode = 1;
+    results.push(["infra", infra.code, infra.durationMs]);
+    if (infra.code) exitCode = 1;
   }
 
   const failed = results.filter(([, code]) => code !== 0).map(([name]) => name);
@@ -891,7 +904,7 @@ async function main() {
   if (delegatedTiers.length) partial.push(`tiers delegated: ${delegatedTiers.join(", ")}`);
 
   const verdict = failed.length ? "RED" : partial.length ? `PARTIAL (${partial.join("; ")})` : "GREEN";
-  const summary = results.map(([name, code]) => `${name} ${code === 0 ? "ok" : "FAILED"}`).join(", ");
+  const summary = results.map(([name, code, durationMs]) => `${name} ${code === 0 ? "ok" : "FAILED"} ${fmt(durationMs)}`).join(", ");
   if (verdict === "GREEN") {
     const ranTierNames = results.map(([name]) => name.split("(")[0]);
     const markerHash = writeGreenMarker({ hash: treeHash, mergeBase: markerBase, ranTierNames });
