@@ -63,6 +63,28 @@ function treeHash(dir, rev) {
   return execFileSync("node", args, { cwd: dir, encoding: "utf8" }).trim();
 }
 
+function makeHookRepo() {
+  const dir = makeRepo();
+  mkdirSync(join(dir, ".githooks"), { recursive: true });
+  cpSync(resolve(ROOT, ".githooks", "pre-push"), join(dir, ".githooks", "pre-push"));
+  chmodSync(join(dir, ".githooks", "pre-push"), 0o755);
+  return dir;
+}
+
+// Simulates a fetched origin/main without an actual remote: the hook only
+// ever reads this ref with `git diff`, never pushes or fetches it.
+function setOriginMain(dir, sha) {
+  execFileSync("git", ["update-ref", "refs/remotes/origin/main", sha], { cwd: dir });
+}
+
+function runHook(dir, stdin) {
+  try {
+    return { code: 0, output: execFileSync("bash", [".githooks/pre-push"], { cwd: dir, input: stdin, encoding: "utf8" }) };
+  } catch (err) {
+    return { code: err.status, output: `${err.stdout || ""}${err.stderr || ""}` };
+  }
+}
+
 describe("--tree-hash blanks provenance-data.js's engineVersion (CQ-45)", () => {
   it("hashes two commits the same when only engineVersion's value differs", () => {
     const dir = makeRepo();
@@ -98,26 +120,10 @@ describe("--tree-hash blanks provenance-data.js's engineVersion (CQ-45)", () => 
 });
 
 describe(".githooks/pre-push skips a restamp-only push against a pre-restamp GREEN marker (CQ-45)", () => {
-  function makeHookRepo() {
-    const dir = makeRepo();
-    mkdirSync(join(dir, ".githooks"), { recursive: true });
-    cpSync(resolve(ROOT, ".githooks", "pre-push"), join(dir, ".githooks", "pre-push"));
-    chmodSync(join(dir, ".githooks", "pre-push"), 0o755);
-    return dir;
-  }
-
   function writeMarker(dir, hash, mergeBase) {
     const markerDir = join(dir, "target", "test-scope");
     mkdirSync(markerDir, { recursive: true });
     writeFileSync(join(markerDir, `green-${hash}`), `mergeBase=${mergeBase} tiers=gates,unit at=${new Date().toISOString()}\n`);
-  }
-
-  function runHook(dir, stdin) {
-    try {
-      return { code: 0, output: execFileSync("bash", [".githooks/pre-push"], { cwd: dir, input: stdin, encoding: "utf8" }) };
-    } catch (err) {
-      return { code: err.status, output: `${err.stdout || ""}${err.stderr || ""}` };
-    }
   }
 
   it("skips the run when a marker exists for the pre-restamp tree of the commit being pushed", () => {
@@ -146,4 +152,55 @@ describe(".githooks/pre-push skips a restamp-only push against a pre-restamp GRE
   // real; the marker-matches branch above is the one that could silently
   // start skipping runs it shouldn't, which is why it alone gets a direct
   // proof.
+});
+
+// CQ-47: PR #117 opened CONFLICTING on 2026-09-15 because a squash carried
+// the fork point's NEXT.md onto a batch branch, reverting two board edits;
+// 72 job-minutes ran on the abandoned head. NEXT.md is maintained on main
+// alone, so a branch that changes it against main is always a mistake.
+describe(".githooks/pre-push refuses a branch push that changes NEXT.md against main (CQ-47)", () => {
+  it("refuses a branch push whose diff against main touches NEXT.md", () => {
+    const dir = makeHookRepo();
+    writeFileSync(join(dir, "NEXT.md"), "- item one\n");
+    const mainTip = commitAll(dir, "main: board");
+    setOriginMain(dir, mainTip);
+
+    writeFileSync(join(dir, "NEXT.md"), "- item one\n- item two (reverted by a stale squash)\n");
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    const branchHead = commitAll(dir, "feature: also touches NEXT.md");
+
+    const result = runHook(dir, `refs/heads/feature ${branchHead} refs/heads/feature ${mainTip}\n`);
+    expect(result.code).toBe(1);
+    expect(result.output).toMatch(/NEXT\.md is maintained on main/);
+  }, 15_000);
+
+  it("does not refuse the same branch when its diff against main has no NEXT.md change", () => {
+    const dir = makeHookRepo();
+    writeFileSync(join(dir, "NEXT.md"), "- item one\n");
+    const mainTip = commitAll(dir, "main: board");
+    setOriginMain(dir, mainTip);
+
+    writeFileSync(join(dir, "README.md"), "docs\n");
+    const branchHead = commitAll(dir, "feature: docs only, NEXT.md untouched");
+
+    const result = runHook(dir, `refs/heads/feature ${branchHead} refs/heads/feature ${mainTip}\n`);
+    expect(result.output).not.toMatch(/NEXT\.md is maintained on main/);
+    expect(result.output).toMatch(/nothing to test/);
+    expect(result.code).toBe(0);
+  }, 15_000);
+
+  it("does not refuse a push directly to refs/heads/main even with a NEXT.md change", () => {
+    const dir = makeHookRepo();
+    writeFileSync(join(dir, "NEXT.md"), "- item one\n");
+    const mainTip = commitAll(dir, "main: board");
+    setOriginMain(dir, mainTip);
+
+    writeFileSync(join(dir, "NEXT.md"), "- item one\n- item two\n");
+    const newMainTip = commitAll(dir, "main: board update");
+
+    const result = runHook(dir, `refs/heads/main ${newMainTip} refs/heads/main ${mainTip}\n`);
+    expect(result.output).not.toMatch(/NEXT\.md is maintained on main/);
+    expect(result.output).toMatch(/nothing to test/);
+    expect(result.code).toBe(0);
+  }, 15_000);
 });
