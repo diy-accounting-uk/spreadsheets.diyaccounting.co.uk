@@ -2555,7 +2555,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(fullOnly.D210);
       if (seShort.D106) {
         check(
-          "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5",
+          "SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71 = Income Tax E5",
           Math.max(0, num(seShort.D106) - fullReturnOnlyBoxes),
           tax.E5,
         );
@@ -2817,6 +2817,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       check("SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1", num(seFull.O149), num(returnSchedule.Y1));
       check("SA103F box 59 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
+      check("SA103F box 53 Structures and Buildings Allowance (D156) = Schedule K120", num(seFull.D156), num(returnSchedule.K120));
+      check(
+        "SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = Schedule K121",
+        num(seFull.D160),
+        num(returnSchedule.K121),
+      );
     }
 
     // Box 50 against the scenario's own assets and the year's own rate,
