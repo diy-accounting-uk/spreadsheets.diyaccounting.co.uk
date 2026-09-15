@@ -491,6 +491,10 @@ function scheduleRow({
   row.AE = singleAssetPool && !specialPool ? sheetNumber(row.R) : SHEET_BLANK;
   row.AF = singleAssetPool && specialPool ? sheetNumber(row.AC) : SHEET_BLANK;
   row.AG = singleAssetPool ? sheetNumber(row.S) : SHEET_BLANK;
+  // AH and AI split the pooled written-down value by rate pool, single asset
+  // pool rows left out, so the small pools test can run on each pool alone.
+  row.AH = !singleAssetPool && !specialPool ? sheetNumber(row.S) : SHEET_BLANK;
+  row.AI = !singleAssetPool && specialPool ? sheetNumber(row.S) : SHEET_BLANK;
 
   row.V = disposal ? disposal.proceeds : SHEET_BLANK;
   row.W = disposal ? cost : SHEET_BLANK;
@@ -521,7 +525,7 @@ function carry(inputs, compute) {
   return inputs.some((value) => value === SHEET_ERROR) ? SHEET_ERROR : compute();
 }
 
-const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC", "AE", "AF", "AG"];
+const SCHEDULE_TOTAL_COLUMNS = ["E", "F", "G", "I", "J", "K", "O", "Q", "R", "S", "V", "W", "X", "Y", "Z", "AC", "AE", "AF", "AG", "AH", "AI"];
 
 function scheduleTotals(rows) {
   const totals = {};
@@ -1057,16 +1061,19 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   const scheduleQ = schedule.totals.Q;
   const scheduleR = schedule.totals.R;
   const scheduleAC = schedule.totals.AC;
-  const scheduleS = schedule.totals.S;
-  // The small pools write-off runs over the pooled balance alone: the
-  // single asset pool rows (AE, AF, AG) come out of both the £1,000 test
-  // and the figure written off. The sheet reads
-  // IF((R1+S1-AE1-AF1-AG1)<1000,S1-AG1,0) on SE Full!O144 and SE Short!D85.
+  // The small pools write-off runs per rate pool over the pooled balance
+  // before this year's allowance, the single asset pool rows (AE, AF) left
+  // out: the main pool's is R1-AE1+AH1 and the special rate pool's
+  // AC1-AF1+AI1, and each pool under £1,000 writes off its own written-down
+  // value. The sheet reads
+  // IF((R1-AE1+AH1)<1000,AH1,0)+IF((AC1-AF1+AI1)<1000,AI1,0) on
+  // SE Full!O144 and SE Short!D85.
   const scheduleAE = schedule.totals.AE;
   const scheduleAF = schedule.totals.AF;
-  const scheduleAG = schedule.totals.AG;
-  const smallPoolsWriteOff = carry([scheduleR, scheduleS, scheduleAE, scheduleAF, scheduleAG], () =>
-    scheduleR + scheduleS - scheduleAE - scheduleAF - scheduleAG < 1000 ? scheduleS - scheduleAG : 0,
+  const scheduleAH = schedule.totals.AH;
+  const scheduleAI = schedule.totals.AI;
+  const smallPoolsWriteOff = carry([scheduleR, scheduleAC, scheduleAE, scheduleAF, scheduleAH, scheduleAI], () =>
+    (scheduleR - scheduleAE + scheduleAH < 1000 ? scheduleAH : 0) + (scheduleAC - scheduleAF + scheduleAI < 1000 ? scheduleAI : 0),
   );
   const scheduleY = schedule.totals.Y;
   const scheduleZ = schedule.totals.Z;
