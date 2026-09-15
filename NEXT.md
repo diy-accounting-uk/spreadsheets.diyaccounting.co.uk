@@ -8,9 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #118 (SET-10) merged as `978781fb`; `main`'s test and prod deploy on it in progress. `2639ee89`'s
-dependency bump is covered by that run. `claude/b16-se` (branch only, its worktree removed) holds
-SET-10's design scratch, superseded by the merge.
+Nothing. `main` is green on `978781fb` (SET-10); prod serves it and the publish job landed diya-gl
+1.2.15 as `034d3838`. `claude/b16-se` (branch only) holds SET-10's superseded design scratch. No
+watch monitor is armed.
 
 ## Context for the open rows
 
