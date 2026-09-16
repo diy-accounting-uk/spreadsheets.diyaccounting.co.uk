@@ -1,6 +1,6 @@
 ---
 name: watch
-description: Arm a background Monitor over this repository's GitHub CI, then act on what it reports until the whole scope is green. Scope is main plus every open PR's head branch, re-read each cycle. Invoke when the operator says "watch the builds", "keep it green", or hands over a branch to get through CI.
+description: Arm a background Monitor over this repository's GitHub CI, then act on what it reports until the whole scope is green. Invoke when the operator says "watch the builds", "keep it green", or hands over a branch to get through CI.
 ---
 
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
@@ -9,8 +9,7 @@ description: Arm a background Monitor over this repository's GitHub CI, then act
 # watch
 
 This skill is a brief for one background monitor. Arm it, keep working, and act on the events it
-sends. Stop only when the whole scope is green: the watch ends on evidence, never on elapsed time
-and never on a check summary.
+sends. The watch ends on evidence, never on elapsed time and never on a check summary.
 
 **Use the `Monitor` tool, `persistent: true`.** It runs the poll loop detached and turns each
 stdout line into a notification, so the session stays free while CI runs. Do not write a foreground
@@ -23,78 +22,43 @@ exits on the condition is lighter: one notification, no filter to get wrong.
 
 ## Scope
 
-**main, plus the head branch of every open pull request.** Re-read the list every cycle:
+**main, plus the head branch of every open pull request**, re-read each cycle:
 
 ```bash
 { echo main; gh pr list --state open --limit 50 --json headRefName --jq '.[].headRefName'; } | sort -u
 ```
 
-A PR merging or opening changes the scope, and picking that up is the skill's job, not the
-operator's. When a PR merges, its branch leaves scope and main's runs become the priority.
+A PR merging or opening changes the scope, and picking that up is this skill's job.
 
-## Check the inboxes
+## The monitor's brief
 
-Other Claude Code sessions and Cowork coordinate through plain-Markdown inboxes, no daemon. The
-protocol is `~/.claude/inboxes/README.md`.
+Arm `scripts/watch-ci.sh <state-dir>` under the `Monitor` tool (`persistent: true`). It polls
+every 75 seconds, seeds silently on its first pass (one `SEEDED` line with the counts), emits one
+`RED <branch> <workflow> run <id> (<conclusion>)` per newly failed latest run, one
+`MERGEABLE #<n> <branch> (<sha>)` per PR per head once its latest runs are all terminal and none
+failed, and exits 0 with one `TALLY` line when nothing in scope is still running. It gives up with
+`NO DATA` after three empty cycles. Re-arm it after each push, because a new head means new runs.
 
-**Check if you have not checked in the last five minutes**, at these two moments:
+What it covers, so the brief need not be rewritten per session:
 
-- while polling or watching a deploy or CI run — the waiting is free time, and a sibling's message
-  often changes what the run means before you have finished reading it;
-- when a sub-agent reports back, before you merge its work.
-
-Three files, all three every time:
-
-- `~/.claude/inboxes/spreadsheets.md` — this repository's own inbox.
-- `~/.claude/inboxes/diyaccounting.md` — the workspace handle's inbox.
-- `/Users/antony/projects/diy-accounting-limited/INBOX.md` — the bridge for sessions that cannot
-  reach `~/.claude/`: Cowork's Linux VM and Desktop chats.
-
-Act on every `[unread]` block in the same turn you read it, then change its marker to `[read]`.
-Acting on it is the reply: write back only to say you made the change it asked for, or that you
-will not. Never acknowledge and never report progress. Do not poll on a tight loop.
-
-An inbox carries exactly two things, both about a change in the recipient's repository: a change
-they must make, or a change already made that they are blocked on. Anything else does not get sent,
-and another session's repository state is never yours to inspect, report or wait on.
-
-## The monitor
-
-One background monitor, polling every 60-90s, emitting one line per newly finished run.
-
-Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
-macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
-does not split an unquoted variable.
-
-```bash
-# Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
-nohup <cmd> > <log> 2>&1 < /dev/null & disown
-echo $! > <log>.pid
-# At the top of any zsh monitor script, so an unquoted $var of names splits into words:
-setopt shwordsplit
-# Fire on the verdict OR on the process having exited, so an empty log never waits forever:
-until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
-```
-
-- **Report every terminal state**: success, failure, cancelled, timed out, skipped. A monitor
-  that greps only for failure is silent when a run is cancelled, and silence is
-  indistinguishable from still running. Ask before arming: if this went red right now, would
-  anything be emitted?
-- **Keep the volume low.** Every line is a message, and a monitor that floods is stopped
-  automatically. Reds as they land plus one tally when everything is terminal is selective without
-  going quiet on bad news.
-- **Seed silently.** On the first pass, record what has already finished without emitting it,
-  so the monitor reports changes rather than history.
-- **Poll the API for state, never grep a log for a word.** `status == "completed"` with its
-  `conclusion` is the fact; a log line saying "passed" is not.
-- Keep the seen-set bounded, and let a failed `gh` call skip the cycle rather than kill the loop.
-- **Probe merge-readiness every cycle.** A watch that only reports reds leaves a PR sitting green
+- **Every terminal state**: `failure`, `timed_out`, `action_required` and `startup_failure` are
+  red; `success`, `skipped`, `cancelled` and `neutral` are not.
+- **Low volume**: reds once each, readiness once per head, one tally.
+- **State from the API**: `gh run list --json` with `jq`, never a log grep.
+- **Empty result sets counted**, not read as green.
+- **A failed `gh` call skips the cycle** instead of ending the loop.
+- **Probe merge-readiness every cycle, from push and pull_request events only.** A watch that only reports reds leaves a PR sitting green
   for however long nobody looks. Each poll, for every open PR that is not a draft, take the **latest
-  run of each distinct workflow on its branch** and call the PR ready when **none of those latest
+  run of each distinct workflow on its branch from push or pull_request events** and call the PR ready when **none of those latest
   runs is still incomplete, and none of them failed**:
 
-      gh run list --branch <headRef> --limit 60 --json workflowName,status,conclusion,databaseId \
-        | jq 'group_by(.workflowName) | map(max_by(.databaseId))'
+      gh run list --branch <headRef> --limit 60 --json workflowName,status,conclusion,databaseId,event \
+        | jq '[.[] | select(.event == "push" or .event == "pull_request")] | group_by(.workflowName) | map(max_by(.databaseId))'
+
+  Only push and pull_request events gate the merge readiness check. Workflow dispatch runs
+  (manual or scheduled package generation), scheduled runs, and other non-gating events do not
+  affect merge readiness, preventing a hand-dispatched generate/publish run from blocking a ready
+  PR.
 
   Incomplete is `queued` or `in_progress`. Failed is `failure`, `timed_out` or `action_required`.
   Anything else — `success`, and also `skipped`, `cancelled` or `neutral` — does not hold the PR
@@ -105,13 +69,6 @@ until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do 
   A shell loop cannot invoke a skill, so the probe's job is only to notice and say so: emit
   `MERGEABLE #<n> <branch>` and let the agent decide. Emit it once per PR per readiness, not every
   cycle, or a ready PR floods the channel until someone merges it.
-- **An empty result set is not a pass.** A branch that does not exist, a query whose filter matches
-  nothing, and a `jq` asking for a field the `gh --json` list did not request all return nothing,
-  with exit 0, which reads exactly like a clean run. Count the rows before interpreting them: ask
-  for `length`, and report NO DATA rather than green when it is zero or the call failed. Every
-  field a `jq` filter touches must appear in the `--json` list beside it, or it silently yields
-  null for every row. Give up loudly after a few empty cycles rather than sitting there looking
-  healthy.
 
 ## When a mergeable PR appears
 
@@ -126,81 +83,53 @@ early. `/auto-merge` is what settles it.
 If `/auto-merge` merges anything, the scope changes — the PR's branch leaves it and `main` gains a
 deploy. Re-read the scope on the next cycle rather than carrying the old one.
 
-## Reading a run
+## When a red arrives
 
-Never report a run's state from memory, from a previous cycle, or from `gh pr checks`. Open it.
-If something you reported turns out to be stale, say so in the same breath as the correction
-rather than carrying it forward.
+**Gather the whole run's failures before fixing anything.** One run's worth, diagnosed together,
+fixed together, pushed once. A workflow costs minutes per cycle; three separate pushes to fix
+three failures from the same run wastes two of them. A run that delegates to another inherits its
+failure, so check whether two red runs are one cause.
 
-**Which jobs failed:**
-```bash
-gh run view <run-id> --json headSha,jobs --jq '{sha:.headSha[0:8],failed:[.jobs[]|select(.conclusion=="failure")|.name]}'
-```
+Open the run; never report its state from memory or from `gh pr checks`.
 
-**Which step inside the job failed** — often enough on its own, and far cheaper than a log:
 ```bash
 gh run view <run-id> --json jobs \
   --jq '.jobs[]|select(.conclusion=="failure")|.steps[]|select(.conclusion=="failure")|[.number,.name]|@tsv'
 ```
 
-**The actual log.** `gh run view --log-failed` frequently returns nothing useful for a job whose
-failure is buried in a step's output. Fetch the job log directly and strip the ANSI codes:
+`gh run view --log-failed` often returns nothing useful when the failure is buried in a step's
+output. Fetch the job log directly, strip the ANSI codes, and tee before filtering:
+
 ```bash
-gh api "repos/<owner>/<repo>/actions/jobs/<job-id>/logs" --allow-escape-sequences \
+gh api "repos/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/actions/jobs/<job-id>/logs" --allow-escape-sequences \
   | sed 's/\x1b\[[0-9;]*m//g' | tee /tmp/job.log | grep -iE "error|fail|✘" | tail -20
 ```
-Tee before filtering, always: the part you need is often not the part you grepped for.
 
-## Five things that are not failures
+**Five reds that are not defects.**
 
-Diagnose these before treating a red or a missing run as a defect.
-
-- **A cancelled run is usually a supersession.** With a concurrency group, a newer run
-  cancels or displaces an older one. Check whether a later run exists for the same group
-  before calling it a failure.
-- **A bot push fires nothing at all.** A job that commits with the default `GITHUB_TOKEN` pushes
-  without triggering any workflow, whatever the `paths:` filter says. A release job that rolls a
-  version, or a generator that commits its output, therefore leaves code on main that nothing has
-  tested or deployed, and the branch looks green because the last commit anyone ran against was
-  the one before it. Check whether main's HEAD has runs, not just whether the newest run passed.
-- **A commit can legitimately trigger nothing.** Workflows have `paths:` filters. A docs-only
-  commit that starts no run is correct behaviour, not a stuck queue. Read the filter before
-  concluding a run is missing — and if a change genuinely should have triggered a workflow
-  and did not, the filter is the bug (a test that cannot trigger the run that proves it is
-  worse than a failing test).
-- **A pending run can be dropped.** With `cancel-in-progress: false`, GitHub keeps one run
-  queued per group and cancels the older pending one when a third arrives. Two active branches
-  sharing one environment means the last to push owns the slot, and the other's deploy silently
-  never happens. "No run for this commit" is a distinct state from "run failed".
+- A cancelled run is usually a supersession, so check for a later run in the same group.
+- A commit can legitimately trigger nothing under a `paths:` filter, and "no run for this commit"
+  is a distinct state from "run failed" — though a change that should have triggered a workflow
+  and did not means the filter is the bug.
+- With `cancel-in-progress: false` GitHub keeps one run queued per group and drops the older
+  pending one when a third arrives, so a deploy can silently never happen.
+- **A bot push fires nothing at all.** A job that commits with the default `GITHUB_TOKEN` — the
+  nightly package generation, a version roll — pushes without triggering any workflow, whatever
+  the `paths:` filter says. The branch then looks green because the last commit anyone ran
+  against was the one before the bot's. Check whether main's HEAD has runs, not just whether the
+  newest run passed.
 - **A workflow cancelling itself.** When a caller workflow and its reusable callee share a
   concurrency group, the caller fires first, then GitHub cancels it when it reaches the reusable
   workflow's jobs. The tell is a cancellation with no other run in the group, followed seconds
   later by the same jobs reappearing under a different workflow name. Check the workflow names
-  before calling it a failure. If the same jobs ran under another workflow, nothing failed.
-
-## On failure
-
-**Gather the whole run's failures before fixing anything.** One run's worth, diagnosed together,
-fixed together, pushed once. A workflow costs minutes per cycle; three separate pushes to fix
-three failures from the same run wastes two of them.
-
-Fix on a branch, push, keep watching.
-
-**Name the layer you fixed, not the symptom you saw.** If a case fails at step 7 and the fix
-takes it to step 10, the fix worked and a second layer was behind it. Called "the cloud case
-fix", the next failure reads as a fix that did not work; called "the panel-reopen fix", it reads
-as progress. This matters most for a path that has never executed: everything after the first
-blocking failure is unwritten ground, and walking it one layer per CI cycle is the slow way.
-When a whole tail is unproven, read it against the code in one pass instead.
+  before calling it a failure.
 
 **Fix the right layer.** If a test asserts something the product genuinely does wrong, fix the
-product. A test taught to work around a defect hides it from every user. Say plainly which you
-chose and why.
+product. Name the layer you fixed, not the symptom you saw: a fix that moves the failure from step
+7 to step 10 worked, and a second layer was behind it.
 
-**Check what changed underneath you.** A run can fail because something outside the repository
-moved — another repository's `main` that a workflow fetches at run time, a live endpoint a gate
-probes, an upstream action. Fetch the live artifact and look, rather than assuming the repository
-is the only variable.
+**Check what changed underneath you.** Another repository's `main`, a live endpoint, an upstream
+action. The repository is not the only variable.
 
 ## Push discipline
 
@@ -217,22 +146,23 @@ done
 A cancelled deploy mid-change can leave infrastructure part-applied, which costs far more than
 the wait.
 
-**A workflow change has no CI gate here, so verify it by hand.** Submit runs its workflow linter in
-CI; this repository has `./scripts/validate-workflows.sh` (`npm run lint:workflows`) and no workflow
-that calls it, so nothing catches a bad workflow before GitHub does. Run it before pushing, and
-strict-parse the YAML as well: prettier and actionlint both accept a duplicate key that GitHub
-rejects outright, and a rejected file means every trigger in it silently stops firing.
+**A workflow change has no CI gate here, so verify it by hand.** This repository has
+`./scripts/validate-workflows.sh` (`npm run lint:workflows`) and no workflow that calls it, so
+nothing catches a bad workflow before GitHub does. Run it before pushing, and strict-parse the
+YAML as well: prettier and actionlint both accept a duplicate key that GitHub rejects outright,
+and a rejected file means every trigger in it silently stops firing.
 
 ## Stop condition
 
-All of these at once, each verified by reading:
+All at once, each verified by reading:
 
 1. Every open PR's required checks pass.
-2. main's workflows are green on its latest commit **that runs them**.
-3. No run is queued or in progress on any branch in scope — established by counting rows, not by
-   a filter printing nothing.
+2. main's workflows are green on its latest commit **that runs them** — enumerate the real
+   workflows with `gh workflow list` rather than assuming a set, and say which commit you judged
+   against when the latest one triggers nothing.
+3. No run queued or in progress on any branch in scope, established by counting rows.
 
-Anything less is not done. A green PR whose deploy has not started is not done.
+A green PR whose deploy has not started is not done.
 
 **Take a draft PR out of draft once its branch's workflows are settled and passing.** A draft
 strands the PR: `/auto-merge` treats it as a deliberate stop and will not route around it, which is
@@ -257,23 +187,5 @@ done
 nothing, and marking it ready on that basis is the same mistake as reading a silent monitor as
 green. Say which PRs you readied and on what evidence.
 
-Two honest qualifications on (2), which the naive form gets wrong:
-
-- **Enumerate this repository's actual workflows** rather than assuming a set. `gh workflow list`
-  tells you. Do not report on a workflow that does not exist here, and do not miss one that does.
-- **The latest commit may run nothing**, either because a `paths:` filter excludes it or because
-  a bot pushed it with the default token. Those differ: the first is correct and the second leaves
-  untested code on main. Diff the latest commit against the last one with runs and look at what
-  actually changed. If it is only documentation, say so and judge against the earlier commit. If
-  it is code, the scope is not green, and closing it means dispatching the workflow by hand.
-
-If blocked — an expired SSO session, a permission, something only the operator can do — say so in
-one line, name exactly what is needed, show the whole command if there is one, and **keep
-monitoring everything else**. A block on one branch does not stop the loop.
-
-## Reporting
-
-One short status per cycle, and only when something changed state. Do not narrate unchanged runs.
-
-Say the moment something goes red, naming the failing job. Push a notification for a red on main
-or a scope-wide green, not for routine progress.
+If blocked by something only the operator can do, say so in one line, name it, show the whole
+command, and keep the monitor running. A block on one branch does not stop the watch.
