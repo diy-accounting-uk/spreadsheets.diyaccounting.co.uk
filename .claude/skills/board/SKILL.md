@@ -36,9 +36,15 @@ degradation. A finding that is not a degradation goes to `PARKED.md` with its ev
 GitHub scan's `Board row` column says `parked` rather than `new`. Say so in the header, so the
 operator can see why a finding did not become a row.
 
-**Is a watch monitor running?** A `/watch` monitor is a background task of this session, not a
-mark on disk, so the session's own task state is the only honest source. Report it as running
-with what it watches, stopped, or **unknown** — and never infer it from a quiet chat. A monitor
+**Is a watch monitor running?** `/watch` arms `scripts/watch-ci.sh` as a background process,
+so the process table is one honest source alongside the session's own task state:
+
+```bash
+pgrep -fl 'watch-ci.sh' 2>/dev/null | head -5
+```
+
+Report it as running with what it watches, stopped, or **unknown** when neither the process
+table nor the session's own task state settles it — never infer it from a quiet chat. A monitor
 that has been killed and one that has simply had nothing to report look identical from the
 outside, which is the whole reason to say which.
 
@@ -57,14 +63,19 @@ a task can be stopped, and a completed one stops notifying.
 - `Source`: the plan file name (`PLAN_DIYA_GL_LAUNCH.md`), `operator` for an
   instruction given in chat that no plan yet carries, or `none` for a row `NEXT.md` holds
   on its own.
-- `Needs`: exactly one of `machine-only`, `human and machine`, `human-only` — what it
-  takes to carry the row to completion, not who happens to own it now. `human-only` is
-  work no session can do: an external registration, a console action with no API, a
-  decision between named alternatives, a command on a host the session cannot reach.
-  `human and machine` needs both, and `Status` says which half is whose — a row waiting
-  on a credential the operator holds and then executing is this, not `human-only`.
-  Everything else is `machine-only`, including a row whose only human step is merging its
-  PR: that is the standing workflow, not an action the row needs.
+- `Needs`: exactly one of `machine-only`, `machine-ask`, `human-driven` — what it takes to
+  carry the row to completion, not who happens to own it now.
+  - `machine-only`: a session carries the row without a human step, including a row whose
+    only human step is merging its PR — that is the standing workflow, not an action the
+    row needs.
+  - `machine-ask`: a session drives the row end to end with a human present to authenticate
+    or approve — a second factor, an SSO login, a command the session's policy denies, a
+    send from the operator's address, a write to Google or GitHub the operator says go to.
+    `Status` says what the ask is.
+  - `human-driven`: a human must navigate the row themselves — a coding assistant's
+    practical limits, a physical restriction beyond one authentication (a proctored exam, a
+    signature in person), or policy (a payment mandate, a filing against the operator's own
+    company, a decision between named alternatives).
 
   Judge it from the work, not from whoever the row names today. Say so in the render when
   a classification contradicts the row's own wording.
@@ -94,7 +105,7 @@ a task can be stopped, and a completed one stops notifying.
 - `Size`: the estimated number of files the change touches, `~n files`, from the plan's task
   or the row's own estimate; `—` when nothing has estimated it. Row order reads this column.
 - `Model`: the proposed sub-agent tier for the row, one of `Fable`, `Opus`, `Sonnet`, `Haiku`,
-  picked as `do-next` picks it (lowest that fits); `operator` for a `human-only` row; `—` when
+  picked as `do-next` picks it (lowest that fits); `operator` for a `human-driven` row; `—` when
   not yet chosen.
 - `Status`: one clause, 12 words or fewer, current as of this render. In-flight rows name
   the current step; started rows name the branch or PR; done rows name the commit; a
@@ -102,37 +113,45 @@ a task can be stopped, and a completed one stops notifying.
 
 ### Rules
 
-- **Row order (the operator's standing order, 2026-09-09, revised 2026-09-12).** Five bands,
-  in this order, by `Needs` first and state second:
-  1. `machine-only` rows that can be worked now: `in-flight`, `ready-to-start`, `ready-to-resume`;
-  2. `human and machine` rows that can be worked now;
-  3. `human-only` rows that can be done now: `ready-to-start`, `ready-to-resume`;
-  4. blocked rows of any class: `blocked-to-start`, `blocked-to-resume`, then `blocked-on-busy`;
-  5. rows gated by a date, whatever their class.
-  **In-flight rows come first in the whole table, ahead of every band**, each with its branch,
-  pull request and any running run in `Status` (`claude/b15-tests, PR #112, deploy 3478…`),
-  read from `git worktree list`, `gh pr list` and `gh run list`, never from the row's prose;
-  the `## In flight` section names the same branches and PRs. Then the bands.
-  Within a band: `in-flight` rows first; then the rows that can start, by the size of the change,
-  fewest files first, read from `Size` (a row without a count follows
-  the counted ones); a precursor stays ahead of its dependants whatever their sizes; equal sizes
-  run `CQ-n` rows first, then product order BST, SE, Taxi, Ltd. `D` rows follow the four bands in
-  the render and are never written back.
+- **Row order (the operator's standing order, 2026-09-09, revised 2026-09-16).** Five
+  sections, in this order:
+  1. `in-flight` — every row with that state, whatever its `Needs`, each with its branch,
+     pull request and any running run in `Status` (`claude/b15-tests, PR #112, deploy 3478…`),
+     read from `git worktree list`, `gh pr list` and `gh run list`, never from the row's
+     prose; the `## In flight` section names the same branches and PRs.
+  2. `machine-only` rows that can be worked now: `ready-to-start`, `ready-to-resume`.
+  3. `machine-ask` rows that can be worked now.
+  4. `human-driven` rows that can be done now: `ready-to-start`, `ready-to-resume`.
+  5. `blocked` — every row not yet startable, whatever its `Needs`: `blocked-to-start`,
+     `blocked-to-resume`, `blocked-on-busy`, then rows gated by a date.
+  Within a section, rows run by the size of the change to committed files, fewest first, read
+  from `Size` — a row that changes nothing committed (an email, a decision, a console click)
+  sorts before any row with a file count, and a row without an estimate follows the counted
+  ones. A precursor stays ahead of its dependants whatever their sizes; equal sizes run
+  `CQ-n` rows first, then product order BST, SE, Taxi, Ltd. `D` rows follow the five sections
+  in the render and are never written back.
 - One row per discrete task. When a plan defines tasks, the board carries one row per
   task, never one per wave or bullet; grouping is visible through `Precursors`.
-- Verification is never a human row. Confirming a deploy, checking a page loads, looking
-  at a render: each is a pipeline check (a behaviour probe, a screenshot artefact, an axe
-  gate) inside the machine row that produces it. A human row exists only for an action
-  the session may not take: merge a PR, write to AWS, decide between named alternatives.
-- Split human from machine where splitting is honest. A machine task blocked pending a
-  human activity is two rows: the human row in its own state, and the machine row naming it
-  in `Precursors`. A batch's merge, and any on-sight review, is a human row that the rows
-  after it name.
+- Verification is never a human-driven row. Confirming a deploy, checking a page loads,
+  looking at a render: each is a pipeline check (a behaviour probe, a screenshot artefact,
+  an axe gate) inside the machine row that produces it. Merging a PR and writing to AWS
+  are machine-only or machine-ask — the operator's go-ahead is the ask, not a separate
+  deliverable — never human-driven. A human-driven row exists only for an action a session
+  may never take whatever the approval: decide between named alternatives, sit a proctored
+  exam, sign in person.
+- Split `human-driven` from `machine-only` where splitting is honest. A machine task blocked
+  pending an activity only a human can do — a decision between named alternatives, a filing
+  against the operator's own company — is two rows: the human-driven row in its own state,
+  and the machine-only row naming it in `Precursors`. A batch's merge, and any on-sight
+  review, is a human-driven row that the rows after it name.
 
-  That is why band 2 is usually empty. `human and machine` is for the row that cannot be
-  split without lying about it — one indivisible action needing both halves, such as a
-  command the session runs with a credential only the operator can supply. Prefer two rows;
-  use the class when two rows would misrepresent one action.
+  `machine-ask` is not a split. It is one row, because the session drives the whole thing
+  and the human step inside it is an authentication or an approval, not a separate
+  deliverable: a credential rotation the session runs end to end except for the 2FA prompt,
+  a write to Google or GitHub the operator has said to go ahead on, a command the session's
+  own policy blocks that the operator can run unchanged. Naming the ask in `Status` is
+  usually enough; only split it into two rows when the machine part is substantial enough
+  to be its own item on the board.
 - Precursors are real dependencies (a module the task calls, a file it shares with an
   unfinished row, a decision it needs), never an ordering chosen for tidiness. If two rows
   could run on one branch at once, neither names the other.
@@ -178,9 +197,13 @@ Dependabot alert, and per code-scanning rule family (one row per rule id, files 
   `investigate` belongs to an existing row (a row whose worktree already touches that
   file, or a plan task that covers it) or gets a new `CQ-n` row (`Source` `none`,
   `Needs` `machine-only`, `Size` and `Model` filled in). `keep open and watch` and `close as
-  stale` need no row; `close as stale` findings are listed for the operator in the
-  render. Never close, label or comment on an issue or alert from this skill; the
-  operator does.
+  stale` need no row; `close as stale` findings are listed in the render. **Never close,
+  label or comment on an issue or alert while rendering the board.** A render is a
+  read-and-report pass: it must not change GitHub state, or the thing being reported moves
+  while it is being described. That is this skill's own restriction and nothing wider —
+  outside a render, labelling, closing or commenting on an issue is ordinary work, needs no
+  special permission, and should be done rather than handed back. If a render finds an
+  issue whose label is wrong, say so and do it after the render, not during.
 
 ## Part 3 — deployments
 
@@ -229,11 +252,14 @@ zsh's word split; a bare `$files` passes one argument and reads every branch as 
 - Worktrees without a board row (`git worktree list`: a detached verify tree, a tree whose
   row landed) get one line each with the same classes.
 
-Local stale branches are pruned with `git branch -d` (never `-D`) and stale worktrees
-with `git worktree remove` as part of the render. Origin stale branches are deleted
-(`git push origin --delete <branch>`) only when the operator has asked for the clean-up in
-the session; otherwise the row lists them for the operator. The `antonycc` remote is the
-archived fork: its refs are never pushed to or deleted.
+Never delete anything from this skill: `git worktree remove` and `git branch -D` are the
+operator's (this repo's `CLAUDE.md`, "Commands only the operator can run"), and `git branch -d`
+on a squash-merged branch refuses because it cannot see the squash, so there is no session-side
+alternative for a stale branch this workflow produced. After the table, print one fenced block
+with the `!` prefix that removes every stale worktree and local branch and every merged origin
+branch, so the operator runs it or leaves it; a stale branch or worktree on disk blocks nothing,
+and the block reappears in every render until it is empty. The `antonycc` remote is the archived
+fork: its refs are never pushed to or deleted.
 
 Branch names follow `CLAUDE.md`: `claude/<ns>-<n>-<topic>` for one of a series,
 `claude/<ns>-<topic>` otherwise, the distinctive part right after `claude/`. A branch named

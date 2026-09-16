@@ -123,9 +123,9 @@ link connects them.**
   measurement, not a running quarrel with the source.
 - **Dependency pragmatism.** Never frame work around avoiding dependencies. State what a choice
   does positively.
-- **"NOT" sections stay factual.** A "this product deliberately does NOT do X" note is fine when
-  each bullet states a positive scope decision. Keep those grounded; don't let them drift into a
-  list of things competitors get wrong.
+- **"NOT" sections stay factual.** A "this repo deliberately does NOT do X" note is fine when each
+  bullet states a positive scope decision (e.g. `CLAUDE.md`'s "No 'legacy' support code" rule).
+  Keep those grounded; don't let them drift into a list of things competitors get wrong.
 
 All three are the same instinct as this skill: say what the thing is, positively and plainly,
 without scaffolding it against something else.

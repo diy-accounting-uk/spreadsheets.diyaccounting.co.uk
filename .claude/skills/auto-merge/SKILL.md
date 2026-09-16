@@ -93,14 +93,20 @@ Say which gate stopped each ineligible PR. "Not ready" without a reason is usele
 
 ## Part 4 — the workflow check
 
-For each eligible PR, list the **distinct workflows that have run against its head SHA**, and take
-the latest run of each:
+For each eligible PR, list the **distinct workflows that have run against its head SHA from push or
+pull_request events**, and take the latest run of each:
 
 ```bash
-gh run list --branch <headRef> --limit 60 --json headSha,workflowName,status,conclusion,databaseId
+gh run list --branch <headRef> --limit 60 --json headSha,workflowName,status,conclusion,databaseId,event \
+  | jq 'map(select(.event == "push" or .event == "pull_request"))'
 ```
 
-Filter to the head SHA, group by `workflowName`, keep the newest per group.
+Filter to the head SHA, filter to push or pull_request events, group by `workflowName`, keep the newest per group.
+
+**Only push and pull_request events gate the merge.** Workflow dispatch runs (manual or scheduled
+package generation) and scheduled runs are not checks on the PR and do not prevent a merge. This
+prevents a hand-dispatched generate/publish run or a maintenance workflow from incorrectly blocking
+a ready PR.
 
 Merge only when every one of those latest runs has `conclusion == "success"`.
 
@@ -124,9 +130,9 @@ Never read a PR's state from `gh pr checks` alone, and never from memory. Open t
 ## Part 5 — merge
 
 Merge one PR at a time, and **wait for its merge to land before merging the next**. Two merges in
-quick succession start two deploys; the concurrency group drops one and the second PR's code reaches
-nothing. This repository also publishes packages on a nightly, so a merge can land beside an
-automated commit — re-read `main` before assuming what is on it.
+quick succession start two deploys of the same environment; the concurrency group drops one and the
+second PR's code reaches nothing. This repository also publishes packages on a nightly, so a merge
+can land beside an automated commit — re-read `main` before assuming what is on it.
 
 Before merging, check that no deploy is in flight on `main`:
 
@@ -155,9 +161,9 @@ git log --oneline origin/main..origin/<headRef>
 The second command must be empty. Anything it lists was left behind by the merge and goes into the
 next batch immediately.
 
-After a verified merge: update local `main`, remove the branch's worktree, and delete the local
-branch with `git branch -d` — never `-D`, which hides the case where the branch was not merged after
-all. **Never delete an origin branch**; list it for the operator instead.
+After a verified merge: update local `main`, then list the branch's worktree, its local branch
+and its origin branch for the operator in Part 7 as one fenced `!` command; removal of all three is
+denied to the session in this environment, and none of them blocks anything.
 
 **Then look at the other open PRs, and leave them alone unless they need a rebase.** A rebase
 restarts the branch's whole deploy, and several at once contend for the ci apex alias and the

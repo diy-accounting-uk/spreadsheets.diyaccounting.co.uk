@@ -154,8 +154,25 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
 - **Its worktree path and branch**, and that it works only there. It may `git add` its own files
   and commit. Never `git stash`, `git reset`, `git checkout --` or `git clean`. Never push, never
   open a PR, never edit `NEXT.md`.
+- **Every Bash call starts with `cd <worktree>` or uses `git -C <worktree>`**, because a shell that
+  starts in the primary checkout edits `main` and leaves work uncommitted there.
+- **Every Read, Edit and Write path is absolute under the worktree**, not only the Bash `cd`. The
+  file tools resolve a repository-relative path against the primary checkout, so an agent that
+  only `cd`s writes its change into `main`'s tree as well as its own; the batch then carries the
+  change twice and the inventory before a merge has to catch it.
 - **What it owns and what it must not touch**, with the reason. Where another agent in the same
   wave is nearby, name it.
+- **For a brief that touches a workflow, three facts about called workflows and one instruction.**
+  A called workflow inherits its caller's `github.event_name`, so a `schedule` guard inside it fires
+  during the scheduled deploy's own probes and rolls it back. A called workflow may request no
+  permission its callers do not grant, or every caller fails at startup. `gh` in a job with no
+  checkout needs `--repo` on every call. Then: grep the sibling workflows for the same defect before
+  committing, because each of these has been fixed in one workflow and found again in the next.
+- **Any new file needs the licence header.** Every comment-capable tracked file carries the SPDX
+  identifier and the copyright line, and `app/test/licence-headers.test.js` fails the suite when
+  one does not. A new `REPORT_*.md` written at the end of an investigation is the usual casualty,
+  because the agent is writing prose by then rather than code. Say it in the brief: the two-line
+  header goes on before the first commit.
 - **The evidence, not just the task.** Paste the run ids, the log lines, the timestamps. An agent
   given a diagnosis it can verify beats one given a symptom to rediscover.
 - **Commit before verifying, not after.** This is the instruction that matters most and the one
@@ -169,11 +186,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
-- **Wait on a long run with the harness's background-task notification, not a poll loop.** Start
-  it with `run_in_background`, do other work or stop, and act on the notification when it lands.
-  The brief pastes the launch and the waiter for each long run the agent will make, one waiter
-  per run, armed before the run starts. An agent whose turn ends on a promoted command stops
-  without reporting unless a waiter is armed.
+- **A wait is a `sleep` loop inside one Bash call with a timeout**, never a Monitor or a
+  backgrounded wait, because an agent that hands its wait to a Monitor or `run_in_background`
+  ends its turn and never resumes to read the notification. The brief pastes the launch and the
+  loop for each long run the agent will make, one loop per run, armed before the run starts.
 
   Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
   macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
@@ -256,10 +272,13 @@ a rebase, a second deploy and the PR's checks (PR #112, 2026-09-14,
 operator has asked for a named set of rows in one PR, the operator's instruction wins and the row
 rides the batch.
 
-- Remove the worktree and delete its branch as the merge lands, not in a later sweep. After a
-  squash `git branch -d` refuses, because it cannot see the squash; prove the content landed
-  (`git diff <agent-branch> <batch> -- $(git diff --name-only <batch>...<agent-branch>)` is empty)
-  and then `git branch -D` it — the one place `-D` is right, and only after that diff.
+- Prove the content landed as the merge lands
+  (`git diff <agent-branch> <batch> -- $(git diff --name-only <batch>...<agent-branch>)` is empty),
+  then hand the removal to the operator: `git branch -D` is theirs (this repo's `CLAUDE.md`,
+  "Commands only the operator can run"), and after a squash `git branch -d` refuses because it
+  cannot see the squash, so there is no session-side alternative. Print the worktree and branch
+  removal as one fenced block with the `!` prefix and carry on. The `/board` render lists every
+  such worktree and branch again until it is gone. Nothing waits on the removal.
 
 **Editing `NEXT.md` is where rows get lost.** Never replace the slice between two markers unless
 you have checked they are adjacent — an edit that removes what it did not name is invisible until
