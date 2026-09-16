@@ -37,7 +37,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Its gate, Submit's relabel (LU-8a), landed 2026-09-09; the operator holds the draft | PLAN_DIYA_GL_LAUNCH.md | human-only | — | ready-to-start | — | operator | operator sends the email |
+| H-LU-9 | One paragraph to `SDSTeam@hmrc.gov.uk`: the licence changed on 2026-09-09 from AGPL-3.0 to free-to-use with source under PolyForm Internal Use 1.0.0 (plus the accountants' grant); the `Gov-Vendor-License-IDs` header, the service, its price and its API calls are unchanged. Its gate, Submit's relabel (LU-8a), landed 2026-09-09; the operator holds the draft | PLAN_DIYA_GL_LAUNCH.md | machine-ask | — | ready-to-start | — | operator | operator sends the email |
 
 ## Plans not tracked here
 
