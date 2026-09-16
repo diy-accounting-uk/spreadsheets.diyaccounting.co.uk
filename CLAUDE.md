@@ -58,8 +58,10 @@ convenience — gitignored, recreate with `ln -s` if missing.
 - `.claude/skills/do-next/SKILL.md` — dispatch `NEXT.md`'s open items as worktree-isolated sub-agents
 - `.claude/skills/board/SKILL.md` — render the work board from `NEXT.md`: in-flight and open items with their source plan; invoke as `/board`
 - `.claude/skills/watch/SKILL.md` — watch GitHub CI on main and every open PR's head branch until the whole scope is green, and fix what goes red; invoke as `/watch`
+- `.claude/skills/iterate/SKILL.md` — run the delivery cycle unattended until the board has no machine-only row that can start: board, a wave of sub-agent batches on one branch and one PR, watch, auto-merge, watch, board, again; invoke as `/iterate`
 - `.claude/skills/archive-packages/SKILL.md` — take a cut of the generated packages into `diy-accounting-archive` as one reviewed commit
 - `.claude/skills/session-report/SKILL.md` — write `REPORT_SESSION_<id>_<date>.md` from measured figures: result, method in prose, mechanisms that worked, losses with a board row each; invoke as `/session-report`
+- `.claude/skills/clean/SKILL.md` — gather merged branches, worktrees of merged branches, logs and test artefacts, and build output; ask once; remove every agreed category in one go; then fetch, switch to main and pull when nothing is in progress; invoke as `/clean`
 
 Note: Read the relevant skill when working on that product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
 
