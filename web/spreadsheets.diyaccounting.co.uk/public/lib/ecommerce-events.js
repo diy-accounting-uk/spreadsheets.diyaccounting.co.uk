@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// Builds the GA4 purchase payload for a completed donation. Pass the amount
+// Builds the purchase-shaped GA4 payload a completed donation sends as the `donate`
+// event, so the Ads Purchase conversion counts subscriptions only. Pass the amount
 // the buyer actually paid (a number) when it is known; pass null when it
 // isn't, so the event reports no revenue rather than a guessed figure.
 function buildPurchaseEvent(provider, product, amount, currency) {
