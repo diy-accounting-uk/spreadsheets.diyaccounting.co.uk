@@ -115,7 +115,7 @@
     "otpauth": "^9.5.2",
     "pa11y": "^10.0.0",
     "pa11y-ci": "^4.1.1",
-    "prettier": "^3.9.7",
+    "prettier": "^3.9.8",
     "retire": "^5.7.0",
     "smol-toml": "^1.8.0",
     "structured-data-testing-tool": "^4.5.0",
@@ -123,7 +123,7 @@
     "wait-on": "^9.1.0"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1134.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1135.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "stripe": "^22.6.2"
