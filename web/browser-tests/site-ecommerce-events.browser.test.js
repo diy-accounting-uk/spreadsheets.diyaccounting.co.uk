@@ -5,7 +5,7 @@
 //
 // The GA4 ecommerce events the plain site pages send: view_item_list on
 // index.html, view_item and begin_checkout on download.html, runner_download
-// on its offline-runner links, purchase on the Stripe/PayPal return trip,
+// on its offline-runner links, donate on the Stripe/PayPal return trip,
 // and begin_checkout/add_to_cart on the built donate.html. Same
 // read-back-off-dataLayer approach as
 // web/browser-tests/diya-gl-measurement.browser.test.js: analytics.js's
@@ -128,7 +128,7 @@ test.describe("download.html — GA4 events", () => {
     expect(events).toEqual([{ product: "bst" }]);
   });
 
-  test("returning from Stripe with a saved download fires purchase with the amount and currency", async ({ page }) => {
+  test("returning from Stripe with a saved download fires donate with the amount and currency", async ({ page }) => {
     await page.goto(`${baseUrl}/download.html`, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
       window.localStorage.setItem("consent.analytics", "granted");
@@ -157,7 +157,7 @@ test.describe("download.html — GA4 events", () => {
     ]);
     await download.cancel();
 
-    const events = await gaEvents(page, "purchase");
+    const events = await gaEvents(page, "donate");
     expect(events).toHaveLength(1);
     expect(events[0].value).toBe(20);
     expect(events[0].currency).toBe("GBP");

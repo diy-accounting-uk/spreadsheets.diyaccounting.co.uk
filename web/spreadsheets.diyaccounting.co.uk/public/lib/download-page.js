@@ -95,7 +95,7 @@ function initForm() {
     if (savedFilename) {
       const provider = isStripeReturn ? "stripe" : "paypal";
       const amount = savedAmount !== null ? parseFloat(savedAmount) : null;
-      trackEvent("purchase", buildPurchaseEvent(provider, savedProduct, amount, savedCurrency));
+      trackEvent("donate", buildPurchaseEvent(provider, savedProduct, amount, savedCurrency));
       const fileUrl = "/zips/" + encodeURIComponent(savedFilename);
       showDownloadAvailable(fileUrl);
       window.location = fileUrl;
