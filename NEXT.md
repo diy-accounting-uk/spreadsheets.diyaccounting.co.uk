@@ -8,8 +8,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is green on `af41a87a` (batch 18: CQ-45 to CQ-49, SET-7); prod serves it and the publish job
-landed diya-gl 1.2.18 as `efa150b4`. No branch but `main`; no watch monitor is armed.
+`main` is `385c09485` (a bot formatting commit on `717c0ae91`) and red: its test run fails the six
+DIYA-GL "no console error" browser specs on the GA4 CSP, and its prod deploy fails the Cognito
+smoke test (`SOFTWARE_TOKEN_MFA` challenge); prod serves `af66772`, the last known good. PR #123
+(`claude/ops-donate-event`, head `b27eb8c4f`) carries both fixes: test run 35319654508 in
+progress, ci deploy 35319651007 green. Merge through `/auto-merge` once the run is green; main's
+own deploy then carries the fixes to prod. No watch monitor process is armed; the session holding
+this file has a Monitor on run 35319654508.
 
 ## Context for the open rows
 
