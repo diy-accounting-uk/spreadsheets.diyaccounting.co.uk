@@ -52,11 +52,20 @@ function taxiUrl() {
   return `${baseUrl}/diya-gl/taxi.html`;
 }
 
+// A render animates the month detail in, and a click leaves the pointer
+// over whatever it pressed, so the page settles and the pointer parks in
+// the corner before anything is measured or audited.
+async function settle(page) {
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {}))));
+  await page.mouse.move(0, 0);
+}
+
 async function openLoadedBook(page, viewport) {
   await page.setViewportSize(viewport);
   await page.goto(taxiUrl(), { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /taxi-scenario-basic/ }).click();
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+  await settle(page);
 }
 
 // ── E6a: axe, one loaded book per viewport ──────────────────────────────

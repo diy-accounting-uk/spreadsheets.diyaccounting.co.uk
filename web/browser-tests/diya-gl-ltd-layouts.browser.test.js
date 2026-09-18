@@ -54,6 +54,14 @@ function ltdUrl() {
   return `${baseUrl}/diya-gl/ltd.html`;
 }
 
+// A render animates the month detail in, and a click leaves the pointer
+// over whatever it pressed, so the page settles and the pointer parks in
+// the corner before anything is measured or audited.
+async function settle(page) {
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {}))));
+  await page.mouse.move(0, 0);
+}
+
 async function openLoadedBook(page, viewport, viewId) {
   await page.setViewportSize(viewport);
   await page.goto(ltdUrl(), { waitUntil: "domcontentloaded" });
@@ -63,6 +71,7 @@ async function openLoadedBook(page, viewport, viewId) {
     await page.locator(`.tab-btn[data-view="${viewId}"]`).click();
     await expect(page.locator(`.tab-btn[data-view="${viewId}"]`)).toHaveAttribute("aria-selected", "true");
   }
+  await settle(page);
 }
 
 // ── axe, one loaded book per viewport, with the CT600 view and the Bank view each open ──
