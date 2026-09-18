@@ -36,12 +36,12 @@ registry chooses the tax modules and the tax-year rule, and the parity gate keep
 book byte-identical. bedrock-meter's currency work is a display-only converter for a USD
 ledger; nothing ports back. DIYA-GL keeps single-currency books with `defaultCurrency`
 (already in the schema, default GBP) and a new check that every line agrees with it.
-Pricing: a free save-in-browser tier (autosave already exists), and one paid India bundle at
-₹499 a year through Submit's catalogue and the existing Stripe account, which accepts UPI for
-UK businesses. Selling to Indian consumers means registering for GST as an OIDAR supplier and
-charging 18% IGST from the first sale, so the paid tier waits for that registration.
-Branding: the same DIYA-GL mark with the 🪔 lamp beside it, the domain diya-gl.in (available on
-2026-09-18), a marigold accent, and no festival tie-in.
+Pricing (operator, 2026-09-19): free and donations first; the one paid India bundle is ₹499 a
+year through Submit's catalogue, and it opens only when GA4 shows a save rate that justifies
+the OIDAR GST registration (18% IGST from the first consumer sale) the paid tier needs.
+`Proprietor` (44AD) is the first Indian product. Branding: the same DIYA-GL mark with the 🪔
+lamp beside it, the domains diya-gl.in, diyagl.in and diya-gl.co.in registered now, a marigold
+accent, and no festival tie-in.
 
 ## The core / uk / in split
 
@@ -409,8 +409,9 @@ The new transaction types, each a `diya-gl:type` value, with the accounts it pos
 
 ## Products for India
 
-Phase 2 ships `Proprietor` first: it is the closest analogue to Basic Sole Trader, the largest
-market (every 44AD business), and needs no GST module beyond composition. `Professional` follows
+`Proprietor` is the first Indian product (operator, 2026-09-19): it is the closest analogue to
+Basic Sole Trader, the largest market (every 44AD business), and needs no GST module beyond
+composition. `Professional` follows
 with the GST regular scheme and the TDS receivable ledger. `CabDriver` is `Proprietor` plus the
 194-O receipt type and the takings view. `PrivateLimited` is phase 3.
 
@@ -496,16 +497,21 @@ Price points, with the Stripe card fee at 3.25% + 20p + 2% and 18% GST inside th
 | ₹499 a year              | £3.88  | £0.40      | 10%       | £3.48 of £3.88 gross       | one charge under the ₹15,000 mandate line; Vyapar's annual convention; ₹42 a month effective | the operator's UK decision of no annual plan; a year's commitment before the product has a record |
 | ₹999 a year              | £7.77  | £0.61      | 8%        | £6.07                      | still under Zoho's cheapest month; fee share smallest                                        | double the PPP line; the free tier already does the accounts                                      |
 
-Recommendation: ₹499 a year, UPI and cards through the existing Stripe account, as the bundle
+Decision (operator, 2026-09-19): ₹499 a year is the India bundle's only price, as
 `resident-diya-gl-in` with `stripeCurrency = "inr"`, `stripeInterval = "year"`,
 `stripePriceAmount = 49900`; `scripts/stripe-setup.js` in Submit already takes currency and
-interval per bundle. Launch the paid tier only after the OIDAR registration exists. Until then
-India is the free tier plus donations, which the pages already prompt for.
+interval per bundle. India launches free and donations only, which the pages already prompt
+for. The paid tier waits on the GA4 save-rate gate below, because the OIDAR registration's
+fixed cost is paid for by subscribers who do not yet exist; H-IN-1 gets the quote meanwhile so
+the gate has a number to clear. The rail (Stripe UPI or Razorpay) is still open.
 
 ### What GA4 evidence would change it
 
-LP-9's events gain a `jurisdiction` dimension. Three readings move the price: the share of
-India-page loads that reach a save (below 20% says the free tier has not earned an ask);
+LP-9's events gain a `jurisdiction` dimension. The first reading is the GA4 save-rate gate
+the paid tier waits on: the share of India-page loads that reach a save, read against H-IN-1's
+quote, opens IN-18 when a plausible conversion of those savers at ₹499 covers the
+registration's yearly cost. Three readings move the price: the share of India-page loads that
+reach a save (below 20% says the free tier has not earned an ask);
 UPI's share of India checkouts (above 70% with a card failure rate above 15% says move rails
 to Razorpay); and the subscribe-click to checkout-complete ratio at ₹499 against a ₹299 test
 (a ratio twice as high at ₹299 pays for itself at the same fee share).
@@ -520,9 +526,10 @@ Sikh, Jain and Buddhist worship (S52). The mark is Unicode U+1FAD4 DIYA LAMP, �
   emoji's platform rendering never appears on a page.
 - Name: "DIYA-GL India" in copy; the domain `diya-gl.in`. NIXI's whois on 2026-09-18 shows
   `diya-gl.in`, `diyagl.in` and `diya-gl.co.in` available. Route 53 registers `.in`, one to ten
-  years, no privacy protection (S53); NIXI takes foreign registrants with KYC (S54). Register
-  the three in the management account beside `diya-gl.co.uk` (H-IN-2), `.in` primary, the others
-  redirecting.
+  years, no privacy protection (S53); NIXI takes foreign registrants with KYC (S54). The
+  operator decided (2026-09-19) to register the three now in the management account beside
+  `diya-gl.co.uk` (H-IN-2), `.in` primary, the others redirecting; the IP India search (H-IN-3)
+  follows the registration.
 - Accent: one token, `--diya-in-accent`, a marigold (the flame and the Diwali flower) on the
   same neutral palette; nothing else in the theme changes.
 - Strapline: "Apna hisaab, apne haath" ("your accounts, in your own hands"), which carries the
@@ -544,26 +551,24 @@ Risks:
    company (S56). A public search of the IP India register for DIYA and DIYA-GL in classes 9
    and 42 has not been done (H-IN-3).
 
-## Decisions needed from the operator
+## Decisions taken (operator, 2026-09-19)
 
-1. An annual price for India. The UK decision (2026-09-04) was one monthly price and no annual
-   plan, and `PLAN_DIYA_GL_HOME.md` (d) allows a yearly charge only as a second button on the
-   same tier. Alternatives: ₹499 a year as the India bundle's only price (recommended; fee share
-   10%), or ₹49 a month to mirror the UK shape (fee share 58% on cards, a mandate every month).
-2. When the paid India tier opens. Alternatives: register for OIDAR GST now and open the bundle
-   with the India pages, or run India free-and-donations only until GA4 shows a save rate that
-   justifies the registration's fixed cost.
-3. Rails. Alternatives: Stripe UPI on the existing account (recommended; one billing system),
+1. Price shape: ₹499 a year is the India bundle's only price.
+2. When the paid tier opens: free and donations first; the paid India tier waits until GA4
+   shows a save rate that justifies the OIDAR GST registration's fixed cost (the "GA4 save-rate
+   gate" precursor on IN-18, IN-19 and H-IN-5); H-IN-1, the OIDAR quote, proceeds meanwhile.
+3. First Indian product: `Proprietor` (44AD).
+4. Domains: register `diya-gl.in`, `diyagl.in` and `diya-gl.co.in` now through Route 53 in the
+   management account (H-IN-2 is ready to start); the IP India search (H-IN-3) follows.
+
+## Decisions still open
+
+1. Rails. Alternatives: Stripe UPI on the existing account (recommended; one billing system),
    or Razorpay's cross-border product (a second integration, better UPI success rates claimed).
-4. What an India book produces. Alternatives: pages and JSON only, with the engine's checks as
+2. What an India book produces. Alternatives: pages and JSON only, with the engine's checks as
    the proof and a CA review as the oracle (recommended for phase 2), or an Indian Excel
    template family so the LibreOffice reconciliation method applies (a large body of work that
    would follow the Rust port's oracle instead).
-5. The first Indian product. Alternatives: `Proprietor` (44AD, recommended), `Professional`
-   (44ADA with GST and TDS, the freelance and consultant market), or `PrivateLimited`.
-6. The domain and the marks. Alternatives: register `diya-gl.in`, `diyagl.in` and `diya-gl.co.in`
-   now at about the cost of a year's Route 53 fees, or wait for the first Indian users; and a
-   Madrid designation of India from the UK application against a direct Indian filing.
 
 ## Task list
 
@@ -586,19 +591,20 @@ Risks:
 | IN-15   | Product `Professional`: 44ADA and books-based, the GST regular scheme with ITC, the TDS receivable ledger against 26AS                                                                                                                       | 2     | IN-12                  | Opus   | ~8 files, as IN-12 for `professional`                                                                                                                                                                             |
 | IN-16   | Product `CabDriver`: `Proprietor` plus the 194-O receipt type and a takings view                                                                                                                                                          | 2     | IN-12                  | Sonnet | ~6 files, as IN-12 for `cab-driver`                                                                                                                                                                                |
 | IN-17   | Product `PrivateLimited`: Schedule III statements, the regime choice, TDS payable by section, PF/ESI/PT payroll                                                                                                                             | 3     | IN-15                  | Opus   | ~10 files, as IN-12 for `private-limited`                                                                                                                                                                          |
-| IN-18   | The `resident-diya-gl-in` bundle in Submit's catalogue (INR, yearly, 49900), UPI enabled, `diyaGlEntitlement.js` reading either bundle                                                                                                       | 3     | LP-21, DG-3a, H-IN-1   | Sonnet | ~4 files: `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `app/services/diyaGlEntitlement.js`, `.env.ci`, `.env.prod`                                                                            |
-| IN-19   | The India page's tier strip and panel in rupees: the "On this device" row (DG-4), the 24h sandbox label (DG-2b), the ₹499 offer where DG-3b puts the upgrade                                                                               | 3     | IN-14, DG-3b, DG-4     | Sonnet | ~3 files: `web/diya-gl.co.uk/public/cloud.js`, `shell.js`, `web/browser-tests/diya-gl-cloud.browser.test.js`                                                                                                       |
+| IN-18   | The `resident-diya-gl-in` bundle in Submit's catalogue (INR, yearly, 49900), UPI enabled, `diyaGlEntitlement.js` reading either bundle                                                                                                       | 3     | LP-21, DG-3a, H-IN-1, GA4 save-rate gate | Sonnet | ~4 files: `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `app/services/diyaGlEntitlement.js`, `.env.ci`, `.env.prod`                                                                            |
+| IN-19   | The India page's tier strip and panel in rupees: the "On this device" row (DG-4), the 24h sandbox label (DG-2b), the ₹499 offer where DG-3b puts the upgrade                                                                               | 3     | IN-14, DG-3b, DG-4, GA4 save-rate gate | Sonnet | ~3 files: `web/diya-gl.co.uk/public/cloud.js`, `shell.js`, `web/browser-tests/diya-gl-cloud.browser.test.js`                                                                                                       |
 | IN-20   | GA4: a `jurisdiction` dimension on LP-9's events; the India price-test events                                                                                                                                                             | 3     | LP-9, IN-14            | Sonnet | ~3 files: `public/lib/analytics.js`, `public/diya-gl/diya-gl-events.js`, `web/unit-tests/diya-gl-events.test.js`                                                                                                   |
 | IN-21   | The lamp mark and the accent token in the brand repository, consumed by the India page                                                                                                                                                    | 3     | LU-13, IN-14           | Sonnet | ~3 files in the brand repository, `public/diya-gl/in.css`                                                                                                                                                          |
 | IN-22   | Copy: the MCP server description, the package README and the spec page say which jurisdictions the build reads; a spec section for the `in:` extension                                                                                     | 3     | IN-12                  | Sonnet | ~4 files: `app/lib/mcp/server.js`, `diya-gl/README.md`, `public/diya-gl.html`, `app/bin/build-sitemaps.js`                                                                                                        |
-| H-IN-1  | An OIDAR GST registration quote (registration, authorised representative, monthly GSTR-5A) from an Indian CA                                                                                                                              | 3     | —                      | operator | —                                                                                                                                                                                                                  |
-| H-IN-2  | Register `diya-gl.in`, `diyagl.in`, `diya-gl.co.in` in the management account                                                                                                                                                             | 3     | —                      | operator | Route 53 (887764105431)                                                                                                                                                                                            |
-| H-IN-3  | The IP India public search for DIYA and DIYA-GL in classes 9 and 42; the Madrid-or-direct decision                                                                                                                                         | 3     | H-LU-4                 | operator | —                                                                                                                                                                                                                  |
+| H-IN-1  | An OIDAR GST registration quote (registration, authorised representative, monthly GSTR-5A) from an Indian CA; the number the GA4 save-rate gate reads against                                                                             | 1     | —                      | operator | —                                                                                                                                                                                                                  |
+| H-IN-2  | Register `diya-gl.in`, `diyagl.in`, `diya-gl.co.in` in the management account through Route 53 (decided 2026-09-19)                                                                                                                       | 1     | —                      | operator | Route 53 (887764105431)                                                                                                                                                                                            |
+| H-IN-3  | The IP India public search for DIYA and DIYA-GL in classes 9 and 42; the Madrid-or-direct decision                                                                                                                                         | 3     | H-IN-2, H-LU-4         | operator | —                                                                                                                                                                                                                  |
 | H-IN-4  | An Indian CA reviews `app/data/in/fy-2026-2027.toml` and the `Proprietor` golden report before the page is public                                                                                                                          | 2     | IN-12                  | operator | —                                                                                                                                                                                                                  |
-| H-IN-5  | Read Stripe's UPI fee for the GB account in the Dashboard and enable UPI                                                                                                                                                                  | 3     | —                      | operator | dashboard.stripe.com                                                                                                                                                                                               |
+| H-IN-5  | Read Stripe's UPI fee for the GB account in the Dashboard and enable UPI                                                                                                                                                                  | 3     | GA4 save-rate gate     | operator | dashboard.stripe.com                                                                                                                                                                                               |
 
-Phase 1 (IN-1 to IN-6) benefits the UK alone and lands on its own. Phase 2 needs nothing from
-Submit. Phase 3 is commerce and brand.
+Phase 1 (IN-1 to IN-6) benefits the UK alone and lands on its own; H-IN-1 and H-IN-2 run
+beside it. Phase 2 needs nothing from Submit. Phase 3 is commerce and brand, and its paid-tier
+rows (IN-18, IN-19, H-IN-5) wait on the GA4 save-rate gate.
 
 ## Briefs
 
@@ -708,7 +714,7 @@ journal. Acceptance as IN-12.
 **IN-18, the bundle.** In `submit.catalogue.toml` add `[[bundles]] id = "resident-diya-gl-in"`
 with `stripePriceAmount = 49900`, `stripeCurrency = "inr"`, `stripeInterval = "year"`,
 `tokensGranted` and refresh as `resident-diya-gl`, listed in every environment once H-IN-1 is
-done; run `scripts/stripe-setup.js --dry-run` then live. Acceptance: the price exists in Stripe
+done and the GA4 save-rate gate has opened; run `scripts/stripe-setup.js --dry-run` then live. Acceptance: the price exists in Stripe
 test and live; the bundles page shows it to a signed-in user; DG-3's entitlement reads either
 bundle.
 
