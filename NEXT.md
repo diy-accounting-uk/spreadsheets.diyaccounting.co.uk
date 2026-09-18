@@ -8,10 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is green on `798c2f0c` (PR #123: the donate GA4 event, the Cognito smoke-test pin, the GA4 CSP
-hosts; PR #124: the BST, Taxi and Ltd axe specs settle animations before auditing). Prod serves
-`19f717c9` as last known good; `798c2f0c` changed only browser specs, which the deploy's path filter
-excludes. No branch but `main`; no watch monitor is armed.
+`main` is green on `8fd0532e4` (test and codeql, 2026-09-18 11:51 UTC); the prod deploy of that head
+succeeded at 12:13 UTC. The three commits since are `NEXT.md` only, which the deploy's path filter
+excludes. No branch is ahead of `main`; no watch monitor is armed.
 
 ## Context for the open rows
 
@@ -39,9 +38,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1 | Operator (2026-09-18): "Move these from the download page into a new domain homepage on diya-gl.co.uk with the same branding as https://spreadsheets.diyaccounting.co.uk/diya-gl/bst.html / https://spreadsheets.diyaccounting.co.uk/diya-gl/ltd.html and move all those pages over too as well as the sign in". The DIYA-GL section of `public/download.html` (the four `diya-gl/*.html` viewers and the four `runners/diya-gl-*.html` offline files) becomes the homepage of `diya-gl.co.uk`; the four viewer pages, `cloud.js` and the Cognito sign-in callback move with it; `download.html` keeps one link out. `diya-gl.co.uk` and `diya-gl.com` are registered in the management account (887764105431, expire 2027-09-11, auto-renew on); neither has a hosted zone in `root.diyaccounting.co.uk` yet. Needs the zone there with `.com` redirecting to `.co.uk`, a certificate, a distribution here, the app client's callback URL (LP-15) and the CSP hosts on the new origin | NEXT.md | machine | LP-15, LP-17 | ready-to-start | L | Opus design, then Sonnet | — |
-| DG-2 | Operator (2026-09-18): "Add a max 1 day retention for saved data with sign in and use labelling withnto \"24h sandbox\" a (and align the mentions of \"wip\" to \"24hy sandbox\")". A one-day expiry on the signed-in book storage (a Submit PR: the lifecycle rule on the `DiyaGlStack` bucket, the `expires` field in the metadata sidecar and the list response), and the pages say so: the "Work in progress" badge and sentence on `download.html` and every DIYA-GL page label that reads work-in-progress become "24h sandbox", with the expiry shown beside a saved book | NEXT.md | machine | LP-16, LP-17 | ready-to-start | M | Sonnet | — |
-| DG-3 | Operator (2026-09-18): "Add paid feature for persistent account". The `resident-diya-gl` bundle (LP-21) lifts DG-2's one-day expiry: an entitled user's saved books keep no expiry, the sidecar and lifecycle rule read the entitlement, and the pages offer the upgrade where the 24h sandbox label sits (LP-18's subscribe button, checkout and portal) | NEXT.md | machine | DG-2, LP-18, LP-21 | blocked on DG-2 | M | Sonnet | — |
+| DG-2 | Operator (2026-09-18): "Add a max 1 day retention for saved data with sign in and use labelling withnto \"24h sandbox\" a (and align the mentions of \"wip\" to \"24hy sandbox\")". A one-day expiry on the signed-in book storage (a Submit PR: the lifecycle rule on the `DiyaGlStack` bucket, the `expires` field in the metadata sidecar and the list response), and the pages say so: the "Work in progress" badge and sentence on `download.html` and every DIYA-GL page label that reads work-in-progress become "24h sandbox", with the expiry shown beside a saved book | NEXT.md | machine | LP-16, LP-17 | ready-to-start | ~6 files | Sonnet | — |
+| DG-1 | Operator (2026-09-18): "Move these from the download page into a new domain homepage on diya-gl.co.uk with the same branding as https://spreadsheets.diyaccounting.co.uk/diya-gl/bst.html / https://spreadsheets.diyaccounting.co.uk/diya-gl/ltd.html and move all those pages over too as well as the sign in". The DIYA-GL section of `public/download.html` (the four `diya-gl/*.html` viewers and the four `runners/diya-gl-*.html` offline files) becomes the homepage of `diya-gl.co.uk`; the four viewer pages, `cloud.js` and the Cognito sign-in callback move with it; `download.html` keeps one link out. `diya-gl.co.uk` and `diya-gl.com` are registered in the management account (887764105431, expire 2027-09-11, auto-renew on); neither has a hosted zone in `root.diyaccounting.co.uk` yet. Needs the zone there with `.com` redirecting to `.co.uk`, a certificate, a distribution here, the app client's callback URL (LP-15) and the CSP hosts on the new origin | NEXT.md | machine | LP-15, LP-17 | ready-to-start | ~12 files | Opus design, then Sonnet | — |
+| DG-3 | Operator (2026-09-18): "Add paid feature for persistent account". The `resident-diya-gl` bundle (LP-21) lifts DG-2's one-day expiry: an entitled user's saved books keep no expiry, the sidecar and lifecycle rule read the entitlement, and the pages offer the upgrade where the 24h sandbox label sits (LP-18's subscribe button, checkout and portal) | NEXT.md | machine | DG-2, LP-18, LP-21 | blocked on DG-2 | ~5 files | Sonnet | — |
 
 ## Plans not tracked here
 
