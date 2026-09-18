@@ -30,7 +30,7 @@ Kanban sense: a wave holds as many batches as file ownership and the SSO window 
 ## Before the first cycle
 
 1. **Remote Control.** Read the state before saying anything about it. A `/remote-control is
-   active` line carrying a `https://claude.ai/code/session_…` URL means the session is connected,
+active` line carrying a `https://claude.ai/code/session_…` URL means the session is connected,
    and `/rc` is then never printed or suggested: on a connected session `/rc` opens the disconnect
    panel, and the `/rc` that follows reconnects under a new session URL, which leaves a phone or
    browser still on the old URL showing the session as disconnected. Only when nothing says the
@@ -84,7 +84,7 @@ scheduled run, a nightly package generation, or a date are not startable; leave 
 - **Land each report as it arrives**: `git status --short` in the worktree first, then
   `git merge --squash` onto the batch against the branch's own fork point, one commit per row
   with the why in its body, and the content proof (`git diff <agent-branch> <batch> -- <its
-  files>` empty). Read the diff before landing it; a test that asserts a count across the whole
+files>` empty). Read the diff before landing it; a test that asserts a count across the whole
   stack, or a comment that restates the code, is fixed on the batch, not sent back.
 - **Once per batch before its first push**: the routed `npm test` run on the merged tree, in the
   background. Then one push, one PR whose body says what each row turned out to be, and `/watch`.
