@@ -32,9 +32,11 @@ manifest's `start_url` and `scope` become `/`.
 **What stays on spreadsheets.** `download.html`'s DIYA-GL section (lines 131-160) shrinks to one
 paragraph and one link: "View and edit your books in DIYA-GL, free in your browser, with a 24h
 sandbox when you sign in", the badge reading "24h sandbox", the link `https://diya-gl.co.uk/`. The
-format spec page `diya-gl.html` stays where LP-8 put it (the npm README, the reconciliation pages and
-the sitemap link to it); its four viewer links (lines 627-630) and `index.html` line 300 point at the
-new host. `redirects.toml` gains a target `diya-gl` (ci `ci.diya-gl.co.uk`, prod `diya-gl.co.uk`) and
+format spec page `diya-gl.html` moves to `https://diya-gl.co.uk/spec.html` (DG-1l): the builder
+`app/bin/build-diya-gl-spec.js` writes it there with the new canonical URL, the npm README
+(`diya-gl/README.md` line 66), the reconciliation pages (`build-reconciliation-pages.js` line 973),
+`index.html` line 300 and both sitemaps point at it, and spreadsheets' `redirects.toml` 301s the old
+path. `redirects.toml` gains a target `diya-gl` (ci `ci.diya-gl.co.uk`, prod `diya-gl.co.uk`) and
 retargets the `/books/` prefix and a new `/diya-gl/` prefix onto it, so every old link and PWA path
 lands on the new site. `donate.html`, the packages, the knowledge base and the reconciliation pages
 stay.
@@ -67,9 +69,9 @@ the `DIYA-GL` mark. The home strip uses the same tokens and no new ones.
 | Stack | this repo, `infra/.../stacks/DiyaGlSiteStack.java` | `{env}-spreadsheets-DiyaGlSiteStack`: S3 origin with OAC, one CloudFront distribution, domain names ci `ci.diya-gl.co.uk`, `ci.diya-gl.com`; prod `diya-gl.co.uk`, `www.diya-gl.co.uk`, `diya-gl.com`, `www.diya-gl.com`; its own response-headers policy from `infra/main/resources/diya-gl-security-headers.json`; its own redirect function; `DistributionDomainName` and `OriginBucketName` outputs. `SpreadsheetsEnvironment` synthesises it when `DIYA_GL_CERTIFICATE_ARN` is set, as it gates `HoldingStack` on its certificate |
 | Deploy | `.github/workflows/deploy.yml` | A deploy step after `SpreadsheetsStack`, gated on the variable like the holding step (lines 313-331); runners upload to the new bucket; the behaviour job gets `DIYA_GL_BASE_URL` (ci `https://ci.diya-gl.co.uk`, prod `https://diya-gl.co.uk`) beside `SPREADSHEETS_BASE_URL` |
 | `.com` | the redirect function | `web/diya-gl.co.uk/redirects.toml` and a generalised `scripts/build-spreadsheets-redirects.cjs` (a `--site` argument): any host ending `diya-gl.com` 301s to the same path on `diya-gl.co.uk` (`ci.diya-gl.com` to `ci.diya-gl.co.uk`), and `www.diya-gl.co.uk` to the apex; both `.com` aliases sit on the same distribution, so one certificate and one function cover it |
-| CSP | `diya-gl-security-headers.json` | `default-src 'self'`; `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com`; `connect-src 'self'` plus the GA hosts, `https://submit.diyaccounting.co.uk`, `https://prod-auth.diyaccounting.co.uk`, `https://ci-submit.diyaccounting.co.uk`, `https://ci-auth.diyaccounting.co.uk`; `form-action 'self'`; `frame-ancestors 'none'`; no PayPal. `web/browser-tests/serve.js` reads it for the second root |
+| CSP | `diya-gl-security-headers.json` | `default-src 'self'`; `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com`; `connect-src 'self'` plus the GA hosts, `https://submit.diyaccounting.co.uk`, `https://prod-auth.diyaccounting.co.uk`; `form-action 'self'`; `frame-ancestors 'none'`; no PayPal. `web/browser-tests/serve.js` reads it for the second root |
 | Cognito | `../submit.diyaccounting.co.uk/infra/.../IdentityStack.java` `buildBooksUrls` | Callback and logout URLs for `https://diya-gl.co.uk/`, `/index.html`, the four pages, and the same under `https://ci.diya-gl.co.uk` (prod lists the ci host as it does today for `ci-spreadsheets`, so the ci behaviour run can sign in); `SubmitApplication.booksAllowedOrigins` (lines 173-179) adds the two origins, which also feeds `BILLING_RETURN_URL_ORIGINS`. The old spreadsheets-host entries stay one release, then go |
-| Which Submit | `web/diya-gl.co.uk/cloud-config.toml` | `cloud-config.js` becomes generated per environment by `scripts/build-donate-page.mjs`'s `ENVIRONMENT_NAME` pattern: `[prod]` is today's values; `[ci]` is `https://ci-submit.diyaccounting.co.uk/api/v1`, `https://ci-auth.diyaccounting.co.uk` and ci's `DiyaGlUserPoolClientId`. Decision 1 below |
+| Which Submit | `web/diya-gl.co.uk/public/cloud-config.js` | Every host talks to Submit prod, as today (decision 1): the committed `cloud-config.js` keeps its one set of values; the ci behaviour job keeps minting its test user through the prod role in `SUBMIT_TEST_USER_ROLE_ARN` and targets `ci.diya-gl.co.uk` through `DIYA_GL_BASE_URL` |
 | Analytics | operator, GA4 admin | The measurement id `G-X4ZPD99X2K` stays; the web data stream's cross-domain list and referral exclusions gain `diya-gl.co.uk` |
 
 **Tests.** The 40 `web/browser-tests/diya-gl-*.browser.test.js` files load `/diya-gl/<page>.html`
@@ -154,16 +156,15 @@ Lifting the tier to prod later is two edits in one Submit PR: `prod` joins the b
 [Subscribe]". After Stripe returns with `?checkout=success`, the panel re-reads the list
 (`processPendingCheckoutReturn`) and the card becomes "Subscribed: kept until you delete it" with
 the existing Manage subscription. A lapsed subscriber sees "Your subscription ended <date>. These
-books expire <date>. [Subscribe]". Prod shows "24h sandbox" and nothing else while the tier is
-ci-only.
+books expire <date>. [Subscribe]". The offer ships behind the list's `residentTier` flag.
 
-**The ci page must talk to Submit ci.** The tier is enabled on Submit ci and the Stripe test
-prices live there, so a person can only click Subscribe on a page whose `cloud-config.js` points at
-`ci-submit.diyaccounting.co.uk`. Today every host points at prod (`cloud-config.js` lines 15-19).
-Decision 1 sets `ci.diya-gl.co.uk` to Submit ci; the ci behaviour job then mints its test user
-through Submit's ci behaviour role (`SUBMIT_TEST_USER_ROLE_ARN` becomes per-environment, ci and
-prod). The resident loop is then a behaviour case on ci: sign in, save (sandbox), subscribe with the
-Stripe test card, save again, the list shows `resident`.
+**Every host talks to Submit prod (decision 1).** `cloud-config.js` keeps today's prod values on
+`diya-gl.co.uk` and `ci.diya-gl.co.uk` alike, and prod's tier switch is off, so no page shows a
+Subscribe button until prod lifts the tier. The pages' offer, subscribed and lapsed cards are
+proven by the cloud browser spec against a stubbed list. The resident loop end to end is proven by
+Submit's own API-level behaviour test, `diyaGlSubscription.behaviour.test.js` on ci: sign in, save
+(the put answers `retention: sandbox` with an `expiresAt`), subscribe with the Stripe test card,
+save again (`retention: resident`, `expiresAt: null`).
 
 ### (d) Pricing
 
@@ -240,23 +241,12 @@ A multi-book library in the browser would give a no-account reader most of what 
 with none of its durability, and would split the product in two. The file download is the
 no-account reader's durable path; it exists today.
 
-## Decisions needed from the operator
+## Decisions taken (operator, 2026-09-19)
 
-1. **Which Submit environment the ci host talks to.** (Recommended) `ci.diya-gl.co.uk` talks to
-   Submit ci, so the resident tier can be clicked through on ci and the ci behaviour job proves it;
-   `SUBMIT_TEST_USER_ROLE_ARN` splits into ci and prod values. Alternative: every host stays on
-   Submit prod as today, the resident tier is proven only by Submit's own API-level behaviour test,
-   and no page shows a Subscribe button until prod lifts the tier.
-2. **Grace after a subscription lapses.** (Recommended) 30 days: resident books of a lapsed
-   subscriber expire 30 days after the bundle's expiry. Alternatives: 0 days, they become sandbox
-   at the lapse; 90 days.
-3. **Where the format spec page lives.** (Recommended) `diya-gl.html` stays on spreadsheets this
-   phase; the homepage links to it. Alternative: it moves to `https://diya-gl.co.uk/spec.html` now,
-   which also changes the npm README, the reconciliation pages and the sitemap.
-4. **Analytics property.** (Recommended) the existing GA4 property with `diya-gl.co.uk` added to
-   its stream and referral exclusions, so the LP-9 events and the pricing evidence stay in one
-   report. Alternative: a new property for the brand, with a second measurement id in
-   `analytics.js` per site.
+1. **Submit environment.** Every host talks to Submit prod, as today; the resident tier is proven by Submit's own API-level behaviour test; no page shows a Subscribe button until prod lifts the tier.
+2. **Lapse grace.** 30 days: a lapsed subscriber's resident books expire 30 days after the bundle's expiry.
+3. **The format spec page.** Moves to `https://diya-gl.co.uk/spec.html` now (DG-1l).
+4. **Analytics.** The existing GA4 property, with `diya-gl.co.uk` added to its stream and referral exclusions.
 
 ## Task list
 
@@ -265,19 +255,20 @@ no-account reader's durable path; it exists today.
 | DG-1a | Root repo: hosted zones for `diya-gl.co.uk` and `diya-gl.com`, aliases, delegate role, lookups | 1 | — | Sonnet | `../root.diyaccounting.co.uk/infra/.../RootDnsStack.java`, `RootEnvironment.java`, `.github/workflows/deploy.yml`, its test (~4 files) |
 | DG-1c | The certificate request workflow for the diya-gl hosts | 1 | — | Haiku | `.github/workflows/request-diya-gl-cert.yml` (~1 file) |
 | DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | 1 | — | Sonnet | `infra/.../stacks/DiyaGlSiteStack.java`, `SpreadsheetsEnvironment.java`, `infra/main/resources/diya-gl-security-headers.json`, `cdk-spreadsheets/cdk.json`, `.github/workflows/deploy.yml`, `infra/test/...` (~6 files) |
-| DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public` and re-home the builds, redirects and links | 1 | — | Sonnet | `web/diya-gl.co.uk/public/**` (moved), `scripts/build-diya-gl-bundle.mjs`, `scripts/build-runner.mjs`, `scripts/build-donate-page.mjs`, `scripts/build-spreadsheets-redirects.cjs`, `web/diya-gl.co.uk/redirects.toml`, `web/spreadsheets.diyaccounting.co.uk/redirects.toml`, `public/download.html`, `public/index.html`, `public/diya-gl.html`, `app/bin/build-sitemaps.js`, `app/lib/sitemap-builder.js`, `web/browser-tests/serve.js`, `playwright.config.js`, `scripts/test-scope.mjs`, `.github/workflows/deploy.yml`, `.github/workflows/test.yml`, `.gitignore`, `CLAUDE.md` (~25 files) |
+| DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public` and re-home the builds, redirects and links | 1 | — | Sonnet | `web/diya-gl.co.uk/public/**` (moved), `scripts/build-diya-gl-bundle.mjs`, `scripts/build-runner.mjs`, `scripts/build-donate-page.mjs`, `scripts/build-spreadsheets-redirects.cjs`, `web/diya-gl.co.uk/redirects.toml`, `web/spreadsheets.diyaccounting.co.uk/redirects.toml`, `public/download.html`, `public/index.html`, `app/bin/build-sitemaps.js`, `app/lib/sitemap-builder.js`, `web/browser-tests/serve.js`, `playwright.config.js`, `scripts/test-scope.mjs`, `.github/workflows/deploy.yml`, `.github/workflows/test.yml`, `.gitignore`, `CLAUDE.md` (~24 files) |
 | DG-1f | The browser and behaviour tests on the new site root | 1 | DG-1e | Haiku | `web/browser-tests/diya-gl-*.browser.test.js` (40), `web/browser-tests/site-ecommerce-events.browser.test.js`, `web/unit-tests/seo-validation.test.js`, `behaviour-tests/spreadsheets.behaviour.test.js`, `package.json` (~45 files) |
 | DG-1g | The homepage: the Ltd example at year view 2025-04, the product nav, the tier strip, the runner row | 1 | DG-1e | Opus | `web/diya-gl.co.uk/public/index.html` (new), `shell.js`, `diya-gl.css`, the four pages (noindex), `app/lib/sitemap-builder.js`, `web/browser-tests/diya-gl-home.browser.test.js` (new) (~8 files) |
 | DG-1h | Submit repo: the DIYA-GL app client's callback URLs and the allowed origins for the new hosts | 1 | — | Sonnet | `../submit.diyaccounting.co.uk/infra/.../IdentityStack.java`, `SubmitApplication.java`, `infra/test/.../IdentityStackTest.java` (~3 files) |
-| DG-1i | `cloud-config.js` generated per environment; the ci behaviour job on Submit's ci role | 1 | DG-1e, DG-1h, decision 1 | Sonnet | `web/diya-gl.co.uk/cloud-config.toml` (new), `scripts/build-cloud-config.mjs` (new), `.github/workflows/deploy.yml`, `CLAUDE.md` (~4 files) |
+| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL` per environment, the sign-in case on `ci.diya-gl.co.uk` against Submit prod | 1 | DG-1e, DG-1h | Sonnet | `.github/workflows/deploy.yml`, `web/diya-gl.co.uk/public/cloud-config.js` (its header comment), `CLAUDE.md` (~3 files) |
+| DG-1l | The format spec page moves to `https://diya-gl.co.uk/spec.html`: builder, canonical URL, links, sitemaps, redirect | 1 | DG-1e | Sonnet | `app/bin/build-diya-gl-spec.js`, `web/diya-gl.co.uk/public/spec.html` (moved from `public/diya-gl.html`), `diya-gl/README.md`, `app/bin/build-reconciliation-pages.js`, `public/index.html`, `app/lib/sitemap-builder.js`, `app/test/sitemap-builder.test.js`, `app/test/diya-gl-spec-page.test.js`, `app/test/licence-headers.test.js`, `LICENSING.md`, `web/spreadsheets.diyaccounting.co.uk/redirects.toml` (~11 files) |
 | DG-1b | Operator: merge and deploy the root PR, point the registrar at the zones, run the certificate workflow, set `DIYA_GL_CERTIFICATE_ARN`, add the domain in GA4 | 1 | DG-1a, DG-1c | operator | — |
-| DG-1j | Operator: cut-over check on `https://diya-gl.co.uk/` and the old links | 1 | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i | operator | — |
+| DG-1j | Operator: cut-over check on `https://diya-gl.co.uk/` and the old links | 1 | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | operator | — |
 | DG-1k | Submit repo: drop the spreadsheets-host callback URLs after the cut-over | 1 | DG-1j | Haiku | `../submit.diyaccounting.co.uk/infra/.../IdentityStack.java`, `IdentityStackTest.java` (~2 files) |
 | DG-2a | Submit repo: retention in the storage routes (sandbox 24h, resident), tags, the lifecycle rule, the tier switch | 2 | — | Opus design, then Sonnet | `../submit.diyaccounting.co.uk/app/functions/diyaGl/diyaGlPut.js`, `diyaGlListGet.js`, `diyaGlVersionGet.js`, `app/data/s3DiyaGlRepository.js`, `app/services/diyaGlEntitlement.js`, `infra/.../DiyaGlStack.java`, `DataStack.java`, `SubmitApplication.java`, `app/unit-tests/functions/diyaGl*.test.js`, `infra/test/.../DataStackTest.java`, `DiyaGlStackTest.java` (~10 files) |
 | DG-2b | The 24h sandbox on the pages: labels, expiry per book, the 403 path removed, the ci behaviour case | 2 | DG-2a | Sonnet | `web/diya-gl.co.uk/public/cloud.js`, `diya-gl.css`, `web/browser-tests/diya-gl-cloud.browser.test.js`, `behaviour-tests/spreadsheets.behaviour.test.js` (~4 files) |
 | DG-3a | Submit repo: checkout refuses a bundle not listed in the current environment | 3 | — | Sonnet | `../submit.diyaccounting.co.uk/app/functions/billing/billingCheckoutPost.js`, `app/services/productCatalog.js`, `app/unit-tests/functions/billingCheckoutPost.test.js` (~3 files) |
-| DG-3b | The upgrade offer beside the sandbox label, the lapsed state, the ci resident behaviour case | 3 | DG-2b, DG-1i | Sonnet | `web/diya-gl.co.uk/public/cloud.js`, `web/browser-tests/diya-gl-cloud.browser.test.js`, `behaviour-tests/spreadsheets.behaviour.test.js` (~3 files) |
-| DG-3c | Submit repo: the daily sweeper for lapsed subscribers' resident books | 3 | DG-2a, decision 2 | Sonnet | `../submit.diyaccounting.co.uk/app/functions/diyaGl/diyaGlLapseSweep.js` (new), `infra/.../DiyaGlStack.java`, `app/unit-tests/functions/diyaGlLapseSweep.test.js` (new), `DiyaGlStackTest.java` (~4 files) |
+| DG-3b | The upgrade offer beside the sandbox label and the lapsed state, behind the tier flag; the resident loop in Submit's behaviour test | 3 | DG-2b | Sonnet | `web/diya-gl.co.uk/public/cloud.js`, `web/browser-tests/diya-gl-cloud.browser.test.js`, `../submit.diyaccounting.co.uk/behaviour-tests/diyaGlSubscription.behaviour.test.js` (~3 files) |
+| DG-3c | Submit repo: the daily sweeper for lapsed subscribers' resident books (30-day grace) | 3 | DG-2a | Sonnet | `../submit.diyaccounting.co.uk/app/functions/diyaGl/diyaGlLapseSweep.js` (new), `infra/.../DiyaGlStack.java`, `app/unit-tests/functions/diyaGlLapseSweep.test.js` (new), `DiyaGlStackTest.java` (~4 files) |
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | 1 | DG-2b, DG-1g | Sonnet | `web/diya-gl.co.uk/public/cloud.js`, `shell.js`, `web/browser-tests/diya-gl-cloud.browser.test.js` (~3 files) |
 | DG-5 | `runners.json` with size and stamp, the homepage runner row reading it, the newer-file notice in each runner | 1 | DG-1g | Sonnet | `scripts/build-runner.mjs`, `web/diya-gl.co.uk/public/index.html`, `web/browser-tests/diya-gl-runner.browser.test.js` (~3 files) |
 
@@ -320,7 +311,7 @@ no-account reader's durable path; it exists today.
   per site; `web/diya-gl.co.uk/redirects.toml` with the `.com` and `www` host rules;
   spreadsheets' `redirects.toml` retargets `/books/` and adds `/diya-gl/` onto the `diya-gl` target.
   `download.html` lines 131-160 become the paragraph, badge and link in Design (a); `index.html`
-  line 300 and `diya-gl.html` lines 627-630 point at the new host. `build-sitemaps.js` writes
+  line 300 points at the new host. `build-sitemaps.js` writes
   `web/diya-gl.co.uk/public/sitemap.xml` and `robots.txt` too. `deploy.yml` and `test.yml` run the
   redirect build for both sites. Acceptance: `npm test` green except the browser and behaviour files
   DG-1f owns, which are listed as the diff's remainder in the commit message.
@@ -344,29 +335,36 @@ no-account reader's durable path; it exists today.
   every other environment, keeping the spreadsheets entries; `SubmitApplication.booksAllowedOrigins`
   adds the two origins on prod and the ci one elsewhere. Acceptance: `IdentityStackTest` lists the
   new URLs; `./mvnw clean verify` green; one Submit PR.
-- **DG-1i**: `web/diya-gl.co.uk/cloud-config.toml` with `[ci]` and `[prod]` (`apiBase`, `hostedUi`,
-  `clientId`); `scripts/build-cloud-config.mjs` writes `public/cloud-config.js` from
-  `ENVIRONMENT_NAME`, defaulting to ci like `build-donate-page.mjs`; the committed `cloud-config.js`
-  is deleted and gitignored; `deploy.yml` runs the build and, on ci, mints the test user through
-  `vars.SUBMIT_TEST_USER_ROLE_ARN_CI` (prod keeps the prod role). Acceptance: `diya-gl-cloud`
-  browser tests green (they pin the client id through `DIYA_GL_CLOUD_TEST_CLIENT_ID`); the ci
-  behaviour sign-in case green against Submit ci.
+- **DG-1i**: `deploy.yml`'s behaviour job passes `DIYA_GL_BASE_URL` (ci `https://ci.diya-gl.co.uk`,
+  prod `https://diya-gl.co.uk`) beside `SPREADSHEETS_BASE_URL`, minting the test user through the
+  prod role in `SUBMIT_TEST_USER_ROLE_ARN` as today; `cloud-config.js`'s header comment names the
+  two hosts and that both talk to Submit prod; `CLAUDE.md`'s variable table says the same.
+  Acceptance: the ci behaviour sign-in case green on `ci.diya-gl.co.uk` against Submit prod.
+- **DG-1l**: `git mv public/diya-gl.html web/diya-gl.co.uk/public/spec.html`;
+  `build-diya-gl-spec.js` `OUT_PATH` and `CANONICAL_URL` to the new file and
+  `https://diya-gl.co.uk/spec.html`; the links in `diya-gl/README.md` (line 66),
+  `build-reconciliation-pages.js` (line 973, now absolute) and `index.html` (line 300);
+  `sitemap-builder.js` lists it on the new site's sitemap and drops it from spreadsheets';
+  spreadsheets' `redirects.toml` gains `[[redirect]] from = "/diya-gl.html" to = "/spec.html"
+  target = "diya-gl"`; `sitemap-builder.test.js`, `diya-gl-spec-page.test.js`,
+  `licence-headers.test.js` and `LICENSING.md` follow the path. Acceptance: `npm test` green;
+  the spec page test reads the new path.
 - **DG-1b**: operator steps, printed by the coordinator when DG-1a and DG-1c are merged: run the
   root `deploy.yml`; `aws --profile management route53domains update-domain-nameservers
   --domain-name diya-gl.co.uk --nameservers Name=<ns1> ...` and the same for `diya-gl.com`, with the
   four names from the zone outputs; run `request-diya-gl-cert.yml`; set `DIYA_GL_CERTIFICATE_ARN`
-  (and `SUBMIT_TEST_USER_ROLE_ARN_CI` if decision 1 stands); add `diya-gl.co.uk` to the GA4 stream.
+  add `diya-gl.co.uk` to the GA4 property's web data stream and its referral exclusions.
 - **DG-1j**: operator check after the deploys: `https://diya-gl.co.uk/` opens the Ltd example at
   April 2025; `https://diya-gl.com/` and `https://www.diya-gl.co.uk/ltd.html` 301 to the apex;
-  `https://spreadsheets.diyaccounting.co.uk/diya-gl/bst.html` and `/books/bst.html` 301 to the new
-  host; sign-in round-trips on both hosts.
+  `https://spreadsheets.diyaccounting.co.uk/diya-gl/bst.html`, `/books/bst.html` and
+  `/diya-gl.html` 301 to the new host; sign-in round-trips on both hosts.
 - **DG-1k**: `buildBooksUrls` and `booksAllowedOrigins` lose the `spreadsheets.diyaccounting.co.uk`
   and `ci-spreadsheets` entries and the `/books/` prefix; `IdentityStackTest` follows.
 - **DG-2a**: design wave (Opus) over `diyaGlPut.js`, `diyaGlListGet.js`, `diyaGlVersionGet.js`,
   `s3DiyaGlRepository.js` and `diyaGlEntitlement.js` for the contract in Design (b) and (c): the
   sidecar fields, the `Tagging` on `putVersion` and `writeMetadata`, the re-tag on a retention
-  change, the list's top-level `entitlement` and its computed lapse expiry (grace from decision 2,
-  default 30 days), the get route's `404 book-expired`, `DIYA_GL_RESIDENT_TIER` replacing
+  change, the list's top-level `entitlement` and its computed lapse expiry (30 days after the
+  bundle's expiry), the get route's `404 book-expired`, `DIYA_GL_RESIDENT_TIER` replacing
   `DIYA_GL_ENTITLEMENT_ENFORCED` (`DiyaGlStack` gains `residentTierEnabled`, set in
   `SubmitApplication` to `!"prod".equals(envName)`), `s3:PutObjectTagging` on the put Lambda, and
   the tag-keyed lifecycle rule in `DataStack`. Then Sonnet builds it with the unit tests named in
@@ -384,10 +382,11 @@ no-account reader's durable path; it exists today.
   `resident-diya-gl` and `resident-ltd` on prod and ci. Acceptance: Submit's `npm test` green; one
   Submit PR.
 - **DG-3b**: `renderEntitlement` renders the offer, the subscribed card and the lapsed card from
-  the list's top-level `entitlement` and `residentTier`; the checkout return re-reads the list;
-  the browser spec covers the three states; the ci behaviour case runs the resident loop in Design
-  (c) with `fillAndSubmitStripeTestCard`'s pattern from Submit's behaviour steps. Acceptance:
-  `npm test` green; the behaviour case green on ci.
+  the list's top-level `entitlement`, only when `residentTier` is true; the checkout return
+  re-reads the list; the browser spec covers the three states and the flag off. Submit's
+  `diyaGlSubscription.behaviour.test.js` gains the two put assertions in Design (c): sandbox with
+  `expiresAt` before subscribing, resident with `expiresAt: null` after. Acceptance: `npm test`
+  green here; Submit's behaviour test green on ci; one Submit PR for its half.
 - **DG-3c**: a scheduled Lambda in `DiyaGlStack` (daily) queries the bundles table's
   `bundleId-expiry-index` for `resident-diya-gl` rows whose `expiry` is older than the grace,
   resolves each owner's prefix and deletes their `retention=resident` books; unit test with the
@@ -410,7 +409,8 @@ no-account reader's durable path; it exists today.
   taken (operator, 2026-09-04)", the task list and briefs LP-6, LP-9, LP-15 to LP-18, LP-21,
   "Donations: the sandbox and the events", "Where this changes the DIYA-GL Cloud plan".
 - This repo: `web/spreadsheets.diyaccounting.co.uk/public/download.html` (131-160),
-  `public/index.html` (300), `public/diya-gl.html` (627-630), `public/robots.txt`,
+  `public/index.html` (300), `public/diya-gl.html`, `public/robots.txt`, `app/bin/build-diya-gl-spec.js`
+  (37-39), `app/bin/build-reconciliation-pages.js` (973), `diya-gl/README.md` (66),
   `public/lib/analytics.js`; `public/diya-gl/` (`ltd.html`, `shell.js` 180-335, 1092-1120, 1255-1275,
   3060-3100; `cloud.js` 1-80, 203-235, 536-660, 1125-1165; `cloud-config.js`; `save.js`;
   `autosave.js`; `examples.js`; `data.js` 522-560; `pwa.js`; `sw.js`; `manifest.webmanifest`;

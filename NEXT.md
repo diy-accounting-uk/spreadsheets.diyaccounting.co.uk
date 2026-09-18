@@ -44,17 +44,18 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~4 files | Sonnet | — |
 | DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~6 files | Sonnet | — |
 | DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~10 files | Opus design, then Sonnet | — |
-| DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects and links | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~25 files | Sonnet | — |
+| DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects and links | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~24 files | Sonnet | — |
 | DG-1b | Operator: root deploy, registrar name servers, certificate workflow, variables, GA4 domain | PLAN_DIYA_GL_HOME.md | human-driven | DG-1a, DG-1c | blocked on DG-1a | ~0 files | operator | — |
-| DG-1i | `cloud-config.js` generated per environment; the ci behaviour job on Submit's ci role | PLAN_DIYA_GL_HOME.md | machine-ask | DG-1e, DG-1h | blocked on DG-1e | ~4 files | Sonnet | — |
+| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1h | blocked on DG-1e | ~3 files | Sonnet | — |
 | DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked on DG-2a | ~4 files | Sonnet | — |
-| DG-3b | The upgrade offer beside the sandbox label, the lapsed state, the ci resident behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1i | blocked on DG-2b | ~3 files | Sonnet | — |
-| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books | PLAN_DIYA_GL_HOME.md | machine-ask | DG-2a | blocked on DG-2a | ~4 files | Sonnet | — |
+| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked on DG-2b | ~3 files | Sonnet | — |
+| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked on DG-2a | ~4 files | Sonnet | — |
 | DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~8 files | Opus | — |
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked on DG-2b | ~3 files | Sonnet | — |
 | DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked on DG-1g | ~3 files | Sonnet | — |
+| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~11 files | Sonnet | — |
 | DG-1f | The browser and behaviour tests on the new site root | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~45 files | Haiku | — |
-| DG-1j | Operator: cut-over check on diya-gl.co.uk and the old links | PLAN_DIYA_GL_HOME.md | human-driven | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i | blocked on DG-1b | ~0 files | operator | — |
+| DG-1j | Operator: cut-over check on diya-gl.co.uk and the old links | PLAN_DIYA_GL_HOME.md | human-driven | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | blocked on DG-1b | ~0 files | operator | — |
 | DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked on DG-1j | ~2 files | Haiku | — |
 
 ## Plans not tracked here
