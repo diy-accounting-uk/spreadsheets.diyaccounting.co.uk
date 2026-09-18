@@ -8,13 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is `19f717c9` (PR #123 merged: the donate GA4 event, the Cognito smoke-test pin, the GA4 CSP
-hosts); prod serves it as last known good, and the publish job ran. main's test run 35324416277 is
-red on one flake: the Taxi layouts axe spec at mobile-landscape reported color-contrast while the
-month cards were still fading in. PR #124 (`claude/ops-axe-settle`, head `e19cd1457`) makes the
-BST, Taxi and Ltd layout specs settle animations before auditing, as the SE spec already does;
-its runs are in progress. Merge through `/auto-merge` when green. The session holding this file has
-`scripts/watch-ci.sh` armed as a Monitor over main and PR #124.
+`main` is green on `798c2f0c` (PR #123: the donate GA4 event, the Cognito smoke-test pin, the GA4 CSP
+hosts; PR #124: the BST, Taxi and Ltd axe specs settle animations before auditing). Prod serves
+`19f717c9` as last known good; `798c2f0c` changed only browser specs, which the deploy's path filter
+excludes. No branch but `main`; no watch monitor is armed.
 
 ## Context for the open rows
 
