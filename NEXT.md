@@ -50,22 +50,22 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects and links | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~24 files | Sonnet | — |
 | H-IN-1 | An OIDAR GST registration quote (registration, authorised representative, monthly GSTR-5A) from an Indian CA | PLAN_DIYA_GL_INDIA.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | H-IN-2 | Register `diya-gl.in`, `diyagl.in` and `diya-gl.co.in` in the management account through Route 53 | PLAN_DIYA_GL_INDIA.md | human-driven | — | ready-to-start | ~0 files | operator | — |
-| DG-1b | Operator: root deploy, registrar name servers, certificate workflow, variables, GA4 domain | PLAN_DIYA_GL_HOME.md | human-driven | DG-1a, DG-1c | blocked on DG-1a | ~0 files | operator | — |
-| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1h | blocked on DG-1e | ~3 files | Sonnet | — |
-| DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked on DG-2a | ~4 files | Sonnet | — |
-| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked on DG-2b | ~3 files | Sonnet | — |
-| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked on DG-2a | ~4 files | Sonnet | — |
-| DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~8 files | Opus | — |
-| DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked on DG-2b | ~3 files | Sonnet | — |
-| DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked on DG-1g | ~3 files | Sonnet | — |
-| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~11 files | Sonnet | — |
+| DG-1b | Operator: root deploy, registrar name servers, certificate workflow, variables, GA4 domain | PLAN_DIYA_GL_HOME.md | human-driven | DG-1a, DG-1c | blocked-to-start | ~0 files | operator | after DG-1a |
+| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1h | blocked-to-start | ~3 files | Sonnet | after DG-1e |
+| DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~4 files | Sonnet | after DG-2a |
+| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~3 files | Sonnet | after DG-2b |
+| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~4 files | Sonnet | after DG-2a |
+| DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~8 files | Opus | after DG-1e |
+| DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked-to-start | ~3 files | Sonnet | after DG-2b |
+| DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked-to-start | ~3 files | Sonnet | after DG-1g |
+| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~11 files | Sonnet | after DG-1e |
 | IN-3 | The formatting seam `app/lib/money-format.js` with a `uk` profile replacing the 32 `£` and 17 `en-GB` literals; report text byte-identical | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked-to-start | ~20 files | Sonnet | after IN-1 |
 | IN-6 | `defaultCurrency` honoured: the page formatter reads it; a shared book check warns when a line's `amountCurrency` differs | PLAN_DIYA_GL_INDIA.md | machine-only | IN-3 | blocked-to-start | ~5 files | Sonnet | after IN-3 |
 | IN-2 | Move `app/lib/tax/*.js` and `tax-year.js` to `app/lib/tax/uk/`; imports updated; parity gate green | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked-to-start | ~30 files | Sonnet | after IN-1 |
 | IN-5 | The UK parity proofs: a jurisdiction-absent test over every `examples/*` book against `examples/parity/*`; a test that `taxDataHash` ignores `app/data/in/` | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1, IN-2, IN-4 | blocked-to-start | ~3 files | Sonnet | after IN-2 |
-| DG-1f | The browser and behaviour tests on the new site root | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~45 files | Haiku | — |
-| DG-1j | Operator: cut-over check on diya-gl.co.uk and the old links | PLAN_DIYA_GL_HOME.md | human-driven | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | blocked on DG-1b | ~0 files | operator | — |
-| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked on DG-1j | ~2 files | Haiku | — |
+| DG-1f | The browser and behaviour tests on the new site root | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~45 files | Haiku | after DG-1e |
+| DG-1j | Operator: cut-over check on diya-gl.co.uk and the old links | PLAN_DIYA_GL_HOME.md | human-driven | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | blocked-to-start | ~0 files | operator | after DG-1b |
+| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked-to-start | ~2 files | Haiku | after DG-1j |
 
 ## Plans not tracked here
 
