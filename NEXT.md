@@ -8,9 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is green on `8fd0532e4` (test and codeql, 2026-09-18 11:51 UTC); the prod deploy of that head
-succeeded at 12:13 UTC. The three commits since are `NEXT.md` only, which the deploy's path filter
-excludes. No branch is ahead of `main`; no watch monitor is armed.
+`main` is `ef3c38ae8`; the last code head, `8fd0532e4`, is green (test and codeql) and its prod deploy
+succeeded at 12:13 UTC on 2026-09-18. Every commit since is Markdown only (`NEXT.md` and the two
+DIYA-GL plans), which the deploy's path filter excludes. No branch is ahead of `main`; no watch
+monitor is armed on this repository.
 
 ## Context for the open rows
 
@@ -58,10 +59,10 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked on DG-2b | ~3 files | Sonnet | — |
 | DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked on DG-1g | ~3 files | Sonnet | — |
 | DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~11 files | Sonnet | — |
-| IN-3 | The formatting seam `app/lib/money-format.js` with a `uk` profile replacing the 32 `£` and 17 `en-GB` literals; report text byte-identical | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked on IN-1 | ~20 files | Sonnet | — |
-| IN-6 | `defaultCurrency` honoured: the page formatter reads it; a shared book check warns when a line's `amountCurrency` differs | PLAN_DIYA_GL_INDIA.md | machine-only | IN-3 | blocked on IN-3 | ~5 files | Sonnet | — |
-| IN-2 | Move `app/lib/tax/*.js` and `tax-year.js` to `app/lib/tax/uk/`; imports updated; parity gate green | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked on IN-1 | ~30 files | Sonnet | — |
-| IN-5 | The UK parity proofs: a jurisdiction-absent test over every `examples/*` book against `examples/parity/*`; a test that `taxDataHash` ignores `app/data/in/` | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1, IN-2, IN-4 | blocked on IN-2 | ~3 files | Sonnet | — |
+| IN-3 | The formatting seam `app/lib/money-format.js` with a `uk` profile replacing the 32 `£` and 17 `en-GB` literals; report text byte-identical | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked-to-start | ~20 files | Sonnet | after IN-1 |
+| IN-6 | `defaultCurrency` honoured: the page formatter reads it; a shared book check warns when a line's `amountCurrency` differs | PLAN_DIYA_GL_INDIA.md | machine-only | IN-3 | blocked-to-start | ~5 files | Sonnet | after IN-3 |
+| IN-2 | Move `app/lib/tax/*.js` and `tax-year.js` to `app/lib/tax/uk/`; imports updated; parity gate green | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1 | blocked-to-start | ~30 files | Sonnet | after IN-1 |
+| IN-5 | The UK parity proofs: a jurisdiction-absent test over every `examples/*` book against `examples/parity/*`; a test that `taxDataHash` ignores `app/data/in/` | PLAN_DIYA_GL_INDIA.md | machine-only | IN-1, IN-2, IN-4 | blocked-to-start | ~3 files | Sonnet | after IN-2 |
 | DG-1f | The browser and behaviour tests on the new site root | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked on DG-1e | ~45 files | Haiku | — |
 | DG-1j | Operator: cut-over check on diya-gl.co.uk and the old links | PLAN_DIYA_GL_HOME.md | human-driven | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | blocked on DG-1b | ~0 files | operator | — |
 | DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked on DG-1j | ~2 files | Haiku | — |
