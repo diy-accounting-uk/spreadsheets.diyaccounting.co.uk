@@ -9,6 +9,23 @@ section. `PLAN_DIYA_GL_HOME.md` landed while this plan was being written; its th
 rows are the base the India tier builds on, and the pricing section below reads from it and
 from `PLAN_DIYA_GL_LAUNCH.md` §3 to §5.
 
+## Board
+
+Phase 1, the core/uk split, plus the two operator rows that gate nothing else. Same columns and
+rules as `NEXT.md`'s board; phase 2 and 3 rows (IN-7 onwards, H-IN-3 to H-IN-5) join it when
+phase 1 lands. `Source` here is this plan.
+
+| # | Item | Source | Needs | Precursors | State | Size | Model | Status |
+|---|---|---|---|---|---|---|---|---|
+| IN-4 | Additive schema fields: `documentInfo.diya-gl:jurisdiction`, the line `diya-gl:type` pattern, four Indian product enum values; every example's canonical text unchanged | this plan | machine-only | — | ready-to-start | ~4 files | Sonnet | — |
+| IN-1 | The jurisdiction registry `app/lib/jurisdictions.js`: `jurisdictionOf(book)` with absence meaning `uk`; `productOf` and `loadTaxDataForBook` resolve through it | this plan | machine-only | — | ready-to-start | ~5 files | Sonnet | — |
+| H-IN-1 | An OIDAR GST registration quote (registration, authorised representative, monthly GSTR-5A) from an Indian CA | this plan | human-driven | — | ready-to-start | ~0 files | operator | — |
+| H-IN-2 | Register `diya-gl.in`, `diyagl.in` and `diya-gl.co.in` in the management account through Route 53 | this plan | human-driven | — | ready-to-start | ~0 files | operator | — |
+| IN-3 | The formatting seam `app/lib/money-format.js` with a `uk` profile replacing the 32 `£` and 17 `en-GB` literals; report text byte-identical | this plan | machine-only | IN-1 | blocked-to-start | ~20 files | Sonnet | after IN-1 |
+| IN-6 | `defaultCurrency` honoured: the page formatter reads it; a shared book check warns when a line's `amountCurrency` differs | this plan | machine-only | IN-3 | blocked-to-start | ~5 files | Sonnet | after IN-3 |
+| IN-2 | Move `app/lib/tax/*.js` and `tax-year.js` to `app/lib/tax/uk/`; imports updated; parity gate green | this plan | machine-only | IN-1 | blocked-to-start | ~30 files | Sonnet | after IN-1 |
+| IN-5 | The UK parity proofs: a jurisdiction-absent test over every `examples/*` book against `examples/parity/*`; a test that `taxDataHash` ignores `app/data/in/` | this plan | machine-only | IN-1, IN-2, IN-4 | blocked-to-start | ~3 files | Sonnet | after IN-2 |
+
 ## User assertions (verbatim)
 
 (2026-09-18) "Also create a fable sub-agent to research support for the indian system including
