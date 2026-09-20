@@ -8,11 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #125 (DG-1c, DG-1d) landed on `main` as `a5f9cf9ac`; its prod deploy is running. Batch
-`claude/b20-board` (worktree `../.worktrees/spreadsheets/b20`) is PR #126 (RUM-1). DG-1a is
+PR #126 (RUM-1) merged; its prod deploy is running. PR #125 (DG-1c, DG-1d) is on prod. DG-1a is
 root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge commands
-handed to the operator; DG-1h landed as Submit `9d8027f7` (#307); DG-2a is Submit PR #308, rebased onto it and under CI. Watches are armed
-on all three repositories.
+handed to the operator. DG-1h landed as Submit `9d8027f7` (#307), whose prod deploy is in its
+destroy-previous tail; DG-2a is Submit PR #308, green on its rebased head, merging when that
+deploy is terminal. Watches are armed on all three repositories.
 
 ## Context for the open rows
 
@@ -43,7 +43,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | Submit PR #308; CI running |
-| RUM-1 | CloudWatch RUM on the spreadsheets site: app monitor, guest role, config deployment, `cwr` loader, CSP | PLAN_SPREADSHEETS_RUM.md | machine-only | — | in-flight | ~6 files | Sonnet | PR #126; placeholder fix pushed f704cdf73, CI running |
 | CSP-1 | `img-src` admits only `*.google.com` and `*.google.co.uk`, so GA audiences pixels from other Google ccTLDs (`google.no` seen locally) are blocked | none | machine-only | — | ready-to-start | ~2 files | Sonnet | evidence in b20's local SE browser run, 2026-09-20 |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~5 files | Sonnet | after DG-2a |
