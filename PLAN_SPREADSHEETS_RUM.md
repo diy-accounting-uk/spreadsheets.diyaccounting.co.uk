@@ -50,3 +50,31 @@ Submit's operations dashboard has a page-experience panel that reads `AWS/RUM` b
 | # | Task | Precursors | Model | Files |
 | --- | --- | --- | --- | --- |
 | RUM-1 | The app monitor, identity pool, guest role and config deployment in `SpreadsheetsStack`; the `cwr` loader in `analytics.js`; the CSP hosts; the stack test | — | Sonnet | `infra/main/java/co/uk/diyaccounting/spreadsheets/stacks/SpreadsheetsStack.java`, `infra/main/resources/security-headers.json`, `infra/test/java/co/uk/diyaccounting/spreadsheets/stacks/SpreadsheetsStackTest.java` (new), `web/spreadsheets.diyaccounting.co.uk/public/lib/analytics.js`, `web/spreadsheets.diyaccounting.co.uk/public/lib/consent-banner.js`, a `web/unit-tests` case (~6 files) |
+
+## Cross-account metrics link (OAM)
+
+### Request (verbatim, from the submit session's inbox message, 2026-09-20T22:54:38Z)
+
+> Add an AWS::Oam::Link (CDK CfnLink) in us-east-1 in SpreadsheetsStack.java: ResourceTypes ["AWS::CloudWatch::Metric"], LabelTemplate "$AccountName", SinkIdentifier = the sink ARN submit's ObservabilityUE1Stack now creates. That sink is a CloudFormation output named "SpreadsheetsMetricsSinkArn" on stack prod-env-ObservabilityUE1Stack (account 972912397388, region us-east-1) and ci-env-ObservabilityUE1Stack (account 367191799875, region us-east-1) — not the eu-west-2 ObservabilityStack, since a cross-account CloudWatch alarm has to live in the metric's own Region. Until submit deploys, the ARN has the shape arn:aws:oam:us-east-1:972912397388:sink/<uuid> (or the 367191799875 equivalent for ci); the coordinator will send the real ARNs in a follow-up message, or read them now with:
+> aws --profile submit-prod cloudformation describe-stacks --region us-east-1 --stack-name prod-env-ObservabilityUE1Stack --query "Stacks[0].Outputs"
+> aws --profile submit-ci cloudformation describe-stacks --region us-east-1 --stack-name ci-env-ObservabilityUE1Stack --query "Stacks[0].Outputs"
+> Nothing else needs to change on the spreadsheets side.
+
+### Design
+
+- The sink ARNs are per environment and not secret, so they live in `cdk-spreadsheets/cdk.json`
+  as `ciMetricsSinkArn` and `prodMetricsSinkArn` (env overrides `CI_METRICS_SINK_ARN`,
+  `PROD_METRICS_SINK_ARN` through `envOr`), selected by `envName` in `SpreadsheetsEnvironment`
+  and passed to `SpreadsheetsStack` as `metricsSinkArn`. The stack creates the `CfnLink` only when
+  the ARN is non-blank, as it gates the redirect function on its file. At 23:20 UTC on 2026-09-20
+  neither `ObservabilityUE1Stack` carried the `SpreadsheetsMetricsSinkArn` output yet, so both keys
+  land blank and a one-line commit fills them when Submit's deploy writes the output.
+- `SpreadsheetsStackTest`: a synth with a sink ARN carries one `AWS::Oam::Link` with the three
+  properties; a synth without carries none.
+
+### Task list
+
+| # | Task | Precursors | Model | Files |
+| --- | --- | --- | --- | --- |
+| OAM-1 | `CfnLink` in `SpreadsheetsStack` gated on `metricsSinkArn`; the two context keys; the test | — | Sonnet | `SpreadsheetsStack.java`, `SpreadsheetsEnvironment.java`, `cdk-spreadsheets/cdk.json`, `SpreadsheetsStackTest.java` (~4 files) |
+| OAM-2 | Fill `ciMetricsSinkArn` and `prodMetricsSinkArn` from the `SpreadsheetsMetricsSinkArn` outputs | OAM-1, Submit's ObservabilityUE1 deploy | Haiku | `cdk-spreadsheets/cdk.json` (~1 file) |
