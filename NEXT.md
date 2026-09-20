@@ -53,6 +53,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~11 files | Opus | after DG-1e |
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked-to-start | ~3 files | Sonnet | after DG-2b |
 | DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked-to-start | ~4 files | Sonnet | after DG-1g |
+| DG-6 | The `sandbox_expired_seen` event when a signed-in reader's list comes back shorter | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~3 files | Sonnet | after DG-2b |
 | DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~18 files | Sonnet | after DG-1e |
 | DG-1f | The browser and behaviour tests on the new site root | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1d | blocked-to-start | ~45 files | Haiku | after DG-1e |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1f, DG-1h | blocked-to-start | ~3 files | Haiku | after DG-1e |
