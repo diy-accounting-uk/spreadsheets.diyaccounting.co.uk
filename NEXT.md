@@ -45,6 +45,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~7 files | Sonnet | claude/b19-board, PR #125; CI running |
 | DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | Submit PR #308; CI running |
+| RUM-1 | CloudWatch RUM on the spreadsheets site: app monitor, guest role, config deployment, `cwr` loader, CSP | PLAN_SPREADSHEETS_RUM.md | machine-only | — | in-flight | ~6 files | Sonnet | agent on claude/rum-1-app-monitor, .worktrees/spreadsheets/rum-1; batch claude/b20-board |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~5 files | Sonnet | after DG-2a |
 | DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects, links and the path constants | PLAN_DIYA_GL_HOME.md | machine-only | DG-1d | blocked-to-start | ~40 files | Sonnet | after DG-1d |
