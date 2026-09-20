@@ -8,10 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 1 of batch `claude/b19-board` (worktree `../.worktrees/spreadsheets/b19`) is on PR #125
-(DG-1c, DG-1d). DG-1a is root PR #33 (`claude/dns-diya-gl`), every merge gate green, the merge
-command handed to the operator. DG-3a, DG-1h and DG-2a are Submit PRs #306, #307 and #308. Watches
-are armed on all three repositories. The last code head on `main`, `1ab04c392`, is on prod.
+PR #125 (DG-1c, DG-1d) landed on `main` as `a5f9cf9ac`; its prod deploy is running. Batch
+`claude/b20-board` (worktree `../.worktrees/spreadsheets/b20`) carries RUM-1's agent. DG-1a is
+root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge commands
+handed to the operator; DG-1h and DG-2a are Submit PRs #307 and #308 under CI. Watches are armed
+on all three repositories.
 
 ## Context for the open rows
 
@@ -39,11 +40,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1c | The certificate request workflow for the diya-gl hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Haiku | claude/b19-board, PR #125; CI running |
 | DG-1h | Submit: the DIYA-GL app client's callback URLs and allowed origins for the new hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | Submit PR #307; CI running |
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
-| DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~7 files | Sonnet | claude/b19-board, PR #125; CI running |
 | DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | Submit PR #308; CI running |
 | RUM-1 | CloudWatch RUM on the spreadsheets site: app monitor, guest role, config deployment, `cwr` loader, CSP | PLAN_SPREADSHEETS_RUM.md | machine-only | — | in-flight | ~6 files | Sonnet | agent on claude/rum-1-app-monitor, .worktrees/spreadsheets/rum-1; batch claude/b20-board |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
