@@ -8,11 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 1 of batch `claude/b19-board` (worktree `../.worktrees/spreadsheets/b19`, forked from
-`503c68e3d`), dispatched 2026-09-20 18:20 UTC: DG-1c and DG-1d on the batch here; DG-1a on
-`claude/dns-diya-gl` in the root repository; DG-1h, DG-3a and DG-2a each on their own Submit
-branch, one Submit PR per row. The last code head, `1ab04c392`, is green and on prod (deploy
-12:27 UTC 2026-09-20). No PR is open yet; no watch monitor is armed.
+Wave 1 of batch `claude/b19-board` (worktree `../.worktrees/spreadsheets/b19`) is on PR #125
+(DG-1c, DG-1d). DG-1a is root PR #33 (`claude/dns-diya-gl`), every merge gate green, the merge
+command handed to the operator. DG-3a, DG-1h and DG-2a are Submit PRs #306, #307 and #308. Watches
+are armed on all three repositories. The last code head on `main`, `1ab04c392`, is on prod.
 
 ## Context for the open rows
 
@@ -40,12 +39,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1c | The certificate request workflow for the diya-gl hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Haiku | agent on claude/dg-1c-cert, .worktrees/spreadsheets/dg-1c; batch claude/b19-board |
-| DG-1h | Submit: the DIYA-GL app client's callback URLs and allowed origins for the new hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | agent on claude/dg-1h-callbacks, .worktrees/submit/dg-1h |
-| DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | agent on claude/dg-3a-bundle-listed, .worktrees/submit/dg-3a |
-| DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | agent on claude/dns-diya-gl, .worktrees/root/dg-1a |
-| DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~7 files | Sonnet | agent on claude/dg-1d-site-stack, .worktrees/spreadsheets/dg-1d; batch claude/b19-board |
-| DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | agent on claude/dg-2a-retention, .worktrees/submit/dg-2a |
+| DG-1c | The certificate request workflow for the diya-gl hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Haiku | claude/b19-board, PR #125; CI running |
+| DG-1h | Submit: the DIYA-GL app client's callback URLs and allowed origins for the new hosts | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | Submit PR #307; CI running |
+| DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
+| DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
+| DG-1d | `DiyaGlSiteStack`: bucket, distribution, headers, redirect function, deploy step | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~7 files | Sonnet | claude/b19-board, PR #125; CI running |
+| DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | Submit PR #308; CI running |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~5 files | Sonnet | after DG-2a |
 | DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects, links and the path constants | PLAN_DIYA_GL_HOME.md | machine-only | DG-1d | blocked-to-start | ~40 files | Sonnet | after DG-1d |
