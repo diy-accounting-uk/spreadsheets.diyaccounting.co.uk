@@ -8,10 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is `ef3c38ae8`; the last code head, `8fd0532e4`, is green (test and codeql) and its prod deploy
-succeeded at 12:13 UTC on 2026-09-18. Every commit since is Markdown only (`NEXT.md` and the two
-DIYA-GL plans), which the deploy's path filter excludes. No branch is ahead of `main`; no watch
-monitor is armed on this repository.
+`main` is `1ab04c392`, the scheduled dependency bump (`package.json`, `package-lock.json`,
+`pom.xml`); test and codeql are green on it and its prod deploy succeeded at 12:27 UTC on
+2026-09-20. No branch is ahead of `main`; no open PR; no worktree; no watch monitor is armed on
+this repository.
 
 ## Context for the open rows
 
