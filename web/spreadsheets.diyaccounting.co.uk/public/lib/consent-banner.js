@@ -47,6 +47,7 @@ function showConsentBannerIfNeeded() {
     }
     document.body.removeChild(banner);
     updateAnalyticsConsent(true);
+    if (typeof window.initRum === "function") window.initRum();
   };
   document.getElementById("consent-decline").onclick = () => {
     try {

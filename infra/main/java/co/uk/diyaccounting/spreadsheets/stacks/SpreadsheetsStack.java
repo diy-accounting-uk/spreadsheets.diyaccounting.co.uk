@@ -57,7 +57,11 @@ import software.amazon.awscdk.services.cloudfront.Signing;
 import software.amazon.awscdk.services.cloudfront.ViewerProtocolPolicy;
 import software.amazon.awscdk.services.cloudfront.origins.S3BucketOrigin;
 import software.amazon.awscdk.services.cloudfront.origins.S3BucketOriginWithOACProps;
+import software.amazon.awscdk.services.cognito.CfnIdentityPool;
+import software.amazon.awscdk.services.cognito.CfnIdentityPoolRoleAttachment;
+import software.amazon.awscdk.services.iam.FederatedPrincipal;
 import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.logs.CfnDelivery;
 import software.amazon.awscdk.services.logs.CfnDeliveryDestination;
@@ -66,6 +70,7 @@ import software.amazon.awscdk.services.logs.CfnDeliveryProps;
 import software.amazon.awscdk.services.logs.CfnDeliverySource;
 import software.amazon.awscdk.services.logs.CfnDeliverySourceProps;
 import software.amazon.awscdk.services.logs.ILogGroup;
+import software.amazon.awscdk.services.rum.CfnAppMonitor;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketEncryption;
@@ -352,8 +357,11 @@ public class SpreadsheetsStack extends Stack {
         var webDocRootSource = Source.asset(
                 publicDir.toString(),
                 AssetOptions.builder().assetHashType(AssetHashType.SOURCE).build());
+        // The committed lib/rum-config.js is the local placeholder; the bucket's copy is written
+        // by the RUM deployment below and must not be overwritten by a later doc-root sync.
         this.webDeployment = BucketDeployment.Builder.create(this, resourcePrefix + "-DeployWebContent")
                 .sources(List.of(webDocRootSource))
+                .exclude(List.of("lib/rum-config.js"))
                 .destinationBucket(this.originBucket)
                 .distribution(distribution)
                 .distributionPaths(List.of(
@@ -383,6 +391,64 @@ public class SpreadsheetsStack extends Stack {
                 .memoryLimit(1024)
                 .ephemeralStorageSize(Size.gibibytes(2))
                 .build();
+
+        // CloudWatch RUM: an app monitor fed by an unauthenticated Cognito identity so the
+        // browser can call PutRumEvents directly, and a config file written by its own
+        // BucketDeployment so no page in the doc root needs editing.
+        CfnIdentityPool rumIdentityPool = CfnIdentityPool.Builder.create(this, resourcePrefix + "-RumIdentityPool")
+                .allowUnauthenticatedIdentities(true)
+                .build();
+
+        Role rumGuestRole = Role.Builder.create(this, resourcePrefix + "-RumGuestRole")
+                .assumedBy(new FederatedPrincipal(
+                        "cognito-identity.amazonaws.com",
+                        Map.of(
+                                "StringEquals", Map.of("cognito-identity.amazonaws.com:aud", rumIdentityPool.getRef()),
+                                "ForAnyValue:StringLike",
+                                        Map.of("cognito-identity.amazonaws.com:amr", "unauthenticated")),
+                        "sts:AssumeRoleWithWebIdentity"))
+                .build();
+        rumGuestRole.addToPolicy(PolicyStatement.Builder.create()
+                .actions(List.of("rum:PutRumEvents"))
+                .resources(List.of("*"))
+                .build());
+
+        CfnIdentityPoolRoleAttachment.Builder.create(this, resourcePrefix + "-RumIdentityPoolRole")
+                .identityPoolId(rumIdentityPool.getRef())
+                .roles(Map.of("unauthenticated", rumGuestRole.getRoleArn()))
+                .build();
+
+        String rumMonitorName = "prod".equals(props.envName()) ? "spreadsheets-web" : "ci-spreadsheets-web";
+        CfnAppMonitor rumMonitor = CfnAppMonitor.Builder.create(this, resourcePrefix + "-RumAppMonitor")
+                .name(rumMonitorName)
+                .domainList(props.domainNames())
+                .appMonitorConfiguration(CfnAppMonitor.AppMonitorConfigurationProperty.builder()
+                        .sessionSampleRate(1.0)
+                        .allowCookies(true)
+                        .enableXRay(true)
+                        .guestRoleArn(rumGuestRole.getRoleArn())
+                        .identityPoolId(rumIdentityPool.getRef())
+                        .telemetries(List.of("performance", "errors", "http"))
+                        .build())
+                .build();
+
+        // CDK resolves the string tokens (monitor id, pool ref, role ARN) inside Source.data
+        // at deploy time, so the written file carries the real values, not placeholders.
+        String rumConfigScript = "window.__RUM_CONFIG__ = {\"appMonitorId\":\"" + rumMonitor.getAttrId()
+                + "\",\"identityPoolId\":\"" + rumIdentityPool.getRef() + "\",\"guestRoleArn\":\""
+                + rumGuestRole.getRoleArn() + "\",\"region\":\"us-east-1\",\"sessionSampleRate\":1};";
+        BucketDeployment rumConfigDeployment = BucketDeployment.Builder.create(
+                        this, resourcePrefix + "-DeployRumConfig")
+                .sources(List.of(Source.data("lib/rum-config.js", rumConfigScript)))
+                .destinationBucket(this.originBucket)
+                .distribution(distribution)
+                .distributionPaths(List.of("/lib/rum-config.js"))
+                .retainOnDelete(true)
+                .prune(false)
+                .memoryLimit(1024)
+                .ephemeralStorageSize(Size.gibibytes(2))
+                .build();
+        rumConfigDeployment.getNode().addDependency(this.webDeployment);
 
         // Outputs
         cfnOutput(this, "DistributionDomainName", this.distribution.getDomainName());
