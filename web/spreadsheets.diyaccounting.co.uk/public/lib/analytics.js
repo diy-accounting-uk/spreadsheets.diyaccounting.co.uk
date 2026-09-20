@@ -26,9 +26,9 @@ script.async = true;
 script.src = "https://www.googletagmanager.com/gtag/js?id=G-X4ZPD99X2K";
 document.head.appendChild(script);
 
-// CloudWatch RUM. SpreadsheetsStack writes /lib/rum-config.js at deploy time with the
-// app monitor id, identity pool and guest role; the local server and the browser tests
-// have no such file, so a failed load is silent and initRum() returns.
+// CloudWatch RUM. SpreadsheetsStack overwrites /lib/rum-config.js at deploy time with the
+// app monitor id, identity pool and guest role; the committed copy sets no config, so
+// initRum() returns on a local server and in the browser tests.
 function hasAnalyticsConsent() {
   try {
     return localStorage.getItem("consent.analytics") === "granted";
@@ -76,5 +76,4 @@ const rumConfigScript = document.createElement("script");
 rumConfigScript.async = true;
 rumConfigScript.src = "/lib/rum-config.js";
 rumConfigScript.onload = initRum;
-rumConfigScript.onerror = () => {};
 document.head.appendChild(rumConfigScript);

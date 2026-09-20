@@ -357,8 +357,11 @@ public class SpreadsheetsStack extends Stack {
         var webDocRootSource = Source.asset(
                 publicDir.toString(),
                 AssetOptions.builder().assetHashType(AssetHashType.SOURCE).build());
+        // The committed lib/rum-config.js is the local placeholder; the bucket's copy is written
+        // by the RUM deployment below and must not be overwritten by a later doc-root sync.
         this.webDeployment = BucketDeployment.Builder.create(this, resourcePrefix + "-DeployWebContent")
                 .sources(List.of(webDocRootSource))
+                .exclude(List.of("lib/rum-config.js"))
                 .destinationBucket(this.originBucket)
                 .distribution(distribution)
                 .distributionPaths(List.of(

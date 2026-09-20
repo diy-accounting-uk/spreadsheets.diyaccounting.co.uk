@@ -121,4 +121,16 @@ class SpreadsheetsStackTest {
 
         assertTrue(contentSecurityPolicy.contains("dataplane.rum.us-east-1.amazonaws.com"));
     }
+
+    @Test
+    void docRootSyncLeavesTheRumConfigToTheRumDeployment(@TempDir Path tempDir) throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+        Template template = synth("ci", publicDir, CI_DOMAIN_NAMES);
+
+        template.hasResourceProperties(
+                "Custom::CDKBucketDeployment", Match.objectLike(Map.of("Exclude", List.of("lib/rum-config.js"))));
+        template.hasResourceProperties(
+                "Custom::CDKBucketDeployment",
+                Match.objectLike(Map.of("DistributionPaths", List.of("/lib/rum-config.js"))));
+    }
 }
