@@ -31,6 +31,10 @@ class SpreadsheetsStackTest {
     }
 
     private static Template synth(String envName, Path publicDir, List<String> domainNames) {
+        return synth(envName, publicDir, domainNames, "");
+    }
+
+    private static Template synth(String envName, Path publicDir, List<String> domainNames, String metricsSinkArn) {
         App app = new App();
         SpreadsheetsStack stack = new SpreadsheetsStack(
                 app,
@@ -44,6 +48,7 @@ class SpreadsheetsStackTest {
                         .certificateArn("arn:aws:acm:us-east-1:064390746177:certificate/placeholder")
                         .docRootPath(publicDir.toString())
                         .domainNames(domainNames)
+                        .metricsSinkArn(metricsSinkArn)
                         .build());
         return Template.fromStack(stack);
     }
@@ -132,5 +137,31 @@ class SpreadsheetsStackTest {
         template.hasResourceProperties(
                 "Custom::CDKBucketDeployment",
                 Match.objectLike(Map.of("DistributionPaths", List.of("/lib/rum-config.js"))));
+    }
+
+    @Test
+    void metricsLinkIsCreatedWhenSinkArnIsConfigured(@TempDir Path tempDir) throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+        String sinkArn = "arn:aws:oam:us-east-1:972912397388:sink/00000000-0000-0000-0000-000000000000";
+        Template template = synth("ci", publicDir, CI_DOMAIN_NAMES, sinkArn);
+
+        template.resourceCountIs("AWS::Oam::Link", 1);
+        template.hasResourceProperties(
+                "AWS::Oam::Link",
+                Match.objectLike(Map.of(
+                        "ResourceTypes",
+                        List.of("AWS::CloudWatch::Metric"),
+                        "LabelTemplate",
+                        "$AccountName",
+                        "SinkIdentifier",
+                        sinkArn)));
+    }
+
+    @Test
+    void metricsLinkIsSkippedWhenSinkArnIsBlank(@TempDir Path tempDir) throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+        Template template = synth("ci", publicDir, CI_DOMAIN_NAMES);
+
+        template.resourceCountIs("AWS::Oam::Link", 0);
     }
 }
