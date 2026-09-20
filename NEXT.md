@@ -10,9 +10,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 PR #126 (RUM-1) merged; its prod deploy is running. PR #125 (DG-1c, DG-1d) is on prod. DG-1a is
 root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge commands
-handed to the operator. DG-1h landed as Submit `9d8027f7` (#307), whose prod deploy is in its
-destroy-previous tail; DG-2a is Submit PR #308, green on its rebased head, merging when that
-deploy is terminal. Watches are armed on all three repositories.
+handed to the operator. DG-1h and DG-2a landed in Submit as `9d8027f7` (#307) and `93af1289` (#308); #308's prod
+deploy is running. Watches are armed on all three repositories.
 
 ## Context for the open rows
 
@@ -42,10 +41,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 |---|---|---|---|---|---|---|---|---|
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
-| DG-2a | Submit: retention in the storage routes (24h sandbox, resident), tags, lifecycle rule, tier switch | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~17 files | Sonnet | Submit PR #308; CI running |
 | CSP-1 | `img-src` admits only `*.google.com` and `*.google.co.uk`, so GA audiences pixels from other Google ccTLDs (`google.no` seen locally) are blocked | none | machine-only | — | ready-to-start | ~2 files | Sonnet | evidence in b20's local SE browser run, 2026-09-20 |
+| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~5 files | Sonnet | DG-2a landed in Submit as 93af1289 |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
-| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a | blocked-to-start | ~5 files | Sonnet | after DG-2a |
 | DG-1e | Move the DIYA-GL pages to `web/diya-gl.co.uk/public`; re-home builds, redirects, links and the path constants | PLAN_DIYA_GL_HOME.md | machine-only | DG-1d | blocked-to-start | ~40 files | Sonnet | after DG-1d |
 | DG-1b | Cut-over runbook: root deploy, name servers, certificate, variable, site stacks, second root deploy | PLAN_DIYA_GL_HOME.md | machine-ask | DG-1a, DG-1c, DG-1d, DG-1e | blocked-to-start | ~0 files | Sonnet | after DG-1e; operator says go on each write |
 | DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a, DG-1e | blocked-to-start | ~4 files | Sonnet | after DG-2a |
