@@ -12,6 +12,9 @@
     "prodFQDomainName": "spreadsheets.diyaccounting.co.uk",
     "holdingCertificateArn": "",
     "holdingDocRootPath": "../web/spreadsheets.diyaccounting.co.uk/holding",
-    "holdingDomainName": ""
+    "holdingDomainName": "",
+    "diyaGlCertificateArn": "",
+    "diyaGlDocRootPath": "../web/diya-gl.co.uk/public",
+    "diyaGlDomainNames": ""
   }
 }

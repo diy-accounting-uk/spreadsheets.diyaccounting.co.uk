@@ -6,6 +6,7 @@ package co.uk.diyaccounting.spreadsheets;
 import static co.uk.diyaccounting.spreadsheets.utils.Kind.envOr;
 import static co.uk.diyaccounting.spreadsheets.utils.Kind.infof;
 
+import co.uk.diyaccounting.spreadsheets.stacks.DiyaGlSiteStack;
 import co.uk.diyaccounting.spreadsheets.stacks.HoldingStack;
 import co.uk.diyaccounting.spreadsheets.stacks.SpreadsheetsStack;
 import co.uk.diyaccounting.spreadsheets.utils.KindCdk;
@@ -25,6 +26,7 @@ public class SpreadsheetsEnvironment {
 
     public final SpreadsheetsStack spreadsheetsStack;
     public final HoldingStack holdingStack;
+    public final DiyaGlSiteStack diyaGlSiteStack;
 
     public static void main(final String[] args) {
         App app = new App();
@@ -63,6 +65,23 @@ public class SpreadsheetsEnvironment {
                     : envName + "-holding.spreadsheets.diyaccounting.co.uk";
         }
 
+        var diyaGlCertificateArn =
+                envOr("DIYA_GL_CERTIFICATE_ARN", KindCdk.getContextValueString(app, "diyaGlCertificateArn", ""));
+        var diyaGlDocRootPath = envOr(
+                "DIYA_GL_DOC_ROOT_PATH",
+                KindCdk.getContextValueString(app, "diyaGlDocRootPath", "../web/diya-gl.co.uk/public"));
+        var diyaGlDomainNamesStr =
+                envOr("DIYA_GL_DOMAIN_NAMES", KindCdk.getContextValueString(app, "diyaGlDomainNames", ""));
+
+        List<String> diyaGlDomainNames;
+        if (!diyaGlDomainNamesStr.isBlank()) {
+            diyaGlDomainNames = List.of(diyaGlDomainNamesStr.split(","));
+        } else if ("prod".equals(envName)) {
+            diyaGlDomainNames = List.of("diya-gl.co.uk", "www.diya-gl.co.uk", "diya-gl.com", "www.diya-gl.com");
+        } else {
+            diyaGlDomainNames = List.of("ci.diya-gl.co.uk", "ci.diya-gl.com");
+        }
+
         var spreadsheets = new SpreadsheetsEnvironment(
                 app,
                 envName,
@@ -71,7 +90,10 @@ public class SpreadsheetsEnvironment {
                 domainNames,
                 holdingCertificateArn,
                 holdingDocRootPath,
-                holdingDomainName);
+                holdingDomainName,
+                diyaGlCertificateArn,
+                diyaGlDocRootPath,
+                diyaGlDomainNames);
         app.synth();
         infof("CDK synth complete for spreadsheets environment");
     }
@@ -84,7 +106,10 @@ public class SpreadsheetsEnvironment {
             List<String> domainNames,
             String holdingCertificateArn,
             String holdingDocRootPath,
-            String holdingDomainName) {
+            String holdingDomainName,
+            String diyaGlCertificateArn,
+            String diyaGlDocRootPath,
+            List<String> diyaGlDomainNames) {
         // CloudFront requires us-east-1 for certificates
         Environment usEast1Env = Environment.builder()
                 .region("us-east-1")
@@ -125,6 +150,28 @@ public class SpreadsheetsEnvironment {
         } else {
             infof("holdingCertificateArn is blank, skipping HoldingStack for environment %s", envName);
             this.holdingStack = null;
+        }
+
+        // Skipped rather than synthesized with an invalid certificate until diya-gl.co.uk's
+        // certificate exists: request-diya-gl-cert.yml issues it once, ahead of this stack's
+        // first deploy, and until then Distribution.Builder rejects a blank certificate ARN.
+        if (!diyaGlCertificateArn.isBlank()) {
+            String diyaGlSiteStackId = envName + "-spreadsheets-DiyaGlSiteStack";
+            infof("Synthesizing stack %s for environment %s", diyaGlSiteStackId, envName);
+
+            this.diyaGlSiteStack = new DiyaGlSiteStack(
+                    app,
+                    diyaGlSiteStackId,
+                    DiyaGlSiteStack.DiyaGlSiteStackProps.builder()
+                            .env(usEast1Env)
+                            .envName(envName)
+                            .certificateArn(diyaGlCertificateArn)
+                            .docRootPath(diyaGlDocRootPath)
+                            .domainNames(diyaGlDomainNames)
+                            .build());
+        } else {
+            infof("diyaGlCertificateArn is blank, skipping DiyaGlSiteStack for environment %s", envName);
+            this.diyaGlSiteStack = null;
         }
     }
 }

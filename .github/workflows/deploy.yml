@@ -21,6 +21,7 @@ on:
     paths:
       - 'infra/main/**'
       - 'web/spreadsheets.diyaccounting.co.uk/**'
+      - 'web/diya-gl.co.uk/**'
       # The smoke test runs these against the deployed site, so a change to a
       # case has to reach the run that exercises it.
       - 'behaviour-tests/**'
@@ -330,6 +331,26 @@ jobs:
           HOLDING_CERTIFICATE_ARN: ${{ vars.SPREADSHEETS_HOLDING_CERTIFICATE_ARN }}
           HOLDING_DOC_ROOT_PATH: '../web/spreadsheets.diyaccounting.co.uk/holding'
 
+      - name: Deploy DiyaGlSiteStack (CDK)
+        if: ${{ vars.DIYA_GL_CERTIFICATE_ARN != '' }}
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-DiyaGlSiteStack"
+          echo "Deploying stack: $STACK_NAME"
+          cd cdk-spreadsheets \
+            && npx cdk deploy \
+              "$STACK_NAME" \
+              --require-approval never \
+              --ci true \
+              --no-notices \
+              --concurrency 4 \
+              --asset-parallelism \
+              --outputs-file ../cdk-spreadsheets.out/cdk-outputs-diya-gl.json \
+          ;
+        env:
+          ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+          DIYA_GL_CERTIFICATE_ARN: ${{ vars.DIYA_GL_CERTIFICATE_ARN }}
+          DIYA_GL_DOC_ROOT_PATH: '../web/diya-gl.co.uk/public'
+
       - name: Upload zip packages to S3
         run: |
           STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-SpreadsheetsStack"
@@ -344,11 +365,24 @@ jobs:
           echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
           aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
 
+      - name: Upload offline runners to the diya-gl site
+        if: ${{ vars.DIYA_GL_CERTIFICATE_ARN != '' }}
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-DiyaGlSiteStack"
+          BUCKET_NAME=$(jq -r ".\"${STACK_NAME}\".OriginBucketName" cdk-spreadsheets.out/cdk-outputs-diya-gl.json)
+          echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
+          aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
+
       - name: Show stack outputs
         run: |
           echo "=== Spreadsheets Stack Outputs ==="
           cat cdk-spreadsheets.out/cdk-outputs-spreadsheets.json | jq '.'
           echo ""
+          if [ -f cdk-spreadsheets.out/cdk-outputs-diya-gl.json ]; then
+            echo "=== DiyaGlSiteStack Outputs ==="
+            cat cdk-spreadsheets.out/cdk-outputs-diya-gl.json | jq '.'
+            echo ""
+          fi
           echo ">>> Copy the CloudFrontDomainName value above and use it as input to root.diyaccounting.co.uk deploy.yml <<<"
 
   test-spreadsheets:
