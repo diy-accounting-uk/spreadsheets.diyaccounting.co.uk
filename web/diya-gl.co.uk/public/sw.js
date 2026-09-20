@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// diya-gl/sw.js -- the DIYA-GL pages' service worker, scoped to /diya-gl/.
+// sw.js -- the DIYA-GL pages' service worker, scoped to the whole site.
 //
 // Precaches the shell scripts and stylesheets, the engine bundle, the two
 // published schemas, and the tax year, form-layout and example-book data
@@ -22,7 +22,7 @@ importScripts("./build-stamp.js");
 const CACHE_PREFIX = "diya-gl-";
 const CACHE_NAME = CACHE_PREFIX + self.DIYA_GL_BUILD_STAMP;
 const PRECACHE_URLS = self.DIYA_GL_PRECACHE_URLS;
-const SCOPE_PATH = "/diya-gl/";
+const SCOPE_PATH = "/";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -68,7 +68,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (!url.pathname.startsWith(SCOPE_PATH) && !url.pathname.startsWith("/schema/")) return;
+  if (!url.pathname.startsWith(SCOPE_PATH)) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(request));

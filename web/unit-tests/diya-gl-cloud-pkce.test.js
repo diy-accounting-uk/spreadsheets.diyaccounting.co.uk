@@ -11,8 +11,8 @@ import { webcrypto } from "node:crypto";
 // import/export) loaded via <script src> on the four books pages, so each
 // publishes its result on window. Run them in a sandbox the same way a
 // browser would, providing only the globals a browser actually carries.
-const CONFIG_SRC = readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/diya-gl/cloud-config.js"), "utf8");
-const CLOUD_SRC = readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/diya-gl/cloud.js"), "utf8");
+const CONFIG_SRC = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/cloud-config.js"), "utf8");
+const CLOUD_SRC = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/cloud.js"), "utf8");
 
 function runCloudConfig(hostname) {
   const sandbox = {

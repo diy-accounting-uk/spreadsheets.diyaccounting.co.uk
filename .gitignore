@@ -39,17 +39,27 @@ web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
-# Generated donate page and DIYA-GL donation config (built per environment
-# from donate.template.html and donate-links.toml by
-# scripts/build-donate-page.mjs)
+# Generated donate page (built per environment from donate.template.html
+# and donate-links.toml by scripts/build-donate-page.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/donate.html
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl/donate-config.js
 
-# Books engine bundle, examples, and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl/engine/
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl/assets/
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl/examples.js
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl/build-stamp.js
+# Files scripts/build-diya-gl-bundle.mjs and scripts/build-donate-page.mjs
+# copy or generate into the diya-gl.co.uk site root: the DIYA-GL donation
+# config, the books engine bundle and its assets, the two published JSON
+# Schemas, the copied spreadsheets-site files its CSP forbids fetching
+# cross-origin, and the redirect function and sitemap the site's own
+# builders write
+web/diya-gl.co.uk/public/donate-config.js
+web/diya-gl.co.uk/public/engine/
+web/diya-gl.co.uk/public/assets/
+web/diya-gl.co.uk/public/examples.js
+web/diya-gl.co.uk/public/build-stamp.js
+web/diya-gl.co.uk/public/schema/
+web/diya-gl.co.uk/public/lib/
+web/diya-gl.co.uk/public/spreadsheets.css
+web/diya-gl.co.uk/public/favicon.*
+web/diya-gl.co.uk/public/sitemap.xml
+web/diya-gl.co.uk/redirect-function.js
 
 # Generated zip packages
 target/zips/

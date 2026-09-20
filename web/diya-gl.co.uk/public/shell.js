@@ -22,10 +22,10 @@
   var active = null;
 
   // The same GA4 sender every other page on the site uses. gtag comes from
-  // ../lib/analytics.js, which the four DIYA-GL pages load beside consent-
-  // banner.js like the rest of the site; that script sits outside the
-  // service worker's own /diya-gl/ scope, so offline it simply never loads --
-  // this stays a silent no-op rather than a thrown error either way.
+  // lib/analytics.js, which the DIYA-GL pages load beside consent-banner.js
+  // like the rest of the site; an ad blocker or a load before gtag has
+  // finished registering can still leave it undefined, so this stays a
+  // silent no-op rather than a thrown error either way.
   function trackEvent(eventName, params) {
     if (typeof gtag === "function") gtag("event", eventName, params);
   }
@@ -3079,7 +3079,7 @@
     throw new Error("shell.js: window.DIYA_GL_DONATE_LINK is not set -- run node scripts/build-donate-page.mjs before serving this page.");
   }
   var DONATE_STRIPE_LINK = window.DIYA_GL_DONATE_LINK;
-  var DONATE_PAGE_LINK = "../donate.html";
+  var DONATE_PAGE_LINK = "https://spreadsheets.diyaccounting.co.uk/donate.html";
 
   function donationPromptSeen(id) {
     try {

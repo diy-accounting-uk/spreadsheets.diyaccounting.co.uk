@@ -4,7 +4,7 @@
 //
 // build-donate-page.mjs — Generate donate.html from a template with
 // per-environment Stripe Payment Links, and the same £10 link for the
-// DIYA-GL pages' donation prompts (diya-gl/shell.js).
+// DIYA-GL pages' donation prompts (web/diya-gl.co.uk/public/shell.js).
 //
 // Usage:
 //   node scripts/build-donate-page.mjs
@@ -13,7 +13,7 @@
 // Reads:  web/spreadsheets.diyaccounting.co.uk/donate.template.html
 //         web/spreadsheets.diyaccounting.co.uk/donate-links.toml
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/donate.html
-//         web/spreadsheets.diyaccounting.co.uk/public/diya-gl/donate-config.js
+//         web/diya-gl.co.uk/public/donate-config.js
 //
 // ENVIRONMENT_NAME picks the [ci] or [prod] section of donate-links.toml --
 // the same name deploy.yml already resolves for the CDK deploy step
@@ -34,7 +34,7 @@ const SITE_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk");
 const TEMPLATE_PATH = resolve(SITE_DIR, "donate.template.html");
 const LINKS_TOML_PATH = resolve(SITE_DIR, "donate-links.toml");
 const OUTPUT_PATH = resolve(SITE_DIR, "public", "donate.html");
-const DIYA_GL_CONFIG_PATH = resolve(SITE_DIR, "public", "diya-gl", "donate-config.js");
+const DIYA_GL_CONFIG_PATH = resolve(ROOT, "web", "diya-gl.co.uk", "public", "donate-config.js");
 
 // Placeholder in the template -> its key in donate-links.toml's section.
 const PLACEHOLDERS = {
@@ -99,7 +99,7 @@ function main() {
     "",
   ].join("\n");
   writeFileSync(DIYA_GL_CONFIG_PATH, diyaGlConfig, "utf8");
-  console.log(`diya-gl/donate-config.js written for environment "${environment}": ${DIYA_GL_CONFIG_PATH}`);
+  console.log(`donate-config.js written for environment "${environment}": ${DIYA_GL_CONFIG_PATH}`);
 }
 
 main();

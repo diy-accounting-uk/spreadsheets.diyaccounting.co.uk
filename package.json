@@ -36,7 +36,7 @@
     "build:sitemaps": "node app/bin/build-sitemaps.js",
     "build:reconciliation-pages": "node app/bin/build-reconciliation-pages.js",
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",
-    "build:redirects": "node scripts/build-spreadsheets-redirects.cjs",
+    "build:redirects": "node scripts/build-spreadsheets-redirects.cjs --site spreadsheets && node scripts/build-spreadsheets-redirects.cjs --site diya-gl",
     "build:donate-page": "node scripts/build-donate-page.mjs",
     "build:diya-gl-bundle": "node scripts/build-diya-gl-bundle.mjs",
     "build:runners": "node scripts/build-runner.mjs",

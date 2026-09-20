@@ -23,7 +23,7 @@
 
 import { build } from "esbuild";
 import { createHash } from "crypto";
-import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, resolve, relative, sep } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
@@ -36,11 +36,46 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ENGINE_LICENCE_COMMENT = "/*!\n * SPDX-License-Identifier: Apache-2.0\n * Copyright (C) 2006-2026 DIY Accounting Limited\n */";
 
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
-const DIYA_GL_DIR = resolve(PUBLIC_DIR, "diya-gl");
+const DIYA_GL_DIR = resolve(ROOT, "web", "diya-gl.co.uk", "public");
 const ENGINE_DIR = resolve(DIYA_GL_DIR, "engine");
 const ASSETS_DIR = resolve(DIYA_GL_DIR, "assets");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
+const DIYA_GL_SCHEMA_DIR = resolve(DIYA_GL_DIR, "schema");
 const BUNDLE_FILE = resolve(ENGINE_DIR, "diya-gl-engine.js");
+
+// Files the spreadsheets site already owns that the new site's own
+// 'default-src self' CSP cannot fetch cross-origin, so each is a local copy
+// rather than a link back to the old host. favicon.svg is listed for the
+// same reason DG-1l's spec page and DG-5's runner row will want it, but the
+// spreadsheets site has never carried one (favicon.ico only): the entry is
+// a no-op copy today and starts working the day that source file exists.
+const SITE_FILES = [
+  ["lib", "analytics.js"],
+  ["lib", "consent-banner.js"],
+  ["lib", "ecommerce-events.js"],
+  ["spreadsheets.css"],
+  ["favicon.ico"],
+  ["favicon.svg"],
+];
+
+// Copies the handful of spreadsheets-site files the new site's pages still
+// reach by tag (lib/*, the stylesheet, the favicons) plus the two published
+// JSON Schemas every book load validates against, so the new host serves
+// its own copy of each rather than reaching across origins.
+function copySiteFiles() {
+  for (const parts of SITE_FILES) {
+    const src = resolve(PUBLIC_DIR, ...parts);
+    if (!existsSync(src)) continue;
+    const dest = resolve(DIYA_GL_DIR, ...parts);
+    mkdirSync(dirname(dest), { recursive: true });
+    cpSync(src, dest);
+  }
+
+  mkdirSync(DIYA_GL_SCHEMA_DIR, { recursive: true });
+  for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
+    cpSync(resolve(SCHEMA_DIR, name), resolve(DIYA_GL_SCHEMA_DIR, name));
+  }
+}
 
 // The four books pages' own script and stylesheet tags, read off the pages
 // themselves rather than restated here by hand -- see buildPrecacheManifest().
@@ -299,7 +334,7 @@ function buildPrecacheManifest() {
     relPaths.add(page);
     const { scripts, styles } = pageReferences(resolve(DIYA_GL_DIR, page));
     for (const src of [...scripts, ...styles]) {
-      if (/^https?:|^\//.test(src)) continue; // vendor/CDN or site-absolute, not a diya-gl/ file
+      if (/^https?:|^\//.test(src)) continue; // vendor/CDN or site-absolute, not a site-relative file
       relPaths.add(src);
       if (src.endsWith(".css")) {
         for (const imported of cssImports(resolve(DIYA_GL_DIR, src))) relPaths.add(imported);
@@ -313,15 +348,14 @@ function buildPrecacheManifest() {
   for (const absPath of walk(resolve(ASSETS_DIR, "data"))) relPaths.add(toDiyaGlPath(absPath));
   for (const absPath of walk(resolve(ASSETS_DIR, "examples"))) relPaths.add(toDiyaGlPath(absPath));
 
-  const urls = [...relPaths].sort().map((p) => `/diya-gl/${p}`);
+  const urls = [...relPaths].sort().map((p) => `/${p}`);
   urls.push("/schema/diya-gl-book-v2.schema.json", "/schema/diya-gl-lines-v2.schema.json");
-  urls.push("/diya-gl/manifest.webmanifest", "/diya-gl/icon.svg");
+  urls.push("/manifest.webmanifest", "/icon.svg");
   return urls;
 }
 
 function urlToPath(url) {
-  if (url.startsWith("/schema/")) return resolve(SCHEMA_DIR, url.slice("/schema/".length));
-  return resolve(DIYA_GL_DIR, url.slice("/diya-gl/".length));
+  return resolve(DIYA_GL_DIR, url.slice(1));
 }
 
 // A hash of every precached URL's own bytes, so the cache name changes
@@ -385,6 +419,7 @@ async function main() {
 
   generateExamplesJs();
   const assets = copyRuntimeAssets();
+  copySiteFiles();
   const buildStamp = writeBuildStamp();
   const bytes = statSync(BUNDLE_FILE).size;
   const inputCount = Object.keys(result.metafile.inputs).length;

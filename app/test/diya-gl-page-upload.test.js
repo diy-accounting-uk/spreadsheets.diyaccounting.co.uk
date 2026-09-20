@@ -30,7 +30,7 @@ import * as seProduct from "../products/se.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const BOOKS_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl");
+const BOOKS_DIR = resolve(ROOT, "web", "diya-gl.co.uk", "public");
 const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
 const BST_WORKBOOK = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
 const HUB_FILE = "Financialaccounts.xlsx";

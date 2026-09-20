@@ -116,6 +116,32 @@ describe("browser spec routing: un-tokened specs that cover multiple products", 
   });
 });
 
+describe("browser spec routing: the diya-gl.co.uk site root", () => {
+  it("runs the whole diya-gl suite for a file shared by every page", () => {
+    const sel = select(["web/diya-gl.co.uk/public/shell.js"]);
+    const allSpecs = [
+      "web/browser-tests/diya-gl-bst.browser.test.js",
+      "web/browser-tests/diya-gl-se.browser.test.js",
+      "web/browser-tests/spreadsheets-content.browser.test.js",
+    ];
+    const chosen = chooseBrowserSpecs(sel, allSpecs);
+    expect(chosen).toContain("web/browser-tests/diya-gl-bst.browser.test.js");
+    expect(chosen).toContain("web/browser-tests/diya-gl-se.browser.test.js");
+    expect(chosen).not.toContain("web/browser-tests/spreadsheets-content.browser.test.js");
+  });
+
+  it("narrows to one product's specs for a file under products/", () => {
+    const sel = select(["web/diya-gl.co.uk/public/products/bst-forms.js"]);
+    const allSpecs = [
+      "web/browser-tests/diya-gl-bst.browser.test.js",
+      "web/browser-tests/diya-gl-se.browser.test.js",
+      "web/browser-tests/diya-gl-ltd.browser.test.js",
+    ];
+    const chosen = chooseBrowserSpecs(sel, allSpecs);
+    expect(chosen).toEqual(["web/browser-tests/diya-gl-bst.browser.test.js"]);
+  });
+});
+
 // CQ-46: the router stops after a failed gates tier instead of running
 // unit, calc, browser and infra behind it. tiersAfterGates is the pure
 // decision main() acts on; it is tested directly here rather than by

@@ -7,16 +7,16 @@
 // fetch. The engine names its files under two roots and this maps each one to
 // a URL:
 //
-//   schema/<file>   -> /schema/<file>          the site already publishes these
-//   <anything else> -> /diya-gl/assets/<path>  copied there by the bundle build
+//   schema/<file>   -> /schema/<file>       the site already publishes these
+//   <anything else> -> /assets/<path>       copied there by the bundle build
 //
-// The layout under diya-gl/assets mirrors app/ one for one:
+// The layout under assets mirrors app/ one for one:
 //
-//   diya-gl/assets/data/se-2025-2026.toml            app/data/
-//   diya-gl/assets/templates/meta.toml               app/templates/
-//   diya-gl/assets/templates/bst/bst-excel.xlsx      app/templates/bst/
-//   diya-gl/assets/examples/<name>/bst/book.toml     examples/<name>/bst/
-//   diya-gl/assets/examples/<name>/bst/lines.jsonl
+//   assets/data/se-2025-2026.toml            app/data/
+//   assets/templates/meta.toml               app/templates/
+//   assets/templates/bst/bst-excel.xlsx      app/templates/bst/
+//   assets/examples/<name>/bst/book.toml     examples/<name>/bst/
+//   assets/examples/<name>/bst/lines.jsonl
 
 const SCHEMA_PREFIX = "schema/";
 
@@ -26,7 +26,7 @@ const SCHEMA_PREFIX = "schema/";
  * @param {string} [options.schemaRoot] - where the published JSON Schemas are served from
  */
 export function browserResourceLoader(options = {}) {
-  const assetRoot = (options.assetRoot ?? "/diya-gl/assets").replace(/\/$/, "");
+  const assetRoot = (options.assetRoot ?? "/assets").replace(/\/$/, "");
   const schemaRoot = (options.schemaRoot ?? "/schema").replace(/\/$/, "");
 
   function urlFor(path) {
