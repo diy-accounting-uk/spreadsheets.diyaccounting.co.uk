@@ -58,7 +58,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | DG-6 | The `sandbox_expired_seen` event when a signed-in reader's list comes back shorter | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~3 files | Sonnet | after DG-2b |
 | DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e | blocked-to-start | ~18 files | Sonnet | after DG-1e |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1e, DG-1f, DG-1h | blocked-to-start | ~3 files | Haiku | after DG-1e |
-| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l | blocked-to-start | ~1 files | Haiku | after DG-1b |
+| DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~1 files | Haiku | after DG-1b |
+| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l, DG-1n | blocked-to-start | ~1 files | Haiku | after DG-1b |
 | DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked-to-start | ~3 files | Haiku | after DG-1j |
 
 ## Plans not tracked here
