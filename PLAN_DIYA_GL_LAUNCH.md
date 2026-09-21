@@ -476,7 +476,7 @@ concurrent edits, and any second price.
    99p monthly was tried.
 9. **Two stores in the bundle.** Submit's S3 and the reader's Google Drive (LP-24).
 10. **Bank referral on the free rung** (LP-25a, LP-25b).
-11. **The sandbox runs 25 days**, with `sandbox_expired_seen` per sign-in as the loss metric
+11. **The sandbox runs 35 days**, with `sandbox_expired_seen` per sign-in as the loss metric
     (`PLAN_PRICE_UPDATE.md` PU-4 and PU-8).
 
 ## Task list
