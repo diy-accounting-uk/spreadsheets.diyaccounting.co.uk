@@ -8,7 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #127 (DG-1e, DG-1f, OAM-1) merged; its prod deploy is running. PRs #125 and #126 are on prod.
+PR #127 (DG-1e, DG-1f, OAM-1) merged as `2a6e5b01`; its prod deploy is running. Batch
+`claude/b22-board` (worktree `../.worktrees/spreadsheets/b22`) carries DG-2b's agent, with DG-1g
+chained after it. PRs #125 and #126 are on prod.
 DG-1a is root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge
 commands handed to the operator. DG-3c is Submit PR #310, green on test, its deploy waiting for a
 ci slot. The SSO token expired at 01:16 UTC on 2026-09-21; AWS reads resume after
@@ -41,19 +43,19 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
-| DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
+| DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | agent on claude/dg-2b-sandbox-pages, .worktrees/spreadsheets/dg-2b; batch claude/b22-board |
 | DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~5 files | Sonnet | Submit PR #310; CI running |
+| DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | CSP-1 | Decide how the GA4 Google-signals pixel meets the CSP: `allow_google_signals: false` in `analytics.js`, or a short reader-region ccTLD list (the full list is 9.4KB against CloudFront's 1,783-char CSP quota) | none | human-driven | — | ready-to-start | ~0 files | operator | evidence in b21's CSP-1 branch, 2026-09-20 |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | OAM-2 | Fill the two metrics sink ARNs in `cdk.json` from Submit's `SpreadsheetsMetricsSinkArn` outputs | PLAN_SPREADSHEETS_RUM.md | machine-only | OAM-1 | blocked-to-start | ~1 files | Haiku | after OAM-1 and Submit's ObservabilityUE1 deploy |
 | DG-1b | Cut-over runbook: root deploy, name servers, certificate, variable, site stacks, second root deploy | PLAN_DIYA_GL_HOME.md | machine-ask | DG-1a, DG-1c | blocked-to-start | ~0 files | Sonnet | after DG-1a merges; operator says go on each write |
-| DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | DG-2a, DG-1e | blocked-to-start | ~4 files | Sonnet | after DG-2a |
 | DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~3 files | Sonnet | after DG-2b |
-| DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~11 files | Opus | DG-1e on main |
+| DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~11 files | Opus | shares diya-gl.css with DG-2b; chained after it |
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b, DG-1g | blocked-to-start | ~3 files | Sonnet | after DG-2b |
 | DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | DG-1g | blocked-to-start | ~4 files | Sonnet | after DG-1g |
 | DG-6 | The `sandbox_expired_seen` event when a signed-in reader's list comes back shorter | PLAN_DIYA_GL_HOME.md | machine-only | DG-2b | blocked-to-start | ~3 files | Sonnet | after DG-2b |
-| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~18 files | Sonnet | DG-1e on main |
+| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~18 files | Sonnet | its links and redirect point at the new host; after DG-1b |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~3 files | Haiku | needs the ci host; after DG-1b |
 | DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~1 files | Haiku | after DG-1b |
 | DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b, DG-1d, DG-1f, DG-1g, DG-1i, DG-1l, DG-1n | blocked-to-start | ~1 files | Haiku | after DG-1b |
