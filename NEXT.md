@@ -8,10 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`main` is `589f13f07` (the publish of diya-gl 1.2.24); the last code head, `c213fe6d` (PR #129),
-is green and on prod. No batch, worktree agent or PR is open here. DG-3a landed in Submit through PR #306. DG-1a is root PR #33, every gate green, its merge
-the operator's; every open machine row waits on DG-1b behind it. No watch monitor of this session is armed;
-the SSO session was renewed on 2026-09-21.
+DG-1b, the cut-over runbook, is in progress: root deploy done (both zones exist), both
+registrations point at the new zones and resolve, the certificate is `ISSUED`
+(`ada2b2aa-…`), `DIYA_GL_CERTIFICATE_ARN` is set, `ci-spreadsheets-DiyaGlSiteStack` is
+`CREATE_COMPLETE` (run 35590445983), and the prod deploy (run 35592882247) is running; the second
+root deploy for the alias records follows. The last code head on `main`, `c213fe6d`, is on prod.
+No batch, worktree agent or PR is open here; no watch monitor of this session is armed.
 
 ## Context for the open rows
 
@@ -40,8 +42,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
+| DG-1b | Cut-over runbook: root deploy, name servers, certificate, variable, site stacks, second root deploy | PLAN_DIYA_GL_HOME.md | machine-ask | — | in-flight | ~0 files | Sonnet | steps 1-6 done through the ci deploy; prod deploy run 35592882247 running; then the second root deploy |
 | CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | ready-to-start | ~3 files | Haiku | operator chose the list; 1,537 and 1,132 chars against the 1,783 quota |
-| DG-1b | Cut-over runbook: root deploy, name servers, certificate, variable, site stacks, second root deploy | PLAN_DIYA_GL_HOME.md | machine-ask | DG-1a, DG-1c | blocked-to-start | ~0 files | Sonnet | after DG-1a merges; operator says go on each write |
 | DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~18 files | Sonnet | its links and redirect point at the new host; after DG-1b |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~3 files | Haiku | needs the ci host; after DG-1b |
 | DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~1 files | Haiku | after DG-1b |
