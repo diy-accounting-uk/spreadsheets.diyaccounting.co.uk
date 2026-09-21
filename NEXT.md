@@ -40,7 +40,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1b done; diya-gl.co.uk and ci.diya-gl.co.uk live |
 | CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | ready-to-start | ~3 files | Haiku | operator chose the list; 1,537 and 1,132 chars against the 1,783 quota |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~3 files | Haiku | DG-1b done; diya-gl.co.uk and ci.diya-gl.co.uk live |
