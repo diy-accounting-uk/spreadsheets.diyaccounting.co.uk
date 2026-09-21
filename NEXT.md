@@ -8,13 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #127 (DG-1e, DG-1f, OAM-1) merged as `2a6e5b01`; its prod deploy is running. Batch
-`claude/b22-board` (worktree `../.worktrees/spreadsheets/b22`) carries DG-2b's agent, with DG-1g
-chained after it. PRs #125 and #126 are on prod.
-DG-1a is root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge
-commands handed to the operator. DG-3c is Submit PR #310, green on test, its deploy waiting for a
-ci slot. The SSO token expired at 01:16 UTC on 2026-09-21; AWS reads resume after
-`aws sso login --sso-session diyaccounting`.
+`main` is `175b74d61` (the publish of diya-gl 1.2.22 after PR #127's prod deploy); the last code
+head, `2a6e5b01` (DG-1e, DG-1f, OAM-1), is green and on prod. Batch `claude/b22-board` (worktree
+`../.worktrees/spreadsheets/b22`) carries DG-2b's agent, with DG-1g chained after it. DG-1a is
+root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge commands
+handed to the operator; DG-3c is Submit PR #310, green on test, its deploy waiting for a ci slot.
+No watch monitor of this session is armed; the SSO token expired at 01:16 UTC on 2026-09-21.
 
 ## Context for the open rows
 
