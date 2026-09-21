@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="ltd.css" />
     <script src="lib/analytics.js"></script>
     <script src="lib/consent-banner.js"></script>
+    <script src="lib/ecommerce-events.js"></script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -73,12 +74,43 @@
         </ul>
         <nav class="runner-row" aria-label="Take it offline">
           <span class="caps-label">Take it offline</span>
-          <a href="runners/diya-gl-bst.html" download>Basic Sole Trader</a>
-          <a href="runners/diya-gl-se.html" download>Self Employed</a>
-          <a href="runners/diya-gl-taxi.html" download>Taxi Driver</a>
-          <a href="runners/diya-gl-ltd.html" download>Limited Company</a>
+          <a href="runners/diya-gl-bst.html" data-product="bst" download>Basic Sole Trader<span class="runner-meta"></span></a>
+          <a href="runners/diya-gl-se.html" data-product="se" download>Self Employed<span class="runner-meta"></span></a>
+          <a href="runners/diya-gl-taxi.html" data-product="taxi" download>Taxi Driver<span class="runner-meta"></span></a>
+          <a href="runners/diya-gl-ltd.html" data-product="ltd" download>Limited Company<span class="runner-meta"></span></a>
         </nav>
       </section>
+
+      <script>
+        // The runner row's own sizes and engine version, from the manifest
+        // scripts/build-runner.mjs writes beside the files it describes.
+        // Built only into target/, so a local server or a browser test
+        // finds no manifest -- the fetch fails and the row stays the plain
+        // links above, with no console error.
+        (function () {
+          document.querySelectorAll(".runner-row a[data-product]").forEach(function (link) {
+            link.addEventListener("click", function () {
+              var event = buildRunnerDownloadEvent(link.dataset.product);
+              if (typeof gtag === "function") gtag("event", event.name, event.params);
+            });
+          });
+          fetch("runners/runners.json")
+            .then(function (response) {
+              return response.ok ? response.json() : null;
+            })
+            .then(function (manifest) {
+              if (!manifest) return;
+              manifest.forEach(function (entry) {
+                var link = document.querySelector('.runner-row a[data-product="' + entry.product + '"]');
+                var meta = link && link.querySelector(".runner-meta");
+                if (!meta) return;
+                var megabytes = (entry.bytes / (1024 * 1024)).toFixed(1);
+                meta.textContent = " (" + megabytes + " MB, v" + entry["diya-gl:engineVersion"] + ")";
+              });
+            })
+            .catch(function () {});
+        })();
+      </script>
 
       <header class="app-topbar">
         <a class="app-mark" href="index.html">DIYA<span>-GL</span></a>

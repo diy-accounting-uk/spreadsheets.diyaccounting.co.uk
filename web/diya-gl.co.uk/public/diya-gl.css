@@ -2532,6 +2532,10 @@ table.kv-table tr.total td {
   border-color: var(--rule-faint);
   color: var(--ink);
 }
+.runner-row .runner-meta {
+  opacity: 0.65;
+  font-size: 0.75rem;
+}
 .tier-strip {
   flex: 1 1 22rem;
   margin: 0;
