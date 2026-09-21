@@ -12,7 +12,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 head, `2a6e5b01` (DG-1e, DG-1f, OAM-1), is green and on prod. Batch `claude/b22-board` (worktree
 `../.worktrees/spreadsheets/b22`) carries DG-2b's agent, with DG-1g chained after it. DG-1a is
 root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge commands
-handed to the operator; DG-3c is Submit PR #310, green on test, its deploy waiting for a ci slot.
+handed to the operator; DG-3c landed in Submit through PR #310.
 No watch monitor of this session is armed; the SSO token expired at 01:16 UTC on 2026-09-21.
 
 ## Context for the open rows
@@ -44,7 +44,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | OAM-2 | Fill the two metrics sink ARNs in `cdk.json` from Submit's `SpreadsheetsMetricsSinkArn` outputs | PLAN_SPREADSHEETS_RUM.md | machine-only | — | in-flight | ~1 files | Haiku | on claude/b22-board; rides DG-2b's PR |
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
 | DG-2b | The 24h sandbox on the pages: labels, expiry per book, 403 path removed, ci behaviour case | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | on claude/b22-board as 3368ba755; push waits for DG-1g |
-| DG-3c | Submit: the daily sweeper for lapsed subscribers' resident books (30-day grace) | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~5 files | Sonnet | Submit PR #310; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | DG-1g | The homepage: the Ltd example at year view 2025-04, product nav, tier strip, runner row | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~11 files | Opus | agent on claude/dg-1g-homepage, .worktrees/spreadsheets/dg-1g; batch claude/b22-board |
 | DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~3 files | Sonnet | DG-2b on b22 |
