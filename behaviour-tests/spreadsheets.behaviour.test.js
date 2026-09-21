@@ -18,7 +18,10 @@ import { HEADLINES as LTD_HEADLINES } from "../app/products/ltd.js";
 // Base URL is set via SPREADSHEETS_BASE_URL env var, with CI default.
 const spreadsheetsBaseUrlRaw = process.env.SPREADSHEETS_BASE_URL || "https://ci-spreadsheets.diyaccounting.co.uk";
 const spreadsheetsBaseUrl = spreadsheetsBaseUrlRaw.replace(/\/+$/, "");
-const diyaGlBaseUrl = (process.env.DIYA_GL_BASE_URL || "https://ci.diya-gl.co.uk").replace(/\/+$/, "");
+// The DIYA-GL site has its own host per environment; a run with no DIYA_GL_BASE_URL is an
+// environment where that host is not deployed yet, so its cases skip rather than probe a
+// name that does not resolve.
+const diyaGlBaseUrl = (process.env.DIYA_GL_BASE_URL || "").replace(/\/+$/, "");
 
 // Screenshot path for spreadsheets tests
 const screenshotPath = "target/behaviour-test-results/screenshots/spreadsheets-behaviour-test";
@@ -962,6 +965,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   });
 
   test("DIYA-GL books page loads the bst-scenario-basic example under production's security headers", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     page.on("console", (msg) => {
@@ -1022,6 +1026,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   });
 
   test("DIYA-GL books page loads the se-scenario-advanced example under production's security headers", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     page.on("console", (msg) => {
@@ -1094,6 +1099,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   });
 
   test("DIYA-GL books page loads the taxi-scenario-basic example under production's security headers", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     page.on("console", (msg) => {
@@ -1164,6 +1170,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   });
 
   test("DIYA-GL books page loads the ltd-scenario-full example under production's security headers", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     page.on("console", (msg) => {

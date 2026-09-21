@@ -20,16 +20,11 @@ from = "/about-redirect-test.html"
 to = "/about.html"
 target = "self"
 
-# The DIYA-GL pages moved from /books/, then from /diya-gl/, to their own
-# site at the apex of diya-gl.co.uk — every old page, asset and PWA path
-# still resolves, including one added to the tree after this rule was
-# written.
+# The DIYA-GL pages moved from /books/ to /diya-gl/ — every old page, asset
+# and PWA path still resolves, including one added to the tree after this
+# rule was written. The pages' own site, diya-gl.co.uk, takes both prefixes
+# once its host is live.
 [[redirect_prefix]]
 from = "/books/"
-to = "/"
-target = "diya-gl"
-
-[[redirect_prefix]]
-from = "/diya-gl/"
-to = "/"
-target = "diya-gl"
+to = "/diya-gl/"
+target = "spreadsheets"
