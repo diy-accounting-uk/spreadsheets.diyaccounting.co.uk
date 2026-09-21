@@ -19,16 +19,21 @@ import { parse as parseTOML } from "smol-toml";
 const ROOT = process.cwd();
 const RUNNER_PATH = path.join(ROOT, "target", "runners", "diya-gl-bst.html");
 
-// The runner's own newer-file check (DG-5) loads
-// https://diya-gl.co.uk/build-stamp.js by a plain script tag. This
-// environment resolves no such host and routes no such request, so
-// Chromium logs this exact resource-load failure on every run -- the
-// offline case the notice's own equality test already tolerates, not a
-// defect the runner raised.
-const EXPECTED_STAMP_LOAD_FAILURE = "Failed to load resource: net::ERR_NAME_NOT_RESOLVED";
+// The runner's own newer-file check loads https://diya-gl.co.uk/build-stamp.js
+// by a plain script tag from a file:// origin. Chromium logs one resource-load
+// failure for that request on every run -- the offline case the notice's own
+// equality test already tolerates, not a defect the runner raised. Which
+// failure it logs depends on whether this environment's DNS resolves the
+// host: name resolution failure where it does not, a same-origin block once
+// it does (the host is a real, live site now, so the request reaches it and
+// is then refused for crossing origins from file://).
+const EXPECTED_STAMP_LOAD_FAILURES = [
+  "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+  "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+];
 
 function unexpectedConsoleErrors(consoleErrors) {
-  return consoleErrors.filter((message) => message !== EXPECTED_STAMP_LOAD_FAILURE);
+  return consoleErrors.filter((message) => !EXPECTED_STAMP_LOAD_FAILURES.includes(message));
 }
 
 test.describe("the DIYA-GL runner — opened from disk, no server", () => {

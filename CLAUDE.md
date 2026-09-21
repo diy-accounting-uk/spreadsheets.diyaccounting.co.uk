@@ -137,7 +137,7 @@ A tracked `.githooks/pre-push` routes the tests over everything the push adds to
 clone and every new worktree inherit it. In a real hurry, `SKIP_PUSH_TESTS=1 git push` runs the
 gates tier alone and prints what it did not run, which beats `--no-verify` running nothing silently.
 
-Behaviour tests use the `SPREADSHEETS_BASE_URL` environment variable to target different environments. Output is automatically teed to `spreadsheetsBehaviour.log` in the project root.
+Behaviour tests use the `SPREADSHEETS_BASE_URL` and `DIYA_GL_BASE_URL` environment variables to target different environments. Output is automatically teed to `spreadsheetsBehaviour.log` in the project root.
 
 ## Reconciliation-bug method
 
@@ -242,7 +242,8 @@ GitHub repository variables:
 | `SPREADSHEETS_ACTIONS_ROLE_ARN` | OIDC auth for spreadsheets account |
 | `SPREADSHEETS_DEPLOY_ROLE_ARN`  | CDK deploy in spreadsheets account |
 | `SPREADSHEETS_CERTIFICATE_ARN`  | ACM certificate for CloudFront     |
-| `SUBMIT_TEST_USER_ROLE_ARN`     | Submit's cross-account role for its prod account; the pages target Submit's released environment on every host, so this is a prod role now, not a per-environment one. When set, the ci behaviour job mints a fresh Cognito test user through it instead of relying on stored secrets |
+| `DIYA_GL_CERTIFICATE_ARN`       | ACM certificate for diya-gl.co.uk CloudFront distribution |
+| `SUBMIT_TEST_USER_ROLE_ARN`     | Submit's cross-account role for its prod account; the pages target Submit's released environment on every host, so this is a prod role now, not a per-environment one. When set, the ci behaviour job mints a fresh Cognito test user through it instead of relying on stored secrets and runs the cloud sign-in case on `https://ci.diya-gl.co.uk` |
 
 ## AWS CLI Access
 

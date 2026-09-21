@@ -12,7 +12,7 @@
 
 export const PROVENANCE_DATA = {
   formatVersion: "diya-gl/1",
-  engineVersion: "1.2.23+80457d57d",
+  engineVersion: "1.2.26+80457d57d",
   taxDataHash: "3221a7c2f39c",
   reconciledCommit: "54e8731a91279975e61b1a232fbb67fda89515f0",
   templates: {

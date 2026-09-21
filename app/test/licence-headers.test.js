@@ -49,7 +49,7 @@ const EXCLUDED_FILES = new Set([
   "diya-gl/NOTICE",
   "package-lock.json",
   "diya-gl/package-lock.json",
-  "web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html",
+  "web/diya-gl.co.uk/public/spec.html",
   "web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml",
   "web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml",
 ]);

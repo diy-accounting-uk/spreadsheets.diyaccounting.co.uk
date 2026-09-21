@@ -10,10 +10,10 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <meta property="og:title" content="The DIYA-GL format - DIY Accounting Spreadsheets" />
     <meta property="og:description" content="The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence." />
-    <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" />
+    <meta property="og:url" content="https://diya-gl.co.uk/spec.html" />
     <meta property="og:site_name" content="DIY Accounting" />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" />
+    <link rel="canonical" href="https://diya-gl.co.uk/spec.html" />
     <link rel="stylesheet" href="spreadsheets.css" />
     <style>
       .spec-scroll { overflow-x: auto; }
@@ -31,12 +31,12 @@
     <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <nav class="top-nav" aria-label="Main navigation">
-      <a href="index.html">Products</a>
-      <a href="download.html">Download</a>
-      <a href="knowledge-base.html">Knowledge Base</a>
-      <a href="community.html">Community</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/index.html">Products</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/download.html">Download</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html">Knowledge Base</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/community.html">Community</a>
       <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
-      <a href="donate.html">Donate</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/donate.html">Donate</a>
     </nav>
 
     <header>
@@ -45,7 +45,7 @@
     </header>
 
     <main id="mainContent">
-      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Products</a></nav>
+      <nav class="nav-back" aria-label="Breadcrumb"><a href="https://spreadsheets.diyaccounting.co.uk/index.html">&larr; Products</a></nav>
 
       <h2 class="kb-page-title">The DIYA-GL&trade; format</h2>
       <p class="kb-page-description">A year of accounts in two text files, and the mapping, the checks and the evidence behind them.</p>
@@ -450,7 +450,7 @@
       <p>
         Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
         books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
-        the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
+        the figures behind them are on its <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">reconciliation scorecard</a>.
       </p>
         <div class="spec-scroll">
           <table class="spec-table">
@@ -610,24 +610,24 @@
           <table class="spec-table">
             <thead><tr><th>Product</th><th>Featured scenario</th></tr></thead>
             <tbody>
-            <tr><td><a href="reconciliation/bst.html">Basic Sole Trader</a></td><td>bst-scenario-basic</td></tr>
-            <tr><td><a href="reconciliation/taxi.html">Taxi Driver</a></td><td>taxi-scenario-basic</td></tr>
-            <tr><td><a href="reconciliation/se.html">Self Employed</a></td><td>se-scenario-advanced</td></tr>
-            <tr><td><a href="reconciliation/ltd.html">Limited Company</a></td><td>ltd-scenario-full</td></tr>
+            <tr><td><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/bst.html">Basic Sole Trader</a></td><td>bst-scenario-basic</td></tr>
+            <tr><td><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/taxi.html">Taxi Driver</a></td><td>taxi-scenario-basic</td></tr>
+            <tr><td><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/se.html">Self Employed</a></td><td>se-scenario-advanced</td></tr>
+            <tr><td><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/ltd.html">Limited Company</a></td><td>ltd-scenario-full</td></tr>
             </tbody>
           </table>
         </div>
-      <p><a href="reconciliation/index.html">All reconciliation reports</a></p>
+      <p><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">All reconciliation reports</a></p>
 
       <h3 id="tools">Getting the tools</h3>
       <p>
         The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
-        <li><a href="diya-gl/bst.html">Basic Sole Trader books</a></li>
-        <li><a href="diya-gl/taxi.html">Taxi Driver books</a></li>
-        <li><a href="diya-gl/se.html">Self Employed books</a></li>
-        <li><a href="diya-gl/ltd.html">Limited Company books</a></li>
+        <li><a href="bst.html">Basic Sole Trader books</a></li>
+        <li><a href="taxi.html">Taxi Driver books</a></li>
+        <li><a href="se.html">Self Employed books</a></li>
+        <li><a href="ltd.html">Limited Company books</a></li>
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package
@@ -638,11 +638,11 @@ brew install diy-accounting-uk/diya-gl/diya-gl
 docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
-        <a href="reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
+        <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
       </p>
       <p>
-        The spreadsheets themselves stay free to download on a donation basis. <a href="download.html">Download a package</a>, or
-        <a href="donate.html">chip in</a> if the tools earn it.
+        The spreadsheets themselves stay free to download on a donation basis. <a href="https://spreadsheets.diyaccounting.co.uk/download.html">Download a package</a>, or
+        <a href="https://spreadsheets.diyaccounting.co.uk/donate.html">chip in</a> if the tools earn it.
       </p>
 
       <h3 id="licence">Licence</h3>
@@ -666,8 +666,8 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <div class="footer-content">
         <div class="footer-left">
           <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
-          <a href="knowledge-base.html">knowledge base</a>
-          <a href="reconciliation/index.html">reconciliation</a>
+          <a href="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html">knowledge base</a>
+          <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">reconciliation</a>
           <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
           <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>

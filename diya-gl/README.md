@@ -63,7 +63,7 @@ map onto HMRC's SA103S boxes. The two schemas that validate a book are published
 and
 [`/schema/diya-gl-lines-v2.schema.json`](https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json).
 The full field mapping, the check catalogue and the reconciliation evidence behind them are
-on the [format spec page](https://spreadsheets.diyaccounting.co.uk/diya-gl.html).
+on the [format spec page](https://diya-gl.co.uk/spec.html).
 
 ## Provenance
 

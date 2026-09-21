@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Recalculate, read and write DIYA-GL books from the command line",
   "license": "Apache-2.0",
-  "homepage": "https://spreadsheets.diyaccounting.co.uk/diya-gl.html",
+  "homepage": "https://diya-gl.co.uk/spec.html",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk.git",
