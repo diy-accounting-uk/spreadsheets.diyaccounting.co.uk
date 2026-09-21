@@ -806,10 +806,14 @@
     renderPanel();
   }
 
+  // Every list carries the reader's entitlement; the page hears it here
+  // (shell.js's tier strip shows the resident tier only where residentTier
+  // is reported) without reading the panel.
   function fetchAllBooks() {
     return apiFetch("/books", { method: "GET" }).then(function (response) {
       return parseJsonBody(response).then(function (body) {
         if (!response.ok) throw apiError(response.status, body);
+        document.dispatchEvent(new CustomEvent("diya-gl:entitlement", { detail: body.entitlement }));
         return { books: body.books || [], entitlement: body.entitlement };
       });
     });

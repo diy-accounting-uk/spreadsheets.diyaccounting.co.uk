@@ -62,6 +62,10 @@
     // Set when a continued working book was already changed before this
     // session picked it up; isEdited() adds what this session has done.
     editedAtLoad: false,
+    // True while the loaded book is the one body[data-default-example]
+    // named and the URL did not: the homepage's own example, over which
+    // the continue offer shows as a banner and whose URL stays clean.
+    loadedFromPageDefault: false,
     // The live book: D as the page currently holds it. Every edit replaces
     // state.lines with the array edits.js returned and recomputes the
     // whole book from it -- there is no incremental update.
@@ -105,6 +109,7 @@
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
 
     bindGlobalControls();
+    bindTierStrip();
     if (window.DiyaGlCloud) window.DiyaGlCloud.mount();
 
     var productId = document.body.dataset.product;
@@ -113,16 +118,20 @@
       throw new Error("body[data-product] names " + JSON.stringify(productId) + ", and no products/" + productId + ".js is loaded.");
     mount(manifest).then(function () {
       // A link carrying ?example=... loads that book on its own -- it never
-      // reads or writes the autosave record, so whatever a reader had saved
-      // stays untouched and is still offered the next time they arrive
-      // without a link. Any other arrival (no example, or view/month alone)
-      // is a plain arrival: the continue offer works exactly as before.
+      // writes the autosave record, so whatever a reader had saved stays
+      // untouched and is still offered the next time they arrive without a
+      // link. The saved-book check runs first on every arrival, so a page
+      // whose own default example loads (the homepage) can offer the saved
+      // book as a banner over it; a link arrival shows no offer, and a plain
+      // arrival shows it on the empty state as before.
       var deepLink = parseDeepLinkParams();
-      if (deepLink.example) {
-        bootFromDeepLink(deepLink);
-      } else {
-        checkForSavedBook();
-      }
+      checkForSavedBook().then(function () {
+        if (deepLink.example) {
+          bootFromDeepLink(deepLink);
+        } else if (!state.loaded) {
+          render();
+        }
+      });
     });
   }
 
@@ -190,14 +199,24 @@
   }
 
   // The saved-book check runs after the first render so the picker appears
-  // immediately; the continue-offer joins it the moment the check resolves.
-  // A blocked or missing IndexedDB resolves to null (autosave.js's own
-  // degrade contract), so this never blocks or errors the empty state --
-  // it just never gets an offer to show.
+  // immediately; the continue-offer joins it once the check resolves and
+  // the caller renders. A blocked or missing IndexedDB resolves to null
+  // (autosave.js's own degrade contract), so this never blocks or errors
+  // the empty state -- it just never gets an offer to show.
   function checkForSavedBook() {
-    window.DiyaGlAutosave.loadWorkingBook().then(function (record) {
+    return window.DiyaGlAutosave.loadWorkingBook().then(function (record) {
       state.savedBook = record || null;
-      if (!state.loaded) render();
+    });
+  }
+
+  // The homepage's tier strip names the resident account only where the
+  // account list reports the tier as offered; cloud.js announces each
+  // list's entitlement on document, and a page without the line ignores it.
+  function bindTierStrip() {
+    var residentLine = document.getElementById("tier-resident");
+    if (!residentLine) return;
+    document.addEventListener("diya-gl:entitlement", function (event) {
+      residentLine.hidden = !(event.detail && event.detail.residentTier);
     });
   }
 
@@ -219,15 +238,28 @@
   // the same loader the example buttons use. &view=<data-view id> and
   // &month=YYYY-MM land on a view or an open month once it has loaded.
   // Unknown view/month values are ignored; an unknown example shows the
-  // empty state with a message naming the ids the manifest knows.
+  // empty state with a message naming the ids the manifest knows. A page
+  // that names its own example in body[data-default-example] (with
+  // data-default-view and data-default-month) boots that one when the URL
+  // names none; the URL's own example always wins over the attributes.
 
   function parseDeepLinkParams() {
     var params = new URLSearchParams(window.location.search);
+    var defaults = document.body.dataset;
+    var fromPageDefault = !params.get("example") && !!defaults.defaultExample;
     return {
-      example: params.get("example"),
-      view: params.get("view"),
-      month: params.get("month"),
+      example: params.get("example") || defaults.defaultExample || null,
+      view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
+      month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
+      fromPageDefault: fromPageDefault,
     };
+  }
+
+  function isAtPageDefault() {
+    var defaults = document.body.dataset;
+    var viewMatches = state.view === (defaults.defaultView || "year");
+    var monthMatches = !defaults.defaultMonth || state.openMonth === defaults.defaultMonth;
+    return viewMatches && monthMatches;
   }
 
   function getExamples() {
@@ -254,7 +286,7 @@
       );
       return;
     }
-    loadExample(deepLink.example, { skipAutosave: true }).then(function (snapshot) {
+    loadExample(deepLink.example, { skipAutosave: true, fromPageDefault: deepLink.fromPageDefault }).then(function (snapshot) {
       if (snapshot) applyDeepLinkViewAndMonth(deepLink, snapshot);
     });
   }
@@ -299,8 +331,9 @@
     if (!state.loaded || !SNAPSHOT.source || SNAPSHOT.source.kind !== "example") return;
     // A changed book is no longer the example the link would fetch, so the
     // address bar stops offering it. An undo back to the example brings it
-    // back.
-    if (isEdited()) {
+    // back. The page's own default example at its default view and month
+    // is what the bare URL already gives, so that stays bare too.
+    if (isEdited() || (state.loadedFromPageDefault && isAtPageDefault())) {
       clearDeepLinkUrl();
       return;
     }
@@ -566,6 +599,7 @@
     applyDriftMarks(els.viewRoot);
     bindViewInteractions(view);
     mountHeadlinesStrip();
+    mountContinueBanner();
     maybeOfferFiguresDonation(view);
 
     els.inspector.innerHTML = renderInspectorFull();
@@ -895,6 +929,26 @@
     );
   }
 
+  // The same offer as a banner over the page's own default example: the
+  // reader arrived at the homepage with a working book saved, and the
+  // example underneath is only the demonstration. It goes once the reader
+  // edits the example, because the autosave record is then the example.
+  function mountContinueBanner() {
+    if (!state.savedBook || !state.loadedFromPageDefault || isEdited()) return;
+    var banner = document.createElement("div");
+    banner.className = "continue-banner";
+    banner.innerHTML = renderContinueOffer();
+    els.viewRoot.insertBefore(banner, els.viewRoot.firstChild);
+    bindContinueOffer();
+  }
+
+  function bindContinueOffer() {
+    var continueBtn = document.getElementById("continue-btn");
+    if (continueBtn) continueBtn.addEventListener("click", handleContinueSavedBook);
+    var discardBtn = document.getElementById("discard-btn");
+    if (discardBtn) discardBtn.addEventListener("click", handleDiscardSavedBook);
+  }
+
   function formatSavedAt(iso) {
     if (!iso) return "";
     try {
@@ -964,10 +1018,7 @@
       });
     }
 
-    var continueBtn = document.getElementById("continue-btn");
-    if (continueBtn) continueBtn.addEventListener("click", handleContinueSavedBook);
-    var discardBtn = document.getElementById("discard-btn");
-    if (discardBtn) discardBtn.addEventListener("click", handleDiscardSavedBook);
+    bindContinueOffer();
 
     Array.prototype.forEach.call(document.querySelectorAll("[data-example]"), function (btn) {
       btn.addEventListener("click", function () {
@@ -1249,6 +1300,7 @@
   function applyLoadedSnapshot(snapshot, opts) {
     window.DiyaGlEdits.undo.clear();
     state.editedAtLoad = !!(opts && opts.editedAtLoad);
+    state.loadedFromPageDefault = !!(opts && opts.fromPageDefault);
     applySnapshot(snapshot, opts);
     state.loaded = true;
     state.view = "year";

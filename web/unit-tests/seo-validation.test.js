@@ -15,13 +15,11 @@ const sites = [
     landingHasJsonLd: true,
   },
   {
-    // The site has no homepage yet; ltd.html stands in as its landing page until index.html
-    // lands with the JSON-LD block.
     name: "diya-gl",
     dir: path.join(process.cwd(), "web/diya-gl.co.uk/public"),
     domain: "https://diya-gl.co.uk",
-    landing: "ltd.html",
-    landingHasJsonLd: false,
+    landing: "index.html",
+    landingHasJsonLd: true,
   },
 ];
 
