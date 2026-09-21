@@ -8,11 +8,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-The cut-over (DG-1b) is done: `diya-gl.co.uk` and `ci.diya-gl.co.uk` serve the site (200 on
-`/ltd.html`), `www` and both `.com` hosts 301 to the apex, the certificate is issued, both
-`DiyaGlSiteStack`s are `CREATE_COMPLETE`, and the twelve alias records are written (root deploy
-run 35594599432). `main`'s last code head, `c213fe6d`, is on prod and ci (`7fc26c3c`). No batch,
-worktree agent or PR is open here; no watch monitor of this session is armed.
+Batch b24 (`claude/b24-board`, worktree `../.worktrees/spreadsheets/b24`) holds CSP-1 (`9ea6d9b18`)
+and DG-1i (`475bd94b0`), unpushed. The redirects+spec agent's commits DG-1n (`8707b81a2`) and DG-1l
+(`23eca9655`) sit on `claude/wt-dg-1nl` with its routed `npm test` in the browser tier; they land on
+b24 when it hands back, then the batch's own routed run, one push, one PR, `/watch`. No PR is open;
+no watch monitor of this session is armed. `main`'s last code head `c213fe6d` is on prod and ci
+(`7fc26c3c`).
 
 ## Context for the open rows
 
@@ -40,12 +41,12 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1b done; diya-gl.co.uk and ci.diya-gl.co.uk live |
-| CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | ready-to-start | ~3 files | Haiku | operator chose the list; 1,537 and 1,132 chars against the 1,783 quota |
-| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~3 files | Haiku | DG-1b done; diya-gl.co.uk and ci.diya-gl.co.uk live |
-| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~18 files | Sonnet | DG-1b done; diya-gl.co.uk and ci.diya-gl.co.uk live |
-| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1i, DG-1l, DG-1n | blocked-to-start | ~1 files | Haiku | after DG-1b |
-| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j | blocked-to-start | ~3 files | Haiku | after DG-1j |
+| CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | in-flight | ~3 files | Haiku | on claude/b24-board `9ea6d9b18`; batch unpushed |
+| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Haiku | on claude/b24-board `475bd94b0`; batch unpushed |
+| DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Sonnet | claude/wt-dg-1nl `8707b81a2`; agent's routed run in browser tier |
+| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~18 files | Sonnet | claude/wt-dg-1nl `23eca9655`; agent's routed run in browser tier |
+| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1i, DG-1l, DG-1n | blocked-to-start | ~1 files | Haiku | after b24 merges and deploys |
+| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j, operator | blocked-on-busy | ~3 files | Haiku | Submit cooling down since 2026-09-21T11:52Z; after DG-1j |
 
 ## Plans not tracked here
 
