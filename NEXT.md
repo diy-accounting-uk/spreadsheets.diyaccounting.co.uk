@@ -9,10 +9,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 `main` is `589f13f07` (the publish of diya-gl 1.2.24); the last code head, `c213fe6d` (PR #129),
-is green and on prod. No batch, worktree agent or PR is open here. DG-1a is root PR #33 and DG-3a
-is Submit PR #306, both with every gate green and their merge commands handed to the operator;
-every open machine row waits on DG-1b behind root #33. No watch monitor of this session is armed;
-the SSO token expired at 01:16 UTC on 2026-09-21.
+is green and on prod. No batch, worktree agent or PR is open here. DG-3a landed in Submit through PR #306. DG-1a is root PR #33, every gate green, its merge
+the operator's; every open machine row waits on DG-1b behind it. No watch monitor of this session is armed;
+the SSO session was renewed on 2026-09-21.
 
 ## Context for the open rows
 
@@ -40,7 +39,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | CSP-1 | Decide how the GA4 Google-signals pixel meets the CSP: `allow_google_signals: false` in `analytics.js`, or a short reader-region ccTLD list (the full list is 9.4KB against CloudFront's 1,783-char CSP quota) | none | human-driven | — | ready-to-start | ~0 files | operator | evidence in b21's CSP-1 branch, 2026-09-20 |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
