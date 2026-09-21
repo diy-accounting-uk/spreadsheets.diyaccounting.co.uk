@@ -8,9 +8,6 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**COOL-DOWN is on since 2026-09-21T19:30:33Z.** No new board rows except a degradation. Agents commit
-and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
-
 Nothing. DG-1k merged as Submit PR #322 (`78e3e552`); Submit's prod deploy of it is running
 there. `PLAN_DIYA_GL_HOME.md` and `PLAN_SPREADSHEETS_RUM.md` are archived, every task delivered.
 `main`'s last code head `128240e2e` is on prod.
