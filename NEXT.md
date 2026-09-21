@@ -8,10 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. b24 (PR #130, four rows) merged as `5cff074d4` and its prod deploy is green: prod serves
-`5cff074d4`, ci `fa4b9678f`; `/books/`, `/diya-gl/` and `/diya-gl.html` on the spreadsheets host
-301 to diya-gl.co.uk, `spec.html` answers 200 there, and both CSPs carry the regional Google
-hosts. No PR, batch or worktree agent is open; the four b24 worktrees await the operator's removal.
+b25 (`claude/b25-board`, worktree `../.worktrees/spreadsheets/b25`) is PR #131 with DG-1j; head
+`5fe8732fb`, its ci deploy, codeql and identity-guard green, `test` running; `/auto-merge` on the
+watch's MERGEABLE. `main`'s last code head `5cff074d4` is on prod.
 
 ## Context for the open rows
 
@@ -39,7 +38,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1i, DG-1l, DG-1n on prod since `5cff074d4` |
+| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Haiku | claude/b25-board, PR #131, test run 35636258099 |
 | DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j, operator | blocked-on-busy | ~3 files | Haiku | Submit cooling down since 2026-09-21T11:52Z; after DG-1j |
 
 ## Plans not tracked here
