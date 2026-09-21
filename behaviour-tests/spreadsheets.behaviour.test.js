@@ -1659,10 +1659,14 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 8: See the row in the list");
       console.log("=".repeat(60));
 
-      // The panel was closed in step 6 and the save in step 7 ran through the
-      // save menu, not the panel, so the page never re-fetched the list --
-      // it only does that for a panel already open at save time. Reopening
-      // it here is what fetches the list that now carries the saved book.
+      // The panel was closed in step 6; the save in step 7 ran through the
+      // save menu on the "saved" outcome, which never re-fetches the list,
+      // but the "duplicate" outcome opens the panel itself and its own
+      // resolution already triggered one re-list. Closing before reopening
+      // makes the GET this step waits for unconditional either way.
+      await hideAccountPanel(panel, accountBtn);
+      const isBooksListResponse = (response) => response.request().method() === "GET" && /\/api\/v1\/books$/.test(response.url());
+      const listResponseReceived = page.waitForResponse(isBooksListResponse, { timeout: 15000 });
       await showAccountPanel(panel, accountBtn);
       await expect(panel, "STEP 8 failed: the account panel never reopened").toBeVisible({ timeout: 10000 });
 
@@ -1672,6 +1676,21 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       });
       await shot("11-row-listed");
       console.log(" The saved book is listed in the account panel");
+
+      // The tier is off in every environment this case can run against
+      // (isCiHost's own check above), so Submit answers entitlement.reason
+      // tier-disabled and every save is sandbox retention with a 24h expiry.
+      const listResponse = await listResponseReceived;
+      const listBody = await listResponse.json();
+      expect(listBody.entitlement?.reason, "STEP 8 failed: the list's entitlement.reason was not tier-disabled").toBe("tier-disabled");
+      const savedBooks = listBody.books.filter((book) => book.title === bookTitle);
+      const savedBook = savedBooks.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+      expect(savedBook, "STEP 8 failed: the saved book was not in the list response").toBeTruthy();
+      const expectedExpiresAt = new Date(savedBook.updatedAt).getTime() + 24 * 60 * 60 * 1000;
+      expect(
+        Math.abs(new Date(savedBook.expiresAt).getTime() - expectedExpiresAt),
+        "STEP 8 failed: the saved book's expiresAt was not within a minute of updatedAt + 24h",
+      ).toBeLessThan(60_000);
 
       // ============================================================
       // STEP 9: Open it

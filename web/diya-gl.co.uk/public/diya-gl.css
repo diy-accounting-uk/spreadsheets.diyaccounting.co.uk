@@ -2040,6 +2040,9 @@ table.kv-table tr.total td {
   color: var(--ink-faint);
   margin-top: 0.2rem;
 }
+.account-row-expiry {
+  font-style: italic;
+}
 .account-row-actions {
   display: flex;
   gap: 0.4rem;
@@ -2059,6 +2062,9 @@ table.kv-table tr.total td {
   padding-top: 0.6rem;
   border-top: 1px solid var(--rule-faint);
   font-size: 0.82rem;
+}
+.account-entitlement-label {
+  font-weight: 600;
 }
 .account-conflict {
   font-size: 0.85rem;

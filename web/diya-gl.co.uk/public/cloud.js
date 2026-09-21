@@ -491,8 +491,9 @@
       accountBtnEl.setAttribute("aria-label", email ? "Account, signed in as " + email : "Account");
       if (label) label.textContent = "Account";
     } else {
-      accountBtnEl.title = "Sign in to save to your account";
-      accountBtnEl.setAttribute("aria-label", "Sign in to save to your account");
+      var signInTitle = "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.";
+      accountBtnEl.title = signInTitle;
+      accountBtnEl.setAttribute("aria-label", signInTitle);
       if (label) label.textContent = "Sign in";
     }
   }
@@ -531,6 +532,16 @@
 
   function kb(bytes) {
     return Math.round((bytes || 0) / 1024) + " KB";
+  }
+
+  function expiryLabel(book) {
+    if (book.retention === "resident") return "kept until you delete it";
+    if (!book.expiresAt) return "";
+    var remainingMs = Math.max(0, new Date(book.expiresAt).getTime() - Date.now());
+    var totalMinutes = Math.floor(remainingMs / 60000);
+    var hours = Math.floor(totalMinutes / 60);
+    var minutes = totalMinutes % 60;
+    return hours > 0 ? "expires in " + hours + "h " + minutes + "m" : "expires in " + minutes + "m";
   }
 
   function renderBookRow(book) {
@@ -582,6 +593,9 @@
       esc(new Date(book.updatedAt).toLocaleString()) +
       "<br>" +
       kb(book.latestSize) +
+      '<br><span class="account-row-expiry">' +
+      esc(expiryLabel(book)) +
+      "</span>" +
       (book.provenance && book.provenance.engineVersion ? "<br><small>" + esc(book.provenance.engineVersion) + "</small>" : "") +
       "</div>" +
       "</div>" +
@@ -605,7 +619,7 @@
     );
   }
 
-  function renderList(books, session) {
+  function renderList(books, entitlement, session) {
     var sorted = (books || []).slice().sort(function (a, b) {
       return new Date(b.updatedAt) - new Date(a.updatedAt);
     });
@@ -618,46 +632,29 @@
       esc((session.user && session.user.email) || "Your account") +
       "</div>" +
       rowsHtml +
-      renderEntitlement(books) +
+      renderEntitlement(entitlement) +
       '<button type="button" class="btn" data-action="sign-out">Sign out</button>'
     );
   }
 
-  // C8: read from the newest book's entitlementAtPut.reason, overridden by
-  // any 403 subscription-required seen this session. not-enforced or an
-  // unknown reason renders nothing.
-  var sawUnentitled403 = false;
-
-  function currentEntitlementReason(books) {
-    if (sawUnentitled403) return "no-subscription";
-    var newest = (books || []).slice().sort(function (a, b) {
-      return new Date(b.updatedAt) - new Date(a.updatedAt);
-    })[0];
-    return newest && newest.entitlementAtPut && newest.entitlementAtPut.reason;
-  }
-
-  function renderEntitlement(books) {
-    var reason = currentEntitlementReason(books);
+  // tier-disabled, no-subscription and expired all render the plain sandbox
+  // card until DG-3b adds the upgrade offer; only an active subscription
+  // changes what shows here.
+  function renderEntitlement(entitlement) {
+    var reason = entitlement && entitlement.reason;
     if (reason === "active-subscription") {
       return (
-        '<div class="account-entitlement">Subscribed' +
+        '<div class="account-entitlement"><span class="account-entitlement-label">Subscribed: kept until you delete it</span>' +
         '<div class="account-row-actions"><button type="button" class="btn" data-action="manage-subscription">Manage subscription</button></div>' +
         "</div>"
       );
     }
-    if (reason === "no-subscription" || reason === "expired") {
-      return (
-        '<div class="account-entitlement">Storage is 99p a month' +
-        '<div class="account-row-actions"><button type="button" class="btn btn-primary" data-action="subscribe">Subscribe</button></div>' +
-        "</div>"
-      );
-    }
-    return "";
+    return '<div class="account-entitlement"><span class="account-entitlement-label">24h sandbox</span></div>';
   }
 
   function renderSignedOut() {
     return (
-      '<p class="account-panel-head">Save your books to your DIYA-GL account and open them on any device.</p>' +
+      '<p class="account-panel-head">Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.</p>' +
       '<button type="button" class="btn btn-primary" data-action="sign-in">Sign in</button>'
     );
   }
@@ -789,7 +786,7 @@
       return;
     }
     if (panelState.status === "list") {
-      panelEl.innerHTML = renderList(panelState.books, getSession());
+      panelEl.innerHTML = renderList(panelState.books, panelState.entitlement, getSession());
       return;
     }
     panelEl.innerHTML = renderSignedOut();
@@ -813,7 +810,7 @@
     return apiFetch("/books", { method: "GET" }).then(function (response) {
       return parseJsonBody(response).then(function (body) {
         if (!response.ok) throw apiError(response.status, body);
-        return body.books || [];
+        return { books: body.books || [], entitlement: body.entitlement };
       });
     });
   }
@@ -822,8 +819,8 @@
     panelState = { status: "loading" };
     openPanel();
     return fetchAllBooks()
-      .then(function (books) {
-        panelState = { status: "list", books: books };
+      .then(function (result) {
+        panelState = { status: "list", books: result.books, entitlement: result.entitlement };
         renderPanel();
       })
       .catch(function (error) {
@@ -1002,8 +999,8 @@
   function handleConflict(bookId, artifact, book, product, editedAt) {
     sendConflictEvent("shown");
     return fetchAllBooks()
-      .then(function (books) {
-        var accountBook = books.find(function (candidate) {
+      .then(function (result) {
+        var accountBook = result.books.find(function (candidate) {
           return candidate.bookId === bookId;
         });
         panelState = {
@@ -1046,22 +1043,11 @@
           handleWriteConflict(bookId, ifMatch, artifact, book, product, editedAt);
           return;
         }
-        if (response.status === 403 && body.code === "subscription-required") {
-          sawUnentitled403 = true;
-          sendSaveEvent(product, "unentitled");
-          showToastMessage("Saving to your account needs the 99p subscription.");
-          fetchBooksList();
-          return;
-        }
         if (!response.ok) {
           sendSaveEvent(product, "failed");
           showToastMessage(messageForApiError(apiError(response.status, body)));
           return;
         }
-        // A successful save is fresher evidence than a 403 seen earlier
-        // this session -- the next list call's own entitlementAtPut.reason
-        // takes over from here (C8).
-        sawUnentitled403 = false;
         setLink({ bookId: bookId, latestETag: body.metadata.latestETag, latestVersion: body.metadata.latestVersion });
         sendSaveEvent(product, isNew ? "created" : "updated");
         showToastMessage("Saved to your account as version " + body.metadata.latestVersion + ".");
@@ -1090,8 +1076,8 @@
         if (link) {
           return submitPut(link.bookId, link.latestETag, artifact, current.book, product, false, editedAt);
         }
-        return fetchAllBooks().then(function (books) {
-          var duplicate = findNearDuplicate(books, current.book, product);
+        return fetchAllBooks().then(function (result) {
+          var duplicate = findNearDuplicate(result.books, current.book, product);
           if (duplicate) {
             panelState = {
               status: "duplicate",
@@ -1302,7 +1288,7 @@
 
   // Section 6, the return from Stripe: never trust the query flag as proof
   // of entitlement -- the entitlement card renders from the next list
-  // call's entitlementAtPut.reason, not from checkout=success itself.
+  // call's top-level entitlement.reason, not from checkout=success itself.
   function processPendingCheckoutReturn() {
     if (!pendingCheckoutReturn) return;
     var result = pendingCheckoutReturn;

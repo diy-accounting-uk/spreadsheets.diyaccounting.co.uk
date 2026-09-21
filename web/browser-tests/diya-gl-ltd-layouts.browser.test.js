@@ -180,7 +180,11 @@ test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () 
     // the topbar now carries it ahead of Checks/Undo/New/Save.
     await tabTo(page, "#account-btn");
     focusRingSamples.push(await activeElementHasFocusRing(page));
-    await expect(page.getByRole("button", { name: "Sign in to save to your account" })).toBeFocused();
+    await expect(
+      page.getByRole("button", {
+        name: "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.",
+      }),
+    ).toBeFocused();
 
     // Stop 1: the example button. Loading a book always lands on the Year
     // view (shell.js's applyLoadedSnapshot sets state.view = "year"), so
