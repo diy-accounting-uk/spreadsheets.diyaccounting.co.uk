@@ -344,6 +344,17 @@ Lambda. The API is small: list books, get a version, put a version, delete. Sync
 last-writer-wins with the version stamp, one writer per book, and a conflict shown rather
 than merged; a merge story is a horizon.
 
+**Google Drive, and the bundle that carries both stores (operator, 2026-09-21).** A second
+place to keep the book, beside Submit's S3: the reader's own Google Drive, through the same
+Google identity the sign-in federates. The page saves the diya-gl zip into a `DIYA-GL` folder
+on the reader's Drive with the Drive API's `drive.file` scope (files the app created; no read of
+the rest of the Drive), lists the books there, and opens one back into the page. Versions are
+Drive's own revision history, so the S3 sidecar's version list does not need a twin. This is the
+ownership promise in cloud form: the file sits in a store the reader already pays for and can
+open without this site. Both stores, S3 and Drive, are carried by the one Resident bundle at
+£39 a year (`../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`), which replaces the 99p
+`resident-diya-gl` tier §3 priced; the sandbox rung stays free. Task LP-24.
+
 **Mobile.** The page already has four layouts including mobile portrait with in-card month
 editing. "Online on mobile" is the same page signed in, with the book fetched from storage
 instead of a file. No app store is needed, which keeps the App Store's rules and cut out of
@@ -357,6 +368,15 @@ this quarter" action on the DIYA-GL page for signed-in users. That is the Filing
 with Submit, and it is where the money is.
 
 ### 5d. White-label and referral
+
+**Bank referral revenue on the free rung (operator, 2026-09-21).** FreeAgent is free because
+Mettle pays for it. The free face can take the same subsidy from the other side: one disclosed
+referral to a business current account, shown where a reader with no account is looking at the
+sandbox and the runners, paid per funded account by the bank's partner programme. The fee levels
+are unverified until the operator reads the current partner terms (Tide, Starling, Mettle,
+Monzo Business are the candidates); the decision on which programme, and the sign-up, is the
+operator's (LP-25a). The placement, its disclosure line, and a `referral_clicked` event are the
+machine half (LP-25b). Zero support cost; the risk is independence, answered by the disclosure.
 
 Two different ideas sit under this heading. A referral from npm users to an online MTD
 service is cheap: the package's `--help` and the spec page link to the site, and the site
@@ -447,6 +467,18 @@ concurrent edits, and any second price.
    Fable 5.1 as coordinator.
 7. **VAT position.** Not VAT registered; the price stands as written.
 
+## Decisions taken (operator, 2026-09-21)
+
+8. **The paid tier's price moves.** The 99p `resident-diya-gl` tier folds into one Resident bundle
+   at £39 a year (£3.99 a month), filing included as each is recognised, annual as the default
+   button; `resident-vat` stays at 99p for its four subscribers. The plan of record is
+   `../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`; §3's fee table stays as the record of why
+   99p monthly was tried.
+9. **Two stores in the bundle.** Submit's S3 and the reader's Google Drive (LP-24).
+10. **Bank referral on the free rung** (LP-25a, LP-25b).
+11. **The sandbox runs 25 days**, with `sandbox_expired_seen` per sign-in as the loss metric
+    (`PLAN_PRICE_UPDATE.md` PU-4 and PU-8).
+
 ## Task list
 
 Ids are shared with `NEXT.md`'s board: a row appears there while it is open, with the same id,
@@ -478,6 +510,9 @@ here until their phase opens.
 | LP-21 | The `resident-diya-gl` bundle at 99p a month in Submit's catalogue, and its Stripe product and price through `stripe-catalogue-sync` (Submit's B54, done 2026-09-08 in test and live) | 3 | — | Sonnet, the bundle agent | `../submit.diyaccounting.co.uk/web/public/submit.catalogue.toml`, `.env.ci`, `.env.prod` |
 | LP-22 | Publish `diya-gl` from every green prod deploy: the version not yet on npm publishes, the release is recorded, the patch version rolls | 2 | — | Sonnet | `.github/workflows/publish-diya-gl.yml`, `.github/workflows/deploy.yml` |
 | LP-23 | The ci behaviour job mints its Cognito test user per run through Submit's cross-account role | 3 | Submit's role | Sonnet | `.github/workflows/deploy.yml` |
+| LP-24 | Google Drive as a second store for the book: save, list and open through the `drive.file` scope on the federated Google identity; carried by the Resident bundle with S3 | 3 | LP-17, PU-1 | Opus design, then Sonnet, the drive agent | `web/diya-gl.co.uk/public/cloud.js`, `cloud-config.js`, `shell.js`, the Submit app client's Google scopes (`../submit.diyaccounting.co.uk` IdentityStack), the cloud browser spec (~6 files) |
+| LP-25a | Bank referral: the operator picks the partner programme, signs up, and supplies the referral link and the disclosure wording | 1 | — | operator | — |
+| LP-25b | Bank referral: the placement on the homepage strip and the sign-in panel, the disclosure line, the `referral_clicked` event | 1 | LP-25a | Haiku, the referral agent | `web/diya-gl.co.uk/public/index.html`, `cloud.js`, `diya-gl-events.js`, the cloud browser spec (~4 files) |
 | H8 | Create the `diy-accounting-uk/homebrew-tap` repository | 2 | — | operator | GitHub |
 | H9 | Merge the Submit repo PRs for LP-15, LP-16 and LP-18; its deploy workflow applies them | 3 | LP-15, LP-16 | operator | Submit repo |
 

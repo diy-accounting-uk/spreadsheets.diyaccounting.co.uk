@@ -42,7 +42,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Haiku | agent on claude/diya-gl-drop-spreadsheets-hosts in Submit |
+| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | 5 files | Haiku | Submit PR #322 `a7e22a958`; test and deploy running; cool-down holds the merge |
+| LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
+| LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the operator supplies the link |
+| LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | PU-1 | blocked-to-start | ~6 files | Opus design, then Sonnet | after Submit's `resident` bundle (PU-1) |
+| PU-8 | The pages: "25-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | PU-2, PU-4 | blocked-to-start | ~9 files | Sonnet | after Submit's two prices and 25-day retention |
 
 ## Plans not tracked here
 
@@ -53,6 +57,9 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 - `PLAN_DIYA_GL_LAUNCH.md`: carries the launch posts (LP-10), the Rust port (LP-12 to LP-14), the
   Filing phase as a Submit dependency (LP-19, LP-20), the HMRC licence note (H-LU-9, tracked in Submit's `NEXT.md` under Human-driven from 2026-09-18)
   and SB-1's last task (SB-3, on the board).
+- `../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`: one Resident bundle at £39 a year, annual
+  first, the practice licence, the 25-day sandbox; its Submit tasks PU-1 to PU-7 and PU-9 sit on
+  Submit's board, PU-8 here.
 - `PLAN_DIYA_GL_LAUNCH.md` carries its own open items (the launch posts LP-10, the Rust port plan
   and the operator's research); Submit's `NEXT.md` carries B50 (the DIYA-GL app client in the native-auth toggle), B54 (the `resident-diya-gl` bundle, LP-21 there, done) and B55 (checkout and the portal for DIYA-GL tokens). Its phase rows are not yet on the board.
 
