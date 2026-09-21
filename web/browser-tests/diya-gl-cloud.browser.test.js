@@ -76,6 +76,24 @@ async function withSignedInSession(page) {
   });
 }
 
+// Seeds autosave.js's own IndexedDB record directly, the way withSignedInSession
+// seeds sessionStorage: before the page's own scripts run, so shell.js's boot
+// (checkForSavedBook) picks it up as state.savedBook and cloud.js's device row
+// finds it the first time the panel opens.
+async function withSavedWorkingBook(page, record) {
+  await page.addInitScript((seeded) => {
+    var request = indexedDB.open("diya-books-autosave", 1);
+    request.onupgradeneeded = function () {
+      if (!request.result.objectStoreNames.contains("workingBook")) {
+        request.result.createObjectStore("workingBook");
+      }
+    };
+    request.onsuccess = function () {
+      request.result.transaction("workingBook", "readwrite").objectStore("workingBook").put(seeded, "current");
+    };
+  }, record);
+}
+
 function fakeIdToken(claims) {
   function b64url(obj) {
     return Buffer.from(JSON.stringify(obj)).toString("base64url");
@@ -411,6 +429,69 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect(page.locator(".account-entitlement").getByRole("button")).toHaveCount(0);
   });
 
+  test("the entitlement card offers the upgrade when the resident tier is on and there is no subscription", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ books: [], entitlement: { reason: "no-subscription", expiry: null, residentTier: true } }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-entitlement")).toContainText("24h sandbox. Keep your books for 99p a month.");
+    await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
+  });
+
+  test("the entitlement card shows both dates for a lapsed subscription", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [],
+          entitlement: { reason: "expired", expiry: "2026-02-01T09:00:00.000Z", residentTier: true },
+        }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-entitlement")).toContainText(
+      "Your subscription ended February 1, 2026. These books expire March 3, 2026.",
+    );
+    await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
+  });
+
+  test("the entitlement card shows the subscribed card when the resident tier is on and active", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [subscribedBook()],
+          entitlement: { reason: "active-subscription", expiry: null, residentTier: true },
+        }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-entitlement")).toContainText("Subscribed: kept until you delete it");
+    await expect(page.locator(".account-entitlement").getByRole("button", { name: "Manage subscription" })).toBeVisible();
+    await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toHaveCount(0);
+  });
+
   test("open decodes the version and loads it the same way an uploaded file would", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
@@ -498,6 +579,153 @@ test.describe("DIYA-GL page — signed in", () => {
     await openAccountPanel(page);
     await expect(page.locator(".account-empty")).toBeVisible();
     expect(apiRouteHit).toBe(true);
+  });
+
+  test("a list shorter than the last one seen sends sandbox_expired_seen once, with the missing count", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    let call = 0;
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      call += 1;
+      const books =
+        call === 1
+          ? [
+              unsubscribedBook(),
+              Object.assign({}, unsubscribedBook(), { bookId: "book-2" }),
+              Object.assign({}, unsubscribedBook(), { bookId: "book-3" }),
+            ]
+          : [unsubscribedBook(), Object.assign({}, unsubscribedBook(), { bookId: "book-2" })];
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books }) });
+    });
+
+    await openAccountPanel(page); // fetch #1: three books
+    await expect(page.locator(".account-row")).toHaveCount(3);
+    await openAccountPanel(page); // closes, no fetch
+    await openAccountPanel(page); // fetch #2: two books
+    await expect(page.locator(".account-row")).toHaveCount(2);
+
+    expect(await gaEvents(page, "sandbox_expired_seen")).toEqual([{ missing: 1 }]);
+  });
+
+  test("a delete followed by a shorter list sends no sandbox_expired_seen", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    let call = 0;
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      call += 1;
+      const books = call === 1 ? [unsubscribedBook(), Object.assign({}, unsubscribedBook(), { bookId: "book-2" })] : [unsubscribedBook()];
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books }) });
+    });
+    await page.route(`${PROD_API_BASE}/books/book-2`, (route) => {
+      if (route.request().method() !== "DELETE") return route.continue();
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({}) });
+    });
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-row")).toHaveCount(2);
+
+    await page.locator('.account-row[data-book-id="book-2"] [data-action="delete"]').click();
+    await page.locator('[data-action="confirm-delete"]').click();
+    await expect(page.locator(".account-row")).toHaveCount(1);
+
+    expect(await gaEvents(page, "sandbox_expired_seen")).toEqual([]);
+  });
+});
+
+test.describe("DIYA-GL page — on this device", () => {
+  test("no device row renders while nothing is saved", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await openAccountPanel(page);
+    await expect(page.locator("#account-panel")).toBeVisible();
+    await expect(page.locator(".account-device-row")).toHaveCount(0);
+  });
+
+  test("the device row names the saved book and when it was saved, signed out", async ({ page }) => {
+    await withTestClientId(page);
+    const savedAt = "2026-01-01T09:00:00.000Z";
+    await withSavedWorkingBook(page, { book: {}, lines: [], source: { kind: "example", label: "Precision Code Trading Ltd" }, savedAt });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    // Read back through the page's own formatSavedAt rather than a hardcoded
+    // string, so the assertion holds regardless of the runner's timezone.
+    const expectedWhen = await page.evaluate((iso) => window.DiyaGlPage.formatSavedAt(iso), savedAt);
+
+    await openAccountPanel(page);
+    const deviceRow = page.locator(".account-device-row");
+    await expect(deviceRow).toContainText("Precision Code Trading Ltd");
+    await expect(deviceRow).toContainText("saved " + expectedWhen);
+    await expect(deviceRow).toContainText("kept on this device until you clear your browser data; download the file to keep it for good");
+  });
+
+  test("the device row sits above the account's own book list, signed in", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await withSavedWorkingBook(page, {
+      book: {},
+      lines: [],
+      source: { kind: "example", label: "Precision Code Trading Ltd" },
+      savedAt: "2026-01-01T09:00:00.000Z",
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [unsubscribedBook()] }) }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-device-row")).toContainText("Precision Code Trading Ltd");
+    await expect(page.locator(".account-row")).toHaveCount(1);
+    const deviceRowBox = await page.locator(".account-device-row").boundingBox();
+    const firstBookRowBox = await page.locator(".account-row").first().boundingBox();
+    expect(deviceRowBox.y).toBeLessThan(firstBookRowBox.y);
+  });
+
+  test("Clear removes the device row and the page's own continue offer", async ({ page }) => {
+    await withTestClientId(page);
+    await withSavedWorkingBook(page, {
+      book: {},
+      lines: [],
+      source: { kind: "example", label: "Precision Code Trading Ltd" },
+      savedAt: "2026-01-01T09:00:00.000Z",
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator(".continue-offer")).toBeVisible();
+    await openAccountPanel(page);
+    const deviceRow = page.locator(".account-device-row");
+    await expect(deviceRow).toBeVisible();
+
+    await deviceRow.getByRole("button", { name: "Clear" }).click();
+    await expect(page.locator(".account-device-row")).toHaveCount(0);
+    await expect(page.locator(".continue-offer")).toHaveCount(0);
+  });
+
+  test("navigator.storage.persist is requested once, after the first autosave that resolves true", async ({ page }) => {
+    await withTestClientId(page);
+    await page.addInitScript(() => {
+      window.__storagePersistCalls = 0;
+      navigator.storage.persist = function () {
+        window.__storagePersistCalls += 1;
+        return Promise.resolve(true);
+      };
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await loadExample(page);
+    await expect.poll(() => page.evaluate(() => window.__storagePersistCalls)).toBe(1);
+
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await name.fill("Persisted Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Persisted Trading Ltd");
+
+    expect(await page.evaluate(() => window.__storagePersistCalls)).toBe(1);
   });
 });
 
@@ -686,6 +914,58 @@ test.describe("DIYA-GL page — billing", () => {
   // The service worker now scopes the whole site, so a navigation to the stubbed checkout
   // and portal URLs would be fetched by the worker, which page.route cannot see.
   test.use({ serviceWorkers: "block" });
+
+  test("subscribe posts the exact body and follows the returned checkout URL", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [unsubscribedBook()],
+          entitlement: { reason: "no-subscription", expiry: null, residentTier: true },
+        }),
+      });
+    });
+
+    let checkoutRequest = null;
+    await page.route(`${PROD_API_BASE}/billing/checkout`, async (route) => {
+      checkoutRequest = { body: route.request().postDataJSON(), headers: route.request().headers() };
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ checkoutUrl: `${baseUrl}/fake-stripe-checkout` }),
+      });
+    });
+    let checkoutPageUrl = null;
+    await page.route(`${baseUrl}/fake-stripe-checkout`, async (route) => {
+      checkoutPageUrl = route.request().url();
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
+    });
+
+    await openAccountPanel(page);
+    // Read the token before the click: the stubbed checkout URL navigates the page away.
+    const idToken = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.idToken"));
+    await page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" }).click();
+
+    await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
+    expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", returnTo: bstUrl() });
+    expect(checkoutRequest.headers["authorization"]).toBe(`Bearer ${idToken}`);
+    expect(checkoutRequest.headers["content-type"]).toBe("application/json");
+
+    // location.assign's navigation tears the document down the moment it
+    // commits, wiping window.dataLayer with it before a poll could ever read
+    // cloud_billing back -- the PKCE authorize test hits the same Chromium
+    // behaviour. The event fires (buildCloudBillingEvent's own unit case
+    // covers its shape); only the request and the navigation are asserted
+    // here.
+    await expect.poll(() => checkoutPageUrl !== null, { timeout: 10_000 }).toBe(true);
+    expect(checkoutPageUrl).toBe(`${baseUrl}/fake-stripe-checkout`);
+  });
 
   test("returning with checkout=success cleans the URL, toasts, and re-lists the account", async ({ page }) => {
     await withTestClientId(page);

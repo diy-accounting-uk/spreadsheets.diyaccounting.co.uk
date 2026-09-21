@@ -45,6 +45,13 @@ function buildCloudSaveEvent(product, outcome) {
   return { name: "cloud_save", params: { product: product, outcome: outcome } };
 }
 
+// Sent once when a signed-in reader's list comes back shorter than their
+// last one and they deleted nothing themselves -- their sandbox books
+// lapsed. missing is the drop in count.
+function buildSandboxExpiredSeenEvent(missing) {
+  return { name: "sandbox_expired_seen", params: { missing: missing } };
+}
+
 function buildCloudConflictEvent(resolution) {
   return { name: "cloud_conflict", params: { resolution: resolution } };
 }
@@ -62,6 +69,7 @@ if (typeof window !== "undefined") {
   window.buildDonationPromptEvent = buildDonationPromptEvent;
   window.buildCloudSignInEvent = buildCloudSignInEvent;
   window.buildCloudSaveEvent = buildCloudSaveEvent;
+  window.buildSandboxExpiredSeenEvent = buildSandboxExpiredSeenEvent;
   window.buildCloudConflictEvent = buildCloudConflictEvent;
   window.buildCloudBillingEvent = buildCloudBillingEvent;
 }

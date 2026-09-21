@@ -44,7 +44,7 @@
 // map and falls through to the real fetch() for anything else.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "fs";
-import { resolve, dirname, join, extname } from "path";
+import { resolve, dirname, join, basename, extname } from "path";
 import { fileURLToPath } from "url";
 import { provenanceStamps } from "../app/lib/provenance.js";
 
@@ -358,6 +358,35 @@ function buildProvenanceStamp(product) {
   return { content: parts.join("; "), stamps };
 }
 
+// The site's own build stamp -- a hash of the precached bytes, set by
+// scripts/build-diya-gl-bundle.mjs's writeBuildStamp() as
+// `self.DIYA_GL_BUILD_STAMP` for sw.js's importScripts() to read. Loaded
+// into a runner by a plain <script src> tag, `self` is the page's own
+// `window`, so the same literal lands as `window.DIYA_GL_BUILD_STAMP` --
+// the value the runner compares its own embedded stamp against.
+function readSiteBuildStamp() {
+  const path = resolve(DIYA_GL_DIR, "build-stamp.js");
+  const text = readText(path);
+  const match = text.match(/self\.DIYA_GL_BUILD_STAMP\s*=\s*("(?:[^"\\]|\\.)*")/);
+  if (!match) {
+    throw new Error(`build-runner.mjs: no DIYA_GL_BUILD_STAMP literal found in ${path}. Run: node scripts/build-diya-gl-bundle.mjs`);
+  }
+  return JSON.parse(match[1]);
+}
+
+// The inline script that gives each runner its own copy of the site's
+// current stamp (window.DIYA_GL_RUNNER_STAMP) and compares it, once the
+// external build-stamp.js script tag has had its chance to load, against
+// whatever that script set. Offline, the external tag never loads,
+// window.DIYA_GL_BUILD_STAMP stays undefined, and the condition is false.
+function buildRunnerStampScript(runnerStamp) {
+  return `window.DIYA_GL_RUNNER_STAMP = ${JSON.stringify(runnerStamp)};
+if (window.DIYA_GL_BUILD_STAMP && window.DIYA_GL_BUILD_STAMP !== window.DIYA_GL_RUNNER_STAMP) {
+  var notice = document.getElementById("runner-update-notice");
+  if (notice) notice.hidden = false;
+}`;
+}
+
 function buildRunner(product) {
   const meta = PRODUCTS[product];
   const pageHtml = readText(resolve(DIYA_GL_DIR, `${product}.html`));
@@ -373,6 +402,7 @@ function buildRunner(product) {
 
   const resources = buildResourceMap(product);
   const { content: provenanceContent, stamps } = buildProvenanceStamp(product);
+  const runnerStamp = readSiteBuildStamp();
 
   const scriptTagsHtml = scripts
     .filter((s) => !SKIP_SCRIPT_SRC.has(s.src))
@@ -390,9 +420,15 @@ function buildRunner(product) {
   }
   assertNoScriptSrcRemains(bodyHtml);
   bodyHtml = rewriteSiteLinks(bodyHtml, product);
+  const runnerUrl = `https://diya-gl.co.uk/runners/diya-gl-${product}.html`;
   bodyHtml = bodyHtml.replace(
     "</body>",
-    `<footer class="runner-provenance">DIYA-GL offline runner — ${provenanceContent}</footer>\n${scriptTagsHtml}\n</body>`,
+    `<p id="runner-update-notice" class="runner-update-notice" hidden>A newer offline runner is available. <a href="${runnerUrl}">Download the latest ${meta.title} runner</a>.</p>
+<footer class="runner-provenance">DIYA-GL offline runner — ${provenanceContent}</footer>
+${scriptTagsHtml}
+<script src="https://diya-gl.co.uk/build-stamp.js"></script>
+<script>${buildRunnerStampScript(runnerStamp)}</script>
+</body>`,
   );
 
   const title = pageHtml.match(/<title>([^<]+)<\/title>/)[1] + " — offline runner";
@@ -409,6 +445,7 @@ function buildRunner(product) {
 <style>
 ${cssText}
 .runner-provenance { padding: 0.75rem 1rem; font-size: 0.75rem; color: var(--ink-faint, #667); border-top: 1px solid var(--rule-faint, #ccc); }
+.runner-update-notice { margin: 0; padding: 0.6rem 1rem; font-size: 0.85rem; background: var(--tint, #eef6f6); border-top: 1px solid var(--rule-faint, #ccc); }
 </style>
 <script>${buildFetchShimScript(resources)}</script>
 <script type="importmap">${buildImportMapScript(importMapModules)}</script>
@@ -423,12 +460,27 @@ ${bodyHtml}
   return { product, title: meta.title, outPath, bytes: statSync(outPath).size, stamps };
 }
 
+// One entry per product for the homepage's runner row to read: which file,
+// how big it is, and the same provenance stamps buildProvenanceStamp()
+// already put in the runner's own footer -- so the row's figures can never
+// drift from what the file itself carries.
+function writeManifest(results) {
+  const manifest = results.map((r) => ({
+    product: r.product,
+    file: basename(r.outPath),
+    bytes: r.bytes,
+    ...r.stamps,
+  }));
+  writeFileSync(resolve(OUT_DIR, "runners.json"), JSON.stringify(manifest, null, 2) + "\n");
+}
+
 function main() {
   assertBuilt();
   const results = Object.keys(PRODUCTS).map(buildRunner);
   for (const r of results) {
     console.log(`runner: ${r.outPath.replace(ROOT + "/", "")} (${r.title}) — ${(r.bytes / (1024 * 1024)).toFixed(2)} MiB`);
   }
+  writeManifest(results);
 }
 
 main();

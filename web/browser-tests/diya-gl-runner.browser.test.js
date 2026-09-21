@@ -19,6 +19,18 @@ import { parse as parseTOML } from "smol-toml";
 const ROOT = process.cwd();
 const RUNNER_PATH = path.join(ROOT, "target", "runners", "diya-gl-bst.html");
 
+// The runner's own newer-file check (DG-5) loads
+// https://diya-gl.co.uk/build-stamp.js by a plain script tag. This
+// environment resolves no such host and routes no such request, so
+// Chromium logs this exact resource-load failure on every run -- the
+// offline case the notice's own equality test already tolerates, not a
+// defect the runner raised.
+const EXPECTED_STAMP_LOAD_FAILURE = "Failed to load resource: net::ERR_NAME_NOT_RESOLVED";
+
+function unexpectedConsoleErrors(consoleErrors) {
+  return consoleErrors.filter((message) => message !== EXPECTED_STAMP_LOAD_FAILURE);
+}
+
 test.describe("the DIYA-GL runner — opened from disk, no server", () => {
   test.beforeAll(() => {
     if (!fs.existsSync(RUNNER_PATH)) {
@@ -61,7 +73,7 @@ test.describe("the DIYA-GL runner — opened from disk, no server", () => {
     const bookToml = parseTOML(await zip.file("book.toml").async("string"));
     expect(bookToml.entityInformation.organizationIdentifier).toBe("Precision Code Trading");
 
-    expect(consoleErrors, "the runner raised no console error or uncaught exception").toEqual([]);
+    expect(unexpectedConsoleErrors(consoleErrors), "the runner raised no console error or uncaught exception").toEqual([]);
   });
 
   test("the SA103S form view renders offline, off the product module's own direct fetch()", async ({ page }) => {
@@ -78,6 +90,69 @@ test.describe("the DIYA-GL runner — opened from disk, no server", () => {
     await page.click("#sheet-tabs >> text=SA103S");
     await expect(page.locator("[data-r-key]").first()).toBeAttached({ timeout: 10_000 });
 
-    expect(consoleErrors, "the runner raised no console error or uncaught exception").toEqual([]);
+    expect(unexpectedConsoleErrors(consoleErrors), "the runner raised no console error or uncaught exception").toEqual([]);
+  });
+});
+
+// The manifest the homepage's runner row reads (target/runners/runners.json)
+// and the newer-file notice each runner carries once the site's own
+// build-stamp.js is reachable -- proven here by routing that one script
+// rather than standing up a real diya-gl.co.uk to answer it.
+const RUNNERS_DIR = path.join(ROOT, "target", "runners");
+const MANIFEST_PATH = path.join(RUNNERS_DIR, "runners.json");
+const STAMP_KEYS = [
+  "diya-gl:formatVersion",
+  "diya-gl:engineVersion",
+  "diya-gl:taxDataHash",
+  "diya-gl:templateHash",
+  "diya-gl:templateScorecard",
+];
+
+function embeddedRunnerStamp(runnerHtml) {
+  const match = runnerHtml.match(/window\.DIYA_GL_RUNNER_STAMP\s*=\s*("(?:[^"\\]|\\.)*")/);
+  if (!match) throw new Error("no window.DIYA_GL_RUNNER_STAMP literal found in the runner");
+  return JSON.parse(match[1]);
+}
+
+test.describe("runners.json", () => {
+  test("lists all four runners with a real byte count and every provenance stamp", () => {
+    if (!fs.existsSync(MANIFEST_PATH)) {
+      throw new Error(`No manifest at ${MANIFEST_PATH}. Run: npm run build:runners`);
+    }
+    const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+    expect(manifest).toHaveLength(4);
+    for (const entry of manifest) {
+      expect(entry.bytes).toBeGreaterThan(0);
+      expect(entry.bytes).toBe(fs.statSync(path.join(RUNNERS_DIR, entry.file)).size);
+      for (const key of STAMP_KEYS) expect(entry[key], key).toBeTruthy();
+      if (Object.prototype.hasOwnProperty.call(entry, "diya-gl:reconciledCommit")) {
+        expect(entry["diya-gl:reconciledCommit"]).toBeTruthy();
+      }
+    }
+  });
+});
+
+test.describe("the runner's newer-file notice", () => {
+  test("shows the notice with a link to the current runner when the site's stamp differs from the one embedded", async ({ page }) => {
+    await page.route("**/build-stamp.js", (route) =>
+      route.fulfill({ contentType: "application/javascript", body: 'self.DIYA_GL_BUILD_STAMP = "a-fabricated-different-stamp";' }),
+    );
+
+    await page.goto(`file://${RUNNER_PATH}`, { waitUntil: "domcontentloaded" });
+
+    const notice = page.locator("#runner-update-notice");
+    await expect(notice).toBeVisible();
+    await expect(notice.locator("a")).toHaveAttribute("href", "https://diya-gl.co.uk/runners/diya-gl-bst.html");
+  });
+
+  test("shows no notice when the site's stamp matches the one embedded", async ({ page }) => {
+    const runnerStamp = embeddedRunnerStamp(fs.readFileSync(RUNNER_PATH, "utf8"));
+    await page.route("**/build-stamp.js", (route) =>
+      route.fulfill({ contentType: "application/javascript", body: `self.DIYA_GL_BUILD_STAMP = ${JSON.stringify(runnerStamp)};` }),
+    );
+
+    await page.goto(`file://${RUNNER_PATH}`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("#runner-update-notice")).toBeHidden();
   });
 });

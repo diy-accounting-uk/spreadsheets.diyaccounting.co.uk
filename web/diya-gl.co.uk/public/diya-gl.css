@@ -2057,6 +2057,16 @@ table.kv-table tr.total td {
   padding-left: 0.5rem;
   border-left: 2px solid var(--rule-faint);
 }
+.account-device-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
 .account-entitlement {
   margin-top: 0.75rem;
   padding-top: 0.6rem;
@@ -2531,6 +2541,10 @@ table.kv-table tr.total td {
   font-weight: 400;
   border-color: var(--rule-faint);
   color: var(--ink);
+}
+.runner-row .runner-meta {
+  opacity: 0.65;
+  font-size: 0.75rem;
 }
 .tier-strip {
   flex: 1 1 22rem;
