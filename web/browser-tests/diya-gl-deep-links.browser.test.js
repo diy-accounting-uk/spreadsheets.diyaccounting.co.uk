@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
@@ -25,7 +25,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -35,11 +35,11 @@ test.afterAll(async () => {
 });
 
 function bstUrl(search) {
-  return `${baseUrl}/diya-gl/bst.html${search || ""}`;
+  return `${baseUrl}/bst.html${search || ""}`;
 }
 
 function seUrl(search) {
-  return `${baseUrl}/diya-gl/se.html${search || ""}`;
+  return `${baseUrl}/se.html${search || ""}`;
 }
 
 const EXAMPLES = [

@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 
 const PAGES = ["bst.html", "se.html", "taxi.html", "ltd.html"];
 
@@ -22,7 +22,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -34,16 +34,16 @@ test.afterAll(async () => {
 test.describe("DIYA-GL PWA manifest", () => {
   for (const page of PAGES) {
     test(`${page} links a manifest that resolves and parses`, async ({ page: browserPage }) => {
-      await browserPage.goto(`${baseUrl}/diya-gl/${page}`, { waitUntil: "domcontentloaded" });
+      await browserPage.goto(`${baseUrl}/${page}`, { waitUntil: "domcontentloaded" });
       const href = await browserPage.locator('link[rel="manifest"]').getAttribute("href");
       expect(href).toBe("manifest.webmanifest");
 
-      const response = await browserPage.request.get(`${baseUrl}/diya-gl/manifest.webmanifest`);
+      const response = await browserPage.request.get(`${baseUrl}/manifest.webmanifest`);
       expect(response.status()).toBe(200);
       const manifest = await response.json();
       expect(manifest.name).toBeTruthy();
-      expect(manifest.start_url).toBe("/diya-gl/");
-      expect(manifest.scope).toBe("/diya-gl/");
+      expect(manifest.start_url).toBe("/");
+      expect(manifest.scope).toBe("/");
       expect(manifest.display).toBe("standalone");
       expect(Array.isArray(manifest.icons) && manifest.icons.length).toBeGreaterThan(0);
     });
@@ -55,7 +55,7 @@ test.describe("DIYA-GL PWA offline", () => {
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(String(error)));
 
-    await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "load" });
+    await page.goto(`${baseUrl}/bst.html`, { waitUntil: "load" });
 
     // Resolves only once the worker has installed (its precache populated)
     // and activated -- the same signal a real install-then-use visitor gets.

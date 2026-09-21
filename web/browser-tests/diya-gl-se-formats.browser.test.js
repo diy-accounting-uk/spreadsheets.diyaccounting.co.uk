@@ -25,8 +25,8 @@ import { stampBook } from "../../app/lib/provenance.js";
 import { SCENARIOS_SE } from "./r-sources.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-se-formats");
 
 const FEATURED = SCENARIOS_SE[0];
@@ -79,7 +79,7 @@ test.beforeAll(async () => {
     throw new Error(`No bundle at ${BUNDLE}. Run: node scripts/build-diya-gl-bundle.mjs`);
   }
   FIXTURES = await buildFixtures();
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -89,7 +89,7 @@ test.afterAll(async () => {
 });
 
 function seUrl() {
-  return `${baseUrl}/diya-gl/se.html`;
+  return `${baseUrl}/se.html`;
 }
 
 async function dropFile(page, bytes, name, mimeType) {

@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 
-const PUBLIC_DIR = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 
 // The same link shell.js itself reads off window.DIYA_GL_DONATE_LINK
 // (donate-config.js, generated per environment by
@@ -27,7 +27,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -37,7 +37,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl() {
-  return `${baseUrl}/diya-gl/bst.html`;
+  return `${baseUrl}/bst.html`;
 }
 
 // Every test starts from a clean localStorage: navigate once, clear it, then

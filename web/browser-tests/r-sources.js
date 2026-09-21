@@ -83,7 +83,7 @@ export const SCENARIOS_TAXI = [
     bookDir: "examples/basic-taxi-driver/taxi",
     button: /taxi-scenario-basic/,
     product: "taxi",
-    page: "diya-gl/taxi.html",
+    page: "taxi.html",
   },
   {
     scenario: "taxi-scenario-sp-sixty",
@@ -91,7 +91,7 @@ export const SCENARIOS_TAXI = [
     bookDir: "examples/sp-sixty-driving/taxi",
     button: /taxi-scenario-sp-sixty/,
     product: "taxi",
-    page: "diya-gl/taxi.html",
+    page: "taxi.html",
   },
   {
     scenario: "taxi-scenario-kestrel",
@@ -99,7 +99,7 @@ export const SCENARIOS_TAXI = [
     bookDir: "examples/kestrel-executive-cars/taxi",
     button: /taxi-scenario-kestrel/,
     product: "taxi",
-    page: "diya-gl/taxi.html",
+    page: "taxi.html",
   },
 ];
 
@@ -114,7 +114,7 @@ export const SCENARIOS_LTD = [
     bookDir: "examples/precision-code-ltd/full",
     example: null,
     product: "ltd",
-    page: "diya-gl/ltd.html",
+    page: "ltd.html",
   },
   {
     scenario: "ltd-brickwork-pro-vat",
@@ -122,7 +122,7 @@ export const SCENARIOS_LTD = [
     bookDir: "examples/brickwork-pro/ltd-vat",
     example: null,
     product: "ltd",
-    page: "diya-gl/ltd.html",
+    page: "ltd.html",
   },
   {
     scenario: "ltd-brickwork-pro-nonvat",
@@ -130,7 +130,7 @@ export const SCENARIOS_LTD = [
     bookDir: "examples/brickwork-pro/ltd-nonvat",
     example: null,
     product: "ltd",
-    page: "diya-gl/ltd.html",
+    page: "ltd.html",
   },
 ];
 

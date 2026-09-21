@@ -18,6 +18,7 @@ import { HEADLINES as LTD_HEADLINES } from "../app/products/ltd.js";
 // Base URL is set via SPREADSHEETS_BASE_URL env var, with CI default.
 const spreadsheetsBaseUrlRaw = process.env.SPREADSHEETS_BASE_URL || "https://ci-spreadsheets.diyaccounting.co.uk";
 const spreadsheetsBaseUrl = spreadsheetsBaseUrlRaw.replace(/\/+$/, "");
+const diyaGlBaseUrl = (process.env.DIYA_GL_BASE_URL || "https://ci.diya-gl.co.uk").replace(/\/+$/, "");
 
 // Screenshot path for spreadsheets tests
 const screenshotPath = "target/behaviour-test-results/screenshots/spreadsheets-behaviour-test";
@@ -974,7 +975,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
+    const booksUrl = `${diyaGlBaseUrl}/bst.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-18-books-bst-empty.png` });
@@ -1034,7 +1035,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the SE books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/se.html`;
+    const booksUrl = `${diyaGlBaseUrl}/se.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-20-books-se-empty.png` });
@@ -1106,7 +1107,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Taxi books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/taxi.html`;
+    const booksUrl = `${diyaGlBaseUrl}/taxi.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-22-books-taxi-empty.png` });
@@ -1176,7 +1177,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("STEP 1: Open the Ltd books page");
     console.log("=".repeat(60));
 
-    const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/ltd.html`;
+    const booksUrl = `${diyaGlBaseUrl}/ltd.html`;
     console.log(` Navigating to: ${booksUrl}`);
     await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-24-books-ltd-empty.png` });
@@ -1415,16 +1416,16 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     const testAuthUsername = process.env.TEST_AUTH_USERNAME || "";
     const testAuthPassword = process.env.TEST_AUTH_PASSWORD || "";
     const testAuthTotpSecret = process.env.TEST_AUTH_TOTP_SECRET || "";
-    let spreadsheetsHostname = "";
+    let diyaGlHostname = "";
     try {
-      spreadsheetsHostname = new URL(spreadsheetsBaseUrl).hostname;
+      diyaGlHostname = new URL(diyaGlBaseUrl).hostname;
     } catch {
-      spreadsheetsHostname = "";
+      diyaGlHostname = "";
     }
-    const isCiHost = spreadsheetsHostname === "ci-spreadsheets.diyaccounting.co.uk";
+    const isCiHost = diyaGlHostname === "ci.diya-gl.co.uk";
 
     const missing = [];
-    if (!isCiHost) missing.push("SPREADSHEETS_BASE_URL naming the ci host");
+    if (!isCiHost) missing.push("DIYA_GL_BASE_URL naming the ci host");
     if (!testAuthUsername) missing.push("TEST_AUTH_USERNAME");
     if (!testAuthPassword) missing.push("TEST_AUTH_PASSWORD");
     if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
@@ -1480,7 +1481,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("STEP 1: Open the books page and the account panel");
       console.log("=".repeat(60));
 
-      const booksUrl = `${spreadsheetsBaseUrl}/diya-gl/bst.html`;
+      const booksUrl = `${diyaGlBaseUrl}/bst.html`;
       await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
       await shot("01-books-page");
 

@@ -32,7 +32,7 @@ import * as esbuild from "esbuild";
 import { headlinesFromReport } from "../../app/lib/headlines.js";
 import { HEADLINES } from "../../app/products/bst.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "target");
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
@@ -237,7 +237,7 @@ test.afterAll(async () => {
 });
 
 async function mountStrip(page, snapshotJson) {
-  await page.goto(`${baseUrl}/diya-gl/headlines-probe.html`);
+  await page.goto(`${baseUrl}/headlines-probe.html`);
   await page.addScriptTag({ path: engineBundlePath });
   // diya-gl/headlines.js calls opts.headlinesFromReport(report) with a single
   // argument, so the declaration is bound in here rather than passed

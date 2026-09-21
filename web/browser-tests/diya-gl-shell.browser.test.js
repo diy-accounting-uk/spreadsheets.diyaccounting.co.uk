@@ -22,7 +22,7 @@ import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
 import { CELL_MAP } from "../../app/products/bst.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 fs.mkdirSync(screenshotsDir, { recursive: true });
 const PROFIT_BRIDGE_SECTION = "section/accounting-profit-to-tax-profit-bridge/";
@@ -33,7 +33,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -43,7 +43,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl(search) {
-  return `${baseUrl}/diya-gl/bst.html${search || ""}`;
+  return `${baseUrl}/bst.html${search || ""}`;
 }
 
 async function openEmptyPage(page) {
@@ -212,7 +212,7 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
 test.describe("DIYA-GL books shell — New sits beside Save", () => {
   test("neither product page links out to the download page", async ({ page }) => {
     for (const file of ["bst.html", "se.html"]) {
-      await page.goto(`${baseUrl}/diya-gl/${file}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/${file}`, { waitUntil: "domcontentloaded" });
       await expect(page.locator(".app-topbar .app-mark")).toBeVisible();
       await expect(page.locator(".app-back")).toHaveCount(0);
       await expect(page.locator('a[href*="download.html"]')).toHaveCount(0);
@@ -300,7 +300,7 @@ test.describe("DIYA-GL books shell — New sits beside Save", () => {
     await expect(page.locator(".empty-state")).toBeVisible();
 
     expect(new URL(page.url()).search).toBe("");
-    expect(new URL(page.url()).pathname).toBe("/diya-gl/bst.html");
+    expect(new URL(page.url()).pathname).toBe("/bst.html");
 
     await expect(page.locator(".continue-offer")).toContainText(EXAMPLE_KEY);
     await page.locator("#continue-btn").click();
@@ -386,7 +386,7 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
   test(".btn:hover keeps 4.5:1 text contrast against its tint fill, on every product page", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     for (const file of ["bst.html", "se.html", "ltd.html", "taxi.html"]) {
-      await page.goto(`${baseUrl}/diya-gl/${file}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/${file}`, { waitUntil: "domcontentloaded" });
       const btn = page.locator("#new-book-btn");
       await expect(btn, file).toBeVisible();
       await btn.hover();
@@ -413,7 +413,7 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
       { file: "ltd.html", example: "ltd-scenario-full", view: "ct600" },
     ];
     for (const c of cases) {
-      await page.goto(`${baseUrl}/diya-gl/${c.file}?example=${c.example}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/${c.file}?example=${c.example}`, { waitUntil: "domcontentloaded" });
       await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
       await page.locator(`.tab-btn[data-view="${c.view}"]`).click();
       await expect(page.locator(".form-row").first()).toBeAttached();
@@ -460,7 +460,7 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
   });
 
   async function entriesColumnsGeometry(page, file, example) {
-    await page.goto(`${baseUrl}/diya-gl/${file}?example=${example}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}/${file}?example=${example}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
     const toggle = page.locator("#entries-toggle");
     if ((await toggle.count()) === 0) {
@@ -492,7 +492,7 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
 
     test("under-44px controls reach 44px at a coarse pointer", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${baseUrl}/diya-gl/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
       await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
       const selectors = [
@@ -514,7 +514,7 @@ test.describe("DIYA-GL books shell — cross-product contrast, layout and touch-
 
   test("a fine pointer keeps the smaller desktop sizes the coarse-pointer media query never touches", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${baseUrl}/diya-gl/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}/bst.html?example=${EXAMPLE_KEY}`, { waitUntil: "domcontentloaded" });
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
     const height = await page
       .locator(".year-row")

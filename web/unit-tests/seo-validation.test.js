@@ -5,11 +5,25 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// Site configuration for the spreadsheets site
-const site = {
-  dir: path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public"),
-  domain: "https://spreadsheets.diyaccounting.co.uk",
-};
+// Site configuration for each of the two sites this repository publishes.
+const sites = [
+  {
+    name: "spreadsheets",
+    dir: path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public"),
+    domain: "https://spreadsheets.diyaccounting.co.uk",
+    landing: "index.html",
+    landingHasJsonLd: true,
+  },
+  {
+    // The site has no homepage yet; ltd.html stands in as its landing page until index.html
+    // lands with the JSON-LD block.
+    name: "diya-gl",
+    dir: path.join(process.cwd(), "web/diya-gl.co.uk/public"),
+    domain: "https://diya-gl.co.uk",
+    landing: "ltd.html",
+    landingHasJsonLd: false,
+  },
+];
 
 // Helper: read file content
 function readFile(filePath) {
@@ -70,96 +84,98 @@ function extractJsonLd(html) {
   return blocks;
 }
 
-describe("Sitemap validation", () => {
-  const sitemapPath = path.join(site.dir, "sitemap.xml");
+for (const site of sites) {
+  describe(`Sitemap validation (${site.name})`, () => {
+    const sitemapPath = path.join(site.dir, "sitemap.xml");
 
-  it("sitemap.xml exists and is valid XML", () => {
-    expect(fs.existsSync(sitemapPath), `${sitemapPath} should exist`).toBe(true);
-    const xml = readFile(sitemapPath);
-    expect(xml).toContain('<?xml version="1.0"');
-    expect(xml).toContain("<urlset");
-    expect(xml).toContain("</urlset>");
-  });
-
-  it("all sitemap URLs use the correct domain", () => {
-    const xml = readFile(sitemapPath);
-    const urls = extractSitemapUrls(xml);
-    expect(urls.length).toBeGreaterThan(0);
-    for (const url of urls) {
-      expect(url, `URL ${url} should start with ${site.domain}`).toMatch(new RegExp(`^${escapeRegExp(site.domain)}`));
-    }
-  });
-
-  it("no duplicate URLs in sitemap", () => {
-    const xml = readFile(sitemapPath);
-    const urls = extractSitemapUrls(xml);
-    const unique = new Set(urls);
-    expect(unique.size, `Found ${urls.length - unique.size} duplicate URLs`).toBe(urls.length);
-  });
-
-  it("no sitemap URLs are blocked by robots.txt", () => {
-    const robotsPath = path.join(site.dir, "robots.txt");
-    if (!fs.existsSync(robotsPath)) return;
-    const robots = parseRobotsTxt(readFile(robotsPath));
-    const xml = readFile(sitemapPath);
-    const urls = extractSitemapUrls(xml);
-    for (const url of urls) {
-      const urlPath = new URL(url).pathname;
-      expect(isDisallowed(urlPath, robots.disallows), `Sitemap URL ${url} is blocked by robots.txt Disallow rule`).toBe(false);
-    }
-  });
-});
-
-describe("robots.txt validation", () => {
-  const robotsPath = path.join(site.dir, "robots.txt");
-
-  it("robots.txt exists", () => {
-    expect(fs.existsSync(robotsPath), `${robotsPath} should exist`).toBe(true);
-  });
-
-  it("has User-agent: * directive", () => {
-    const robots = parseRobotsTxt(readFile(robotsPath));
-    expect(robots.userAgents).toContain("*");
-  });
-
-  it("has Sitemap directive pointing to correct URL", () => {
-    const robots = parseRobotsTxt(readFile(robotsPath));
-    const expectedSitemap = `${site.domain}/sitemap.xml`;
-    expect(robots.sitemaps, `Should contain ${expectedSitemap}`).toContain(expectedSitemap);
-  });
-});
-
-describe("Meta tag validation", () => {
-  const indexPath = path.join(site.dir, "index.html");
-
-  it("index.html has <title>", () => {
-    const html = readFile(indexPath);
-    expect(html).toMatch(/<title>.+<\/title>/);
-  });
-
-  it('index.html has <meta name="description">', () => {
-    const html = readFile(indexPath);
-    expect(html).toMatch(/name\s*=\s*"description"/);
-  });
-
-  // Check all HTML pages in the site have <title>
-  const htmlFiles = fs.readdirSync(site.dir).filter((f) => f.endsWith(".html"));
-  for (const file of htmlFiles) {
-    it(`${file} has <title>`, () => {
-      const html = readFile(path.join(site.dir, file));
-      expect(html, `${file} should have a <title> tag`).toMatch(/<title>.+<\/title>/);
+    it("sitemap.xml exists and is valid XML", () => {
+      expect(fs.existsSync(sitemapPath), `${sitemapPath} should exist`).toBe(true);
+      const xml = readFile(sitemapPath);
+      expect(xml).toContain('<?xml version="1.0"');
+      expect(xml).toContain("<urlset");
+      expect(xml).toContain("</urlset>");
     });
-  }
-});
 
-describe("Structured data validation", () => {
-  it('index.html has JSON-LD with @type "SoftwareApplication"', () => {
-    const html = readFile(path.join(site.dir, "index.html"));
-    const jsonLdBlocks = extractJsonLd(html);
-    expect(jsonLdBlocks.length).toBeGreaterThan(0);
-    const app = jsonLdBlocks.find((b) => b["@type"] === "SoftwareApplication");
-    expect(app, "Should have a SoftwareApplication JSON-LD block").toBeTruthy();
-    expect(app["@context"]).toBe("https://schema.org");
-    expect(app.name).toContain("DIY Accounting");
+    it("all sitemap URLs use the correct domain", () => {
+      const xml = readFile(sitemapPath);
+      const urls = extractSitemapUrls(xml);
+      expect(urls.length).toBeGreaterThan(0);
+      for (const url of urls) {
+        expect(url, `URL ${url} should start with ${site.domain}`).toMatch(new RegExp(`^${escapeRegExp(site.domain)}`));
+      }
+    });
+
+    it("no duplicate URLs in sitemap", () => {
+      const xml = readFile(sitemapPath);
+      const urls = extractSitemapUrls(xml);
+      const unique = new Set(urls);
+      expect(unique.size, `Found ${urls.length - unique.size} duplicate URLs`).toBe(urls.length);
+    });
+
+    it("no sitemap URLs are blocked by robots.txt", () => {
+      const robotsPath = path.join(site.dir, "robots.txt");
+      if (!fs.existsSync(robotsPath)) return;
+      const robots = parseRobotsTxt(readFile(robotsPath));
+      const xml = readFile(sitemapPath);
+      const urls = extractSitemapUrls(xml);
+      for (const url of urls) {
+        const urlPath = new URL(url).pathname;
+        expect(isDisallowed(urlPath, robots.disallows), `Sitemap URL ${url} is blocked by robots.txt Disallow rule`).toBe(false);
+      }
+    });
   });
-});
+
+  describe(`robots.txt validation (${site.name})`, () => {
+    const robotsPath = path.join(site.dir, "robots.txt");
+
+    it("robots.txt exists", () => {
+      expect(fs.existsSync(robotsPath), `${robotsPath} should exist`).toBe(true);
+    });
+
+    it("has User-agent: * directive", () => {
+      const robots = parseRobotsTxt(readFile(robotsPath));
+      expect(robots.userAgents).toContain("*");
+    });
+
+    it("has Sitemap directive pointing to correct URL", () => {
+      const robots = parseRobotsTxt(readFile(robotsPath));
+      const expectedSitemap = `${site.domain}/sitemap.xml`;
+      expect(robots.sitemaps, `Should contain ${expectedSitemap}`).toContain(expectedSitemap);
+    });
+  });
+
+  describe(`Meta tag validation (${site.name})`, () => {
+    const landingPath = path.join(site.dir, site.landing);
+
+    it(`${site.landing} has <title>`, () => {
+      const html = readFile(landingPath);
+      expect(html).toMatch(/<title>.+<\/title>/);
+    });
+
+    it(`${site.landing} has <meta name="description">`, () => {
+      const html = readFile(landingPath);
+      expect(html).toMatch(/name\s*=\s*"description"/);
+    });
+
+    // Check all HTML pages in the site have <title>
+    const htmlFiles = fs.readdirSync(site.dir).filter((f) => f.endsWith(".html"));
+    for (const file of htmlFiles) {
+      it(`${file} has <title>`, () => {
+        const html = readFile(path.join(site.dir, file));
+        expect(html, `${file} should have a <title> tag`).toMatch(/<title>.+<\/title>/);
+      });
+    }
+  });
+
+  describe.runIf(site.landingHasJsonLd)(`Structured data validation (${site.name})`, () => {
+    it(`${site.landing} has JSON-LD with @type "SoftwareApplication"`, () => {
+      const html = readFile(path.join(site.dir, site.landing));
+      const jsonLdBlocks = extractJsonLd(html);
+      expect(jsonLdBlocks.length).toBeGreaterThan(0);
+      const app = jsonLdBlocks.find((b) => b["@type"] === "SoftwareApplication");
+      expect(app, "Should have a SoftwareApplication JSON-LD block").toBeTruthy();
+      expect(app["@context"]).toBe("https://schema.org");
+      expect(app.name).toContain("DIY Accounting");
+    });
+  });
+}

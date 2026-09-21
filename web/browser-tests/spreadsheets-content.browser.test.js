@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
-const booksDir = path.join(publicDir, "diya-gl");
+const booksDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 
 function readHtml(filename) {
   return fs.readFileSync(path.join(publicDir, filename), "utf-8");

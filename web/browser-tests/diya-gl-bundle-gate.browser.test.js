@@ -10,7 +10,7 @@
 // agree cell for cell and verdict for verdict.
 //
 // The Node side calls the same functions in the same order as
-// web/spreadsheets.diyaccounting.co.uk/public/diya-gl/probe.js. Keep them in step.
+// web/diya-gl.co.uk/public/probe.js. Keep them in step.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -30,8 +30,8 @@ import {
 } from "../../app/lib/diya-gl-engine.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
 const FIXTURE = path.join(ROOT, "examples/sp-sixty-driving/bst");
 
 // The Node run: the same steps probe.js takes, against the modules themselves.
@@ -93,12 +93,15 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   });
 
   test("the bundled engine and the pipeline modules agree on the sp-sixty BST book", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
 
     try {
-      await page.goto(`${baseUrl}/diya-gl/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => document.body.dataset.probeState !== "running", null, { timeout: 60_000 });
 
       const probe = await page.evaluate(() => ({
@@ -145,9 +148,12 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   });
 
   test("a Node-only path fails loudly in the browser rather than returning nothing", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     try {
-      await page.goto(`${baseUrl}/diya-gl/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/probe.html`, { waitUntil: "domcontentloaded" });
       const outcome = await page.evaluate(async () => {
         const engine = await import("./engine/diya-gl-engine.js");
         try {
@@ -166,12 +172,15 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   });
 
   test("validating before the schemas are supplied says so, rather than validating nothing", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     try {
       // A fresh page, so the probe's own loadSchemasFrom() has not run yet.
-      await page.goto(`${baseUrl}/diya-gl/probe.html`, { waitUntil: "commit" });
+      await page.goto(`${baseUrl}/probe.html`, { waitUntil: "commit" });
       const outcome = await page.evaluate(async () => {
-        const engine = await import("/diya-gl/engine/diya-gl-engine.js");
+        const engine = await import("/engine/diya-gl-engine.js");
         try {
           engine.validateBook({});
           return { threw: false };
@@ -190,9 +199,12 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   // and nothing on the load path fetches it, so the asset layout's one binary
   // claim would otherwise go untested until W4 arrives.
   test("the BST template is where the asset layout says, and opens in the browser", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     try {
-      await page.goto(`${baseUrl}/diya-gl/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/probe.html`, { waitUntil: "domcontentloaded" });
       const fetched = await page.evaluate(async () => {
         const probe = await import("./probe.js");
         return probe.readTemplate();

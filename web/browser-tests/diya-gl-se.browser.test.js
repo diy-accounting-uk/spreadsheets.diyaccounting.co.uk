@@ -19,7 +19,7 @@ import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
 import { BANK_LAYOUTS } from "../../app/products/se.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 const BOOK_DIR = "examples/precision-code-ltd/advanced";
 const FEATURED_EXAMPLE = "se-scenario-advanced";
@@ -40,7 +40,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -50,7 +50,7 @@ test.afterAll(async () => {
 });
 
 function seUrl(search) {
-  return `${baseUrl}/diya-gl/se.html${search || ""}`;
+  return `${baseUrl}/se.html${search || ""}`;
 }
 
 // Every uncaught error and every console error the page raises while a test

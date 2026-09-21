@@ -40,7 +40,7 @@ import { addSaleLine, addPurchaseLine, addBankLine } from "../../app/lib/diya-gl
 import { changePayrollLine } from "../../app/lib/diya-gl-edits-ltd.js";
 import { bankLayout, BANK_ACCOUNT_FILES } from "../../app/lib/ltd-layout.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const ROOT = process.cwd();
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
@@ -50,7 +50,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -92,7 +92,7 @@ async function dropFile(page, bytes, name) {
 
 async function openFull(page) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/ltd.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/ltd.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, await diyaGlZipOf(LTD_FULL_DIR), "precision-code-ltd-full.zip");
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 }
@@ -102,7 +102,7 @@ async function openFull(page) {
 // openNewSeBook/settleTestBook pattern, over Ltd's own new-book form.
 async function openNewLtdBook(page, businessName) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/ltd.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/ltd.html`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Start a new book" }).click();
   await page.locator("#new-book-name").fill(businessName);
   await page.locator("#new-book-year-end").fill("2026-03-31");

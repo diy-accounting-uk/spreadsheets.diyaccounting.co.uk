@@ -27,7 +27,7 @@ import { loadDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { externalLinks, HUB_FILE } from "../../app/lib/link-caches.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
 const PACKAGE_DIR = path.join(ROOT, "examples/ltd-latest");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-ltd-equivalence");
 
@@ -37,7 +37,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -47,7 +47,7 @@ test.afterAll(async () => {
 });
 
 function ltdUrl() {
-  return `${baseUrl}/diya-gl/ltd.html`;
+  return `${baseUrl}/ltd.html`;
 }
 
 function periodEndOf(bookDir) {

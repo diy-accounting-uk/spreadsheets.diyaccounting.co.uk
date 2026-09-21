@@ -29,7 +29,7 @@ import {
 } from "../../app/lib/diya-gl-edits.js";
 import { applyHelper } from "../../app/lib/book-checks.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
@@ -39,7 +39,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -71,7 +71,7 @@ async function monthCell(page, monthKey, column) {
 
 async function openBook(page, example = /bst-scenario-basic/) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/bst.html`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: example }).click();
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 }
@@ -474,7 +474,7 @@ test.describe("DIYA-GL page — E1: each edit's report.json equals Node's", () =
 test.describe("DIYA-GL page — a book started from nothing", () => {
   test("a brand-new book takes its first entry in the grid", async ({ page }) => {
     await page.setViewportSize(DESKTOP_LANDSCAPE);
-    await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}/bst.html`, { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: "Start a new book" }).click();
     await page.locator("#new-book-name").fill("Acorn Trading");
     await page.locator("#new-book-year-end").fill("2026-03-31");
@@ -734,7 +734,7 @@ test.describe("DIYA-GL page — the rung: helpers fix a deliberately broken book
 test.describe("DIYA-GL page — drift after an edit", () => {
   test("an uploaded workbook's drift annotations relabel as recalculated once the book is edited", async ({ page }) => {
     await page.setViewportSize(DESKTOP_LANDSCAPE);
-    await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${baseUrl}/bst.html`, { waitUntil: "domcontentloaded" });
     await page.locator("#file-picker").setInputFiles(path.join(process.cwd(), "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx"));
     await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 

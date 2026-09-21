@@ -17,7 +17,7 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { parseDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 
-const PUBLIC_DIR = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const ROOT = process.cwd();
 const PRECISION_DIR = path.join(ROOT, "examples/precision-code-ltd/bst");
 
@@ -30,7 +30,7 @@ let precisionBookToml;
 let precisionLinesJsonl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
   precisionBookToml = fs.readFileSync(path.join(PRECISION_DIR, "book.toml"), "utf-8");
@@ -46,7 +46,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl() {
-  return `${baseUrl}/diya-gl/bst.html`;
+  return `${baseUrl}/bst.html`;
 }
 
 async function withTestClientId(page) {

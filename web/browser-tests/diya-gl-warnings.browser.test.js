@@ -20,7 +20,7 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { parseFigure } from "./r-sources.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
 
@@ -28,7 +28,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -39,7 +39,7 @@ test.afterAll(async () => {
 
 async function openBook(page, example) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/bst.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/bst.html`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: example }).click();
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 }
