@@ -640,6 +640,10 @@ function subscribedBook() {
 }
 
 test.describe("DIYA-GL page — billing", () => {
+  // The service worker now scopes the whole site, so a navigation to the stubbed checkout
+  // and portal URLs would be fetched by the worker, which page.route cannot see.
+  test.use({ serviceWorkers: "block" });
+
   test("subscribe posts the exact body and follows the returned checkout URL", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
