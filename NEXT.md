@@ -8,11 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #129 (`claude/b23-board`: DG-3b, DG-6, DG-5, DG-4) is under CI. PRs #125 to #128 are on prod
-(`db6f1f63` the last code head). DG-1a is root PR #33 and DG-3a is Submit PR #306, both with
-every gate green and their merge commands handed to the operator. Submit carries DG-1h, DG-2a,
-DG-3c and DG-3b's test half on its main. The SSO token expired at 01:16 UTC on 2026-09-21; AWS
-reads resume after `aws sso login --sso-session diyaccounting`.
+PR #129 (DG-3b, DG-6, DG-5, DG-4) merged; its prod deploy is running. PRs #125 to #128 are on
+prod. DG-1a is root PR #33 and DG-3a is Submit PR #306, both with every gate green and their merge
+commands handed to the operator; every open machine row waits on DG-1b (the cut-over) behind root
+#33. Submit carries DG-1h, DG-2a, DG-3c and DG-3b's test half on its main. The SSO token expired at
+01:16 UTC on 2026-09-21; AWS reads resume after `aws sso login --sso-session diyaccounting`.
 
 ## Context for the open rows
 
@@ -40,11 +40,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | claude/b23-board, PR #129; CI running |
-| DG-6 | The `sandbox_expired_seen` event when a signed-in reader's list comes back shorter | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | claude/b23-board, PR #129; CI running |
-| DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | claude/b23-board, PR #129; CI running |
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
-| DG-5 | `runners.json` with size and stamp, the homepage runner row, the newer-file notice | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | claude/b23-board, PR #129; CI running |
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | CSP-1 | Decide how the GA4 Google-signals pixel meets the CSP: `allow_google_signals: false` in `analytics.js`, or a short reader-region ccTLD list (the full list is 9.4KB against CloudFront's 1,783-char CSP quota) | none | human-driven | — | ready-to-start | ~0 files | operator | evidence in b21's CSP-1 branch, 2026-09-20 |
 | DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
