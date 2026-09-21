@@ -41,7 +41,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 |---|---|---|---|---|---|---|---|---|
 | DG-1a | Root: hosted zones, aliases and delegate role for diya-gl.co.uk and diya-gl.com | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~6 files | Sonnet | root PR #33, gates green; operator merges |
 | CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | ready-to-start | ~3 files | Haiku | operator chose the list; 1,537 and 1,132 chars against the 1,783 quota |
-| DG-1m | Operator: GA4 admin, diya-gl.co.uk in the stream's cross-domain list and referral exclusions | PLAN_DIYA_GL_HOME.md | human-driven | — | ready-to-start | ~0 files | operator | — |
 | DG-1b | Cut-over runbook: root deploy, name servers, certificate, variable, site stacks, second root deploy | PLAN_DIYA_GL_HOME.md | machine-ask | DG-1a, DG-1c | blocked-to-start | ~0 files | Sonnet | after DG-1a merges; operator says go on each write |
 | DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~18 files | Sonnet | its links and redirect point at the new host; after DG-1b |
 | DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | DG-1b | blocked-to-start | ~3 files | Haiku | needs the ci host; after DG-1b |
