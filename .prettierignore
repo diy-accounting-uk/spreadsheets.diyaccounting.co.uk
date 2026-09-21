@@ -18,7 +18,7 @@ package-lock.json
 web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
 
 # Generated diya-gl format spec page (built by app/bin/build-diya-gl-spec.js)
-web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
+web/diya-gl.co.uk/public/spec.html
 
 # Books engine bundle and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
 web/diya-gl.co.uk/public/engine/

@@ -53,7 +53,7 @@ name.
 | `scripts/` | PolyForm |
 | `web/spreadsheets.diyaccounting.co.uk/public/schema/*.schema.json` | Apache-2.0 |
 | `web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-docs.md` | CC-BY-4.0 |
-| `web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html` | CC-BY-4.0, written by its builder |
+| `web/diya-gl.co.uk/public/spec.html` | CC-BY-4.0, written by its builder |
 | `web/` (everything else) | PolyForm |
 | `_developers/` | PolyForm; the HMRC material under `_developers/hmrc-references/` is Crown copyright, see below |
 | `.claude/`, `.github/`, `.mvn/` | PolyForm; the Maven wrapper is Apache-2.0 third-party code |

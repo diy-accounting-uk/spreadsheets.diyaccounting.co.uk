@@ -14,7 +14,7 @@
 //         app/lib/diya-gl-interchange.js (the zip entries and the format version)
 //         app/lib/book-checks.js, run over one example book per product
 //         web/spreadsheets.diyaccounting.co.uk/public/reconciliation/*.json
-// Writes: web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
+// Writes: web/diya-gl.co.uk/public/spec.html
 //
 // Every table on the page is read from the artefact it describes, so the
 // page cannot claim a field, a box or a check the code does not carry. The
@@ -30,13 +30,14 @@ import { runBookChecks } from "../lib/book-checks.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
+const DIYA_GL_DIR = resolve(ROOT, "web", "diya-gl.co.uk", "public");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const RECONCILIATION_DIR = resolve(PUBLIC_DIR, "reconciliation");
 const HMRC_DIR = resolve(ROOT, "app", "data", "hmrc");
 const EXAMPLES_DIR = resolve(ROOT, "examples");
-const OUT_PATH = resolve(PUBLIC_DIR, "diya-gl.html");
+const OUT_PATH = resolve(DIYA_GL_DIR, "spec.html");
 
-const CANONICAL_URL = "https://spreadsheets.diyaccounting.co.uk/diya-gl.html";
+const CANONICAL_URL = "https://diya-gl.co.uk/spec.html";
 const PAGE_TITLE = "The DIYA-GL format - DIY Accounting Spreadsheets";
 const PAGE_DESCRIPTION =
   "The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence.";
@@ -456,7 +457,7 @@ function buildPage() {
       <p>
         Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
         books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
-        the figures behind them are on its <a href="reconciliation/index.html">reconciliation scorecard</a>.
+        the figures behind them are on its <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">reconciliation scorecard</a>.
       </p>
 ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "MTD API field"], boxes.rows.map(boxRow))}`);
 
@@ -540,7 +541,7 @@ ${table(
   // A scorecard's status, run count and date move with every generate run, so
   // they stay on the scorecard; this table carries what does not move.
   const scorecardRow = (card) => [
-    `<a href="reconciliation/${escapeHtml(card.page)}">${escapeHtml(card.name)}</a>`,
+    `<a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/${escapeHtml(card.page)}">${escapeHtml(card.name)}</a>`,
     escapeHtml(card.featuredScenario),
   ];
   sections.push(`      <h3 id="evidence">Reconciliation evidence</h3>
@@ -551,17 +552,17 @@ ${table(
         of the recalculated sheets, the accounting statements and the tax review.
       </p>
 ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
-      <p><a href="reconciliation/index.html">All reconciliation reports</a></p>`);
+      <p><a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">All reconciliation reports</a></p>`);
 
   sections.push(`      <h3 id="tools">Getting the tools</h3>
       <p>
         The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
-        <li><a href="diya-gl/bst.html">Basic Sole Trader books</a></li>
-        <li><a href="diya-gl/taxi.html">Taxi Driver books</a></li>
-        <li><a href="diya-gl/se.html">Self Employed books</a></li>
-        <li><a href="diya-gl/ltd.html">Limited Company books</a></li>
+        <li><a href="bst.html">Basic Sole Trader books</a></li>
+        <li><a href="taxi.html">Taxi Driver books</a></li>
+        <li><a href="se.html">Self Employed books</a></li>
+        <li><a href="ltd.html">Limited Company books</a></li>
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package
@@ -572,11 +573,11 @@ brew install diy-accounting-uk/diya-gl/diya-gl
 docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
-        <a href="reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
+        <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
       </p>
       <p>
-        The spreadsheets themselves stay free to download on a donation basis. <a href="download.html">Download a package</a>, or
-        <a href="donate.html">chip in</a> if the tools earn it.
+        The spreadsheets themselves stay free to download on a donation basis. <a href="https://spreadsheets.diyaccounting.co.uk/download.html">Download a package</a>, or
+        <a href="https://spreadsheets.diyaccounting.co.uk/donate.html">chip in</a> if the tools earn it.
       </p>`);
 
   sections.push(`      <h3 id="licence">Licence</h3>
@@ -640,12 +641,12 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
     <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <nav class="top-nav" aria-label="Main navigation">
-      <a href="index.html">Products</a>
-      <a href="download.html">Download</a>
-      <a href="knowledge-base.html">Knowledge Base</a>
-      <a href="community.html">Community</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/index.html">Products</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/download.html">Download</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html">Knowledge Base</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/community.html">Community</a>
       <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
-      <a href="donate.html">Donate</a>
+      <a href="https://spreadsheets.diyaccounting.co.uk/donate.html">Donate</a>
     </nav>
 
     <header>
@@ -654,7 +655,7 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
     </header>
 
     <main id="mainContent">
-      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Products</a></nav>
+      <nav class="nav-back" aria-label="Breadcrumb"><a href="https://spreadsheets.diyaccounting.co.uk/index.html">&larr; Products</a></nav>
 
       <h2 class="kb-page-title">The DIYA-GL&trade; format</h2>
       <p class="kb-page-description">A year of accounts in two text files, and the mapping, the checks and the evidence behind them.</p>
@@ -672,8 +673,8 @@ ${sections.join("\n\n")}
       <div class="footer-content">
         <div class="footer-left">
           <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
-          <a href="knowledge-base.html">knowledge base</a>
-          <a href="reconciliation/index.html">reconciliation</a>
+          <a href="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html">knowledge base</a>
+          <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">reconciliation</a>
           <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
           <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
           <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>

@@ -970,7 +970,7 @@ function renderReleasesPage(releases) {
   const body = [
     '      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>',
     '      <h2 class="kb-page-title">Reconciled releases</h2>',
-    '      <p class="kb-page-description">Every diya-gl release carries five stamps: the format it is written to, the engine build that produced it, the tax data it applied, each product\'s template, and the commit its scorecard was proved against. <a href="../diya-gl.html#versioning">The diya-gl format</a> explains what each one means.</p>',
+    '      <p class="kb-page-description">Every diya-gl release carries five stamps: the format it is written to, the engine build that produced it, the tax data it applied, each product\'s template, and the commit its scorecard was proved against. <a href="https://diya-gl.co.uk/spec.html#versioning">The diya-gl format</a> explains what each one means.</p>',
     renderSection({ id: "releases", title: "Releases" }, renderReleasesTable(releases)),
   ].join("\n");
 

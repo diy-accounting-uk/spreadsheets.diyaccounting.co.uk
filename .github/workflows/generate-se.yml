@@ -461,7 +461,7 @@ jobs:
             find reports -name "*se-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
           git add packages/ reports/ examples/se-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
-            app/lib/provenance-data.js web/spreadsheets.diyaccounting.co.uk/public/diya-gl.html
+            app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

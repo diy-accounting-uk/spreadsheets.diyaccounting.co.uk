@@ -32,3 +32,9 @@ target = "diya-gl"
 from = "/diya-gl/"
 to = "/"
 target = "diya-gl"
+
+# The format spec page moved with the rest of the DIYA-GL pages.
+[[redirect]]
+from = "/diya-gl.html"
+to = "/spec.html"
+target = "diya-gl"

@@ -13,8 +13,9 @@ import { buildDiyaGlSpecHtml } from "../bin/build-diya-gl-spec.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
 const PUBLIC_DIR = resolve(REPO_ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
+const DIYA_GL_DIR = resolve(REPO_ROOT, "web", "diya-gl.co.uk", "public");
 
-const published = readFileSync(resolve(PUBLIC_DIR, "diya-gl.html"), "utf8");
+const published = readFileSync(resolve(DIYA_GL_DIR, "spec.html"), "utf8");
 
 function fieldNames(schemaFile) {
   const schema = JSON.parse(readFileSync(resolve(PUBLIC_DIR, "schema", schemaFile), "utf8"));

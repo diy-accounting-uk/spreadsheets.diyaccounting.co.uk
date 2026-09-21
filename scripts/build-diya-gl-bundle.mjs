@@ -61,8 +61,9 @@ const SITE_FILES = [
 
 // Copies the handful of spreadsheets-site files the new site's pages still
 // reach by tag (lib/*, the stylesheet, the favicons) plus the two published
-// JSON Schemas every book load validates against, so the new host serves
-// its own copy of each rather than reaching across origins.
+// JSON Schemas every book load validates against and their commentary, so
+// the new host serves its own copy of each rather than reaching across
+// origins.
 function copySiteFiles() {
   for (const parts of SITE_FILES) {
     const src = resolve(PUBLIC_DIR, ...parts);
@@ -73,7 +74,7 @@ function copySiteFiles() {
   }
 
   mkdirSync(DIYA_GL_SCHEMA_DIR, { recursive: true });
-  for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
+  for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json", "diya-gl-docs.md"]) {
     cpSync(resolve(SCHEMA_DIR, name), resolve(DIYA_GL_SCHEMA_DIR, name));
   }
 }
