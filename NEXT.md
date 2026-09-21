@@ -11,10 +11,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 **COOL-DOWN is on since 2026-09-21T19:30:33Z.** No new board rows except a degradation. Agents commit
 and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
 
-DG-1k, in Submit: PR #322 (`claude/diya-gl-drop-spreadsheets-hosts`, worktree
-`../submit.diyaccounting.co.uk/.claude/worktrees/dg-1k`), now driven by the Submit session, which
-added the log-group fix and the DIYA-GL suites' sign-in through diya-gl.co.uk; head `0e960f738`,
-test and deploy running. Nothing else open here; `main`'s last code head `128240e2e` is on prod.
+Nothing. DG-1k merged as Submit PR #322 (`78e3e552`); Submit's prod deploy of it is running
+there. `PLAN_DIYA_GL_HOME.md` and `PLAN_SPREADSHEETS_RUM.md` are archived, every task delivered.
+`main`'s last code head `128240e2e` is on prod.
 
 ## Context for the open rows
 
@@ -42,7 +41,6 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | 5 files | Haiku | Submit PR #322 head `0e960f738`, two fix commits by the Submit session; test and deploy running |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
 | LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the operator supplies the link |
 | LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | PU-1 | blocked-to-start | ~6 files | Opus design, then Sonnet | after Submit's `resident` bundle (PU-1) |

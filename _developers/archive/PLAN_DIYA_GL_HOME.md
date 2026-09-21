@@ -2,6 +2,11 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: DIYA-GL home on diya-gl.co.uk, the 24h sandbox, the resident account
 
+> Delivered 2026-09-21: every task landed (DG-1a to DG-1n, DG-2a/2b, DG-3a/3b/3c, DG-4, DG-5,
+> DG-6); DG-1k merged as Submit PR #322 (`78e3e552`). Superseded on retention and price by
+> `../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`: the sandbox runs 35 days and the resident
+> tier is the £39-a-year `resident` bundle. §(d)'s two measurement triggers live on there.
+
 Refines the board rows DG-1, DG-2 and DG-3 into one design and one task list. Builds on
 `PLAN_DIYA_GL_LAUNCH.md` (§3 to §5, the 2026-09-04 decisions, LP-15 to LP-21) and cites it by
 section. State lines are as of 2026-09-18.

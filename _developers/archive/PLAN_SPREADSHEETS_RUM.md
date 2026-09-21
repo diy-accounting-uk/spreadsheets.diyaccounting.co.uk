@@ -2,6 +2,8 @@
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # PLAN: CloudWatch RUM on spreadsheets.diyaccounting.co.uk
 
+> Delivered 2026-09-21: RUM-1 (PR #126), OAM-1 (PR #127), OAM-2 (PR #128).
+
 Submit's operations dashboard has a page-experience panel that reads `AWS/RUM` by
 `application_name`; this site has no app monitor, so the panel does not cover it.
 
