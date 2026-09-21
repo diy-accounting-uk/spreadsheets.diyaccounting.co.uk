@@ -1365,10 +1365,15 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("Testing DIYA-GL apex host files");
     console.log("=".repeat(60));
 
-    // Test /runners/diya-gl-bst.html
-    const bstRunnerResponse = await page.request.get(`${diyaGlBaseUrl}/runners/diya-gl-bst.html`);
-    expect(bstRunnerResponse.status()).toBe(200);
-    console.log(` ${diyaGlBaseUrl}/runners/diya-gl-bst.html → 200`);
+    // The offline runners are built into target/runners/ and synced to the bucket's /runners/ at
+    // deploy time, so only a deployed host serves them; the local static server has no such path.
+    if (new URL(diyaGlBaseUrl).hostname.startsWith("localhost")) {
+      console.log(` ${diyaGlBaseUrl}/runners/ is not served locally; runner probe applies to a deployed host`);
+    } else {
+      const bstRunnerResponse = await page.request.get(`${diyaGlBaseUrl}/runners/diya-gl-bst.html`);
+      expect(bstRunnerResponse.status()).toBe(200);
+      console.log(` ${diyaGlBaseUrl}/runners/diya-gl-bst.html → 200`);
+    }
 
     // Test /sitemap.xml
     const sitemapResponse = await page.request.get(`${diyaGlBaseUrl}/sitemap.xml`);
