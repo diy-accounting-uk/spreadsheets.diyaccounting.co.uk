@@ -22,7 +22,7 @@ import { applyNamedEdit } from "./r-sources.js";
 import { addSaleLine, changeLineQuantity } from "../../app/lib/diya-gl-edits.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
 
 const BASIC_DIR = "examples/basic-taxi-driver/taxi";
 const SP_SIXTY_DIR = "examples/sp-sixty-driving/taxi";
@@ -31,7 +31,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -41,7 +41,7 @@ test.afterAll(async () => {
 });
 
 function taxiUrl() {
-  return `${baseUrl}/diya-gl/taxi.html`;
+  return `${baseUrl}/taxi.html`;
 }
 
 async function waitForLoaded(page) {

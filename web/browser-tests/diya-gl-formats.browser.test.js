@@ -31,9 +31,9 @@ import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
 import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
-const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "diya-gl/assets/examples/precision-code-ltd/bst");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
+const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "assets/examples/precision-code-ltd/bst");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-formats");
 
 const WORKBOOK_PATH = path.join(ROOT, "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
@@ -108,7 +108,7 @@ test.beforeAll(async () => {
     throw new Error(`No bundle at ${BUNDLE}. Run: node scripts/build-diya-gl-bundle.mjs`);
   }
   FIXTURES = await buildFixtures();
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -118,7 +118,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl() {
-  return `${baseUrl}/diya-gl/bst.html`;
+  return `${baseUrl}/bst.html`;
 }
 
 // Drops a File built from bytes onto the empty-state card through a

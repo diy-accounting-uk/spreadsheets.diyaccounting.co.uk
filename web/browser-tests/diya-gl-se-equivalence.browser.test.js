@@ -33,8 +33,8 @@ import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
 import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "diya-gl/assets/examples/precision-code-ltd/advanced");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "assets/examples/precision-code-ltd/advanced");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-se-equivalence");
 // The served example's book.toml is a plain copy of
 // examples/precision-code-ltd/advanced/book.toml, carrying no stamps of its
@@ -53,7 +53,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -63,7 +63,7 @@ test.afterAll(async () => {
 });
 
 function seUrl(search) {
-  return `${baseUrl}/diya-gl/se.html${search || ""}`;
+  return `${baseUrl}/se.html${search || ""}`;
 }
 
 // ── S2 for a Self Employed book, on the tax data the page itself reads ────

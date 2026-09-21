@@ -19,7 +19,7 @@ let buildCloudConflictEvent;
 let buildCloudBillingEvent;
 
 beforeAll(() => {
-  const src = readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/diya-gl/diya-gl-events.js"), "utf8");
+  const src = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/diya-gl-events.js"), "utf8");
   const sandbox = { window: {} };
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox);

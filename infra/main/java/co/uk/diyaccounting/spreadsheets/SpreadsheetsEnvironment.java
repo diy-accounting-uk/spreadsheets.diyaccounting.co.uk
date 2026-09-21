@@ -73,6 +73,11 @@ public class SpreadsheetsEnvironment {
         var diyaGlDomainNamesStr =
                 envOr("DIYA_GL_DOMAIN_NAMES", KindCdk.getContextValueString(app, "diyaGlDomainNames", ""));
 
+        var ciMetricsSinkArn = envOr("CI_METRICS_SINK_ARN", KindCdk.getContextValueString(app, "ciMetricsSinkArn", ""));
+        var prodMetricsSinkArn =
+                envOr("PROD_METRICS_SINK_ARN", KindCdk.getContextValueString(app, "prodMetricsSinkArn", ""));
+        var metricsSinkArn = "prod".equals(envName) ? prodMetricsSinkArn : ciMetricsSinkArn;
+
         List<String> diyaGlDomainNames;
         if (!diyaGlDomainNamesStr.isBlank()) {
             diyaGlDomainNames = List.of(diyaGlDomainNamesStr.split(","));
@@ -93,7 +98,8 @@ public class SpreadsheetsEnvironment {
                 holdingDomainName,
                 diyaGlCertificateArn,
                 diyaGlDocRootPath,
-                diyaGlDomainNames);
+                diyaGlDomainNames,
+                metricsSinkArn);
         app.synth();
         infof("CDK synth complete for spreadsheets environment");
     }
@@ -109,7 +115,8 @@ public class SpreadsheetsEnvironment {
             String holdingDomainName,
             String diyaGlCertificateArn,
             String diyaGlDocRootPath,
-            List<String> diyaGlDomainNames) {
+            List<String> diyaGlDomainNames,
+            String metricsSinkArn) {
         // CloudFront requires us-east-1 for certificates
         Environment usEast1Env = Environment.builder()
                 .region("us-east-1")
@@ -128,6 +135,7 @@ public class SpreadsheetsEnvironment {
                         .certificateArn(certificateArn)
                         .docRootPath(docRootPath)
                         .domainNames(domainNames)
+                        .metricsSinkArn(metricsSinkArn)
                         .build());
 
         // Skipped rather than synthesized with an invalid certificate until the holding

@@ -28,8 +28,8 @@ import { validateTaxiAnchors } from "../../app/lib/anchors/taxi.js";
 import { AnchorError } from "../../app/lib/anchors/run.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-taxi-formats");
 fs.mkdirSync(TARGET_DIR, { recursive: true });
 
@@ -69,7 +69,7 @@ test.beforeAll(async ({ browser }) => {
   if (!fs.existsSync(BUNDLE)) {
     throw new Error(`No bundle at ${BUNDLE}. Run: node scripts/build-diya-gl-bundle.mjs`);
   }
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 
@@ -94,7 +94,7 @@ test.beforeAll(async ({ browser }) => {
   // is exactly what the JSON/JSON-zip drops in the tests below are proving
   // equivalent to the workbook.
   const page = await browser.newPage();
-  await page.goto(`${baseUrl}/diya-gl/taxi.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/taxi.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, FIXTURES.workbook.bytes, FIXTURES.workbook.name);
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
   const jsonBytes = (await triggerSaveDownload(page, "Download books as JSON (.json)")).bytes;
@@ -108,7 +108,7 @@ test.afterAll(async () => {
 });
 
 function taxiUrl() {
-  return `${baseUrl}/diya-gl/taxi.html`;
+  return `${baseUrl}/taxi.html`;
 }
 
 async function dropFile(page, bytes, name, mimeType) {

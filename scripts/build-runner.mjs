@@ -50,7 +50,7 @@ import { provenanceStamps } from "../app/lib/provenance.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
-const DIYA_GL_DIR = resolve(PUBLIC_DIR, "diya-gl");
+const DIYA_GL_DIR = resolve(ROOT, "web", "diya-gl.co.uk", "public");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const ASSETS_DIR = resolve(DIYA_GL_DIR, "assets");
 const OUT_DIR = resolve(ROOT, "target", "runners");
@@ -60,7 +60,7 @@ const OUT_DIR = resolve(ROOT, "target", "runners");
 // file header. ".invalid" is the reserved TLD for exactly this: a name
 // that must never resolve on a real network (RFC 2606).
 const ORIGIN = "https://runner.diya-gl.invalid";
-const BASE_PATH = "/diya-gl/";
+const BASE_PATH = "/";
 const BASE_HREF = `${ORIGIN}${BASE_PATH}`;
 
 const PRODUCTS = {
@@ -77,7 +77,7 @@ const PRODUCTS = {
 // -- none of which a file opened from disk has. cloud.js's own isEnabled()
 // guard (C5) would already keep the feature off on file://, but the runner
 // carries neither script at all rather than relying on that guard alone.
-const SKIP_SCRIPT_SRC = new Set(["../lib/analytics.js", "../lib/consent-banner.js", "pwa.js", "cloud-config.js", "cloud.js"]);
+const SKIP_SCRIPT_SRC = new Set(["lib/analytics.js", "lib/consent-banner.js", "pwa.js", "cloud-config.js", "cloud.js"]);
 
 const MIME_BY_EXT = {
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -265,9 +265,7 @@ function rewriteSaveJsEngineImport(source) {
 // live page instead, so following one from an opened-from-disk runner
 // reaches a real page rather than a dead address.
 function rewriteSiteLinks(bodyHtml, product) {
-  return bodyHtml
-    .replace(`href="${product}.html"`, `href="https://spreadsheets.diyaccounting.co.uk/diya-gl/${product}.html"`)
-    .replace('href="../donate.html"', 'href="https://spreadsheets.diyaccounting.co.uk/donate.html"');
+  return bodyHtml.replace(`href="${product}.html"`, `href="https://diya-gl.co.uk/${product}.html"`);
 }
 
 function collectTemplateFiles(product) {

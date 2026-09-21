@@ -16,7 +16,7 @@ import path from "node:path";
 import http from "node:http";
 import { execFileSync } from "node:child_process";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const targetDir = path.join(process.cwd(), "target", "render-coverage");
 
 const CONTENT_TYPES = {
@@ -146,7 +146,7 @@ async function openEveryAccount(page, runningKeys) {
 
 async function sweepPage(page, exampleButton, htmlFile, views) {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${baseUrl}/diya-gl/${htmlFile}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/${htmlFile}`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: exampleButton }).click();
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 

@@ -22,7 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const ROOT = resolve(APP_DIR, "..");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
-const MANIFEST_FILE = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl", "products", "se.js");
+const MANIFEST_FILE = resolve(ROOT, "web", "diya-gl.co.uk", "public", "products", "se.js");
 
 const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8"));
 

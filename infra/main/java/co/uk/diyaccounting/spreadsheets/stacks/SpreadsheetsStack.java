@@ -70,6 +70,7 @@ import software.amazon.awscdk.services.logs.CfnDeliveryProps;
 import software.amazon.awscdk.services.logs.CfnDeliverySource;
 import software.amazon.awscdk.services.logs.CfnDeliverySourceProps;
 import software.amazon.awscdk.services.logs.ILogGroup;
+import software.amazon.awscdk.services.oam.CfnLink;
 import software.amazon.awscdk.services.rum.CfnAppMonitor;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
@@ -114,6 +115,12 @@ public class SpreadsheetsStack extends Stack {
 
         /** Domain names for the CloudFront distribution (e.g. ci-spreadsheets.diyaccounting.co.uk) */
         List<String> domainNames();
+
+        /** ARN of Submit's us-east-1 CloudWatch OAM sink; blank skips the cross-account metrics link. */
+        @Value.Default
+        default String metricsSinkArn() {
+            return "";
+        }
 
         static ImmutableSpreadsheetsStackProps.Builder builder() {
             return ImmutableSpreadsheetsStackProps.builder();
@@ -449,6 +456,19 @@ public class SpreadsheetsStack extends Stack {
                 .ephemeralStorageSize(Size.gibibytes(2))
                 .build();
         rumConfigDeployment.getNode().addDependency(this.webDeployment);
+
+        // Cross-account metrics link: shares this account's CloudWatch metrics with Submit's
+        // us-east-1 monitoring sink, gated on the sink ARN as the redirect function is gated
+        // on its file.
+        if (!props.metricsSinkArn().isBlank()) {
+            CfnLink.Builder.create(this, resourcePrefix + "-MetricsLink")
+                    .resourceTypes(List.of("AWS::CloudWatch::Metric"))
+                    .labelTemplate("$AccountName")
+                    .sinkIdentifier(props.metricsSinkArn())
+                    .build();
+        } else {
+            infof("metricsSinkArn is blank, skipping the cross-account metrics link for %s", props.envName());
+        }
 
         // Outputs
         cfnOutput(this, "DistributionDomainName", this.distribution.getDomainName());

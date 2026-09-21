@@ -20,7 +20,7 @@ import { s1, s2, s2ForPackage, s3, s3YearEnd, canonical, parseFigure, SCENARIOS 
 import { provenanceStamps, provenanceHeader } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
-const publicDir = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(ROOT, "web/diya-gl.co.uk/public");
 const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/bst.json"), "utf-8"));
 const FRESH_PACKAGE_PATH = path.join(process.cwd(), "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-equivalence");
@@ -30,7 +30,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -40,7 +40,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl() {
-  return `${baseUrl}/diya-gl/bst.html`;
+  return `${baseUrl}/bst.html`;
 }
 
 // ── The page sweep: every data-r-key on every view, both drill levels ──────

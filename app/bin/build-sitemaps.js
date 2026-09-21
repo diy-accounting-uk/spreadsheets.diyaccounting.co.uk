@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// build-sitemaps.js — Generate sitemap.xml for spreadsheets site
+// build-sitemaps.js — Generate sitemap.xml for the spreadsheets site and for
+// diya-gl.co.uk
 //
 // Usage:
 //   node app/bin/build-sitemaps.js
@@ -10,12 +11,13 @@
 // Reads:  web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 //         web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
+//         web/diya-gl.co.uk/public/sitemap.xml
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { buildSitemapXml } from "../lib/sitemap-builder.js";
+import { buildSitemapXml, buildDiyaGlSitemapXml } from "../lib/sitemap-builder.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -23,6 +25,10 @@ const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "pub
 const KB_TOML = resolve(PUBLIC_DIR, "knowledge-base.toml");
 const CATALOGUE_TOML = resolve(PUBLIC_DIR, "catalogue.toml");
 const SITEMAP_PATH = resolve(PUBLIC_DIR, "sitemap.xml");
+const DIYA_GL_SITEMAP_PATH = resolve(ROOT, "web", "diya-gl.co.uk", "public", "sitemap.xml");
+
+// The four books pages; DG-1g adds the homepage once it exists.
+const DIYA_GL_PAGES = ["bst.html", "se.html", "taxi.html", "ltd.html"];
 
 let articles = [];
 if (existsSync(KB_TOML)) {
@@ -49,3 +55,7 @@ if (existsSync(RECONCILIATION_DIR)) {
 const { xml, urlCount } = buildSitemapXml(products, articles, reconciliationPages);
 writeFileSync(SITEMAP_PATH, xml, "utf8");
 console.log(`Spreadsheets sitemap: ${SITEMAP_PATH} (${urlCount} URLs)`);
+
+const diyaGl = buildDiyaGlSitemapXml(DIYA_GL_PAGES);
+writeFileSync(DIYA_GL_SITEMAP_PATH, diyaGl.xml, "utf8");
+console.log(`diya-gl sitemap: ${DIYA_GL_SITEMAP_PATH} (${diyaGl.urlCount} URLs)`);

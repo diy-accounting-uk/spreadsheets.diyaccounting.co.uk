@@ -146,6 +146,23 @@ const ROUTES = [
     adds: { browser: "diya-gl", extras: ["smoke:diya-gl"] },
   },
   {
+    id: "diya-gl site",
+    // The new site's own root: its scripts sit directly under public/, not
+    // under a page directory, so the generic "browser asset" row below can
+    // only narrow to one spec by filename. A shared file here (shell.js,
+    // sw.js, bundle-resources.js) reaches every DIYA-GL page, so this row
+    // runs the whole diya-gl-*.browser.test.js suite instead.
+    match: (p) => /^web\/diya-gl\.co\.uk\/public\//.test(p) && !/^web\/diya-gl\.co\.uk\/public\/products\//.test(p),
+    adds: { browser: "diya-gl" },
+  },
+  {
+    id: "diya-gl site product",
+    // A single product's own module under products/ narrows back to that
+    // product's specs rather than the whole suite.
+    match: (p) => /^web\/diya-gl\.co\.uk\/public\/products\/(bst|se|ltd|taxi)/.test(p),
+    adds: { browser: "product" },
+  },
+  {
     id: "browser asset",
     match: (p) => /^web\/[^/]+\/public\/.*\.(js|css)$/.test(p),
     adds: { browser: "page" },

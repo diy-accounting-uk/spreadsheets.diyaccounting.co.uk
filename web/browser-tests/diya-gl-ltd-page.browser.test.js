@@ -22,7 +22,7 @@ import { startStaticServer } from "./serve.js";
 import { taxYearFileName } from "../../app/lib/product-workbook.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
 const PACKAGE_DIR = path.join(ROOT, "examples/ltd-latest");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-ltd-page");
 
@@ -32,7 +32,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -42,7 +42,7 @@ test.afterAll(async () => {
 });
 
 function ltdUrl(search) {
-  return `${baseUrl}/diya-gl/ltd.html${search || ""}`;
+  return `${baseUrl}/ltd.html${search || ""}`;
 }
 
 // Every uncaught error and every console error the page raises while a test

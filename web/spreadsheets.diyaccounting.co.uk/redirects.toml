@@ -8,6 +8,7 @@
 # Targets:
 #   "spreadsheets" → spreadsheets.diyaccounting.co.uk (ci: ci-spreadsheets.diyaccounting.co.uk)
 #   "submit"       → submit.diyaccounting.co.uk (ci: ci.submit.diyaccounting.co.uk)
+#   "diya-gl"      → diya-gl.co.uk (ci: ci.diya-gl.co.uk)
 #   "self"         → same host (internal redirect, no 301)
 #
 # [[redirect]] matches one path exactly; [[redirect_prefix]] matches every
@@ -21,7 +22,8 @@ target = "self"
 
 # The DIYA-GL pages moved from /books/ to /diya-gl/ — every old page, asset
 # and PWA path still resolves, including one added to the tree after this
-# rule was written.
+# rule was written. The pages' own site, diya-gl.co.uk, takes both prefixes
+# once its host is live.
 [[redirect_prefix]]
 from = "/books/"
 to = "/diya-gl/"

@@ -30,7 +30,7 @@ import { loadDiyaGlData } from "../../app/lib/diya-gl-loader.js";
 import { changeLineAmount } from "../../app/lib/diya-gl-edits.js";
 import { loadTaxDataForBook } from "../../app/lib/product-workbook.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const ROOT = process.cwd();
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
@@ -42,7 +42,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -55,7 +55,7 @@ test.afterAll(async () => {
 
 async function openAdvanced(page) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/se.html?example=se-scenario-advanced`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/se.html?example=se-scenario-advanced`, { waitUntil: "domcontentloaded" });
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 }
 
@@ -90,7 +90,7 @@ async function dropFile(page, bytes, name) {
 
 async function openSeNonVat(page) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/se.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/se.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, await diyaGlZipOf(SE_NONVAT_DIR), "se-nonvat-diya-gl.zip");
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 }
@@ -101,7 +101,7 @@ async function openSeNonVat(page) {
 // page's own new-book form instead.
 async function openNewSeBook(page, businessName) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/se.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/se.html`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Start a new book" }).click();
   await page.locator("#new-book-name").fill(businessName);
   await page.locator("#new-book-year-end").fill("2026-03-31");
@@ -1045,7 +1045,7 @@ async function sePackageZipBytes() {
 
 async function uploadSePackage(page) {
   await page.setViewportSize(DESKTOP_LANDSCAPE);
-  await page.goto(`${baseUrl}/diya-gl/se.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/se.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, await sePackageZipBytes(), "se-latest-package.zip");
   await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 60_000 });
 }

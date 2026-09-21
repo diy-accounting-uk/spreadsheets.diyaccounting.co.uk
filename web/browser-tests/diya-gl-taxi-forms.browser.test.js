@@ -19,7 +19,7 @@ import { loadDiyaGlData, extractTaxDataFromBook } from "../../app/lib/diya-gl-lo
 import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
 
 const ROOT = process.cwd();
-const publicDir = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(ROOT, "web/diya-gl.co.uk/public");
 const LAYOUT = JSON.parse(fs.readFileSync(path.join(ROOT, "app/data/hmrc/form-layouts/taxi.json"), "utf-8"));
 const SE_SHORT = "SE Short";
 const PL = "Profit & Loss Acc";
@@ -29,7 +29,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -47,7 +47,7 @@ function spSixtyExample() {
 
 async function openBook(page, example) {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${baseUrl}/diya-gl/taxi.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/taxi.html`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: example.button }).click();
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 }

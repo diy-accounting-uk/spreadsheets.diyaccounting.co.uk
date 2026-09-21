@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://diya-gl.co.uk/sitemap.xml

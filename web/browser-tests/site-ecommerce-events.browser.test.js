@@ -4,9 +4,9 @@
 // web/browser-tests/site-ecommerce-events.browser.test.js
 //
 // The GA4 ecommerce events the plain site pages send: view_item_list on
-// index.html, view_item and begin_checkout on download.html, runner_download
-// on its offline-runner links, donate on the Stripe/PayPal return trip,
-// and begin_checkout/add_to_cart on the built donate.html. Same
+// index.html, view_item and begin_checkout on download.html, donate on the
+// Stripe/PayPal return trip, and begin_checkout/add_to_cart on the built
+// donate.html. Same
 // read-back-off-dataLayer approach as
 // web/browser-tests/diya-gl-measurement.browser.test.js: analytics.js's
 // local gtag() always queues onto window.dataLayer whether or not the
@@ -109,23 +109,6 @@ test.describe("download.html — GA4 events", () => {
     expect(events[0].items[0].item_id).toBe(selected);
     // Still on download.html -- the click never navigated.
     await expect(page.locator("#download-form")).toBeVisible();
-  });
-
-  test("a runner download link fires runner_download with the product", async ({ page }) => {
-    await withConsent(page, `${baseUrl}/download.html`);
-
-    // Built by scripts/build-diya-gl-bundle.mjs, so this static checkout
-    // carries no runners/ directory -- fulfil the request so the download
-    // attribute still completes and the click handler's own event fires.
-    // The download attribute means this never navigates the tab regardless.
-    await page.route("**/runners/diya-gl-bst.html", (route) =>
-      route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" }),
-    );
-    const [download] = await Promise.all([page.waitForEvent("download"), page.click("#runner-bst-link")]);
-    await download.cancel();
-
-    const events = await gaEvents(page, "runner_download");
-    expect(events).toEqual([{ product: "bst" }]);
   });
 
   test("returning from Stripe with a saved download fires donate with the amount and currency", async ({ page }) => {

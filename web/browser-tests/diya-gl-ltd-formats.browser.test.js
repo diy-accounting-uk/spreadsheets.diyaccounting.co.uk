@@ -27,8 +27,8 @@ import { writeBookJson } from "../../app/lib/diya-gl-interchange.js";
 import { saveWorkbookFiles } from "../../app/lib/product-workbook.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-ltd-formats");
 
 const HUB = "Financialaccounts.xlsx";
@@ -106,7 +106,7 @@ test.beforeAll(async () => {
     throw new Error(`No bundle at ${BUNDLE}. Run: node scripts/build-diya-gl-bundle.mjs`);
   }
   FIXTURES = await buildFixtures();
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -116,7 +116,7 @@ test.afterAll(async () => {
 });
 
 function ltdUrl() {
-  return `${baseUrl}/diya-gl/ltd.html`;
+  return `${baseUrl}/ltd.html`;
 }
 
 function money(text) {

@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 // web/browser-tests/diya-gl-bst.browser.test.js
-// Browser tests for the DIYA-GL page (web/spreadsheets.diyaccounting.co.uk/public/diya-gl/bst.html)
+// Browser tests for the DIYA-GL page (web/diya-gl.co.uk/public/bst.html)
 // covering the four designed layouts, the download.html entry panel, and (W1)
 // the live upload path: extraction, the as-read drift layer and its
 // breakability proof.
@@ -14,7 +14,8 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
 
-const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
+const spreadsheetsPublicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
@@ -36,7 +37,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -46,7 +47,7 @@ test.afterAll(async () => {
 });
 
 function bstUrl() {
-  return `${baseUrl}/diya-gl/bst.html`;
+  return `${baseUrl}/bst.html`;
 }
 
 async function openLoadedBook(page, viewport, exampleName = /bst-scenario-basic/) {
@@ -570,23 +571,20 @@ test.describe("DIYA-GL page — four layouts", () => {
 
 test.describe("Spreadsheets download.html — DIYA-GL entry panel", () => {
   function readHtml(filename) {
-    return fs.readFileSync(path.join(publicDir, filename), "utf-8");
+    return fs.readFileSync(path.join(spreadsheetsPublicDir, filename), "utf-8");
   }
 
-  test("has the View your books in DIYA-GL panel linking to books/bst.html", async ({ page }) => {
+  test("has the View your books in DIYA-GL panel linking to diya-gl.co.uk", async ({ page }) => {
     await page.setContent(readHtml("download.html"), { waitUntil: "domcontentloaded" });
 
     const heading = page.locator("h2", { hasText: "View your books in DIYA-GL" });
     await expect(heading).toBeVisible();
 
     const section = page.locator(".download-section", { has: heading });
-    await expect(section).toContainText("Nothing is uploaded");
+    await expect(section).toContainText("24h sandbox");
 
-    const link = section.locator("#diya-gl-bst-link");
-    await expect(link).toHaveAttribute("href", "diya-gl/bst.html");
-    await expect(link).toHaveText("View in DIYA-GL");
-
-    // No file picker on this panel -- the DIYA-GL page owns it.
-    await expect(section.locator("input[type=file]")).toHaveCount(0);
+    const link = section.locator("#diya-gl-link");
+    await expect(link).toHaveAttribute("href", "https://diya-gl.co.uk/");
+    await expect(link).toHaveText("Open DIYA-GL");
   });
 });

@@ -572,15 +572,23 @@ jobs:
         run: |
           nohup npx http-server web/spreadsheets.diyaccounting.co.uk/public -p 3000 > /tmp/http-server.log 2>&1 &
 
+      - name: Start local diya-gl server
+        run: |
+          nohup npx http-server web/diya-gl.co.uk/public -p 3001 > /tmp/http-server-diya-gl.log 2>&1 &
+
       - name: Wait for server
-        run: npx wait-on http://localhost:3000 --timeout 30000
+        run: npx wait-on http://localhost:3000 http://localhost:3001 --timeout 30000
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-local
+        env:
+          DIYA_GL_BASE_URL: http://localhost:3001
 
       - name: Show server logs
         if: ${{ !cancelled() }}
-        run: cat /tmp/http-server.log 2>/dev/null || echo "No server log found"
+        run: |
+          cat /tmp/http-server.log 2>/dev/null || echo "No server log found"
+          cat /tmp/http-server-diya-gl.log 2>/dev/null || echo "No diya-gl server log found"
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}

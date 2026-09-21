@@ -15,7 +15,7 @@ import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const PRODUCTS_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl", "products");
+const PRODUCTS_DIR = resolve(ROOT, "web", "diya-gl.co.uk", "public", "products");
 const TAKINGS_FILE = resolve(PRODUCTS_DIR, "taxi-takings.js");
 
 await import(resolve(PRODUCTS_DIR, "taxi.js"));

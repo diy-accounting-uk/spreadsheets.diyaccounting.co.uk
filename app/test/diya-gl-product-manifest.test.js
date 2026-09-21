@@ -19,7 +19,7 @@ import * as bst from "../products/bst.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const MANIFEST_FILE = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "diya-gl", "products", "bst.js");
+const MANIFEST_FILE = resolve(ROOT, "web", "diya-gl.co.uk", "public", "products", "bst.js");
 const taxData = parseTOML(readFileSync(resolve(ROOT, "app", "data", "se-2025-2026.toml"), "utf8"));
 
 const globalsBefore = new Set(Object.keys(globalThis));

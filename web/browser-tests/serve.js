@@ -31,8 +31,8 @@ const CONTENT_TYPES = {
   ".svg": "image/svg+xml",
 };
 
-function readSecurityHeaders() {
-  const config = JSON.parse(fs.readFileSync(SECURITY_HEADERS_PATH, "utf-8"));
+function readSecurityHeaders(headersPath) {
+  const config = JSON.parse(fs.readFileSync(headersPath, "utf-8"));
   const headers = {
     "Content-Security-Policy": config.contentSecurityPolicy,
     "Strict-Transport-Security": `max-age=${config.strictTransportSecurityMaxAgeSeconds}${config.strictTransportSecurityIncludeSubdomains ? "; includeSubDomains" : ""}`,
@@ -46,10 +46,11 @@ function readSecurityHeaders() {
 }
 
 // Starts a static file server over rootDir with production's security
-// headers set on every response. Returns { baseUrl, close } -- close tears
-// the server down and resolves once it's fully stopped.
-export function startStaticServer(rootDir) {
-  const securityHeaders = readSecurityHeaders();
+// headers set on every response, read from headersPath (default: the
+// spreadsheets site's own). Returns { baseUrl, close } -- close tears the
+// server down and resolves once it's fully stopped.
+export function startStaticServer(rootDir, headersPath = SECURITY_HEADERS_PATH) {
+  const securityHeaders = readSecurityHeaders(headersPath);
   const server = http.createServer((req, res) => {
     const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
     const filePath = path.join(rootDir, requested);

@@ -19,7 +19,7 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
 const PACKAGE_DIR = path.join(ROOT, "examples/ltd-latest");
 const LAYOUT = JSON.parse(fs.readFileSync(path.join(ROOT, "app/data/hmrc/form-layouts/ltd.json"), "utf-8"));
 
@@ -27,7 +27,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(PUBLIC_DIR);
+  const server = await startStaticServer(PUBLIC_DIR, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -98,7 +98,7 @@ async function dropFile(page, bytes, name) {
 
 async function openPackage(page, corrupt) {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${baseUrl}/diya-gl/ltd.html`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/ltd.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, await packageZipBytes(corrupt), "ltd-latest.zip");
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 }

@@ -7,6 +7,36 @@ export function escapeXml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function wrapUrlset(urls) {
+  const lines = [];
+  lines.push('<?xml version="1.0" encoding="UTF-8"?>');
+  lines.push("<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->");
+  lines.push("<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->");
+  lines.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+  for (const u of urls) {
+    let entry = `  <url><loc>${u.loc}</loc>`;
+    if (u.changefreq) entry += `<changefreq>${u.changefreq}</changefreq>`;
+    entry += `<priority>${u.priority}</priority></url>`;
+    lines.push(entry);
+  }
+  lines.push("</urlset>");
+  lines.push("");
+
+  return { xml: lines.join("\n"), urlCount: urls.length };
+}
+
+// The diya-gl.co.uk site's own sitemap: one entry per page it serves at its
+// root, read off the same list the callers of PAGES-style constants use
+// elsewhere rather than restated by hand.
+export function buildDiyaGlSitemapXml(pages) {
+  const urls = pages.map((page) => ({
+    loc: `https://diya-gl.co.uk/${page}`,
+    changefreq: "monthly",
+    priority: page === "index.html" ? "1.0" : "0.9",
+  }));
+  return wrapUrlset(urls);
+}
+
 export function buildSitemapXml(products, articles, reconciliationPages = []) {
   const urls = [];
 
@@ -43,19 +73,5 @@ export function buildSitemapXml(products, articles, reconciliationPages = []) {
     }
   }
 
-  const lines = [];
-  lines.push('<?xml version="1.0" encoding="UTF-8"?>');
-  lines.push("<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->");
-  lines.push("<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->");
-  lines.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-  for (const u of urls) {
-    let entry = `  <url><loc>${u.loc}</loc>`;
-    if (u.changefreq) entry += `<changefreq>${u.changefreq}</changefreq>`;
-    entry += `<priority>${u.priority}</priority></url>`;
-    lines.push(entry);
-  }
-  lines.push("</urlset>");
-  lines.push("");
-
-  return { xml: lines.join("\n"), urlCount: urls.length };
+  return wrapUrlset(urls);
 }

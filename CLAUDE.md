@@ -95,7 +95,7 @@ operator's: they need a factor the session does not hold, or they spend money or
 
 ```bash
 npm install
-node scripts/build-spreadsheets-redirects.cjs
+npm run build:redirects  # both sites: --site spreadsheets, --site diya-gl
 node app/bin/build-sitemaps.js
 ./mvnw clean verify
 node app/bin/build-packages.js
@@ -204,11 +204,9 @@ checks, fixtures, or the judge.
 
 ## Web Content
 
-Static site files live in `web/spreadsheets.diyaccounting.co.uk/public/`. This is the document root deployed to S3.
+Two document roots, each deployed to its own S3 bucket. `web/spreadsheets.diyaccounting.co.uk/public/` is the main site: `index.html` (product catalogue), `download.html` (zip downloads), `donate.html` (Stripe + PayPal), `knowledge-base.html`, `community.html`, `references.html`, `sources.html`. `web/diya-gl.co.uk/public/` is the DIYA-GL books app: the four product pages (`bst.html`, `se.html`, `taxi.html`, `ltd.html`), served at the site root with no `/diya-gl/` prefix.
 
-Key pages: `index.html` (product catalogue), `download.html` (zip downloads), `donate.html` (Stripe + PayPal), `knowledge-base.html`, `community.html`, `references.html`, `sources.html`.
-
-Redirects are configured in `web/spreadsheets.diyaccounting.co.uk/redirects.toml` and compiled to a CloudFront Function by `scripts/build-spreadsheets-redirects.cjs`. The generated `redirect-function.js` is gitignored.
+Each site has its own `redirects.toml`, compiled to that site's own `redirect-function.js` by `scripts/build-spreadsheets-redirects.cjs --site <spreadsheets|diya-gl>` (`npm run build:redirects` runs both). Both generated `redirect-function.js` files are gitignored.
 
 ## Package Pipeline
 

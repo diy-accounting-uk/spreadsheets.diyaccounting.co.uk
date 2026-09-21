@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
-// diya-gl/diya-gl-events.js
+// diya-gl-events.js
 //
 // Pure GA4 event-payload builders for the DIYA-GL pages: a book loaded, a
 // save and a donation prompt shown or followed. Kept apart from
-// public/lib/ecommerce-events.js so this file can sit inside the /diya-gl/
+// public/lib/ecommerce-events.js so this file can sit inside the DIYA-GL
 // service worker's cache scope and never risks that file's own
 // view_item_list guard. shell.js calls these and sends the result through
 // its own trackEvent; nothing here touches gtag or the DOM.

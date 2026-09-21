@@ -25,10 +25,10 @@ import { canonicalBookToml } from "../../app/lib/diya-gl-canonical.js";
 import { stampBook } from "../../app/lib/provenance.js";
 
 const ROOT = process.cwd();
-const publicDir = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
+const publicDir = path.join(ROOT, "web/diya-gl.co.uk/public");
 const DECLARED = JSON.parse(fs.readFileSync(path.join(ROOT, "app/data/render-unrepresentable/taxi.json"), "utf-8"));
 const FRESH_PACKAGE_PATH = path.join(ROOT, "examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx");
-const ASSETS_EXAMPLE_DIR = path.join(publicDir, "diya-gl/assets/examples/basic-taxi-driver/taxi");
+const ASSETS_EXAMPLE_DIR = path.join(publicDir, "assets/examples/basic-taxi-driver/taxi");
 const TARGET_DIR = path.join(ROOT, "target", "diya-gl-taxi-equivalence");
 fs.mkdirSync(TARGET_DIR, { recursive: true });
 
@@ -42,7 +42,7 @@ let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  const server = await startStaticServer(publicDir);
+  const server = await startStaticServer(publicDir, path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"));
   baseUrl = server.baseUrl;
   closeServer = server.close;
 });
@@ -52,7 +52,7 @@ test.afterAll(async () => {
 });
 
 function taxiUrl() {
-  return `${baseUrl}/diya-gl/taxi.html`;
+  return `${baseUrl}/taxi.html`;
 }
 
 function basicScenario() {

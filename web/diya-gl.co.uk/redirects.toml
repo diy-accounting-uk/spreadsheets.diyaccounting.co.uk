@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+#
+# redirects.toml - diya-gl.co.uk site redirect configuration
+# Processed by scripts/build-spreadsheets-redirects.cjs → redirect-function.js
+# The generated CloudFront Function returns HTTP 301 for matched URLs
+#
+# [[redirect_host]] matches the whole Host header, or a "." suffix of it, and
+# rewrites it onto "to" with the same path -- applied in sequence, so a host
+# two rules both touch resolves in the one redirect. Both .com aliases and
+# the .co.uk "www" alias sit on this one distribution alongside the apex, so
+# one certificate and one function cover every host this site answers on.
+
+[[redirect_host]]
+from = "diya-gl.com"
+to = "diya-gl.co.uk"
+
+[[redirect_host]]
+from = "www.diya-gl.co.uk"
+to = "diya-gl.co.uk"

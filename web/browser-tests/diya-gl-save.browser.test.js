@@ -17,8 +17,8 @@ import { parse as parseTOML } from "smol-toml";
 import { startStaticServer } from "./serve.js";
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
-const BUNDLE = path.join(PUBLIC_DIR, "diya-gl/engine/diya-gl-engine.js");
+const PUBLIC_DIR = path.join(ROOT, "web/diya-gl.co.uk/public");
+const BUNDLE = path.join(PUBLIC_DIR, "engine/diya-gl-engine.js");
 
 test.describe("books save — the browser save path produces a well-formed download", () => {
   test.beforeAll(() => {
@@ -28,14 +28,17 @@ test.describe("books save — the browser save path produces a well-formed downl
   });
 
   test("clicking save downloads the diya-gl zip, carrying the book's own details", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     let download = null;
     page.on("download", (d) => (download = d));
 
     try {
-      await page.goto(`${baseUrl}/diya-gl/save-probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/save-probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForSelector("#save-diya-gl-btn:not([disabled])", { timeout: 30_000 });
 
       await page.click("#save-diya-gl-btn");
@@ -70,9 +73,12 @@ test.describe("books save — the browser save path produces a well-formed downl
   });
 
   test("clicking save JSON downloads the diya-gl document, carrying the book's own details", async ({ page }) => {
-    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
     try {
-      await page.goto(`${baseUrl}/diya-gl/save-probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/save-probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForSelector("#save-json-btn:not([disabled])", { timeout: 30_000 });
 
       await page.click("#save-json-btn");
