@@ -8,6 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
+**COOL-DOWN is on since 2026-09-21T19:30:33Z.** No new board rows except a degradation. Agents commit
+and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
+
 DG-1k, in Submit: the callbacks agent on `claude/diya-gl-drop-spreadsheets-hosts` (worktree
 `../submit.diyaccounting.co.uk/.claude/worktrees/dg-1k`), one Submit PR to follow; the operator
 lifted the cool-down question at 19:12Z (Submit is not cooling down). Nothing else open here;
