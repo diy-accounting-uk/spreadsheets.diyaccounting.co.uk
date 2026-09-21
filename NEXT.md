@@ -41,7 +41,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | on claude/b23-board as bbe11c9e7; Submit PR #314; push waits for DG-4 |
+| DG-3b | The upgrade offer and lapsed state behind the tier flag; the resident loop in Submit's behaviour test | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | on claude/b23-board as bbe11c9e7; Submit half merged (#314) |
 | DG-6 | The `sandbox_expired_seen` event when a signed-in reader's list comes back shorter | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | on claude/b23-board as fca79fb5d; push waits for DG-4 |
 | DG-4 | The "On this device" row, `storage.persist()`, the three-tier wording | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Sonnet | agent on claude/dg-4-on-this-device, .worktrees/spreadsheets/dg-4; batch claude/b23-board |
 | DG-3a | Submit: checkout refuses a bundle not listed in the current environment | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~4 files | Sonnet | Submit PR #306; CI running |
