@@ -2040,6 +2040,9 @@ table.kv-table tr.total td {
   color: var(--ink-faint);
   margin-top: 0.2rem;
 }
+.account-row-expiry {
+  font-style: italic;
+}
 .account-row-actions {
   display: flex;
   gap: 0.4rem;
@@ -2059,6 +2062,9 @@ table.kv-table tr.total td {
   padding-top: 0.6rem;
   border-top: 1px solid var(--rule-faint);
   font-size: 0.82rem;
+}
+.account-entitlement-label {
+  font-weight: 600;
 }
 .account-conflict {
   font-size: 0.85rem;
@@ -2476,6 +2482,91 @@ table.kv-table tr.total td {
   .headline-bar-svg rect {
     transition: none !important;
   }
+}
+
+/* ============================================================
+   Home strip (index.html): the product links, the three tiers and the
+   offline runners, above the topbar of the page's own default example.
+   ============================================================ */
+
+.home-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 2rem;
+  padding: 0.9rem 0.9rem 0.8rem;
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--rule-faint);
+}
+.home-products,
+.runner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.home-products .caps-label,
+.runner-row .caps-label {
+  flex-basis: 100%;
+}
+.home-products a,
+.runner-row a {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: var(--rule);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.home-products a:hover,
+.runner-row a:hover {
+  background: var(--tint);
+  border-color: var(--rule-dark);
+  color: var(--rule-dark);
+}
+.runner-row a {
+  font-weight: 400;
+  border-color: var(--rule-faint);
+  color: var(--ink);
+}
+.tier-strip {
+  flex: 1 1 22rem;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  list-style: none;
+  border-left: 4px solid var(--rule);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--tint);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.tier-strip li + li {
+  margin-top: 0.25rem;
+}
+.tier-strip strong {
+  color: var(--rule-dark);
+}
+@media (max-width: 560px) {
+  .home-strip {
+    gap: 0.6rem;
+    padding: 0.6rem 0.5rem;
+  }
+  .tier-strip {
+    flex-basis: 100%;
+  }
+}
+
+/* The continue offer over the homepage's example: the same card the empty
+   state shows, sat above the headlines strip of the demonstration book. */
+.continue-banner {
+  max-width: 560px;
+  margin: 0 0 1rem;
+}
+.continue-banner .continue-offer {
+  margin-bottom: 0;
 }
 
 /* ============================================================

@@ -27,8 +27,7 @@ const CATALOGUE_TOML = resolve(PUBLIC_DIR, "catalogue.toml");
 const SITEMAP_PATH = resolve(PUBLIC_DIR, "sitemap.xml");
 const DIYA_GL_SITEMAP_PATH = resolve(ROOT, "web", "diya-gl.co.uk", "public", "sitemap.xml");
 
-// The four books pages; DG-1g adds the homepage once it exists.
-const DIYA_GL_PAGES = ["bst.html", "se.html", "taxi.html", "ltd.html"];
+const DIYA_GL_PAGES = ["index.html", "bst.html", "se.html", "taxi.html", "ltd.html"];
 
 let articles = [];
 if (existsSync(KB_TOML)) {

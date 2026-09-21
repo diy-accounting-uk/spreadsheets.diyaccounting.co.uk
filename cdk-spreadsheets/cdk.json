@@ -16,7 +16,7 @@
     "diyaGlCertificateArn": "",
     "diyaGlDocRootPath": "../web/diya-gl.co.uk/public",
     "diyaGlDomainNames": "",
-    "ciMetricsSinkArn": "",
-    "prodMetricsSinkArn": ""
+    "ciMetricsSinkArn": "arn:aws:oam:us-east-1:367191799875:sink/95055e90-9811-47c0-98db-171adcfbec90",
+    "prodMetricsSinkArn": "arn:aws:oam:us-east-1:972912397388:sink/8f40e076-e9ab-445b-8fc2-68557456b63d"
   }
 }

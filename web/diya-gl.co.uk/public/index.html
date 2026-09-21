@@ -4,11 +4,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>DIYA-GL — Limited Company | DIY Accounting Spreadsheets</title>
+    <title>DIYA-GL — UK small business books, free in your browser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="View a Limited Company package as editable books in your browser. Nothing is uploaded — the files never leave your machine."
+      content="View and edit your Basic Sole Trader, Self Employed, Taxi Driver or Limited Company books in DIYA-GL, free in your browser. Sign in for a 24h sandbox that keeps your books for 24 hours after each save, on any device."
     />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="manifest" href="manifest.webmanifest" />
@@ -16,13 +16,72 @@
     <link rel="stylesheet" href="ltd.css" />
     <script src="lib/analytics.js"></script>
     <script src="lib/consent-banner.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "DIYA-GL by DIY Accounting",
+        "url": "https://diya-gl.co.uk",
+        "description": "UK small business bookkeeping in the browser: sole trader, self employed, taxi driver and limited company books, with a 24h sandbox on sign-in",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any (web browser)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "GBP"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "DIY Accounting Limited",
+          "url": "https://diyaccounting.co.uk"
+        },
+        "license": "https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/blob/main/LICENSE",
+        "copyrightHolder": {
+          "@type": "Organization",
+          "name": "DIY Accounting Limited"
+        }
+      }
+    </script>
   </head>
-  <body class="diya-books" data-product="ltd">
+  <body
+    class="diya-books"
+    data-product="ltd"
+    data-default-example="ltd-brickwork-pro-vat"
+    data-default-view="year"
+    data-default-month="2025-04"
+  >
     <a href="#view-root" class="skip-link">Skip to main content</a>
 
     <div id="app">
+      <section class="home-strip" aria-label="DIYA-GL">
+        <nav class="home-products" aria-label="Products">
+          <span class="caps-label">Your books, free in the browser</span>
+          <a href="bst.html">Basic Sole Trader</a>
+          <a href="se.html">Self Employed</a>
+          <a href="taxi.html">Taxi Driver</a>
+          <a href="ltd.html">Limited Company</a>
+        </nav>
+        <ul class="tier-strip" aria-label="Where your books are kept">
+          <li id="tier-device">
+            <strong>On this device, no account:</strong> kept on this device until you clear your browser data; download the file to keep it
+            for good.
+          </li>
+          <li id="tier-sandbox">
+            <strong>24h sandbox, signed in:</strong> your books are kept for 24 hours after each save, on any device.
+          </li>
+          <li id="tier-resident" hidden><strong>Resident, 99p a month:</strong> kept until you delete it, on any device.</li>
+        </ul>
+        <nav class="runner-row" aria-label="Take it offline">
+          <span class="caps-label">Take it offline</span>
+          <a href="runners/diya-gl-bst.html" download>Basic Sole Trader</a>
+          <a href="runners/diya-gl-se.html" download>Self Employed</a>
+          <a href="runners/diya-gl-taxi.html" download>Taxi Driver</a>
+          <a href="runners/diya-gl-ltd.html" download>Limited Company</a>
+        </nav>
+      </section>
+
       <header class="app-topbar">
-        <a class="app-mark" href="ltd.html">DIYA<span>-GL</span></a>
+        <a class="app-mark" href="index.html">DIYA<span>-GL</span></a>
         <div id="app-title" class="app-title">DIYA-GL — Limited Company books</div>
         <button
           type="button"

@@ -33,6 +33,7 @@ export default defineConfig({
         "**/diya-gl-measurement.browser.test.js",
         "**/diya-gl-empty-state.browser.test.js",
         "**/diya-gl-deep-links.browser.test.js",
+        "**/diya-gl-home.browser.test.js",
         "**/diya-gl-render-coverage.browser.test.js",
         "**/diya-gl-equivalence.browser.test.js",
         "**/diya-gl-layouts.browser.test.js",

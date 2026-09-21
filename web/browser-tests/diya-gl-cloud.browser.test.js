@@ -338,6 +338,79 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect(rows.last()).toContainText("2025-01-01 to 2025-12-31");
   });
 
+  test("a sandbox book's row counts down to its expiry, over and under an hour", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [
+            Object.assign({}, unsubscribedBook(), {
+              bookId: "book-long",
+              title: "Long Trading Ltd",
+              retention: "sandbox",
+              expiresAt: new Date(Date.now() + (23 * 60 + 10) * 60_000).toISOString(),
+            }),
+            Object.assign({}, unsubscribedBook(), {
+              bookId: "book-short",
+              title: "Short Trading Ltd",
+              retention: "sandbox",
+              expiresAt: new Date(Date.now() + 40 * 60_000).toISOString(),
+            }),
+          ],
+          entitlement: { reason: "tier-disabled", expiry: null, residentTier: false },
+        }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    const rows = page.locator(".account-row");
+    await expect(rows.filter({ hasText: "Long Trading Ltd" })).toContainText(/expires in \d+h \d+m/);
+    await expect(rows.filter({ hasText: "Short Trading Ltd" })).toContainText(/expires in \d+m/);
+  });
+
+  test("a resident book's row is kept until it is deleted, not counted down", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [Object.assign({}, unsubscribedBook(), { retention: "resident", expiresAt: null })],
+          entitlement: { reason: "active-subscription", expiry: null, residentTier: true },
+        }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-row").first()).toContainText("kept until you delete it");
+  });
+
+  test("the entitlement card shows the plain sandbox label when the resident tier is disabled", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ books: [], entitlement: { reason: "tier-disabled", expiry: null, residentTier: false } }),
+      }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-entitlement")).toContainText("24h sandbox");
+    await expect(page.locator(".account-entitlement").getByRole("button")).toHaveCount(0);
+  });
+
   test("open decodes the version and loads it the same way an uploaded file would", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
@@ -554,37 +627,6 @@ test.describe("DIYA-GL page — save to my account", () => {
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached();
   });
 
-  test("a 403 subscription-required offers the subscription and loses no book", async ({ page }) => {
-    await withTestClientId(page);
-    await withSignedInSession(page);
-    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await loadExample(page);
-
-    await page.route(`${PROD_API_BASE}/books`, (route) => {
-      if (route.request().method() !== "GET") return route.continue();
-      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) });
-    });
-    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
-      if (route.request().method() !== "PUT") return route.continue();
-      await route.fulfill({
-        status: 403,
-        contentType: "application/json",
-        body: JSON.stringify({ message: "a subscription is needed", code: "subscription-required" }),
-      });
-    });
-
-    await page.click("#save-btn");
-    await page.getByRole("menuitem", { name: "Save to my account", exact: true }).click();
-
-    await expect(page.locator("#toast")).toContainText("Saving to your account needs the 99p subscription.", { timeout: 10_000 });
-    await expect(page.locator(".account-entitlement")).toContainText("Storage is 99p a month");
-    await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
-
-    const saveEvents = await gaEvents(page, "cloud_save");
-    expect(saveEvents).toEqual([{ product: "bst", outcome: "unentitled" }]);
-    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached();
-  });
-
   test("a 401 triggers one refresh and one retry, then signs out on the second 401", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
@@ -631,63 +673,19 @@ function unsubscribedBook() {
     periodCoveredEnd: "2025-12-31",
     versions: [],
     provenance: {},
-    entitlementAtPut: { reason: "no-subscription" },
+    retention: "sandbox",
+    expiresAt: "2026-01-02T09:00:00.000Z",
   };
 }
 
 function subscribedBook() {
-  return Object.assign({}, unsubscribedBook(), { entitlementAtPut: { reason: "active-subscription" } });
+  return Object.assign({}, unsubscribedBook(), { retention: "resident", expiresAt: null });
 }
 
 test.describe("DIYA-GL page — billing", () => {
   // The service worker now scopes the whole site, so a navigation to the stubbed checkout
   // and portal URLs would be fetched by the worker, which page.route cannot see.
   test.use({ serviceWorkers: "block" });
-
-  test("subscribe posts the exact body and follows the returned checkout URL", async ({ page }) => {
-    await withTestClientId(page);
-    await withSignedInSession(page);
-    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-
-    await page.route(`${PROD_API_BASE}/books`, (route) => {
-      if (route.request().method() !== "GET") return route.continue();
-      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [unsubscribedBook()] }) });
-    });
-
-    let checkoutRequest = null;
-    await page.route(`${PROD_API_BASE}/billing/checkout`, async (route) => {
-      checkoutRequest = { body: route.request().postDataJSON(), headers: route.request().headers() };
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ checkoutUrl: `${baseUrl}/fake-stripe-checkout` }),
-      });
-    });
-    let checkoutPageUrl = null;
-    await page.route(`${baseUrl}/fake-stripe-checkout`, async (route) => {
-      checkoutPageUrl = route.request().url();
-      await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
-    });
-
-    await openAccountPanel(page);
-    // Read the token before the click: the stubbed checkout URL navigates the page away.
-    const idToken = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.idToken"));
-    await page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" }).click();
-
-    await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
-    expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", returnTo: bstUrl() });
-    expect(checkoutRequest.headers["authorization"]).toBe(`Bearer ${idToken}`);
-    expect(checkoutRequest.headers["content-type"]).toBe("application/json");
-
-    // location.assign's navigation tears the document down the moment it
-    // commits, wiping window.dataLayer with it before a poll could ever read
-    // cloud_billing back -- the PKCE authorize test hits the same Chromium
-    // behaviour. The event fires (buildCloudBillingEvent's own unit case
-    // covers its shape); only the request and the navigation are asserted
-    // here.
-    await expect.poll(() => checkoutPageUrl !== null, { timeout: 10_000 }).toBe(true);
-    expect(checkoutPageUrl).toBe(`${baseUrl}/fake-stripe-checkout`);
-  });
 
   test("returning with checkout=success cleans the URL, toasts, and re-lists the account", async ({ page }) => {
     await withTestClientId(page);
@@ -696,7 +694,14 @@ test.describe("DIYA-GL page — billing", () => {
     let booksCalls = 0;
     await page.route(`${PROD_API_BASE}/books`, (route) => {
       booksCalls += 1;
-      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [subscribedBook()],
+          entitlement: { reason: "active-subscription", expiry: null, residentTier: true },
+        }),
+      });
     });
 
     await page.goto(`${bstUrl()}?checkout=success&session_id=test-session`, { waitUntil: "domcontentloaded" });
@@ -731,7 +736,14 @@ test.describe("DIYA-GL page — billing", () => {
 
     await page.route(`${PROD_API_BASE}/books`, (route) => {
       if (route.request().method() !== "GET") return route.continue();
-      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [subscribedBook()] }) });
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [subscribedBook()],
+          entitlement: { reason: "active-subscription", expiry: null, residentTier: true },
+        }),
+      });
     });
 
     let portalRequestUrl = null;

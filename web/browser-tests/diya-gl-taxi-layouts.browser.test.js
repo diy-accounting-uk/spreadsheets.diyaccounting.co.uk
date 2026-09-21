@@ -132,7 +132,11 @@ test.describe("DIYA-GL Taxi books page — keyboard-only traversal (E6)", () => 
     // the topbar now carries it ahead of Checks/Undo/New/Save.
     await tabTo(page, "#account-btn");
     focusRingSamples.push(await activeElementHasFocusRing(page));
-    await expect(page.getByRole("button", { name: "Sign in to save to your account" })).toBeFocused();
+    await expect(
+      page.getByRole("button", {
+        name: "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.",
+      }),
+    ).toBeFocused();
 
     // Stop 1: the example button.
     await tabTo(page, '[data-example="taxi-scenario-basic"]');

@@ -229,7 +229,11 @@ test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {
     // topbar now carries it ahead of Checks/Undo/New/Save.
     await tabTo(page, "#account-btn");
     focusRingSamples.push(await activeElementHasFocusRing(page));
-    await expect(page.getByRole("button", { name: "Sign in to save to your account" })).toBeFocused();
+    await expect(
+      page.getByRole("button", {
+        name: "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.",
+      }),
+    ).toBeFocused();
 
     // Load: the example button.
     await tabTo(page, `[data-example="${EXAMPLE}"]`);
