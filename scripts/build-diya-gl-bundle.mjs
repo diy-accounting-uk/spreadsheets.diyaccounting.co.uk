@@ -53,6 +53,7 @@ const SITE_FILES = [
   ["lib", "analytics.js"],
   ["lib", "consent-banner.js"],
   ["lib", "ecommerce-events.js"],
+  ["lib", "rum-config.js"],
   ["spreadsheets.css"],
   ["favicon.ico"],
   ["favicon.svg"],
