@@ -637,9 +637,22 @@
     );
   }
 
-  // tier-disabled, no-subscription and expired all render the plain sandbox
-  // card until DG-3b adds the upgrade offer; only an active subscription
-  // changes what shows here.
+  var RESIDENT_LAPSE_GRACE_DAYS = 30;
+
+  function entitlementDate(value) {
+    return new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+  }
+
+  function subscribeButton() {
+    return '<div class="account-row-actions"><button type="button" class="btn btn-primary" data-action="subscribe">Subscribe</button></div>';
+  }
+
+  // tier-disabled always renders the plain sandbox card; an active
+  // subscription renders the subscribed card regardless of the flag (a
+  // reader already paying keeps their card even if the tier were switched
+  // off under them). no-subscription and expired render the upgrade offer
+  // only where residentTier is true -- everywhere else they fall through to
+  // the plain sandbox card with no Subscribe button.
   function renderEntitlement(entitlement) {
     var reason = entitlement && entitlement.reason;
     if (reason === "active-subscription") {
@@ -648,6 +661,28 @@
         '<div class="account-row-actions"><button type="button" class="btn" data-action="manage-subscription">Manage subscription</button></div>' +
         "</div>"
       );
+    }
+    if (entitlement && entitlement.residentTier) {
+      if (reason === "no-subscription") {
+        return (
+          '<div class="account-entitlement"><span class="account-entitlement-label">24h sandbox. Keep your books for 99p a month.</span>' +
+          subscribeButton() +
+          "</div>"
+        );
+      }
+      if (reason === "expired") {
+        var expiredOn = entitlementDate(entitlement.expiry);
+        var booksExpireOn = entitlementDate(new Date(entitlement.expiry).getTime() + RESIDENT_LAPSE_GRACE_DAYS * 24 * 60 * 60 * 1000);
+        return (
+          '<div class="account-entitlement"><span class="account-entitlement-label">Your subscription ended ' +
+          expiredOn +
+          ". These books expire " +
+          booksExpireOn +
+          ".</span>" +
+          subscribeButton() +
+          "</div>"
+        );
+      }
     }
     return '<div class="account-entitlement"><span class="account-entitlement-label">24h sandbox</span></div>';
   }
