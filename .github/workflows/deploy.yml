@@ -489,6 +489,7 @@ jobs:
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
         env:
+          DIYA_GL_BASE_URL: ${{ needs.params.outputs.environment-name == 'prod' && 'https://diya-gl.co.uk' || 'https://ci.diya-gl.co.uk' }}
           TEST_AUTH_USERNAME: ${{ steps.mint.outputs.test-auth-username || secrets.TEST_AUTH_USERNAME }}
           TEST_AUTH_PASSWORD: ${{ steps.mint.outputs.test-auth-password || secrets.TEST_AUTH_PASSWORD }}
           TEST_AUTH_TOTP_SECRET: ${{ steps.mint.outputs.test-auth-totp-secret || secrets.TEST_AUTH_TOTP_SECRET }}
