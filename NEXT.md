@@ -8,12 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Batch b24 (`claude/b24-board`, worktree `../.worktrees/spreadsheets/b24`) holds CSP-1 (`9ea6d9b18`)
-and DG-1i (`475bd94b0`), unpushed. The redirects+spec agent's commits DG-1n (`8707b81a2`) and DG-1l
-(`23eca9655`) sit on `claude/wt-dg-1nl` with its routed `npm test` in the browser tier; they land on
-b24 when it hands back, then the batch's own routed run, one push, one PR, `/watch`. No PR is open;
-no watch monitor of this session is armed. `main`'s last code head `c213fe6d` is on prod and ci
-(`7fc26c3c`).
+Nothing. b24 (PR #130, four rows) merged as `5cff074d4` and its prod deploy is green: prod serves
+`5cff074d4`, ci `fa4b9678f`; `/books/`, `/diya-gl/` and `/diya-gl.html` on the spreadsheets host
+301 to diya-gl.co.uk, `spec.html` answers 200 there, and both CSPs carry the regional Google
+hosts. No PR, batch or worktree agent is open; the four b24 worktrees await the operator's removal.
 
 ## Context for the open rows
 
@@ -41,11 +39,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| CSP-1 | `img-src` of both CSPs admits the twenty-one Google ccTLD hosts the operator chose (2026-09-21), `connect-src` unchanged; a unit test asserts both files and the quota | none | machine-only | — | in-flight | ~3 files | Haiku | on claude/b24-board `9ea6d9b18`; batch unpushed |
-| DG-1i | The deploy's behaviour job on the new host: `DIYA_GL_BASE_URL`, sign-in on ci.diya-gl.co.uk against Submit prod | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Haiku | on claude/b24-board `475bd94b0`; batch unpushed |
-| DG-1n | Retarget `/books/` and `/diya-gl/` on the spreadsheets host onto diya-gl.co.uk once the host resolves | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~1 files | Sonnet | claude/wt-dg-1nl `8707b81a2`; agent's routed run in browser tier |
-| DG-1l | The format spec page moves to diya-gl.co.uk/spec.html: builder, links, sitemaps, redirect | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~18 files | Sonnet | claude/wt-dg-1nl `23eca9655`; agent's routed run in browser tier |
-| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | DG-1i, DG-1l, DG-1n | blocked-to-start | ~1 files | Haiku | after b24 merges and deploys |
+| DG-1j | Cut-over probes on diya-gl.co.uk and the old links, as prod behaviour cases | PLAN_DIYA_GL_HOME.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1i, DG-1l, DG-1n on prod since `5cff074d4` |
 | DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | DG-1j, operator | blocked-on-busy | ~3 files | Haiku | Submit cooling down since 2026-09-21T11:52Z; after DG-1j |
 
 ## Plans not tracked here
