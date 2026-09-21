@@ -8,10 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. b25 (PR #131, DG-1j) merged as `128240e2e`; its prod deploy is green and the prod
-behaviour job ran the six cut-over probes and the cloud sign-in case on diya-gl.co.uk (22 passed).
-No PR, batch or worktree agent is open; the b25 worktrees await the operator's removal. The only
-open row, DG-1k, is in Submit, which is cooling down.
+DG-1k, in Submit: the callbacks agent on `claude/diya-gl-drop-spreadsheets-hosts` (worktree
+`../submit.diyaccounting.co.uk/.claude/worktrees/dg-1k`), one Submit PR to follow; the operator
+lifted the cool-down question at 19:12Z (Submit is not cooling down). Nothing else open here;
+`main`'s last code head `128240e2e` is on prod.
 
 ## Context for the open rows
 
@@ -39,7 +39,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | operator | blocked-on-busy | ~3 files | Haiku | Submit cooling down since 2026-09-21T11:52Z; DG-1j done |
+| DG-1k | Submit: drop the spreadsheets-host callback URLs after the cut-over | PLAN_DIYA_GL_HOME.md | machine-only | — | in-flight | ~3 files | Haiku | agent on claude/diya-gl-drop-spreadsheets-hosts in Submit |
 
 ## Plans not tracked here
 
