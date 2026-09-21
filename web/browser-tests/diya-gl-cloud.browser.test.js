@@ -76,6 +76,24 @@ async function withSignedInSession(page) {
   });
 }
 
+// Seeds autosave.js's own IndexedDB record directly, the way withSignedInSession
+// seeds sessionStorage: before the page's own scripts run, so shell.js's boot
+// (checkForSavedBook) picks it up as state.savedBook and cloud.js's device row
+// finds it the first time the panel opens.
+async function withSavedWorkingBook(page, record) {
+  await page.addInitScript((seeded) => {
+    var request = indexedDB.open("diya-books-autosave", 1);
+    request.onupgradeneeded = function () {
+      if (!request.result.objectStoreNames.contains("workingBook")) {
+        request.result.createObjectStore("workingBook");
+      }
+    };
+    request.onsuccess = function () {
+      request.result.transaction("workingBook", "readwrite").objectStore("workingBook").put(seeded, "current");
+    };
+  }, record);
+}
+
 function fakeIdToken(claims) {
   function b64url(obj) {
     return Buffer.from(JSON.stringify(obj)).toString("base64url");
@@ -615,6 +633,99 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect(page.locator(".account-row")).toHaveCount(1);
 
     expect(await gaEvents(page, "sandbox_expired_seen")).toEqual([]);
+  });
+});
+
+test.describe("DIYA-GL page — on this device", () => {
+  test("no device row renders while nothing is saved", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await openAccountPanel(page);
+    await expect(page.locator("#account-panel")).toBeVisible();
+    await expect(page.locator(".account-device-row")).toHaveCount(0);
+  });
+
+  test("the device row names the saved book and when it was saved, signed out", async ({ page }) => {
+    await withTestClientId(page);
+    const savedAt = "2026-01-01T09:00:00.000Z";
+    await withSavedWorkingBook(page, { book: {}, lines: [], source: { kind: "example", label: "Precision Code Trading Ltd" }, savedAt });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    // Read back through the page's own formatSavedAt rather than a hardcoded
+    // string, so the assertion holds regardless of the runner's timezone.
+    const expectedWhen = await page.evaluate((iso) => window.DiyaGlPage.formatSavedAt(iso), savedAt);
+
+    await openAccountPanel(page);
+    const deviceRow = page.locator(".account-device-row");
+    await expect(deviceRow).toContainText("Precision Code Trading Ltd");
+    await expect(deviceRow).toContainText("saved " + expectedWhen);
+    await expect(deviceRow).toContainText("kept on this device until you clear your browser data; download the file to keep it for good");
+  });
+
+  test("the device row sits above the account's own book list, signed in", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await withSavedWorkingBook(page, {
+      book: {},
+      lines: [],
+      source: { kind: "example", label: "Precision Code Trading Ltd" },
+      savedAt: "2026-01-01T09:00:00.000Z",
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [unsubscribedBook()] }) }),
+    );
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-device-row")).toContainText("Precision Code Trading Ltd");
+    await expect(page.locator(".account-row")).toHaveCount(1);
+    const deviceRowBox = await page.locator(".account-device-row").boundingBox();
+    const firstBookRowBox = await page.locator(".account-row").first().boundingBox();
+    expect(deviceRowBox.y).toBeLessThan(firstBookRowBox.y);
+  });
+
+  test("Clear removes the device row and the page's own continue offer", async ({ page }) => {
+    await withTestClientId(page);
+    await withSavedWorkingBook(page, {
+      book: {},
+      lines: [],
+      source: { kind: "example", label: "Precision Code Trading Ltd" },
+      savedAt: "2026-01-01T09:00:00.000Z",
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator(".continue-offer")).toBeVisible();
+    await openAccountPanel(page);
+    const deviceRow = page.locator(".account-device-row");
+    await expect(deviceRow).toBeVisible();
+
+    await deviceRow.getByRole("button", { name: "Clear" }).click();
+    await expect(page.locator(".account-device-row")).toHaveCount(0);
+    await expect(page.locator(".continue-offer")).toHaveCount(0);
+  });
+
+  test("navigator.storage.persist is requested once, after the first autosave that resolves true", async ({ page }) => {
+    await withTestClientId(page);
+    await page.addInitScript(() => {
+      window.__storagePersistCalls = 0;
+      navigator.storage.persist = function () {
+        window.__storagePersistCalls += 1;
+        return Promise.resolve(true);
+      };
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await loadExample(page);
+    await expect.poll(() => page.evaluate(() => window.__storagePersistCalls)).toBe(1);
+
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await name.fill("Persisted Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Persisted Trading Ltd");
+
+    expect(await page.evaluate(() => window.__storagePersistCalls)).toBe(1);
   });
 });
 

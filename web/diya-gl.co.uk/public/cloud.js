@@ -628,6 +628,7 @@
       ? sorted.map(renderBookRow).join("")
       : '<p class="account-empty">No books in your account yet.' + (current ? " Save this book to my account." : "") + "</p>";
     return (
+      DEVICE_ROW_SLOT +
       '<div class="account-panel-head">' +
       esc((session.user && session.user.email) || "Your account") +
       "</div>" +
@@ -635,6 +636,57 @@
       renderEntitlement(entitlement) +
       '<button type="button" class="btn" data-action="sign-out">Sign out</button>'
     );
+  }
+
+  // ============================== on this device ==============================
+  // The one autosave slot shell.js keeps (autosave.js), surfaced at the top
+  // of the account panel whichever side of sign-in the reader is on.
+  // renderList and renderSignedOut leave an empty slot; mountDeviceRow()
+  // reads the record fresh on every panel open (never cached here, so a
+  // Clear made through the continue offer or New shows up the next time the
+  // panel opens) and fills the slot once loadWorkingBook() resolves --
+  // never rejects, so the row simply stays absent when there is no record.
+  var DEVICE_ROW_SLOT = '<div id="account-device-row-slot"></div>';
+  var deviceRowToken = 0;
+
+  function deviceRowHtml(record) {
+    if (!record) return "";
+    var label = (record.source && record.source.label) || "your working book";
+    var formatSavedAt = window.DiyaGlPage && window.DiyaGlPage.formatSavedAt;
+    var when = typeof formatSavedAt === "function" ? formatSavedAt(record.savedAt) : "";
+    return (
+      '<div class="account-device-row">' +
+      "<div>" +
+      "<strong>On this device — " +
+      esc(label) +
+      "</strong>" +
+      '<div class="account-row-meta">' +
+      (when ? "saved " + esc(when) + "<br>" : "") +
+      "kept on this device until you clear your browser data; download the file to keep it for good" +
+      "</div>" +
+      "</div>" +
+      '<button type="button" class="btn" data-action="clear-device-book">Clear</button>' +
+      "</div>"
+    );
+  }
+
+  function mountDeviceRow() {
+    var token = ++deviceRowToken;
+    if (!window.DiyaGlAutosave) return;
+    window.DiyaGlAutosave.loadWorkingBook().then(function (record) {
+      if (token !== deviceRowToken || !panelEl) return;
+      var slot = panelEl.querySelector("#account-device-row-slot");
+      if (slot) slot.innerHTML = deviceRowHtml(record);
+    });
+  }
+
+  // Routed through window.DiyaGlPage so shell.js's own state.savedBook and
+  // the continue offer clear in the same call -- the panel never calls
+  // DiyaGlAutosave.clearWorkingBook() itself, which would clear the store
+  // twice over.
+  function clearDeviceBook() {
+    if (!(window.DiyaGlPage && typeof window.DiyaGlPage.discardSavedBook === "function")) return;
+    window.DiyaGlPage.discardSavedBook().then(mountDeviceRow);
   }
 
   var RESIDENT_LAPSE_GRACE_DAYS = 30;
@@ -689,6 +741,7 @@
 
   function renderSignedOut() {
     return (
+      DEVICE_ROW_SLOT +
       '<p class="account-panel-head">Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.</p>' +
       '<button type="button" class="btn btn-primary" data-action="sign-in">Sign in</button>'
     );
@@ -798,6 +851,7 @@
     }
     if (panelState.status === "signed-out") {
       panelEl.innerHTML = renderSignedOut();
+      mountDeviceRow();
       return;
     }
     if (panelState.confirm) {
@@ -822,6 +876,7 @@
     }
     if (panelState.status === "list") {
       panelEl.innerHTML = renderList(panelState.books, panelState.entitlement, getSession());
+      mountDeviceRow();
       return;
     }
     panelEl.innerHTML = renderSignedOut();
@@ -1230,6 +1285,8 @@
       signIn();
     } else if (action === "sign-out") {
       signOut();
+    } else if (action === "clear-device-book") {
+      clearDeviceBook();
     } else if (action === "retry-list") {
       fetchBooksList();
     } else if (action === "open") {

@@ -1091,7 +1091,7 @@
   }
 
   function handleDiscardSavedBook() {
-    window.DiyaGlAutosave.clearWorkingBook().then(function () {
+    return window.DiyaGlAutosave.clearWorkingBook().then(function () {
       state.savedBook = null;
       render();
       showToast("Discarded the saved working book.");
@@ -1319,7 +1319,22 @@
   // autosave were never called.
   function autosaveCurrentBook() {
     if (!state.book || !state.lines) return;
-    window.DiyaGlAutosave.saveWorkingBook(workingBookRecord());
+    window.DiyaGlAutosave.saveWorkingBook(workingBookRecord()).then(function (saved) {
+      if (saved) requestStoragePersistence();
+    });
+  }
+
+  // Asks the browser not to evict the autosave store under storage pressure,
+  // once per page and only once the store has actually held something --
+  // Chromium and Firefox both key this on the origin already having done
+  // something worth keeping. The guard covers a browser with no Storage
+  // Manager at all; the result decides nothing either way.
+  var storagePersistenceRequested = false;
+
+  function requestStoragePersistence() {
+    if (storagePersistenceRequested) return;
+    storagePersistenceRequested = true;
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
   }
 
   // ============================== the edit path ==============================
@@ -3278,6 +3293,8 @@
     productId: productId,
     isEdited: isEdited,
     trackEvent: trackEvent,
+    formatSavedAt: formatSavedAt,
+    discardSavedBook: handleDiscardSavedBook,
     get manifest() {
       return active;
     },
