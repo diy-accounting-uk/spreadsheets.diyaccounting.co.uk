@@ -1246,6 +1246,270 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("=".repeat(60));
   });
 
+  test("Spreadsheets host 301 redirects to DIYA-GL host", async ({ page }) => {
+    const spreadsheetsHostname = new URL(spreadsheetsBaseUrl).hostname;
+    const isLocalhost = spreadsheetsHostname.startsWith("localhost");
+    test.skip(isLocalhost, "Redirects are a CloudFront function and do not run locally");
+
+    let expectedDiyaGlHost = "";
+    if (spreadsheetsHostname === "ci-spreadsheets.diyaccounting.co.uk") {
+      expectedDiyaGlHost = "https://ci.diya-gl.co.uk";
+    } else if (spreadsheetsHostname === "spreadsheets.diyaccounting.co.uk") {
+      expectedDiyaGlHost = "https://diya-gl.co.uk";
+    } else {
+      test.skip(true, `Unmapped spreadsheets host: ${spreadsheetsHostname}`);
+    }
+
+    // ============================================================
+    // Redirect from /diya-gl/bst.html
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing /diya-gl/bst.html redirect");
+    console.log("=".repeat(60));
+
+    const diyaGlBstResponse = await page.request.get(`${spreadsheetsBaseUrl}/diya-gl/bst.html`, { maxRedirects: 0 });
+    expect(diyaGlBstResponse.status()).toBe(301);
+    const diyaGlBstLocation = diyaGlBstResponse.headers()["location"] || "";
+    expect(diyaGlBstLocation).toContain("/bst.html");
+    expect(diyaGlBstLocation).toContain(expectedDiyaGlHost.replace("https://", ""));
+    console.log(` ${spreadsheetsBaseUrl}/diya-gl/bst.html → 301 to ${diyaGlBstLocation}`);
+
+    // ============================================================
+    // Redirect from /books/bst.html
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing /books/bst.html redirect");
+    console.log("=".repeat(60));
+
+    const booksBstResponse = await page.request.get(`${spreadsheetsBaseUrl}/books/bst.html`, { maxRedirects: 0 });
+    expect(booksBstResponse.status()).toBe(301);
+    const booksBstLocation = booksBstResponse.headers()["location"] || "";
+    expect(booksBstLocation).toContain("/bst.html");
+    expect(booksBstLocation).toContain(expectedDiyaGlHost.replace("https://", ""));
+    console.log(` ${spreadsheetsBaseUrl}/books/bst.html → 301 to ${booksBstLocation}`);
+
+    // ============================================================
+    // Redirect from /diya-gl.html
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing /diya-gl.html redirect");
+    console.log("=".repeat(60));
+
+    const diyaGlHtmlResponse = await page.request.get(`${spreadsheetsBaseUrl}/diya-gl.html`, { maxRedirects: 0 });
+    expect(diyaGlHtmlResponse.status()).toBe(301);
+    const diyaGlHtmlLocation = diyaGlHtmlResponse.headers()["location"] || "";
+    expect(diyaGlHtmlLocation).toContain("/spec.html");
+    expect(diyaGlHtmlLocation).toContain(expectedDiyaGlHost.replace("https://", ""));
+    console.log(` ${spreadsheetsBaseUrl}/diya-gl.html → 301 to ${diyaGlHtmlLocation}`);
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - Spreadsheets redirects verified");
+    console.log("=".repeat(60));
+  });
+
+  test("Alternate DIYA-GL hosts 301 to the apex host", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
+
+    let diyaGlHostname = "";
+    let isApex = false;
+    try {
+      diyaGlHostname = new URL(diyaGlBaseUrl).hostname;
+      isApex = diyaGlHostname === "diya-gl.co.uk" || diyaGlHostname === "ci.diya-gl.co.uk";
+    } catch {
+      diyaGlHostname = "";
+    }
+    test.skip(!isApex, `DIYA_GL_BASE_URL does not name the apex host (has: ${diyaGlHostname})`);
+
+    const isCi = diyaGlHostname === "ci.diya-gl.co.uk";
+    const expectedApex = isCi ? "ci.diya-gl.co.uk" : "diya-gl.co.uk";
+
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing alternate host redirects");
+    console.log("=".repeat(60));
+
+    if (!isCi) {
+      // Test .com apex redirect on prod
+      const comApexResponse = await page.request.get("https://diya-gl.com/", { maxRedirects: 0 });
+      expect(comApexResponse.status()).toBe(301);
+      expect(comApexResponse.headers()["location"]).toBe("https://diya-gl.co.uk/");
+      console.log(` https://diya-gl.com/ → 301 to https://diya-gl.co.uk/`);
+
+      // Test www.co.uk redirect on prod
+      const wwwCoUkResponse = await page.request.get("https://www.diya-gl.co.uk/ltd.html", { maxRedirects: 0 });
+      expect(wwwCoUkResponse.status()).toBe(301);
+      expect(wwwCoUkResponse.headers()["location"]).toBe("https://diya-gl.co.uk/ltd.html");
+      console.log(` https://www.diya-gl.co.uk/ltd.html → 301 to https://diya-gl.co.uk/ltd.html`);
+
+      // Test www.com redirect on prod
+      const wwwComResponse = await page.request.get("https://www.diya-gl.com/bst.html", { maxRedirects: 0 });
+      expect(wwwComResponse.status()).toBe(301);
+      expect(wwwComResponse.headers()["location"]).toBe("https://diya-gl.co.uk/bst.html");
+      console.log(` https://www.diya-gl.com/bst.html → 301 to https://diya-gl.co.uk/bst.html`);
+    } else {
+      // Test .com apex redirect on ci
+      const comApexResponse = await page.request.get("https://ci.diya-gl.com/", { maxRedirects: 0 });
+      expect(comApexResponse.status()).toBe(301);
+      expect(comApexResponse.headers()["location"]).toBe("https://ci.diya-gl.co.uk/");
+      console.log(` https://ci.diya-gl.com/ → 301 to https://ci.diya-gl.co.uk/`);
+    }
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - Alternate host redirects verified");
+    console.log("=".repeat(60));
+  });
+
+  test("DIYA-GL apex host serves its files and /spec.html", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing DIYA-GL apex host files");
+    console.log("=".repeat(60));
+
+    // Test /runners/diya-gl-bst.html
+    const bstRunnerResponse = await page.request.get(`${diyaGlBaseUrl}/runners/diya-gl-bst.html`);
+    expect(bstRunnerResponse.status()).toBe(200);
+    console.log(` ${diyaGlBaseUrl}/runners/diya-gl-bst.html → 200`);
+
+    // Test /sitemap.xml
+    const sitemapResponse = await page.request.get(`${diyaGlBaseUrl}/sitemap.xml`);
+    expect(sitemapResponse.status()).toBe(200);
+    const sitemapText = await sitemapResponse.text();
+    expect(sitemapText).toContain("/spec.html");
+    console.log(` ${diyaGlBaseUrl}/sitemap.xml → 200, contains /spec.html`);
+
+    // Test /robots.txt
+    const robotsResponse = await page.request.get(`${diyaGlBaseUrl}/robots.txt`);
+    expect(robotsResponse.status()).toBe(200);
+    console.log(` ${diyaGlBaseUrl}/robots.txt → 200`);
+
+    // Test /spec.html
+    const specResponse = await page.request.get(`${diyaGlBaseUrl}/spec.html`);
+    expect(specResponse.status()).toBe(200);
+    console.log(` ${diyaGlBaseUrl}/spec.html → 200`);
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL apex host files verified");
+    console.log("=".repeat(60));
+  });
+
+  test("DIYA-GL homepage opens the Ltd example with company title and figures", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing DIYA-GL homepage");
+    console.log("=".repeat(60));
+
+    await page.goto(diyaGlBaseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-diya-gl-homepage-initial.png` });
+
+    // Check page title
+    const title = await page.title();
+    console.log(` Page title: "${title}"`);
+
+    // Wait for the year totals to appear, which indicates the example has loaded
+    const yearTotals = page.locator('.year-totals [data-r-key*="MnthP&L!B9"]');
+    await expect(yearTotals).toBeVisible({ timeout: 30000 });
+    console.log(` Year totals are visible; example loaded`);
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-diya-gl-homepage-loaded.png` });
+
+    // Check app title contains BrickWork Pro Ltd (updated when example loads)
+    const appTitle = page.locator("#app-title");
+    await expect(appTitle).toBeVisible({ timeout: 10000 });
+    const titleText = await appTitle.textContent();
+    expect(titleText).toContain("BrickWork Pro Ltd");
+    console.log(` App title contains "BrickWork Pro Ltd"`);
+
+    // Check year totals with a value above zero
+    const yearTotalsText = await yearTotals.textContent();
+    const yearTotalsValue = parseFloat(yearTotalsText.replace(/[^0-9.]/g, ""));
+    expect(yearTotalsValue).toBeGreaterThan(0);
+    console.log(` Year totals show £${yearTotalsValue.toFixed(2)}`);
+
+    // Check URL has no query string
+    const url = page.url();
+    expect(new URL(url).search).toBe("");
+    console.log(` URL has no query string`);
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL homepage verified");
+    console.log("=".repeat(60));
+  });
+
+  test("Download page links to DIYA-GL with description", async ({ page }) => {
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing download page DIYA-GL link");
+    console.log("=".repeat(60));
+
+    await page.goto(`${spreadsheetsBaseUrl}/download.html`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-download-diya-gl-link.png` });
+
+    // Check the DIYA-GL link exists with correct href
+    const diyaGlLink = page.locator("#diya-gl-link");
+    await expect(diyaGlLink).toBeVisible();
+    await expect(diyaGlLink).toHaveAttribute("href", "https://diya-gl.co.uk/");
+    console.log(` #diya-gl-link has href="https://diya-gl.co.uk/"`);
+
+    // Check for adjacent paragraph mentioning DIYA-GL
+    const linkContainer = diyaGlLink.locator("../..");
+    const paragraphs = linkContainer.locator("p");
+    let foundDiyaGlMention = false;
+    const paragraphCount = await paragraphs.count();
+    for (let i = 0; i < paragraphCount; i++) {
+      const text = await paragraphs.nth(i).textContent();
+      if (text.includes("DIYA-GL")) {
+        foundDiyaGlMention = true;
+        console.log(` Found paragraph mentioning DIYA-GL: "${text.substring(0, 80)}..."`);
+        break;
+      }
+    }
+    expect(foundDiyaGlMention).toBeTruthy();
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - Download page DIYA-GL link verified");
+    console.log("=".repeat(60));
+  });
+
+  test("DIYA-GL host wires GA4 measurement into its pages", async ({ page }) => {
+    test.skip(!diyaGlBaseUrl, "DIYA_GL_BASE_URL is unset: the DIYA-GL host is not deployed for this environment");
+
+    let diyaGlHostname = "";
+    try {
+      diyaGlHostname = new URL(diyaGlBaseUrl).hostname;
+    } catch {
+      diyaGlHostname = "";
+    }
+    test.skip(diyaGlHostname.startsWith("localhost"), "GA4 measurement is deployed on the CDN, not on localhost");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("Testing DIYA-GL GA4 instrumentation");
+    console.log("=".repeat(60));
+
+    // The test context blanks analytics.js, gtag/js and the collect endpoint so a behaviour run
+    // never sends GA4 a hit. What can be proved without one: the page asks its own host for
+    // lib/analytics.js, and that file, read outside the routed context, configures the property.
+    const analyticsRequested = page.waitForRequest((request) => /\/lib\/analytics\.js$/.test(request.url()), { timeout: 30000 });
+
+    const ltdUrl = `${diyaGlBaseUrl}/ltd.html`;
+    console.log(` Navigating to ${ltdUrl}`);
+    await page.goto(ltdUrl, { waitUntil: "load", timeout: 30000 });
+
+    const analyticsUrl = new URL((await analyticsRequested).url());
+    console.log(` analytics.js requested from ${analyticsUrl.hostname}`);
+    expect(analyticsUrl.hostname).toBe(diyaGlHostname);
+
+    const analyticsSource = await page.request.get(`${diyaGlBaseUrl}/lib/analytics.js`);
+    expect(analyticsSource.status()).toBe(200);
+    const analyticsText = await analyticsSource.text();
+    expect(analyticsText).toContain('gtag("config", "G-X4ZPD99X2K")');
+    expect(analyticsText).toContain("https://www.googletagmanager.com/gtag/js?id=G-X4ZPD99X2K");
+    console.log(` analytics.js configures G-X4ZPD99X2K`);
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-diya-gl-ga4.png` });
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL GA4 measurement wired on the host");
+    console.log("=".repeat(60));
+  });
+
   // Types into whichever field matching `selector` is actually visible.
   // The Cognito Hosted UI renders duplicate forms (desktop and mobile,
   // synced by its own JS) and Playwright's fill() hangs against them even
@@ -1416,9 +1680,11 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
   test("Cloud sign-in: save, list, open, delete and sign out of the DIYA-GL account", async ({ page }) => {
     // ============================================================
-    // Guard: only runs against the ci host with all three TEST_AUTH_*
-    // variables set. deploy.yml passes an unset repository secret through
-    // as an empty string, so empty counts as missing here too.
+    // Guard: only runs against the DIYA-GL apex hosts with all three
+    // TEST_AUTH_* variables set. deploy.yml mints a fresh test user and
+    // enables native sign-in for both ci and prod. An unset repository
+    // secret is passed through as an empty string, so empty counts as
+    // missing here too.
     // ============================================================
     const testAuthUsername = process.env.TEST_AUTH_USERNAME || "";
     const testAuthPassword = process.env.TEST_AUTH_PASSWORD || "";
@@ -1429,10 +1695,10 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     } catch {
       diyaGlHostname = "";
     }
-    const isCiHost = diyaGlHostname === "ci.diya-gl.co.uk";
+    const isDiyaGlHost = diyaGlHostname === "ci.diya-gl.co.uk" || diyaGlHostname === "diya-gl.co.uk";
 
     const missing = [];
-    if (!isCiHost) missing.push("DIYA_GL_BASE_URL naming the ci host");
+    if (!isDiyaGlHost) missing.push("DIYA_GL_BASE_URL naming the ci or prod host");
     if (!testAuthUsername) missing.push("TEST_AUTH_USERNAME");
     if (!testAuthPassword) missing.push("TEST_AUTH_PASSWORD");
     if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
@@ -1678,7 +1944,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log(" The saved book is listed in the account panel");
 
       // The tier is off in every environment this case can run against
-      // (isCiHost's own check above), so Submit answers entitlement.reason
+      // (isDiyaGlHost's own check above), so Submit answers entitlement.reason
       // tier-disabled and every save is sandbox retention with a 24h expiry.
       const listResponse = await listResponseReceived;
       const listBody = await listResponse.json();
