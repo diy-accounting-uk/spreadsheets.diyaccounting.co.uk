@@ -562,6 +562,60 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect(page.locator(".account-empty")).toBeVisible();
     expect(apiRouteHit).toBe(true);
   });
+
+  test("a list shorter than the last one seen sends sandbox_expired_seen once, with the missing count", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    let call = 0;
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      call += 1;
+      const books =
+        call === 1
+          ? [
+              unsubscribedBook(),
+              Object.assign({}, unsubscribedBook(), { bookId: "book-2" }),
+              Object.assign({}, unsubscribedBook(), { bookId: "book-3" }),
+            ]
+          : [unsubscribedBook(), Object.assign({}, unsubscribedBook(), { bookId: "book-2" })];
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books }) });
+    });
+
+    await openAccountPanel(page); // fetch #1: three books
+    await expect(page.locator(".account-row")).toHaveCount(3);
+    await openAccountPanel(page); // closes, no fetch
+    await openAccountPanel(page); // fetch #2: two books
+    await expect(page.locator(".account-row")).toHaveCount(2);
+
+    expect(await gaEvents(page, "sandbox_expired_seen")).toEqual([{ missing: 1 }]);
+  });
+
+  test("a delete followed by a shorter list sends no sandbox_expired_seen", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    let call = 0;
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      call += 1;
+      const books = call === 1 ? [unsubscribedBook(), Object.assign({}, unsubscribedBook(), { bookId: "book-2" })] : [unsubscribedBook()];
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books }) });
+    });
+    await page.route(`${PROD_API_BASE}/books/book-2`, (route) => {
+      if (route.request().method() !== "DELETE") return route.continue();
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({}) });
+    });
+
+    await openAccountPanel(page);
+    await expect(page.locator(".account-row")).toHaveCount(2);
+
+    await page.locator('.account-row[data-book-id="book-2"] [data-action="delete"]').click();
+    await page.locator('[data-action="confirm-delete"]').click();
+    await expect(page.locator(".account-row")).toHaveCount(1);
+
+    expect(await gaEvents(page, "sandbox_expired_seen")).toEqual([]);
+  });
 });
 
 test.describe("DIYA-GL page — save to my account", () => {

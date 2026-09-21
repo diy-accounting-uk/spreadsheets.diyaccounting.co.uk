@@ -17,6 +17,7 @@ let buildCloudSignInEvent;
 let buildCloudSaveEvent;
 let buildCloudConflictEvent;
 let buildCloudBillingEvent;
+let buildSandboxExpiredSeenEvent;
 
 beforeAll(() => {
   const src = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/diya-gl-events.js"), "utf8");
@@ -30,6 +31,7 @@ beforeAll(() => {
   buildCloudSaveEvent = sandbox.window.buildCloudSaveEvent;
   buildCloudConflictEvent = sandbox.window.buildCloudConflictEvent;
   buildCloudBillingEvent = sandbox.window.buildCloudBillingEvent;
+  buildSandboxExpiredSeenEvent = sandbox.window.buildSandboxExpiredSeenEvent;
 });
 
 describe("buildBookLoadedEvent", () => {
@@ -109,5 +111,12 @@ describe("buildCloudBillingEvent", () => {
   it("names the event cloud_billing and carries the action", () => {
     expect(buildCloudBillingEvent("subscribe-started")).toEqual({ name: "cloud_billing", params: { action: "subscribe-started" } });
     expect(buildCloudBillingEvent("manage-opened")).toEqual({ name: "cloud_billing", params: { action: "manage-opened" } });
+  });
+});
+
+describe("buildSandboxExpiredSeenEvent", () => {
+  it("names the event sandbox_expired_seen and carries the missing count", () => {
+    expect(buildSandboxExpiredSeenEvent(1)).toEqual({ name: "sandbox_expired_seen", params: { missing: 1 } });
+    expect(buildSandboxExpiredSeenEvent(3)).toEqual({ name: "sandbox_expired_seen", params: { missing: 3 } });
   });
 });

@@ -859,6 +859,7 @@
     openPanel();
     return fetchAllBooks()
       .then(function (result) {
+        trackSandboxExpiry(result.books);
         panelState = { status: "list", books: result.books, entitlement: result.entitlement };
         renderPanel();
       })
@@ -936,6 +937,7 @@
       .then(function (response) {
         return parseJsonBody(response).then(function (body) {
           if (!response.ok) throw apiError(response.status, body);
+          removeStorage(LAST_BOOK_COUNT_KEY);
           return fetchBooksList();
         });
       })
@@ -975,6 +977,28 @@
   function sendSaveEvent(product, outcome) {
     if (typeof window.buildCloudSaveEvent !== "function") return;
     sendCloudEvent(window.buildCloudSaveEvent(product, outcome));
+  }
+
+  // DG-6: the reader's own deletes reset this (performDelete), so a shorter
+  // list here always means their sandbox books lapsed, never a removal they
+  // asked for. Nothing is stored until the first list of the session, so
+  // that one never fires a false drop against a session that read no count
+  // yet.
+  var LAST_BOOK_COUNT_KEY = "lastBookCount";
+
+  function sendSandboxExpiredEvent(missing) {
+    if (typeof window.buildSandboxExpiredSeenEvent !== "function") return;
+    sendCloudEvent(window.buildSandboxExpiredSeenEvent(missing));
+  }
+
+  function trackSandboxExpiry(books) {
+    var count = (books || []).length;
+    var storedRaw = readStorage(LAST_BOOK_COUNT_KEY);
+    if (storedRaw !== null) {
+      var stored = Number(storedRaw);
+      if (count < stored) sendSandboxExpiredEvent(stored - count);
+    }
+    writeStorage(LAST_BOOK_COUNT_KEY, String(count));
   }
 
   function sendConflictEvent(resolution) {
