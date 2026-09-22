@@ -8,9 +8,14 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. DG-1k merged as Submit PR #322 (`78e3e552`); Submit's prod deploy of it is running
-there. `PLAN_DIYA_GL_HOME.md` and `PLAN_SPREADSHEETS_RUM.md` are archived, every task delivered.
-`main`'s last code head `128240e2e` is on prod.
+Wave b26 on `claude/b26-board` (worktree `../.worktrees/spreadsheets/b26`), no PR yet:
+
+- `claude/b26-smoke` (`../.worktrees/spreadsheets/b26-smoke`, Sonnet): CQ-56.
+- `claude/b26-router` (`../.worktrees/spreadsheets/b26-router`, Sonnet): CQ-51, then CQ-50.
+- `claude/b26-skill` (`../.worktrees/spreadsheets/b26-skill`, Haiku): CQ-53, CQ-54, CQ-55, CQ-52.
+
+`main`'s last code head `128240e2e` is on prod; the scheduled deploy of `1a5a7ec40` failed at
+the smoke test (CQ-56).
 
 ## Context for the open rows
 
@@ -38,13 +43,13 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| CQ-56 | The cloud sign-in behaviour case asserts the pre-tier answers (`tier-disabled`, 24h expiry); Submit prod now answers `no-subscription` and 35-day retention | none | machine-only | — | ready-to-start | ~1 files | Sonnet | prod deploy 35728232187 red at the smoke test; `spreadsheets.behaviour.test.js` step 8 |
-| CQ-53 | The brief's shape: an agent backgrounds any test run over a few minutes with the nohup recipe and waits in one Bash call | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1i: 52 minutes of foreground agent time; shares `do-next/SKILL.md` with CQ-52, CQ-54, CQ-55 |
-| CQ-54 | The brief's shape: an agent's routed run is its proof; no second suite after its commit, and the coordinator stops one that starts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1n/DG-1l: 44 minutes of a redundant suite |
-| CQ-51 | The router's `--tree-hash` ignores untracked non-source paths (`packages/`, `test-results/`, `target/`), so a GREEN marker survives a run's byproducts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Sonnet | b24, b25: 19 minutes of duplicate hook runs |
-| CQ-52 | A new behaviour probe names the server that serves its path; the local job serves the doc root only, the CDN adds `/runners/` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Haiku | PR #131: 63.2 job-minutes on one red run |
-| CQ-55 | Test guidance: assert a network request or fetched content, never a page global read back through `evaluate()` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Haiku | DG-1j: 28 of 66 turns on an unfailable case |
-| CQ-50 | The router refuses to start while a soffice, playwright or vitest process is live on the machine, naming it; `do-next` says so | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~3 files | Sonnet | b24: 90 wall minutes lost to a contended run |
+| CQ-56 | The cloud sign-in behaviour case asserts the pre-tier answers (`tier-disabled`, 24h expiry); Submit prod now answers `no-subscription` and 35-day retention | none | machine-only | — | in-flight | ~1 files | Sonnet | prod deploy 35728232187 red at the smoke test; `spreadsheets.behaviour.test.js` step 8 |
+| CQ-53 | The brief's shape: an agent backgrounds any test run over a few minutes with the nohup recipe and waits in one Bash call | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~1 files | Haiku | DG-1i: 52 minutes of foreground agent time; shares `do-next/SKILL.md` with CQ-52, CQ-54, CQ-55 |
+| CQ-54 | The brief's shape: an agent's routed run is its proof; no second suite after its commit, and the coordinator stops one that starts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~1 files | Haiku | DG-1n/DG-1l: 44 minutes of a redundant suite |
+| CQ-51 | The router's `--tree-hash` ignores untracked non-source paths (`packages/`, `test-results/`, `target/`), so a GREEN marker survives a run's byproducts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~2 files | Sonnet | b24, b25: 19 minutes of duplicate hook runs |
+| CQ-52 | A new behaviour probe names the server that serves its path; the local job serves the doc root only, the CDN adds `/runners/` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~2 files | Haiku | PR #131: 63.2 job-minutes on one red run |
+| CQ-55 | Test guidance: assert a network request or fetched content, never a page global read back through `evaluate()` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~2 files | Haiku | DG-1j: 28 of 66 turns on an unfailable case |
+| CQ-50 | The router refuses to start while a soffice, playwright or vitest process is live on the machine, naming it; `do-next` says so | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~3 files | Sonnet | b24: 90 wall minutes lost to a contended run |
 | LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | ready-to-start | ~6 files | Opus design, then Sonnet | Submit's `resident` bundle (PU-1) is on its main; Opus design wave first |
 | PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | CQ-56 | blocked-to-start | ~9 files | Sonnet | PU-2 and PU-4 are on Submit's main; shares the behaviour test with CQ-56 |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
