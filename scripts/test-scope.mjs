@@ -14,6 +14,14 @@
 //   npm test -- --tree-hash --rev X  print the same key for commit X's own tree, not the working tree
 //   npm test -- --code-tree-hash     print the same key with every *.md path dropped, run nothing
 //
+// Before any tier runs (but not for --plan), the router refuses to start
+// while a soffice, playwright or vitest process is already live on this
+// machine, naming the pid and command and exiting non-zero: a second
+// LibreOffice/Playwright/Vitest run on the same machine shares profile
+// locks, browser contexts and worker ports with the one already running.
+// TEST_SCOPE_IGNORE_LIVE=1 skips this check for the operator who wants to
+// race anyway; the router prints that it did.
+//
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
 // origin/main, a shallow clone or an empty diff all escalate to --all and
@@ -25,6 +33,11 @@
 // the merge base it diffed against. .githooks/pre-push looks this marker
 // up before running anything, so a suite that just passed on this exact
 // tree is not repeated for the push. PARTIAL never writes one.
+//
+// The hash drops untracked paths the router would not route tests on (see
+// isSourcePath below) before hashing -- packages/*/LICENCE.txt and
+// README.txt, test-results/, target/ -- so a byproduct the browser tier
+// itself wrote does not move the hash a GREEN run already keyed itself by.
 //
 // Both hashes blank app/lib/provenance-data.js's engineVersion value first
 // (see normaliseEngineVersion below): that field names the last commit
@@ -308,6 +321,21 @@ function workingTreeHash({ withoutDocs = false, rev = null } = {}) {
       if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
       const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
       if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+      // Untracked byproducts (packages/*/LICENCE.txt and README.txt the
+      // package build writes, test-results/, target/) must not move the
+      // hash a GREEN run keyed itself by. `git add -A` just staged them
+      // alongside everything else, so drop only the ones that are untracked
+      // AND not a source path the router would route tests on -- a tracked
+      // file's staged content is untouched by this (it was never in the
+      // "others" list below), and a new untracked source file (a new test,
+      // a new script) still counts.
+      const untracked = lines(git(["ls-files", "--others", "--exclude-standard"]));
+      const untrackedNonSource = untracked.filter((p) => !isSourcePath(p));
+      if (untrackedNonSource.length) {
+        const rmUntracked = spawnSync("git", ["rm", "--cached", "-q", "--", ...untrackedNonSource], { cwd: ROOT, env });
+        if (rmUntracked.status !== 0)
+          throw new Error(`git rm --cached (untracked non-source) failed: ${(rmUntracked.stderr || "").toString().trim()}`);
+      }
     }
     if (withoutDocs) {
       const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
@@ -383,10 +411,15 @@ function changedPaths(baseRef) {
 const SOURCE_ROOTS = ["app/", "web/", "diya-gl/", "scripts/"];
 const SOURCE_EXT = /\.(js|mjs|cjs)$/;
 
+// Also used by workingTreeHash (defined above, called only from main() once
+// this whole module has evaluated) to decide which untracked paths count
+// toward the tree hash -- see the comment there.
+function isSourcePath(p) {
+  return SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/");
+}
+
 function sourceFiles() {
-  return lines(git(["ls-files"])).filter(
-    (p) => SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/"),
-  );
+  return lines(git(["ls-files"])).filter(isSourcePath);
 }
 
 function resolveSpecifier(fromFile, spec) {
@@ -607,6 +640,65 @@ function chooseBrowserSpecs(sel, specs) {
   return [...chosen].sort();
 }
 
+// ---------------------------------------------------- live-process guard
+
+// A LibreOffice, Playwright or Vitest process already running on this
+// machine shares profile locks, browser contexts and worker ports with a
+// router invocation that starts beside it. Measured: a routed run raced
+// two agents' browser suites on one machine, 90 wall minutes lost.
+//
+// The match is on what a process runs, never on a word in its arguments:
+// a shell whose command line quotes "vitest" (a pgrep, a grep, the very
+// call that launched this router) is not a test run. soffice is matched as
+// the executable's basename; vitest and playwright as the package under
+// node_modules; a Playwright browser by its ms-playwright install path.
+const LIVE_CONFLICT_EXECUTABLE = /(^|\/)soffice(\.bin)?$/;
+const LIVE_CONFLICT_PACKAGE = /node_modules\/(\.bin\/)?(vitest|playwright)(\/|$|\s)|\/ms-playwright\//;
+
+function isLiveConflictingCommand(command) {
+  const executable = command.split(/\s+/)[0] || "";
+  return LIVE_CONFLICT_EXECUTABLE.test(executable) || LIVE_CONFLICT_PACKAGE.test(command);
+}
+
+// Pure: given ps's own output lines ("pid ppid command", the shape
+// `ps -axo pid,ppid,command` prints) and this process's own pid, returns
+// the conflicting processes -- everything isLiveConflictingCommand accepts
+// except the router's own process and every ancestor of it (npm, the shell
+// that ran npm, the terminal), walked by ppid from the listing itself.
+// Exported for the unit test, which passes a fake listing rather than
+// shelling out to ps.
+function findLiveConflictingProcesses(psLines, { ownPid }) {
+  const rows = [];
+  for (const line of psLines) {
+    const m = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
+    if (!m) continue;
+    rows.push({ pid: Number(m[1]), ppid: Number(m[2]), command: m[3].trim() });
+  }
+  const parentOf = new Map(rows.map((r) => [r.pid, r.ppid]));
+  const ancestry = new Set();
+  for (let pid = ownPid; pid !== undefined && !ancestry.has(pid); pid = parentOf.get(pid)) ancestry.add(pid);
+  return rows.filter((r) => !ancestry.has(r.pid) && isLiveConflictingCommand(r.command)).map(({ pid, command }) => ({ pid, command }));
+}
+
+// Refuses (process.exit(1)) when a conflicting process is live, naming its
+// pid and command; a no-op when TEST_SCOPE_IGNORE_LIVE=1 is set, which
+// prints that the check was skipped so the operator racing it on purpose
+// still sees it happened.
+function checkNoLiveConflictingProcesses() {
+  if (process.env.TEST_SCOPE_IGNORE_LIVE === "1") {
+    console.log("  NOTE     TEST_SCOPE_IGNORE_LIVE=1 is set, so the live-process check was skipped");
+    return;
+  }
+  const ps = spawnSync("ps", ["-axo", "pid,ppid,command"], { encoding: "utf8" });
+  if (ps.status !== 0) return; // ps itself failing is not this router's call to make
+  const hits = findLiveConflictingProcesses(lines(ps.stdout), { ownPid: process.pid });
+  if (hits.length === 0) return;
+  console.error("test-scope: refusing to start -- already live on this machine:");
+  for (const h of hits) console.error(`  pid ${h.pid}  ${h.command}`);
+  console.error("Set TEST_SCOPE_IGNORE_LIVE=1 to start anyway.");
+  process.exit(1);
+}
+
 // ----------------------------------------------------------------- tiers
 
 const TIER_ORDER = ["gates", "unit", "calc", "browser", "infra"];
@@ -716,6 +808,8 @@ export {
   workingTreeHash,
   writeGreenMarker,
   tiersAfterGates,
+  isSourcePath,
+  findLiveConflictingProcesses,
 };
 
 // ------------------------------------------------------------------ main
@@ -904,6 +998,8 @@ async function main() {
     console.log("--plan: nothing was run.");
     process.exit(0);
   }
+
+  checkNoLiveConflictingProcesses();
 
   const treeHash = workingTreeHash();
   const results = [];

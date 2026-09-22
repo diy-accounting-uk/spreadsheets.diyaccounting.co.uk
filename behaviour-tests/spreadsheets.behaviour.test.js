@@ -1948,19 +1948,22 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await shot("11-row-listed");
       console.log(" The saved book is listed in the account panel");
 
-      // The tier is off in every environment this case can run against
-      // (isDiyaGlHost's own check above), so Submit answers entitlement.reason
-      // tier-disabled and every save is sandbox retention with a 24h expiry.
+      // The resident tier is on in every environment this case can run
+      // against (isDiyaGlHost's own check above), and the test user carries
+      // no bundle, so Submit answers entitlement.reason no-subscription with
+      // residentTier true and every save is sandbox retention with a 35-day
+      // expiry.
       const listResponse = await listResponseReceived;
       const listBody = await listResponse.json();
-      expect(listBody.entitlement?.reason, "STEP 8 failed: the list's entitlement.reason was not tier-disabled").toBe("tier-disabled");
+      expect(listBody.entitlement?.reason, "STEP 8 failed: the list's entitlement.reason was not no-subscription").toBe("no-subscription");
+      expect(listBody.entitlement?.residentTier, "STEP 8 failed: the list's entitlement.residentTier was not true").toBe(true);
       const savedBooks = listBody.books.filter((book) => book.title === bookTitle);
       const savedBook = savedBooks.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
       expect(savedBook, "STEP 8 failed: the saved book was not in the list response").toBeTruthy();
-      const expectedExpiresAt = new Date(savedBook.updatedAt).getTime() + 24 * 60 * 60 * 1000;
+      const expectedExpiresAt = new Date(savedBook.updatedAt).getTime() + 35 * 24 * 60 * 60 * 1000;
       expect(
         Math.abs(new Date(savedBook.expiresAt).getTime() - expectedExpiresAt),
-        "STEP 8 failed: the saved book's expiresAt was not within a minute of updatedAt + 24h",
+        "STEP 8 failed: the saved book's expiresAt was not within a minute of updatedAt + 35 days",
       ).toBeLessThan(60_000);
 
       // ============================================================
