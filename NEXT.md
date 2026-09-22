@@ -41,7 +41,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| LP-24b | Google Drive store: `drive.js`, the merged list and Connect row in `cloud.js`, the security headers, the Drive browser spec, the ci case | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | ~13 files | Sonnet | `claude/b29-drive`, PR #134, checks in flight |
+| LP-24b | Google Drive store: `drive.js`, the merged list and Connect row in `cloud.js`, the security headers, the Drive browser spec, the ci case | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | ~13 files | Sonnet | PR #134; ci smoke red twice, main merged in and TOTP retry pushed |
 | PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | — | in-flight | ~9 files | Sonnet | `claude/b27-board` 420d43226; routed run started |
 | LP-24a | Google Drive store: the console steps in the launch plan design (origins, Drive API, `drive.file` scope), then post the OAuth client id | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | seven steps under "LP-24 design" in the plan |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
