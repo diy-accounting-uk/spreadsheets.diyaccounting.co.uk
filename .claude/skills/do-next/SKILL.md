@@ -243,6 +243,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   `page.waitForResponse()`, `page.waitForRequest()`, or by reading a response body. Never read
   a page global through `page.evaluate()`: objects like `Arguments` serialise as empty over the
   CDP bridge, making the case unfailable.
+- **Server naming for new behaviour probes**: A new case that probes a path names the server
+  that serves it. The local test server (`localhost:3000`) serves the document root only;
+  CloudFront-only paths like `/runners/` require a deployed host (`SPREADSHEETS_BASE_URL` set
+  to ci or prod).
 - **A report-back contract**: what it changed and why, what it deliberately did not do, any
   adjacent bug it found with file and line, the exact commands run with counts, and its commit
   SHAs.

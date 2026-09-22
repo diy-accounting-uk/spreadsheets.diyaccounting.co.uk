@@ -144,6 +144,12 @@ of a file the page fetches. Never read a page global back through `page.evaluate
 like `Arguments` serialise as empty over the Chrome DevTools Protocol bridge, so a case reading
 `window.dataLayer` or similar can pass on nothing and become unfailable.
 
+**Server naming for new behaviour probes**: A new case that probes a path names the server from
+which that path is served at the first commit. The local `npm run test:spreadsheetsBehaviour-local`
+server serves only the document root; any path added by CloudFront (e.g., `/runners/`) must target
+a deployed host with `SPREADSHEETS_BASE_URL` naming ci or prod. A case probing CloudFront-only
+paths on the local server goes red on the first CI run.
+
 ## Reconciliation-bug method
 
 The working method behind the reconciliation coverage waves. Follow it for any change to
