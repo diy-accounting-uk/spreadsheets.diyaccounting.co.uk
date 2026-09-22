@@ -138,8 +138,14 @@ describe("buildCloudDriveConnectEvent", () => {
 
 describe("buildCloudDriveSaveEvent", () => {
   it("names the event cloud_drive_save and carries the product and the outcome", () => {
-    expect(buildCloudDriveSaveEvent("bst", "created")).toEqual({ name: "cloud_drive_save", params: { product: "bst", outcome: "created" } });
-    expect(buildCloudDriveSaveEvent("ltd", "updated")).toEqual({ name: "cloud_drive_save", params: { product: "ltd", outcome: "updated" } });
+    expect(buildCloudDriveSaveEvent("bst", "created")).toEqual({
+      name: "cloud_drive_save",
+      params: { product: "bst", outcome: "created" },
+    });
+    expect(buildCloudDriveSaveEvent("ltd", "updated")).toEqual({
+      name: "cloud_drive_save",
+      params: { product: "ltd", outcome: "updated" },
+    });
     expect(buildCloudDriveSaveEvent("se", "failed")).toEqual({ name: "cloud_drive_save", params: { product: "se", outcome: "failed" } });
   });
 });

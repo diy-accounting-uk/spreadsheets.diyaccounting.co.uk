@@ -2204,10 +2204,9 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
       await accountBtn.click(); // close the panel so the example button underneath it can be clicked
       await page.locator('[data-example="bst-scenario-basic"]').click();
-      await expect(
-        page.locator("tfoot.year-totals"),
-        "STEP 3 failed: the example never loaded",
-      ).toContainText("£409,900.00", { timeout: 30000 });
+      await expect(page.locator("tfoot.year-totals"), "STEP 3 failed: the example never loaded").toContainText("£409,900.00", {
+        timeout: 30000,
+      });
 
       await page.click("#save-btn");
       await expect(page.getByRole("menu"), "STEP 3 failed: the save menu never opened").toBeVisible({ timeout: 10000 });
@@ -2223,13 +2222,12 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
           "STEP 3 failed: the Connect row did not appear for an active subscription",
         ).toBeVisible({ timeout: 10000 });
         await shot("02-connect-row");
-        console.log(" The Drive save item opened the Connect row. Stopping here: the consent window Google opens on Connect cannot be driven headlessly.");
+        console.log(
+          " The Drive save item opened the Connect row. Stopping here: the consent window Google opens on Connect cannot be driven headlessly.",
+        );
         await accountBtn.click();
       } else {
-        await expect(
-          driveItem,
-          `STEP 3 failed: the Drive save item appeared for entitlement.reason "${reason}"`,
-        ).toHaveCount(0);
+        await expect(driveItem, `STEP 3 failed: the Drive save item appeared for entitlement.reason "${reason}"`).toHaveCount(0);
         await page.keyboard.press("Escape");
         console.log(` No Drive save item for entitlement.reason "${reason}", as expected`);
       }
@@ -2262,9 +2260,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log("=".repeat(60));
 
       const bodyText = await page.locator("body").innerText();
-      expect(bodyText, "STEP 5 failed: the page text carried a Content Security Policy violation").not.toContain(
-        "Content Security Policy",
-      );
+      expect(bodyText, "STEP 5 failed: the page text carried a Content Security Policy violation").not.toContain("Content Security Policy");
       const cspViolations = consoleErrors.filter((error) => /content security policy/i.test(error));
       expect(cspViolations, `STEP 5 failed: the console reported a CSP violation: ${cspViolations.join(" | ")}`).toEqual([]);
       console.log(" No CSP violation was reported");
@@ -2278,9 +2274,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
       await accountBtn.click();
       await panel.locator('[data-action="sign-out"]').click();
-      await page
-        .waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 })
-        .catch(() => {});
+      await page.waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 }).catch(() => {});
       console.log(" Signed out");
 
       console.log("\n" + "=".repeat(60));

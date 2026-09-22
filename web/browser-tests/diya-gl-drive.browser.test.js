@@ -195,7 +195,14 @@ function createDriveBackend(seedFiles) {
       return json(200, {
         files: files
           .filter((f) => !f.trashed)
-          .map((f) => ({ id: f.id, name: f.name, size: f.size, modifiedTime: f.modifiedTime, appProperties: f.appProperties, headRevisionId: f.headRevisionId })),
+          .map((f) => ({
+            id: f.id,
+            name: f.name,
+            size: f.size,
+            modifiedTime: f.modifiedTime,
+            appProperties: f.appProperties,
+            headRevisionId: f.headRevisionId,
+          })),
       });
     }
     if (pathname === "/drive/v3/files" && method === "POST") {
@@ -264,7 +271,14 @@ function createDriveBackend(seedFiles) {
         trashed: false,
       };
       files.push(newFile);
-      return json(200, { id: id, name: newFile.name, size: newFile.size, modifiedTime: newFile.modifiedTime, appProperties: newFile.appProperties, headRevisionId: revisionId });
+      return json(200, {
+        id: id,
+        name: newFile.name,
+        size: newFile.size,
+        modifiedTime: newFile.modifiedTime,
+        appProperties: newFile.appProperties,
+        headRevisionId: revisionId,
+      });
     }
     return route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
   }
@@ -402,7 +416,14 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
     });
 
     const backend = createDriveBackend([
-      { id: "file-1", name: "Precision Code Trading.diya-gl.zip", size: 100, modifiedTime: "2026-03-01T09:00:00.000Z", headRevisionId: "fresh-revision", appProperties: {} },
+      {
+        id: "file-1",
+        name: "Precision Code Trading.diya-gl.zip",
+        size: 100,
+        modifiedTime: "2026-03-01T09:00:00.000Z",
+        headRevisionId: "fresh-revision",
+        appProperties: {},
+      },
     ]);
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
