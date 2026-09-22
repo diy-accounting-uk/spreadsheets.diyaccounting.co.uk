@@ -356,7 +356,7 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect(rows.last()).toContainText("2025-01-01 to 2025-12-31");
   });
 
-  test("a sandbox book's row counts down to its expiry, over and under an hour", async ({ page }) => {
+  test("a sandbox book's row counts down to its expiry, over and under a day", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -371,13 +371,13 @@ test.describe("DIYA-GL page — signed in", () => {
               bookId: "book-long",
               title: "Long Trading Ltd",
               retention: "sandbox",
-              expiresAt: new Date(Date.now() + (23 * 60 + 10) * 60_000).toISOString(),
+              expiresAt: new Date(Date.now() + (3 * 24 + 5) * 60 * 60_000).toISOString(),
             }),
             Object.assign({}, unsubscribedBook(), {
               bookId: "book-short",
               title: "Short Trading Ltd",
               retention: "sandbox",
-              expiresAt: new Date(Date.now() + 40 * 60_000).toISOString(),
+              expiresAt: new Date(Date.now() + 20 * 60 * 60_000).toISOString(),
             }),
           ],
           entitlement: { reason: "tier-disabled", expiry: null, residentTier: false },
@@ -387,8 +387,8 @@ test.describe("DIYA-GL page — signed in", () => {
 
     await openAccountPanel(page);
     const rows = page.locator(".account-row");
-    await expect(rows.filter({ hasText: "Long Trading Ltd" })).toContainText(/expires in \d+h \d+m/);
-    await expect(rows.filter({ hasText: "Short Trading Ltd" })).toContainText(/expires in \d+m/);
+    await expect(rows.filter({ hasText: "Long Trading Ltd" })).toContainText(/expires in \d+ days/);
+    await expect(rows.filter({ hasText: "Short Trading Ltd" })).toContainText("expires today");
   });
 
   test("a resident book's row is kept until it is deleted, not counted down", async ({ page }) => {
@@ -425,7 +425,7 @@ test.describe("DIYA-GL page — signed in", () => {
     );
 
     await openAccountPanel(page);
-    await expect(page.locator(".account-entitlement")).toContainText("24h sandbox");
+    await expect(page.locator(".account-entitlement")).toContainText("35-day sandbox");
     await expect(page.locator(".account-entitlement").getByRole("button")).toHaveCount(0);
   });
 
@@ -443,8 +443,9 @@ test.describe("DIYA-GL page — signed in", () => {
     );
 
     await openAccountPanel(page);
-    await expect(page.locator(".account-entitlement")).toContainText("24h sandbox. Keep your books for 99p a month.");
+    await expect(page.locator(".account-entitlement")).toContainText("35-day sandbox. Keep your books for £39 a year.");
     await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
+    await expect(page.locator(".account-entitlement").getByRole("button", { name: "or £3.99 a month" })).toBeVisible();
   });
 
   test("the entitlement card shows both dates for a lapsed subscription", async ({ page }) => {
@@ -902,7 +903,7 @@ function unsubscribedBook() {
     versions: [],
     provenance: {},
     retention: "sandbox",
-    expiresAt: "2026-01-02T09:00:00.000Z",
+    expiresAt: "2026-02-05T09:00:00.000Z",
   };
 }
 
@@ -953,7 +954,7 @@ test.describe("DIYA-GL page — billing", () => {
     await page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" }).click();
 
     await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
-    expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", returnTo: bstUrl() });
+    expect(checkoutRequest.body).toEqual({ bundleId: "resident-diya-gl", interval: "annual", returnTo: bstUrl() });
     expect(checkoutRequest.headers["authorization"]).toBe(`Bearer ${idToken}`);
     expect(checkoutRequest.headers["content-type"]).toBe("application/json");
 
@@ -965,6 +966,40 @@ test.describe("DIYA-GL page — billing", () => {
     // here.
     await expect.poll(() => checkoutPageUrl !== null, { timeout: 10_000 }).toBe(true);
     expect(checkoutPageUrl).toBe(`${baseUrl}/fake-stripe-checkout`);
+  });
+
+  test("the monthly link starts checkout at the monthly interval", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [unsubscribedBook()],
+          entitlement: { reason: "no-subscription", expiry: null, residentTier: true },
+        }),
+      });
+    });
+
+    let checkoutRequest = null;
+    await page.route(`${PROD_API_BASE}/billing/checkout`, async (route) => {
+      checkoutRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ checkoutUrl: `${baseUrl}/fake-stripe-checkout` }),
+      });
+    });
+
+    await openAccountPanel(page);
+    await page.locator(".account-entitlement").getByRole("button", { name: "or £3.99 a month" }).click();
+
+    await expect.poll(() => checkoutRequest !== null, { timeout: 10_000 }).toBe(true);
+    expect(checkoutRequest).toEqual({ bundleId: "resident-diya-gl", interval: "monthly", returnTo: bstUrl() });
   });
 
   test("returning with checkout=success cleans the URL, toasts, and re-lists the account", async ({ page }) => {

@@ -134,7 +134,7 @@ test.describe("DIYA-GL Taxi books page — keyboard-only traversal (E6)", () => 
     focusRingSamples.push(await activeElementHasFocusRing(page));
     await expect(
       page.getByRole("button", {
-        name: "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.",
+        name: "Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.",
       }),
     ).toBeFocused();
 
