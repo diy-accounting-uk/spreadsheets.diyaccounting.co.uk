@@ -8,11 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-- `main` at `587f11af6` (PR #134, LP-24b, the Google Drive store); its deploy in flight. Prod
-  served `b9de37874` before it.
+- `main` at `587f11af6` (PR #134, LP-24b, the Google Drive store) is on prod, deploy and smoke
+  green.
 - `claude/b27-board` (worktree `../.worktrees/spreadsheets/b27`): PU-8, PR #135 at `58c257c47`
-  (main merged in for the `cloud.js` and `index.html` overlap with #134); the first head's ci
-  deploy and smoke test were green; the merged head's runs in flight. Merges after main's deploy
+  (main merged in for the `cloud.js` and `index.html` overlap with #134); the merged head's ci
+  deploy and smoke test green; its test run in flight. Merges after main's deploy
   lands.
 
 ## Context for the open rows
