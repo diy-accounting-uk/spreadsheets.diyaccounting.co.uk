@@ -30,6 +30,7 @@ export default defineConfig({
         "**/diya-gl-save.browser.test.js",
         "**/diya-gl-donation.browser.test.js",
         "**/diya-gl-cloud.browser.test.js",
+        "**/diya-gl-drive.browser.test.js",
         "**/diya-gl-measurement.browser.test.js",
         "**/diya-gl-empty-state.browser.test.js",
         "**/diya-gl-deep-links.browser.test.js",

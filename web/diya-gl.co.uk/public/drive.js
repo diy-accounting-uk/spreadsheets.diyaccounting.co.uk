@@ -100,9 +100,13 @@
     removeStorage("driveTokenExpiresAt");
   }
 
+  // A present-but-expired token still counts: the design's "token expired"
+  // row runs the silent re-request first and only falls back to the
+  // Connect row on its failure, so the UI (and mergeDriveBooks) must still
+  // attempt a call rather than treating expiry here as no token at all.
+  // ensureToken() is what actually enforces expiry, for every real call.
   function hasToken() {
-    var current = readToken();
-    return !!current.token && Date.now() < current.expiresAt;
+    return !!readToken().token;
   }
 
   function DriveSignedOutError() {
