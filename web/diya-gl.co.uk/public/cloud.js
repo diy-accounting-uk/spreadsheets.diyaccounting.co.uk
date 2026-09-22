@@ -308,6 +308,22 @@
     removeStorage("link");
   }
 
+  // The tab's Drive link for the currently loaded book (LP-24): fileId and
+  // headRevisionId, kept beside the S3 link rather than replacing it, since
+  // a book can be tracked in one store, the other, both or neither.
+  function getDriveLink() {
+    var raw = readStorage("driveLink");
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  function setDriveLink(link) {
+    if (!link) {
+      removeStorage("driveLink");
+      return;
+    }
+    writeStorage("driveLink", JSON.stringify(link));
+  }
+
   // Journey 3.7 step 2: every diya-gl.cloud.* key, whatever this build has
   // added since, so sign-out is never one key short of a clean tab.
   function clearAllStorage() {
@@ -544,6 +560,10 @@
     return hours > 0 ? "expires in " + hours + "h " + minutes + "m" : "expires in " + minutes + "m";
   }
 
+  function storeBadge(book) {
+    return book.store === "drive" ? '<span class="account-row-badge">Drive</span>' : "";
+  }
+
   function renderBookRow(book) {
     var versions = book.versions || [];
     var expanded = panelState.expandedBookId === book.bookId;
@@ -584,6 +604,7 @@
       esc(book.title) +
       "</strong>" +
       '<div class="account-row-meta">' +
+      storeBadge(book) +
       esc(book.product) +
       ", " +
       esc(periodLabel(book)) +
@@ -619,6 +640,23 @@
     );
   }
 
+  // Journey step 2 of the Drive design: a subscribed reader with no Drive
+  // token sees this above the list; the Drive save item opens the panel
+  // straight onto it. panelState.driveConnectMessage carries the refused
+  // or expired wording, cleared the next time the row would not show.
+  function renderDriveConnectRow(entitlement) {
+    var reason = entitlement && entitlement.reason;
+    if (reason !== "active-subscription") return "";
+    if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) return "";
+    var message = panelState.driveConnectMessage;
+    return (
+      '<div class="account-drive-connect">' +
+      (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
+      '<button type="button" class="btn" data-action="connect-drive">Connect Google Drive</button>' +
+      "</div>"
+    );
+  }
+
   function renderList(books, entitlement, session) {
     var sorted = (books || []).slice().sort(function (a, b) {
       return new Date(b.updatedAt) - new Date(a.updatedAt);
@@ -632,6 +670,7 @@
       '<div class="account-panel-head">' +
       esc((session.user && session.user.email) || "Your account") +
       "</div>" +
+      renderDriveConnectRow(entitlement) +
       rowsHtml +
       renderEntitlement(entitlement) +
       '<button type="button" class="btn" data-action="sign-out">Sign out</button>'
@@ -779,6 +818,19 @@
         "</div>"
       );
     }
+    if (confirm.store === "drive") {
+      return (
+        '<p class="account-panel-head">Delete ' +
+        esc(confirm.title) +
+        "? It moves to your Google Drive bin.</p>" +
+        '<div class="account-row-actions">' +
+        '<button type="button" class="btn btn-primary" data-action="confirm-delete" data-book-id="' +
+        esc(confirm.bookId) +
+        '">Delete</button>' +
+        '<button type="button" class="btn" data-action="cancel-confirm">Cancel</button>' +
+        "</div>"
+      );
+    }
     return (
       '<p class="account-panel-head">Delete ' +
       esc(confirm.title) +
@@ -790,6 +842,24 @@
       esc(confirm.bookId) +
       '">Delete</button>' +
       '<button type="button" class="btn" data-action="cancel-confirm">Cancel</button>' +
+      "</div>"
+    );
+  }
+
+  // The Drive equivalent of renderConflict's etag-mismatch card: Drive has
+  // no version counter, only headRevisionId, so the second line reads off
+  // the file's own modifiedTime instead of a version number.
+  function renderDriveConflict(state) {
+    return (
+      '<div class="account-conflict">' +
+      '<p class="account-panel-head">This book changed in Google Drive.</p>' +
+      '<div class="account-row"><span>In your Drive — saved ' +
+      esc(new Date(state.current.modifiedTime).toLocaleString()) +
+      "</span></div>" +
+      '<div class="account-row-actions">' +
+      '<button type="button" class="btn btn-primary" data-action="drive-conflict-retry">Try again</button>' +
+      '<button type="button" class="btn" data-action="drive-conflict-cancel">Cancel</button>' +
+      "</div>" +
       "</div>"
     );
   }
@@ -866,6 +936,10 @@
       panelEl.innerHTML = renderDuplicate(panelState);
       return;
     }
+    if (panelState.status === "drive-conflict") {
+      panelEl.innerHTML = renderDriveConflict(panelState);
+      return;
+    }
     if (panelState.status === "loading") {
       panelEl.innerHTML = '<p class="account-panel-head">Loading your books…</p>';
       return;
@@ -896,6 +970,27 @@
     renderPanel();
   }
 
+  // Section 5's error table for Drive: a dropped-token error (drive.js
+  // already cleared it on a 401/403, or the silent re-request came back
+  // empty) just re-lists, which is what brings the Connect row back. Every
+  // other Drive failure gets the reach-failure card, storageQuotaExceeded's
+  // own wording aside.
+  function driveErrorMessage(error) {
+    if (error && error.name === "DriveApiError" && error.status === 403 && error.reason === "storageQuotaExceeded") {
+      return "Your Drive is full. The download still works.";
+    }
+    return messageForApiError({ status: (error && error.status) || 0 });
+  }
+
+  function handleDriveError(error) {
+    if (error && error.name === "DriveSignedOutError") {
+      fetchBooksList();
+      return;
+    }
+    panelState = { status: "error", message: driveErrorMessage(error) };
+    renderPanel();
+  }
+
   // Every list carries the reader's entitlement; the page hears it here
   // (shell.js's tier strip shows the resident tier only where residentTier
   // is reported) without reading the panel.
@@ -909,18 +1004,43 @@
     });
   }
 
+  // Listing and opening stay available whenever a Drive token is held,
+  // subscribed or not -- those files are the reader's own. A listing
+  // failure (an expired token whose silent re-request came back empty, or
+  // any other Drive error) drops back to the account's own books rather
+  // than failing the whole panel: drive.js has already cleared the token on
+  // a 401/403, so the Connect row is what the reader sees next.
+  function mergeDriveBooks(accountBooks) {
+    if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) return Promise.resolve(accountBooks);
+    return window.DiyaGlDrive.list()
+      .then(function (driveBooks) {
+        return accountBooks.concat(driveBooks);
+      })
+      .catch(function () {
+        return accountBooks;
+      });
+  }
+
   function fetchBooksList() {
     panelState = { status: "loading" };
     openPanel();
     return fetchAllBooks()
       .then(function (result) {
         trackSandboxExpiry(result.books);
-        panelState = { status: "list", books: result.books, entitlement: result.entitlement };
-        renderPanel();
+        return mergeDriveBooks(result.books).then(function (merged) {
+          panelState = { status: "list", books: merged, entitlement: result.entitlement };
+          renderPanel();
+        });
       })
       .catch(function (error) {
         handlePanelError(error);
       });
+  }
+
+  function findBookInPanel(bookId) {
+    return (panelState.books || []).find(function (candidate) {
+      return candidate.bookId === bookId;
+    });
   }
 
   function bytesFromBase64(base64) {
@@ -936,7 +1056,34 @@
     return window.btoa(binary);
   }
 
+  // A revision opened from a Drive row's own version, or the row's current
+  // headRevisionId when no specific one was picked -- either way the bytes
+  // come back through alt=media and load the same File-based path an
+  // uploaded file already uses.
+  function performDriveOpen(book, revisionId) {
+    panelState = { status: "loading" };
+    renderPanel();
+    window.DiyaGlDrive.open(book.driveFileId, revisionId || null)
+      .then(function (blob) {
+        var file = new File([blob], (book.title || "book") + ".zip", { type: "application/zip" });
+        return window.DiyaGlPage.loadFile(file).then(function () {
+          clearLink();
+          setDriveLink({ fileId: book.driveFileId, headRevisionId: revisionId || book.driveHeadRevisionId });
+          sendCloudEvent(window.buildCloudDriveOpenEvent(revisionId ? "revision" : "latest"));
+          closePanel();
+        });
+      })
+      .catch(function (error) {
+        handleDriveError(error);
+      });
+  }
+
   function performOpen(bookId, version) {
+    var book = findBookInPanel(bookId);
+    if (book && book.store === "drive") {
+      performDriveOpen(book, version);
+      return;
+    }
     panelState = { status: "loading" };
     renderPanel();
     apiFetch("/books/" + encodeURIComponent(bookId) + "/versions/" + encodeURIComponent(version || "latest"), { method: "GET" })
@@ -951,6 +1098,7 @@
               latestETag: body.metadata.latestETag,
               latestVersion: body.metadata.latestVersion,
             });
+            setDriveLink(null);
             closePanel();
           });
         });
@@ -975,7 +1123,29 @@
     performOpen(bookId, version);
   }
 
+  // Trashing puts the file in the reader's own Drive bin (the confirm card
+  // already named it so), so there is no equivalent of the S3 path's
+  // link-forgetting step -- the file still exists, just not in the folder.
+  function performDriveDelete(book) {
+    panelState = { status: "loading" };
+    renderPanel();
+    window.DiyaGlDrive.trash(book.driveFileId)
+      .then(function () {
+        var driveLink = getDriveLink();
+        if (driveLink && driveLink.fileId === book.driveFileId) setDriveLink(null);
+        return fetchBooksList();
+      })
+      .catch(function (error) {
+        handleDriveError(error);
+      });
+  }
+
   function performDelete(bookId) {
+    var book = findBookInPanel(bookId);
+    if (book && book.store === "drive") {
+      performDriveDelete(book);
+      return;
+    }
     // The tab holds this book's bookId and latestETag. Once it is deleted that
     // points at nothing, so a later save would send an If-Match for a book the
     // account no longer has and the API would answer 412. Forget it here, in
@@ -1002,11 +1172,12 @@
   }
 
   function requestDelete(bookId, title, versionsCount) {
+    var book = findBookInPanel(bookId);
     var before = panelState;
     panelState = {
       status: before.status,
       books: before.books,
-      confirm: { kind: "delete", bookId: bookId, title: title, versionsCount: versionsCount },
+      confirm: { kind: "delete", bookId: bookId, title: title, versionsCount: versionsCount, store: book && book.store },
       previous: before,
     };
     renderPanel();
@@ -1218,6 +1389,130 @@
       });
   }
 
+  // ============================== Google Drive ==============================
+
+  function sendDriveConnectEvent(step) {
+    if (typeof window.buildCloudDriveConnectEvent !== "function") return;
+    sendCloudEvent(window.buildCloudDriveConnectEvent(step));
+  }
+
+  function sendDriveSaveEvent(product, outcome) {
+    if (typeof window.buildCloudDriveSaveEvent !== "function") return;
+    sendCloudEvent(window.buildCloudDriveSaveEvent(product, outcome));
+  }
+
+  // Journey step 3-4 of the Drive design: performDriveSave() re-reads
+  // currentBook() and rebuilds the artifact fresh each time it runs, so a
+  // retry off the conflict card carries whatever the page shows right now,
+  // never a stale copy from the first attempt.
+  function performDriveSave() {
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
+    if (!current) return;
+    var product = window.DiyaGlPage.productId();
+    window.DiyaGlPage.buildArtifact("diya-gl-zip")
+      .then(function (artifact) {
+        var driveLink = getDriveLink();
+        var info = (current.book && current.book.documentInfo) || {};
+        var params = {
+          fileId: driveLink ? driveLink.fileId : null,
+          headRevisionId: driveLink ? driveLink.headRevisionId : null,
+          title: bookTitle(current.book),
+          product: product,
+          periodStart: info.periodCoveredStart || null,
+          periodEnd: info.periodCoveredEnd || null,
+          engineVersion: bookProvenance(current.book).engineVersion,
+          bytes: artifact.bytes,
+        };
+        return window.DiyaGlDrive.save(params).then(function (fileMeta) {
+          setDriveLink({ fileId: fileMeta.id, headRevisionId: fileMeta.headRevisionId });
+          sendDriveSaveEvent(product, driveLink ? "updated" : "created");
+          showToastMessage("Saved to your DIYA-GL folder in Google Drive.");
+          if (isPanelOpen()) fetchBooksList();
+        });
+      })
+      .catch(function (error) {
+        if (error && error.name === "DriveConflictError") {
+          panelState = { status: "drive-conflict", current: error.current };
+          openPanel();
+          return;
+        }
+        if (error && error.name === "DriveSignedOutError") {
+          fetchBooksList();
+          return;
+        }
+        sendDriveSaveEvent(product, "failed");
+        showToastMessage(driveErrorMessage(error));
+      });
+  }
+
+  // Set the moment "Save to my Google Drive" is chosen without a token
+  // held; connectDrive()'s success callback reads it back and saves rather
+  // than merely re-listing.
+  var pendingDriveSaveRequested = false;
+
+  function connectDrive() {
+    sendDriveConnectEvent("started");
+    window.DiyaGlDrive.connect()
+      .then(function () {
+        sendDriveConnectEvent("granted");
+        panelState.driveConnectMessage = null;
+        if (pendingDriveSaveRequested) {
+          pendingDriveSaveRequested = false;
+          performDriveSave();
+        } else {
+          fetchBooksList();
+        }
+      })
+      .catch(function () {
+        sendDriveConnectEvent("refused");
+        pendingDriveSaveRequested = false;
+        panelState.driveConnectMessage = "Google Drive was not connected.";
+        renderPanel();
+      });
+  }
+
+  // The save menu's "Save to my Google Drive" item: a token already held
+  // saves straight away; otherwise the panel opens on the Connect card and
+  // the save runs once the reader connects.
+  function saveToDrive() {
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
+    if (!current) return;
+    if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) {
+      performDriveSave();
+      return;
+    }
+    pendingDriveSaveRequested = true;
+    fetchBooksList();
+  }
+
+  // A Drive row's versions are not carried in the list response (unlike an
+  // S3 book's), so the first expand fetches them; a later toggle on the
+  // same row reuses what is already there.
+  function toggleVersions(bookId) {
+    if (panelState.expandedBookId === bookId) {
+      panelState.expandedBookId = null;
+      renderPanel();
+      return;
+    }
+    var book = findBookInPanel(bookId);
+    if (book && book.store === "drive" && !(book.versions && book.versions.length)) {
+      window.DiyaGlDrive.revisions(book.driveFileId)
+        .then(function (revisions) {
+          book.versions = revisions.map(function (revision) {
+            return { version: revision.id, size: Number(revision.size) || 0, createdAt: revision.modifiedTime };
+          });
+          panelState.expandedBookId = bookId;
+          renderPanel();
+        })
+        .catch(function (error) {
+          handleDriveError(error);
+        });
+      return;
+    }
+    panelState.expandedBookId = bookId;
+    renderPanel();
+  }
+
   // Every billing failure -- a bad response, a network error, a missing
   // url field -- lands on messageForApiError's own default branch, the
   // same "try the download" wording the books routes already show for a
@@ -1292,8 +1587,13 @@
     } else if (action === "open") {
       requestOpen(bookId, target.getAttribute("data-version") || null);
     } else if (action === "toggle-versions") {
-      panelState.expandedBookId = panelState.expandedBookId === bookId ? null : bookId;
-      renderPanel();
+      toggleVersions(bookId);
+    } else if (action === "connect-drive") {
+      connectDrive();
+    } else if (action === "drive-conflict-retry") {
+      performDriveSave();
+    } else if (action === "drive-conflict-cancel") {
+      closePanel();
     } else if (action === "delete") {
       requestDelete(bookId, target.getAttribute("data-title"), Number(target.getAttribute("data-versions-count")));
     } else if (action === "confirm-open") {
@@ -1451,6 +1751,7 @@
     signIn: signIn,
     signOut: signOut,
     saveCurrentBook: saveCurrentBook,
+    saveToDrive: saveToDrive,
     startSubscription: startSubscription,
     randomUrlSafe: randomUrlSafe,
     challengeFor: challengeFor,
