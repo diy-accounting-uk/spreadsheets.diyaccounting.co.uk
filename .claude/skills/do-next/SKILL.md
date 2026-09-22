@@ -239,6 +239,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
 - **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
   `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
   item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
+- **Behaviour case assertions**: Assert a network request or fetched file content with
+  `page.waitForResponse()`, `page.waitForRequest()`, or by reading a response body. Never read
+  a page global through `page.evaluate()`: objects like `Arguments` serialise as empty over the
+  CDP bridge, making the case unfailable.
 - **A report-back contract**: what it changed and why, what it deliberately did not do, any
   adjacent bug it found with file and line, the exact commands run with counts, and its commit
   SHAs.

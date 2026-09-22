@@ -138,6 +138,12 @@ gates tier alone and prints what it did not run, which beats `--no-verify` runni
 
 Behaviour tests use the `SPREADSHEETS_BASE_URL` and `DIYA_GL_BASE_URL` environment variables to target different environments. Output is automatically teed to `spreadsheetsBehaviour.log` in the project root.
 
+**Behaviour cases asserting network state**: A case proving a page's behaviour asserts one of:
+a network request (using `page.waitForResponse()` or `page.waitForRequest()`), or the content
+of a file the page fetches. Never read a page global back through `page.evaluate()`. Objects
+like `Arguments` serialise as empty over the Chrome DevTools Protocol bridge, so a case reading
+`window.dataLayer` or similar can pass on nothing and become unfailable.
+
 ## Reconciliation-bug method
 
 The working method behind the reconciliation coverage waves. Follow it for any change to
