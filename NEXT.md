@@ -8,10 +8,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-- `main`'s deploy of PR #132 (wave b26, CQ-50 to CQ-56, merge `b9de37874`) queued; it is the
-  retry of the smoke test that failed on the scheduled deploy of `1a5a7ec40`.
-- PR #133 (`claude/ops-developers-out`, the operator's, worktree `.claude/worktrees/developers`):
-  moves the developer archive out; its test run in flight; no file shared with #132.
+- `main` at `384aeea57` (PR #133, the developer archive moved out); its test and codeql runs in
+  flight. Prod serves `b9de37874` (PR #132, wave b26), the smoke test green on that deploy.
 - `claude/b27-board` (worktree `../.worktrees/spreadsheets/b27`, forked from b26, Sonnet): PU-8.
 - `claude/b29-drive` (worktree `../.worktrees/spreadsheets/b29`, Sonnet): LP-24b, the Google Drive
   store build from the design on main.
