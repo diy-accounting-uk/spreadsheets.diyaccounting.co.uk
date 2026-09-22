@@ -63,6 +63,21 @@ function buildCloudBillingEvent(action) {
   return { name: "cloud_billing", params: { action: action } };
 }
 
+// The three Google Drive events (books/drive.js and books/cloud.js) -- kept
+// apart from the S3 cloud_sign_in/cloud_save series so that series stays
+// readable across this change.
+function buildCloudDriveConnectEvent(step) {
+  return { name: "cloud_drive_connect", params: { step: step } };
+}
+
+function buildCloudDriveSaveEvent(product, outcome) {
+  return { name: "cloud_drive_save", params: { product: product, outcome: outcome } };
+}
+
+function buildCloudDriveOpenEvent(source) {
+  return { name: "cloud_drive_open", params: { source: source } };
+}
+
 if (typeof window !== "undefined") {
   window.buildBookLoadedEvent = buildBookLoadedEvent;
   window.buildBookSavedEvent = buildBookSavedEvent;
@@ -72,4 +87,7 @@ if (typeof window !== "undefined") {
   window.buildSandboxExpiredSeenEvent = buildSandboxExpiredSeenEvent;
   window.buildCloudConflictEvent = buildCloudConflictEvent;
   window.buildCloudBillingEvent = buildCloudBillingEvent;
+  window.buildCloudDriveConnectEvent = buildCloudDriveConnectEvent;
+  window.buildCloudDriveSaveEvent = buildCloudDriveSaveEvent;
+  window.buildCloudDriveOpenEvent = buildCloudDriveOpenEvent;
 }

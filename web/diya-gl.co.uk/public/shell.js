@@ -2964,6 +2964,9 @@
     if (window.DiyaGlCloud && window.DiyaGlCloud.isEnabled()) {
       items.push({ label: "Save to my account", format: "cloud" });
     }
+    if (window.DiyaGlDrive && window.DiyaGlDrive.isOffered()) {
+      items.push({ label: "Save to my Google Drive", format: "cloud-drive" });
+    }
     return items;
   }
 
@@ -2992,6 +2995,8 @@
         closeSaveMenu();
         if (opt.format === "cloud") {
           window.DiyaGlCloud.saveCurrentBook();
+        } else if (opt.format === "cloud-drive") {
+          window.DiyaGlCloud.saveToDrive();
         } else {
           runSave(current, opt.format);
         }
