@@ -2081,4 +2081,219 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       throw error;
     }
   });
+
+  test(
+    "DIYA-GL books page: the Drive save item and Connect row follow entitlement.reason, and the CSP lets Google Identity Services load " +
+      "(stops before consent, which cannot be driven headlessly)",
+    async ({ page }) => {
+      // ============================================================
+      // Guard: the same three TEST_AUTH_* variables and apex-host check the
+      // Cloud sign-in case above needs -- this case signs in the same way,
+      // then reads the entitlement the account list reports rather than
+      // assuming one. Consent, the folder, the upload and its revisions
+      // need a Google account this job has none of, so the case ends at
+      // the Connect row.
+      // ============================================================
+      const testAuthUsername = process.env.TEST_AUTH_USERNAME || "";
+      const testAuthPassword = process.env.TEST_AUTH_PASSWORD || "";
+      const testAuthTotpSecret = process.env.TEST_AUTH_TOTP_SECRET || "";
+      let diyaGlHostname = "";
+      try {
+        diyaGlHostname = new URL(diyaGlBaseUrl).hostname;
+      } catch {
+        diyaGlHostname = "";
+      }
+      const isDiyaGlHost = diyaGlHostname === "ci.diya-gl.co.uk" || diyaGlHostname === "diya-gl.co.uk";
+
+      const missing = [];
+      if (!isDiyaGlHost) missing.push("DIYA_GL_BASE_URL naming the ci or prod host");
+      if (!testAuthUsername) missing.push("TEST_AUTH_USERNAME");
+      if (!testAuthPassword) missing.push("TEST_AUTH_PASSWORD");
+      if (!testAuthTotpSecret) missing.push("TEST_AUTH_TOTP_SECRET");
+      test.skip(missing.length > 0, `Drive gate case needs: ${missing.join(", ")}`);
+
+      test.setTimeout(120_000);
+
+      const { TOTP, Secret } = await import("otpauth");
+
+      const driveScreenshotPath = `${screenshotPath}/drive-gate`;
+      fs.mkdirSync(driveScreenshotPath, { recursive: true });
+      const shot = (name) => page.screenshot({ path: `${driveScreenshotPath}/${timestamp()}-${name}.png` });
+
+      const consoleErrors = [];
+      page.on("pageerror", (error) => consoleErrors.push(String(error)));
+      page.on("console", (message) => {
+        if (message.type() === "error") consoleErrors.push(message.text());
+      });
+
+      // ============================================================
+      // STEP 1: Sign in, the same journey the Cloud sign-in case drives
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 1: Sign in");
+      console.log("=".repeat(60));
+
+      const booksUrl = `${diyaGlBaseUrl}/bst.html`;
+      await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+      const accountBtn = page.locator("#account-btn");
+      await expect(accountBtn, "STEP 1 failed: the account button never appeared").toBeVisible({ timeout: 15000 });
+
+      const appOrigin = new URL(page.url()).origin;
+      await accountBtn.click();
+      const panel = page.locator("#account-panel");
+      await panel.getByRole("button", { name: "Sign in" }).click();
+      await page
+        .waitForURL((url) => url.origin !== appOrigin, { timeout: 20000 })
+        .catch((error) => {
+          throw new Error(`STEP 1 failed: sign-in never redirected to the hosted UI (still at ${page.url()})`, { cause: error });
+        });
+      await page.waitForLoadState("domcontentloaded");
+
+      await page.waitForSelector('input[name="username"]', { state: "attached", timeout: 20000 }).catch((error) => {
+        throw new Error(`STEP 1 failed: the hosted UI sign-in form never rendered (still at ${page.url()})`, { cause: error });
+      });
+      await page.waitForSelector('input[name="password"]', { state: "attached", timeout: 5000 });
+      await typeIntoVisibleField(page, 'input[name="username"]', testAuthUsername);
+      await typeIntoVisibleField(page, 'input[name="password"]', testAuthPassword);
+      await page.evaluate(() => {
+        for (const form of document.querySelectorAll("form")) form.noValidate = true;
+      });
+      await clickVisibleButton(page, 'input[name="signInSubmitButton"]');
+      await page.waitForLoadState("networkidle").catch(() => {});
+
+      const totpFieldSelector = 'input[name="totpCode"], input[name="SOFTWARE_TOKEN_MFA_CODE"], input[type="text"][inputmode="numeric"]';
+      const totpField = await page.waitForSelector(totpFieldSelector, { state: "attached", timeout: 8000 }).catch(() => null);
+      if (totpField) {
+        // The Cloud sign-in case above signs the same user in moments before
+        // this one, and Cognito accepts each TOTP code once. Within the same
+        // 30-second period the code it used is spent, so the hosted UI stays
+        // on /mfa; wait for the next period and submit the fresh code.
+        const totp = new TOTP({ secret: Secret.fromBase32(testAuthTotpSecret), algorithm: "SHA1", digits: 6, period: 30 });
+        const submitTotp = async () => {
+          await typeIntoVisibleField(page, totpFieldSelector, totp.generate());
+          await clickVisibleButton(page, 'input[name="signInSubmitButton"], button[type="submit"], input[type="submit"]');
+          await page.waitForLoadState("networkidle").catch(() => {});
+        };
+        await submitTotp();
+        if (new URL(page.url()).pathname === "/mfa") {
+          await page.waitForTimeout(30000 - (Date.now() % 30000) + 1000);
+          await submitTotp();
+        }
+      }
+
+      await page
+        .waitForURL((url) => url.origin === appOrigin, { timeout: 20000 })
+        .catch((error) => {
+          throw new Error(`STEP 1 failed: the hosted UI never returned to the books page (still at ${page.url()})`, { cause: error });
+        });
+      await expect(
+        panel.locator('[data-action="sign-out"]'),
+        "STEP 1 failed: never reached the signed-in account panel after returning from the hosted UI",
+      ).toBeVisible({ timeout: 20000 });
+      await shot("01-signed-in");
+      console.log(" Signed in");
+
+      // ============================================================
+      // STEP 2: Read the entitlement the account list reports
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 2: Read the entitlement the account list reports");
+      console.log("=".repeat(60));
+
+      const isBooksListResponse = (response) => response.request().method() === "GET" && /\/api\/v1\/books$/.test(response.url());
+      const listResponseReceived = page.waitForResponse(isBooksListResponse, { timeout: 15000 });
+      await accountBtn.click(); // the panel opened by sign-in is still showing the list from the redirect; close and reopen for a fresh one
+      await accountBtn.click();
+      const listResponse = await listResponseReceived;
+      const listBody = await listResponse.json();
+      const reason = listBody.entitlement?.reason;
+      console.log(` entitlement.reason: ${reason}`);
+
+      // ============================================================
+      // STEP 3: The Drive save item and Connect row follow that reason
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 3: Check the Drive save item and Connect row against the entitlement");
+      console.log("=".repeat(60));
+
+      await accountBtn.click(); // close the panel so the example button underneath it can be clicked
+      await page.locator('[data-example="bst-scenario-basic"]').click();
+      await expect(page.locator("tfoot.year-totals"), "STEP 3 failed: the example never loaded").toContainText("£409,900.00", {
+        timeout: 30000,
+      });
+
+      await page.click("#save-btn");
+      await expect(page.getByRole("menu"), "STEP 3 failed: the save menu never opened").toBeVisible({ timeout: 10000 });
+      const driveItem = page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true });
+
+      if (reason === "active-subscription") {
+        await expect(driveItem, "STEP 3 failed: the Drive save item did not appear for an active subscription").toBeVisible({
+          timeout: 5000,
+        });
+        await driveItem.click();
+        await expect(
+          panel.locator(".account-drive-connect"),
+          "STEP 3 failed: the Connect row did not appear for an active subscription",
+        ).toBeVisible({ timeout: 10000 });
+        await shot("02-connect-row");
+        console.log(
+          " The Drive save item opened the Connect row. Stopping here: the consent window Google opens on Connect cannot be driven headlessly.",
+        );
+        await accountBtn.click();
+      } else {
+        await expect(driveItem, `STEP 3 failed: the Drive save item appeared for entitlement.reason "${reason}"`).toHaveCount(0);
+        await page.keyboard.press("Escape");
+        console.log(` No Drive save item for entitlement.reason "${reason}", as expected`);
+      }
+
+      // ============================================================
+      // STEP 4: The deployed CSP lets Google Identity Services load
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 4: Load https://accounts.google.com/gsi/client under the deployed CSP");
+      console.log("=".repeat(60));
+
+      await page.evaluate(
+        () =>
+          new Promise((resolveLoad, rejectLoad) => {
+            const script = document.createElement("script");
+            script.src = "https://accounts.google.com/gsi/client";
+            script.onload = resolveLoad;
+            script.onerror = () => rejectLoad(new Error("gsi/client failed to load"));
+            document.head.appendChild(script);
+          }),
+      );
+      await shot("03-gsi-loaded");
+      console.log(" Google Identity Services loaded under the deployed CSP");
+
+      // ============================================================
+      // STEP 5: No CSP violation was reported
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 5: Check for a CSP violation");
+      console.log("=".repeat(60));
+
+      const bodyText = await page.locator("body").innerText();
+      expect(bodyText, "STEP 5 failed: the page text carried a Content Security Policy violation").not.toContain("Content Security Policy");
+      const cspViolations = consoleErrors.filter((error) => /content security policy/i.test(error));
+      expect(cspViolations, `STEP 5 failed: the console reported a CSP violation: ${cspViolations.join(" | ")}`).toEqual([]);
+      console.log(" No CSP violation was reported");
+
+      // ============================================================
+      // STEP 6: Sign out
+      // ============================================================
+      console.log("\n" + "=".repeat(60));
+      console.log("STEP 6: Sign out");
+      console.log("=".repeat(60));
+
+      await accountBtn.click();
+      await panel.locator('[data-action="sign-out"]').click();
+      await page.waitForURL((url) => url.origin === appOrigin && !url.search.includes("code="), { timeout: 20000 }).catch(() => {});
+      console.log(" Signed out");
+
+      console.log("\n" + "=".repeat(60));
+      console.log("TEST COMPLETE - Drive gate verified");
+      console.log("=".repeat(60));
+    },
+  );
 });

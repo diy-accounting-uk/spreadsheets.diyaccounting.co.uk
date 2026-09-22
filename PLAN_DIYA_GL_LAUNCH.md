@@ -7,7 +7,7 @@ full year of a sole trader's accounts fits in a 15 KB zip, recalculates in a bro
 command line without Excel or a server, and produces the same bytes on every surface. Self
 Employed, Taxi and Limited Company followed by 2026-09-06 (PRs #60 to #68): four products on
 the page, in the CLI and in the MCP server, each reconciled in CI, their plans archived under
-`_developers/archive/`. This document turns that into a product line with a revenue stream,
+`../developers/spreadsheets/archive/`. This document turns that into a product line with a revenue stream,
 checks the operator's sketch against the market and the arithmetic, and lays out a launch
 sequence with gates. State lines are as of 2026-09-06.
 
@@ -533,7 +533,7 @@ here until their phase opens.
 - **LP-3**: this repo's `package.json` is private; the publishable package is a second
   `package.json` (a `diya-gl/` directory or an npm workspace) whose `bin` map wraps
   `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
-  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
+  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `../developers/spreadsheets/PLAN_DIYA_CLOUD.md` section 3
   is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
   every green prod deploy from a push to main, with `NPM_TOKEN` and provenance attestation, rolling the patch version afterwards so the next deploy publishes the next one. Prove with `npm pack` and a
   smoke run of each bin in CI.
@@ -590,7 +590,7 @@ here until their phase opens.
   (and the ci host), sign-out URL the same, PKCE, no secret; the client id as a stack output and
   an SSM parameter the spreadsheets deploy can read; its Java test; lands by Submit PR (H9).
 - **LP-16**: design wave first (Opus): the S3 key layout `users/<sub>/books/<bookId>/<version>.zip`
-  with `metadata.json` per book (`_developers/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
+  with `metadata.json` per book (`../developers/spreadsheets/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
   four Lambda handlers, the API Gateway routes under the existing `ApiStack` with the pool's
   authoriser, the ETag-based optimistic concurrency, and the entitlement hook LP-18 fills. Then
   Sonnet builds it with unit tests per handler and a behaviour probe against submit-ci.
@@ -628,6 +628,169 @@ here until their phase opens.
   that diffs `report.json` and `bookchecks.json` against the JS over the fixtures, and the CI
   parity job; then the code waves and the closing ladder, sized from section 5b's estimate.
   Fable coordinates; Sonnet and Opus workers. Does not wait on LP-13.
+
+### LP-24 design: Google Drive as a second store
+
+**The reader's journey.**
+
+1. A subscribed reader opens the save menu and picks "Save to my Google Drive". The item shows
+   only while the account list reports `entitlement.reason` as `active-subscription`.
+2. This browser holds no Drive token, so the account panel opens on a "Connect Google Drive" card.
+   The card names the one permission asked for: files this page creates, and nothing else in
+   the Drive.
+3. The reader clicks Connect. Google's consent window opens on that click, pointed at the address
+   in the Cognito id token. They approve.
+4. The window closes with an access token. The page finds or creates a `DIYA-GL` folder in their
+   Drive and uploads the same diya-gl zip a download would write. The toast names the folder.
+5. The panel lists that book with a Drive badge, in one list beside the books in the account.
+6. Versions on a Drive row are Drive's own revisions. Open takes the latest, or any revision in
+   the list, back into the page.
+7. On a second device the reader signs in and clicks Connect once more. The folder and every book
+   in it come back. The token belongs to this browser, the books to the Drive.
+8. The zip also opens straight from drive.google.com, which is the point of keeping it there.
+
+**The token.** Cognito's hosted UI returns the pool's own id, access and refresh tokens. Google's
+access token stays inside the pool, so the page asks Google for one of its own. `drive.js` loads
+`https://accounts.google.com/gsi/client` on the first Connect click, calls
+`google.accounts.oauth2.initTokenClient({ client_id, scope: "https://www.googleapis.com/auth/drive.file", hint: <the email claim>, callback })`,
+and fires `requestAccessToken()` inside that same click so the popup blocker lets the window
+through. The callback's `access_token` and `expires_in` go to sessionStorage as
+`diya-gl.cloud.driveToken` and `diya-gl.cloud.driveTokenExpiresAt`, which sign-out already clears
+by prefix. Within 60 seconds of expiry the next Drive call re-requests with `prompt: ""`, silent
+while the Google session is live, and the panel returns to the Connect card when that comes back
+empty. `hasGrantedAllScopes` is checked on every response, because the consent window lets a
+reader approve less than was asked. The alternative, adding `drive.file` to the IdP's scope list
+in `IdentityStack.java`, is rejected because the grant then lands in the user pool and the hosted
+UI's token endpoint hands the page pool tokens only.
+
+**The Drive calls.** Every one carries `Authorization: Bearer <the Drive token>`. Reads and
+metadata writes go to `https://www.googleapis.com/drive/v3`, uploads to
+`https://www.googleapis.com/upload/drive/v3`.
+
+- Find the folder: `GET /files?q=name='DIYA-GL' and mimeType='application/vnd.google-apps.folder'
+  and trashed=false&fields=files(id,name)&spaces=drive`. Under `drive.file` a search sees only
+  files this page created, so a hit is our own folder.
+- Create it when the search is empty: `POST /files` with
+  `{"name":"DIYA-GL","mimeType":"application/vnd.google-apps.folder","appProperties":{"diyaGl":"folder"}}`.
+- Save a new book: `POST /upload/files?uploadType=multipart&fields=id,name,size,modifiedTime,appProperties,headRevisionId`,
+  a `multipart/related` body of the metadata JSON then the zip bytes as `application/zip`. The
+  metadata sets `name` to `<title> <periodEnd>.diya-gl.zip`, `parents` to the folder id, and
+  `appProperties` to `bookId`, `product`, `periodStart`, `periodEnd` and `engineVersion`. A key
+  and its value are capped at 124 bytes together, so the title stays in the file name.
+- Save over a book: `PATCH /upload/files/{fileId}?uploadType=multipart&fields=id,size,modifiedTime,headRevisionId`.
+  The previous bytes become a revision.
+- Keep that revision: `PATCH /files/{fileId}/revisions/{revisionId}` with `{"keepForever":true}`
+  straight after each upload. Drive prunes binary revisions past 30 days or 100 revisions
+  otherwise, and holds 200 kept-forever revisions per file, so at 200 the oldest loses the flag
+  first.
+- List: `GET /files?q='{folderId}' in parents and
+  trashed=false&fields=files(id,name,size,modifiedTime,appProperties,headRevisionId)&orderBy=modifiedTime desc&pageSize=100`.
+- Open: `GET /files/{fileId}?alt=media`, or `GET /files/{fileId}/revisions/{revisionId}?alt=media`
+  for an older one. The bytes become a `File` and go through `DiyaGlPage.loadFile`, the path
+  `performOpen` already uses.
+- Versions: `GET /files/{fileId}/revisions?fields=revisions(id,modifiedTime,size,keepForever)`.
+- Delete: `PATCH /files/{fileId}` with `{"trashed":true}`, so the file lands in the reader's own
+  Drive bin and the confirm card says so.
+
+Per file the page keeps `fileId`, `headRevisionId`, `modifiedTime`, `size`, `name` and
+`appProperties`. Per tab it keeps the folder id, re-resolved whenever a call answers 404, and
+`driveLink = {fileId, headRevisionId}` for the loaded book, beside the existing S3 `link`.
+Drive's `files.update` takes no precondition header, so a save over an existing file re-reads
+`headRevisionId` first and shows the S3 path's conflict card when it has moved. The window
+between that read and the write stays open; a Drive-side precondition would close it, and that
+is the open problem to come back to.
+
+**The account panel.** One list, sorted by save time as it is today. `renderBookRow` takes a
+`store` field of `account` or `drive` and prints a badge in the meta line; a Drive row carries the
+same Open, Versions and Delete. The head gains a link to the folder,
+`https://drive.google.com/drive/folders/<id>`. The page decides what to offer from the list
+route's `entitlement.reason`, so the catalogue's move from `resident-diya-gl` to the `resident`
+bundle needs no change here.
+
+| state | what the panel shows |
+| --- | --- |
+| `reason` is not `active-subscription` | no Drive rows, no Drive save item, no Connect action |
+| subscribed, no Drive token | a "Connect Google Drive" row above the list; the Drive save item opens the panel on it |
+| consent refused, or the window closed | the Connect row stays, with "Google Drive was not connected." |
+| token expired | the silent re-request runs first; on failure the Connect row returns and the S3 rows stay listed |
+| 401 or 403 from a Drive call | the token is dropped and the Connect row returns |
+| 403 `storageQuotaExceeded` | "Your Drive is full. The download still works." |
+| any other Drive failure | the reach-failure wording `messageForApiError` already ends on |
+
+Listing and opening stay available whenever a token is held, subscribed or not, because those
+files are the reader's own. Only the save is gated.
+
+**The events.** Three more builders in `diya-gl-events.js`, sent through the guarded
+`sendCloudEvent` the cloud events already use, exported on `window` with the rest, and each with
+a case in `web/unit-tests/diya-gl-events.test.js`.
+
+| builder | event | params |
+| --- | --- | --- |
+| `buildCloudDriveConnectEvent(step)` | `cloud_drive_connect` | `step`: `started`, `granted`, `refused`, `expired` |
+| `buildCloudDriveSaveEvent(product, outcome)` | `cloud_drive_save` | `product`, `outcome`: `created`, `updated`, `failed` |
+| `buildCloudDriveOpenEvent(source)` | `cloud_drive_open` | `source`: `latest`, `revision` |
+
+`cloud_drive_save` sits apart from `cloud_save` so the S3 series stays readable across the change.
+
+**The build.**
+
+| file | change |
+| --- | --- |
+| `web/diya-gl.co.uk/public/drive.js` (new, ~400 lines) | the token client, the folder, the calls above, published as `window.DiyaGlDrive` with `isOffered`, `hasToken`, `connect`, `list`, `save`, `open`, `revisions`, `trash` |
+| `web/diya-gl.co.uk/public/cloud.js` | the merged list and the store badge, the Connect row, the Drive save path, the entitlement gate, the Drive error states |
+| `web/diya-gl.co.uk/public/cloud-config.js` | `googleClientId`, with a `DIYA_GL_DRIVE_TEST_CLIENT_ID` override matching the hook already there |
+| `web/diya-gl.co.uk/public/shell.js` | the second save-menu item, shown when `DiyaGlDrive.isOffered()` |
+| `bst.html`, `se.html`, `taxi.html`, `ltd.html`, `index.html` | the `drive.js` script tag after `cloud.js`; then `node scripts/build-diya-gl-bundle.mjs` and commit the regenerated `build-stamp.js` the precache list comes from |
+| `infra/main/resources/diya-gl-security-headers.json` | `script-src` gains `https://accounts.google.com`; `connect-src` gains `https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com`; a `frame-src 'self' https://accounts.google.com`; `Cross-Origin-Opener-Policy` becomes `same-origin-allow-popups` so the consent window can reach its opener |
+| `web/diya-gl.co.uk/public/diya-gl-events.js`, `web/unit-tests/diya-gl-events.test.js` | the three builders and their cases |
+| `web/browser-tests/diya-gl-drive.browser.test.js` (new), `playwright.config.js` | the spec, and its name in the config's `testMatch` list |
+| `behaviour-tests/spreadsheets.behaviour.test.js` | the ci case below |
+
+The browser spec stubs `https://accounts.google.com/**` and `https://www.googleapis.com/**`
+through `page.route`, and injects a fake `google.accounts.oauth2` with `addInitScript` so no
+window opens. Cases:
+
+1. Sandbox entitlement: no Drive save item, no Connect row, and no call to googleapis.
+2. Subscribed, no token: the Connect row renders, and the Drive save item opens the panel on it.
+3. Connect granted: the folder search returns empty, the create runs once, the upload's second
+   part starts with the PK magic bytes, the toast names the folder, `cloud_drive_save` is
+   `created`.
+4. A second save of the same book: no repeat search, the `PATCH` carries the file id, the revision
+   `PATCH` sets `keepForever`, the outcome is `updated`.
+5. `headRevisionId` moved between the list and the save: the conflict card renders and no upload
+   is sent.
+6. Two account books and two Drive files render as four rows with the right badges, in save-time
+   order.
+7. Open a revision: the revisions call, then `alt=media` on that revision id, then the page holds
+   the fixture's book and `cloud_drive_open` is `revision`.
+8. Delete: the `PATCH` sets `trashed`, the row goes, and the confirm wording names the Drive bin.
+9. The token expires: the silent re-request returns nothing, the Connect row comes back, and the
+   account rows stay listed.
+
+The ci behaviour case runs on `https://ci.diya-gl.co.uk` as the Cognito user the behaviour job mints per
+run, who has no Google account. It proves the gate and the wiring: the Drive save item and the Connect row
+appear for an `active-subscription` entitlement and are absent otherwise, the deployed CSP lets
+`accounts.google.com/gsi/client` load, and nothing reaches googleapis before a token exists.
+Consent, the upload, the revisions and the folder need a Google account that can sign in
+headlessly, so until one exists the operator checks those on their own Drive after a prod deploy.
+
+**Operator steps.** All seven are the operator's. Submit changes nothing: `IdentityStack.java`
+keeps `List.of("email", "openid", "profile")` on the Google IdP.
+
+1. Open the credentials page of the Google Cloud project that holds Submit's OAuth client:
+   `https://console.cloud.google.com/apis/credentials`
+2. Open that OAuth 2.0 Client ID and add `https://diya-gl.co.uk` and `https://ci.diya-gl.co.uk`
+   to Authorised JavaScript origins, then save. The redirect URIs stay as they are.
+3. Enable the Drive API on the same project:
+   `https://console.cloud.google.com/apis/library/drive.googleapis.com`
+4. Add the scope `https://www.googleapis.com/auth/drive.file` on the consent screen:
+   `https://console.cloud.google.com/apis/credentials/consent`. It is a non-sensitive scope, so
+   it asks for no security assessment.
+5. Check the publishing status on that same screen reads In production.
+6. Post the client id from step 2 in the chat; it is a public identifier and goes into
+   `cloud-config.js` beside the Cognito client id.
+7. After the prod deploy, save a book to Drive from your own account and check the folder, the
+   file and a second revision at `https://drive.google.com/drive/my-drive`
 
 ## Donations: the sandbox and the events
 
@@ -687,7 +850,7 @@ test there is, for less than it costs. Phase 5 was convenience.
 
 ## The names and the notice
 
-Two operator rows moved here from `_developers/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
+Two operator rows moved here from `../developers/spreadsheets/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
 narrowed to the licence change and its filings. They sit with the launch because that is what they
 serve: the product needs its names held before it is talked about, and HMRC should hear the licence
 changed from us rather than from the release.
@@ -701,7 +864,7 @@ The note says what changed and the one thing that has not: we still issue no lic
 
 ## Where this changes the DIYA-GL Cloud plan
 
-`_developers/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
+`../developers/spreadsheets/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
 and a full general ledger. This plan keeps its storage, identity and account placement
 decisions and changes three things on the strength of what shipped this week: computation
 is client-side (the browser engine is the same code CI reconciles), `.xlsx` generation is
@@ -763,7 +926,7 @@ its phases 3 to 5 are absorbed by the page; its phase 6 is this plan's Filing ru
   (read 2026-09-03)
 - tech-insider.org, Tauri vs Electron sizes: https://tech-insider.org/tauri-vs-electron-2026/
   (read 2026-09-03)
-- This repository: the four product plans under `_developers/archive/`
-  (`PLAN_DIYA_GL_{BST,SE,TAXI,LTD}_CLI_MCP_WEB.md`), `_developers/PLAN_DIYA_CLOUD.md`,
-  `_developers/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
+- This repository: the four product plans under `../developers/spreadsheets/archive/`
+  (`PLAN_DIYA_GL_{BST,SE,TAXI,LTD}_CLI_MCP_WEB.md`), `../developers/spreadsheets/PLAN_DIYA_CLOUD.md`,
+  `../developers/spreadsheets/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
   repository's `README.md` (HMRC recognition for VAT) and `AWS_COSTS.md` (Cognito cost).
