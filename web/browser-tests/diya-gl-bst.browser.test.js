@@ -581,7 +581,7 @@ test.describe("Spreadsheets download.html — DIYA-GL entry panel", () => {
     await expect(heading).toBeVisible();
 
     const section = page.locator(".download-section", { has: heading });
-    await expect(section).toContainText("24h sandbox");
+    await expect(section).toContainText("35-day sandbox");
 
     const link = section.locator("#diya-gl-link");
     await expect(link).toHaveAttribute("href", "https://diya-gl.co.uk/");

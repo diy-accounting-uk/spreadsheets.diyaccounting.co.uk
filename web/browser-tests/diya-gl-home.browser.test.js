@@ -228,7 +228,7 @@ test.describe("DIYA-GL homepage — the resident tier line", () => {
     await page.click("#account-btn");
     await expect(page.locator(".account-entitlement")).toContainText("Subscribed");
     await expect(page.locator("#tier-resident")).toBeVisible();
-    await expect(page.locator("#tier-resident")).toContainText("99p a month");
+    await expect(page.locator("#tier-resident")).toContainText("£39 a year");
   });
 
   test("stays hidden while the account list reports the tier as disabled", async ({ page }) => {
@@ -238,7 +238,7 @@ test.describe("DIYA-GL homepage — the resident tier line", () => {
 
     await page.goto(homeUrl(), { waitUntil: "domcontentloaded" });
     await page.click("#account-btn");
-    await expect(page.locator(".account-entitlement")).toContainText("24h sandbox");
+    await expect(page.locator(".account-entitlement")).toContainText("35-day sandbox");
     await expect(page.locator("#tier-resident")).toBeHidden();
   });
 });

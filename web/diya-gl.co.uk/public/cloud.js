@@ -507,7 +507,7 @@
       accountBtnEl.setAttribute("aria-label", email ? "Account, signed in as " + email : "Account");
       if (label) label.textContent = "Account";
     } else {
-      var signInTitle = "Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.";
+      var signInTitle = "Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.";
       accountBtnEl.title = signInTitle;
       accountBtnEl.setAttribute("aria-label", signInTitle);
       if (label) label.textContent = "Sign in";
@@ -554,10 +554,10 @@
     if (book.retention === "resident") return "kept until you delete it";
     if (!book.expiresAt) return "";
     var remainingMs = Math.max(0, new Date(book.expiresAt).getTime() - Date.now());
-    var totalMinutes = Math.floor(remainingMs / 60000);
-    var hours = Math.floor(totalMinutes / 60);
-    var minutes = totalMinutes % 60;
-    return hours > 0 ? "expires in " + hours + "h " + minutes + "m" : "expires in " + minutes + "m";
+    var days = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
+    if (days > 1) return "expires in " + days + " days";
+    if (days === 1) return "expires in 1 day";
+    return "expires today";
   }
 
   function storeBadge(book) {
@@ -735,7 +735,10 @@
   }
 
   function subscribeButton() {
-    return '<div class="account-row-actions"><button type="button" class="btn btn-primary" data-action="subscribe">Subscribe</button></div>';
+    return (
+      '<div class="account-row-actions"><button type="button" class="btn btn-primary" data-action="subscribe" data-interval="annual">Subscribe</button></div>' +
+      '<p class="account-entitlement-monthly"><button type="button" class="account-entitlement-monthly-link" data-action="subscribe" data-interval="monthly">or £3.99 a month</button></p>'
+    );
   }
 
   // tier-disabled always renders the plain sandbox card; an active
@@ -756,7 +759,7 @@
     if (entitlement && entitlement.residentTier) {
       if (reason === "no-subscription") {
         return (
-          '<div class="account-entitlement"><span class="account-entitlement-label">24h sandbox. Keep your books for 99p a month.</span>' +
+          '<div class="account-entitlement"><span class="account-entitlement-label">35-day sandbox. Keep your books for £39 a year.</span>' +
           subscribeButton() +
           "</div>"
         );
@@ -775,13 +778,13 @@
         );
       }
     }
-    return '<div class="account-entitlement"><span class="account-entitlement-label">24h sandbox</span></div>';
+    return '<div class="account-entitlement"><span class="account-entitlement-label">35-day sandbox</span></div>';
   }
 
   function renderSignedOut() {
     return (
       DEVICE_ROW_SLOT +
-      '<p class="account-panel-head">Sign in to save to a 24h sandbox: your books are kept for 24 hours after each save, on any device.</p>' +
+      '<p class="account-panel-head">Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.</p>' +
       '<button type="button" class="btn btn-primary" data-action="sign-in">Sign in</button>'
     );
   }
@@ -1528,13 +1531,13 @@
   // Section 6: the checkout route. Submit's server sets metadata.hashedSub
   // from the id token; the panel re-reads entitlement from the next list
   // call once the reader returns from Stripe (processPendingCheckoutReturn).
-  function startSubscription() {
+  function startSubscription(interval) {
     if (!getSession()) return;
     sendBillingEvent("subscribe-started");
     apiFetch("/billing/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bundleId: "resident-diya-gl", returnTo: redirectUri() }),
+      body: JSON.stringify({ bundleId: "resident-diya-gl", interval: interval || "annual", returnTo: redirectUri() }),
     })
       .then(function (response) {
         return parseJsonBody(response).then(function (body) {
@@ -1604,7 +1607,7 @@
       panelState = panelState.previous || { status: panelState.status, books: panelState.books };
       renderPanel();
     } else if (action === "subscribe") {
-      startSubscription();
+      startSubscription(target.getAttribute("data-interval"));
     } else if (action === "manage-subscription") {
       openBillingPortal();
     } else if (action === "duplicate-update") {
