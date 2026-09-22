@@ -8,12 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-- `main` at `384aeea57` (PR #133, the developer archive moved out); its test run in flight, codeql
-  green. Prod serves `b9de37874` (PR #132, wave b26), the smoke test green on that deploy.
-- `claude/b27-board` (worktree `../.worktrees/spreadsheets/b27`): PU-8, PR #135; the PR head's runs
-  in flight. Merges after #134's deploy lands.
-- `claude/b29-drive` (worktree `../.worktrees/spreadsheets/b29`): LP-24b, PR #134 at `30c8831a4`
-  (main merged in, the ci case's TOTP retry); ci deploy and smoke green, the test run in flight.
+- `main` at `587f11af6` (PR #134, LP-24b, the Google Drive store); its deploy in flight. Prod
+  served `b9de37874` before it.
+- `claude/b27-board` (worktree `../.worktrees/spreadsheets/b27`): PU-8, PR #135; it overlaps
+  #134 in `cloud.js` and `index.html`, so main is merged in locally and pushes once the branch's
+  ci deploy ends. Merges after main's deploy lands.
 
 ## Context for the open rows
 
@@ -41,8 +40,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| LP-24b | Google Drive store: `drive.js`, the merged list and Connect row in `cloud.js`, the security headers, the Drive browser spec, the ci case | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | ~13 files | Sonnet | PR #134, ci deploy and smoke green on 30c8831a4; test run in flight |
-| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | — | in-flight | ~9 files | Sonnet | `claude/b27-board`, PR #135, checks in flight |
+| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | — | in-flight | ~9 files | Sonnet | PR #135; main merged in locally, push after its ci deploy ends |
 | LP-24a | Google Drive store: the console steps in the launch plan design (origins, Drive API, `drive.file` scope), then post the OAuth client id | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | seven steps under "LP-24 design" in the plan |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
 | LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the link |
