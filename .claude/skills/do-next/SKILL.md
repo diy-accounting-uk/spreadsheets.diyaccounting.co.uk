@@ -319,7 +319,10 @@ Before the first push of a batch, the routed run (`npm test`, what `.githooks/pr
 first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
 HEAD, missing `origin/main`, shallow clone, or empty diff) or the change touches a shared generated
 artifact whose radius the router cannot see; say so when that is why. Add the relevant behaviour
-target when the change reaches the site or a package.
+target when the change reaches the site or a package. The router refuses to start while a
+`soffice`, `playwright` or `vitest` process is live on the machine and names it: an agent's suite
+still running is the usual cause, so wait for it in a sleep loop inside one Bash call, then start
+the routed run; `TEST_SCOPE_IGNORE_LIVE=1` races it on purpose.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's

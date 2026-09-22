@@ -14,6 +14,14 @@
 //   npm test -- --tree-hash --rev X  print the same key for commit X's own tree, not the working tree
 //   npm test -- --code-tree-hash     print the same key with every *.md path dropped, run nothing
 //
+// Before any tier runs (but not for --plan), the router refuses to start
+// while a soffice, playwright or vitest process is already live on this
+// machine, naming the pid and command and exiting non-zero: a second
+// LibreOffice/Playwright/Vitest run on the same machine shares profile
+// locks, browser contexts and worker ports with the one already running.
+// TEST_SCOPE_IGNORE_LIVE=1 skips this check for the operator who wants to
+// race anyway; the router prints that it did.
+//
 // The one rule that outranks the routing table: when the diff cannot be
 // worked out, the router runs MORE, not less. A detached HEAD, a missing
 // origin/main, a shallow clone or an empty diff all escalate to --all and
@@ -632,6 +640,65 @@ function chooseBrowserSpecs(sel, specs) {
   return [...chosen].sort();
 }
 
+// ---------------------------------------------------- live-process guard
+
+// A LibreOffice, Playwright or Vitest process already running on this
+// machine shares profile locks, browser contexts and worker ports with a
+// router invocation that starts beside it. Measured: a routed run raced
+// two agents' browser suites on one machine, 90 wall minutes lost.
+//
+// The match is on what a process runs, never on a word in its arguments:
+// a shell whose command line quotes "vitest" (a pgrep, a grep, the very
+// call that launched this router) is not a test run. soffice is matched as
+// the executable's basename; vitest and playwright as the package under
+// node_modules; a Playwright browser by its ms-playwright install path.
+const LIVE_CONFLICT_EXECUTABLE = /(^|\/)soffice(\.bin)?$/;
+const LIVE_CONFLICT_PACKAGE = /node_modules\/(\.bin\/)?(vitest|playwright)(\/|$|\s)|\/ms-playwright\//;
+
+function isLiveConflictingCommand(command) {
+  const executable = command.split(/\s+/)[0] || "";
+  return LIVE_CONFLICT_EXECUTABLE.test(executable) || LIVE_CONFLICT_PACKAGE.test(command);
+}
+
+// Pure: given ps's own output lines ("pid ppid command", the shape
+// `ps -axo pid,ppid,command` prints) and this process's own pid, returns
+// the conflicting processes -- everything isLiveConflictingCommand accepts
+// except the router's own process and every ancestor of it (npm, the shell
+// that ran npm, the terminal), walked by ppid from the listing itself.
+// Exported for the unit test, which passes a fake listing rather than
+// shelling out to ps.
+function findLiveConflictingProcesses(psLines, { ownPid }) {
+  const rows = [];
+  for (const line of psLines) {
+    const m = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
+    if (!m) continue;
+    rows.push({ pid: Number(m[1]), ppid: Number(m[2]), command: m[3].trim() });
+  }
+  const parentOf = new Map(rows.map((r) => [r.pid, r.ppid]));
+  const ancestry = new Set();
+  for (let pid = ownPid; pid !== undefined && !ancestry.has(pid); pid = parentOf.get(pid)) ancestry.add(pid);
+  return rows.filter((r) => !ancestry.has(r.pid) && isLiveConflictingCommand(r.command)).map(({ pid, command }) => ({ pid, command }));
+}
+
+// Refuses (process.exit(1)) when a conflicting process is live, naming its
+// pid and command; a no-op when TEST_SCOPE_IGNORE_LIVE=1 is set, which
+// prints that the check was skipped so the operator racing it on purpose
+// still sees it happened.
+function checkNoLiveConflictingProcesses() {
+  if (process.env.TEST_SCOPE_IGNORE_LIVE === "1") {
+    console.log("  NOTE     TEST_SCOPE_IGNORE_LIVE=1 is set, so the live-process check was skipped");
+    return;
+  }
+  const ps = spawnSync("ps", ["-axo", "pid,ppid,command"], { encoding: "utf8" });
+  if (ps.status !== 0) return; // ps itself failing is not this router's call to make
+  const hits = findLiveConflictingProcesses(lines(ps.stdout), { ownPid: process.pid });
+  if (hits.length === 0) return;
+  console.error("test-scope: refusing to start -- already live on this machine:");
+  for (const h of hits) console.error(`  pid ${h.pid}  ${h.command}`);
+  console.error("Set TEST_SCOPE_IGNORE_LIVE=1 to start anyway.");
+  process.exit(1);
+}
+
 // ----------------------------------------------------------------- tiers
 
 const TIER_ORDER = ["gates", "unit", "calc", "browser", "infra"];
@@ -742,6 +809,7 @@ export {
   writeGreenMarker,
   tiersAfterGates,
   isSourcePath,
+  findLiveConflictingProcesses,
 };
 
 // ------------------------------------------------------------------ main
@@ -930,6 +998,8 @@ async function main() {
     console.log("--plan: nothing was run.");
     process.exit(0);
   }
+
+  checkNoLiveConflictingProcesses();
 
   const treeHash = workingTreeHash();
   const results = [];
