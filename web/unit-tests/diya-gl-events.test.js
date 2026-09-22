@@ -18,6 +18,9 @@ let buildCloudSaveEvent;
 let buildCloudConflictEvent;
 let buildCloudBillingEvent;
 let buildSandboxExpiredSeenEvent;
+let buildCloudDriveConnectEvent;
+let buildCloudDriveSaveEvent;
+let buildCloudDriveOpenEvent;
 
 beforeAll(() => {
   const src = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/diya-gl-events.js"), "utf8");
@@ -32,6 +35,9 @@ beforeAll(() => {
   buildCloudConflictEvent = sandbox.window.buildCloudConflictEvent;
   buildCloudBillingEvent = sandbox.window.buildCloudBillingEvent;
   buildSandboxExpiredSeenEvent = sandbox.window.buildSandboxExpiredSeenEvent;
+  buildCloudDriveConnectEvent = sandbox.window.buildCloudDriveConnectEvent;
+  buildCloudDriveSaveEvent = sandbox.window.buildCloudDriveSaveEvent;
+  buildCloudDriveOpenEvent = sandbox.window.buildCloudDriveOpenEvent;
 });
 
 describe("buildBookLoadedEvent", () => {
@@ -118,5 +124,29 @@ describe("buildSandboxExpiredSeenEvent", () => {
   it("names the event sandbox_expired_seen and carries the missing count", () => {
     expect(buildSandboxExpiredSeenEvent(1)).toEqual({ name: "sandbox_expired_seen", params: { missing: 1 } });
     expect(buildSandboxExpiredSeenEvent(3)).toEqual({ name: "sandbox_expired_seen", params: { missing: 3 } });
+  });
+});
+
+describe("buildCloudDriveConnectEvent", () => {
+  it("names the event cloud_drive_connect and carries the step", () => {
+    expect(buildCloudDriveConnectEvent("started")).toEqual({ name: "cloud_drive_connect", params: { step: "started" } });
+    expect(buildCloudDriveConnectEvent("granted")).toEqual({ name: "cloud_drive_connect", params: { step: "granted" } });
+    expect(buildCloudDriveConnectEvent("refused")).toEqual({ name: "cloud_drive_connect", params: { step: "refused" } });
+    expect(buildCloudDriveConnectEvent("expired")).toEqual({ name: "cloud_drive_connect", params: { step: "expired" } });
+  });
+});
+
+describe("buildCloudDriveSaveEvent", () => {
+  it("names the event cloud_drive_save and carries the product and the outcome", () => {
+    expect(buildCloudDriveSaveEvent("bst", "created")).toEqual({ name: "cloud_drive_save", params: { product: "bst", outcome: "created" } });
+    expect(buildCloudDriveSaveEvent("ltd", "updated")).toEqual({ name: "cloud_drive_save", params: { product: "ltd", outcome: "updated" } });
+    expect(buildCloudDriveSaveEvent("se", "failed")).toEqual({ name: "cloud_drive_save", params: { product: "se", outcome: "failed" } });
+  });
+});
+
+describe("buildCloudDriveOpenEvent", () => {
+  it("names the event cloud_drive_open and carries the source", () => {
+    expect(buildCloudDriveOpenEvent("latest")).toEqual({ name: "cloud_drive_open", params: { source: "latest" } });
+    expect(buildCloudDriveOpenEvent("revision")).toEqual({ name: "cloud_drive_open", params: { source: "revision" } });
   });
 });
