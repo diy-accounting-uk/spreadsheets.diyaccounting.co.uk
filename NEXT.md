@@ -8,9 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave b26 on `claude/b26-board` (worktree `../.worktrees/spreadsheets/b26`), PR #132: CQ-50 to
-CQ-56, one commit each; the routed run GREEN on the merged tree; test and ci deploy runs on the
-PR head in flight.
+- Wave b26 on `claude/b26-board` (worktree `../.worktrees/spreadsheets/b26`), PR #132: CQ-50 to
+  CQ-56, one commit each; the routed run GREEN on the merged tree; the PR head's runs in flight.
+- `claude/b27-board` (worktree `../.worktrees/spreadsheets/b27`, forked from b26, Sonnet): PU-8.
+- `claude/b28-drive` (worktree `../.worktrees/spreadsheets/b28`, Opus): LP-24's design section in
+  the launch plan; the build follows as a Sonnet row.
 
 `main`'s last code head `128240e2e` is on prod; the scheduled deploy of `1a5a7ec40` failed at
 the smoke test (CQ-56).
@@ -48,8 +50,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 | CQ-52 | A new behaviour probe names the server that serves its path; the local job serves the doc root only, the CDN adds `/runners/` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~2 files | Haiku | `claude/b26-board`, PR #132, checks in flight |
 | CQ-55 | Test guidance: assert a network request or fetched content, never a page global read back through `evaluate()` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~2 files | Haiku | `claude/b26-board`, PR #132, checks in flight |
 | CQ-50 | The router refuses to start while a soffice, playwright or vitest process is live on the machine, naming it; `do-next` says so | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | in-flight | ~3 files | Sonnet | `claude/b26-board`, PR #132, checks in flight |
-| LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | ready-to-start | ~6 files | Opus design, then Sonnet | Submit's `resident` bundle (PU-1) is on its main; Opus design wave first |
-| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | — | ready-to-start | ~9 files | Sonnet | PU-2 and PU-4 on Submit main; fork from `claude/b26-board` for CQ-56 |
+| LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | in-flight | ~6 files | Opus design, then Sonnet | `claude/b28-drive`, Opus design agent writing the plan section |
+| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | — | in-flight | ~9 files | Sonnet | `claude/b27-board`, agent on the pages and the two specs |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
 | LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the link |
 
