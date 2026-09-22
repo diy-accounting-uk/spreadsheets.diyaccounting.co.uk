@@ -186,6 +186,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
+- **Any test run expected to take over a few minutes must be backgrounded with the nohup recipe
+  and then waited on inside one Bash call**, never in the foreground. An agent that runs a long
+  suite in the foreground ends its turn before the result arrives, leaving the work uncommitted
+  and the result unused. Background it, commit first, then wait inside one Bash call.
 - **A wait is a `sleep` loop inside one Bash call with a timeout**, never a Monitor or a
   backgrounded wait, because an agent that hands its wait to a Monitor or `run_in_background`
   ends its turn and never resumes to read the notification. The brief pastes the launch and the
