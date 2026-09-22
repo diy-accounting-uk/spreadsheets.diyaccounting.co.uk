@@ -8,7 +8,7 @@
 
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "child_process";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, rmSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import {
@@ -225,37 +225,15 @@ describe("writeGreenMarker", () => {
 // merge commit later pushed to main (NEXT.md board lines, landed on main
 // directly under the docs exception) hashes the same and reuses one GREEN
 // record instead of paying for the suite twice.
+//
+// The behaviour case that distinguishes withoutDocs from a plain hash --
+// a tracked Markdown file's content changing -- is proved in
+// app/test/test-scope-tree-hash.test.js against a throwaway repo, because
+// CQ-51's untracked-non-source exclusion (see the "ignores untracked paths
+// that are not source" describe block there) already covers every
+// untracked case this repo's own tree could exercise here.
 describe("workingTreeHash({ withoutDocs: true })", () => {
-  const rootDoc = join(ROOT, "cq-40-scratch.md");
-  const nestedDoc = join(ROOT, "app", "test", "cq-40-scratch-nested.md");
-
-  afterEach(() => {
-    for (const f of [rootDoc, nestedDoc]) if (existsSync(f)) rmSync(f);
-  });
-
   it("prints a 40-hex hash, the same shape as --tree-hash", () => {
     expect(workingTreeHash({ withoutDocs: true })).toMatch(/^[0-9a-f]{40}$/);
   }, 20_000);
-
-  it("holds the hash steady across a root and a nested Markdown file, but not a non-Markdown one", () => {
-    const docsBefore = workingTreeHash({ withoutDocs: true });
-    const plainBefore = workingTreeHash();
-
-    writeFileSync(rootDoc, "scratch\n");
-    writeFileSync(nestedDoc, "scratch\n");
-    const docsAfterMd = workingTreeHash({ withoutDocs: true });
-    const plainAfterMd = workingTreeHash();
-    expect(docsAfterMd).toBe(docsBefore);
-    expect(plainAfterMd).not.toBe(plainBefore);
-
-    rmSync(rootDoc);
-    rmSync(nestedDoc);
-    writeFileSync(rootDoc.replace(/\.md$/, ".txt"), "scratch\n");
-    try {
-      const docsAfterTxt = workingTreeHash({ withoutDocs: true });
-      expect(docsAfterTxt).not.toBe(docsBefore);
-    } finally {
-      rmSync(rootDoc.replace(/\.md$/, ".txt"));
-    }
-  }, 30_000);
 });

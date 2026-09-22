@@ -26,6 +26,11 @@
 // up before running anything, so a suite that just passed on this exact
 // tree is not repeated for the push. PARTIAL never writes one.
 //
+// The hash drops untracked paths the router would not route tests on (see
+// isSourcePath below) before hashing -- packages/*/LICENCE.txt and
+// README.txt, test-results/, target/ -- so a byproduct the browser tier
+// itself wrote does not move the hash a GREEN run already keyed itself by.
+//
 // Both hashes blank app/lib/provenance-data.js's engineVersion value first
 // (see normaliseEngineVersion below): that field names the last commit
 // that touched the shipped engine, so a code commit followed by a
@@ -308,6 +313,21 @@ function workingTreeHash({ withoutDocs = false, rev = null } = {}) {
       if (existsSync(realIndex)) copyFileSync(realIndex, tmpIndex);
       const add = spawnSync("git", ["add", "-A"], { cwd: ROOT, env });
       if (add.status !== 0) throw new Error(`git add -A (throwaway index) failed: ${(add.stderr || "").toString().trim()}`);
+      // Untracked byproducts (packages/*/LICENCE.txt and README.txt the
+      // package build writes, test-results/, target/) must not move the
+      // hash a GREEN run keyed itself by. `git add -A` just staged them
+      // alongside everything else, so drop only the ones that are untracked
+      // AND not a source path the router would route tests on -- a tracked
+      // file's staged content is untouched by this (it was never in the
+      // "others" list below), and a new untracked source file (a new test,
+      // a new script) still counts.
+      const untracked = lines(git(["ls-files", "--others", "--exclude-standard"]));
+      const untrackedNonSource = untracked.filter((p) => !isSourcePath(p));
+      if (untrackedNonSource.length) {
+        const rmUntracked = spawnSync("git", ["rm", "--cached", "-q", "--", ...untrackedNonSource], { cwd: ROOT, env });
+        if (rmUntracked.status !== 0)
+          throw new Error(`git rm --cached (untracked non-source) failed: ${(rmUntracked.stderr || "").toString().trim()}`);
+      }
     }
     if (withoutDocs) {
       const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
@@ -383,10 +403,15 @@ function changedPaths(baseRef) {
 const SOURCE_ROOTS = ["app/", "web/", "diya-gl/", "scripts/"];
 const SOURCE_EXT = /\.(js|mjs|cjs)$/;
 
+// Also used by workingTreeHash (defined above, called only from main() once
+// this whole module has evaluated) to decide which untracked paths count
+// toward the tree hash -- see the comment there.
+function isSourcePath(p) {
+  return SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/");
+}
+
 function sourceFiles() {
-  return lines(git(["ls-files"])).filter(
-    (p) => SOURCE_EXT.test(p) && SOURCE_ROOTS.some((r) => p.startsWith(r)) && !p.startsWith("packages/"),
-  );
+  return lines(git(["ls-files"])).filter(isSourcePath);
 }
 
 function resolveSpecifier(fromFile, spec) {
@@ -716,6 +741,7 @@ export {
   workingTreeHash,
   writeGreenMarker,
   tiersAfterGates,
+  isSourcePath,
 };
 
 // ------------------------------------------------------------------ main
