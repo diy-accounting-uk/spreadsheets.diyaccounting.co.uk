@@ -18,6 +18,14 @@ row's detail lives; the board carries enough to act on without opening it.
 A one-line mode header, then exactly four parts in this order: the board table, the GitHub
 scan, the deployments, the branch audit.
 
+Every part is drawn as a grid in the chat. The terminal draws a markdown table as a grid only
+while the sum of its minimum column widths fits the window; past that it degrades every row to a
+key-value list, which the operator has rejected (2026-09-22). The minimum width of a column is its
+longest unbroken token, so in the chat render no cell carries a token over about 20 characters:
+a plan is named in words (`launch plan`, `Submit price plan`, `session report 2026-09-21`), a
+file by a phrase (`the behaviour test`), a size as `~1`. `NEXT.md` keeps the full names; only
+the chat render shortens them.
+
 ## The mode header
 
 One line, before the table, saying two things. Both are read, never assumed.
