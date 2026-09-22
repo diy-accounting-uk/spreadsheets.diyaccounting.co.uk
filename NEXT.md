@@ -8,8 +8,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-- `main` at `05c887750` (PR #135, PU-8, the 35-day sandbox and the £39 offer on the pages); its
-  deploy in flight. Prod serves `587f11af6` (PR #134, the Google Drive store) until it lands.
+Nothing. `main`'s last code head `05c887750` (PR #135, PU-8) is on prod with PR #134 (LP-24b, the
+Google Drive store) under it; every run green. The board's open rows are the operator's (LP-24a,
+LP-25a) or wait on one (LP-25b).
 
 ## Context for the open rows
 
