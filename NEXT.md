@@ -38,16 +38,17 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
+| CQ-56 | The cloud sign-in behaviour case asserts the pre-tier answers (`tier-disabled`, 24h expiry); Submit prod now answers `no-subscription` and 35-day retention | none | machine-only | — | ready-to-start | ~1 files | Sonnet | prod deploy 35728232187 red at the smoke test; `spreadsheets.behaviour.test.js` step 8 |
 | CQ-53 | The brief's shape: an agent backgrounds any test run over a few minutes with the nohup recipe and waits in one Bash call | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1i: 52 minutes of foreground agent time; shares `do-next/SKILL.md` with CQ-52, CQ-54, CQ-55 |
 | CQ-54 | The brief's shape: an agent's routed run is its proof; no second suite after its commit, and the coordinator stops one that starts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~1 files | Haiku | DG-1n/DG-1l: 44 minutes of a redundant suite |
 | CQ-51 | The router's `--tree-hash` ignores untracked non-source paths (`packages/`, `test-results/`, `target/`), so a GREEN marker survives a run's byproducts | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Sonnet | b24, b25: 19 minutes of duplicate hook runs |
 | CQ-52 | A new behaviour probe names the server that serves its path; the local job serves the doc root only, the CDN adds `/runners/` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Haiku | PR #131: 63.2 job-minutes on one red run |
 | CQ-55 | Test guidance: assert a network request or fetched content, never a page global read back through `evaluate()` | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~2 files | Haiku | DG-1j: 28 of 66 turns on an unfailable case |
 | CQ-50 | The router refuses to start while a soffice, playwright or vitest process is live on the machine, naming it; `do-next` says so | REPORT_SESSION_vCiOR2_2026-09-21.md | machine-only | — | ready-to-start | ~3 files | Sonnet | b24: 90 wall minutes lost to a contended run |
+| LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | — | ready-to-start | ~6 files | Opus design, then Sonnet | Submit's `resident` bundle (PU-1) is on its main; Opus design wave first |
+| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | CQ-56 | blocked-to-start | ~9 files | Sonnet | PU-2 and PU-4 are on Submit's main; shares the behaviour test with CQ-56 |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
 | LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the link |
-| LP-24 | Google Drive as a second store for the book, in the Resident bundle with S3 | PLAN_DIYA_GL_LAUNCH.md | machine-only | PU-1 | blocked-to-start | ~6 files | Opus design, then Sonnet | after Submit's `resident` bundle (PU-1) |
-| PU-8 | The pages: "35-day sandbox" labels, the countdown in days, the offer at £39/year first, `sandbox_expired_seen` | ../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md | machine-only | PU-2, PU-4 | blocked-to-start | ~9 files | Sonnet | after Submit's two prices and 35-day retention |
 
 ## Plans not tracked here
 
