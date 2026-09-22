@@ -561,7 +561,7 @@
   }
 
   function storeBadge(book) {
-    return book.store === "drive" ? '<span class="account-row-badge">Drive</span>' : "";
+    return book.store === "drive" ? '<span class="account-row-badge">Drive</span> ' : "";
   }
 
   function renderBookRow(book) {
