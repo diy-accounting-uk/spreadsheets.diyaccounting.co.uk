@@ -2164,10 +2164,21 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       const totpFieldSelector = 'input[name="totpCode"], input[name="SOFTWARE_TOKEN_MFA_CODE"], input[type="text"][inputmode="numeric"]';
       const totpField = await page.waitForSelector(totpFieldSelector, { state: "attached", timeout: 8000 }).catch(() => null);
       if (totpField) {
+        // The Cloud sign-in case above signs the same user in moments before
+        // this one, and Cognito accepts each TOTP code once. Within the same
+        // 30-second period the code it used is spent, so the hosted UI stays
+        // on /mfa; wait for the next period and submit the fresh code.
         const totp = new TOTP({ secret: Secret.fromBase32(testAuthTotpSecret), algorithm: "SHA1", digits: 6, period: 30 });
-        await typeIntoVisibleField(page, totpFieldSelector, totp.generate());
-        await clickVisibleButton(page, 'input[name="signInSubmitButton"], button[type="submit"], input[type="submit"]');
-        await page.waitForLoadState("networkidle").catch(() => {});
+        const submitTotp = async () => {
+          await typeIntoVisibleField(page, totpFieldSelector, totp.generate());
+          await clickVisibleButton(page, 'input[name="signInSubmitButton"], button[type="submit"], input[type="submit"]');
+          await page.waitForLoadState("networkidle").catch(() => {});
+        };
+        await submitTotp();
+        if (new URL(page.url()).pathname === "/mfa") {
+          await page.waitForTimeout(30000 - (Date.now() % 30000) + 1000);
+          await submitTotp();
+        }
       }
 
       await page
