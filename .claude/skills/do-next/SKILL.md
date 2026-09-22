@@ -198,6 +198,9 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
   macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
   does not split an unquoted variable.
+- **An agent's own routed run is its proof.** Once the agent's commit lands on the batch branch,
+  the batch's own routed `npm test` run covers it. The agent does not run a second suite after
+  committing; skip the confirmation step. The coordinator stops any duplicate run that starts.
 
   ```bash
   # Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
