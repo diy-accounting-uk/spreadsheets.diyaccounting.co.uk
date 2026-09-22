@@ -7,7 +7,7 @@ full year of a sole trader's accounts fits in a 15 KB zip, recalculates in a bro
 command line without Excel or a server, and produces the same bytes on every surface. Self
 Employed, Taxi and Limited Company followed by 2026-09-06 (PRs #60 to #68): four products on
 the page, in the CLI and in the MCP server, each reconciled in CI, their plans archived under
-`_developers/archive/`. This document turns that into a product line with a revenue stream,
+`../developers/spreadsheets/archive/`. This document turns that into a product line with a revenue stream,
 checks the operator's sketch against the market and the arithmetic, and lays out a launch
 sequence with gates. State lines are as of 2026-09-06.
 
@@ -533,7 +533,7 @@ here until their phase opens.
 - **LP-3**: this repo's `package.json` is private; the publishable package is a second
   `package.json` (a `diya-gl/` directory or an npm workspace) whose `bin` map wraps
   `app/bin/report.js` (`recalc`), the extractors (`read-workbook`), `app/bin/export.js`
-  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `_developers/PLAN_DIYA_CLOUD.md` section 3
+  (`write-workbook`) and `app/bin/diya-gl-mcp.js`; `../developers/spreadsheets/PLAN_DIYA_CLOUD.md` section 3
   is the design for what it exposes. A `publish-diya-gl.yml` workflow publishes on a tag
   every green prod deploy from a push to main, with `NPM_TOKEN` and provenance attestation, rolling the patch version afterwards so the next deploy publishes the next one. Prove with `npm pack` and a
   smoke run of each bin in CI.
@@ -590,7 +590,7 @@ here until their phase opens.
   (and the ci host), sign-out URL the same, PKCE, no secret; the client id as a stack output and
   an SSM parameter the spreadsheets deploy can read; its Java test; lands by Submit PR (H9).
 - **LP-16**: design wave first (Opus): the S3 key layout `users/<sub>/books/<bookId>/<version>.zip`
-  with `metadata.json` per book (`_developers/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
+  with `metadata.json` per book (`../developers/spreadsheets/PLAN_DIYA_CLOUD.md` sections 2.3, 2.4 and 4), the
   four Lambda handlers, the API Gateway routes under the existing `ApiStack` with the pool's
   authoriser, the ETag-based optimistic concurrency, and the entitlement hook LP-18 fills. Then
   Sonnet builds it with unit tests per handler and a behaviour probe against submit-ci.
@@ -687,7 +687,7 @@ test there is, for less than it costs. Phase 5 was convenience.
 
 ## The names and the notice
 
-Two operator rows moved here from `_developers/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
+Two operator rows moved here from `../developers/spreadsheets/archive/PLAN_LICENSING_UPLIFT.md` on 2026-09-10, when that plan
 narrowed to the licence change and its filings. They sit with the launch because that is what they
 serve: the product needs its names held before it is talked about, and HMRC should hear the licence
 changed from us rather than from the release.
@@ -701,7 +701,7 @@ The note says what changed and the one thing that has not: we still issue no lic
 
 ## Where this changes the DIYA-GL Cloud plan
 
-`_developers/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
+`../developers/spreadsheets/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
 and a full general ledger. This plan keeps its storage, identity and account placement
 decisions and changes three things on the strength of what shipped this week: computation
 is client-side (the browser engine is the same code CI reconciles), `.xlsx` generation is
@@ -763,7 +763,7 @@ its phases 3 to 5 are absorbed by the page; its phase 6 is this plan's Filing ru
   (read 2026-09-03)
 - tech-insider.org, Tauri vs Electron sizes: https://tech-insider.org/tauri-vs-electron-2026/
   (read 2026-09-03)
-- This repository: the four product plans under `_developers/archive/`
-  (`PLAN_DIYA_GL_{BST,SE,TAXI,LTD}_CLI_MCP_WEB.md`), `_developers/PLAN_DIYA_CLOUD.md`,
-  `_developers/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
+- This repository: the four product plans under `../developers/spreadsheets/archive/`
+  (`PLAN_DIYA_GL_{BST,SE,TAXI,LTD}_CLI_MCP_WEB.md`), `../developers/spreadsheets/PLAN_DIYA_CLOUD.md`,
+  `../developers/spreadsheets/SPEC-basic-sole-trader-import-export.md`, the v2 schemas; the Submit
   repository's `README.md` (HMRC recognition for VAT) and `AWS_COSTS.md` (Cognito cost).

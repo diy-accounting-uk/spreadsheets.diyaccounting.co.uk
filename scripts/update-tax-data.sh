@@ -9,7 +9,7 @@
 # Local-only: this script runs on a developer machine using the locally-authenticated
 # `gh` CLI. After it completes, review the generated files manually and commit if happy.
 # (The previous GitHub Actions workflow that did the same thing has been moved to
-#  _developers/archive/update-tax-data.yml — running an LLM call inside CI and
+#  ../developers/spreadsheets/archive/update-tax-data.yml — running an LLM call inside CI and
 #  committing the output back to the repo is the kind of automation pattern that
 #  triggers GitHub's abuse heuristics.)
 #
