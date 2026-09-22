@@ -63,6 +63,10 @@ function treeHash(dir, rev) {
   return execFileSync("node", args, { cwd: dir, encoding: "utf8" }).trim();
 }
 
+function codeTreeHash(dir) {
+  return execFileSync("node", ["scripts/test-scope.mjs", "--code-tree-hash"], { cwd: dir, encoding: "utf8" }).trim();
+}
+
 function makeHookRepo() {
   const dir = makeRepo();
   mkdirSync(join(dir, ".githooks"), { recursive: true });
@@ -116,6 +120,74 @@ describe("--tree-hash blanks provenance-data.js's engineVersion", () => {
     writeFileSync(join(dir, "app", "lib", "provenance-data.js"), provenanceSource("1.0.0+aaaaaaaaaa"));
     const head = commitAll(dir, "code");
     expect(treeHash(dir, null)).toBe(treeHash(dir, head));
+  }, 30_000);
+});
+
+describe("--tree-hash ignores untracked paths that are not source", () => {
+  it("hashes the same with an untracked file under packages/ present as without it", () => {
+    const dir = makeRepo();
+    writeFileSync(join(dir, "app", "lib", "base.js"), "export const x = 1;\n");
+    commitAll(dir, "base");
+    const before = treeHash(dir);
+
+    mkdirSync(join(dir, "packages", "GB Accounts Basic Sole Trader"), { recursive: true });
+    writeFileSync(join(dir, "packages", "GB Accounts Basic Sole Trader", "LICENCE.txt"), "licence\n");
+    writeFileSync(join(dir, "packages", "GB Accounts Basic Sole Trader", "README.txt"), "readme\n");
+    const withUntrackedPackages = treeHash(dir);
+
+    expect(withUntrackedPackages).toBe(before);
+  }, 30_000);
+
+  it("hashes differently with an untracked source file present", () => {
+    const dir = makeRepo();
+    writeFileSync(join(dir, "app", "lib", "base.js"), "export const x = 1;\n");
+    commitAll(dir, "base");
+    const before = treeHash(dir);
+
+    mkdirSync(join(dir, "app", "lib"), { recursive: true });
+    writeFileSync(join(dir, "app", "lib", "x.js"), "export const y = 2;\n");
+    const withUntrackedSource = treeHash(dir);
+
+    expect(withUntrackedSource).not.toBe(before);
+  }, 30_000);
+
+  it("also ignores untracked test-results/ and target/ byproducts", () => {
+    const dir = makeRepo();
+    writeFileSync(join(dir, "app", "lib", "base.js"), "export const x = 1;\n");
+    commitAll(dir, "base");
+    const before = treeHash(dir);
+
+    mkdirSync(join(dir, "test-results"), { recursive: true });
+    writeFileSync(join(dir, "test-results", "report.xml"), "<xml/>\n");
+    // target/ is gitignored by makeRepo's .gitignore, so it is not seen as
+    // "untracked" by git at all -- proving test-results/ alone is enough to
+    // show the exclusion covers a root outside target/'s own .gitignore rule.
+    const withUntrackedTestResults = treeHash(dir);
+
+    expect(withUntrackedTestResults).toBe(before);
+  }, 30_000);
+});
+
+// CQ-40's --code-tree-hash strips every *.md path from the index before
+// hashing, tracked or not; CQ-51's untracked-non-source exclusion (the
+// describe block above) only ever touches paths git ls-files --others
+// reports, so a tracked Markdown file's own content change is the one case
+// that distinguishes the two mechanisms.
+describe("--code-tree-hash strips a tracked Markdown file's content too", () => {
+  it("holds --code-tree-hash steady across a tracked Markdown edit, but not the plain --tree-hash", () => {
+    const dir = makeRepo();
+    mkdirSync(join(dir, "app", "lib"), { recursive: true });
+    writeFileSync(join(dir, "app", "lib", "base.js"), "export const x = 1;\n");
+    writeFileSync(join(dir, "README.md"), "before\n");
+    commitAll(dir, "base");
+
+    const codeBefore = codeTreeHash(dir);
+    const plainBefore = treeHash(dir);
+
+    writeFileSync(join(dir, "README.md"), "after, a real edit to a tracked doc\n");
+
+    expect(codeTreeHash(dir)).toBe(codeBefore);
+    expect(treeHash(dir)).not.toBe(plainBefore);
   }, 30_000);
 });
 

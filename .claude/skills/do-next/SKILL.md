@@ -186,6 +186,10 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   For a suite that finishes in seconds — a targeted `vitest` run, a YAML parse — verify first and
   commit after, as normal. The inversion is for the long ones: a full generate-and-compare run over
   the products, or anything that rebuilds the templates.
+- **Any test run expected to take over a few minutes must be backgrounded with the nohup recipe
+  and then waited on inside one Bash call**, never in the foreground. An agent that runs a long
+  suite in the foreground ends its turn before the result arrives, leaving the work uncommitted
+  and the result unused. Background it, commit first, then wait inside one Bash call.
 - **A wait is a `sleep` loop inside one Bash call with a timeout**, never a Monitor or a
   backgrounded wait, because an agent that hands its wait to a Monitor or `run_in_background`
   ends its turn and never resumes to read the notification. The brief pastes the launch and the
@@ -194,6 +198,9 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   Two incidents sit behind these recipes: a `nohup setsid` launch that never started, because
   macOS has no `setsid`, and a monitor script that read a branch list as one word, because zsh
   does not split an unquoted variable.
+- **An agent's own routed run is its proof.** Once the agent's commit lands on the batch branch,
+  the batch's own routed `npm test` run covers it. The agent does not run a second suite after
+  committing; skip the confirmation step. The coordinator stops any duplicate run that starts.
 
   ```bash
   # Launch a long run detached (macOS has no setsid; nohup + disown is what works here):
@@ -232,6 +239,14 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
 - **A screenshot for anything visual.** Drive the page with Playwright, save a PNG under
   `reports/screenshots/`, **open it with the Read tool**, and say what it shows against what the
   item asked for. An equal z-index and a lazily created overlay do not show up in a passing test.
+- **Behaviour case assertions**: Assert a network request or fetched file content with
+  `page.waitForResponse()`, `page.waitForRequest()`, or by reading a response body. Never read
+  a page global through `page.evaluate()`: objects like `Arguments` serialise as empty over the
+  CDP bridge, making the case unfailable.
+- **Server naming for new behaviour probes**: A new case that probes a path names the server
+  that serves it. The local test server (`localhost:3000`) serves the document root only;
+  CloudFront-only paths like `/runners/` require a deployed host (`SPREADSHEETS_BASE_URL` set
+  to ci or prod).
 - **A report-back contract**: what it changed and why, what it deliberately did not do, any
   adjacent bug it found with file and line, the exact commands run with counts, and its commit
   SHAs.
@@ -304,7 +319,10 @@ Before the first push of a batch, the routed run (`npm test`, what `.githooks/pr
 first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
 HEAD, missing `origin/main`, shallow clone, or empty diff) or the change touches a shared generated
 artifact whose radius the router cannot see; say so when that is why. Add the relevant behaviour
-target when the change reaches the site or a package.
+target when the change reaches the site or a package. The router refuses to start while a
+`soffice`, `playwright` or `vitest` process is live on the machine and names it: an agent's suite
+still running is the usual cause, so wait for it in a sleep loop inside one Bash call, then start
+the routed run; `TEST_SCOPE_IGNORE_LIVE=1` races it on purpose.
 
 Raise the PR as soon as the branch is testing and deploying, so its checks and its description grow
 together. Keep the description honest about what each item actually turned out to be — a row's
