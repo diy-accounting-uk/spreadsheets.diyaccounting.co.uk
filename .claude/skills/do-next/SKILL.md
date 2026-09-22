@@ -263,7 +263,7 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
 
 When a landed workstream's diff touches only Markdown files (`.md` anywhere: `.claude/**/SKILL.md`,
 `CLAUDE.md`, `PLAN_*.md`, `README.md`), land it on `main` directly under the docs exception in
-`../CLAUDE.md` ("commits touching ONLY `.md` files may be pushed directly to `main`"), from the
+this repository's `CLAUDE.md`, shared conventions section ("commits touching ONLY `.md` files may be pushed directly to `main`"), from the
 batch worktree or a cherry-pick onto `main`. The batch and `main` both edit those files between
 batches, so a docs row on the batch is a merge conflict waiting for the PR, and the conflict costs
 a rebase, a second deploy and the PR's checks (PR #112, 2026-09-14,
