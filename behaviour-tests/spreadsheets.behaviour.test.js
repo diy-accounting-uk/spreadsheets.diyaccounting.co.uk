@@ -1505,7 +1505,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     const analyticsSource = await page.request.get(`${diyaGlBaseUrl}/lib/analytics.js`);
     expect(analyticsSource.status()).toBe(200);
     const analyticsText = await analyticsSource.text();
-    expect(analyticsText).toContain('gtag("config", "G-X4ZPD99X2K")');
+    expect(analyticsText).toContain('gtag("config", "G-X4ZPD99X2K", { linker: { domains: GA4_LINKER_DOMAINS } })');
     expect(analyticsText).toContain("https://www.googletagmanager.com/gtag/js?id=G-X4ZPD99X2K");
     console.log(` analytics.js configures G-X4ZPD99X2K`);
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-diya-gl-ga4.png` });
