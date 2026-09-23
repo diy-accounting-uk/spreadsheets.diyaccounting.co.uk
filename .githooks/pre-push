@@ -121,12 +121,31 @@ unset SKIP_LIBREOFFICE
 # under this hook turned the checkout bare and put four "Test" commits on the batch.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_PREFIX
 
+# The router can write generated files (it regenerates provenance-data.js
+# among others). A push that leaves them uncommitted carries real work that
+# vanishes if the worktree is later removed, so any entry the run adds to
+# `git status` fails the push. Entries already there before the run are the
+# pusher's own and do not count.
+status_before="$(git status --porcelain)"
+
+finish() {
+  status=$1
+  written="$(comm -13 <(printf '%s\n' "$status_before" | sort) <(git status --porcelain | sort) | sed '/^$/d')"
+  if [ -n "$written" ]; then
+    echo "pre-push: the test run left these files uncommitted; commit or discard them before pushing:"
+    echo "$written"
+    exit 1
+  fi
+  exit "$status"
+}
+
 if [ "${SKIP_PUSH_TESTS:-}" = "1" ]; then
   echo "pre-push: SKIP_PUSH_TESTS=1, running the gates tier only."
   echo "pre-push: the unit, calc, browser and infra tiers are NOT running. CI is now the first thing that will see them."
   TEST_SCOPE_TIERS=gates node scripts/test-scope.mjs --base "$base"
-  exit $?
+  finish $?
 fi
 
 echo "pre-push: routing the tests over everything this push adds, base ${base}."
 node scripts/test-scope.mjs --base "$base"
+finish $?
