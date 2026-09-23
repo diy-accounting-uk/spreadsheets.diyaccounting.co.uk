@@ -17,8 +17,13 @@ try {
 } catch (error) {
   console.warn("Failed to read analytics consent from localStorage:", error);
 }
+
+// The three hosts sharing GA4 property 523400333, so a visit that starts on
+// one and continues on another stays one session instead of two.
+const GA4_LINKER_DOMAINS = ["diyaccounting.co.uk", "spreadsheets.diyaccounting.co.uk", "submit.diyaccounting.co.uk"];
+
 gtag("js", new Date());
-gtag("config", "G-X4ZPD99X2K");
+gtag("config", "G-X4ZPD99X2K", { linker: { domains: GA4_LINKER_DOMAINS } });
 
 // Dynamically load gtag.js (CSP: no inline scripts allowed)
 const script = document.createElement("script");
