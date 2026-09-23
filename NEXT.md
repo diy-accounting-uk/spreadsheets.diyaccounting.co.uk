@@ -21,7 +21,7 @@ in the plan until their phase opens. They pack into four workstreams by area of 
 branch `claude/b<n>-<topic>` with one worktree per row:
 
 - **Workstream A, the DIYA-GL engine and the package** (LP-1 to LP-4): `app/lib` and `app/bin`,
-  `package.json`, `scripts/build-books-bundle.mjs`, the workflows. Sonnet throughout; LP-1 first,
+  `package.json`, `scripts/build-diya-gl-bundle.mjs`, the workflows. Sonnet throughout; LP-1 first,
   the rest in series on its output.
 - **Workstream B, the web pages** (LP-5 to LP-9): `web/spreadsheets.diyaccounting.co.uk/public/`
   and `scripts/`. LP-6, LP-7 and LP-8 share no file and run at once; LP-5 waits on LP-1; LP-9 waits
@@ -39,11 +39,11 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
-| CQ-57 | A batch forks from, or merges, the merged tip before its first push when an open PR shares its files; the board names the overlap | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~2 files | Haiku | PR #135: 65 job-minutes superseded; PR #134: 53 job-minutes and a 35-minute fix cycle |
-| CQ-58 | The scheduled test job skips a head whose `--code-tree-hash` matches the last green run | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~2 files | Sonnet | 67 job-minutes on a docs-only head each scheduled day |
-| LP-24a | Google Drive store: the console steps in the launch plan design (origins, Drive API, `drive.file` scope), then post the OAuth client id | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | seven steps under "LP-24 design" in the plan |
+| CQ-57 | A batch forks from, or merges, the merged tip before its first push when an open PR shares its files; `do-next/SKILL.md` "taken from `main`" (line 84) and "Before the first push of a batch" (line 318), `iterate/SKILL.md` "One batch branch per wave" (line 65); the board's Status names the overlap | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~2 files | Haiku | PR #135: 65 job-minutes superseded; PR #134: 53 job-minutes and a 35-minute fix cycle |
+| CQ-58 | The scheduled test run re-ran every tier on a docs-only head although `test.yml`'s `green-check` (line 95) and the push run's `green-<hash>` artifact on `05c887750` exist: diagnose the miss first (the publish roll changed `diya-gl/package.json`, `package.json` and `app/data/releases.json` between that head and `b519856c9`, so the code tree differs; `--code-tree-hash` ignores `--rev`, `scripts/test-scope.mjs` line 835), then normalise the rolled fields as `normaliseEngineVersion` (line 264) does, and make `--rev` apply | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~3 files | Sonnet | run 35827958993: 61.5 job-minutes on a head whose code the push run had proven |
+| LP-24a | Google Drive store: the seven console steps under "Operator steps" in the LP-24 design (`PLAN_DIYA_GL_LAUNCH.md` line 777), then post the OAuth client id here; it lands in `cloud-config.js` `googleClientId` (line 25) per host | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | the Drive item and Connect row are on prod and inert until the id is set |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
-| LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the link |
+| LP-25b | Bank referral: the placement on the homepage tier strip (`index.html` lines 66 to 75) and the signed-out panel (`cloud.js` `renderSignedOut`, line 784), the disclosure line, a `referral_clicked` builder in `diya-gl-events.js` after `buildCloudDriveOpenEvent` (line 77) with its case in `web/unit-tests/diya-gl-events.test.js`, and the cloud browser spec | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~5 files | Sonnet | the link and the disclosure wording are LP-25a's output |
 
 ## Plans not tracked here
 
