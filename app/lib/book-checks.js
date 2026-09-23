@@ -19,7 +19,7 @@ import { changeLinePostingDate, changeLineAccount, changeLineAmount, addSaleLine
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
 import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
 import { SE_PRODUCT_RULES } from "./book-checks/se.js";
-import { isStraddlingLine } from "./scenario-extractor.js";
+import { isStraddlingLine, signedAmount } from "./scenario-extractor.js";
 
 // ============================== shared helpers ==============================
 
@@ -323,7 +323,7 @@ function runChecks(ctx) {
 // year's turnover and not to this one.
 function salesTotal(lines) {
   let total = 0;
-  for (const line of lines) if (line.sourceJournalID === "sales" && !isStraddlingLine(line)) total += line.amount;
+  for (const line of lines) if (line.sourceJournalID === "sales" && !isStraddlingLine(line)) total += signedAmount(line);
   return total;
 }
 

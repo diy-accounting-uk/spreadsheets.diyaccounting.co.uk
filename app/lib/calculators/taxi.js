@@ -10,6 +10,7 @@ import {
   MONTH_ORDER,
   getMonthKey,
   buildTaxMonthByDate,
+  signedAmount,
 } from "../scenario-extractor.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -89,7 +90,7 @@ function aggregateByCodeAndMonth(lines, codeMap) {
     const code = codeMap[line.accountMainID];
     if (!code) continue;
     const month = getMonthKey(line.postingDate);
-    byMonth[month][code] = (byMonth[month][code] || 0) + line.amount;
+    byMonth[month][code] = (byMonth[month][code] || 0) + signedAmount(line);
   }
   return byMonth;
 }
@@ -117,17 +118,17 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const byCode = aggregateByCode(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
   const byCodeAndMonth = aggregateByCodeAndMonth(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
 
-  const totalSales = Math.floor(salesLines.reduce((s, l) => s + l.amount, 0));
+  const totalSales = Math.floor(salesLines.reduce((s, l) => s + signedAmount(l), 0));
   const monthlySales = {};
   for (const month of MONTH_ORDER) monthlySales[month] = 0;
-  for (const line of salesLines) monthlySales[byDate.get(line.postingDate)] += line.amount;
+  for (const line of salesLines) monthlySales[byDate.get(line.postingDate)] += signedAmount(line);
 
   // Other business income, month by month on the same week-based tab a
   // fare's date falls in -- the Sales tab's rental and other-income rows
   // belong to a week exactly as a fare day does.
   const monthlyOther = {};
   for (const month of MONTH_ORDER) monthlyOther[month] = 0;
-  for (const line of otherIncomeLines) monthlyOther[byDate.get(line.postingDate)] += line.amount;
+  for (const line of otherIncomeLines) monthlyOther[byDate.get(line.postingDate)] += signedAmount(line);
 
   // Capital allowances, from the fixed asset register cellWrites registers
   // (the same additions cellWrites itself derives via fixedAssetAdditions()).

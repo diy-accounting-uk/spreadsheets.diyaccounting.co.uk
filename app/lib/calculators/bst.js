@@ -6,7 +6,7 @@
 // read returns, so app/products/bst.js's reportSections() and
 // checkCompliance() work unchanged on either source.
 
-import { BST_SALES_ACCOUNTS, CIS_DEDUCTION_FIELD, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, CIS_DEDUCTION_FIELD, MONTH_ORDER, getMonthKey, signedAmount } from "../scenario-extractor.js";
 import { resolveBstPurchaseCodeMap } from "../diya-gl-loader.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -91,14 +91,14 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && purchaseCodeMap[l.accountMainID] !== undefined);
 
   // Total sales (BST: gross, no VAT split)
-  const totalSales = Math.round(salesLines.reduce((s, l) => s + l.amount, 0));
+  const totalSales = Math.round(salesLines.reduce((s, l) => s + signedAmount(l), 0));
 
   // Monthly sales
   const monthlySales = {};
   for (const month of MONTH_ORDER) monthlySales[month] = 0;
   for (const line of salesLines) {
     const month = getMonthKey(line.postingDate);
-    monthlySales[month] += line.amount;
+    monthlySales[month] += signedAmount(line);
   }
 
   // Purchase expenses by code. A mileage-log entry is left out: it buys

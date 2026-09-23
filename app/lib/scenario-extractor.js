@@ -514,11 +514,30 @@ export function tomlLocalDate(value) {
   return value instanceof Date ? value.toISOString().slice(0, 10) : value;
 }
 
+// Bad debts written off (4005, sales code "o") and fixed-asset disposals
+// (4006, code "fs") already carry their own sign in the sales code's own
+// P&L formula (see LTD_SALES_CODE_MAP and the "o"/"fs" rows CONTEXT_SELF_
+// EMPLOYED.md and CONTEXT_LIMITED_COMPANY.md describe), so negating a
+// credit note against either account here would flip an already-correct
+// figure a second time.
+const SALES_ACCOUNTS_WITH_OWN_SIGN = new Set(["4005", "4006"]);
+
+// A credit note reverses part of the sale or purchase it names. The schema
+// fixes a line's amount at zero or more -- only documentType says which way
+// it points -- so every total that sums a sales or purchases line's amount
+// reads this instead of the raw field, or a refund inflates turnover (and a
+// supplier's credit inflates spend) instead of reducing it.
+export function signedAmount(line) {
+  if (line.documentType !== "credit-note") return line.amount;
+  if (line.sourceJournalID === "sales" && SALES_ACCOUNTS_WITH_OWN_SIGN.has(String(line.accountMainID))) return line.amount;
+  return -line.amount;
+}
+
 export function computeNetSales(salesLines) {
   let netTotal = 0;
   for (const line of salesLines) {
     const rate = line.taxRate || 0;
-    netTotal += line.amount / (1 + rate);
+    netTotal += signedAmount(line) / (1 + rate);
   }
   return Math.round(netTotal);
 }
@@ -527,14 +546,14 @@ export function computeNetSales(salesLines) {
 export function computeSpreadsheetNetSales(salesLines) {
   let netTotal = 0;
   for (const line of salesLines) {
-    netTotal += line.amount / 1.2;
+    netTotal += signedAmount(line) / 1.2;
   }
   return Math.round(netTotal);
 }
 
 // BST: amounts are entered as-is (no VAT split), so total = sum of amounts
 export function computeGrossSales(salesLines) {
-  return Math.round(salesLines.reduce((sum, line) => sum + line.amount, 0));
+  return Math.round(salesLines.reduce((sum, line) => sum + signedAmount(line), 0));
 }
 
 // ============================================================================
@@ -816,7 +835,7 @@ export function buildGrouped(
         date: line.postingDate,
         customer: line.detailComment,
         code,
-        amount: line.amount,
+        amount: signedAmount(line),
       };
       if (carriesSourceFields) {
         sale.account = line.accountMainID;
@@ -836,7 +855,7 @@ export function buildGrouped(
         date: line.postingDate,
         supplier: line.detailComment,
         code,
-        amount: line.amount,
+        amount: signedAmount(line),
       };
       if (carriesSourceFields) {
         purchase.account = line.accountMainID;
@@ -891,7 +910,7 @@ export function totalsByCode(lines, purchaseCodeMap) {
     if (line.sourceJournalID !== "purchases") continue;
     const code = purchaseCodeMap[line.accountMainID];
     if (!code) continue;
-    totals[code] = Math.round(((totals[code] || 0) + line.amount) * 100) / 100;
+    totals[code] = Math.round(((totals[code] || 0) + signedAmount(line)) * 100) / 100;
   }
   return totals;
 }

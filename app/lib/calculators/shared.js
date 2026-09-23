@@ -3,7 +3,7 @@
 //
 // shared.js — Aggregation helpers used by more than one product calculator.
 
-import { getMonthKey } from "../scenario-extractor.js";
+import { getMonthKey, signedAmount } from "../scenario-extractor.js";
 
 /**
  * Group lines by accountMainID and month, computing totals.
@@ -49,7 +49,7 @@ export function aggregateByCode(lines, codeMap) {
   const byCode = {};
   for (const line of lines) {
     const code = codeMap[line.accountMainID];
-    if (code) byCode[code] = (byCode[code] || 0) + line.amount;
+    if (code) byCode[code] = (byCode[code] || 0) + signedAmount(line);
   }
   return byCode;
 }
