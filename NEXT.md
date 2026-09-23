@@ -8,9 +8,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. `main`'s last code head `05c887750` (PR #135, PU-8) is on prod with PR #134 (LP-24b, the
-Google Drive store) under it; every run green. The board's open rows are the operator's (LP-24a,
-LP-25a) or wait on one (LP-25b).
+Nothing. Prod serves `05c887750` (PR #135, PU-8, with PR #134's Google Drive store under it),
+every run green. `main`'s head `46c09ca82` is the scheduled dependency update, a bot push that
+fires no workflow; the 07:17 UTC deploy picks it up. The board's open rows are the operator's
+(LP-24a, LP-25a) or wait on one (LP-25b).
 
 ## Context for the open rows
 
