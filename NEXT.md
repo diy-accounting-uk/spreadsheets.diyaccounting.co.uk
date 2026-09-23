@@ -52,7 +52,7 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 - `PLAN_DIYACCOUNTING_BRAND.md`: the brand in three parts — one source for the marks and tokens,
   the trade mark filings, and what recovering `diyaccounting.com` would take.
 - `PLAN_DIYA_GL_LAUNCH.md`: carries the launch posts (LP-10), the Rust port (LP-12 to LP-14), the
-  Filing phase as a Submit dependency (LP-19, LP-20), the HMRC licence note (H-LU-9, tracked in Submit's `NEXT.md` under Human-driven from 2026-09-18)
+  Filing phase as a Submit dependency (LP-19, LP-20), the HMRC licence note (H-LU-9, tracked as Submit's BACKLOG row 75)
   and SB-1's last task (SB-3, on the board).
 - `../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`: one Resident bundle at £39 a year, annual
   first, the practice licence, the 35-day sandbox; its Submit tasks PU-1 to PU-7 and PU-9 sit on
