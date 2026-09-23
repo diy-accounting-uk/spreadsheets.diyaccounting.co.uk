@@ -39,6 +39,8 @@ branch `claude/b<n>-<topic>` with one worktree per row:
 
 | # | Item | Source | Needs | Precursors | State | Size | Model | Status |
 |---|---|---|---|---|---|---|---|---|
+| CQ-57 | A batch forks from, or merges, the merged tip before its first push when an open PR shares its files; the board names the overlap | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~2 files | Haiku | PR #135: 65 job-minutes superseded; PR #134: 53 job-minutes and a 35-minute fix cycle |
+| CQ-58 | The scheduled test job skips a head whose `--code-tree-hash` matches the last green run | REPORT_SESSION_dn+mHL_2026-09-23.md | machine-only | — | ready-to-start | ~2 files | Sonnet | 67 job-minutes on a docs-only head each scheduled day |
 | LP-24a | Google Drive store: the console steps in the launch plan design (origins, Drive API, `drive.file` scope), then post the OAuth client id | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | seven steps under "LP-24 design" in the plan |
 | LP-25a | Bank referral: pick the partner programme, sign up, supply the link and the disclosure wording | PLAN_DIYA_GL_LAUNCH.md | human-driven | — | ready-to-start | ~0 files | operator | added 2026-09-21 on the operator's instruction |
 | LP-25b | Bank referral: the placement, the disclosure line, the `referral_clicked` event | PLAN_DIYA_GL_LAUNCH.md | machine-only | LP-25a | blocked-to-start | ~4 files | Haiku | after the link |
