@@ -143,6 +143,8 @@ next item would have to share a file with one already dispatched.
    order — the DIYA-GL naming chain, anything paired with submit's own rows — that order is the
    specification.
 
+   Rows that touch the same page or module run in sequence in one agent or the later brief carries the earlier row's changes, so dependencies do not require a reconciliation pass.
+
    A brief this size needs one extra instruction: if the total is more than the agent can finish,
    commit what is done and report exactly where it stopped. A clean stopping point mid-sequence is
    recoverable; a rushed tail is not.
@@ -234,6 +236,7 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
   until grep -q '^VERDICT:' <log> || ! kill -0 "$(cat <log>.pid)" 2>/dev/null; do sleep 30; done
   ```
 
+- **A background command that expands a list runs under `bash -c`**, because the shell where a background command runs is not bash and does not split unquoted variables into words.
 - **The exact clean-up for the browser tier's byproducts.** The browser tier's
   `app/bin/build-packages.js --years 2` step leaves untracked `LICENCE.txt` and `README.txt`
   files under `packages/`. Remove them with this loop, the only way:

@@ -100,6 +100,7 @@ sentence, and name the other row:
 - rows that share a file (`cloud.js`, the behaviour test, `do-next/SKILL.md`) say so in both
   places, so the wave puts them in one agent or forks the second from the first's batch; a shared
   file alone is not a precursor when the second row can fork from the first's branch;
+- rows that touch the same page or module run in sequence in one agent, or the later brief carries the earlier row's changes, so the dependencies land in one commit or the second agent sees the first agent's work.
 - rows over the same data name the same facts once each (Submit's entitlement reasons and
   retention days, the product cell maps, the fixture's master data under `examples/`);
 - a row whose output another row consumes names the shape it writes and the row that reads it
