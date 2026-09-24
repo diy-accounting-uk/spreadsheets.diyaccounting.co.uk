@@ -31,6 +31,7 @@ import {
   computeSpreadsheetNetSales,
   splitStraddlingLines,
   deriveStraddlingEntries,
+  signedAmount,
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
@@ -314,14 +315,14 @@ export function diyaGlToScenario(book, lines, product) {
     const turnoverLines = salesLines.filter((l) => TURNOVER_ACCOUNTS.has(l.accountMainID));
     totalSales = vatRegistered
       ? computeSpreadsheetNetSales(turnoverLines)
-      : Math.round(turnoverLines.reduce((sum, l) => sum + l.amount, 0));
+      : Math.round(turnoverLines.reduce((sum, l) => sum + signedAmount(l), 0));
   }
 
   // Compute expense totals by code.
   const byCode = {};
   purchaseLines.forEach((l) => {
     const code = purchaseCodeMap[l.accountMainID];
-    if (code) byCode[code] = (byCode[code] || 0) + l.amount;
+    if (code) byCode[code] = (byCode[code] || 0) + signedAmount(l);
   });
 
   // Build metadata from book.toml
@@ -382,7 +383,7 @@ export function diyaGlToScenario(book, lines, product) {
       .filter((l) => !(l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
       .forEach((l) => {
         const code = purchaseCodeMap[l.accountMainID];
-        if (code) bstByCode[code] = (bstByCode[code] || 0) + l.amount;
+        if (code) bstByCode[code] = (bstByCode[code] || 0) + signedAmount(l);
       });
     if (businessMiles) bstByCode.m = (bstByCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
 
@@ -415,7 +416,7 @@ export function diyaGlToScenario(book, lines, product) {
     const cashMotor = purchaseLines
       .filter((l) => !(product === "se" && l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
       .filter((l) => purchaseCodeMap[l.accountMainID] === "v")
-      .reduce((sum, l) => sum + l.amount, 0);
+      .reduce((sum, l) => sum + signedAmount(l), 0);
     const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES) : 0;
     expected.total_motor_net = Math.round(cashMotor / vatDivisor + mileageClaim);
     expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);

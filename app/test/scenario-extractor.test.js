@@ -39,6 +39,7 @@ import {
   splitStraddlingLines,
   straddlingPeriodLabel,
   deriveStraddlingEntries,
+  signedAmount,
 } from "../lib/scenario-extractor.js";
 
 // ── getMonthKey ────────────────────────────────────────────────────────────
@@ -77,6 +78,32 @@ describe("escapeTomlString", () => {
   });
 });
 
+// ── signedAmount ───────────────────────────────────────────────────────────
+
+describe("signedAmount", () => {
+  it("returns an ordinary line's amount unchanged", () => {
+    expect(signedAmount({ amount: 100 })).toBe(100);
+  });
+
+  it("negates a credit note against a sale", () => {
+    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4000", amount: 20, documentType: "credit-note" })).toBe(-20);
+  });
+
+  it("negates a credit note against a purchase", () => {
+    expect(signedAmount({ sourceJournalID: "purchases", accountMainID: "5301", amount: 160.22, documentType: "credit-note" })).toBe(
+      -160.22,
+    );
+  });
+
+  it("leaves a bad-debt write-off (4005) unnegated -- its P&L row already carries the sign", () => {
+    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4005", amount: 360, documentType: "credit-note" })).toBe(360);
+  });
+
+  it("leaves a fixed-asset disposal (4006) unnegated -- its own schedule carries the sign", () => {
+    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4006", amount: 500, documentType: "credit-note" })).toBe(500);
+  });
+});
+
 // ── computeGrossSales ──────────────────────────────────────────────────────
 
 describe("computeGrossSales", () => {
@@ -87,6 +114,14 @@ describe("computeGrossSales", () => {
 
   it("returns 0 for empty array", () => {
     expect(computeGrossSales([])).toBe(0);
+  });
+
+  it("nets a credit note against the sale it refunds", () => {
+    const lines = [
+      { sourceJournalID: "sales", accountMainID: "4000", amount: 20 },
+      { sourceJournalID: "sales", accountMainID: "4000", amount: 20, documentType: "credit-note" },
+    ];
+    expect(computeGrossSales(lines)).toBe(0);
   });
 });
 
@@ -264,6 +299,74 @@ describe("buildGrouped", () => {
     expect(bank["1200"].jun).toHaveLength(1);
     expect(bank["1200"].jun[0].code).toBe("si");
     expect(bank["1200"].jun[0].direction).toBe("out");
+  });
+
+  it("writes a credit note's amount negative -- the mechanism the Sales sheet reads: app/products/bst.js writes sheet[`F${row}`] = tx.amount directly, with no separate refund column, so a negative amount here is what nets the sheet's own SUM", () => {
+    const lines = [
+      { sourceJournalID: "sales", accountMainID: 4000, postingDate: "2025-04-15", detailComment: "Client A", amount: 1000 },
+      {
+        sourceJournalID: "sales",
+        accountMainID: 4000,
+        postingDate: "2025-05-20",
+        detailComment: "Client A refund",
+        amount: 1000,
+        documentType: "credit-note",
+      },
+    ];
+    const { sales } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    expect(sales.apr[0].amount).toBe(1000);
+    expect(sales.may[0].amount).toBe(-1000);
+  });
+
+  it("leaves a bad-debt write-off's amount unnegated -- the sales code 'o' formula already subtracts it", () => {
+    const lines = [
+      {
+        sourceJournalID: "sales",
+        accountMainID: "4005",
+        postingDate: "2025-04-15",
+        detailComment: "Bad debt",
+        amount: 360,
+        documentType: "credit-note",
+      },
+    ];
+    const { sales } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    expect(sales.apr[0].amount).toBe(360);
+    expect(sales.apr[0].code).toBe("o");
+  });
+
+  it("nets a supplier's credit note in the grouped purchases journal the same way", () => {
+    const lines = [
+      { sourceJournalID: "purchases", accountMainID: 5000, postingDate: "2025-05-10", detailComment: "Supplier X", amount: 500 },
+      {
+        sourceJournalID: "purchases",
+        accountMainID: 5000,
+        postingDate: "2025-06-01",
+        detailComment: "Supplier X credit",
+        amount: 500,
+        documentType: "credit-note",
+      },
+    ];
+    const { purchases } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    expect(purchases.may[0].amount).toBe(500);
+    expect(purchases.jun[0].amount).toBe(-500);
+  });
+
+  it("the workbook's own grouped total agrees with the book check's total -- the same sale-and-refund pair nets to the same figure either way", () => {
+    const lines = [
+      { sourceJournalID: "sales", accountMainID: 4000, postingDate: "2025-04-15", detailComment: "Client A", amount: 2000 },
+      {
+        sourceJournalID: "sales",
+        accountMainID: 4000,
+        postingDate: "2025-04-20",
+        detailComment: "Client A refund",
+        amount: 2000,
+        documentType: "credit-note",
+      },
+    ];
+    const { sales } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    const workbookTotal = sales.apr.reduce((sum, tx) => sum + tx.amount, 0);
+    expect(workbookTotal).toBe(computeGrossSales(lines));
+    expect(workbookTotal).toBe(0);
   });
 
   it("leaves a bank line with no debit/credit code out of the grouped bank book, without throwing", () => {
@@ -653,6 +756,16 @@ describe("totalsByCode", () => {
       { sourceJournalID: "sales", accountMainID: "4000", amount: 4550 },
     ];
     expect(totalsByCode(lines, BST_PURCHASE_CODE_MAP)).toEqual({ s: 1250 });
+  });
+
+  it("nets a supplier's credit note against the code it was posted to", () => {
+    // The AWS-refund case: a hosting purchase, then a credit note against
+    // the same code, netting to what the business actually spent.
+    const lines = [
+      { sourceJournalID: "purchases", accountMainID: "5301", amount: 500 },
+      { sourceJournalID: "purchases", accountMainID: "5301", amount: 160.22, documentType: "credit-note" },
+    ];
+    expect(totalsByCode(lines, { 5301: "o" })).toEqual({ o: 339.78 });
   });
 });
 

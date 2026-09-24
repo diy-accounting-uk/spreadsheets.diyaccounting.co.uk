@@ -17,7 +17,7 @@
 // up from the book's own entityInformation["diya-gl:product"].
 
 import { changeLineBankAccount } from "../diya-gl-edits.js";
-import { SE_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, isStraddlingLine } from "../scenario-extractor.js";
+import { SE_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, isStraddlingLine, signedAmount } from "../scenario-extractor.js";
 
 // The workbook each bank account is kept in. A Self Employed package
 // carries two of them where a Company package carries four, so an account
@@ -558,7 +558,7 @@ function isVatRegistered(book) {
 // year and belongs to a different year's turnover.
 function netOfVatTurnover(lines, rate) {
   let total = 0;
-  for (const line of lines) if (line.sourceJournalID === "sales" && !isStraddlingLine(line)) total += line.amount / (1 + rate);
+  for (const line of lines) if (line.sourceJournalID === "sales" && !isStraddlingLine(line)) total += signedAmount(line) / (1 + rate);
   return total;
 }
 

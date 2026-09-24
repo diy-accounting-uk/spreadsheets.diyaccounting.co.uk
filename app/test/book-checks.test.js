@@ -348,6 +348,58 @@ describe("each rule is breakable by one crafted change, and only that rule flips
   });
 });
 
+describe("book-vat-threshold nets a credit note against turnover", () => {
+  it("a sale and its refund in the same month leave turnover unchanged", () => {
+    const fixture = baseline();
+    fixture.lines.push(
+      {
+        entryNumber: "CN-01",
+        sourceJournalID: "sales",
+        postingDate: "2025-04-10",
+        accountMainID: "4000",
+        amount: 500,
+        detailComment: "Acme Ltd invoice 3",
+      },
+      {
+        entryNumber: "CN-02",
+        sourceJournalID: "sales",
+        postingDate: "2025-04-10",
+        accountMainID: "4000",
+        amount: 500,
+        detailComment: "Acme Ltd refund",
+        documentType: "credit-note",
+      },
+    );
+    const { results } = runBookChecks(fixture);
+    expect(resultFor(results, "book-vat-threshold").actual).toBe(resultFor(runBookChecks(baseline()).results, "book-vat-threshold").actual);
+  });
+
+  it("a refund in a later month still reduces the year's turnover", () => {
+    const fixture = baseline();
+    fixture.lines.push(
+      {
+        entryNumber: "CN-03",
+        sourceJournalID: "sales",
+        postingDate: "2025-04-10",
+        accountMainID: "4000",
+        amount: 500,
+        detailComment: "Acme Ltd invoice 3",
+      },
+      {
+        entryNumber: "CN-04",
+        sourceJournalID: "sales",
+        postingDate: "2025-06-15",
+        accountMainID: "4000",
+        amount: 500,
+        detailComment: "Acme Ltd refund",
+        documentType: "credit-note",
+      },
+    );
+    const { results } = runBookChecks(fixture);
+    expect(resultFor(results, "book-vat-threshold").actual).toBe(resultFor(runBookChecks(baseline()).results, "book-vat-threshold").actual);
+  });
+});
+
 // ============================== helpers ==============================
 
 describe("the fix-it helpers", () => {

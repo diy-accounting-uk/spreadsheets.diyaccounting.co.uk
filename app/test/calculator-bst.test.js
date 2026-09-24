@@ -298,6 +298,58 @@ describe("BST calculator — CIS suffered on sales reaches the Income Tax total"
   });
 });
 
+// ── Credit notes ──────────────────────────────────────────────────────────
+
+describe("BST calculator — a credit note nets against turnover", () => {
+  const dir = FIXTURES[0].dir;
+
+  function withExtraLines(book, lines, extra) {
+    const withPair = [...lines, ...extra];
+    const scenario = diyaGlToScenario(book, withPair, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    return calculateBstResults(book, withPair, taxData, merged);
+  }
+
+  it("a sale and its refund in the same month leave that month's and the year's turnover unchanged", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const before = calculateBstResults(book, lines, taxData, { ...scenario, ...scenario.expected });
+
+    const sale = {
+      sourceJournalID: "sales",
+      accountMainID: "4000",
+      postingDate: "2025-04-15",
+      detailComment: "Credit note test",
+      amount: 2000,
+    };
+    const refund = { ...sale, postingDate: "2025-04-20", detailComment: "Credit note test refund", documentType: "credit-note" };
+    const after = withExtraLines(book, lines, [sale, refund]);
+
+    expect(after["Profit & Loss Acc"].D4).toBe(before["Profit & Loss Acc"].D4);
+    expect(after["Profit & Loss Acc"].C4).toBe(before["Profit & Loss Acc"].C4);
+  });
+
+  it("a refund in a later month reduces that month, not the sale's month", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const before = calculateBstResults(book, lines, taxData, { ...scenario, ...scenario.expected });
+
+    const sale = {
+      sourceJournalID: "sales",
+      accountMainID: "4000",
+      postingDate: "2025-04-15",
+      detailComment: "Credit note test",
+      amount: 2000,
+    };
+    const refund = { ...sale, postingDate: "2025-05-20", detailComment: "Credit note test refund", documentType: "credit-note" };
+    const after = withExtraLines(book, lines, [sale, refund]);
+
+    expect(after["Profit & Loss Acc"].D4).toBe(before["Profit & Loss Acc"].D4 + 2000); // April: the sale alone
+    expect(after["Profit & Loss Acc"].E4).toBe(before["Profit & Loss Acc"].E4 - 2000); // May: the refund alone
+    expect(after["Profit & Loss Acc"].C4).toBe(before["Profit & Loss Acc"].C4); // the year nets to the same total
+  });
+});
+
 // ── Units ──────────────────────────────────────────────────────────────
 
 describe("BST cellLabels()", () => {
