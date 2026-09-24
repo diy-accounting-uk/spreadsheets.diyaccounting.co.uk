@@ -352,7 +352,7 @@ the rest of the Drive), lists the books there, and opens one back into the page.
 Drive's own revision history, so the S3 sidecar's version list does not need a twin. This is the
 ownership promise in cloud form: the file sits in a store the reader already pays for and can
 open without this site. Both stores, S3 and Drive, are carried by the one Resident bundle at
-£39 a year (`../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`), which replaces the 99p
+£39 a year (`../developers/submit/archive/PLAN_PRICE_UPDATE.md`), which replaces the 99p
 `resident-diya-gl` tier §3 priced; the sandbox rung stays free. Task LP-24.
 
 **Mobile.** The page already has four layouts including mobile portrait with in-card month
@@ -472,12 +472,12 @@ concurrent edits, and any second price.
 8. **The paid tier's price moves.** The 99p `resident-diya-gl` tier folds into one Resident bundle
    at £39 a year (£3.99 a month), filing included as each is recognised, annual as the default
    button; `resident-vat` stays at 99p for its four subscribers. The plan of record is
-   `../submit.diyaccounting.co.uk/PLAN_PRICE_UPDATE.md`; §3's fee table stays as the record of why
+   `../developers/submit/archive/PLAN_PRICE_UPDATE.md`; §3's fee table stays as the record of why
    99p monthly was tried.
 9. **Two stores in the bundle.** Submit's S3 and the reader's Google Drive (LP-24).
 10. **Bank referral on the free rung** (LP-25a, LP-25b).
 11. **The sandbox runs 35 days**, with `sandbox_expired_seen` per sign-in as the loss metric
-    (`PLAN_PRICE_UPDATE.md` PU-4 and PU-8).
+    (`../developers/submit/archive/PLAN_PRICE_UPDATE.md` PU-4 and PU-8).
 
 ## Task list
 
