@@ -35,6 +35,10 @@ import {
   payeTaxMonthDates,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_DEFAULT_BLOCK_ROW,
+  PAYSLIP_PRINT_DEFAULT_HEADING,
+  PAYSLIP_PRINT_DEFAULT_PERIOD,
+  PAYSLIP_PRINT_DEFAULT_TAB,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
   PAYSLIP_PRINT_PERIOD_CELLS,
@@ -798,7 +802,18 @@ function computeLtd(book, lines, taxData, scenario) {
       T2: directorPayroll[tab].employerNI,
     });
   }
-  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
+  // The writer only points F3 and F4 at a real month when the book has
+  // payroll to print (app/products/ltd.js's cellWrites), so a book with none
+  // leaves the sheet's own shipped default in place rather than the period
+  // this function otherwise asks for.
+  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = scenario.payroll
+    ? buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries)
+    : {
+        [PAYSLIP_PRINT_CELLS.tab]: PAYSLIP_PRINT_DEFAULT_TAB,
+        [PAYSLIP_PRINT_CELLS.blockRow]: PAYSLIP_PRINT_DEFAULT_BLOCK_ROW,
+        [PAYSLIP_PRINT_CELLS.heading]: PAYSLIP_PRINT_DEFAULT_HEADING,
+        [PAYSLIP_PRINT_CELLS.periodNumber]: PAYSLIP_PRINT_DEFAULT_PERIOD,
+      };
 
   const companySecretary = buildCompanySecretary(scenario);
   Object.assign(results, companySecretary);

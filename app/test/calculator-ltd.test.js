@@ -802,6 +802,24 @@ describe("Ltd payroll date checks on a year end nineteen months from the scenari
   });
 });
 
+describe("Ltd Payslips print page on a book with no payroll", () => {
+  it("expects the sheet's own shipped default rather than the payroll period", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+    const taxData = taxDataFor("ltd-2024");
+    const scenario = diyaGlToScenario(book, lines, "ltd");
+    delete scenario.payroll;
+
+    const results = calculateFromDiyaGl(book, lines, "ltd", taxData, scenario);
+
+    expect(results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]).toEqual({
+      [PAYSLIP_PRINT_CELLS.tab]: "Apr",
+      [PAYSLIP_PRINT_CELLS.blockRow]: 8,
+      [PAYSLIP_PRINT_CELLS.heading]: "WEEKLY PAYROLL",
+      [PAYSLIP_PRINT_CELLS.periodNumber]: 1,
+    });
+  });
+});
+
 // A June year end's month tabs run Jul through Jun, so the reference and
 // wages-paid-date checks land on Oct/Nov (fiscalTabs' positions 3/4 from a
 // July opening) rather than the March-year-end Jul/Aug. The payroll-by-tab

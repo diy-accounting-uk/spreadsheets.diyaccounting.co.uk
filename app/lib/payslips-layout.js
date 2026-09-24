@@ -233,3 +233,13 @@ export const PAYSLIP_PRINT_TO_DATE_CELLS = { G16: "grossPay", H16: "incomeTax", 
 // for a period other than the sheet's own default of 1 -- a join stuck on the
 // default prints the wrong period with every other check still green.
 export const PAYSLIP_PRINT_PERIOD = 2;
+
+// The sheet's own shipped default, before any writer's join ever points F3
+// and F4 at a real month: weekly payslips, period 1. app/products/ltd.js's
+// cellWrites only writes F3 and F4 when the book has payroll to point them
+// at, so a book with none leaves the sheet exactly there, and H3, H4 and L7
+// stay what that default resolves to -- verified against the template.
+export const PAYSLIP_PRINT_DEFAULT_TAB = "Apr";
+export const PAYSLIP_PRINT_DEFAULT_BLOCK_ROW = 8;
+export const PAYSLIP_PRINT_DEFAULT_HEADING = "WEEKLY PAYROLL";
+export const PAYSLIP_PRINT_DEFAULT_PERIOD = 1;
