@@ -142,8 +142,19 @@ export async function loadTaxDataForBook(book, options = {}) {
  * templates to read, which year's data to apply, what the package is called,
  * and which cells to write. Reading it all up front is what stops a book with
  * a missing field producing a half-written package.
+ *
+ * Exported so a reconciler can derive the same cell writes, scenario and tax
+ * data a package was written with, from the book alone, without a second
+ * mapping from book to cells living beside this one.
+ *
+ * @param {Object} book - parsed book.toml
+ * @param {Array} lines - parsed lines.jsonl entries
+ * @param {Object} [options]
+ * @param {Object} [options.resources] - resource loader; defaults to reading app/
+ * @param {string} [options.taxYearName] - override the tax year the book's dates imply
+ * @param {Object} [options.taxData] - already-parsed tax data, skipping the load
  */
-async function resolveInputs(book, lines, options) {
+export async function resolveInputs(book, lines, options = {}) {
   const resources = options.resources || nodeResourceLoader();
 
   const product = productOf(book);
