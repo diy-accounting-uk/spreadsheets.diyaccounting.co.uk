@@ -145,6 +145,8 @@ test.describe("DIYA-GL homepage — the Ltd example boots on arrival", () => {
     await expect(page.locator("#tier-device")).toBeVisible();
     await expect(page.locator("#tier-sandbox")).toBeVisible();
     await expect(page.locator("#tier-resident")).toBeHidden();
+    await expect(page.locator("#tier-resident-pro")).toBeHidden();
+    await expect(page.locator("#tier-resident-pro")).toContainText("£199 a year");
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   });
 
