@@ -81,11 +81,33 @@ you to hold an identifier, a route that now exists. Read before you merge, not a
 **One branch. One PR. Waves inside it.**
 
 A branch deployment is expensive and slow, so everything that can share a deploy should. The batch
-branch is `claude/b<n>-board`, taken from `main`. Every sub-agent worktree branches from **the
+branch is `claude/<codename>-<theme>` (see Naming the batch), taken from `main`. Every sub-agent worktree branches from **the
 batch branch**, not from `main`, so each wave builds on what the last one landed.
 
 Give the batch branch its own worktree and leave the primary checkout on `main`. You merge into the
 batch worktree; you edit `NEXT.md` on `main`.
+
+### Naming the batch
+
+The batch branch is `claude/<codename>-<theme>`. The code name is the one after the last batch's in
+this list, wrapping from `zephyr` back to `arclight`; the theme is one or two lowercase words for the
+area most of the batch's rows touch (`itsa`, `pricing`, `ch-filing`, `ops`, `cdk`, `docs`). Example:
+`claude/arclight-pricing`, then `claude/blizzard-itsa`.
+
+`arclight` `blizzard` `cyclone` `dynamo` `eclipse` `falcon` `galileo` `horizon` `impulse` `juniper`
+`kraken` `lynx` `mirage` `nebula` `orion` `pulsar` `quasar` `ricochet` `sphinx` `tempest` `umbra`
+`vortex` `wyvern` `xenon` `yahtzee` `zephyr`
+
+One name per letter, so the batches sort in the order they ran until the list wraps. The names come
+from https://shockwaveinnovations.com/code-names/, kept to single lowercase words: no AWS resource
+name here is built from a branch name, so the only limit is the branch dropdown. Find the last batch's name with:
+
+```bash
+{ git branch -a --format='%(refname:short)'; git log origin/main --merges --format=%s -n 200; } \
+  | grep -oE 'claude/[a-z]+-' | sed -e 's#claude/##' -e 's/-$//' | awk 'NR==FNR{l[$1]=1;next} ($1 in l){print; exit}' <(printf '%s\n' arclight blizzard cyclone dynamo eclipse falcon galileo horizon impulse juniper kraken lynx mirage nebula orion pulsar quasar ricochet sphinx tempest umbra vortex wyvern xenon yahtzee zephyr) -
+```
+
+No match means none has run yet: start at `arclight`. The batch's worktree is named for its code name.
 
 **`NEXT.md` never travels on the batch branch.** The board is maintained on `main` under the docs
 exception. A second copy on the branch guarantees a conflict at merge time, and two sub-agents
