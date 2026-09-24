@@ -48,12 +48,15 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Decide whether this version is already on npm
+      - name: Decide what this run still needs to do
         id: version
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PKG_NAME=$(node -p "require('./diya-gl/package.json').name")
           PKG_VERSION=$(node -p "require('./diya-gl/package.json').version")
           TAG="diya-gl-v${PKG_VERSION}"
+          IMAGE="ghcr.io/diy-accounting-uk/diya-gl:${PKG_VERSION}"
           echo "name=${PKG_NAME}" | tee -a "$GITHUB_OUTPUT"
           echo "version=${PKG_VERSION}" | tee -a "$GITHUB_OUTPUT"
           echo "tag=${TAG}" | tee -a "$GITHUB_OUTPUT"
@@ -63,6 +66,19 @@ jobs:
           else
             echo "Publishing ${PKG_NAME}@${PKG_VERSION}"
             echo "publish=true" | tee -a "$GITHUB_OUTPUT"
+          fi
+          # The image keys on the registry, not on whether this run did the npm
+          # publish, for the same reason the tag below keys on the git remote: a
+          # run that published to npm and then died before pushing the image (an
+          # `unknown blob` GHCR error, say) leaves publish=false forever, so no
+          # later run would ever push the image again without its own check.
+          echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin >/dev/null 2>&1
+          if docker manifest inspect "${IMAGE}" >/dev/null 2>&1; then
+            echo "${IMAGE} is already on GHCR; nothing to push"
+            echo "image=false" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "Pushing ${IMAGE}"
+            echo "image=true" | tee -a "$GITHUB_OUTPUT"
           fi
           # The tag, the release record and the version roll key on the tag, not on
           # whether this run did the publishing. A run that published and then died
@@ -79,22 +95,22 @@ jobs:
       - name: Node dependencies
         # Also on a finish-only run: the release record and the version roll both
         # need the install, and they run when the publish steps do not.
-        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.finish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' || steps.version.outputs.finish == 'true' }}
         run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Build provenance data
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: npm run build:provenance-data
 
       - name: diya-gl package dependencies
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: cd diya-gl && npm ci
 
       - name: Pack diya-gl and run each bin from the tarball
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: diya-gl/smoke.sh target/diya-gl-smoke
 
       - name: Update npm to latest
@@ -121,14 +137,14 @@ jobs:
           HOMEBREW_DISPATCH_TOKEN: ${{ secrets.HOMEBREW_DISPATCH_TOKEN }}
 
       - name: Find the packed tarball
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         id: tarball
         run: |
           TARBALL=$(basename "$(ls target/diya-gl-smoke/*.tgz)")
           echo "name=${TARBALL}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -136,7 +152,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build the diya-gl image
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: |
           docker build \
             --build-arg TARBALL="${{ steps.tarball.outputs.name }}" \
@@ -146,11 +162,11 @@ jobs:
             target/diya-gl-smoke
 
       - name: Image smoke test
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: diya-gl/image-smoke.sh "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}" "$PWD"
 
       - name: Push the diya-gl image to GHCR
-        if: ${{ steps.version.outputs.publish == 'true' }}
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
         run: |
           docker tag "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}" ghcr.io/diy-accounting-uk/diya-gl:latest
           docker push "ghcr.io/diy-accounting-uk/diya-gl:${{ steps.version.outputs.version }}"
