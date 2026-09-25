@@ -21,6 +21,13 @@ describe("web/spreadsheets.diyaccounting.co.uk/public/lib/analytics.js", () => {
       getItem: vi.fn(() => null),
     };
 
+    global.sessionStorage = {
+      getItem: vi.fn(() => null),
+    };
+
+    // Node defines a getter-only global.navigator; vi.stubGlobal replaces it safely for the test.
+    vi.stubGlobal("navigator", { userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15" });
+
     global.document = {
       head: {
         appendChild: vi.fn((el) => headScripts.push(el)),
@@ -58,5 +65,34 @@ describe("web/spreadsheets.diyaccounting.co.uk/public/lib/analytics.js", () => {
     expect(inlineDomains).toContain("diyaccounting.co.uk");
     expect(inlineDomains).toContain("spreadsheets.diyaccounting.co.uk");
     expect(inlineDomains).toContain("submit.diyaccounting.co.uk");
+  });
+
+  it("tags a plain visit as human", () => {
+    eval(scriptContent);
+    dataLayerPushes = global.dataLayer;
+
+    expect(dataLayerPushes.some((args) => args[0] === "set" && args[1] === "user_properties" && args[2].visitor_kind === "human")).toBe(
+      true,
+    );
+  });
+
+  it("tags a behaviour-test visit as synthetic", () => {
+    global.sessionStorage.getItem = vi.fn((key) => (key === "requestIdPrefix" ? "test_" : null));
+
+    eval(scriptContent);
+    dataLayerPushes = global.dataLayer;
+
+    expect(dataLayerPushes.some((args) => args[0] === "set" && args[1] === "user_properties" && args[2].visitor_kind === "synthetic")).toBe(
+      true,
+    );
+  });
+
+  it("tags a canary visit as bot", () => {
+    global.navigator.userAgent = "DIYAccounting-Probe-Monitor/1.0";
+
+    eval(scriptContent);
+    dataLayerPushes = global.dataLayer;
+
+    expect(dataLayerPushes.some((args) => args[0] === "set" && args[1] === "user_properties" && args[2].visitor_kind === "bot")).toBe(true);
   });
 });

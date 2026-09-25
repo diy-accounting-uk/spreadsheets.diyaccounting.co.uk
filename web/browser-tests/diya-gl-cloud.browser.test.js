@@ -272,6 +272,52 @@ test.describe("DIYA-GL page — the sign-in return", () => {
     await expect(page.locator("#account-btn")).toHaveAccessibleName("Account, signed in as reader@example.com");
     const returned = await gaEvents(page, "cloud_sign_in");
     expect(returned).toEqual([{ step: "returned" }]);
+    // A native email/password user carries no identities claim, so GA4's own login event
+    // names the provider "cognito" the same way Submit's web client does.
+    const loggedIn = await gaEvents(page, "login");
+    expect(loggedIn).toEqual([{ method: "cognito" }]);
+  });
+
+  test("a federated sign-in sends GA4 login with the identity provider", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.route(`${PROD_HOSTED_UI}/oauth2/authorize*`, async (route) => {
+      const url = new URL(route.request().url());
+      const state = url.searchParams.get("state");
+      await route.fulfill({
+        status: 302,
+        headers: { location: `${bstUrl()}?code=test-auth-code&state=${encodeURIComponent(state)}` },
+      });
+    });
+    await page.route(`${PROD_HOSTED_UI}/oauth2/token`, async (route) => {
+      const nonce = await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.nonce"));
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id_token: fakeIdToken({
+            sub: "user-1",
+            email: "reader@example.com",
+            nonce,
+            identities: JSON.stringify([{ providerName: "Google" }]),
+          }),
+          access_token: "access-1",
+          refresh_token: "refresh-1",
+          expires_in: 3600,
+        }),
+      });
+    });
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) }),
+    );
+
+    await openAccountPanel(page);
+    await page.locator("#account-panel").getByRole("button", { name: "Sign in" }).click();
+    await page.waitForURL((url) => !url.search.includes("code="), { timeout: 10_000 });
+
+    const loggedIn = await gaEvents(page, "login");
+    expect(loggedIn).toEqual([{ method: "Google" }]);
   });
 
   test("a mismatched state is refused without ever calling the token endpoint", async ({ page }) => {
@@ -543,7 +589,17 @@ test.describe("DIYA-GL page — signed in", () => {
     expect(loaded).toEqual([{ product: "bst", source: "zip" }]);
   });
 
-  test("sign-out clears every cloud key and navigates to the hosted UI's logout", async ({ page }) => {
+  // GA4 logout and the storage clear both happen inside the same synchronous signOut() call
+  // that ends in window.location.assign(); the "sign-in redirect" test above found that a real
+  // top-level navigation triggered from a click tears the document down before either a
+  // post-click page.evaluate() or one made from inside the route handler that must itself call
+  // fulfill() can reliably read them (the latter hangs past the test timeout, mid-navigation).
+  // What a route handler CAN see reliably is the network requests themselves, so this test
+  // covers those: the revoke call, the sign-out POST and its bearer token, and the logout URL.
+  // buildLogoutEvent's own payload is covered by web/unit-tests/diya-gl-events.test.js.
+  test("sign-out revokes the refresh token, calls Submit's sign-out route with the ID token, and navigates to the hosted UI's logout", async ({
+    page,
+  }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -551,6 +607,16 @@ test.describe("DIYA-GL page — signed in", () => {
       route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) }),
     );
 
+    let revokeBody = null;
+    await page.route(`${PROD_HOSTED_UI}/oauth2/revoke`, async (route) => {
+      revokeBody = route.request().postData();
+      await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+    let signOutAuthorization = null;
+    await page.route(`${PROD_API_BASE}/session/sign-out`, async (route) => {
+      signOutAuthorization = route.request().headers()["authorization"];
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
     let logoutUrl = null;
     await page.route(`${PROD_HOSTED_UI}/logout*`, async (route) => {
       logoutUrl = new URL(route.request().url());
@@ -563,6 +629,36 @@ test.describe("DIYA-GL page — signed in", () => {
     await expect.poll(() => logoutUrl !== null, { timeout: 10_000 }).toBe(true);
     expect(logoutUrl.searchParams.get("client_id")).toBe("test-diya-gl-client");
     expect(logoutUrl.searchParams.get("logout_uri")).toBe(bstUrl());
+
+    await expect.poll(() => revokeBody, { timeout: 10_000 }).not.toBeNull();
+    expect(new URLSearchParams(revokeBody).get("token")).toBe("refresh-1");
+    expect(new URLSearchParams(revokeBody).get("client_id")).toBe("test-diya-gl-client");
+    // withSignedInSession seeds diya-gl.cloud.idToken with a fake JWT; the sign-out route is
+    // called with that ID token, the same one apiFetch sends to the books API.
+    expect(signOutAuthorization).toBe(`Bearer ${fakeIdToken({ sub: "user-1", email: "reader@example.com" })}`);
+  });
+
+  test("sign-out still reaches the hosted UI's logout when the revoke and sign-out calls fail", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ books: [] }) }),
+    );
+    await page.route(`${PROD_HOSTED_UI}/oauth2/revoke`, (route) => route.abort());
+    await page.route(`${PROD_API_BASE}/session/sign-out`, (route) => route.fulfill({ status: 500 }));
+
+    let logoutUrl = null;
+    await page.route(`${PROD_HOSTED_UI}/logout*`, async (route) => {
+      logoutUrl = new URL(route.request().url());
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<html></html>" });
+    });
+
+    await openAccountPanel(page);
+    await page.getByRole("button", { name: "Sign out" }).click();
+
+    await expect.poll(() => logoutUrl !== null, { timeout: 10_000 }).toBe(true);
+    expect(logoutUrl.searchParams.get("client_id")).toBe("test-diya-gl-client");
   });
 
   test("the service worker does not intercept the cross-origin API call", async ({ page }) => {

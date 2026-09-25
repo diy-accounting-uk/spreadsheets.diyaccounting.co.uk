@@ -21,6 +21,9 @@ let buildSandboxExpiredSeenEvent;
 let buildCloudDriveConnectEvent;
 let buildCloudDriveSaveEvent;
 let buildCloudDriveOpenEvent;
+let buildLoginEvent;
+let buildLogoutEvent;
+let buildCloudOpenEvent;
 
 beforeAll(() => {
   const src = readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/diya-gl-events.js"), "utf8");
@@ -38,6 +41,9 @@ beforeAll(() => {
   buildCloudDriveConnectEvent = sandbox.window.buildCloudDriveConnectEvent;
   buildCloudDriveSaveEvent = sandbox.window.buildCloudDriveSaveEvent;
   buildCloudDriveOpenEvent = sandbox.window.buildCloudDriveOpenEvent;
+  buildLoginEvent = sandbox.window.buildLoginEvent;
+  buildLogoutEvent = sandbox.window.buildLogoutEvent;
+  buildCloudOpenEvent = sandbox.window.buildCloudOpenEvent;
 });
 
 describe("buildBookLoadedEvent", () => {
@@ -154,5 +160,25 @@ describe("buildCloudDriveOpenEvent", () => {
   it("names the event cloud_drive_open and carries the source", () => {
     expect(buildCloudDriveOpenEvent("latest")).toEqual({ name: "cloud_drive_open", params: { source: "latest" } });
     expect(buildCloudDriveOpenEvent("revision")).toEqual({ name: "cloud_drive_open", params: { source: "revision" } });
+  });
+});
+
+describe("buildLoginEvent", () => {
+  it("names the event login and carries the identity provider as method", () => {
+    expect(buildLoginEvent("cognito")).toEqual({ name: "login", params: { method: "cognito" } });
+    expect(buildLoginEvent("Google")).toEqual({ name: "login", params: { method: "Google" } });
+  });
+});
+
+describe("buildLogoutEvent", () => {
+  it("names the event logout and carries no params", () => {
+    expect(buildLogoutEvent()).toEqual({ name: "logout", params: {} });
+  });
+});
+
+describe("buildCloudOpenEvent", () => {
+  it("names the event cloud_open and carries the source", () => {
+    expect(buildCloudOpenEvent("latest")).toEqual({ name: "cloud_open", params: { source: "latest" } });
+    expect(buildCloudOpenEvent("revision")).toEqual({ name: "cloud_open", params: { source: "revision" } });
   });
 });

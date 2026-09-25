@@ -78,6 +78,25 @@ function buildCloudDriveOpenEvent(source) {
   return { name: "cloud_drive_open", params: { source: source } };
 }
 
+// GA4's own standard events, carrying the same meaning here as Submit's web client sends them
+// (web/public/auth/loginWithCognitoCallback.html): method names the identity provider ("cognito"
+// for a native email/password user), so login needs no separate step params the way
+// cloud_sign_in does -- a fresh sign-in is the whole event.
+function buildLoginEvent(method) {
+  return { name: "login", params: { method: method } };
+}
+
+function buildLogoutEvent() {
+  return { name: "logout", params: {} };
+}
+
+// A book opened from the reader's DIYA-GL account (the S3 store), the same latest/revision
+// source split buildCloudDriveOpenEvent uses for the Drive store, so the two open series read
+// the same way in the export.
+function buildCloudOpenEvent(source) {
+  return { name: "cloud_open", params: { source: source } };
+}
+
 if (typeof window !== "undefined") {
   window.buildBookLoadedEvent = buildBookLoadedEvent;
   window.buildBookSavedEvent = buildBookSavedEvent;
@@ -90,4 +109,7 @@ if (typeof window !== "undefined") {
   window.buildCloudDriveConnectEvent = buildCloudDriveConnectEvent;
   window.buildCloudDriveSaveEvent = buildCloudDriveSaveEvent;
   window.buildCloudDriveOpenEvent = buildCloudDriveOpenEvent;
+  window.buildLoginEvent = buildLoginEvent;
+  window.buildLogoutEvent = buildLogoutEvent;
+  window.buildCloudOpenEvent = buildCloudOpenEvent;
 }
