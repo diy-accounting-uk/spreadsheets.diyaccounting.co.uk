@@ -63,8 +63,12 @@ function treeHash(dir, rev) {
   return execFileSync("node", args, { cwd: dir, encoding: "utf8" }).trim();
 }
 
+// CI runs this suite with TEST_SCOPE_TIERS set, which delegates tiers away; the plan
+// under test is the one a developer's push gets, so the child runs without it.
 function plan(dir, baseRef) {
-  return execFileSync("node", ["scripts/test-scope.mjs", "--plan", "--base", baseRef], { cwd: dir, encoding: "utf8" });
+  const env = { ...process.env };
+  delete env.TEST_SCOPE_TIERS;
+  return execFileSync("node", ["scripts/test-scope.mjs", "--plan", "--base", baseRef], { cwd: dir, encoding: "utf8", env });
 }
 
 function codeTreeHash(dir) {
