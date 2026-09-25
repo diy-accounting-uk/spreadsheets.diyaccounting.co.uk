@@ -63,6 +63,14 @@ function treeHash(dir, rev) {
   return execFileSync("node", args, { cwd: dir, encoding: "utf8" }).trim();
 }
 
+// CI runs this suite with TEST_SCOPE_TIERS set, which delegates tiers away; the plan
+// under test is the one a developer's push gets, so the child runs without it.
+function plan(dir, baseRef) {
+  const env = { ...process.env };
+  delete env.TEST_SCOPE_TIERS;
+  return execFileSync("node", ["scripts/test-scope.mjs", "--plan", "--base", baseRef], { cwd: dir, encoding: "utf8", env });
+}
+
 function codeTreeHash(dir) {
   return execFileSync("node", ["scripts/test-scope.mjs", "--code-tree-hash"], { cwd: dir, encoding: "utf8" }).trim();
 }
@@ -274,5 +282,73 @@ describe(".githooks/pre-push refuses a branch push that changes NEXT.md against 
     expect(result.output).not.toMatch(/NEXT\.md is maintained on main/);
     expect(result.output).toMatch(/nothing to test/);
     expect(result.code).toBe(0);
+  }, 15_000);
+});
+
+// SR-5: every diya-gl publish rewrites package.json and package-lock.json
+// (root and diya-gl/) with nothing but their own "version" field bumped.
+// The "test harness" route treats any package.json change as one nothing in
+// the diff can narrow (calc, browser and infra all), which is right for a
+// real dependency edit and wrong for a version echo carried into a branch's
+// diff by an unrelated publish commit. infra's run flag is asserted here
+// because it comes straight from sel.infra with no test-file discovery of
+// its own to fake up, unlike calc and browser -- proof enough that the
+// whole route did or did not fire.
+describe("test-scope.mjs drops a self-version-only package.json/lockfile change from routing", () => {
+  function writePackageJson(dir, version, extra = {}) {
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "throwaway", version, ...extra }, null, 2) + "\n");
+  }
+
+  it("does not run calc, browser or infra for a version-only package.json bump", () => {
+    const dir = makeRepo();
+    writePackageJson(dir, "1.2.34");
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    const base = commitAll(dir, "base");
+
+    writePackageJson(dir, "1.2.35");
+    commitAll(dir, "publish: version bump only");
+
+    const output = plan(dir, base);
+    expect(output).toMatch(/skipped {2,}infra/);
+    expect(output).toMatch(/skipped {2,}browser/);
+  }, 15_000);
+
+  it("still runs calc, browser and infra when package.json's dependencies actually change", () => {
+    const dir = makeRepo();
+    writePackageJson(dir, "1.2.34", { dependencies: {} });
+    const base = commitAll(dir, "base");
+
+    writePackageJson(dir, "1.2.34", { dependencies: { "left-pad": "1.0.0" } });
+    commitAll(dir, "add a dependency");
+
+    const output = plan(dir, base);
+    expect(output).toMatch(/RUN {2,}infra/);
+  }, 15_000);
+
+  it("still runs calc, browser and infra when a version-only package.json bump rides alongside a real code change", () => {
+    const dir = makeRepo();
+    writePackageJson(dir, "1.2.34");
+    writeFileSync(join(dir, "pom.xml"), "<project/>\n");
+    const base = commitAll(dir, "base");
+
+    writePackageJson(dir, "1.2.35");
+    writeFileSync(join(dir, "pom.xml"), "<project><real-change/></project>\n");
+    commitAll(dir, "publish plus an infra edit");
+
+    const output = plan(dir, base);
+    expect(output).toMatch(/RUN {2,}infra/);
+  }, 15_000);
+
+  it("does not run the full unit tier for a version-only package-lock.json bump", () => {
+    const dir = makeRepo();
+    writePackageJson(dir, "1.2.34");
+    writeFileSync(join(dir, "package-lock.json"), JSON.stringify({ name: "throwaway", version: "1.2.34" }, null, 2) + "\n");
+    const base = commitAll(dir, "base");
+
+    writeFileSync(join(dir, "package-lock.json"), JSON.stringify({ name: "throwaway", version: "1.2.35" }, null, 2) + "\n");
+    commitAll(dir, "publish: lockfile version bump only");
+
+    const output = plan(dir, base);
+    expect(output).not.toMatch(/because .*lockfile/);
   }, 15_000);
 });

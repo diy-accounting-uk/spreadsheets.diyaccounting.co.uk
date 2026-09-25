@@ -406,6 +406,40 @@ function changedPaths(baseRef) {
   return { paths: [...paths].sort(), base: baseRef, mergeBase: mb };
 }
 
+// ------------------------------------------------- self-version-only diffs
+
+// package.json, its lockfile, and diya-gl's own copies of both are rewritten
+// by every diya-gl publish (.github/workflows/publish-diya-gl.yml) with
+// nothing but their own "version" field bumped to the number just
+// published -- not a dependency added or upgraded, not a behaviour change.
+// The "test harness" and "lockfile" routes below treat any change to these
+// files as one nothing in the diff can narrow, which is right for a real
+// dependency edit and wrong for a version echo: it forces the full calc,
+// browser, infra and unit tiers for a push whose own work never touched
+// them. main() drops a path here from what it hands to select() and the
+// import graph, the same way normaliseEngineVersion keeps a restamp-only
+// commit from moving the GREEN marker's tree hash -- blank the one field
+// that always differs and compare what is left.
+const SELF_VERSION_FILES = new Set(["package.json", "package-lock.json", "diya-gl/package.json", "diya-gl/package-lock.json"]);
+const SELF_VERSION_PATTERN = /"version":\s*"[^"]*"/g;
+
+function isSelfVersionOnlyChange(path, mergeBase) {
+  const before = spawnSync("git", ["show", `${mergeBase}:${path}`], { cwd: ROOT, encoding: "utf8" });
+  if (before.status !== 0) return false; // new file: a real change, nothing to compare against
+  let after;
+  try {
+    after = readFileSync(resolve(ROOT, path), "utf8");
+  } catch {
+    return false; // deleted in the working tree: a real change
+  }
+  const blank = (text) => text.replace(SELF_VERSION_PATTERN, '"version": "0.0.0"');
+  return blank(before.stdout) === blank(after);
+}
+
+function dropSelfVersionOnlyPaths(paths, mergeBase) {
+  return paths.filter((p) => !(SELF_VERSION_FILES.has(p) && isSelfVersionOnlyChange(p, mergeBase)));
+}
+
 // ------------------------------------------------------- the import graph
 
 const SOURCE_ROOTS = ["app/", "web/", "diya-gl/", "scripts/"];
@@ -871,6 +905,13 @@ async function main() {
     }
   }
 
+  // The diff routing sees, once a self-version-only change to package.json
+  // or a lockfile is dropped from it -- `changed` above still carries the
+  // full diff, so the printed path list and the GREEN marker's own hashing
+  // are unaffected. escalated runs (wantAll or an unresolvable base) have no
+  // mergeBase to diff a "before" from and route every tier regardless.
+  const routingChanged = escalated ? changed : dropSelfVersionOnlyPaths(changed, markerBase);
+
   const everyTest = allTestFiles();
   const { calc: calcFiles, plain: plainFiles } = splitByLibreOffice(everyTest);
   const specs = browserSpecs();
@@ -895,12 +936,12 @@ async function main() {
     chosenSpecs = specs;
     unitReason = "every unit file, because the scope escalated";
   } else {
-    sel = select(changed);
-    const { tests, unresolved } = importClosure(changed, sourceFiles());
-    const literal = literalMatches(changed, everyTest);
-    const changedTests = changed.filter((p) => TEST_FILE.test(p));
+    sel = select(routingChanged);
+    const { tests, unresolved } = importClosure(routingChanged, sourceFiles());
+    const literal = literalMatches(routingChanged, everyTest);
+    const changedTests = routingChanged.filter((p) => TEST_FILE.test(p));
     const reached = new Set([...tests, ...literal, ...changedTests]);
-    const changedSource = changed.filter((p) => SOURCE_EXT.test(p));
+    const changedSource = routingChanged.filter((p) => SOURCE_EXT.test(p));
     const orphan = changedSource.length > 0 && reached.size === 0;
     if (unresolved > 0) {
       unitFiles = plainFiles;

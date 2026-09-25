@@ -160,6 +160,21 @@ function parseArgs(argv) {
   return { reconciledCommit: idx !== -1 ? argv[idx + 1] : null };
 }
 
+// engineVersion moves whenever this script runs from a local checkout whose
+// installed diya-gl version or working-tree commit differs from what was
+// last committed to this file, even when nothing else about the engine, tax
+// data or templates has changed. Rewriting the committed file for that
+// alone leaves it uncommitted after a router run (the browser tier calls
+// this script), which .githooks/pre-push then refuses to push. Exported for
+// the unit test: pure string comparison, no filesystem or git of its own.
+const ENGINE_VERSION_PATTERN = /engineVersion:\s*"[^"]*"/;
+
+export function differsOnlyByEngineVersion(before, after) {
+  if (before === after) return false;
+  const blank = (text) => text.replace(ENGINE_VERSION_PATTERN, 'engineVersion: "0.0.0+000000000000"');
+  return blank(before) === blank(after);
+}
+
 async function main() {
   const { reconciledCommit } = parseArgs(process.argv.slice(2));
   const data = {
@@ -191,6 +206,13 @@ export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
   // expects, and a plain re-run never leaves a formatting-only diff behind.
   const config = await prettier.resolveConfig(OUT_FILE);
   const formatted = await prettier.format(body, { ...config, filepath: OUT_FILE });
+  const existing = existsSync(OUT_FILE) ? readFileSync(OUT_FILE, "utf8") : null;
+  if (existing !== null && differsOnlyByEngineVersion(existing, formatted)) {
+    console.log(
+      `provenance data: ${OUT_FILE.replace(ROOT + "/", "")} left as committed -- the only difference is engineVersion (${data.engineVersion}), which this checkout's own installed version or commit produces, not an engine, tax data or template change.`,
+    );
+    return;
+  }
   writeFileSync(OUT_FILE, formatted);
   console.log(`provenance data: ${OUT_FILE.replace(ROOT + "/", "")}`);
   console.log(`  engineVersion: ${data.engineVersion}`);
@@ -201,7 +223,13 @@ export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
   console.log(`  reconciledCommit: ${data.reconciledCommit || "(none yet)"}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Guarded the same way scripts/test-scope.mjs guards its own main(): so that
+// importing differsOnlyByEngineVersion for the unit test does not also run
+// this script's full regeneration (git, filesystem, prettier) as an import
+// side effect.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
