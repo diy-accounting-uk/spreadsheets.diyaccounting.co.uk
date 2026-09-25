@@ -193,6 +193,36 @@
     sendCloudEvent(window.buildCloudSignInEvent(step));
   }
 
+  // The identity provider Cognito recorded, the same reading Submit's web client takes of the
+  // same claim (web/public/auth/loginWithCognitoCallback.html): identities is a JSON string for
+  // a federated user, absent for a native email/password one, which falls back to "cognito".
+  function loginMethodFromClaims(claims) {
+    try {
+      var identities = typeof claims.identities === "string" ? JSON.parse(claims.identities) : claims.identities;
+      if (Array.isArray(identities) && identities[0] && identities[0].providerName) {
+        return identities[0].providerName;
+      }
+    } catch (e) {
+      /* malformed identities claim: fall back to "cognito" */
+    }
+    return "cognito";
+  }
+
+  function sendLoginEvent(claims) {
+    if (typeof window.buildLoginEvent !== "function") return;
+    sendCloudEvent(window.buildLoginEvent(loginMethodFromClaims(claims)));
+  }
+
+  function sendLogoutEvent() {
+    if (typeof window.buildLogoutEvent !== "function") return;
+    sendCloudEvent(window.buildLogoutEvent());
+  }
+
+  function sendCloudOpenEvent(source) {
+    if (typeof window.buildCloudOpenEvent !== "function") return;
+    sendCloudEvent(window.buildCloudOpenEvent(source));
+  }
+
   function sendBillingEvent(action) {
     if (typeof window.buildCloudBillingEvent !== "function") return;
     sendCloudEvent(window.buildCloudBillingEvent(action));
@@ -1102,6 +1132,7 @@
               latestVersion: body.metadata.latestVersion,
             });
             setDriveLink(null);
+            sendCloudOpenEvent(version ? "revision" : "latest");
             closePanel();
           });
         });
@@ -1565,11 +1596,41 @@
       .catch(handleBillingError);
   }
 
+  // Ends the session server-side before the local one: revokes the refresh token (Cognito's
+  // /oauth2/revoke, so a copied refresh token stops working) and tells Submit's authenticated
+  // sign-out route to publish "logout" and delete the session item, both keepalive fetches so
+  // they survive the navigation this function ends with. Neither is awaited -- only started --
+  // because awaiting a fetch's response right before navigating away has hung headless Chrome
+  // in Submit's own behaviour tests; keepalive already guarantees delivery survives the page
+  // going away, and the reader ends signed out locally whatever the server answers.
+  function revokeAndSignOut(session, config) {
+    if (session.refreshToken) {
+      fetch(config.hostedUi + "/oauth2/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ token: session.refreshToken, client_id: config.clientId }).toString(),
+        keepalive: true,
+      }).catch(function () {
+        /* revoke failures are expected (offline, ad blockers) -- local sign-out still proceeds */
+      });
+    }
+    fetch(config.apiBase + "/session/sign-out", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + session.idToken },
+      keepalive: true,
+    }).catch(function () {
+      /* sign-out failures are expected (offline, ad blockers) -- local sign-out still proceeds */
+    });
+  }
+
   function signOut() {
     var config = window.DIYA_GL_CLOUD_CONFIG;
+    var session = getSession();
+    if (session) revokeAndSignOut(session, config);
     clearAllStorage();
     closePanel();
     syncAccountButton();
+    sendLogoutEvent();
     var query = new URLSearchParams({ client_id: config.clientId, logout_uri: redirectUri() });
     window.location.assign(config.hostedUi + "/logout?" + query.toString());
   }
@@ -1699,6 +1760,7 @@
         });
         clearTransient();
         sendSignInEvent("returned");
+        sendLoginEvent(claims);
         syncAccountButton();
         fetchBooksList();
       })

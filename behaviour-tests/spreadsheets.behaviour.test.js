@@ -54,6 +54,20 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("\n Test environment ready\n");
   });
 
+  // Marks every page this suite loads as synthetic before any of its own scripts run, so
+  // analytics.js's visitor_kind classification (and any server-side request tagging) reads it
+  // on the very first page and every navigation after, the way behaviour-tests/helpers/
+  // gotoWithRetries.js marks each page it drives in the submit.diyaccounting.co.uk repo.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.sessionStorage.setItem("requestIdPrefix", "test_");
+      } catch {
+        /* private browsing or storage disabled: the page just reads as human */
+      }
+    });
+  });
+
   test("Index page loads with product catalogue", async ({ page }) => {
     addOnPageLogging(page);
 

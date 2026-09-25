@@ -25,6 +25,49 @@ const GA4_LINKER_DOMAINS = ["diyaccounting.co.uk", "spreadsheets.diyaccounting.c
 gtag("js", new Date());
 gtag("config", "G-X4ZPD99X2K", { linker: { domains: GA4_LINKER_DOMAINS } });
 
+// This is a plain script, loaded before any module, so it keeps its own copy of the same
+// crawler/agent list and the same behaviour-test marker Submit's web/public/lib/analytics.js
+// classifies visits with (kept in step by web/unit-tests/analytics.test.js).
+const GA4_BOT_USER_AGENT_PATTERNS = [
+  "googlebot",
+  "bingbot",
+  "applebot",
+  "slurp",
+  "duckduckbot",
+  "baiduspider",
+  "yandexbot",
+  "claudedesktop",
+  "chatgpt-user",
+  "perplexity-user",
+  "google-extended",
+  "diyaccounting-probe-monitor",
+];
+
+// Classifies this session for the visitor panels: "bot" for crawlers, AI agents and the
+// canaries; "synthetic" for the behaviour-test suites, which mark themselves by setting
+// requestIdPrefix in sessionStorage; "human" otherwise.
+function classifyVisitorKindForGa4() {
+  let userAgent = "";
+  try {
+    userAgent = (navigator.userAgent || "").toLowerCase();
+  } catch {
+    userAgent = "";
+  }
+  if (GA4_BOT_USER_AGENT_PATTERNS.some((pattern) => userAgent.includes(pattern))) {
+    return "bot";
+  }
+  try {
+    if (sessionStorage.getItem("requestIdPrefix") === "test_") {
+      return "synthetic";
+    }
+  } catch {
+    // sessionStorage unavailable: fall through to human
+  }
+  return "human";
+}
+
+gtag("set", "user_properties", { visitor_kind: classifyVisitorKindForGa4() });
+
 // Dynamically load gtag.js (CSP: no inline scripts allowed)
 const script = document.createElement("script");
 script.async = true;
