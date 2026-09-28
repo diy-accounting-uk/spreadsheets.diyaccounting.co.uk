@@ -742,21 +742,30 @@
     );
   }
 
-  // Journey step 2 of the Drive design: a subscribed reader with no Drive
-  // token sees this above the list; the Drive save item opens the panel
-  // straight onto it. panelState.driveConnectMessage carries the refused
-  // or expired wording, cleared the next time the row would not show.
-  function renderDriveConnectRow(entitlement) {
-    var reason = entitlement && entitlement.reason;
-    if (reason !== "active-subscription") return "";
-    if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) return "";
-    var message = panelState.driveConnectMessage;
-    return (
-      '<div class="account-drive-connect">' +
-      (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
-      '<button type="button" class="btn" data-action="connect-drive">Connect Google Drive</button>' +
-      "</div>"
-    );
+  // Drive's own panel state: a browser-only save and open, reached from the
+  // save menu's "Save to my Google Drive" item with no Submit sign-in and
+  // no entitlement check. panelState.driveConnectMessage carries the
+  // refused or expired wording, cleared the next time the card would not
+  // show. Connected, the rows below reuse renderBookRow -- toBookRow() in
+  // drive.js already shapes a Drive file the same way an account book
+  // arrives from Submit's list.
+  function renderDrive(state) {
+    if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) {
+      var message = state.driveConnectMessage;
+      return (
+        '<p class="account-panel-head">Save this book to a "DIYA-GL" folder in your own Google Drive.</p>' +
+        (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
+        '<button type="button" class="btn btn-primary" data-action="connect-drive">Connect Google Drive</button>'
+      );
+    }
+    var sorted = (state.books || []).slice().sort(function (a, b) {
+      return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
+    var rowsHtml = sorted.length
+      ? sorted.map(renderBookRow).join("")
+      : '<p class="account-empty">No books in your Google Drive folder yet.' + (current ? " Save this book to Google Drive." : "") + "</p>";
+    return '<div class="account-panel-head">Your Google Drive</div>' + rowsHtml;
   }
 
   function renderList(books, entitlement, session) {
@@ -772,7 +781,6 @@
       '<div class="account-panel-head">' +
       esc((session.user && session.user.email) || "Your account") +
       "</div>" +
-      renderDriveConnectRow(entitlement) +
       rowsHtml +
       renderEntitlement(entitlement) +
       '<button type="button" class="btn" data-action="sign-out">Sign out</button>'
@@ -1042,6 +1050,10 @@
       mountDeviceRow();
       return;
     }
+    if (panelState.status === "drive") {
+      setPanelContent(renderDrive(panelState));
+      return;
+    }
     setPanelContent(renderSignedOut());
   }
 
@@ -1071,9 +1083,13 @@
     return messageForApiError({ status: (error && error.status) || 0 });
   }
 
+  // An expired token whose silent re-request came back empty, or any other
+  // Drive error, drops back to the Connect card -- drive.js has already
+  // cleared the token on a 401/403.
   function handleDriveError(error) {
     if (error && error.name === "DriveSignedOutError") {
-      fetchBooksList();
+      panelState = { status: "drive" };
+      renderPanel();
       return;
     }
     panelState = { status: "error", message: driveErrorMessage(error) };
@@ -1093,36 +1109,33 @@
     });
   }
 
-  // Listing and opening stay available whenever a Drive token is held,
-  // subscribed or not -- those files are the reader's own. A listing
-  // failure (an expired token whose silent re-request came back empty, or
-  // any other Drive error) drops back to the account's own books rather
-  // than failing the whole panel: drive.js has already cleared the token on
-  // a 401/403, so the Connect row is what the reader sees next.
-  function mergeDriveBooks(accountBooks) {
-    if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) return Promise.resolve(accountBooks);
-    return window.DiyaGlDrive.list()
-      .then(function (driveBooks) {
-        return accountBooks.concat(driveBooks);
-      })
-      .catch(function () {
-        return accountBooks;
-      });
-  }
-
   function fetchBooksList() {
     panelState = { status: "loading" };
     openPanel();
     return fetchAllBooks()
       .then(function (result) {
         trackSandboxExpiry(result.books);
-        return mergeDriveBooks(result.books).then(function (merged) {
-          panelState = { status: "list", books: merged, entitlement: result.entitlement };
-          renderPanel();
-        });
+        panelState = { status: "list", books: result.books, entitlement: result.entitlement };
+        renderPanel();
       })
       .catch(function (error) {
         handlePanelError(error);
+      });
+  }
+
+  // Drive's own list, reached with no Submit session and no /books call of
+  // any kind -- separate from the account's S3 books fetchBooksList()
+  // fetches.
+  function fetchDriveList() {
+    panelState = { status: "loading" };
+    openPanel();
+    return window.DiyaGlDrive.list()
+      .then(function (books) {
+        panelState = { status: "drive", books: books };
+        renderPanel();
+      })
+      .catch(function (error) {
+        handleDriveError(error);
       });
   }
 
@@ -1223,7 +1236,7 @@
       .then(function () {
         var driveLink = getDriveLink();
         if (driveLink && driveLink.fileId === book.driveFileId) setDriveLink(null);
-        return fetchBooksList();
+        return fetchDriveList();
       })
       .catch(function (error) {
         handleDriveError(error);
@@ -1518,8 +1531,8 @@
           headRevisionId: driveLink ? driveLink.headRevisionId : null,
           title: bookTitle(current.book),
           product: product,
-          periodStart: info.periodCoveredStart || null,
-          periodEnd: info.periodCoveredEnd || null,
+          periodStart: isoDate(info.periodCoveredStart),
+          periodEnd: isoDate(info.periodCoveredEnd),
           engineVersion: bookProvenance(current.book).engineVersion,
           bytes: artifact.bytes,
         };
@@ -1527,7 +1540,7 @@
           setDriveLink({ fileId: fileMeta.id, headRevisionId: fileMeta.headRevisionId });
           sendDriveSaveEvent(product, driveLink ? "updated" : "created");
           showToastMessage("Saved to your DIYA-GL folder in Google Drive.");
-          if (isPanelOpen()) fetchBooksList();
+          if (isPanelOpen()) fetchDriveList();
         });
       })
       .catch(function (error) {
@@ -1537,7 +1550,8 @@
           return;
         }
         if (error && error.name === "DriveSignedOutError") {
-          fetchBooksList();
+          panelState = { status: "drive" };
+          openPanel();
           return;
         }
         sendDriveSaveEvent(product, "failed");
@@ -1560,7 +1574,7 @@
           pendingDriveSaveRequested = false;
           performDriveSave();
         } else {
-          fetchBooksList();
+          fetchDriveList();
         }
       })
       .catch(function () {
@@ -1574,15 +1588,24 @@
   // The save menu's "Save to my Google Drive" item: a token already held
   // saves straight away; otherwise the panel opens on the Connect card and
   // the save runs once the reader connects.
+  // The save menu's only Drive entry point, so it doubles as "open": the
+  // panel opens every time, not only on the first connect, or a reader
+  // already connected in this tab would never see a book they saved from
+  // another device.
   function saveToDrive() {
     var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     if (!current) return;
     if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) {
+      panelState = { status: "loading" };
+      openPanel();
       performDriveSave();
       return;
     }
+    // No Submit session, no /books call -- this opens the panel straight
+    // on the Connect card.
     pendingDriveSaveRequested = true;
-    fetchBooksList();
+    panelState = { status: "drive" };
+    openPanel();
   }
 
   // A Drive row's versions are not carried in the list response (unlike an

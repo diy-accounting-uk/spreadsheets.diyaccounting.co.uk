@@ -3,13 +3,13 @@
 
 // diya-gl/drive.js
 //
-// Google Drive as a second store for a DIYA-GL book (PLAN_DIYA_GL_LAUNCH.md,
-// "LP-24 design: Google Drive as a second store"). Cognito's hosted UI never
-// carries a Google Drive token -- Google's own token stays out of the user
-// pool -- so this file asks Google for one of its own, scoped to
-// drive.file (files this page creates, nothing else in the reader's Drive),
-// and keeps it in sessionStorage under the same "diya-gl.cloud." prefix
-// cloud.js already clears on sign-out.
+// Google Drive as a second store for a DIYA-GL book, free and browser-only
+// -- no Submit sign-in, no subscription. Cognito's hosted UI never carries
+// a Google Drive token -- Google's own token stays out of the user pool --
+// so this file asks Google for one of its own, scoped to drive.file (files
+// this page creates, nothing else in the reader's Drive), and keeps it in
+// sessionStorage under the same "diya-gl.cloud." prefix cloud.js already
+// clears on sign-out.
 //
 // Pure functions: buildMetadata, driveFileName, titleFromFileName,
 // toBookRow, multipartBody. Everything else either holds the module's own
@@ -17,8 +17,8 @@
 //
 // cloud.js calls into the surface this file publishes on window.DiyaGlDrive;
 // nothing here calls back into cloud.js or shell.js except reading the
-// signed-in session's email (for the consent screen's hint) and the
-// "diya-gl:entitlement" event cloud.js already dispatches.
+// signed-in session's email, when one exists, for the consent screen's
+// hint.
 (function () {
   "use strict";
 
@@ -58,7 +58,7 @@
     }
   }
 
-  // ============================== configuration and entitlement ==============================
+  // ============================== configuration ==============================
 
   function isConfigured() {
     var config = window.DIYA_GL_CLOUD_CONFIG;
@@ -68,18 +68,10 @@
     return isHttps || isLocal;
   }
 
-  // The save item and the Connect row show only for a subscribed reader
-  // (entitlement.reason "active-subscription"); cloud.js's fetchAllBooks
-  // already dispatches this event on every list, so this file tracks it
-  // without calling back into cloud.js.
-  var lastEntitlementReason = null;
-
-  document.addEventListener("diya-gl:entitlement", function (event) {
-    lastEntitlementReason = event.detail && event.detail.reason;
-  });
-
+  // The save item shows whenever a Drive client id is configured -- no
+  // Submit sign-in, no subscription.
   function isOffered() {
-    return isConfigured() && lastEntitlementReason === "active-subscription";
+    return isConfigured();
   }
 
   // ============================== the token ==============================
