@@ -952,6 +952,62 @@ test.describe("DIYA-GL page — save to my account", () => {
     ]);
   });
 
+  // With no link of its own (a fresh tab never saved this book before, or
+  // the same example re-saved after a reload lost the tab's sessionStorage)
+  // a save that matches an existing book on title, product and period lands
+  // straight on that book: no "Update it, or save as a new book?" prompt
+  // sits between the reader and one more account holding a duplicate.
+  test("a save with no link and a matching book already in the account updates that book, with no prompt", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+
+    const putRequests = [];
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [
+            {
+              bookId: "existing-book",
+              title: "Precision Code Trading",
+              product: "bst",
+              latestVersion: 3,
+              latestETag: "existing-etag",
+              latestSize: 15000,
+              updatedAt: "2026-09-13T09:00:00.000Z",
+              periodCoveredStart: "2025-04-01",
+              periodCoveredEnd: "2026-03-31",
+              versions: [],
+              provenance: {},
+            },
+          ],
+        }),
+      });
+    });
+    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
+      if (route.request().method() !== "PUT") return route.continue();
+      putRequests.push({ bookId: route.request().url().split("/").pop(), ifMatch: route.request().headers()["if-match"] || null });
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ metadata: { latestETag: "existing-etag-2", latestVersion: 4 } }),
+      });
+    });
+
+    await page.click("#save-btn");
+    await page.getByRole("menuitem", { name: "Save to my account", exact: true }).click();
+
+    await expect(page.locator("#toast")).toContainText("Saved to your account as version 4.", { timeout: 10_000 });
+    await expect(page.locator("#account-panel")).toBeHidden();
+
+    expect(putRequests).toEqual([{ bookId: "existing-book", ifMatch: '"existing-etag"' }]);
+    expect(await gaEvents(page, "cloud_save")).toEqual([{ product: "bst", outcome: "updated" }]);
+  });
+
   test("a 412 shows the conflict card; saving as a new book carries a fresh id and no If-Match", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);
