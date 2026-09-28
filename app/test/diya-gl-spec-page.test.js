@@ -49,4 +49,8 @@ describe("the diya-gl spec page", () => {
       expect(published, `lines schema field ${field} is missing from the page`).toContain(`${field}<`);
     }
   });
+
+  it("carries a DIYA-GL entry in the top nav, linking back to diya-gl.co.uk", () => {
+    expect(published).toContain('<a href="https://diya-gl.co.uk/">DIYA-GL</a>');
+  });
 });

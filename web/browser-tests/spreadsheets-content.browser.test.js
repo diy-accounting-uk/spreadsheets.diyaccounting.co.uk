@@ -95,7 +95,32 @@ test.describe("Spreadsheets index.html", () => {
 
     const donateLink = page.locator('.top-nav a[href="donate.html"]');
     await expect(donateLink).toBeVisible();
+
+    const diyaGlLink = page.locator('.top-nav a[href="https://diya-gl.co.uk/"]');
+    await expect(diyaGlLink).toBeVisible();
+    await expect(diyaGlLink).toHaveText("DIYA-GL");
   });
+
+  test("has a DIYA-GL product card linking to diya-gl.co.uk", async ({ page }) => {
+    await page.setContent(readHtml("index.html"), { waitUntil: "domcontentloaded" });
+
+    const card = page.locator(".product-card", { hasText: "DIYA-GL" });
+    await expect(card).toBeVisible();
+    await expect(card.locator('a[href="https://diya-gl.co.uk/"]').first()).toBeVisible();
+  });
+});
+
+test.describe("Spreadsheets top navigation carries the DIYA-GL link", () => {
+  const topLevelHtmlFiles = fs.readdirSync(publicDir).filter((f) => f.endsWith(".html"));
+
+  for (const file of topLevelHtmlFiles) {
+    test(`${file} top nav links to diya-gl.co.uk`, async ({ page }) => {
+      await page.setContent(readHtml(file), { waitUntil: "domcontentloaded" });
+
+      const diyaGlLink = page.locator('.top-nav a[href="https://diya-gl.co.uk/"]');
+      await expect(diyaGlLink).toHaveCount(1);
+    });
+  }
 });
 
 test.describe("Spreadsheets download.html", () => {
@@ -180,6 +205,28 @@ test.describe("Books pages have a footer", () => {
       expect(footerText).toContain("2006-2026");
     });
   }
+});
+
+test.describe("DIYA-GL pages link back to Submit and Spreadsheets", () => {
+  const productFiles = ["index.html", "bst.html", "se.html", "ltd.html", "taxi.html"];
+
+  for (const file of productFiles) {
+    test(`${file} footer links to submit.diyaccounting.co.uk and spreadsheets.diyaccounting.co.uk`, async ({ page }) => {
+      await page.setContent(readBooksHtml(file), { waitUntil: "domcontentloaded" });
+
+      const footer = page.locator("footer");
+      await expect(footer.locator('a[href="https://submit.diyaccounting.co.uk/"]')).toBeVisible();
+      await expect(footer.locator('a[href="https://spreadsheets.diyaccounting.co.uk/"]')).toBeVisible();
+    });
+  }
+
+  test("index.html home strip links to submit.diyaccounting.co.uk and spreadsheets.diyaccounting.co.uk", async ({ page }) => {
+    await page.setContent(readBooksHtml("index.html"), { waitUntil: "domcontentloaded" });
+
+    const homeStrip = page.locator(".home-strip");
+    await expect(homeStrip.locator('a[href="https://submit.diyaccounting.co.uk/"]')).toBeVisible();
+    await expect(homeStrip.locator('a[href="https://spreadsheets.diyaccounting.co.uk/"]')).toBeVisible();
+  });
 });
 
 test.describe("All HTML pages have required structure", () => {

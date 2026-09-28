@@ -2548,18 +2548,21 @@ table.kv-table tr.total td {
   border-bottom: 1px solid var(--rule-faint);
 }
 .home-products,
-.runner-row {
+.runner-row,
+.cross-links {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
 }
 .home-products .caps-label,
-.runner-row .caps-label {
+.runner-row .caps-label,
+.cross-links .caps-label {
   flex-basis: 100%;
 }
 .home-products a,
-.runner-row a {
+.runner-row a,
+.cross-links a {
   display: inline-block;
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--rule);
@@ -2571,7 +2574,8 @@ table.kv-table tr.total td {
   white-space: nowrap;
 }
 .home-products a:hover,
-.runner-row a:hover {
+.runner-row a:hover,
+.cross-links a:hover {
   background: var(--tint);
   border-color: var(--rule-dark);
   color: var(--rule-dark);

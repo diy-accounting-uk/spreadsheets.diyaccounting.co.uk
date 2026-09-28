@@ -611,6 +611,7 @@ function pageShell({ title, description, canonical, body }) {
 
     <nav class="top-nav" aria-label="Main navigation">
       <a href="../index.html">Products</a>
+      <a href="https://diya-gl.co.uk/">DIYA-GL</a>
       <a href="../download.html">Download</a>
       <a href="../knowledge-base.html">Knowledge Base</a>
       <a href="../community.html">Community</a>
