@@ -391,6 +391,8 @@ test.describe("DIYA-GL page — the sign-in return", () => {
     await openAccountPanel(page);
     await page.locator("#account-panel").getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL((url) => !url.search.includes("code="), { timeout: 10_000 });
+    // The login event follows the token exchange, which finishes after the URL is cleaned.
+    await expect(page.locator("#account-btn")).toHaveAttribute("title", "reader@example.com");
 
     const loggedIn = await gaEvents(page, "login");
     expect(loggedIn).toEqual([{ method: "Google" }]);
