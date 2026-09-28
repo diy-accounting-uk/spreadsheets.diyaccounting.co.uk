@@ -8,19 +8,19 @@
 
 **After compaction or at session start:**
 
-1. Read all `PLAN_*.md` files in the project root — these are the active goals
+1. Read `../submit.diyaccounting.co.uk/NEXT.md` and the `PLAN_*.md` files at that root — this repository's board and plans live there (`NEXT.md` here only points to them)
 2. Run `TaskList` to see tracked tasks with status
 3. Do NOT start new work without checking these first
 
 **During work:**
 
-- When the user gives a new requirement, add it to the relevant `PLAN_*.md` or create a new one
+- When the user gives a new requirement, add it to the relevant `PLAN_*.md` in `../submit.diyaccounting.co.uk/` or create a new one there, and its row to that repository's `NEXT.md`
 - Track all user goals as Tasks with status (pending -> in_progress -> completed)
 - Update `PLAN_*.md` with progress before context gets large
 
 **PLAN file pattern:**
 
-- Active plans live at project root: `PLAN_<DESCRIPTION>.md`
+- Active plans live at `../submit.diyaccounting.co.uk/`'s root: `PLAN_<DESCRIPTION>.md`
 - Each plan has user assertions verbatim at the top (non-negotiable requirements)
 - Plans track problems, fixes applied, and verification criteria
 - If no plan file exists for the current work, create one before starting
