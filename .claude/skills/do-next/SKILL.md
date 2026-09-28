@@ -1,24 +1,26 @@
 ---
 name: do-next
-description: Work NEXT.md top to bottom as waves of concurrent worktree sub-agents, land them on one branch, push in batches, raise one PR, and hand over to /watch. Invoke when the operator says "do next", "work the backlog", "clear NEXT.md", or when a landed batch leaves items still open.
+description: Work the board (../submit.diyaccounting.co.uk/NEXT.md) top to bottom as waves of concurrent worktree sub-agents, land them on one branch, push in batches, raise one PR, and hand over to /watch. Invoke when the operator says "do next", "work the backlog", "clear NEXT.md", or when a landed batch leaves items still open.
 ---
 
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
-# do-next — work `NEXT.md` with the coordinator model
+# do-next — work the board with the coordinator model
 
 You are the coordinator. You plan, dispatch, merge, push and answer the operator. You do not
 write the code. **Keep the main chat free for chat**: anything long-running goes to a sub-agent
 or a background task.
 
-Work `NEXT.md` top to bottom, taking the unblocked items. As an item's blocker clears, promote it
-to ready and resequence the board. Then keep going, top to bottom, until the board is empty or the
-operator stops you. An approved plan is the authorisation: a green suite, a landed wave and a tidy
-summary are the middle of the work, not the end of it.
+Work the board (`../submit.diyaccounting.co.uk/NEXT.md`) top to bottom, taking the rows that
+change this repository — CQ-*, LP-*, F-BS2, MK-2, as its intro line names them — and are
+unblocked. As an item's blocker clears, promote it to ready and resequence the board. Then keep
+going, top to bottom, until no such row remains or the operator stops you. An approved plan is the
+authorisation: a green suite, a landed wave and a tidy summary are the middle of the work, not the
+end of it.
 
-Plans of record are `PLAN_*.md` at this repo's root. `NEXT.md`'s own shape rules are in
-`../NEXT.md` and in this repo's `CLAUDE.md`.
+Plans of record are `PLAN_*.md` at `../submit.diyaccounting.co.uk/`'s root. The board's own shape
+rules are in `../NEXT.md` and in this repo's `CLAUDE.md`.
 
 ## If cool-down is on, wake first
 
@@ -26,7 +28,7 @@ The operator invoking this skill is the operator lifting cool-down in their own 
 backlog" and "stay cool" cannot both be true, and cool-down forbids exactly the dispatch this skill
 exists to do.
 
-So when `NEXT.md` carries the cool-down marker, **run `/wake` first and in full** — all seven steps
+So when the board carries the cool-down marker, **run `/wake` first and in full** — all seven steps
 of the cool-down skill's "Waking up" section, in order. Waking ends with a board render, so that
 render is this skill's `/board` step; do not render twice.
 
@@ -39,7 +41,7 @@ says a batch is stacking problems faster than it lands them.
 
 ## Start with `/board`
 
-**Invoke `/board` before dispatching anything.** It reads `NEXT.md` fresh, puts the rows in order,
+**Invoke `/board` before dispatching anything.** It reads the board fresh, puts the rows in order,
 and reports the things that decide what this batch should contain: the GitHub scan, the live ci and
 prod deployments, and a branch audit. It also writes the sequenced board back, so the order you then
 work is the order on disk rather than one you hold in your head.
@@ -84,8 +86,11 @@ A branch deployment is expensive and slow, so everything that can share a deploy
 branch is `claude/<codename>-<theme>` (see Naming the batch), taken from `main`. Every sub-agent worktree branches from **the
 batch branch**, not from `main`, so each wave builds on what the last one landed.
 
+When an open PR shares files with the batch, the batch does not simply fork from `main` and push:
+see "Before the first push of a batch" under Pushing for the check and the fix.
+
 Give the batch branch its own worktree and leave the primary checkout on `main`. You merge into the
-batch worktree; you edit `NEXT.md` on `main`.
+batch worktree; you edit the board in `../submit.diyaccounting.co.uk/`, not here.
 
 ### Naming the batch
 
@@ -109,10 +114,10 @@ name here is built from a branch name, so the only limit is the branch dropdown.
 
 No match means none has run yet: start at `arclight`. The batch's worktree is named for its code name.
 
-**`NEXT.md` never travels on the batch branch.** The board is maintained on `main` under the docs
-exception. A second copy on the branch guarantees a conflict at merge time, and two sub-agents
-editing it guarantees a lost row. If a merge drags `NEXT.md` onto the batch, restore it to the
-branch point in the same commit.
+**This repo's own `NEXT.md` never travels on the batch branch.** It is a pointer to the board
+(`../submit.diyaccounting.co.uk/NEXT.md`), which sits in a separate repository and so never rides
+this repo's batch branch at all. If a merge drags this repo's own `NEXT.md` pointer onto the
+batch, restore it to the branch point in the same commit, the same as any other doc file.
 
 ## Waves
 
@@ -127,7 +132,7 @@ next item would have to share a file with one already dispatched.
    `app/products/*.js` (per-product cell mapping and reconciliation), `app/data/*.toml` (tax rate
    data, one file per year), `app/templates/**` (the xlsx templates),
    `web/spreadsheets.diyaccounting.co.uk/public/**` (site pages, including the DIYA-GL pages under
-   `/diya-gl/`), `cdk-spreadsheets/**`, `.github/workflows/**`, and the root `PLAN_*.md` documents.
+   `/diya-gl/`), `cdk-spreadsheets/**`, and `.github/workflows/**`.
 2. **Items that share a file are one workstream, so give them to one agent in one brief.** Not one
    per wave with the rest queued behind: that turns a file boundary into three round trips and the
    later items wait for nothing. Say "do A, then B, then C on these files, a commit per item", give
@@ -177,7 +182,7 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
 
 - **Its worktree path and branch**, and that it works only there. It may `git add` its own files
   and commit. Never `git stash`, `git reset`, `git checkout --` or `git clean`. Never push, never
-  open a PR, never edit `NEXT.md`.
+  open a PR, never edit `NEXT.md` or the board (`../submit.diyaccounting.co.uk/NEXT.md`).
 - **Every Bash call starts with `cd <worktree>` or uses `git -C <worktree>`**, because a shell that
   starts in the primary checkout edits `main` and leaves work uncommitted there.
 - **Every Read, Edit and Write path is absolute under the worktree**, not only the Bash `cd`. The
@@ -297,12 +302,15 @@ Merge each workstream as its notification arrives. Do not hold them for the end.
   The pre-push hook now refuses any branch push whose diff against `main` touches `NEXT.md`. If it
   fires, fix it with `git checkout origin/main -- NEXT.md && git commit`.
 - Run that change's blast radius on the merged tree, not the agent's own report.
-- Update `NEXT.md` on `main` in the same breath: mark the item code complete, and remove it only
-  once its checks pass. A bug the agent surfaced is that item's remainder, not a new item, unless
-  it is genuinely separate work — then say so explicitly rather than deciding quietly.
+- Update the board in the same breath: in `../submit.diyaccounting.co.uk/`, edit `NEXT.md` to mark
+  the item code complete and remove it only once its checks pass, run `npx vitest run
+  app/unit-tests/nextShape.test.js` there, commit `NEXT.md` alone, and push that repository's
+  `main` as its own command (its own docs exception: a Markdown-only commit goes straight to
+  `main`). A bug the agent surfaced is that item's remainder, not a new item, unless it is
+  genuinely separate work — then say so explicitly rather than deciding quietly.
 
 When a landed workstream's diff touches only Markdown files (`.md` anywhere: `.claude/**/SKILL.md`,
-`CLAUDE.md`, `PLAN_*.md`, `README.md`), land it on `main` directly under the docs exception in
+`CLAUDE.md`, `README.md`), land it on `main` directly under the docs exception in
 this repository's `CLAUDE.md`, shared conventions section ("commits touching ONLY `.md` files may be pushed directly to `main`"), from the
 batch worktree or a cherry-pick onto `main`. The batch and `main` both edit those files between
 batches, so a docs row on the batch is a merge conflict waiting for the PR, and the conflict costs
@@ -320,7 +328,7 @@ rides the batch.
   removal as one fenced block with the `!` prefix and carry on. The `/board` render lists every
   such worktree and branch again until it is gone. Nothing waits on the removal.
 
-**Editing `NEXT.md` is where rows get lost.** Never replace the slice between two markers unless
+**Editing the board is where rows get lost.** Never replace the slice between two markers unless
 you have checked they are adjacent — an edit that removes what it did not name is invisible until
 someone counts the rows. Split on the row boundary, filter by row key, and rejoin.
 
@@ -339,6 +347,16 @@ see this repo's `CLAUDE.md`.
 Before any push, check **every** deploy workflow for that branch — `deploy` and `deploy-holding`
 here, and `deploy` carries both the stack and the smoke test in one run. Confirm they are finished
 by reading the runs, not by assuming elapsed time.
+
+**Before the first push of a batch, check every open PR for file overlap.**
+`gh pr list --state open --json number,headRefName` then diff each head's files
+(`git diff --name-only origin/main...<pr-branch>`) against the batch's own changed files
+(`git diff --name-only main...<batch-branch>`). When one overlaps, fork the batch from that PR's
+merged tip once it lands, or merge that tip into the batch before pushing — never push a head the
+other PR's own merge then supersedes (PR #135, about 65 job-minutes on the superseded head,
+2026-09-23), and never assert a fact that PR has already changed (PR #134, a 35-minute fix cycle
+after ci deployed the stale head, 2026-09-23). Name the overlapping PR in the board's Status
+(`../submit.diyaccounting.co.uk/NEXT.md`) for every row it touches.
 
 Before the first push of a batch, the routed run (`npm test`, what `.githooks/pre-push` runs) is the
 first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
@@ -400,7 +418,7 @@ and its own PR to `main`.
 ## What not to do
 
 - Do not dispatch around a wake step that will not complete. Say which one and stay cool.
-- Do not let a sub-agent push, merge, open a PR or edit `NEXT.md`.
+- Do not let a sub-agent push, merge, open a PR or edit `NEXT.md` or the board.
 - Do not run the behaviour tier inside a worktree.
 - Do not give a workstream a branch of its own PR when it could ride the batch.
 - Do not push while any deploy workflow for that branch is in flight.

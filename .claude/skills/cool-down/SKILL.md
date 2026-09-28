@@ -21,15 +21,18 @@ and the way up can never drift apart.
 
 ## Turning it on
 
-Write the marker at the top of `NEXT.md`'s `## In flight` section, so it survives a compaction
-and any other session reads it:
+Write the marker at the top of the board's (`../submit.diyaccounting.co.uk/NEXT.md`) `## In
+flight` section, so it survives a compaction and any other session reads it:
 
 ```
 **COOL-DOWN is on since <ISO-8601 UTC>.** No new board rows except a degradation. Agents commit
 and stop. One branch is driven green at a time. Lifted only by the operator in their own words.
 ```
 
-Commit that on its own, push it, and say in the reply that it is on and what it forbids.
+In `../submit.diyaccounting.co.uk/`: run `npx vitest run app/unit-tests/nextShape.test.js`,
+commit `NEXT.md` on its own, and push that repository's `main` as its own command (its docs
+exception: a Markdown-only commit goes straight to `main`). Say in the reply that it is on and
+what it forbids.
 
 **Stop the loop and the watch in the same turn.** If `/iterate` is running, end it with
 `ScheduleWakeup` `stop: true`; if a `/watch` Monitor is armed, `TaskStop` it. Neither is
@@ -137,14 +140,17 @@ serialised until it is settled.
 
 This is the part that is always skipped and always missed later.
 
-- `NEXT.md`: every in-flight and every just-landed item names **its worktree, its branch and its
-  PR**. A row that says work is happening without saying where is not a status.
-- `NEXT.md`: every open row's status line is made true as of now. Closed rows are deleted, not
-  annotated; this file holds open work only.
+- The board (`../submit.diyaccounting.co.uk/NEXT.md`): every in-flight and every just-landed item
+  that names this repository names **its worktree, its branch and its PR**. A row that says work
+  is happening without saying where is not a status.
+- The board: every open row that names this repository has a status line made true as of now.
+  Closed rows are deleted, not annotated; the file holds open work only.
 - Any backlog or tier document this repository keeps is brought into step with the board.
-- `PLAN_*.md`: any plan whose decisions moved during the batch records them, so the plan and the
-  board do not disagree.
-- Commit the documents on their own, separately from any code fix, so the history reads.
+- `PLAN_*.md` at `../submit.diyaccounting.co.uk/`'s root: any plan whose decisions moved during
+  the batch records them, so the plan and the board do not disagree.
+- Commit the documents on their own, separately from any code fix, so the history reads. `NEXT.md`
+  and the `PLAN_*.md` files commit and push in `../submit.diyaccounting.co.uk/`, as its own
+  command; anything local to this repository commits here.
 
 **Waking:** the documents are current, so they are the source for what to dispatch. Read them;
 do not work from memory of what the batch was doing. Where a row and your recollection disagree,
@@ -155,7 +161,7 @@ the row wins, or the row is wrong and fixing it is the first action.
 Both directions keep the board honest as they go, not only at the end.
 
 **Resequence as statuses change.** Whenever a row's state, owner or tier position moves, move
-the row in `NEXT.md` at the same time. An item whose blocker cleared rises to its ready section;
+the row in the board at the same time. An item whose blocker cleared rises to its ready section;
 one that gained a blocker drops to `## Blocked`; a new degradation goes to the top of its
 section as tier 1. The order is the one the `board` skill defines, and a row left in the wrong
 section is a status that lies.
@@ -197,7 +203,9 @@ The order matters, because each step depends on the one before:
    stacks a second branch on the first. Merging what is genuinely ready is the cheapest thing that
    reduces what is outstanding, and it is the one step here that shortens the list rather than
    reading it.
-2. Delete the cool-down marker from `NEXT.md`.
+2. Delete the cool-down marker from the board (`../submit.diyaccounting.co.uk/NEXT.md`), the same
+   way it was written: `npx vitest run app/unit-tests/nextShape.test.js` in that repository,
+   commit `NEXT.md` on its own, push that repository's `main` as its own command.
 3. Account for every hotfix branch (rule 2's Waking note).
 4. Walk every worktree still on disk for uncommitted work (rule 3's Waking note).
 5. Confirm every branch that was open during cool-down is green or closed AND carries no

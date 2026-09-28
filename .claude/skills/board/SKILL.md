@@ -1,17 +1,22 @@
 ---
 name: board
-description: Render the work board — whether cool-down is on and whether a watch monitor is running, then the table in NEXT.md of every open task with its source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
+description: Render the work board — whether cool-down is on and whether a watch monitor is running, then a table of the board's (../submit.diyaccounting.co.uk/NEXT.md) open rows that change this repository, with source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
 ---
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # board
 
-The board is the `## Board` table in `NEXT.md` at the repo root. It holds every open row
-in full (item, source, owner, precursors, state, status), so rendering never assembles
-rows from a plan: read `NEXT.md` fresh every time, refresh each row's state from
-evidence, render, and write the refreshed table back. A plan (`PLAN_*.md`) is where a
-row's detail lives; the board carries enough to act on without opening it.
+The board is `../submit.diyaccounting.co.uk/NEXT.md`. This repository's rows are the ones its
+intro line names — CQ-*, LP-*, F-BS2, MK-2 — each a bullet under that file's `## Open items`
+(grouped into `## In flight`, `## Machine-only`, `## Machine-ask`, `## Human-driven`,
+`## Blocked`), tagged `**Source**`, `**Owner**`, `**Model**`, `**Size**`. Rendering never
+assembles rows from a plan: read the board fresh every time, refresh each row's state from
+evidence, render this repository's rows as the table below, and write each changed row back into
+its own bullet, in the section its new state puts it in. A plan (`PLAN_*.md`, also at
+`../submit.diyaccounting.co.uk/`) is where a row's detail lives; the board carries enough to act
+on without opening it. This repo's own `NEXT.md` is a pointer to the board above, not the board
+itself.
 
 ## Output shape
 
@@ -23,18 +28,18 @@ while the sum of its minimum column widths fits the window; past that it degrade
 key-value list, which the operator has rejected (2026-09-22). The minimum width of a column is its
 longest unbroken token, so in the chat render no cell carries a token over about 20 characters:
 a plan is named in words (`launch plan`, `Submit price plan`, `session report 2026-09-21`), a
-file by a phrase (`the behaviour test`), a size as `~1`. `NEXT.md` keeps the full names; only
+file by a phrase (`the behaviour test`), a size as `~1`. The board keeps the full names; only
 the chat render shortens them.
 
 ## The mode header
 
 One line, before the table, saying two things. Both are read, never assumed.
 
-**Is cool-down on?** It writes a marker into `NEXT.md`'s `## In flight` section, so the file
+**Is cool-down on?** It writes a marker into the board's `## In flight` section, so the file
 you are already reading answers it:
 
 ```bash
-grep -c "COOL-DOWN is on since" NEXT.md
+grep -c "COOL-DOWN is on since" ../submit.diyaccounting.co.uk/NEXT.md
 ```
 
 Report it as on with its timestamp, or off. **If it is on, it changes this skill's own
@@ -69,7 +74,7 @@ a task can be stopped, and a completed one stops notifying.
   opens are `CQ-1`, `CQ-2`, … Ids never renumber.
 - `Item`: the task's name, short, from the plan where one exists.
 - `Source`: the plan file name (`PLAN_DIYA_GL_LAUNCH.md`), `operator` for an
-  instruction given in chat that no plan yet carries, or `none` for a row `NEXT.md` holds
+  instruction given in chat that no plan yet carries, or `none` for a row the board holds
   on its own.
 - `Needs`: exactly one of `machine-only`, `machine-ask`, `human-driven` — what it takes to
   carry the row to completion, not who happens to own it now.
@@ -173,8 +178,8 @@ a task can be stopped, and a completed one stops notifying.
   the exact command in a fenced block, `!`-prefixed, so the operator can paste it into this chat
   or a terminal. Never a description in place of the command. This repo's `CLAUDE.md` has the
   full rule for collecting these into one block.
-- After the table: one line naming the plans `NEXT.md` lists as not tracked there, if
-  any; and one sentence per row the session materially changed since `NEXT.md` was last
+- After the table: one line naming the plans the board lists as not tracked there, if
+  any; and one sentence per row the session materially changed since the board was last
   written. No other commentary.
 
 ## Part 2 — the GitHub scan
@@ -203,8 +208,8 @@ Dependabot alert, and per code-scanning rule family (one row per rule id, files 
   is closed to everything but a degradation: the finding goes to `PARKED.md` instead and its
   `Board row` reads `parked`. Otherwise, a finding whose action is `fix`, `bump` or
   `investigate` belongs to an existing row (a row whose worktree already touches that
-  file, or a plan task that covers it) or gets a new `CQ-n` row (`Source` `none`,
-  `Needs` `machine-only`, `Size` and `Model` filled in). `keep open and watch` and `close as
+  file, or a plan task that covers it) or gets a new `CQ-n` row on the board under
+  `## Machine-only` (`Source` `none`, `Size` and `Model` filled in). `keep open and watch` and `close as
   stale` need no row; `close as stale` findings are listed in the render. **Never close,
   label or comment on an issue or alert while rendering the board.** A render is a
   read-and-report pass: it must not change GitHub state, or the thing being reported moves
@@ -276,8 +281,15 @@ a note in `Action`: rename before its next push.
 
 ## Write-back
 
-Replace the `## Board` table in `NEXT.md` with the rendered one minus the `D` rows
-(`NEXT.md` holds only what is next; the session's done rows live in `git log`), including
-any `CQ-n` rows Part 2 opened. Parts 3 and 4 are rendered, never written to `NEXT.md`.
-Run `npx prettier --write NEXT.md`, commit the `NEXT.md`-only change to `main` (the docs
-exception allows a direct push) and push.
+In `../submit.diyaccounting.co.uk/`: write each of this repository's changed rows back into its
+own bullet under the board's matching section (`## In flight`, `## Machine-only`, `## Machine-ask`,
+`## Human-driven`, `## Blocked`), moving it between sections as its state changes, and add any new
+`CQ-n` row Part 2 opened, matching the shape (`**ID. Title.**`, prose, `**Source**`, `**Owner**`,
+`**Model**`, `**Size**`) its existing rows already use. Drop the `D` rows (the board holds only
+what is next; the session's done rows live in `git log`). Parts 3 and 4 are rendered, never
+written to the board. The file is shared with sessions working in the submit repository: follow
+that repository's own board skill (`../submit.diyaccounting.co.uk/.claude/skills/board/SKILL.md`,
+its Rules on section order and write-back) for where a row goes, touch only this repository's rows,
+and never reformat the file. Pull that repository's `main` first, run `npx vitest run
+app/unit-tests/nextShape.test.js` there, commit the `NEXT.md`-only change to that
+repository's `main` (its docs exception allows a direct push) and push.
