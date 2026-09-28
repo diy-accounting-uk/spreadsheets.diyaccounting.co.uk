@@ -71,8 +71,10 @@ function plan(dir, baseRef) {
   return execFileSync("node", ["scripts/test-scope.mjs", "--plan", "--base", baseRef], { cwd: dir, encoding: "utf8", env });
 }
 
-function codeTreeHash(dir) {
-  return execFileSync("node", ["scripts/test-scope.mjs", "--code-tree-hash"], { cwd: dir, encoding: "utf8" }).trim();
+function codeTreeHash(dir, rev) {
+  const args = ["scripts/test-scope.mjs", "--code-tree-hash"];
+  if (rev) args.push("--rev", rev);
+  return execFileSync("node", args, { cwd: dir, encoding: "utf8" }).trim();
 }
 
 function makeHookRepo() {
@@ -196,6 +198,102 @@ describe("--code-tree-hash strips a tracked Markdown file's content too", () => 
 
     expect(codeTreeHash(dir)).toBe(codeBefore);
     expect(treeHash(dir)).not.toBe(plainBefore);
+  }, 30_000);
+});
+
+// CQ-58: .github/workflows/publish-diya-gl.yml's roll commit bumps
+// package.json's and diya-gl/package.json's "version" field and appends a
+// whole entry to app/data/releases.json, regenerating the reconciled-
+// releases page from it. A scheduled test.yml run checks out whatever
+// commit that roll landed on top of a proven one, so its code-tree hash
+// must match the proven commit's or every tier reruns for no code reason.
+function writeRollFiles(dir, { pkgVersion, releaseCount }) {
+  mkdirSync(join(dir, "diya-gl"), { recursive: true });
+  mkdirSync(join(dir, "app", "data"), { recursive: true });
+  mkdirSync(join(dir, "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation"), { recursive: true });
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "throwaway", version: pkgVersion }, null, 2) + "\n");
+  writeFileSync(
+    join(dir, "diya-gl", "package.json"),
+    JSON.stringify({ name: "@diy-accounting-uk/diya-gl", version: pkgVersion }, null, 2) + "\n",
+  );
+  writeFileSync(
+    join(dir, "app", "data", "releases.json"),
+    JSON.stringify({ releases: Array.from({ length: releaseCount }, (_, i) => ({ tag: `diya-gl-v${i}` })) }, null, 2) + "\n",
+  );
+  writeFileSync(
+    join(dir, "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation", "releases.html"),
+    `<table>${"<tr></tr>".repeat(releaseCount)}</table>\n`,
+  );
+  writeFileSync(
+    join(dir, "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation", "releases.json"),
+    JSON.stringify({ releases: releaseCount }, null, 2) + "\n",
+  );
+}
+
+describe("--code-tree-hash normalises a publish-roll commit", () => {
+  it("hashes a roll (version bump plus a new releases.json entry and regenerated page) the same as before it", () => {
+    const dir = makeRepo();
+    writeRollFiles(dir, { pkgVersion: "1.2.35", releaseCount: 1 });
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    commitAll(dir, "base");
+    const before = codeTreeHash(dir);
+
+    writeRollFiles(dir, { pkgVersion: "1.2.36", releaseCount: 2 });
+    commitAll(dir, "Published diya-gl 1.2.35; next publish is 1.2.36");
+
+    expect(codeTreeHash(dir)).toBe(before);
+  }, 30_000);
+
+  it("still hashes differently when a real source change rides with the roll", () => {
+    const dir = makeRepo();
+    writeRollFiles(dir, { pkgVersion: "1.2.35", releaseCount: 1 });
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    commitAll(dir, "base");
+    const before = codeTreeHash(dir);
+
+    writeRollFiles(dir, { pkgVersion: "1.2.36", releaseCount: 2 });
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 2;\n");
+    commitAll(dir, "roll plus a real change");
+
+    expect(codeTreeHash(dir)).not.toBe(before);
+  }, 30_000);
+
+  it("still hashes differently when package.json gains a real dependency alongside the version bump", () => {
+    const dir = makeRepo();
+    writeRollFiles(dir, { pkgVersion: "1.2.35", releaseCount: 1 });
+    commitAll(dir, "base");
+    const before = codeTreeHash(dir);
+
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ name: "throwaway", version: "1.2.36", dependencies: { "left-pad": "1.0.0" } }, null, 2) + "\n",
+    );
+    commitAll(dir, "roll plus a real dependency");
+
+    expect(codeTreeHash(dir)).not.toBe(before);
+  }, 30_000);
+});
+
+describe("--code-tree-hash honours --rev", () => {
+  it("the working-tree hash (no --rev) equals the rev-based hash of the same checked-out commit", () => {
+    const dir = makeRepo();
+    writeFileSync(join(dir, "README.md"), "before\n");
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    const head = commitAll(dir, "code");
+    expect(codeTreeHash(dir, null)).toBe(codeTreeHash(dir, head));
+  }, 30_000);
+
+  it("hashes an earlier commit's own tree, not the working tree's later state", () => {
+    const dir = makeRepo();
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 1;\n");
+    const earlier = commitAll(dir, "code");
+    const earlierHash = codeTreeHash(dir, earlier);
+
+    writeFileSync(join(dir, "app", "lib", "feature.js"), "export const x = 2;\n");
+    commitAll(dir, "real change");
+
+    expect(codeTreeHash(dir, earlier)).toBe(earlierHash);
+    expect(codeTreeHash(dir)).not.toBe(earlierHash);
   }, 30_000);
 });
 

@@ -10,9 +10,10 @@
 //   npm test -- --all              every tier, every product, full browser suite
 //   npm test -- --base HEAD~1      a different comparison point
 //   npm test -- --plan             print the selection and the estimate, run nothing
-//   npm test -- --tree-hash          print the GREEN marker's key for the current tree, run nothing
-//   npm test -- --tree-hash --rev X  print the same key for commit X's own tree, not the working tree
-//   npm test -- --code-tree-hash     print the same key with every *.md path dropped, run nothing
+//   npm test -- --tree-hash               print the GREEN marker's key for the current tree, run nothing
+//   npm test -- --tree-hash --rev X       print the same key for commit X's own tree, not the working tree
+//   npm test -- --code-tree-hash          print the same key with every *.md path dropped, run nothing
+//   npm test -- --code-tree-hash --rev X  print the same key for commit X's own tree, not the working tree
 //
 // Before any tier runs (but not for --plan), the router refuses to start
 // while a soffice, playwright or vitest process is already live on this
@@ -48,11 +49,21 @@
 // lets a GREEN marker written before the restamp still vouch for the
 // commit pushed after it.
 //
+// Both hashes also normalise what .github/workflows/publish-diya-gl.yml's
+// roll commit changes after every publishing prod deploy: the "version"
+// field it bumps in package.json, its lockfile, and diya-gl's own copies of
+// both (see normaliseRolledVersionFields below), and the whole release
+// record it appends to app/data/releases.json plus the reconciled-releases
+// page regenerated from it, dropped from the index entirely since neither
+// is code a test could exercise. A commit proved GREEN therefore hashes the
+// same before and after the roll that follows it.
+//
 // --code-tree-hash is the same idea one layer up, for CI: test.yml's
 // green-check job hashes the tree with every *.md path removed and looks
 // for a workflow artifact recording an earlier green run at that hash, so
 // a docs-only difference between a PR's merge ref and the merge commit
-// later pushed to main is not run twice.
+// later pushed to main is not run twice, and a scheduled run on a head the
+// roll commit moved past a proven commit reuses that commit's record too.
 
 import { spawn, spawnSync } from "child_process";
 import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync, unlinkSync, copyFileSync } from "fs";
@@ -261,22 +272,27 @@ const MARKER_DIR = join(ROOT, "target", "test-scope");
 const PROVENANCE_FILE = "app/lib/provenance-data.js";
 const ENGINE_VERSION_PATTERN = /engineVersion:\s*"[^"]*"/;
 
-function normaliseEngineVersion(env) {
-  const show = spawnSync("git", ["cat-file", "-p", `:${PROVENANCE_FILE}`], { cwd: ROOT, env, encoding: "utf8" });
+// Blanks path's content in the throwaway index (env carries GIT_INDEX_FILE)
+// by replacing pattern with replacement and writing the result as a new
+// blob at path's existing mode -- never touching the real index. A path
+// this tree does not have (an old commit that predates it, or a throwaway
+// test repo without it) is left alone: cat-file exits non-zero and there is
+// nothing to normalise.
+function blankFileContent(path, pattern, replacement, env) {
+  const show = spawnSync("git", ["cat-file", "-p", `:${path}`], { cwd: ROOT, env, encoding: "utf8" });
   if (show.status !== 0) return;
-  const normalised = show.stdout.replace(ENGINE_VERSION_PATTERN, 'engineVersion: "0.0.0+000000000000"');
+  const normalised = show.stdout.replace(pattern, replacement);
   if (normalised === show.stdout) return;
-  const stage = spawnSync("git", ["ls-files", "--stage", "--", PROVENANCE_FILE], { cwd: ROOT, env, encoding: "utf8" });
+  const stage = spawnSync("git", ["ls-files", "--stage", "--", path], { cwd: ROOT, env, encoding: "utf8" });
   const mode = stage.stdout.trim().split(/\s+/)[0] || "100644";
   const hashObj = spawnSync("git", ["hash-object", "-w", "--stdin"], { cwd: ROOT, env, input: normalised, encoding: "utf8" });
-  if (hashObj.status !== 0)
-    throw new Error(`git hash-object (normalise engineVersion) failed: ${(hashObj.stderr || "").toString().trim()}`);
-  const upd = spawnSync("git", ["update-index", "--cacheinfo", `${mode},${hashObj.stdout.trim()},${PROVENANCE_FILE}`], {
-    cwd: ROOT,
-    env,
-  });
-  if (upd.status !== 0)
-    throw new Error(`git update-index --cacheinfo (normalise engineVersion) failed: ${(upd.stderr || "").toString().trim()}`);
+  if (hashObj.status !== 0) throw new Error(`git hash-object (normalise ${path}) failed: ${(hashObj.stderr || "").toString().trim()}`);
+  const upd = spawnSync("git", ["update-index", "--cacheinfo", `${mode},${hashObj.stdout.trim()},${path}`], { cwd: ROOT, env });
+  if (upd.status !== 0) throw new Error(`git update-index --cacheinfo (normalise ${path}) failed: ${(upd.stderr || "").toString().trim()}`);
+}
+
+function normaliseEngineVersion(env) {
+  blankFileContent(PROVENANCE_FILE, ENGINE_VERSION_PATTERN, 'engineVersion: "0.0.0+000000000000"', env);
 }
 
 // The hash of what the tests actually ran against: tracked content plus
@@ -338,10 +354,15 @@ function workingTreeHash({ withoutDocs = false, rev = null } = {}) {
       }
     }
     if (withoutDocs) {
-      const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
+      // -f: with rev set, the throwaway index holds that commit's own blobs,
+      // which git rm --cached otherwise refuses to drop once they differ
+      // from both the real HEAD and the real working tree -- exactly the
+      // case for any rev that is not the one currently checked out.
+      const rm = spawnSync("git", ["rm", "--cached", "-r", "-q", "-f", "--ignore-unmatch", "--", "*.md"], { cwd: ROOT, env });
       if (rm.status !== 0) throw new Error(`git rm --cached *.md (throwaway index) failed: ${(rm.stderr || "").toString().trim()}`);
     }
     normaliseEngineVersion(env);
+    normaliseRolledVersionFields(env);
     const wt = spawnSync("git", ["write-tree"], { cwd: ROOT, env, encoding: "utf8" });
     if (wt.status !== 0) throw new Error(`git write-tree (throwaway index) failed: ${(wt.stderr || "").trim()}`);
     return wt.stdout.trim();
@@ -438,6 +459,43 @@ function isSelfVersionOnlyChange(path, mergeBase) {
 
 function dropSelfVersionOnlyPaths(paths, mergeBase) {
   return paths.filter((p) => !(SELF_VERSION_FILES.has(p) && isSelfVersionOnlyChange(p, mergeBase)));
+}
+
+// The same publish roll also appends one whole entry to app/data/releases.json
+// (a record of the version just published: engine version, tax-data hash,
+// per-product template hashes and scorecards) and regenerates the reconciled-
+// releases page from it (web/.../reconciliation/releases.html and its sibling
+// releases.json, a release count). All three are pure byproducts of
+// releases.json plus app/bin/build-reconciliation-pages.js: no ROUTES row
+// reads any of them, app/test/build-reconciliation-pages.test.js exercises
+// the generator against a temp file rather than the tracked one, and a real
+// edit to the generator itself still shows up in the hash through its own
+// source file. Dropping them from the index -- the same technique
+// withoutDocs uses for *.md -- keeps a roll-only commit's tree hashing the
+// same as the commit it rolled from.
+const PUBLISH_ROLL_RECORD_FILES = [
+  "app/data/releases.json",
+  "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html",
+  "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json",
+];
+
+// Called from workingTreeHash (defined above, invoked only from main() once
+// this whole module has evaluated): blanks the "version" field the publish
+// roll bumps in package.json, its lockfile, and diya-gl's own copies of both
+// (the same technique normaliseEngineVersion uses for engineVersion), then
+// drops the release-record byproducts above. Together these keep a
+// publish-roll-only commit's tree hashing the same as the commit it rolled
+// from, so a GREEN record written before the roll still vouches for the
+// tree a scheduled run checks out after it.
+function normaliseRolledVersionFields(env) {
+  for (const path of SELF_VERSION_FILES) blankFileContent(path, SELF_VERSION_PATTERN, '"version": "0.0.0"', env);
+  // -f: see the comment beside the *.md removal above -- the same throwaway-
+  // index-vs-real-tree mismatch applies here once rev is set.
+  const rm = spawnSync("git", ["rm", "--cached", "-q", "-f", "--ignore-unmatch", "--", ...PUBLISH_ROLL_RECORD_FILES], {
+    cwd: ROOT,
+    env,
+  });
+  if (rm.status !== 0) throw new Error(`git rm --cached (publish-roll record files) failed: ${(rm.stderr || "").toString().trim()}`);
 }
 
 // ------------------------------------------------------- the import graph
@@ -869,7 +927,10 @@ async function main() {
   if (argv.includes("--code-tree-hash")) {
     // Same hash, with every *.md path dropped first -- see the comment
     // above workingTreeHash() and the one above the GREEN marker section.
-    console.log(workingTreeHash({ withoutDocs: true }));
+    // --rev X hashes commit X's own committed tree, the same as --tree-hash.
+    const revIdx = argv.indexOf("--rev");
+    const rev = revIdx !== -1 ? argv[revIdx + 1] : null;
+    console.log(workingTreeHash({ withoutDocs: true, ...(rev ? { rev } : {}) }));
     process.exit(0);
   }
 
