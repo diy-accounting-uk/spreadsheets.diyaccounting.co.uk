@@ -522,6 +522,57 @@
     document.body.appendChild(backdropEl);
   }
 
+  function remToPx(rem) {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  }
+
+  // The landing page carries a product strip above the topbar (home-strip in
+  // index.html), so the topbar's sticky top:0 only takes hold once that
+  // strip has scrolled past -- before then the topbar, the tab strip and the
+  // Account button all sit lower than --topbar-h/--tabstrip-h assume. Reading
+  // the topbar and tab strip's own rendered position (rather than trusting
+  // those two variables to already describe it) keeps the panel clear of the
+  // button at every width, every scroll position and on every page, loaded
+  // book or none.
+  function positionPanel() {
+    if (!panelEl) return;
+    var topbarEl = document.querySelector(".app-topbar");
+    var tabstripEl = document.querySelector(".sheet-tabs");
+    var topbarBottom = topbarEl ? topbarEl.getBoundingClientRect().bottom : 0;
+    var tabstripBottom = tabstripEl ? tabstripEl.getBoundingClientRect().bottom : 0;
+    var gap = remToPx(0.75);
+    var top = Math.max(topbarBottom, tabstripBottom) + gap;
+    panelEl.style.setProperty("--account-panel-top", top + "px");
+    panelEl.style.setProperty("--account-panel-max-height", "calc(100vh - " + top + "px - " + gap + "px)");
+  }
+
+  function handlePanelKeydown(event) {
+    if (event.key !== "Escape") return;
+    closePanel();
+    if (accountBtnEl) accountBtnEl.focus();
+  }
+
+  // Every click anywhere in the document reaches here while the panel is
+  // open; a click inside the panel is the data-action handler's job, and a
+  // click on the Account button is its own toggle's job (mount()) -- this
+  // only closes for a click genuinely outside both, on any width, which is
+  // what the desktop card needs since #account-backdrop (the mobile bottom
+  // sheet's click-outside layer) is display:none there.
+  // composedPath(), not event.target, because a click on a panel control
+  // (delete a book, choose a menu action that opens the panel signed-out)
+  // can itself trigger a renderPanel() that replaces panelEl's children
+  // before this listener runs -- event.target would then be a node
+  // already detached from panelEl, and Node.contains() reads false for a
+  // node that isn't attached to anything. composedPath() is the path the
+  // event was dispatched along, fixed before any handler ran.
+  function handleOutsideClick(event) {
+    if (!isPanelOpen()) return;
+    var path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
+    if (path.indexOf(panelEl) !== -1) return;
+    if (accountBtnEl && path.indexOf(accountBtnEl) !== -1) return;
+    closePanel();
+  }
+
   // The accessible name (aria-label) must contain the visible label ("Sign
   // in" or "Account") as a literal substring -- WCAG 2.5.3 Label in Name.
   // The email goes in aria-label and title so it stays discoverable to both
@@ -548,6 +599,11 @@
     return !!(panelEl && !panelEl.classList.contains("hidden"));
   }
 
+  // Every renderPanel() branch replaces panelEl's whole content, so the
+  // close button is prepended here rather than appended once to panelEl
+  // itself, which an innerHTML assignment would otherwise wipe out.
+  var CLOSE_BUTTON_HTML = '<button type="button" class="account-panel-close" data-action="close-panel" aria-label="Close">&times;</button>';
+
   // Shows the panel with whatever panelState the caller has already set --
   // callers that want a fresh list call fetchBooksList() (which sets
   // "loading" and calls this itself), never this directly with a stale
@@ -557,6 +613,18 @@
     panelEl.classList.remove("hidden");
     backdropEl.classList.remove("hidden");
     if (accountBtnEl) accountBtnEl.setAttribute("aria-expanded", "true");
+    positionPanel();
+    window.addEventListener("scroll", positionPanel, { passive: true });
+    window.addEventListener("resize", positionPanel);
+    document.addEventListener("keydown", handlePanelKeydown);
+    // Deferred a tick: openPanel() often runs from a click on some other
+    // element entirely (a save-menu item, the Account button itself before
+    // this listener existed) that is still bubbling towards document when
+    // this line runs -- registering synchronously would catch that same
+    // click and close the panel it had just opened.
+    window.setTimeout(function () {
+      document.addEventListener("click", handleOutsideClick);
+    }, 0);
     renderPanel();
   }
 
@@ -564,6 +632,10 @@
     if (panelEl) panelEl.classList.add("hidden");
     if (backdropEl) backdropEl.classList.add("hidden");
     if (accountBtnEl) accountBtnEl.setAttribute("aria-expanded", "false");
+    window.removeEventListener("scroll", positionPanel);
+    window.removeEventListener("resize", positionPanel);
+    document.removeEventListener("keydown", handlePanelKeydown);
+    document.removeEventListener("click", handleOutsideClick);
   }
 
   function showSignInFailure(message) {
@@ -946,47 +1018,51 @@
     );
   }
 
+  function setPanelContent(html) {
+    panelEl.innerHTML = CLOSE_BUTTON_HTML + html;
+  }
+
   function renderPanel() {
     if (!panelEl) return;
     if (panelState.status === "failure") {
-      panelEl.innerHTML = renderFailure(panelState.message);
+      setPanelContent(renderFailure(panelState.message));
       return;
     }
     if (panelState.status === "signed-out") {
-      panelEl.innerHTML = renderSignedOut();
+      setPanelContent(renderSignedOut());
       mountDeviceRow();
       return;
     }
     if (panelState.confirm) {
-      panelEl.innerHTML = renderConfirm(panelState.confirm);
+      setPanelContent(renderConfirm(panelState.confirm));
       return;
     }
     if (panelState.status === "conflict") {
-      panelEl.innerHTML = renderConflict(panelState);
+      setPanelContent(renderConflict(panelState));
       return;
     }
     if (panelState.status === "duplicate") {
-      panelEl.innerHTML = renderDuplicate(panelState);
+      setPanelContent(renderDuplicate(panelState));
       return;
     }
     if (panelState.status === "drive-conflict") {
-      panelEl.innerHTML = renderDriveConflict(panelState);
+      setPanelContent(renderDriveConflict(panelState));
       return;
     }
     if (panelState.status === "loading") {
-      panelEl.innerHTML = '<p class="account-panel-head">Loading your books…</p>';
+      setPanelContent('<p class="account-panel-head">Loading your books…</p>');
       return;
     }
     if (panelState.status === "error") {
-      panelEl.innerHTML = renderError(panelState.message);
+      setPanelContent(renderError(panelState.message));
       return;
     }
     if (panelState.status === "list") {
-      panelEl.innerHTML = renderList(panelState.books, panelState.entitlement, getSession());
+      setPanelContent(renderList(panelState.books, panelState.entitlement, getSession()));
       mountDeviceRow();
       return;
     }
-    panelEl.innerHTML = renderSignedOut();
+    setPanelContent(renderSignedOut());
   }
 
   // Journey 3.3 step 4: the signed-out panel carries the session-ended
@@ -1640,7 +1716,10 @@
     if (!target) return;
     var action = target.getAttribute("data-action");
     var bookId = target.getAttribute("data-book-id");
-    if (action === "sign-in") {
+    if (action === "close-panel") {
+      closePanel();
+      if (accountBtnEl) accountBtnEl.focus();
+    } else if (action === "sign-in") {
       signIn();
     } else if (action === "sign-out") {
       signOut();
