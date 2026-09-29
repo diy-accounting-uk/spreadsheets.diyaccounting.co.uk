@@ -522,6 +522,57 @@
     document.body.appendChild(backdropEl);
   }
 
+  function remToPx(rem) {
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  }
+
+  // The landing page carries a product strip above the topbar (home-strip in
+  // index.html), so the topbar's sticky top:0 only takes hold once that
+  // strip has scrolled past -- before then the topbar, the tab strip and the
+  // Account button all sit lower than --topbar-h/--tabstrip-h assume. Reading
+  // the topbar and tab strip's own rendered position (rather than trusting
+  // those two variables to already describe it) keeps the panel clear of the
+  // button at every width, every scroll position and on every page, loaded
+  // book or none.
+  function positionPanel() {
+    if (!panelEl) return;
+    var topbarEl = document.querySelector(".app-topbar");
+    var tabstripEl = document.querySelector(".sheet-tabs");
+    var topbarBottom = topbarEl ? topbarEl.getBoundingClientRect().bottom : 0;
+    var tabstripBottom = tabstripEl ? tabstripEl.getBoundingClientRect().bottom : 0;
+    var gap = remToPx(0.75);
+    var top = Math.max(topbarBottom, tabstripBottom) + gap;
+    panelEl.style.setProperty("--account-panel-top", top + "px");
+    panelEl.style.setProperty("--account-panel-max-height", "calc(100vh - " + top + "px - " + gap + "px)");
+  }
+
+  function handlePanelKeydown(event) {
+    if (event.key !== "Escape") return;
+    closePanel();
+    if (accountBtnEl) accountBtnEl.focus();
+  }
+
+  // Every click anywhere in the document reaches here while the panel is
+  // open; a click inside the panel is the data-action handler's job, and a
+  // click on the Account button is its own toggle's job (mount()) -- this
+  // only closes for a click genuinely outside both, on any width, which is
+  // what the desktop card needs since #account-backdrop (the mobile bottom
+  // sheet's click-outside layer) is display:none there.
+  // composedPath(), not event.target, because a click on a panel control
+  // (delete a book, choose a menu action that opens the panel signed-out)
+  // can itself trigger a renderPanel() that replaces panelEl's children
+  // before this listener runs -- event.target would then be a node
+  // already detached from panelEl, and Node.contains() reads false for a
+  // node that isn't attached to anything. composedPath() is the path the
+  // event was dispatched along, fixed before any handler ran.
+  function handleOutsideClick(event) {
+    if (!isPanelOpen()) return;
+    var path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
+    if (path.indexOf(panelEl) !== -1) return;
+    if (accountBtnEl && path.indexOf(accountBtnEl) !== -1) return;
+    closePanel();
+  }
+
   // The accessible name (aria-label) must contain the visible label ("Sign
   // in" or "Account") as a literal substring -- WCAG 2.5.3 Label in Name.
   // The email goes in aria-label and title so it stays discoverable to both
@@ -548,6 +599,11 @@
     return !!(panelEl && !panelEl.classList.contains("hidden"));
   }
 
+  // Every renderPanel() branch replaces panelEl's whole content, so the
+  // close button is prepended here rather than appended once to panelEl
+  // itself, which an innerHTML assignment would otherwise wipe out.
+  var CLOSE_BUTTON_HTML = '<button type="button" class="account-panel-close" data-action="close-panel" aria-label="Close">&times;</button>';
+
   // Shows the panel with whatever panelState the caller has already set --
   // callers that want a fresh list call fetchBooksList() (which sets
   // "loading" and calls this itself), never this directly with a stale
@@ -557,6 +613,18 @@
     panelEl.classList.remove("hidden");
     backdropEl.classList.remove("hidden");
     if (accountBtnEl) accountBtnEl.setAttribute("aria-expanded", "true");
+    positionPanel();
+    window.addEventListener("scroll", positionPanel, { passive: true });
+    window.addEventListener("resize", positionPanel);
+    document.addEventListener("keydown", handlePanelKeydown);
+    // Deferred a tick: openPanel() often runs from a click on some other
+    // element entirely (a save-menu item, the Account button itself before
+    // this listener existed) that is still bubbling towards document when
+    // this line runs -- registering synchronously would catch that same
+    // click and close the panel it had just opened.
+    window.setTimeout(function () {
+      document.addEventListener("click", handleOutsideClick);
+    }, 0);
     renderPanel();
   }
 
@@ -564,6 +632,10 @@
     if (panelEl) panelEl.classList.add("hidden");
     if (backdropEl) backdropEl.classList.add("hidden");
     if (accountBtnEl) accountBtnEl.setAttribute("aria-expanded", "false");
+    window.removeEventListener("scroll", positionPanel);
+    window.removeEventListener("resize", positionPanel);
+    document.removeEventListener("keydown", handlePanelKeydown);
+    document.removeEventListener("click", handleOutsideClick);
   }
 
   function showSignInFailure(message) {
@@ -670,21 +742,30 @@
     );
   }
 
-  // Journey step 2 of the Drive design: a subscribed reader with no Drive
-  // token sees this above the list; the Drive save item opens the panel
-  // straight onto it. panelState.driveConnectMessage carries the refused
-  // or expired wording, cleared the next time the row would not show.
-  function renderDriveConnectRow(entitlement) {
-    var reason = entitlement && entitlement.reason;
-    if (reason !== "active-subscription") return "";
-    if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) return "";
-    var message = panelState.driveConnectMessage;
-    return (
-      '<div class="account-drive-connect">' +
-      (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
-      '<button type="button" class="btn" data-action="connect-drive">Connect Google Drive</button>' +
-      "</div>"
-    );
+  // Drive's own panel state: a browser-only save and open, reached from the
+  // save menu's "Save to my Google Drive" item with no Submit sign-in and
+  // no entitlement check. panelState.driveConnectMessage carries the
+  // refused or expired wording, cleared the next time the card would not
+  // show. Connected, the rows below reuse renderBookRow -- toBookRow() in
+  // drive.js already shapes a Drive file the same way an account book
+  // arrives from Submit's list.
+  function renderDrive(state) {
+    if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) {
+      var message = state.driveConnectMessage;
+      return (
+        '<p class="account-panel-head">Save this book to a "DIYA-GL" folder in your own Google Drive.</p>' +
+        (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
+        '<button type="button" class="btn btn-primary" data-action="connect-drive">Connect Google Drive</button>'
+      );
+    }
+    var sorted = (state.books || []).slice().sort(function (a, b) {
+      return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+    var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
+    var rowsHtml = sorted.length
+      ? sorted.map(renderBookRow).join("")
+      : '<p class="account-empty">No books in your Google Drive folder yet.' + (current ? " Save this book to Google Drive." : "") + "</p>";
+    return '<div class="account-panel-head">Your Google Drive</div>' + rowsHtml;
   }
 
   function renderList(books, entitlement, session) {
@@ -700,7 +781,6 @@
       '<div class="account-panel-head">' +
       esc((session.user && session.user.email) || "Your account") +
       "</div>" +
-      renderDriveConnectRow(entitlement) +
       rowsHtml +
       renderEntitlement(entitlement) +
       '<button type="button" class="btn" data-action="sign-out">Sign out</button>'
@@ -930,63 +1010,51 @@
     );
   }
 
-  // Journey 3.5 step 4: a near-duplicate found before minting a fresh id.
-  function renderDuplicate(state) {
-    var duplicate = state.duplicate;
-    return (
-      '<p class="account-panel-head">This looks like ' +
-      esc(duplicate.title) +
-      ", already in your account as version " +
-      duplicate.latestVersion +
-      ". Update it, or save as a new book?</p>" +
-      '<div class="account-row-actions">' +
-      '<button type="button" class="btn btn-primary" data-action="duplicate-update">Update</button>' +
-      '<button type="button" class="btn" data-action="duplicate-new">New book</button>' +
-      "</div>"
-    );
+  function setPanelContent(html) {
+    panelEl.innerHTML = CLOSE_BUTTON_HTML + html;
   }
 
   function renderPanel() {
     if (!panelEl) return;
     if (panelState.status === "failure") {
-      panelEl.innerHTML = renderFailure(panelState.message);
+      setPanelContent(renderFailure(panelState.message));
       return;
     }
     if (panelState.status === "signed-out") {
-      panelEl.innerHTML = renderSignedOut();
+      setPanelContent(renderSignedOut());
       mountDeviceRow();
       return;
     }
     if (panelState.confirm) {
-      panelEl.innerHTML = renderConfirm(panelState.confirm);
+      setPanelContent(renderConfirm(panelState.confirm));
       return;
     }
     if (panelState.status === "conflict") {
-      panelEl.innerHTML = renderConflict(panelState);
-      return;
-    }
-    if (panelState.status === "duplicate") {
-      panelEl.innerHTML = renderDuplicate(panelState);
+      setPanelContent(renderConflict(panelState));
       return;
     }
     if (panelState.status === "drive-conflict") {
-      panelEl.innerHTML = renderDriveConflict(panelState);
+      setPanelContent(renderDriveConflict(panelState));
       return;
     }
     if (panelState.status === "loading") {
-      panelEl.innerHTML = '<p class="account-panel-head">Loading your books…</p>';
+      setPanelContent('<p class="account-panel-head">Loading your books…</p>');
       return;
     }
     if (panelState.status === "error") {
-      panelEl.innerHTML = renderError(panelState.message);
+      setPanelContent(renderError(panelState.message));
       return;
     }
     if (panelState.status === "list") {
-      panelEl.innerHTML = renderList(panelState.books, panelState.entitlement, getSession());
+      setPanelContent(renderList(panelState.books, panelState.entitlement, getSession()));
       mountDeviceRow();
       return;
     }
-    panelEl.innerHTML = renderSignedOut();
+    if (panelState.status === "drive") {
+      setPanelContent(renderDrive(panelState));
+      return;
+    }
+    setPanelContent(renderSignedOut());
   }
 
   // Journey 3.3 step 4: the signed-out panel carries the session-ended
@@ -1015,9 +1083,13 @@
     return messageForApiError({ status: (error && error.status) || 0 });
   }
 
+  // An expired token whose silent re-request came back empty, or any other
+  // Drive error, drops back to the Connect card -- drive.js has already
+  // cleared the token on a 401/403.
   function handleDriveError(error) {
     if (error && error.name === "DriveSignedOutError") {
-      fetchBooksList();
+      panelState = { status: "drive" };
+      renderPanel();
       return;
     }
     panelState = { status: "error", message: driveErrorMessage(error) };
@@ -1037,36 +1109,33 @@
     });
   }
 
-  // Listing and opening stay available whenever a Drive token is held,
-  // subscribed or not -- those files are the reader's own. A listing
-  // failure (an expired token whose silent re-request came back empty, or
-  // any other Drive error) drops back to the account's own books rather
-  // than failing the whole panel: drive.js has already cleared the token on
-  // a 401/403, so the Connect row is what the reader sees next.
-  function mergeDriveBooks(accountBooks) {
-    if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) return Promise.resolve(accountBooks);
-    return window.DiyaGlDrive.list()
-      .then(function (driveBooks) {
-        return accountBooks.concat(driveBooks);
-      })
-      .catch(function () {
-        return accountBooks;
-      });
-  }
-
   function fetchBooksList() {
     panelState = { status: "loading" };
     openPanel();
     return fetchAllBooks()
       .then(function (result) {
         trackSandboxExpiry(result.books);
-        return mergeDriveBooks(result.books).then(function (merged) {
-          panelState = { status: "list", books: merged, entitlement: result.entitlement };
-          renderPanel();
-        });
+        panelState = { status: "list", books: result.books, entitlement: result.entitlement };
+        renderPanel();
       })
       .catch(function (error) {
         handlePanelError(error);
+      });
+  }
+
+  // Drive's own list, reached with no Submit session and no /books call of
+  // any kind -- separate from the account's S3 books fetchBooksList()
+  // fetches.
+  function fetchDriveList() {
+    panelState = { status: "loading" };
+    openPanel();
+    return window.DiyaGlDrive.list()
+      .then(function (books) {
+        panelState = { status: "drive", books: books };
+        renderPanel();
+      })
+      .catch(function (error) {
+        handleDriveError(error);
       });
   }
 
@@ -1167,7 +1236,7 @@
       .then(function () {
         var driveLink = getDriveLink();
         if (driveLink && driveLink.fileId === book.driveFileId) setDriveLink(null);
-        return fetchBooksList();
+        return fetchDriveList();
       })
       .catch(function (error) {
         handleDriveError(error);
@@ -1270,6 +1339,18 @@
     return (book.entityInformation && book.entityInformation.organizationIdentifier) || "";
   }
 
+  // A TOML date literal (documentInfo.periodCoveredStart/End as every
+  // book.toml -- example fixtures included -- writes them, unquoted) parses
+  // to a Date, not a string; JSON.stringify() then widens it to a full ISO
+  // datetime on the wire. Both sides of a period comparison go through this
+  // first, or a freshly loaded book's own Date never equals the date-only
+  // string a previous save of it already sent the server.
+  function isoDate(value) {
+    if (!value) return null;
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    return String(value).slice(0, 10);
+  }
+
   // Section 5's provenance shape: the five diya-gl:* stamps off
   // documentInfo, each sent as null when the book carries none.
   function bookProvenance(book) {
@@ -1283,16 +1364,20 @@
     };
   }
 
-  // Journey 3.5 step 4: same product, same title, same two dates.
+  // Same product, same title, same two dates: a save with no link of its
+  // own (a fresh tab, a book reopened from an example) lands on this copy
+  // rather than minting a new one every time it's re-saved.
   function findNearDuplicate(books, book, product) {
     var title = bookTitle(book);
     var info = book.documentInfo || {};
+    var periodStart = isoDate(info.periodCoveredStart);
+    var periodEnd = isoDate(info.periodCoveredEnd);
     return (books || []).find(function (candidate) {
       return (
         candidate.product === product &&
         candidate.title === title &&
-        candidate.periodCoveredStart === info.periodCoveredStart &&
-        candidate.periodCoveredEnd === info.periodCoveredEnd
+        isoDate(candidate.periodCoveredStart) === periodStart &&
+        isoDate(candidate.periodCoveredEnd) === periodEnd
       );
     });
   }
@@ -1302,8 +1387,8 @@
     var payload = {
       title: bookTitle(book),
       product: product,
-      periodCoveredStart: info.periodCoveredStart || null,
-      periodCoveredEnd: info.periodCoveredEnd || null,
+      periodCoveredStart: isoDate(info.periodCoveredStart),
+      periodCoveredEnd: isoDate(info.periodCoveredEnd),
       provenance: bookProvenance(book),
       zipBase64: bytesToBase64(artifact.bytes),
     };
@@ -1402,13 +1487,7 @@
         return fetchAllBooks().then(function (result) {
           var duplicate = findNearDuplicate(result.books, current.book, product);
           if (duplicate) {
-            panelState = {
-              status: "duplicate",
-              duplicate: duplicate,
-              pending: { artifact: artifact, book: current.book, product: product, editedAt: editedAt },
-            };
-            openPanel();
-            return;
+            return submitPut(duplicate.bookId, duplicate.latestETag, artifact, current.book, product, false, editedAt);
           }
           return submitPut(window.crypto.randomUUID(), null, artifact, current.book, product, true, editedAt);
         });
@@ -1452,8 +1531,8 @@
           headRevisionId: driveLink ? driveLink.headRevisionId : null,
           title: bookTitle(current.book),
           product: product,
-          periodStart: info.periodCoveredStart || null,
-          periodEnd: info.periodCoveredEnd || null,
+          periodStart: isoDate(info.periodCoveredStart),
+          periodEnd: isoDate(info.periodCoveredEnd),
           engineVersion: bookProvenance(current.book).engineVersion,
           bytes: artifact.bytes,
         };
@@ -1461,7 +1540,7 @@
           setDriveLink({ fileId: fileMeta.id, headRevisionId: fileMeta.headRevisionId });
           sendDriveSaveEvent(product, driveLink ? "updated" : "created");
           showToastMessage("Saved to your DIYA-GL folder in Google Drive.");
-          if (isPanelOpen()) fetchBooksList();
+          if (isPanelOpen()) fetchDriveList();
         });
       })
       .catch(function (error) {
@@ -1471,7 +1550,8 @@
           return;
         }
         if (error && error.name === "DriveSignedOutError") {
-          fetchBooksList();
+          panelState = { status: "drive" };
+          openPanel();
           return;
         }
         sendDriveSaveEvent(product, "failed");
@@ -1494,7 +1574,7 @@
           pendingDriveSaveRequested = false;
           performDriveSave();
         } else {
-          fetchBooksList();
+          fetchDriveList();
         }
       })
       .catch(function () {
@@ -1508,15 +1588,24 @@
   // The save menu's "Save to my Google Drive" item: a token already held
   // saves straight away; otherwise the panel opens on the Connect card and
   // the save runs once the reader connects.
+  // The save menu's only Drive entry point, so it doubles as "open": the
+  // panel opens every time, not only on the first connect, or a reader
+  // already connected in this tab would never see a book they saved from
+  // another device.
   function saveToDrive() {
     var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     if (!current) return;
     if (window.DiyaGlDrive && window.DiyaGlDrive.hasToken()) {
+      panelState = { status: "loading" };
+      openPanel();
       performDriveSave();
       return;
     }
+    // No Submit session, no /books call -- this opens the panel straight
+    // on the Connect card.
     pendingDriveSaveRequested = true;
-    fetchBooksList();
+    panelState = { status: "drive" };
+    openPanel();
   }
 
   // A Drive row's versions are not carried in the list response (unlike an
@@ -1640,7 +1729,10 @@
     if (!target) return;
     var action = target.getAttribute("data-action");
     var bookId = target.getAttribute("data-book-id");
-    if (action === "sign-in") {
+    if (action === "close-panel") {
+      closePanel();
+      if (accountBtnEl) accountBtnEl.focus();
+    } else if (action === "sign-in") {
       signIn();
     } else if (action === "sign-out") {
       signOut();
@@ -1671,29 +1763,6 @@
       startSubscription(target.getAttribute("data-interval"));
     } else if (action === "manage-subscription") {
       openBillingPortal();
-    } else if (action === "duplicate-update") {
-      var updatePending = panelState.pending;
-      var duplicate = panelState.duplicate;
-      submitPut(
-        duplicate.bookId,
-        duplicate.latestETag,
-        updatePending.artifact,
-        updatePending.book,
-        updatePending.product,
-        false,
-        updatePending.editedAt,
-      );
-    } else if (action === "duplicate-new") {
-      var newBookPending = panelState.pending;
-      submitPut(
-        window.crypto.randomUUID(),
-        null,
-        newBookPending.artifact,
-        newBookPending.book,
-        newBookPending.product,
-        true,
-        newBookPending.editedAt,
-      );
     } else if (action === "conflict-new-book") {
       var conflictPending = panelState.pending;
       sendConflictEvent("new-book");

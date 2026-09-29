@@ -2004,14 +2004,25 @@ table.kv-table tr.total td {
    under the topbar on the right at 900px and up, over the same corner the
    donation prompt uses. It carries a higher z-index than that prompt so an
    open panel's buttons stay clickable instead of sitting under the prompt's
-   own actions. */
+   own actions.
+
+   top and max-height fall back to the topbar/tab-strip CSS variables (the
+   layout on every page but the landing one, where the topbar is already
+   docked at the viewport's top edge), but cloud.js sets
+   --account-panel-top/--account-panel-max-height from the topbar and
+   Account button's own measured position before every open, every scroll
+   and every resize while it's open. The landing page carries a product
+   strip above the topbar, so the topbar only reaches the top of the
+   viewport once that strip has scrolled past -- a plain CSS offset from
+   the two variables alone would then float the panel over the button
+   instead of clear of it. */
 .account-panel {
   position: fixed;
-  top: calc(var(--topbar-h) + var(--tabstrip-h) + 0.75rem);
+  top: var(--account-panel-top, calc(var(--topbar-h) + var(--tabstrip-h) + 0.75rem));
   right: 1rem;
   z-index: 61;
   width: min(360px, calc(100vw - 2rem));
-  max-height: calc(100vh - var(--topbar-h) - 2rem);
+  max-height: var(--account-panel-max-height, calc(100vh - var(--topbar-h) - var(--tabstrip-h) - 2rem));
   overflow-y: auto;
   background: var(--paper-raised);
   border: 1px solid var(--rule-faint);
@@ -2019,10 +2030,25 @@ table.kv-table tr.total td {
   box-shadow: var(--shadow-md);
   padding: 0.85rem 1rem;
 }
+.account-panel-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+.account-panel-close:hover {
+  color: var(--ink);
+}
 .account-panel-head {
   font-size: 0.85rem;
   color: var(--ink);
-  margin: 0 0 0.75rem;
+  margin: 0 2rem 0.75rem 0;
 }
 .account-row {
   display: flex;
@@ -2522,18 +2548,21 @@ table.kv-table tr.total td {
   border-bottom: 1px solid var(--rule-faint);
 }
 .home-products,
-.runner-row {
+.runner-row,
+.cross-links {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
 }
 .home-products .caps-label,
-.runner-row .caps-label {
+.runner-row .caps-label,
+.cross-links .caps-label {
   flex-basis: 100%;
 }
 .home-products a,
-.runner-row a {
+.runner-row a,
+.cross-links a {
   display: inline-block;
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--rule);
@@ -2545,7 +2574,8 @@ table.kv-table tr.total td {
   white-space: nowrap;
 }
 .home-products a:hover,
-.runner-row a:hover {
+.runner-row a:hover,
+.cross-links a:hover {
   background: var(--tint);
   border-color: var(--rule-dark);
   color: var(--rule-dark);

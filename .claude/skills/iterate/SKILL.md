@@ -52,9 +52,10 @@ active` line carrying a `https://claude.ai/code/session_…` URL means the sessi
 
 ### 1. Board
 
-`/board`, in full, with its write-back. The write-back is a docs commit pushed straight to `main`
-(the docs exception, which ruleset 16056971 allows for a `.md`-only diff); commit first, then push
-as its own command. Read the Part 1 rows whose State is `ready-to-start` or `ready-to-resume` and
+`/board`, in full, with its write-back. The board lives in `../submit.diyaccounting.co.uk/`, so
+the write-back is a docs commit pushed straight to that repository's `main` (its own docs
+exception, which allows a `.md`-only diff); commit first, then push as its own command, in that
+repository. Read the Part 1 rows whose State is `ready-to-start` or `ready-to-resume` and
 Needs is `machine-only`: that is the wave's input, in board order. Rows whose remainder is a
 scheduled run, a nightly package generation, or a date are not startable; leave them.
 
@@ -63,8 +64,13 @@ scheduled run, a nightly package generation, or a date are not startable; leave 
 `/do-next`'s shape, sized by these rules:
 
 - **One batch branch per wave** (`claude/<codename>-<theme>`, named as `/do-next` says, its own worktree under
-  `../.worktrees/spreadsheets/<codename>`), every agent worktree branched from it, `NEXT.md` never on
-  it.
+  `../.worktrees/spreadsheets/<codename>`), every agent worktree branched from it, this repo's own
+  `NEXT.md` pointer never on it, and the board (`../submit.diyaccounting.co.uk/NEXT.md`) never on
+  it either — it sits in a separate repository, so it cannot ride this repo's batch branch at all.
+- **Before the batch's first push, check open PRs for file overlap** (`/do-next`'s rule under
+  Pushing): fork from, or merge in, the merged tip of any open PR sharing the batch's files — never
+  push a head that PR's own merge then supersedes, and never assert a fact that PR has already
+  changed. Name the overlap in the board's Status (`../submit.diyaccounting.co.uk/NEXT.md`).
 - **One agent per row.** Rows that share a file go to one agent in one brief, in the order the
   plan fixes, a commit per row. A row over about 25 files is a two-agent chain (design, then
   build), never one long-context agent. Size from the row's `Size`, not from plan prose.

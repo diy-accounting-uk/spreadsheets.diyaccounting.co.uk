@@ -1633,49 +1633,13 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     });
     await cloudMenuItem.click();
 
+    // A save that matches a book already in the account updates it, so the toast is the only
+    // outcome. A body this size takes longer to reach the account than step 7's small one.
     const toast = page.locator("#toast");
-    const duplicateNewButton = panel.getByRole("button", { name: "New book" });
-    let saveOutcome;
-    try {
-      // The toast is a single element that persists, so it is very likely still
-      // visible carrying whatever the last step said. Waiting for it to be
-      // visible would resolve at once and report a save that never happened;
-      // what proves this save is the text CHANGING from what is there now.
-      const staleToast = (await toast.textContent().catch(() => "")) || "";
-      // An empty stale text would filter to nothing, because every string
-      // contains the empty string, so with nothing to distinguish from we wait
-      // on the toast itself.
-      const changedToast = staleToast ? toast.filter({ hasNotText: staleToast }) : toast;
-      saveOutcome = await Promise.race([
-        changedToast.waitFor({ state: "visible", timeout: 30000 }).then(() => "saved"),
-        duplicateNewButton.waitFor({ state: "visible", timeout: 30000 }).then(() => "duplicate"),
-      ]);
-    } catch (error) {
-      throw new Error(
-        `${sizeLabel} case failed: neither the save toast nor the near-duplicate prompt appeared (panel now shows: ${await panel
-          .innerText()
-          .catch(() => "<unreadable>")})`,
-        { cause: error },
-      );
-    }
-    if (saveOutcome === "duplicate") {
-      // A prior run of this case can leave a book behind with this same
-      // title, product and dates -- save as a new book rather than update it,
-      // the same choice step 7 makes.
-      await duplicateNewButton.click();
-      await expect(toast, `${sizeLabel} case failed: saving as a new book never showed the save toast`).toContainText(
-        /Saved to your account as version \d+\./,
-        { timeout: 30000 },
-      );
-    } else {
-      // The same 30s the near-duplicate branch above allows: a body this size
-      // takes longer to reach the account than step 7's small one, and the
-      // default five seconds is a window sized for that smaller save.
-      await expect(toast, `${sizeLabel} case failed: the save toast did not carry the expected wording`).toContainText(
-        /Saved to your account as version \d+\./,
-        { timeout: 30000 },
-      );
-    }
+    await expect(toast, `${sizeLabel} case failed: the save toast did not carry the expected wording`).toContainText(
+      /Saved to your account as version \d+\./,
+      { timeout: 30000 },
+    );
     console.log(` Saved the ${sizeLabel} book to the account`);
 
     await showAccountPanel(panel, accountBtn);
@@ -1907,33 +1871,13 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await expect(cloudMenuItem, "STEP 7 failed: the save menu never carried a Save to my account item").toBeVisible({ timeout: 10000 });
       await cloudMenuItem.click();
 
+      // A save that matches a book already in the account updates it, so the toast is the only
+      // outcome; the example's own "Loaded" toast may still be showing, so wait for the wording.
       const toast = page.locator("#toast");
-      const duplicateNewButton = panel.getByRole("button", { name: "New book" });
-      let saveOutcome;
-      try {
-        saveOutcome = await Promise.race([
-          toast.waitFor({ state: "visible", timeout: 20000 }).then(() => "saved"),
-          duplicateNewButton.waitFor({ state: "visible", timeout: 20000 }).then(() => "duplicate"),
-        ]);
-      } catch (error) {
-        throw new Error(
-          `STEP 7 failed: neither the save toast nor the near-duplicate prompt appeared (panel now shows: ${await panel.innerText().catch(() => "<unreadable>")})`,
-          { cause: error },
-        );
-      }
-      if (saveOutcome === "duplicate") {
-        // A prior run of this same case left a book with this title, product
-        // and dates in the account -- save as a new book rather than update it.
-        await duplicateNewButton.click();
-        await expect(toast, "STEP 7 failed: saving as a new book never showed the save toast").toContainText(
-          /Saved to your account as version \d+\./,
-          { timeout: 20000 },
-        );
-      } else {
-        await expect(toast, "STEP 7 failed: the save toast did not carry the expected wording").toContainText(
-          /Saved to your account as version \d+\./,
-        );
-      }
+      await expect(toast, "STEP 7 failed: the save toast did not carry the expected wording").toContainText(
+        /Saved to your account as version \d+\./,
+        { timeout: 20000 },
+      );
       await shot("10-saved");
       console.log(" Saved the book to the account");
 

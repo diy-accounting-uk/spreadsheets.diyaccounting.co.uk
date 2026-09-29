@@ -3,11 +3,11 @@
 
 // web/browser-tests/diya-gl-drive.browser.test.js
 //
-// Google Drive as a second store (drive.js, and cloud.js's merged account
-// list and Connect row) -- exercised with Google Identity Services faked
-// through addInitScript (no consent window ever opens) and every
-// googleapis.com endpoint stubbed through page.route. No real Google
-// account, Drive or Cognito pool is reached.
+// Google Drive as a second store (drive.js, and cloud.js's own Drive panel
+// state), free and browser-only with no Submit sign-in -- exercised with
+// Google Identity Services faked through addInitScript (no consent window
+// ever opens) and every googleapis.com endpoint stubbed through
+// page.route. No real Google account, Drive or Cognito pool is reached.
 
 import { test, expect } from "@playwright/test";
 import path from "node:path";
@@ -151,7 +151,6 @@ function routeBooks(page, entitlement, books) {
   });
 }
 
-const ACTIVE_SUBSCRIPTION = { reason: "active-subscription", expiry: null, residentTier: true };
 const NO_SUBSCRIPTION = { reason: "no-subscription", expiry: null, residentTier: true };
 
 async function diyaGlZipBytes() {
@@ -299,23 +298,28 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => window.sessionStorage.clear());
 });
 
+// Opens the save menu and clicks the Drive item -- the one entry point
+// into the Drive panel, connected or not, signed into Submit or not.
+async function clickSaveToDrive(page) {
+  await page.click("#save-btn");
+  const driveItem = page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true });
+  await expect(driveItem).toBeVisible();
+  await driveItem.click();
+}
+
 test.describe("DIYA-GL page — Drive gate", () => {
-  test("a sandbox entitlement offers no Drive save item, no Connect row, and calls no googleapis endpoint", async ({ page }) => {
-    await withTestClientIds(page);
+  test("no Drive client id configured offers no Drive save item, and calls no googleapis endpoint", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.DIYA_GL_DRIVE_TEST_CLIENT_ID = null;
+    });
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, NO_SUBSCRIPTION, []);
 
     let googleapisHit = false;
     await page.route(`${GOOGLE_API}/**`, (route) => {
       googleapisHit = true;
       return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
     });
-
-    await openAccountPanel(page);
-    await expect(page.locator(".account-drive-connect")).toHaveCount(0);
-    await closeAccountPanel(page);
 
     await loadExample(page);
     await page.click("#save-btn");
@@ -325,27 +329,27 @@ test.describe("DIYA-GL page — Drive gate", () => {
     expect(googleapisHit).toBe(false);
   });
 
-  test("a subscribed reader with no token sees the Connect row, opened from the save menu's Drive item", async ({ page }) => {
+  test("Drive is offered signed out, with no token: the save menu's Drive item opens the Connect card, with no call to Submit", async ({
+    page,
+  }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, []);
 
-    // A first list is what teaches the page the reader's entitlement --
-    // the save menu itself never fetches it.
-    await openAccountPanel(page);
-    await expect(page.locator(".account-drive-connect")).toBeVisible();
-    await closeAccountPanel(page);
+    let booksApiHit = false;
+    await page.route(`${PROD_API_BASE}/**`, (route) => {
+      booksApiHit = true;
+      return route.fulfill({ status: 500, contentType: "application/json", body: "{}" });
+    });
 
     await loadExample(page);
-    await page.click("#save-btn");
-    const driveItem = page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true });
-    await expect(driveItem).toBeVisible();
-    await driveItem.click();
+    await clickSaveToDrive(page);
 
     await expect(page.locator("#account-panel")).toBeVisible();
-    await expect(page.locator(".account-drive-connect")).toBeVisible();
+    await expect(page.locator("#account-panel")).toContainText("DIYA-GL");
+    await page.locator('[data-action="connect-drive"]').waitFor({ state: "visible" });
+
+    expect(booksApiHit).toBe(false);
   });
 });
 
@@ -355,19 +359,13 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
   }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, []);
 
     const backend = createDriveBackend();
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
-    await openAccountPanel(page);
-    await closeAccountPanel(page);
     await loadExample(page);
-
-    await page.click("#save-btn");
-    await page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true }).click();
+    await clickSaveToDrive(page);
     await page.locator('[data-action="connect-drive"]').click();
 
     await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
@@ -387,8 +385,7 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
     // click), so the upload count -- not the toast -- is what proves the
     // second save actually ran.
     await closeAccountPanel(page);
-    await page.click("#save-btn");
-    await page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true }).click();
+    await clickSaveToDrive(page);
     await expect.poll(() => backend.calls.uploads.length, { timeout: 10_000 }).toBe(2);
     await expect.poll(() => backend.calls.keepRevision.length, { timeout: 10_000 }).toBe(2);
 
@@ -407,10 +404,8 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
   test("a moved headRevisionId shows the conflict card and sends no upload", async ({ page }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await withDriveToken(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, []);
     await page.evaluate(() => {
       window.sessionStorage.setItem("diya-gl.cloud.driveLink", JSON.stringify({ fileId: "file-1", headRevisionId: "stale-revision" }));
     });
@@ -427,29 +422,52 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
     ]);
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
-    // Learn the entitlement first, same as every other case.
-    await openAccountPanel(page);
-    await closeAccountPanel(page);
     await loadExample(page);
-
-    await page.click("#save-btn");
-    await page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true }).click();
+    await clickSaveToDrive(page);
 
     const conflict = page.locator(".account-conflict");
     await expect(conflict).toBeVisible({ timeout: 10_000 });
     await expect(conflict).toContainText("This book changed in Google Drive.");
     expect(backend.calls.uploads).toHaveLength(0);
   });
+
+  test("an expired token's silent re-request comes back empty: the save falls back to the Connect card", async ({ page }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    // Already past expiry, so ensureToken's silent re-request fires on the
+    // very first Drive call this test makes.
+    await withDriveToken(page, -1000);
+    await page.addInitScript(() => {
+      window.__driveTokenOutcome = "empty";
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    let googleapisHit = false;
+    await page.route(`${GOOGLE_API}/**`, (route) => {
+      googleapisHit = true;
+      return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+
+    await loadExample(page);
+    await clickSaveToDrive(page);
+
+    await page.locator('[data-action="connect-drive"]').waitFor({ state: "visible", timeout: 10_000 });
+
+    // The silent retry runs through the faked token client, never a real
+    // HTTP call, and the retry itself failed before any Drive endpoint
+    // could be reached.
+    expect(googleapisHit).toBe(false);
+    expect(await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.driveToken"))).toBeNull();
+  });
 });
 
-test.describe("DIYA-GL page — the merged account list", () => {
-  test("an account book and a Drive book render together, newest first, with a Drive badge", async ({ page }) => {
+test.describe("DIYA-GL page — Drive's own list, separate from the account's books", () => {
+  test("the Drive list carries only Drive files, never an account book, and the account list carries none of Drive's", async ({ page }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
     await withSignedInSession(page);
-    await withDriveToken(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, [
+    await routeBooks(page, NO_SUBSCRIPTION, [
       {
         bookId: "s3-book",
         title: "Older Trading Ltd",
@@ -465,34 +483,31 @@ test.describe("DIYA-GL page — the merged account list", () => {
       },
     ]);
 
-    const backend = createDriveBackend([
-      {
-        id: "drive-book",
-        name: "Newer Trading Ltd 2025-12-31.diya-gl.zip",
-        size: 16000,
-        modifiedTime: "2026-02-01T09:00:00.000Z",
-        headRevisionId: "1",
-        appProperties: { product: "bst", periodStart: "2025-01-01", periodEnd: "2025-12-31", engineVersion: "1.2.3" },
-      },
-    ]);
+    const backend = createDriveBackend();
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await page.locator('[data-action="connect-drive"]').click();
+    await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
+
+    const driveRows = page.locator(".account-row");
+    await expect(driveRows).toHaveCount(1);
+    await expect(driveRows.first()).not.toContainText("Older Trading Ltd");
+
+    await closeAccountPanel(page);
     await openAccountPanel(page);
-    const rows = page.locator(".account-row");
-    await expect(rows).toHaveCount(2);
-    await expect(rows.first()).toContainText("Newer Trading Ltd");
-    await expect(rows.first().locator(".account-row-badge")).toHaveText("Drive");
-    await expect(rows.last()).toContainText("Older Trading Ltd");
-    await expect(rows.last().locator(".account-row-badge")).toHaveCount(0);
+    const accountRows = page.locator(".account-row");
+    await expect(accountRows).toHaveCount(1);
+    await expect(accountRows.first()).toContainText("Older Trading Ltd");
+    await expect(page.locator(".account-row-badge")).toHaveCount(0);
   });
 
   test("opening a Drive book's older revision fetches its revisions, then that revision's bytes", async ({ page }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await withDriveToken(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, []);
 
     const backend = createDriveBackend([
       {
@@ -510,13 +525,23 @@ test.describe("DIYA-GL page — the merged account list", () => {
     ]);
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
-    await openAccountPanel(page);
+    // Already connected, so this save both creates a second file in the
+    // folder and re-lists it -- the pre-seeded drive-book row is what the
+    // rest of this test reads from.
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
+
     const row = page.locator('.account-row[data-book-id="drive-book"]');
     await row.getByRole("button", { name: "Versions", exact: true }).click();
     expect(backend.calls.revisionsList).toBe(1);
 
     await row.locator('[data-action="open"][data-version="rev-old"]').click();
-    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    // The month-cards/year-table from the example already loaded stay
+    // attached throughout, so they prove nothing here -- the panel closing
+    // is performDriveOpen's own last step, once loadFile and the event
+    // both landed.
+    await expect(page.locator("#account-panel")).toBeHidden({ timeout: 15_000 });
 
     const opened = await gaEvents(page, "cloud_drive_open");
     expect(opened).toEqual([{ source: "revision" }]);
@@ -525,15 +550,13 @@ test.describe("DIYA-GL page — the merged account list", () => {
   test("deleting a Drive book trashes it in Drive and the row goes", async ({ page }) => {
     await withTestClientIds(page);
     await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
     await withDriveToken(page);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, []);
 
     const backend = createDriveBackend([
       {
         id: "drive-book",
-        name: "Precision Code Trading 2025-12-31.diya-gl.zip",
+        name: "Older Save.diya-gl.zip",
         size: 15000,
         modifiedTime: "2026-03-01T09:00:00.000Z",
         headRevisionId: "rev-head",
@@ -542,7 +565,10 @@ test.describe("DIYA-GL page — the merged account list", () => {
     ]);
     await page.route(`${GOOGLE_API}/**`, backend.handle);
 
-    await openAccountPanel(page);
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
+
     const row = page.locator('.account-row[data-book-id="drive-book"]');
     await expect(row).toBeVisible();
     await row.getByRole("button", { name: "Delete", exact: true }).click();
@@ -552,52 +578,5 @@ test.describe("DIYA-GL page — the merged account list", () => {
 
     await expect(page.locator('.account-row[data-book-id="drive-book"]')).toHaveCount(0, { timeout: 15_000 });
     expect(backend.calls.trash).toEqual(["drive-book"]);
-  });
-
-  test("an expired token's silent re-request comes back empty: the Connect row returns and the account's own books stay listed", async ({
-    page,
-  }) => {
-    await withTestClientIds(page);
-    await withFakeGoogleIdentity(page);
-    await withSignedInSession(page);
-    // Already past expiry, so ensureToken's silent re-request fires on the
-    // very first Drive call this test makes.
-    await withDriveToken(page, -1000);
-    await page.addInitScript(() => {
-      window.__driveTokenOutcome = "empty";
-    });
-    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
-    await routeBooks(page, ACTIVE_SUBSCRIPTION, [
-      {
-        bookId: "s3-book",
-        title: "Still Listed Ltd",
-        product: "bst",
-        latestVersion: 1,
-        latestETag: "etag-1",
-        latestSize: 15000,
-        updatedAt: "2026-01-01T09:00:00.000Z",
-        periodCoveredStart: "2025-01-01",
-        periodCoveredEnd: "2025-12-31",
-        versions: [],
-        provenance: {},
-      },
-    ]);
-
-    let googleapisHit = false;
-    await page.route(`${GOOGLE_API}/**`, (route) => {
-      googleapisHit = true;
-      return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
-    });
-
-    await openAccountPanel(page);
-    await expect(page.locator(".account-row")).toHaveCount(1);
-    await expect(page.locator(".account-row")).toContainText("Still Listed Ltd");
-    await expect(page.locator(".account-drive-connect")).toBeVisible();
-
-    // The silent retry runs through the faked token client, never a real
-    // HTTP call, and the retry itself failed before any Drive endpoint
-    // could be reached.
-    expect(googleapisHit).toBe(false);
-    expect(await page.evaluate(() => window.sessionStorage.getItem("diya-gl.cloud.driveToken"))).toBeNull();
   });
 });

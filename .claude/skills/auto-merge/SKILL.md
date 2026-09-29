@@ -26,7 +26,8 @@ than merging it by hand outside the skill.
 `/auto-merge-dry-run` runs this skill with every mutating step suppressed. In dry-run:
 
 - no merge, no commit, no push, no rebase, no branch deletion, no worktree removal
-- no write to any file tracked in source control, including `NEXT.md`
+- no write to any file tracked in source control, including this repo's own `NEXT.md` pointer or
+  the board it points to (`../submit.diyaccounting.co.uk/NEXT.md`)
 - no PR comment, no review, no label, no issue change
 - `/watch` is not invoked
 

@@ -49,6 +49,14 @@ function bstUrl() {
   return `${baseUrl}/bst.html`;
 }
 
+// The landing page: unlike bst.html, its topbar sits below a product strip
+// (.home-strip) in normal document flow rather than at the very top of the
+// document, so it only reaches the sticky top:0 position once that strip
+// has scrolled past.
+function indexUrl() {
+  return `${baseUrl}/index.html`;
+}
+
 async function withTestClientId(page) {
   await page.addInitScript(() => {
     window.DIYA_GL_CLOUD_TEST_CLIENT_ID = "test-diya-gl-client";
@@ -151,7 +159,8 @@ test.describe("DIYA-GL page — signed out", () => {
     await accountBtn.click();
     const panel = page.locator("#account-panel");
     await expect(panel).toBeVisible();
-    await expect(panel.locator("button")).toHaveCount(1);
+    // The close button plus "Sign in".
+    await expect(panel.locator("button")).toHaveCount(2);
     await expect(panel.getByRole("button", { name: "Sign in" })).toBeVisible();
     await accountBtn.click();
     await expect(panel).toBeHidden();
@@ -181,6 +190,73 @@ test.describe("DIYA-GL page — signed out", () => {
     await expect(page.getByRole("menuitem")).toHaveCount(2);
 
     expect(pageErrors).toEqual([]);
+  });
+});
+
+test.describe("DIYA-GL page — closing the account panel", () => {
+  test("the close button closes the panel and returns focus to the Account button", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.click("#account-btn");
+    const panel = page.locator("#account-panel");
+    await expect(panel).toBeVisible();
+
+    await panel.getByRole("button", { name: "Close" }).click();
+    await expect(panel).toBeHidden();
+    await expect(page.locator("#account-btn")).toBeFocused();
+  });
+
+  test("Escape closes the panel and returns focus to the Account button", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.click("#account-btn");
+    const panel = page.locator("#account-panel");
+    await expect(panel).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(panel).toBeHidden();
+    await expect(page.locator("#account-btn")).toBeFocused();
+  });
+
+  test("a click outside the panel closes it on desktop, where the backdrop stays invisible", async ({ page }) => {
+    await withTestClientId(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    await page.click("#account-btn");
+    const panel = page.locator("#account-panel");
+    await expect(panel).toBeVisible();
+    await expect(page.locator("#account-backdrop")).toHaveCSS("display", "none");
+
+    // A point clear of both the panel (top-right corner) and the Account
+    // button that opened it.
+    await page.mouse.click(60, 400);
+    await expect(panel).toBeHidden();
+  });
+
+  // The landing page carries a product strip (.home-strip) above the
+  // topbar, so at the top of the page the topbar -- and the Account button
+  // inside it -- sit in normal document flow below that strip rather than
+  // already docked at the sticky top:0 position --topbar-h/--tabstrip-h
+  // assume. A plain CSS offset from those two variables floated the panel
+  // up over the button in exactly this state.
+  test("the Account button stays clickable with the panel open on the landing page, before its product strip has scrolled past", async ({
+    page,
+  }) => {
+    await withTestClientId(page);
+    await page.goto(indexUrl(), { waitUntil: "domcontentloaded" });
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+    const accountBtn = page.locator("#account-btn");
+    const panel = page.locator("#account-panel");
+    await accountBtn.click();
+    await expect(panel).toBeVisible();
+
+    // Covered, this click would land on the panel (which has no handler for
+    // a plain click) and never reach the button underneath.
+    await accountBtn.click();
+    await expect(panel).toBeHidden();
   });
 });
 
@@ -315,6 +391,8 @@ test.describe("DIYA-GL page — the sign-in return", () => {
     await openAccountPanel(page);
     await page.locator("#account-panel").getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL((url) => !url.search.includes("code="), { timeout: 10_000 });
+    // The login event follows the token exchange, which finishes after the URL is cleaned.
+    await expect(page.locator("#account-btn")).toHaveAttribute("title", "reader@example.com");
 
     const loggedIn = await gaEvents(page, "login");
     expect(loggedIn).toEqual([{ method: "Google" }]);
@@ -874,6 +952,62 @@ test.describe("DIYA-GL page — save to my account", () => {
       { product: "bst", outcome: "created" },
       { product: "bst", outcome: "updated" },
     ]);
+  });
+
+  // With no link of its own (a fresh tab never saved this book before, or
+  // the same example re-saved after a reload lost the tab's sessionStorage)
+  // a save that matches an existing book on title, product and period lands
+  // straight on that book: no "Update it, or save as a new book?" prompt
+  // sits between the reader and one more account holding a duplicate.
+  test("a save with no link and a matching book already in the account updates that book, with no prompt", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+
+    const putRequests = [];
+    await page.route(`${PROD_API_BASE}/books`, (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          books: [
+            {
+              bookId: "existing-book",
+              title: "Precision Code Trading",
+              product: "bst",
+              latestVersion: 3,
+              latestETag: "existing-etag",
+              latestSize: 15000,
+              updatedAt: "2026-09-13T09:00:00.000Z",
+              periodCoveredStart: "2025-04-01",
+              periodCoveredEnd: "2026-03-31",
+              versions: [],
+              provenance: {},
+            },
+          ],
+        }),
+      });
+    });
+    await page.route(`${PROD_API_BASE}/books/*`, async (route) => {
+      if (route.request().method() !== "PUT") return route.continue();
+      putRequests.push({ bookId: route.request().url().split("/").pop(), ifMatch: route.request().headers()["if-match"] || null });
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ metadata: { latestETag: "existing-etag-2", latestVersion: 4 } }),
+      });
+    });
+
+    await page.click("#save-btn");
+    await page.getByRole("menuitem", { name: "Save to my account", exact: true }).click();
+
+    await expect(page.locator("#toast")).toContainText("Saved to your account as version 4.", { timeout: 10_000 });
+    await expect(page.locator("#account-panel")).toBeHidden();
+
+    expect(putRequests).toEqual([{ bookId: "existing-book", ifMatch: '"existing-etag"' }]);
+    expect(await gaEvents(page, "cloud_save")).toEqual([{ product: "bst", outcome: "updated" }]);
   });
 
   test("a 412 shows the conflict card; saving as a new book carries a fresh id and no If-Match", async ({ page }) => {

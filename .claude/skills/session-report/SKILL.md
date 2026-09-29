@@ -37,10 +37,11 @@ git diff --shortstat <main at session start>..<main now> -- . ':!packages' ':!ex
 git diff --shortstat <main at session start>..<main now>
 ```
 
-Board rows closed: the rows that left `NEXT.md`'s Board table between the session's first and
-last `/board` render (`git log -p --since=<start> -- NEXT.md` shows each `| <ID> | ... |` row
-removed). Sibling-repository PRs the session opened (`submit.diyaccounting.co.uk`,
-`homebrew-diya-gl`) count separately; they are not this repository's output.
+Board rows closed: this repository's rows that left the board (`../submit.diyaccounting.co.uk/NEXT.md`)
+between the session's first and last `/board` render (`git -C ../submit.diyaccounting.co.uk log -p
+--since=<start> -- NEXT.md` shows each `- [ ] **<ID>. ...` row removed). Sibling-repository PRs the
+session opened (`submit.diyaccounting.co.uk`, `homebrew-diya-gl`) count separately; they are not
+this repository's output.
 
 **Elapsed.** Session start is the first tool call's timestamp; batch dispatch to prod is the first
 agent dispatch to the prod deploy that promoted the batch (`set-last-known-good-deployment`

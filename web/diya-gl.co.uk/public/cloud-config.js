@@ -11,10 +11,11 @@
 // the page (cloud.js's isEnabled()).
 //
 // googleClientId is the same kind of public identifier for the Drive store
-// (drive.js's isOffered()) -- Submit's Google OAuth client id, once the
-// operator's console steps (PLAN_DIYA_GL_LAUNCH.md, LP-24 "Operator steps")
-// have added diya-gl.co.uk and ci.diya-gl.co.uk as authorised origins. It
-// stays null until then, which keeps every Drive control off the page.
+// (drive.js's isOffered(), free and browser-only, no Submit sign-in) --
+// its own web client, separate from the sign-in client above, once one
+// exists with diya-gl.co.uk and ci.diya-gl.co.uk as its JavaScript
+// origins. It stays null until then, which keeps every Drive control off
+// the page.
 (function () {
   "use strict";
 

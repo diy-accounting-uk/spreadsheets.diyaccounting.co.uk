@@ -54,8 +54,8 @@ Skills live at `.claude/skills/<name>/SKILL.md`.
 - `.claude/skills/excel/SKILL.md` — Excel XML manipulation techniques, xls roundtrip, external link caches, multi-file recalculation, testing approaches, known pitfalls
 - `.claude/skills/package-updates/SKILL.md` — Annual tax data update process, HMRC rate sources, TOML file structure, publishing workflow
 - `.claude/skills/plain-prose/SKILL.md` — writing rules for plain, human prose; follow this for all human-facing text (docs, comments, chat)
-- `.claude/skills/do-next/SKILL.md` — dispatch `NEXT.md`'s open items as worktree-isolated sub-agents
-- `.claude/skills/board/SKILL.md` — render the work board from `NEXT.md`: in-flight and open items with their source plan; invoke as `/board`
+- `.claude/skills/do-next/SKILL.md` — dispatch the board's (`../submit.diyaccounting.co.uk/NEXT.md`) open items for this repository as worktree-isolated sub-agents
+- `.claude/skills/board/SKILL.md` — render the work board from `../submit.diyaccounting.co.uk/NEXT.md`: in-flight and open items with their source plan; invoke as `/board`
 - `.claude/skills/watch/SKILL.md` — watch GitHub CI on main and every open PR's head branch until the whole scope is green, and fix what goes red; invoke as `/watch`
 - `.claude/skills/iterate/SKILL.md` — run the delivery cycle unattended until the board has no machine-only row that can start: board, a wave of sub-agent batches on one branch and one PR, watch, auto-merge, watch, board, again; invoke as `/iterate`
 - `.claude/skills/archive-packages/SKILL.md` — take a cut of the generated packages into `diy-accounting-archive` as one reviewed commit
@@ -197,7 +197,8 @@ checks, fixtures, or the judge.
   defect is fixed at source with a new deterministic check (so its class stops needing the
   judge); a context gap gets a new indicator in `app/lib/report-indicators.js` or a per-product
   note in `app/bin/judge-reconciliation.js`. The rubric's standards are never softened. Template
-  defects the fixtures cannot fix become NEXT.md items with the hand-computed evidence.
+  defects the fixtures cannot fix become board items (`../submit.diyaccounting.co.uk/NEXT.md`)
+  with the hand-computed evidence.
 - **Verification ladder per change**: `npm test` on the change → the featured scenario
   reconciles RECONCILES → the pre-push hook's routed run → the four `generate-*` workflows
   dispatched with skip-commit on the branch (deterministic gates plus the live judge under

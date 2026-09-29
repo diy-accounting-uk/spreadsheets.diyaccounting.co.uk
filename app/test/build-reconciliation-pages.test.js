@@ -4,8 +4,12 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
-import { join } from "path";
+import { join, dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import { parseReport, renderFrontMatter, loadReleases, recordRelease } from "../bin/build-reconciliation-pages.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const RECONCILIATION_DIR = resolve(__dirname, "..", "..", "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation");
 
 const FIXTURE_REPORT = `# Reconciliation Report: GB Accounts Company 2026-03-31 (Mar26) Excel 2007
 
@@ -127,4 +131,15 @@ describe("recordRelease", () => {
 
     expect(data.releases[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
+});
+
+describe("published reconciliation pages", () => {
+  const pages = ["index.html", "bst.html", "se.html", "ltd.html", "taxi.html", "releases.html"];
+
+  for (const page of pages) {
+    it(`${page} carries a DIYA-GL entry in the top nav, linking back to diya-gl.co.uk`, () => {
+      const html = readFileSync(join(RECONCILIATION_DIR, page), "utf8");
+      expect(html).toContain('<a href="https://diya-gl.co.uk/">DIYA-GL</a>');
+    });
+  }
 });

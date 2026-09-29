@@ -1,16 +1,17 @@
 ---
 name: refine
-description: Refine every open row on NEXT.md in the main context before a wave is dispatched — check each reference against origin/main, make each brief complete enough for its sub-agent and pick the lowest model that fits, share the facts one row's check turns up with every row they help, and split the human step out of any row that mixes one with machine work — then write the file back and render /board. Invoke when the operator asks for a readiness, feasibility or context pass over the board, or says "refine the board".
+description: Refine every open board row that changes this repository, in the main context before a wave is dispatched — check each reference against origin/main, make each brief complete enough for its sub-agent and pick the lowest model that fits, share the facts one row's check turns up with every row they help, and split the human step out of any row that mixes one with machine work — then write the board back and render /board. Invoke when the operator asks for a readiness, feasibility or context pass over the board, or says "refine the board".
 ---
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 
 # refine
 
-Four passes over `NEXT.md`, in the main context and with no sub-agents, then the write-back and
-`/board`. A sub-agent reads only its brief; every fact it would otherwise have to rediscover costs
-tokens, and every fact it gets wrong costs a redeploy. The passes move that discovery into one
-place, once.
+Four passes over the board's (`../submit.diyaccounting.co.uk/NEXT.md`) rows that change this
+repository — CQ-*, LP-*, F-BS2, MK-2, as its intro line names them — in the main context and with
+no sub-agents, then the write-back and `/board`. A sub-agent reads only its brief; every fact it
+would otherwise have to rediscover costs tokens, and every fact it gets wrong costs a redeploy.
+The passes move that discovery into one place, once.
 
 ## Before the passes
 
@@ -36,8 +37,8 @@ fact it names:
   pass corrects the number, never the anchor.
 - **Symbols exist**: `grep -n '<symbol>' <file>` for each function, constant, env var, workflow
   job and input the row names. A label another row or a plan once used (`DG-2b`) is not a
-  reference; replace it with the command or file it stood for (`git log -S'<label>' -- NEXT.md`
-  finds the text).
+  reference; replace it with the command or file it stood for (`git -C
+  ../submit.diyaccounting.co.uk log -S'<label>' -- NEXT.md` finds the text).
 - **Counts are current**: a row that quotes a count (findings, files, alerts, resources) gets the
   count re-run (`gh api …/code-scanning/alerts`, `git diff --name-only`, the router's `--plan`
   tier list) and the number replaced.
@@ -129,11 +130,13 @@ waits, and the board reads it as one blocked lump. Split it:
 
 ## Write-back
 
-`NEXT.md` in board order (in flight, machine-only, machine-ask, human-driven, blocked; within a
-section by size, fewest files first), the prod and ci lines current, then `npx prettier --write NEXT.md`, one commit whose message carries the
-corrections, the decisions and the splits, and a push straight to `main` as its own command (the
-docs exception). The rows carry only what is open. Then `/board`, whose render is the proof that
-the file and the table agree.
+In `../submit.diyaccounting.co.uk/`: `NEXT.md` in board order (in flight, machine-only,
+machine-ask, human-driven, blocked; within a section by size, fewest files first), the prod and ci
+lines current, then `npx prettier --write NEXT.md` and `npx vitest run
+app/unit-tests/nextShape.test.js`, one commit whose message carries the corrections, the decisions
+and the splits, and a push straight to that repository's `main` as its own command (its docs
+exception). The rows carry only what is open. Then `/board`, whose render is the proof that the
+file and the table agree.
 
 ## What this pass has caught
 

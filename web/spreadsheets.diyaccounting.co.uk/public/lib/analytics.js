@@ -125,3 +125,119 @@ rumConfigScript.async = true;
 rumConfigScript.src = "/lib/rum-config.js";
 rumConfigScript.onload = initRum;
 document.head.appendChild(rumConfigScript);
+
+// Acquisition source capture and cross-site link decoration: which campaign, ad or referral
+// brought this visitor, and carrying that source into every link this page has into Submit.
+// Copied byte-for-byte onto diya-gl.co.uk by scripts/build-diya-gl-bundle.mjs, so the fallback
+// source below reads the hostname at runtime rather than being baked in per site.
+const ACQUISITION_STORAGE_KEY = "acquisition.source";
+const ACQUISITION_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
+const ACQUISITION_PARAM_NAMES = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "gclid", "ref"];
+
+function readLandingAcquisitionParams() {
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const found = {};
+    for (const name of ACQUISITION_PARAM_NAMES) {
+      const value = searchParams.get(name);
+      if (value) found[name] = value;
+    }
+    return found;
+  } catch (error) {
+    console.warn("Failed to read acquisition parameters from the landing URL:", error);
+    return {};
+  }
+}
+
+function readStoredAcquisition() {
+  try {
+    const raw = localStorage.getItem(ACQUISITION_STORAGE_KEY);
+    if (!raw) return null;
+    const stored = JSON.parse(raw);
+    if (!stored || typeof stored.landedAt !== "number") return null;
+    if (Date.now() - stored.landedAt > ACQUISITION_WINDOW_MS) return null;
+    return stored;
+  } catch (error) {
+    console.warn("Failed to read the stored acquisition source:", error);
+    return null;
+  }
+}
+
+function storeAcquisition(params) {
+  try {
+    localStorage.setItem(ACQUISITION_STORAGE_KEY, JSON.stringify({ ...params, landedAt: Date.now() }));
+  } catch (error) {
+    console.warn("Failed to store the acquisition source:", error);
+  }
+}
+
+// First touch wins inside the 90-day window: an untagged landing leaves whatever is stored
+// alone; a tagged landing, first or later, replaces it and restarts the window.
+function captureAcquisitionSource() {
+  const landingParams = readLandingAcquisitionParams();
+  if (Object.keys(landingParams).length > 0) {
+    storeAcquisition(landingParams);
+  }
+}
+
+captureAcquisitionSource();
+
+// This site's own name, appended when a visitor carries no stored source, so cross-site
+// traffic between the DIY Accounting properties is attributed rather than reading as direct.
+function fallbackAcquisitionSource() {
+  let hostname = "";
+  try {
+    hostname = window.location.hostname || "";
+  } catch (error) {
+    hostname = "";
+  }
+  return hostname.includes("diya-gl") ? "diya-gl" : "spreadsheets";
+}
+
+function acquisitionParamsForOutboundLink() {
+  const stored = readStoredAcquisition();
+  if (stored) {
+    const { landedAt, ...params } = stored;
+    return params;
+  }
+  return { utm_source: fallbackAcquisitionSource(), utm_medium: "referral" };
+}
+
+// Appends the stored (or fallback) acquisition source to a link into Submit, without
+// overwriting any parameter the link already carries.
+function decorateSubmitLink(anchor) {
+  const href = anchor.getAttribute("href");
+  if (!href) return;
+  let url;
+  try {
+    url = new URL(href, window.location.href);
+  } catch (error) {
+    return;
+  }
+  if (url.hostname !== "submit.diyaccounting.co.uk") return;
+  const params = acquisitionParamsForOutboundLink();
+  for (const [key, value] of Object.entries(params)) {
+    if (!url.searchParams.has(key)) {
+      url.searchParams.set(key, value);
+    }
+  }
+  anchor.setAttribute("href", url.toString());
+}
+
+function decorateSubmitLinks() {
+  try {
+    document.querySelectorAll("a[href]").forEach(decorateSubmitLink);
+  } catch (error) {
+    console.warn("Failed to decorate links into Submit:", error);
+  }
+}
+
+try {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", decorateSubmitLinks);
+  } else {
+    decorateSubmitLinks();
+  }
+} catch (error) {
+  console.warn("Failed to wire up Submit link decoration:", error);
+}
