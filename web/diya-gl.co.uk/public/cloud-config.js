@@ -12,10 +12,10 @@
 //
 // googleClientId is the same kind of public identifier for the Drive store
 // (drive.js's isOffered(), free and browser-only, no Submit sign-in) --
-// its own web client, separate from the sign-in client above, once one
-// exists with diya-gl.co.uk and ci.diya-gl.co.uk as its JavaScript
-// origins. It stays null until then, which keeps every Drive control off
-// the page.
+// its own web client, separate from the sign-in client above, with
+// diya-gl.co.uk and ci.diya-gl.co.uk among its JavaScript origins (Submit's
+// infra/google/gcp/oauth.toml, purpose drive_browser). A null id keeps
+// every Drive control off the page.
 (function () {
   "use strict";
 
@@ -23,7 +23,7 @@
     apiBase: "https://submit.diyaccounting.co.uk/api/v1",
     hostedUi: "https://prod-auth.diyaccounting.co.uk",
     clientId: "1c8hjrjp5g5ipm8o47t6qkks4r",
-    googleClientId: null,
+    googleClientId: "670010122633-56q89d0h9c4skb9cpj4h9j2gr3kq06vd.apps.googleusercontent.com",
   };
 
   // A browser test's addInitScript sets these before any page script runs
