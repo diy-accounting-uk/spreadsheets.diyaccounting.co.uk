@@ -65,8 +65,8 @@ have to discover to finish. Then put that in the brief. The checks that paid for
   mismatch: the brief names the run id and the log line that settles the cause, and the two or
   three causes it can find (Submit's rule changed, the fixture drifted, the template moved), so the agent
   fixes the layer it finds rather than the one the row guessed.
-- **The runtime the agent will find.** A fresh worktree has no `node_modules` (symlink the main
-  checkout's), no built redirect functions (`npm run build:redirects`), `packages/` byproducts
+- **The runtime the agent will find.** A fresh worktree has no `node_modules` (`scripts/worktree-add.sh`
+  links the main checkout's), no built redirect functions (`npm run build:redirects`), `packages/` byproducts
   the router's build step writes (untracked, ignored by the tree hash), and a LibreOffice one
   suite at a time may own: the router refuses to start beside a live `soffice`, `playwright` or
   `vitest`, so the brief carries the wait loop. `spotless:apply` reformats files the row does not

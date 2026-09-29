@@ -64,7 +64,9 @@ scheduled run, a nightly package generation, or a date are not startable; leave 
 `/do-next`'s shape, sized by these rules:
 
 - **One batch branch per wave** (`claude/<codename>-<theme>`, named as `/do-next` says, its own worktree under
-  `../.worktrees/spreadsheets/<codename>`), every agent worktree branched from it, this repo's own
+  `../.worktrees/spreadsheets/<codename>`), every agent worktree branched from it (each created with
+  `scripts/worktree-add.sh <path> <branch> <base>`, which links `node_modules` and fails when it
+  cannot), this repo's own
   `NEXT.md` pointer never on it, and the board (`../submit.diyaccounting.co.uk/NEXT.md`) never on
   it either — it sits in a separate repository, so it cannot ride this repo's batch branch at all.
 - **Before the batch's first push, check open PRs for file overlap** (`/do-next`'s rule under
@@ -92,7 +94,8 @@ scheduled run, a nightly package generation, or a date are not startable; leave 
   with the why in its body, and the content proof (`git diff <agent-branch> <batch> -- <its
 files>` empty). Read the diff before landing it; a test that asserts a count across the whole
   stack, or a comment that restates the code, is fixed on the batch, not sent back.
-- **Once per batch before its first push**: the routed `npm test` run on the merged tree, in the
+- **Once per batch before its first push**: check `[ -L node_modules ]` in the batch worktree and
+  stop with a message when it fails, then the routed `npm test` run on the merged tree, in the
   background. Then one push, one PR whose body says what each row turned out to be, and `/watch`.
 
 ### 3. Watch

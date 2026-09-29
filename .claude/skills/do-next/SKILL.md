@@ -89,7 +89,10 @@ batch branch**, not from `main`, so each wave builds on what the last one landed
 When an open PR shares files with the batch, the batch does not simply fork from `main` and push:
 see "Before the first push of a batch" under Pushing for the check and the fix.
 
-Give the batch branch its own worktree and leave the primary checkout on `main`. You merge into the
+Give the batch branch its own worktree and leave the primary checkout on `main`. Create it, and
+every agent worktree, with `scripts/worktree-add.sh <path> <branch> <base>`: it runs `git worktree
+add -b`, links `node_modules` from this repository's main checkout and exits 1 when the link is
+missing. You merge into the
 batch worktree; you edit the board in `../submit.diyaccounting.co.uk/`, not here.
 
 ### Naming the batch
@@ -183,6 +186,9 @@ A fresh agent carries none of your context, so the brief stands alone. Every bri
 - **Its worktree path and branch**, and that it works only there. It may `git add` its own files
   and commit. Never `git stash`, `git reset`, `git checkout --` or `git clean`. Never push, never
   open a PR, never edit `NEXT.md` or the board (`../submit.diyaccounting.co.uk/NEXT.md`).
+- **Its worktree exists with `node_modules` linked**: created by `scripts/worktree-add.sh`, which
+  the coordinator runs before dispatch. An empty `node_modules` in a fresh worktree failed a
+  router run's diya-gl bundle step after 46 minutes.
 - **Every Bash call starts with `cd <worktree>` or uses `git -C <worktree>`**, because a shell that
   starts in the primary checkout edits `main` and leaves work uncommitted there.
 - **Every Read, Edit and Write path is absolute under the worktree**, not only the Bash `cd`. The
@@ -359,7 +365,8 @@ after ci deployed the stale head, 2026-09-23). Name the overlapping PR in the bo
 (`../submit.diyaccounting.co.uk/NEXT.md`) for every row it touches.
 
 Before the first push of a batch, the routed run (`npm test`, what `.githooks/pre-push` runs) is the
-first-push proof. Run `npm test -- --all` only when the router escalates to the full set (a detached
+first-push proof. First check `[ -L node_modules ]` in the batch worktree and stop with a message
+when it fails (`scripts/worktree-add.sh` creates the link). Run `npm test -- --all` only when the router escalates to the full set (a detached
 HEAD, missing `origin/main`, shallow clone, or empty diff) or the change touches a shared generated
 artifact whose radius the router cannot see; say so when that is why. Add the relevant behaviour
 target when the change reaches the site or a package. The router refuses to start while a
