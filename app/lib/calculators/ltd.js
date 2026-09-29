@@ -1576,7 +1576,7 @@ function buildTrialBalance(input) {
   // Interest received arrives net of the tax deducted at source, and the
   // computation charges the gross figure. EH58 is the grossing-up and EH35
   // gives the same tax back as a credit against the charge.
-  tb.EH58 = tb.EJ58 / ((100 - input.smallProfitsRatePercent) / 100) - tb.EJ58;
+  tb.EH58 = Math.round((tb.EJ58 / ((100 - input.smallProfitsRatePercent) / 100) - tb.EJ58) * 100) / 100;
   tb.EJ58 += tb.EH58;
   tb.EH35 = -tb.EH58;
 
@@ -1867,7 +1867,7 @@ function buildCorporationTax({ admin, trialBalance, blocks, publishedPl, openAcc
     sheet[`L${sheetRow}`] = row.marginalRelief;
     sheet[`I${sheetRow}`] = row.tax;
   });
-  sheet.K35 = charge.tax;
+  sheet.K35 = Math.round(charge.tax * 100) / 100;
   sheet.K37 = trialBalance.EH35;
   sheet.K39 = sheet.K35 - sheet.K37;
   sheet.marginalRelief = charge.marginalRelief;
@@ -1913,7 +1913,7 @@ function buildCt600(corporationTax, pl, admin) {
   sheet.AJ110 = sheet.AJ92;
   sheet.AJ131 = sheet.AJ126 + sheet.AJ128;
   sheet.Y133 = corporationTax.marginalRelief;
-  sheet.Y135 = sheet.AJ131 - sheet.Y133;
+  sheet.Y135 = corporationTax.K35;
   sheet.AJ145 = sheet.Y135;
   sheet.AJ154 = corporationTax.K37 > 0 ? corporationTax.K37 : 0;
   sheet.AJ159 = sheet.AJ145 > 0 ? sheet.AJ145 - sheet.AJ154 : 0;

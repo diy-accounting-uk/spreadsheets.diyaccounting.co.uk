@@ -31,6 +31,8 @@ const DATA_DIR = resolve(APP_DIR, "data");
 // book, so the figures here are the ones the featured package reports.
 const FIXTURE_PROFIT = 147519.897839506;
 
+const toPence = (amount) => Math.round(amount * 100) / 100;
+
 const READS = {
   CorporationTax: ["A33", "A34", "A35", "E33", "E34", "F33", "F34", "G33", "G34", "J33", "J34", "L33", "L34", "I33", "I34", "K28", "K35"],
   CT600: ["C126", "N126", "AA126", "AJ126", "C128", "N128", "AA128", "AJ128", "AJ131", "Y133", "Y135", "AJ145"],
@@ -111,7 +113,7 @@ describeCalc(
       // years splits the profit and both limits the same way, so the two
       // rows add back to the same charge.
       for (const name of ["march", "december", "september"]) {
-        expect(runs[name].CorporationTax.K35, name).toBeCloseTo(35342.772927, 4);
+        expect(runs[name].CorporationTax.K35, name).toBe(35342.77);
         expect(runs[name].CorporationTax.L33 + runs[name].CorporationTax.L34, name).toBeCloseTo(1537.201532, 4);
         expect(runs[name].CorporationTax.J33 + runs[name].CorporationTax.J34, name).toBeCloseTo(36879.97446, 4);
       }
@@ -129,7 +131,7 @@ describeCalc(
       expect(ct.G34).toBe(19);
       expect(ct.L33).toBe(0);
       expect(ct.L34).toBe(0);
-      expect(ct.K35).toBeCloseTo(FIXTURE_PROFIT * 0.19, 6);
+      expect(ct.K35).toBe(toPence(FIXTURE_PROFIT * 0.19));
     });
 
     it("charges the small profits rate below the lower limit and the main rate above the upper one", () => {
@@ -147,7 +149,7 @@ describeCalc(
     it("agrees with the statutory computation at every profit level and year end", () => {
       for (const [name, { profit }] of Object.entries(CASES)) {
         const statutory = calculateCorporationTax(profit, rates[name]).corporationTax;
-        expect(runs[name].CorporationTax.K35, name).toBeCloseTo(statutory, 6);
+        expect(runs[name].CorporationTax.K35, name).toBe(toPence(statutory));
       }
     });
 
@@ -163,7 +165,7 @@ describeCalc(
       }
       expect(runs.march.CT600.AJ131).toBeCloseTo(36879.97446, 4);
       expect(runs.march.CT600.Y133).toBeCloseTo(1537.201532, 4);
-      expect(runs.march.CT600.Y135).toBeCloseTo(35342.772927, 4);
+      expect(runs.march.CT600.Y135).toBe(35342.77);
     });
 
     it("fills the second financial year row only when the period reaches into one", () => {
