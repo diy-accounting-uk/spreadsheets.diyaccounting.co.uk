@@ -6,7 +6,7 @@
     "rule": "{ op: sum | deduct, cells: [<cell> ...], why }; deduct is the first cell minus the rest"
   },
   "sources": {
-    "boxLists": "_developers/hmrc-references/hmrc-forms-sole-trader.md, read 2026-09-04",
+    "boxLists": "../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-sole-trader.md, read 2026-09-04",
     "template": "packages/GB Accounts Self Employed 2026-04-05 (Apr26) Excel 2007/Financialaccounts.xlsx, read 2026-09-05"
   },
   "forms": {

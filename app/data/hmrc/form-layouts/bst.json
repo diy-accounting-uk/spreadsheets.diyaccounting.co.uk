@@ -6,7 +6,7 @@
     "derived": "a resolver the render owns, set only where cell is null: \"pl:C<n>\" for one Profit & Loss Acc cell, or \"sum:C<n>,C<m>\" for a total of several"
   },
   "sources": {
-    "boxLists": "_developers/hmrc-references/hmrc-forms-sole-trader.md, section 1",
+    "boxLists": "../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-sole-trader.md, section 1",
     "template": "packages/GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007/Financialaccountsto050426.xlsx"
   },
   "notes": {

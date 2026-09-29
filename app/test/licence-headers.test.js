@@ -27,11 +27,10 @@ const COPYRIGHT = "Copyright (C) 2006-2026 DIY Accounting Limited";
 
 const CC_BY_PATH = "web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-docs.md";
 
-// Directories a header sweep never enters: build artefacts, vendored
-// third-party trees, and HMRC material the company does not licence.
+// Directories a header sweep never enters: build artefacts and vendored
+// third-party trees.
 const EXCLUDED_PATH_PREFIXES = [
   "packages/",
-  "_developers/hmrc-references/",
   "node_modules/",
   "reports/",
   "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/",

@@ -6,7 +6,7 @@
     "derived": "a resolver the render owns, set only where cell is null: a name in DiyaGlTaxiForms.DERIVED_NAMES, \"pl:B<n>\" for one Profit & Loss Acc cell, or \"sum:B<n>,B<m>\" for a total of several"
   },
   "sources": {
-    "boxLists": "_developers/hmrc-references/hmrc-forms-sole-trader.md, section 1",
+    "boxLists": "../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-sole-trader.md, section 1",
     "template": "packages/GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007/Financialaccountsyearto050426.xlsx"
   },
   "notes": {
