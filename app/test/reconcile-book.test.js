@@ -17,8 +17,10 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
-import { applyCellWrites } from "../lib/spreadsheet-runner.js";
+import { applyCellWrites, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { reconcileBook } from "../bin/reconcile.js";
+
+const describeCalc = hasLibreOffice() ? describe : describe.skip;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -37,7 +39,7 @@ async function writeBookPackage(packagesDir) {
   return pkgDir;
 }
 
-describe("reconcileBook", () => {
+describeCalc("reconcileBook", () => {
   it("reconciles clean against the package it was written from", async () => {
     const packagesDir = mkdtempSync(resolve(tmpdir(), "reconcile-book-"));
     await writeBookPackage(packagesDir);
