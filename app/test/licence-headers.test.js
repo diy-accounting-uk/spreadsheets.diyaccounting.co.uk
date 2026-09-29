@@ -29,12 +29,7 @@ const CC_BY_PATH = "web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-d
 
 // Directories a header sweep never enters: build artefacts and vendored
 // third-party trees.
-const EXCLUDED_PATH_PREFIXES = [
-  "packages/",
-  "node_modules/",
-  "reports/",
-  "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/",
-];
+const EXCLUDED_PATH_PREFIXES = ["packages/", "node_modules/", "reports/", "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/"];
 
 // Individual files: licence texts themselves, third-party wrapper scripts,
 // lock files, and files a build script writes its own header into.
