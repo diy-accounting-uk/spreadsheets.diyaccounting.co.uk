@@ -794,7 +794,7 @@ describeCalc(
       expect(ct.A35).toBe(admin.F21 - admin.B9 + 1);
       expect(ct.F33).toBeCloseTo(ct.K28, 6);
       expect(ct.F34).toBe(0);
-      expect(ct.I33 + ct.I34).toBeCloseTo(ct.K35, 6);
+      expect(ct.I33 + ct.I34).toBeCloseTo(ct.K35, 2);
     });
 
     it("names the accounting period on the working sheet and on the return", () => {
@@ -831,9 +831,9 @@ describeCalc(
       expect(ct.G33).toBe(25);
       expect(ct.J33).toBeCloseTo(ct.K28 * 0.25, 6);
       expect(ct.L33).toBeCloseTo((250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(statutory, 6);
+      expect(ct.K35).toBe(Math.round(statutory * 100) / 100);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(29740.591948753, 4);
+      expect(ct.K35).toBe(29740.59);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -842,7 +842,7 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(31104.974459877, 4);
+      expect(ct600.AJ131).toBeCloseTo(31104.975416667, 4);
       expect(ct600.Y133).toBeCloseTo(1364.382511123, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
@@ -1380,7 +1380,7 @@ describeCalc(
       expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
-      expect(tb.EJ35).toBeCloseTo(-29676.09, 2);
+      expect(tb.EJ35).toBeCloseTo(-29676.08, 2);
     });
 
     it("writes each CIS certificate into the purchase journal's own column", () => {
