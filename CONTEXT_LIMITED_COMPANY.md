@@ -502,7 +502,7 @@ Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals
 
 ## Filing Taxonomy Mapping
 
-The Ltd product is the primary XBRL consumer — Companies House filing requires iXBRL accounts, HMRC requires iXBRL computations with the CT600. See `_developers/hmrc-references/cell-to-xbrl-mapping.md` for full iXBRL element names.
+The Ltd product is the primary XBRL consumer — Companies House filing requires iXBRL accounts, HMRC requires iXBRL computations with the CT600. See `../private.diyaccounting.co.uk/hmrc/publications/cell-to-xbrl-mapping.md` for full iXBRL element names.
 
 ### Published P&L (PubP&L) — FRS 102 Statutory Accounts
 

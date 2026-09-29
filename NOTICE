@@ -33,8 +33,7 @@ Copyright the Apache Software Foundation. Apache License 2.0.
 HMRC-derived data. The tax rates, thresholds, form layouts and box mappings under
 app/data/ (including app/data/filing/ and app/data/hmrc/sa103f_mapping_v3.csv), the
 knowledge-base reference additions under
-web/spreadsheets.diyaccounting.co.uk/public/data/ref-additions/, and the HMRC
-reference material under _developers/hmrc-references/, are derived from HM Revenue
+web/spreadsheets.diyaccounting.co.uk/public/data/ref-additions/, are derived from HM Revenue
 & Customs publications. Crown copyright, used under the Open Government Licence
 v3.0: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
 

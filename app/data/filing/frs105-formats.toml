@@ -7,7 +7,7 @@
 #   Schedule 1, Section C (micro-entity formats, inserted by SI 2013/3008):
 #   https://www.legislation.gov.uk/uksi/2008/409/schedule/1
 #   In-force consolidated text, last modified 16 April 2025, valid from 6 April 2025.
-# - Headings transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 4.
+# - Headings transcribed in ../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-company.md, section 4.
 # - sheetCell: the Companies House accounts mapping in "The look-alike forms" section of
 #   PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked against CELL_MAP/standardReads() in
 #   app/products/ltd.js. Only one of Format 1 or Format 2 may be used for the balance sheet

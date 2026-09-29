@@ -7,7 +7,7 @@
 #   https://www.gov.uk/government/publications/corporation-tax-technical-specifications-xbrl-and-ixbrl
 # - The format PDF:
 #   https://assets.publishing.service.gov.uk/media/691c7cd40dcbf6343e9a2999/ct-computations-format-version-1.1.pdf
-# - Lines and XBRL tags transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 3.
+# - Lines and XBRL tags transcribed in ../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-company.md, section 3.
 # - sheetCell: "The tax computation view" paragraph of PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked
 #   against CELL_MAP/standardReads() in app/products/ltd.js.
 #

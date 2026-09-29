@@ -7,7 +7,7 @@
 #   https://www.gov.uk/government/publications/corporation-tax-company-tax-return-ct600-2015-version-3
 # - Form PDF, footer stamp HMRC 04/26:
 #   https://assets.publishing.service.gov.uk/media/69c543424a06660f085442bd/ct600.pdf
-# - Box list transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 1.
+# - Box list transcribed in ../private.diyaccounting.co.uk/hmrc/publications/hmrc-forms-company.md, section 1.
 # - element/xmlPath/format: HMRC RIM artefacts V1.994 (10 October 2025), CT-specDoc-v1-994.xml,
 #   downloaded from https://assets.publishing.service.gov.uk/media/68e8a35c1c8b2a3b5069080c/HMRC-CT-2014-v1-994.zip
 #   (research note section 7 names this download; the zip is not committed to this repo --
