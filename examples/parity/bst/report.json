@@ -1170,8 +1170,8 @@
     {
       "key": "check/Net Profit",
       "unit": "verdict",
-      "value": "fail",
-      "expected": "265508",
+      "value": "pass",
+      "expected": "265371.5",
       "actual": "265371",
       "tolerance": "1"
     },

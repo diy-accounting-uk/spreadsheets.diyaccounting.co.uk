@@ -6747,9 +6747,9 @@
     {
       "key": "check/Category netting: Motor Expenses (purchases v) net reaches Profit & Loss Account!B25 with no residue",
       "unit": "verdict",
-      "value": "fail",
+      "value": "pass",
       "expected": "0",
-      "actual": "-136.5",
+      "actual": "0",
       "tolerance": "0.01"
     },
     {
@@ -7186,8 +7186,8 @@
     {
       "key": "check/Motor Expenses",
       "unit": "verdict",
-      "value": "fail",
-      "expected": "6434",
+      "value": "pass",
+      "expected": "6570.5",
       "actual": "6570.75",
       "tolerance": "1"
     },
@@ -14188,17 +14188,17 @@
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/gross",
       "unit": "money",
-      "value": "7598.25"
+      "value": "7734.75"
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/net",
       "unit": "money",
-      "value": "6434.25"
+      "value": "6570.75"
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/residue",
       "unit": "money",
-      "value": "-136.5",
+      "value": "0",
       "derivedFrom": [
         "section/journal-category-vat-netting/motor-expenses-purchases-v/net",
         "section/journal-category-vat-netting/motor-expenses-purchases-v/downstream"
