@@ -53,7 +53,15 @@ function buildReport(dir) {
   const results = calculateFromDiyaGl(book, lines, "se", TAX_DATA, scenario);
   const merged = { ...scenario, ...scenario.expected };
   const checks = se.checkCompliance(results, merged, TAX_DATA, calculateExpectedTax);
-  const report = buildReportDocument({ packageName: "se", engine: "js", results, productMod: se, scenario: merged, checks });
+  const report = buildReportDocument({
+    packageName: "se",
+    engine: "js",
+    results,
+    productMod: se,
+    scenario: merged,
+    taxData: TAX_DATA,
+    checks,
+  });
   return { report, results };
 }
 

@@ -375,6 +375,7 @@ export function applyNamedEdit(bookDir, edit, product = "bst", taxData) {
     results,
     productMod,
     scenario: mergedScenario,
+    taxData: resolvedTaxData,
     checks,
     scenarioName: book.documentInfo?.entriesComment,
     yearEnd,
