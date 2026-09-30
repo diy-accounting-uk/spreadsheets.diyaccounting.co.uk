@@ -48,7 +48,7 @@ Tax data files encode the UK tax rates, thresholds, and allowances that are inje
 - Dividend tax rates at basic/higher/additional bands
 
 **Mileage and Depreciation**
-- Mileage rates (45p/25p, unchanged for many years)
+- Mileage rates (45p/25p to 2025-26; 55p/25p from 2026-27; check the gov.uk travel mileage page each year)
 - Depreciation rates (unchanged for many years)
 
 ### Files Needed for a New Year
@@ -108,7 +108,7 @@ motor_vehicles = 0.25
 
 [mileage]
 higher_rate_limit = 10000    # Miles at higher rate
-higher_rate_pence = 0.45     # Rate per mile (first 10,000)
+higher_rate_pence = 0.55     # Rate per mile (first 10,000): 0.45 to 2025-26, 0.55 from 2026-27
 lower_rate_start = 10001     # Miles where lower rate starts
 lower_rate_pence = 0.25      # Rate per mile (after 10,000)
 
