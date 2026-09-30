@@ -2041,7 +2041,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
   });
 
   test(
-    "DIYA-GL books page: the Drive save item and Connect row follow entitlement.reason, and the CSP lets Google Identity Services load " +
+    "DIYA-GL books page: the Drive save item opens the Connect card for any entitlement.reason, and the CSP lets Google Identity Services load " +
       "(stops before consent, which cannot be driven headlessly)",
     async ({ page }) => {
       // ============================================================
@@ -2168,10 +2168,10 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log(` entitlement.reason: ${reason}`);
 
       // ============================================================
-      // STEP 3: The Drive save item and Connect row follow that reason
+      // STEP 3: The Drive save item and Connect card show whatever that reason
       // ============================================================
       console.log("\n" + "=".repeat(60));
-      console.log("STEP 3: Check the Drive save item and Connect row against the entitlement");
+      console.log("STEP 3: Check the Drive save item opens the Connect card for any entitlement");
       console.log("=".repeat(60));
 
       await accountBtn.click(); // close the panel so the example button underneath it can be clicked
@@ -2184,25 +2184,19 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await expect(page.getByRole("menu"), "STEP 3 failed: the save menu never opened").toBeVisible({ timeout: 10000 });
       const driveItem = page.getByRole("menuitem", { name: "Save to my Google Drive", exact: true });
 
-      if (reason === "active-subscription") {
-        await expect(driveItem, "STEP 3 failed: the Drive save item did not appear for an active subscription").toBeVisible({
-          timeout: 5000,
-        });
-        await driveItem.click();
-        await expect(
-          panel.locator(".account-drive-connect"),
-          "STEP 3 failed: the Connect row did not appear for an active subscription",
-        ).toBeVisible({ timeout: 10000 });
-        await shot("02-connect-row");
-        console.log(
-          " The Drive save item opened the Connect row. Stopping here: the consent window Google opens on Connect cannot be driven headlessly.",
-        );
-        await accountBtn.click();
-      } else {
-        await expect(driveItem, `STEP 3 failed: the Drive save item appeared for entitlement.reason "${reason}"`).toHaveCount(0);
-        await page.keyboard.press("Escape");
-        console.log(` No Drive save item for entitlement.reason "${reason}", as expected`);
-      }
+      await expect(driveItem, `STEP 3 failed: the Drive save item did not appear for entitlement.reason "${reason}"`).toBeVisible({
+        timeout: 5000,
+      });
+      await driveItem.click();
+      await expect(
+        panel.locator('[data-action="connect-drive"]'),
+        `STEP 3 failed: the Connect card did not appear for entitlement.reason "${reason}"`,
+      ).toBeVisible({ timeout: 10000 });
+      await shot("02-connect-card");
+      console.log(
+        ` The Drive save item opened the Connect card for entitlement.reason "${reason}". Stopping here: the consent window Google opens on Connect cannot be driven headlessly.`,
+      );
+      await accountBtn.click();
 
       // ============================================================
       // STEP 4: The deployed CSP lets Google Identity Services load
@@ -2250,7 +2244,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       console.log(" Signed out");
 
       console.log("\n" + "=".repeat(60));
-      console.log("TEST COMPLETE - Drive gate verified");
+      console.log("TEST COMPLETE - Drive save item and CSP verified");
       console.log("=".repeat(60));
     },
   );

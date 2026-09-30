@@ -303,8 +303,9 @@ test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(3);
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(4);
     await expect(saveMenu.getByRole("menuitem", { name: "Save to my account", exact: true })).toBeVisible();
+    await expect(saveMenu.getByRole("menuitem", { name: "Save to my Google Drive" })).toBeVisible();
     await page.keyboard.press("Escape");
 
     expect(focusRingSamples.length).toBe(8);
