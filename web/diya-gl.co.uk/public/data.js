@@ -407,6 +407,7 @@
       results: ctx.results,
       productMod: ctx.productMod,
       scenario: expectedScenario,
+      taxData: ctx.taxData,
       checks: ctx.checks,
       scenarioName: ctx.book.documentInfo && ctx.book.documentInfo.entriesComment,
       yearEnd: yearEnd,
