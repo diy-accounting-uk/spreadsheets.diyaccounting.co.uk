@@ -5,7 +5,7 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.18+16fb115d9",
+    "engineVersion": "1.2.37+907683df0",
     "taxDataHash": "3221a7c2f39c",
     "templateHash": "1ff69654d64d",
     "templateScorecard": "686 passed, 0 warnings, 0 failed",
@@ -30,7 +30,7 @@
     {
       "key": "cell/Admin!G21",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/Admin!G22",
@@ -898,8 +898,8 @@
       "key": "check/Admin: Mileage Higher Rate Pence = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
@@ -1661,7 +1661,7 @@
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-pence",
       "unit": "rate",
-      "value": "0.45",
+      "value": "0.55",
       "source": "cell/Admin!G21"
     },
     {

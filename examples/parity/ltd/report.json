@@ -5,9 +5,9 @@
   "yearEnd": "2027-10-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.26+80457d57d",
+    "engineVersion": "1.2.37+907683df0",
     "taxDataHash": "3221a7c2f39c",
-    "templateHash": "caa14632083b",
+    "templateHash": "5bb7be9b6d97",
     "templateScorecard": "101605 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
   },
@@ -245,7 +245,7 @@
     {
       "key": "cell/Financialaccounts.xlsx!Admin!O16",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/Financialaccounts.xlsx!Admin!O17",
@@ -7520,62 +7520,62 @@
     {
       "key": "cell/expensesform.xlsx!Month 01!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 02!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 03!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 04!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 05!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 06!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 07!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 08!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 09!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 10!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 11!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/expensesform.xlsx!Month 12!C30",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "check/Accounting profit to tax profit bridge closes to zero",
@@ -7693,8 +7693,8 @@
       "key": "check/Admin O16: mileage higher rate pence",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
@@ -8693,96 +8693,96 @@
       "key": "check/Expenses form Month 01: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 02: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 03: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 04: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 05: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 06: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 07: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 08: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 09: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 10: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 11: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
       "key": "check/Expenses form Month 12: mileage rate = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {

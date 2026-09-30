@@ -5,7 +5,7 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.18+16fb115d9",
+    "engineVersion": "1.2.37+907683df0",
     "taxDataHash": "3221a7c2f39c",
     "templateHash": "0d003e10e00c",
     "templateScorecard": "812 passed, 0 warnings, 0 failed",
@@ -30,7 +30,7 @@
     {
       "key": "cell/Admin!G21",
       "unit": "rate",
-      "value": "0.45"
+      "value": "0.55"
     },
     {
       "key": "cell/Admin!G22",
@@ -345,12 +345,12 @@
     {
       "key": "cell/Income Tax!E10",
       "unit": "money",
-      "value": "45615.6"
+      "value": "45553.95"
     },
     {
       "key": "cell/Income Tax!E11",
       "unit": "money",
-      "value": "88131.6"
+      "value": "88069.95"
     },
     {
       "key": "cell/Income Tax!E12",
@@ -365,17 +365,17 @@
     {
       "key": "cell/Income Tax!E16",
       "unit": "money",
-      "value": "3524.76"
+      "value": "3522.02"
     },
     {
       "key": "cell/Income Tax!E18",
       "unit": "money",
-      "value": "93918.36"
+      "value": "93853.97"
     },
     {
       "key": "cell/Income Tax!E5",
       "unit": "money",
-      "value": "226508"
+      "value": "226371"
     },
     {
       "key": "cell/Income Tax!E6",
@@ -385,7 +385,7 @@
     {
       "key": "cell/Income Tax!E7",
       "unit": "money",
-      "value": "226508"
+      "value": "226371"
     },
     {
       "key": "cell/Income Tax!E8",
@@ -420,7 +420,7 @@
     {
       "key": "cell/Profit & Loss Acc!C15",
       "unit": "money",
-      "value": "7598"
+      "value": "7735"
     },
     {
       "key": "cell/Profit & Loss Acc!C16",
@@ -455,12 +455,12 @@
     {
       "key": "cell/Profit & Loss Acc!C22",
       "unit": "money",
-      "value": "125852"
+      "value": "125989"
     },
     {
       "key": "cell/Profit & Loss Acc!C24",
       "unit": "money",
-      "value": "265508"
+      "value": "265371"
     },
     {
       "key": "cell/Profit & Loss Acc!C26",
@@ -470,7 +470,7 @@
     {
       "key": "cell/Profit & Loss Acc!C28",
       "unit": "money",
-      "value": "226508"
+      "value": "226371"
     },
     {
       "key": "cell/Profit & Loss Acc!C30",
@@ -480,17 +480,17 @@
     {
       "key": "cell/Profit & Loss Acc!C32",
       "unit": "money",
-      "value": "88131.6"
+      "value": "88069.95"
     },
     {
       "key": "cell/Profit & Loss Acc!C33",
       "unit": "money",
-      "value": "5786.76"
+      "value": "5784.02"
     },
     {
       "key": "cell/Profit & Loss Acc!C35",
       "unit": "money",
-      "value": "132589.64"
+      "value": "132517.03"
     },
     {
       "key": "cell/Profit & Loss Acc!C4",
@@ -575,7 +575,7 @@
     {
       "key": "cell/PurchasesMar!A1",
       "unit": "money",
-      "value": "614.25"
+      "value": "750.75"
     },
     {
       "key": "cell/PurchasesMar!C1",
@@ -605,7 +605,7 @@
     {
       "key": "cell/SE Short!D106",
       "unit": "money",
-      "value": "226508"
+      "value": "226371"
     },
     {
       "key": "cell/SE Short!D38",
@@ -620,7 +620,7 @@
     {
       "key": "cell/SE Short!D51",
       "unit": "money",
-      "value": "9458"
+      "value": "9595"
     },
     {
       "key": "cell/SE Short!D55",
@@ -640,7 +640,7 @@
     {
       "key": "cell/SE Short!D71",
       "unit": "money",
-      "value": "265508"
+      "value": "265371"
     },
     {
       "key": "cell/SE Short!D80",
@@ -660,7 +660,7 @@
     {
       "key": "cell/SE Short!D99",
       "unit": "money",
-      "value": "226508"
+      "value": "226371"
     },
     {
       "key": "cell/SE Short!O71",
@@ -763,8 +763,8 @@
       "key": "check/Admin: Mileage Higher Rate Pence = tax data",
       "unit": "verdict",
       "value": "pass",
-      "expected": "0.45",
-      "actual": "0.45",
+      "expected": "0.55",
+      "actual": "0.55",
       "tolerance": "0.0001"
     },
     {
@@ -1147,8 +1147,8 @@
       "key": "check/Income Tax",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88131.6",
-      "actual": "88131.6",
+      "expected": "88069.95",
+      "actual": "88069.95",
       "tolerance": "0.01"
     },
     {
@@ -1170,9 +1170,9 @@
     {
       "key": "check/Net Profit",
       "unit": "verdict",
-      "value": "pass",
+      "value": "fail",
       "expected": "265508",
-      "actual": "265508",
+      "actual": "265371",
       "tolerance": "1"
     },
     {
@@ -1195,8 +1195,8 @@
       "key": "check/P&L: Expense lines sum = Total",
       "unit": "verdict",
       "value": "pass",
-      "expected": "125852",
-      "actual": "125852",
+      "expected": "125989",
+      "actual": "125989",
       "tolerance": "1"
     },
     {
@@ -1211,24 +1211,24 @@
       "key": "check/P&L: Motor Expenses = motoring paid for + the mileage claimed",
       "unit": "verdict",
       "value": "pass",
-      "expected": "7598.25",
-      "actual": "7598",
+      "expected": "7734.75",
+      "actual": "7735",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: Net = Gross - Expenses",
       "unit": "verdict",
       "value": "pass",
-      "expected": "265508",
-      "actual": "265508",
+      "expected": "265371",
+      "actual": "265371",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: Taxable Profit = Net Profit - Capital Allowances",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226508",
-      "actual": "226508",
+      "expected": "226371",
+      "actual": "226371",
       "tolerance": "1"
     },
     {
@@ -1243,8 +1243,8 @@
       "key": "check/P&L: tax charged = Income Tax sheet total less CIS deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88131.6",
-      "actual": "88131.6",
+      "expected": "88069.95",
+      "actual": "88069.95",
       "tolerance": "1"
     },
     {
@@ -1268,31 +1268,31 @@
       "unit": "verdict",
       "value": "pass",
       "expected": "178778",
-      "actual": "178777.75",
+      "actual": "178778.25",
       "tolerance": "1"
     },
     {
       "key": "check/Purchases: mileage claimed = those miles at the tax year's approved rates",
       "unit": "verdict",
       "value": "pass",
-      "expected": "614.25",
-      "actual": "614.25",
+      "expected": "750.75",
+      "actual": "750.75",
       "tolerance": "0.01"
     },
     {
       "key": "check/SA103S: Net profit close to P&L Net",
       "unit": "verdict",
       "value": "pass",
-      "expected": "265508",
-      "actual": "265508",
+      "expected": "265371",
+      "actual": "265371",
       "tolerance": "0"
     },
     {
       "key": "check/SA103S: Profit for tax = Income Tax E5",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226508",
-      "actual": "226508",
+      "expected": "226371",
+      "actual": "226371",
       "tolerance": "1"
     },
     {
@@ -1315,8 +1315,8 @@
       "key": "check/Tax at additional rate",
       "unit": "verdict",
       "value": "pass",
-      "expected": "45615.6",
-      "actual": "45615.6",
+      "expected": "45553.95",
+      "actual": "45553.95",
       "tolerance": "1"
     },
     {
@@ -1339,8 +1339,8 @@
       "key": "check/Tax: IT = Basic + Higher + Additional",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88131.6",
-      "actual": "88131.6",
+      "expected": "88069.95",
+      "actual": "88069.95",
       "tolerance": "1"
     },
     {
@@ -1355,16 +1355,16 @@
       "key": "check/Tax: Taxable = Profit - Allowance",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226508",
-      "actual": "226508",
+      "expected": "226371",
+      "actual": "226371",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Total = IT + CIS deduction line + NI",
       "unit": "verdict",
       "value": "pass",
-      "expected": "93918.36",
-      "actual": "93918.36",
+      "expected": "93853.97",
+      "actual": "93853.97",
       "tolerance": "1"
     },
     {
@@ -1419,8 +1419,8 @@
       "key": "check/Total Tax + NI, less the CIS already deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "93918.36",
-      "actual": "93918.36",
+      "expected": "93853.97",
+      "actual": "93853.97",
       "tolerance": "0.01"
     },
     {
@@ -1480,7 +1480,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
       "unit": "money",
-      "value": "265508",
+      "value": "265371",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
@@ -1491,7 +1491,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "derivedFrom": [
         "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
         "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-10",
@@ -1508,7 +1508,7 @@
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/Income Tax!E5"
     },
     {
@@ -1562,7 +1562,7 @@
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-pence",
       "unit": "rate",
-      "value": "0.45",
+      "value": "0.55",
       "source": "cell/Admin!G21"
     },
     {
@@ -1928,19 +1928,19 @@
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
       "unit": "money",
-      "value": "3524.76",
+      "value": "3522.02",
       "source": "cell/Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate",
       "unit": "money",
-      "value": "45615.6",
+      "value": "45553.95",
       "source": "cell/Income Tax!E10"
     },
     {
@@ -1958,19 +1958,19 @@
     {
       "key": "section/income-tax-calculation/taxable-income",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
       "unit": "money",
-      "value": "88131.6",
+      "value": "88069.95",
       "source": "cell/Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
       "unit": "money",
-      "value": "93918.36",
+      "value": "93853.97",
       "source": "cell/Income Tax!E18"
     },
     {
@@ -2096,7 +2096,7 @@
     {
       "key": "section/profit-loss-account/income-tax-less-cis-deducted",
       "unit": "money",
-      "value": "88131.6",
+      "value": "88069.95",
       "source": "cell/Profit & Loss Acc!C32"
     },
     {
@@ -2114,25 +2114,25 @@
     {
       "key": "section/profit-loss-account/motor-expenses",
       "unit": "money",
-      "value": "7598",
+      "value": "7735",
       "source": "cell/Profit & Loss Acc!C15"
     },
     {
       "key": "section/profit-loss-account/net-income-after-tax",
       "unit": "money",
-      "value": "132589.64",
+      "value": "132517.03",
       "source": "cell/Profit & Loss Acc!C35"
     },
     {
       "key": "section/profit-loss-account/net-profit",
       "unit": "money",
-      "value": "265508",
+      "value": "265371",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
       "key": "section/profit-loss-account/ni-class-4",
       "unit": "money",
-      "value": "5786.76",
+      "value": "5784.02",
       "source": "cell/Profit & Loss Acc!C33"
     },
     {
@@ -2168,13 +2168,13 @@
     {
       "key": "section/profit-loss-account/taxable-profit",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/Profit & Loss Acc!C28"
     },
     {
       "key": "section/profit-loss-account/total-expenses",
       "unit": "money",
-      "value": "125852",
+      "value": "125989",
       "source": "cell/Profit & Loss Acc!C22"
     },
     {
@@ -2192,7 +2192,7 @@
     {
       "key": "section/purchase-analysis/mileage-claimed-for-the-year",
       "unit": "money",
-      "value": "614.25",
+      "value": "750.75",
       "source": "cell/PurchasesMar!A1"
     },
     {
@@ -2240,13 +2240,13 @@
     {
       "key": "section/self-assessment-sa103s/motor-travel-expenses",
       "unit": "money",
-      "value": "9458",
+      "value": "9595",
       "source": "cell/SE Short!D51"
     },
     {
       "key": "section/self-assessment-sa103s/net-business-profit-box-28",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/SE Short!D99"
     },
     {
@@ -2258,13 +2258,13 @@
     {
       "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
       "unit": "money",
-      "value": "226508",
+      "value": "226371",
       "source": "cell/SE Short!D106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-loss",
       "unit": "money",
-      "value": "265508",
+      "value": "265371",
       "source": "cell/SE Short!D71"
     },
     {
