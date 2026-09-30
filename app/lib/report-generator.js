@@ -219,7 +219,7 @@ export function complianceChecksLines(checks) {
   return lines;
 }
 
-export function generateReport(packageName, scenarioName, results, checks, productMod, scenario) {
+export function generateReport(packageName, scenarioName, results, checks, productMod, scenario, taxData) {
   const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
   const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
   const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
@@ -242,7 +242,7 @@ export function generateReport(packageName, scenarioName, results, checks, produ
   // Then the netting, which explains the other difference the checks only
   // prove correct: a journal figure and the statement figure it becomes.
   if (typeof productMod.categoryNetting === "function") {
-    lines.push(...categoryNettingLines(productMod.categoryNetting(results, scenario)));
+    lines.push(...categoryNettingLines(productMod.categoryNetting(results, scenario, taxData)));
   }
 
   // Formatted accounting statements (if product module provides them)
@@ -299,7 +299,7 @@ export function generateReport(packageName, scenarioName, results, checks, produ
  * Generate individual report files, one per reportSections() section.
  * Returns { "filename.md": content } map.
  */
-export function generateSectionReports(results, productMod, scenario, checks) {
+export function generateSectionReports(results, productMod, scenario, checks, taxData) {
   const reports = {};
 
   if (typeof productMod.reportSections !== "function") return reports;
@@ -341,7 +341,7 @@ export function generateSectionReports(results, productMod, scenario, checks) {
   }
 
   if (typeof productMod.categoryNetting === "function") {
-    const nettingLines = categoryNettingLines(productMod.categoryNetting(results, scenario));
+    const nettingLines = categoryNettingLines(productMod.categoryNetting(results, scenario, taxData));
     if (nettingLines.length > 0) {
       reports["journal-category-vat-netting.md"] = [`# ${CATEGORY_NETTING_TITLE}`, ...nettingLines.slice(2), ""].join("\n");
     }

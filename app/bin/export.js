@@ -149,6 +149,7 @@ export function buildFileReportDocument(book, lines, packageName, productMod) {
     results,
     productMod,
     scenario: mergedScenario,
+    taxData,
     checks,
     scenarioName: book.documentInfo?.entriesComment,
     yearEnd,

@@ -420,7 +420,7 @@ test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
 
     await page.locator('.tab-btn[data-view="profit-loss"]').click();
     await expect(page.locator(".pencil-correction")).toHaveCount(0);
-    await expect(page.locator(".kv-table")).toContainText("£7,598.00"); // Motor Expenses, plain, no correction
+    await expect(page.locator(".kv-table")).toContainText("£7,735.00"); // Motor Expenses, plain, no correction
   });
 
   test("a hand-corrupted cached value shows exactly that cell's drift, nothing else", async ({ page }) => {
@@ -435,7 +435,7 @@ test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
     const correction = page.locator(".form-row-margin .pencil-correction");
     await expect(correction).toHaveCount(1);
     await expect(correction.locator(".as-read")).toContainText("99,999");
-    await expect(correction.locator(".computed-value")).toContainText("88,131.60");
+    await expect(correction.locator(".computed-value")).toContainText("88,069.95");
     await expect(correction.locator(".drift-amount")).toContainText("11867.40");
 
     // Nothing else on the P&L or SA103S views picked up a correction: the

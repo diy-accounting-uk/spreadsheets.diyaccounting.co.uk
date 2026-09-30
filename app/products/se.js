@@ -2259,7 +2259,7 @@ function mileageClaimsByMonth(scenario, mileageRates) {
 
 // One row per journal category that crosses into another statement, so the
 // gross-to-net step is stated where it happens rather than only in total.
-export function categoryNetting(results, scenario) {
+export function categoryNetting(results, scenario, taxData) {
   // With no journal there is nothing to net: every row would compare a nil
   // against whatever the sheet holds and read as a category that lost its
   // whole value on the way.
@@ -2272,14 +2272,13 @@ export function categoryNetting(results, scenario) {
   const num = (v) => (typeof v === "number" ? v : 0);
   const sales = journalTotalsByCode(scenario.sales, rate, "a");
   const purchases = journalTotalsByCode(scenario.purchases, rate);
-  // The year's mileage claim, as the year-end Purchases tab carries it, lands
-  // on the motoring category whole, so it stands on both sides of that row:
-  // nothing was stripped on the way to Motor Expenses because there was no VAT
-  // on it to strip. Whether the tab priced the miles at the year's approved
-  // rates is a check of its own.
+  // The year's mileage claim lands on the motoring category whole, so it
+  // stands on both sides of that row: nothing was stripped on the way to
+  // Motor Expenses because there was no VAT on it to strip.
   const businessMiles = journalMiles(scenario.sales) + journalMiles(scenario.purchases);
   if (businessMiles) {
-    const claim = num(results[`Purchases.xlsx!${MONTH_SHEETS.mar}`]?.A2);
+    if (!taxData?.mileage) throw new Error("categoryNetting needs the tax year's mileage rates to price the year's business miles");
+    const claim = calculateMileageAllowance(businessMiles, taxData.mileage);
     purchases.gross.v = (purchases.gross.v || 0) + claim;
     purchases.net.v = (purchases.net.v || 0) + claim;
   }
@@ -4272,7 +4271,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // monthly ties above prove each month landed in the right column; these
   // prove the year's gross figure reaches the statement with the VAT taken
   // off and nothing else lost on the way.
-  const netting = categoryNetting(results, expected);
+  const netting = categoryNetting(results, expected, taxData);
   for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
 
   // ── The customer-facing invoice against the tax year's own VAT rate ──────

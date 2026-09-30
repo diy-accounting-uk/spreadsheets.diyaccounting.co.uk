@@ -168,7 +168,7 @@ export async function reconcileBook(bookDir, packagesDir) {
 
   const expected = calculateFromDiyaGl(book, lines, inputs.product, inputs.taxData, inputs.scenario);
   const checks = checkAgainstBook(results, expected);
-  const { content, compliant } = generateReport(inputs.dirName, "book", results, checks, productMod, inputs.scenario);
+  const { content, compliant } = generateReport(inputs.dirName, "book", results, checks, productMod, inputs.scenario, inputs.taxData);
 
   return { product: inputs.product, dirName: inputs.dirName, checks, compliant, content };
 }
@@ -360,7 +360,7 @@ async function main() {
       // so checks that anchor against fixtures need the whole scenario merged in.
       const mergedScenario = { ...scenario, ...scenario.expected };
       const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, packageYearEnd(pkgDir));
-      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod, mergedScenario);
+      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod, mergedScenario, taxData);
 
       // Report naming: <product>_<scenario>.md
       const reportFile = `${pkgSlug}_${scenarioName}.md`;

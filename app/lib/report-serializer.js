@@ -323,12 +323,13 @@ function checkEntries(checks) {
  * @param {Object} options.results - the cell read map, sheet -> cell -> value
  * @param {Object} options.productMod - the product module (app/products/<name>.js)
  * @param {Object} [options.scenario] - the merged scenario, where the run has one
+ * @param {Object} [options.taxData] - the tax year's data, where the run has it
  * @param {Array} [options.checks] - checkCompliance() output, where the run has one
  * @param {string} [options.scenarioName]
  * @param {string} [options.yearEnd] - YYYY-MM-DD
  * @returns {Object} the R document, entries sorted by key
  */
-export function buildReportDocument({ packageName, engine, results, productMod, scenario, checks, scenarioName, yearEnd }) {
+export function buildReportDocument({ packageName, engine, results, productMod, scenario, taxData, checks, scenarioName, yearEnd }) {
   const multiFile = Boolean(productMod.MULTI_FILE);
   const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
   const cellEntries = collectCellEntries(results, multiFile);
@@ -349,7 +350,7 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
     values.push(...bridgeEntries(productMod.profitBridge(results), multiFile));
   }
   if (typeof productMod.categoryNetting === "function") {
-    values.push(...nettingEntries(productMod.categoryNetting(results, scenario), multiFile));
+    values.push(...nettingEntries(productMod.categoryNetting(results, scenario, taxData), multiFile));
   }
   values.push(...checkEntries(checks));
 

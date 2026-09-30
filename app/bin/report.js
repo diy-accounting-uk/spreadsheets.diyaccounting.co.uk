@@ -146,7 +146,7 @@ async function main() {
     const resolvedOutputDir = resolve(outputDir);
     mkdirSync(resolvedOutputDir, { recursive: true });
 
-    const sectionReports = generateSectionReports(results, productMod, mergedScenario, checks);
+    const sectionReports = generateSectionReports(results, productMod, mergedScenario, checks, taxData);
     for (const [filename, content] of Object.entries(sectionReports)) {
       writeFileSync(resolve(resolvedOutputDir, filename), content);
       console.log(`  Written: ${filename}`);
@@ -158,6 +158,7 @@ async function main() {
       results,
       productMod,
       scenario: mergedScenario,
+      taxData,
       checks,
       scenarioName: book.documentInfo?.entriesComment,
       yearEnd,
@@ -266,7 +267,7 @@ async function main() {
     }
   }
 
-  const sectionReports = generateSectionReports(results, productMod, excelScenario, excelChecks);
+  const sectionReports = generateSectionReports(results, productMod, excelScenario, excelChecks, taxData);
   for (const [filename, content] of Object.entries(sectionReports)) {
     writeFileSync(resolve(resolvedOutputDir, filename), content);
     console.log(`  Written: ${filename}`);
@@ -278,6 +279,7 @@ async function main() {
     results,
     productMod,
     scenario: excelScenario,
+    taxData,
     checks: excelChecks,
     yearEnd,
   });
