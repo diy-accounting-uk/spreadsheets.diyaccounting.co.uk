@@ -2272,18 +2272,14 @@ export function categoryNetting(results, scenario) {
   const num = (v) => (typeof v === "number" ? v : 0);
   const sales = journalTotalsByCode(scenario.sales, rate, "a");
   const purchases = journalTotalsByCode(scenario.purchases, rate);
-  // The year's mileage claim lands on the motoring category whole, so it
-  // stands on both sides of that row: nothing was stripped on the way to
-  // Motor Expenses because there was no VAT on it to strip.
+  // The year's mileage claim, as the year-end Purchases tab carries it, lands
+  // on the motoring category whole, so it stands on both sides of that row:
+  // nothing was stripped on the way to Motor Expenses because there was no VAT
+  // on it to strip. Whether the tab priced the miles at the year's approved
+  // rates is a check of its own.
   const businessMiles = journalMiles(scenario.sales) + journalMiles(scenario.purchases);
   if (businessMiles) {
-    const admin = results.Admin;
-    if (!admin) throw new Error("categoryNetting needs the Admin sheet's mileage rates to price the year's business miles");
-    const claim = calculateMileageAllowance(businessMiles, {
-      higher_rate_limit: admin.F21,
-      higher_rate_pence: admin.G21,
-      lower_rate_pence: admin.G22,
-    });
+    const claim = num(results[`Purchases.xlsx!${MONTH_SHEETS.mar}`]?.A2);
     purchases.gross.v = (purchases.gross.v || 0) + claim;
     purchases.net.v = (purchases.net.v || 0) + claim;
   }
