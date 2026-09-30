@@ -33,7 +33,7 @@ import {
   deriveStraddlingEntries,
   signedAmount,
 } from "./scenario-extractor.js";
-import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
@@ -385,7 +385,7 @@ export function diyaGlToScenario(book, lines, product) {
         const code = purchaseCodeMap[l.accountMainID];
         if (code) bstByCode[code] = (bstByCode[code] || 0) + signedAmount(l);
       });
-    if (businessMiles) bstByCode.m = (bstByCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
+    if (businessMiles) bstByCode.m = (bstByCode.m || 0) + calculateMileageAllowance(businessMiles, FIXTURE_CAR_MILEAGE_RATES);
 
     const stockPurchases = bstByCode.s || 0;
     const openingStock = book.stock?.openingValue ?? 0;
@@ -417,7 +417,7 @@ export function diyaGlToScenario(book, lines, product) {
       .filter((l) => !(product === "se" && l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
       .filter((l) => purchaseCodeMap[l.accountMainID] === "v")
       .reduce((sum, l) => sum + signedAmount(l), 0);
-    const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES) : 0;
+    const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, FIXTURE_CAR_MILEAGE_RATES) : 0;
     expected.total_motor_net = Math.round(cashMotor / vatDivisor + mileageClaim);
     expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
     if (product === "ltd") {

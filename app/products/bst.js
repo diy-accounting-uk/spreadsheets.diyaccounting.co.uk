@@ -11,7 +11,7 @@ import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-lo
 import { shiftMonths, periodShiftMonths } from "../lib/period-shift.js";
 import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
-import { calculateMileageAllowance } from "../lib/tax/mileage.js";
+import { calculateMileageAllowance, mileageClaimChangeFromFixture } from "../lib/tax/mileage.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
@@ -450,7 +450,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const pl = results["Profit & Loss Acc"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.C4, expected.total_sales);
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.C9, expected.gross_profit);
-  if (expected.net_profit !== undefined) check("Net Profit", pl.C24, expected.net_profit);
+  if (expected.net_profit !== undefined) {
+    const mileageChange = taxData && expected.total_mileage ? mileageClaimChangeFromFixture(expected.total_mileage, taxData.mileage) : 0;
+    check("Net Profit", pl.C24, expected.net_profit - mileageChange);
+  }
   if (expected.total_premises !== undefined) check("Premises Costs", pl.C12, expected.total_premises);
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.C14, expected.total_gen_admin);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.C18, expected.total_legal);

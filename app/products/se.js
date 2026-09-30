@@ -39,7 +39,7 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
-import { calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
+import { calculateMileageAllowance, mileageClaimChangeFromFixture, FIXTURE_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
@@ -2277,7 +2277,13 @@ export function categoryNetting(results, scenario) {
   // Motor Expenses because there was no VAT on it to strip.
   const businessMiles = journalMiles(scenario.sales) + journalMiles(scenario.purchases);
   if (businessMiles) {
-    const claim = calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
+    const admin = results.Admin;
+    if (!admin) throw new Error("categoryNetting needs the Admin sheet's mileage rates to price the year's business miles");
+    const claim = calculateMileageAllowance(businessMiles, {
+      higher_rate_limit: admin.F21,
+      higher_rate_pence: admin.G21,
+      lower_rate_pence: admin.G22,
+    });
     purchases.gross.v = (purchases.gross.v || 0) + claim;
     purchases.net.v = (purchases.net.v || 0) + claim;
   }
@@ -2387,10 +2393,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const blank = (v) => String(v ?? "").trim();
 
   // The approved rates the generator injected into the Admin sheet, which is
-  // what the Purchases sheets band their running mileage total by. The rates
-  // have held since 2011/12, so a book checked without a tax year's data
-  // still has them.
-  const mileageRates = taxData?.mileage || HMRC_CAR_MILEAGE_RATES;
+  // what the Purchases sheets band their running mileage total by. A book
+  // checked without a tax year's data is priced at the fixture year's rates.
+  const mileageRates = taxData?.mileage || FIXTURE_CAR_MILEAGE_RATES;
   const monthlyMileageClaims = mileageClaimsByMonth(expected, mileageRates);
 
   // The rate cell itself, month by month on both journals. A non-registered
@@ -2452,7 +2457,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // Expense line totals (6f)
-  if (expected.total_motor_net) check("Motor Expenses", pl.B25 || 0, expected.total_motor_net);
+  if (expected.total_motor_net) {
+    const fixtureMotorNet = expected.total_motor_net;
+    check(
+      "Motor Expenses",
+      pl.B25 || 0,
+      fixtureMotorNet + (expected.total_mileage ? mileageClaimChangeFromFixture(expected.total_mileage, mileageRates) : 0),
+    );
+  }
   if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
 
   // The mileage route. A mileage-log entry buys nothing: it states the miles
