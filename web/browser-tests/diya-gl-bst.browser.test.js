@@ -436,7 +436,7 @@ test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
     await expect(correction).toHaveCount(1);
     await expect(correction.locator(".as-read")).toContainText("99,999");
     await expect(correction.locator(".computed-value")).toContainText("88,069.95");
-    await expect(correction.locator(".drift-amount")).toContainText("11867.40");
+    await expect(correction.locator(".drift-amount")).toContainText("11929.05");
 
     // Nothing else on the P&L or SA103S views picked up a correction: the
     // computed side never reads the workbook's cells at all, so corrupting
