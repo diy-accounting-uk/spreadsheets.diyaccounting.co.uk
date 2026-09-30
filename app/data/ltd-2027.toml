@@ -42,9 +42,10 @@ fixtures_and_fittings = 0.20
 computer_equipment = 0.33
 motor_vehicles = 0.25
 
+# Approved mileage rates: gov.uk "Travel - mileage and fuel rates and allowances", cars and vans, tax year 2026 to 2027: 55p first 10,000 miles, 25p after.
 [mileage]
 higher_rate_limit = 10000
-higher_rate_pence = 0.45
+higher_rate_pence = 0.55
 lower_rate_start = 10001
 lower_rate_pence = 0.25
 

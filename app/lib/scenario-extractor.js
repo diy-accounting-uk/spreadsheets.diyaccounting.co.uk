@@ -4,7 +4,7 @@
 // scenario-extractor.js — Pure functions for extracting test scenario data
 // from Precision Code Ltd master data.
 
-import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths } from "./generator.js";
 
 // ============================================================================
@@ -948,7 +948,7 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
   const byCode = totalsByCode(cashPurchaseLines, purchaseCodeMap);
   const businessMiles = totalBusinessMiles(purchaseLines);
   if (businessMiles) {
-    byCode.m = Math.round(((byCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100;
+    byCode.m = Math.round(((byCode.m || 0) + calculateMileageAllowance(businessMiles, FIXTURE_CAR_MILEAGE_RATES)) * 100) / 100;
   }
 
   const stockAdjustment = stock ? stock.openingValue - stock.closingValue : 0;

@@ -146,7 +146,7 @@ async function main() {
     const resolvedOutputDir = resolve(outputDir);
     mkdirSync(resolvedOutputDir, { recursive: true });
 
-    const sectionReports = generateSectionReports(results, productMod, mergedScenario, checks);
+    const sectionReports = generateSectionReports(results, productMod, mergedScenario, checks, taxData);
     for (const [filename, content] of Object.entries(sectionReports)) {
       writeFileSync(resolve(resolvedOutputDir, filename), content);
       console.log(`  Written: ${filename}`);
@@ -158,6 +158,7 @@ async function main() {
       results,
       productMod,
       scenario: mergedScenario,
+      taxData,
       checks,
       scenarioName: book.documentInfo?.entriesComment,
       yearEnd,
@@ -245,6 +246,7 @@ async function main() {
   // publishes the same compliance verdicts the JS run does, against the
   // sheet's own figures. Without it the report is the values alone.
   let excelScenario;
+  let excelTaxData;
   let excelChecks = [];
   if (dataDir) {
     const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
@@ -261,12 +263,13 @@ async function main() {
     } else {
       taxData = extractTaxDataFromBook(book, packageName);
     }
+    excelTaxData = taxData;
     if (typeof productMod.checkCompliance === "function") {
       excelChecks = productMod.checkCompliance({ ...results }, excelScenario, taxData, calculateExpectedTax, yearEnd);
     }
   }
 
-  const sectionReports = generateSectionReports(results, productMod, excelScenario, excelChecks);
+  const sectionReports = generateSectionReports(results, productMod, excelScenario, excelChecks, excelTaxData);
   for (const [filename, content] of Object.entries(sectionReports)) {
     writeFileSync(resolve(resolvedOutputDir, filename), content);
     console.log(`  Written: ${filename}`);
@@ -278,6 +281,7 @@ async function main() {
     results,
     productMod,
     scenario: excelScenario,
+    taxData: excelTaxData,
     checks: excelChecks,
     yearEnd,
   });

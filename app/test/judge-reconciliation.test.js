@@ -397,7 +397,8 @@ describe("buildIndicators for the Self Employed", () => {
     const deducted = fullOnly.reduce((sum, box) => sum + box.figure, 0);
     // The full-only boxes take the short return's figure down and box 71
     // takes it back up; the gap the sentence closes on is the net of the two.
-    expect(shortForTax - fullForTax).toBeCloseTo(deducted - accountingAdjustment, 2);
+    // Each figure is rounded to pence on the report, so the two sides can differ by a penny.
+    expect(shortForTax - fullForTax).toBeCloseTo(deducted - accountingAdjustment, 1);
 
     expect(text).toContain(
       `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(shortForTax)} on the short return; ` +
@@ -448,15 +449,15 @@ describe("buildIndicators for the Basic Sole Trader", () => {
 
   it("itemises this product's allowance boxes too", () => {
     expect(text).toContain(
-      "Self assessment: net profit 265,508.00, less 39,000.00 of capital allowances " +
+      "Self assessment: net profit 265,371.00, less 39,000.00 of capital allowances " +
         "(Capital allowances 39,000.00, AIA / WDA claimed 0.00, WDA + Capital Allowance claimed 0.00), " +
-        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a net business profit of 226,508.00.",
+        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a net business profit of 226,371.00.",
     );
   });
 
   it("states turnover, profit and the tax charged on it", () => {
-    expect(text).toContain("Turnover 409,900.00, gross profit 391,360.00, net profit 265,508.00.");
-    expect(text).toContain("income tax 88,131.60");
+    expect(text).toContain("Turnover 409,900.00, gross profit 391,360.00, net profit 265,371.00.");
+    expect(text).toContain("income tax 88,069.95");
   });
 
   it("says the product publishes no balance sheet and no VAT returns", () => {
@@ -481,13 +482,13 @@ describe("buildIndicators for the Taxi Driver", () => {
       "less 200.00 of capital allowances (Annual investment allowance 0.00, " +
         "Small-balance allowance 172.00, Other capital allowances 28.00)",
     );
-    expect(split).toContain("gives a net business profit of 29,480.00.");
+    expect(split).toContain("gives a net business profit of 28,060.00.");
   });
 
   it("says the workbook charged the mileage claim rather than the running costs", () => {
     const claimed = indicatorText("taxi", "taxiSpSixty");
-    expect(claimed).toContain("the year's mileage claim of 7,000.00 beats the 4,640.00 the vehicle cost to run");
-    expect(claimed).toContain("Business miles for the year 20,000, claimed at the approved rates as 7,000.00.");
+    expect(claimed).toContain("the year's mileage claim of 8,420.00 beats the 4,640.00 the vehicle cost to run");
+    expect(claimed).toContain("Business miles for the year 21,680, claimed at the approved rates as 8,420.00.");
   });
 });
 

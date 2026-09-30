@@ -15,18 +15,18 @@ Trade: IT consultancy and software development
 |-------|----------|--------|------|--------|
 | Total Sales | 409900 | 409900 | 0 | PASS |
 | Gross Profit | 391360 | 391360 | 0 | PASS |
-| Net Profit | 265508 | 265508 | 0 | PASS |
+| Net Profit | 265371.5 | 265371 | -0.5 | PASS |
 | Premises Costs | 15840 | 15840 | 0 | PASS |
 | Gen Admin | 1962 | 1962 | 0 | PASS |
 | Legal & Professional | 4560 | 4560 | 0 | PASS |
 | P&L: Gross = Sales - CoS - Direct | 391360 | 391360 | 0 | PASS |
-| P&L: Net = Gross - Expenses | 265508 | 265508 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 265371 | 265371 | 0 | PASS |
 | P&L: Total Sales = sum of monthly Sales sheets | 409900 | 409900 | 0 | PASS |
-| P&L: Expense lines sum = Total | 125852 | 125852 | 0 | PASS |
-| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 178778 | 178777.75 | -0.25 | PASS |
+| P&L: Expense lines sum = Total | 125989 | 125989 | 0 | PASS |
+| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 178778 | 178778.25 | +0.25 | PASS |
 | Purchases: business miles carried = the journals' miles | 1365 | 1365 | 0 | PASS |
-| Purchases: mileage claimed = those miles at the tax year's approved rates | 614.25 | 614.25 | 0 | PASS |
-| P&L: Motor Expenses = motoring paid for + the mileage claimed | 7598.25 | 7598 | -0.25 | PASS |
+| Purchases: mileage claimed = those miles at the tax year's approved rates | 750.7500000000001 | 750.75 | -1.1368683772161603e-13 | PASS |
+| P&L: Motor Expenses = motoring paid for + the mileage claimed | 7734.75 | 7735 | +0.25 | PASS |
 | Opening Stock | 10000 | 10000 | 0 | PASS |
 | Closing Stock | 6000 | 6000 | 0 | PASS |
 | Stock: cost of sales = stock purchases + stock movement | 10540 | 10540 | 0 | PASS |
@@ -62,7 +62,7 @@ Trade: IT consultancy and software development
 | Fixed Assets: first addition recorded | 1800 | 1800 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 39000 | 39000 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 39000 | 39000 | 0 | PASS |
-| P&L: Taxable Profit = Net Profit - Capital Allowances | 226508 | 226508 | 0 | PASS |
+| P&L: Taxable Profit = Net Profit - Capital Allowances | 226371 | 226371 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
@@ -80,13 +80,13 @@ Trade: IT consultancy and software development
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
-| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.55 | 0.55 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 88131.6 | 88131.6 | 0 | PASS |
+| Income Tax | 88069.95000000001 | 88069.95 | -1.4551915228366852e-11 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 93918.36 | 93918.36 | 0 | PASS |
+| Total Tax + NI, less the CIS already deducted | 93853.97000000002 | 93853.97 | -1.4551915228366852e-11 | PASS |
 | Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
@@ -94,15 +94,15 @@ Trade: IT consultancy and software development
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
 | Tax: sheet splits the higher and additional bands at the higher band end | 125140 | 125140 | 0 | PASS |
 | Tax at basic rate | 7540 | 7540 | 0 | PASS |
-| P&L: tax charged = Income Tax sheet total less CIS deducted | 88131.6 | 88131.6 | 0 | PASS |
+| P&L: tax charged = Income Tax sheet total less CIS deducted | 88069.95 | 88069.95 | 0 | PASS |
 | Tax at higher rate | 34976 | 34976 | 0 | PASS |
-| Tax at additional rate | 45615.6 | 45615.6 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 226508 | 226508 | 0 | PASS |
-| Tax: IT = Basic + Higher + Additional | 88131.6 | 88131.6 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 93918.36 | 93918.36 | 0 | PASS |
+| Tax at additional rate | 45553.950000000004 | 45553.95 | -7.275957614183426e-12 | PASS |
+| Tax: Taxable = Profit - Allowance | 226371 | 226371 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 88069.95 | 88069.95 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 93853.97 | 93853.97 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 409900 | 409900 | 0 | PASS |
-| SA103S: Net profit close to P&L Net | 265508 | 265508 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 226508 | 226508 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 265371 | 265371 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 226371 | 226371 | 0 | PASS |
 | P&L: Capital Allowances = SE Short chain | 39000 | 39000 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
@@ -110,7 +110,7 @@ Trade: IT consultancy and software development
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 265,508 |
+| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 265,371 |
 | Add other business income (box 10) | SE Short!O38 | 0 |
 | Less net loss for the year (box 22) | SE Short!O71 | 0 |
 | Less annual investment allowance (box 23) | SE Short!D80 | -39,000 |
@@ -120,8 +120,8 @@ Trade: IT consultancy and software development
 | Add goods and services for own use (box 27) | SE Short!D94 | 0 |
 | Add other business income (box 30) | SE Short!O99 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
-| **Tax profit the bridge computes** | | **226,508** |
-| Tax profit the sheet carries | Income Tax!E5 | 226,508 |
+| **Tax profit the bridge computes** | | **226,371** |
+| Tax profit the sheet carries | Income Tax!E5 | 226,371 |
 | **Residue** | | **0** |
 
 ## Business Details
@@ -146,21 +146,21 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 1,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 1,962 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 7,598 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 7,735 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Subsistence | 1,860 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Advertising | 4,560 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 4,560 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts | 500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Finance | 750 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 17,882 |
-| Total Expenses | 125,852 |
-| **Net Profit** | 265,508 |
+| Total Expenses | 125,989 |
+| **Net Profit** | 265,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 39,000 |
-| Taxable Profit | 226,508 |
+| Taxable Profit | 226,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income received | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 88,131.6 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 5,786.76 |
-| Net Income After Tax | 132,589.64 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 88,069.95 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 5,784.02 |
+| Net Income After Tax | 132,517.03 |
 
 ## Monthly Sales
 
@@ -183,9 +183,9 @@ Trade: IT consultancy and software development
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 226,508 |
+| Profit from Self Employment | 226,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 0 |
-| Taxable Income | 226,508 |
+| Taxable Income | 226,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
@@ -193,12 +193,12 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 34,976 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 125,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 45,615.6 |
-| **Total Income Tax** | 88,131.6 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 45,553.95 |
+| **Total Income Tax** | 88,069.95 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 3,524.76 |
-| **Total Tax + NI** | 93,918.36 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 3,522.02 |
+| **Total Tax + NI** | 93,853.97 |
 
 ## Self Assessment (SA103S)
 
@@ -206,22 +206,22 @@ Trade: IT consultancy and software development
 |---|------:|
 | Turnover | 409,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | 9,458 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | 9,595 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 69,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | 1,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10) | — |
-| **Net profit/loss** | 265,508 |
+| **Net profit/loss** | 265,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 39,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Net business profit (box 28)** | 226,508 |
+| **Net business profit (box 28)** | 226,371 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30) | 0 |
-| **Net profit for tax calc (box 31)** | 226,508 |
+| **Net profit for tax calc (box 31)** | 226,371 |
 
 ## Stock
 
@@ -270,7 +270,7 @@ Trade: IT consultancy and software development
 |---|------:|
 | Purchases capitalised as fixed assets | 39,000 |
 | Business miles for the year | 1,365 |
-| Mileage claimed for the year | 614.25 |
+| Mileage claimed for the year | 750.75 |
 
 ## Fixed Assets
 
@@ -305,7 +305,7 @@ Trade: IT consultancy and software development
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
 | Mileage Higher Rate Limit | 10,000 |
-| Mileage Higher Rate Pence | 0.45 |
+| Mileage Higher Rate Pence | 0.55 |
 | Mileage Lower Rate Start | 10,001 |
 | Mileage Lower Rate Pence | 0.25 |
 | VAT Registration Threshold | 90,000 |
@@ -336,21 +336,21 @@ Trade: IT consultancy and software development
 | C12 | Premises Costs | 15840 | accounts.purchases.5200 |
 | C13 | Repairs & Maintenance | 1140 | accounts.purchases.5400 |
 | C14 | General Admin | 1962 | accounts.purchases.5501 |
-| C15 | Motor Expenses | 7598 | accounts.purchases.5601 |
+| C15 | Motor Expenses | 7735 | accounts.purchases.5601 |
 | C16 | Travel & Subsistence | 1860 | accounts.purchases.5600 |
 | C17 | Advertising | 4560 | accounts.purchases.5500 |
 | C18 | Legal & Professional | 4560 | accounts.purchases.5800 |
 | C19 | Bad Debts | 500 | accounts.purchases.5801 (badDebts) |
 | C20 | Interest & Finance | 750 | accounts.purchases.5803 |
 | C21 | Other Expenses | 17882 | accounts.purchases (other) |
-| C22 | Total Expenses | 125852 | gl-cor:amount (totalExpenses) |
-| C24 | **Net Profit** | 265508 | gl-cor:amount (netProfit) |
+| C22 | Total Expenses | 125989 | gl-cor:amount (totalExpenses) |
+| C24 | **Net Profit** | 265371 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 39000 | tax.capitalAllowances |
-| C28 | Taxable Profit | 226508 | gl-cor:amount (taxableProfit) |
+| C28 | Taxable Profit | 226371 | gl-cor:amount (taxableProfit) |
 | C30 | Other Income received | 0 | gl-cor:amount (otherIncomeReceived) |
-| C32 | Income Tax less CIS deducted | 88131.6 | tax.incomeTax (net of CIS) |
-| C33 | NI Class 4 | 5786.76 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 132589.64 | gl-cor:amount (netIncome) |
+| C32 | Income Tax less CIS deducted | 88069.95 | tax.incomeTax (net of CIS) |
+| C33 | NI Class 4 | 5784.02 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 132517.03 | gl-cor:amount (netIncome) |
 | D4 | Apr | 33400 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 32920 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 35200 | gl-cor:amount (monthlySales.jun) |
@@ -368,9 +368,9 @@ Trade: IT consultancy and software development
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 226508 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 226371 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 0 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 226508 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 226371 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
 | C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicRateLimit (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
@@ -378,12 +378,12 @@ Trade: IT consultancy and software development
 | E9 | Tax at Higher Rate | 34976 | tax.incomeTax.higherRate |
 | C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherRateThreshold (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
-| E10 | Tax at Additional Rate | 45615.6 | tax.incomeTax.additionalRate |
-| E11 | **Total Income Tax** | 88131.6 | tax.incomeTax (total) |
+| E10 | Tax at Additional Rate | 45553.95 | tax.incomeTax.additionalRate |
+| E11 | **Total Income Tax** | 88069.95 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 2262 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 3524.76 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 93918.36 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 3522.02 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 93853.97 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
@@ -391,21 +391,21 @@ Trade: IT consultancy and software development
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 409900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
-| D51 | Motor & travel expenses | 9458 | gl-cor:amount (sa103s.motorAndTravel) |
+| D51 | Motor & travel expenses | 9595 | gl-cor:amount (sa103s.motorAndTravel) |
 | D55 | Employee costs | 69200 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
 | D64 | Repairs & maintenance | 1140 | gl-cor:amount (sa103s.repairs) |
-| D71 | **Net profit/loss** | 265508 | gl-cor:amount (sa103s.netProfit) |
+| D71 | **Net profit/loss** | 265371 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 39000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Net business profit (box 28)** | 226508 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 226371 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc (box 31)** | 226508 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 226371 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
@@ -454,7 +454,7 @@ Trade: IT consultancy and software development
 |------|-----------|-------|-----------------|
 | X1 | Purchases capitalised as fixed assets | 39000 | fixedAssets (purchased, year total) |
 | C1 | Business miles for the year | 1365 | gl-bus:measurableQuantity (miles) |
-| A1 | Mileage claimed for the year | 614.25 | tax.mileage (claim) |
+| A1 | Mileage claimed for the year | 750.75 | tax.mileage (claim) |
 
 ### Fixed Assets
 
@@ -489,7 +489,7 @@ Trade: IT consultancy and software development
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| G21 | Mileage Higher Rate Pence | 0.55 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
 | G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |

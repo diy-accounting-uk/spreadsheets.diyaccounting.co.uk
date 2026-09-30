@@ -65,7 +65,7 @@ import {
   splitStraddlingLines,
   deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
-import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
 const FIXTURE_HEADER =
   "# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0\n# Copyright (C) 2006-2026 DIY Accounting Limited\n";
@@ -642,7 +642,7 @@ const advToml = formatScenarioToml(
   {
     total_sales: advTotalSales,
     total_mileage: advBusinessMiles,
-    total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100,
+    total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, FIXTURE_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     disallowable: SE_ADVANCED_DISALLOWABLE,
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,

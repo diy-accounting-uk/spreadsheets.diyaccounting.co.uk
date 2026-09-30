@@ -43,8 +43,13 @@ function scenarioFor(offset) {
   return { book, lines, scenario: diyaGlToScenario(book, lines, "se") };
 }
 
-function resultsFor({ book, lines, scenario }, years) {
-  const taxData = parseTOML(fs.readFileSync(path.join(ROOT, "app/data", `${years}.toml`), "utf-8"));
+function taxDataOf(years) {
+  return parseTOML(fs.readFileSync(path.join(ROOT, "app/data", `${years}.toml`), "utf-8"));
+}
+
+function resultsFor({ book, lines, scenario }, years, { mileageOf } = {}) {
+  const taxData = taxDataOf(years);
+  if (mileageOf) taxData.mileage = taxDataOf(mileageOf).mileage;
   return calculateFromDiyaGl(book, lines, "se", taxData, scenario);
 }
 
@@ -154,8 +159,11 @@ describe("the Self Employed package's two calendars", () => {
   });
 
   it("puts the same VAT figures on both years' returns, so the gap frames nothing", () => {
+    // The approved mileage rate differs between the two years and a mileage
+    // claim reaches the VAT figures, so the later year is priced at the own
+    // year's rate to leave the calendar as the only difference.
     const own = resultsFor(master, OWN_YEAR);
-    const later = resultsFor(master, LATER_YEAR);
+    const later = resultsFor(master, LATER_YEAR, { mileageOf: OWN_YEAR });
     for (let row = VATINTERFACE_FIRST_MONTH_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
       for (const column of PERIOD_COLUMNS) {
         expect(later["Vat.xlsx!Vatinterface"][`${column}${row}`]).toBe(own["Vat.xlsx!Vatinterface"][`${column}${row}`]);

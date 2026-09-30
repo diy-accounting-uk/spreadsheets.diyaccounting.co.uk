@@ -54,7 +54,9 @@ Trade: Bricklaying, plastering and general building
 | Opening Creditors total | 1510 | 1510 | 0 | PASS |
 | Closing Creditors total | 1510 | 1510 | 0 | PASS |
 | Income Tax | 0 | 0 | 0 | PASS |
+| Income Tax on transition profit (box 73.3) | 0 | 0 | 0 | PASS |
 | NI Class 4 (lower) | 0 | 0 | 0 | PASS |
+| NI Class 4 (upper) | 0 | 0 | 0 | PASS |
 | Total Tax + NI, less the CIS already deducted | -200 | -200 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
@@ -63,12 +65,12 @@ Trade: Bricklaying, plastering and general building
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 0 | 0 | 0 | PASS |
 | Tax: IT = Basic + Higher + Additional | 0 | 0 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | -200 | -200 | 0 | PASS |
+| Tax: Total = IT + transition profit tax + CIS deduction line + NI | -200 | -200 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 58990 | 58990 | 0 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 16010 | 16010 | 0 | PASS |
 | SA103S: net loss = total expenses - turnover - other business income | 0 | 0 | 0 | PASS |
-| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71 = Income Tax E5 | 4010 | 4010 | 0 | PASS |
+| SA103S: Profit for tax (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71 = Income Tax E5 | 4010 | 4010 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
 | Forecast: turnover = P&L turnover | 75000 | 75000 | 0 | PASS |
@@ -114,30 +116,44 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 1680 | 1680 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 12000 | 12000 | 0 | PASS |
 | SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 4010 | 4010 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus box 71, floored at nil | 4010 | 4010 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and box 71, floored at nil | 0 | 0 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71, floored at nil | 4010 | 4010 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71, floored at nil | 0 | 0 | 0 | PASS |
 | SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 4010 | 4010 | 0 | PASS |
+| Business Details!D59 overlap profit brought forward = the fixture's own figure | 0 | 0 | 0 | PASS |
+| Business Details!O59 transition profit not yet treated as arising = the fixture's own figure | 0 | 0 | 0 | PASS |
+| Business Details!O69 additional transition profit elected this year = the fixture's own figure | 0 | 0 | 0 | PASS |
+| Business Details!D74 following period's profit = the fixture's own figure | 0 | 0 | 0 | PASS |
+| Business Details!D64 overlap relief used this year = the 2023-24 return uses it in full, else nil | 0 | 0 | 0 | PASS |
+| Business Details!D69 overlap profit carried forward = box 69's input less box 69's relief used | 0 | 0 | 0 | PASS |
+| Business Details!O64 transition profit treated as arising this year, before election = the fixture's balance divided by the years left | 0 | 0 | 0 | PASS |
+| Business Details!O74 transition profit carried forward = the fixture's balance less what this year and the election take | 0 | 0 | 0 | PASS |
+| Business Details!O69 election does not exceed the untaxed transition balance (para 73(3)) | 0 | 0 | 0 | PASS |
+| SA103F box 73.3 spread of the transition profit treated as arising (D201) = box O64 plus box O69 | 0 | 0 | 0 | PASS |
+| SA103F box 68 adjustment where the accounting period was not 12 months long (D197) = the s.7A apportionment | 0 | 0 | 0 | PASS |
 | SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 12000 | 12000 | 0 | PASS |
 | SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 0 | 0 | 0 | PASS |
 | SA103F box 51 capital allowances at 6% (D147) = Schedule AC1 | 0 | 0 | 0 | PASS |
-| SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 less the single asset pools while the pooled balance is under £1,000 | 0 | 0 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances (O144) = each pool's Schedule written-down value (AH1, AI1) while that pool's balance is under £1,000 | 0 | 0 | 0 | PASS |
 | SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1 | 0 | 0 | 0 | PASS |
 | SA103F box 59 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
-| SA103F box 52 zero-emission goods vehicle allowance (D152) = the figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 52.1 zero-emission car allowance (D156) = the figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 53 Structures and Buildings Allowance (D160) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 53 Structures and Buildings Allowance (D156) = Schedule K120 | 0 | 0 | 0 | PASS |
+| SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = Schedule K121 | 0 | 0 | 0 | PASS |
+| SA103F box 52 zero-emission goods vehicle allowance (D150) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 52.1 zero-emission car allowance (D152) = the figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 54 electric charge-point allowance (O139) = the figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 62 income included but not taxable as business profits (D179) = the figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 71 adjustment for change of accounting practice (D210) = the figure the book states | 0 | 0 | 0 | PASS |
+| SA103F box 53 Structures and Buildings Allowance (D156) = the fixture's own claims at the year's rate | 0 | 0 | 0 | PASS |
+| SA103F box 53.1 Freeport and Investment Zone Structures and Buildings Allowance (D160) = the fixture's own claims at the year's enhanced rate | 0 | 0 | 0 | PASS |
 | SA103F box 60 goods and services for own use (D169) = the figure the book states on Business Details!O50 | 0 | 0 | 0 | PASS |
 | Business Details!O50 goods and services for own use = the figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 55 and 56 = the allowances the book states (boxes 52, 52.1, 53 and 54) | 0 | 0 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) less the schedule-fed boxes 49, 50, 51, 53, 53.1, 55 and 56 = the allowances the book states (boxes 52, 52.1 and 54) | 0 | 0 | 0 | PASS |
 | SA103F box 63 total deductions from net profit (O169) less box 57 = the box 62 figure the book states | 0 | 0 | 0 | PASS |
 | SA103F box 61 total additions to net profit (D174) less boxes 46 and 59 = the box 60 figure the book states | 0 | 0 | 0 | PASS |
-| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus the box 71 figure the book states, floored at nil | 4010 | 4010 | 0 | PASS |
-| SA103F box 77 adjusted loss (D219) = box 65 less box 64 and the box 71 figure the book states, floored at nil | 0 | 0 | 0 | PASS |
-| SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 | 4010 | 4010 | 0 | PASS |
-| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 54 and 62 plus box 71, with each return's own loss set-off | 4010 | 4010 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 less box 65 plus boxes 68 and 71 the book states, floored at nil | 4010 | 4010 | 0 | PASS |
+| SA103F box 77 adjusted loss (D219) = box 65 less box 64, 68 and 71 the book states, floored at nil | 0 | 0 | 0 | PASS |
+| SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 | 4010 | 4010 | 0 | PASS |
+| SA103F box 76 total taxable profits: full return (O210) = short return (D106) less the SE Full-only boxes 52, 52.1, 53, 53.1, 54 and 62 plus box 71, with each return's own loss set-off | 4010 | 4010 | 0 | PASS |
 | SA103S box 28 net business profit for tax purposes (D99) leaves out the allowances and box 62 adjustment the trader states on SE Full alone | 4010 | 4010 | 0 | PASS |
 | SA103F box 15 turnover: full return (D55) = short return (D38) | 75000 | 75000 | 0 | PASS |
 | SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
@@ -152,8 +168,8 @@ Trade: Bricklaying, plastering and general building
 | SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 200 | 200 | 0 | PASS |
 | SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back | 60670 | 60670 | 0 | PASS |
 | SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation | 14330 | 14330 | 0 | PASS |
-| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53 and 54 | 12000 | 12000 | 0 | PASS |
-| SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states on SE Full alone (boxes 52, 52.1, 53 and 54) | 0 | 0 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25 plus the SE Full-only boxes 52, 52.1, 53, 53.1 and 54 | 12000 | 12000 | 0 | PASS |
+| SA103S box 25 other capital allowances (O80) leaves out the allowances the trader states or claims on SE Full alone (boxes 52, 52.1, 53, 53.1 and 54) | 0 | 0 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 46118 | 46118 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 46482 | 46482 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.14 | 0.14 | 0 | PASS |
@@ -765,7 +781,7 @@ Trade: Bricklaying, plastering and general building
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
 | Admin: special rate WDA = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
-| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.55 | 0.55 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
@@ -851,9 +867,10 @@ Trade: Bricklaying, plastering and general building
 | Less other capital allowances (box 25) | SE Short!O80 | 0 |
 | Add balancing charges (box 26) | SE Short!O85 | 0 |
 | Add goods and services for own use (box 27) | SE Short!D94 | 0 |
-| Less the full return's own zero-emission goods vehicle allowance (box 52) | SE Full!D152 | 0 |
-| Less the full return's own zero-emission car allowance (box 52.1) | SE Full!D156 | 0 |
-| Less the full return's own Structures and Buildings Allowance (box 53) | SE Full!D160 | 0 |
+| Less the full return's own zero-emission goods vehicle allowance (box 52) | SE Full!D150 | 0 |
+| Less the full return's own zero-emission car allowance (box 52.1) | SE Full!D152 | 0 |
+| Less the full return's own Structures and Buildings Allowance (box 53) | SE Full!D156 | 0 |
+| Less the full return's own Freeport and Investment Zone Structures and Buildings Allowance (box 53.1) | SE Full!D160 | 0 |
 | Less the full return's own electric charge-point allowance (box 54) | SE Full!O139 | 0 |
 | Less the full return's own box 62 adjustment | SE Full!D179 | 0 |
 | Add the full return's own box 71 adjustment for change of accounting practice | SE Full!D210 | 0 |
@@ -874,6 +891,16 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 |---|------:|
 | Business Name | BrickWork Pro Trading |
 | &nbsp;&nbsp;&nbsp;&nbsp;Value of goods and services for own use (box 24) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accounting period start date (box 8) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accounting period end date (box 9) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap profit brought forward (feeds box 69) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap relief used this year (box 69) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Overlap profit carried forward | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Following period's profit (feeds box 68) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit not yet treated as arising | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit treated as arising this year, before election (feeds box 73.3) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional transition profit elected this year (feeds box 73.3) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Transition profit carried forward to next year | 0 |
 
 ## Profit & Loss Account
 
@@ -923,6 +950,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 0 |
 | **Total Income Tax** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax on transition profit (box 73.3), top-sliced | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
 | **Total Tax + NI** | -200 |
@@ -1013,7 +1041,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances at 6% (box 51) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Zero-emission goods vehicle allowance (box 52) | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Zero-emission car allowance (box 52.1) | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Structures and Buildings Allowance (box 53) | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Structures and Buildings Allowance (box 53) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Freeport and Investment Zones Structures and Buildings Allowance (box 53.1) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Electric charge-point allowance (box 54) | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;100% and other enhanced capital allowances (box 55) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 56) | 0 |
@@ -1025,8 +1054,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | **Total deductions from net profit (box 63)** | 12,000 |
 | **Net business profit for tax purposes (box 64)** | 4,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjustment where accounting period was not 12 months long (box 68) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjustment for change of accounting practice (box 71) | — |
 | **Adjusted profit (box 73)** | 4,010 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Spread of the transition profit treated as arising this year (box 73.3) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 0 |
 | **Total taxable profits from this business (box 76)** | 4,010 |
@@ -1091,8 +1122,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
 | Special Rate Writing Down Allowance Rate | 0.06 |
+| Structures and Buildings Allowance Rate | 0.03 |
+| Freeport and Investment Zone SBA Rate | 0.1 |
 | Mileage Higher Rate Limit | 10,000 |
-| Mileage Higher Rate Pence | 0.45 |
+| Mileage Higher Rate Pence | 0.55 |
 | Mileage Lower Rate Start | 10,001 |
 | Mileage Lower Rate Pence | 0.25 |
 | VAT Registration Threshold | 90,000 |
@@ -1161,6 +1194,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C5 | Business Name | BrickWork Pro Trading | entityInformation.organizationIdentifier |
+| D64 | Overlap relief used this year (box 69) | 0 | gl-cor:amount (basisPeriod.overlapReliefUsed) |
+| D69 | Overlap profit carried forward | 0 | gl-cor:amount (basisPeriod.overlapCarriedForward) |
+| O64 | Transition profit treated as arising this year, before election (feeds box 73.3) | 0 | gl-cor:amount (basisPeriod.transitionArisingBeforeElection) |
+| O74 | Transition profit carried forward to next year | 0 | gl-cor:amount (basisPeriod.transitionCarriedForward) |
 
 ### Profit & Loss Account
 
@@ -1512,6 +1549,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | E10 | Tax at Additional Rate (45%) | 0 | tax.incomeTax.additionalRate |
 | E11 | **Total Income Tax** | 0 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | -200 | diya-gl:cisDeduction (total) |
+| E14 | Income Tax on transition profit (box 73.3), top-sliced | 0 | gl-cor:amount (transitionProfitTax) |
 | E15 | NI Class 4 (lower band) | 0 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
 | E18 | **Total Tax + NI** | -200 | gl-cor:taxAmount (totalTaxNI) |
@@ -1591,6 +1629,8 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | D139 | Annual investment allowance (box 49) | 12000 | tax.capitalAllowances.aia (sa103f) |
 | D144 | Capital allowances at 18% (box 50) | 0 | tax.capitalAllowances.wda (sa103f) |
 | D147 | Capital allowances at 6% (box 51) | 0 | tax.capitalAllowances.specialRateWDA (sa103f) |
+| D156 | Structures and Buildings Allowance (box 53) | 0 | tax.capitalAllowances.structuresAndBuildingsAllowance (sa103f) |
+| D160 | Freeport and Investment Zones Structures and Buildings Allowance (box 53.1) | 0 | tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced (sa103f) |
 | O144 | 100% and other enhanced capital allowances (box 55) | 0 | tax.capitalAllowances.enhanced (sa103f) |
 | O149 | Allowances on sale or cessation (box 56) | 0 | tax.capitalAllowances.balancingAllowance (sa103f) |
 | O154 | **Total capital allowances (box 57)** | 12000 | tax.capitalAllowances (sa103f) |
@@ -1600,7 +1640,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | O169 | **Total deductions from net profit (box 63)** | 12000 | gl-cor:amount (sa103f.totalDeductions) |
 | O174 | **Net business profit for tax purposes (box 64)** | 4010 | gl-cor:amount (sa103f.taxableProfit) |
 | O179 | Net business loss for tax purposes (box 65) | 0 | gl-cor:amount (sa103f.taxableLoss) |
+| D197 | Adjustment where accounting period was not 12 months long (box 68) | 0 | gl-cor:amount (sa103f.basisAdjustment) |
 | O194 | **Adjusted profit (box 73)** | 4010 | gl-cor:amount (sa103f.adjustedProfit) |
+| D201 | Spread of the transition profit treated as arising this year (box 73.3) | 0 | gl-cor:amount (sa103f.transitionProfitSpread) |
 | O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 0 | gl-cor:amount (sa103f.otherBusinessIncome) |
 | O210 | **Total taxable profits from this business (box 76)** | 4010 | gl-cor:amount (sa103f.profitForTax) |
@@ -1716,8 +1758,10 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | G4 | Annual Investment Allowance Rate | 1 |  |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
 | G6 | Special Rate Writing Down Allowance Rate | 0.06 | tax.capitalAllowances.specialRateWDA |
+| G9 | Structures and Buildings Allowance Rate | 0.03 | tax.capitalAllowances.structuresAndBuildingsAllowance |
+| G10 | Freeport and Investment Zone SBA Rate | 0.1 | tax.capitalAllowances.structuresAndBuildingsAllowanceEnhanced |
 | F21 | Mileage Higher Rate Limit | 10000 |  |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| G21 | Mileage Higher Rate Pence | 0.55 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 |  |
 | G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
@@ -2324,9 +2368,13 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | AE1 | Single asset pool writing down allowance at the main rate (the rows marked P in column AD) | 0 |  |
 | AF1 | Single asset pool writing down allowance at the special rate (the rows marked P and S) | 0 |  |
 | AG1 | Single asset pool tax written down value carried forward | 0 |  |
+| AH1 | Main pool tax written down value carried forward, single asset pool rows left out | 0 |  |
+| AI1 | Special rate pool tax written down value carried forward (the rows marked S), single asset pool rows left out | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 0 |  |
 | E110 | Cost of the assets bought during the year | 12000 |  |
 | M40 | Private use share of the third motor vehicle brought forward | 0 |  |
+| K120 | Structures and Buildings Allowance (SA103F box 53), the non-Freeport claims summed | 0 |  |
+| K121 | Freeport and Investment Zone Structures and Buildings Allowance (SA103F box 53.1), the Freeport claims summed | 0 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 

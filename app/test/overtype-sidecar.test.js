@@ -190,7 +190,7 @@ describe("overtyped.json when one template formula is typed over", () => {
       "Profit & Loss Acc!C24": {
         kind: "literal",
         templateFormula: "ROUND((C9-C22),0)",
-        value: 265508,
+        value: 265371,
         attribution: {
           kind: "reportedFigure",
           label: "**Net Profit**",
@@ -205,7 +205,7 @@ describe("overtyped.json when one template formula is typed over", () => {
       "Income Tax!E11": {
         kind: "literal",
         templateFormula: "SUM(E8:E10)",
-        value: 88131.6,
+        value: 88069.95,
         attribution: {
           kind: "reportedFigure",
           label: "**Total Income Tax**",
