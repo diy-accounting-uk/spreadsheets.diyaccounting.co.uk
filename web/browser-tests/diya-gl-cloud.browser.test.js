@@ -179,6 +179,7 @@ test.describe("DIYA-GL page — signed out", () => {
     page.on("pageerror", (error) => pageErrors.push(String(error)));
     await page.addInitScript(() => {
       window.DIYA_GL_CLOUD_TEST_CLIENT_ID = null;
+      window.DIYA_GL_DRIVE_TEST_CLIENT_ID = null;
     });
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
