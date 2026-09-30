@@ -62,7 +62,7 @@ Trade: Owner-driver private hire and taxi services
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
-| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.55 | 0.55 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
@@ -347,7 +347,7 @@ Trade: Owner-driver private hire and taxi services
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
 | Mileage Higher Rate Limit | 10,000 |
-| Mileage Higher Rate Pence | 0.45 |
+| Mileage Higher Rate Pence | 0.55 |
 | Mileage Lower Rate Start | 10,001 |
 | Mileage Lower Rate Pence | 0.25 |
 | VAT Registration Threshold | 90,000 |
@@ -558,7 +558,7 @@ Trade: Owner-driver private hire and taxi services
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| G21 | Mileage Higher Rate Pence | 0.55 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
 | G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |

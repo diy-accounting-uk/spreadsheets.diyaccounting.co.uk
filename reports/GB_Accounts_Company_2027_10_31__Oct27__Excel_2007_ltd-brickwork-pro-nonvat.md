@@ -924,7 +924,7 @@ Trade: Bricklaying, plastering and general building
 | Admin G18: depreciation rate, computer equipment | 0.33 | 0.33 | 0 | PASS |
 | Admin G19: depreciation rate, motor vehicles | 0.25 | 0.25 | 0 | PASS |
 | Admin N16: mileage higher rate limit | 10000 | 10000 | 0 | PASS |
-| Admin O16: mileage higher rate pence | 0.45 | 0.45 | 0 | PASS |
+| Admin O16: mileage higher rate pence | 0.55 | 0.55 | 0 | PASS |
 | Admin N17: mileage lower rate start | 10001 | 10001 | 0 | PASS |
 | Admin O17: mileage lower rate pence | 0.25 | 0.25 | 0 | PASS |
 | Admin M19: standard VAT rate | 20 | 20 | 0 | PASS |
@@ -945,18 +945,18 @@ Trade: Bricklaying, plastering and general building
 | CT: the two tax rows span the accounting period | 365 | 365 | 0 | PASS |
 | CT600: return period starts at the accounting period start | 46327 | 46327 | 0 | PASS |
 | CT600: return period ends at the year end | 46691 | 46691 | 0 | PASS |
-| Expenses form Month 01: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 02: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 03: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 04: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 05: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 06: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 07: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 08: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 09: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 10: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 11: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
-| Expenses form Month 12: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
+| Expenses form Month 01: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 02: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 03: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 04: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 05: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 06: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 07: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 08: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 09: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 10: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 11: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
+| Expenses form Month 12: mileage rate = tax data | 0.55 | 0.55 | 0 | PASS |
 | Fixed asset note: depreciation rate, land and property | 0 | 0 | 0 | PASS |
 | Fixed asset note: depreciation rate, plant and machinery | 0.1 | 0.1 | 0 | PASS |
 | Fixed asset note: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
@@ -1961,7 +1961,7 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | G18 |  | 0.33 |  |
 | G19 |  | 0.25 |  |
 | N16 |  | 10000 |  |
-| O16 |  | 0.45 |  |
+| O16 |  | 0.55 |  |
 | N17 |  | 10001 |  |
 | O17 |  | 0.25 |  |
 | M19 |  | 20 |  |
@@ -3076,73 +3076,73 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 02
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 03
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 05
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 06
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 07
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 08
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 09
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 10
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 11
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### expensesform.xlsx!Month 12
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C30 |  | 0.45 |  |
+| C30 |  | 0.55 |  |
 
 ### Salesinvoice.xlsx!Product Details
 

@@ -15,17 +15,17 @@ Trade: Private hire and taxi driving services
 |-------|----------|--------|------|--------|
 | Total Sales | 38000 | 38000 | 0 | PASS |
 | Gross Profit | 38000 | 38000 | 0 | PASS |
-| Net Profit | 31287 | 31287 | 0 | PASS |
+| Net Profit | 31119.6 | 31119 | -0.5999999999985448 | PASS |
 | Gen Admin | 420 | 420 | 0 | PASS |
 | Legal & Professional | 750 | 750 | 0 | PASS |
 | P&L: Gross = Sales - CoS - Direct | 38000 | 38000 | 0 | PASS |
-| P&L: Net = Gross - Expenses | 31287 | 31287 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 31119 | 31119 | 0 | PASS |
 | P&L: Total Sales = sum of monthly Sales sheets | 38000 | 38000 | 0 | PASS |
-| P&L: Expense lines sum = Total | 6713 | 6713 | 0 | PASS |
-| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 6160 | 6159.7 | -0.3000000000001819 | PASS |
+| P&L: Expense lines sum = Total | 6881 | 6881 | 0 | PASS |
+| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 6160 | 6160.3 | +0.3000000000001819 | PASS |
 | Purchases: business miles carried = the journals' miles | 1674 | 1674 | 0 | PASS |
-| Purchases: mileage claimed = those miles at the tax year's approved rates | 753.3000000000001 | 753.3 | -1.1368683772161603e-13 | PASS |
-| P&L: Motor Expenses = motoring paid for + the mileage claimed | 3233.3 | 3233 | -0.3000000000001819 | PASS |
+| Purchases: mileage claimed = those miles at the tax year's approved rates | 920.7 | 920.7 | 0 | PASS |
+| P&L: Motor Expenses = motoring paid for + the mileage claimed | 3400.7 | 3401 | +0.3000000000001819 | PASS |
 | Debtors & Creditors: Apr sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
 | Debtors & Creditors: May sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
 | Debtors & Creditors: Jun sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
@@ -56,7 +56,7 @@ Trade: Private hire and taxi driving services
 | Fixed Assets: first addition recorded | 200 | 200 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 200 | 200 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 200 | 200 | 0 | PASS |
-| P&L: Taxable Profit = Net Profit - Capital Allowances | 31087 | 31087 | 0 | PASS |
+| P&L: Taxable Profit = Net Profit - Capital Allowances | 30919 | 30919 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
@@ -74,29 +74,29 @@ Trade: Private hire and taxi driving services
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
-| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.55 | 0.55 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 3703.4 | 3703.4 | 0 | PASS |
-| NI Class 4 (lower) | 1111.02 | 1111.02 | 0 | PASS |
-| Total Tax + NI, less the CIS already deducted | 4814.42 | 4814.42 | 0 | PASS |
+| Income Tax | 3669.8 | 3669.8 | 0 | PASS |
+| NI Class 4 (lower) | 1100.94 | 1100.94 | 0 | PASS |
+| Total Tax + NI, less the CIS already deducted | 4770.74 | 4770.74 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
 | Tax: sheet splits the higher and additional bands at the higher band end | 125140 | 125140 | 0 | PASS |
-| Tax at basic rate | 3703.4 | 3703.4 | 0 | PASS |
-| P&L: tax charged = Income Tax sheet total less CIS deducted | 3703.4 | 3703.4 | 0 | PASS |
+| Tax at basic rate | 3669.8 | 3669.8 | 0 | PASS |
+| P&L: tax charged = Income Tax sheet total less CIS deducted | 3669.8 | 3669.8 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 18517 | 18517 | 0 | PASS |
-| Tax: IT = Basic + Higher + Additional | 3703.4 | 3703.4 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 4814.42 | 4814.42 | 0 | PASS |
+| Tax: Taxable = Profit - Allowance | 18349 | 18349 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 3669.8 | 3669.8 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 4770.74 | 4770.74 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 38000 | 38000 | 0 | PASS |
-| SA103S: Net profit close to P&L Net | 31287 | 31287 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 31087 | 31087 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 31119 | 31119 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 30919 | 30919 | 0 | PASS |
 | P&L: Capital Allowances = SE Short chain | 200 | 200 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
@@ -104,7 +104,7 @@ Trade: Private hire and taxi driving services
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 31,287 |
+| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 31,119 |
 | Add other business income (box 10) | SE Short!O38 | 0 |
 | Less net loss for the year (box 22) | SE Short!O71 | 0 |
 | Less annual investment allowance (box 23) | SE Short!D80 | -200 |
@@ -114,8 +114,8 @@ Trade: Private hire and taxi driving services
 | Add goods and services for own use (box 27) | SE Short!D94 | 0 |
 | Add other business income (box 30) | SE Short!O99 | 0 |
 | Less loss brought forward (box 29) | SE Short!O94 | 0 |
-| **Tax profit the bridge computes** | | **31,087** |
-| Tax profit the sheet carries | Income Tax!E5 | 31,087 |
+| **Tax profit the bridge computes** | | **30,919** |
+| Tax profit the sheet carries | Income Tax!E5 | 30,919 |
 | **Residue** | | **0** |
 
 ## Business Details
@@ -140,21 +140,21 @@ Trade: Private hire and taxi driving services
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 580 |
 | &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 420 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 3,233 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses | 3,401 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Subsistence | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Advertising | 150 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 750 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Finance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 1,580 |
-| Total Expenses | 6,713 |
-| **Net Profit** | 31,287 |
+| Total Expenses | 6,881 |
+| **Net Profit** | 31,119 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 200 |
-| Taxable Profit | 31,087 |
+| Taxable Profit | 30,919 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income received | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 3,703.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 1,111.02 |
-| Net Income After Tax | 26,272.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 3,669.8 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 1,100.94 |
+| Net Income After Tax | 26,148.26 |
 
 ## Monthly Sales
 
@@ -177,22 +177,22 @@ Trade: Private hire and taxi driving services
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 31,087 |
+| Profit from Self Employment | 30,919 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 18,517 |
+| Taxable Income | 18,349 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 3,703.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 3,669.8 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 125,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 0 |
-| **Total Income Tax** | 3,703.4 |
+| **Total Income Tax** | 3,669.8 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 1,111.02 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 1,100.94 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
-| **Total Tax + NI** | 4,814.42 |
+| **Total Tax + NI** | 4,770.74 |
 
 ## Self Assessment (SA103S)
 
@@ -205,17 +205,17 @@ Trade: Private hire and taxi driving services
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 10) | — |
-| **Net profit/loss** | 31,287 |
+| **Net profit/loss** | 31,119 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 22) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Net business profit (box 28)** | 31,087 |
+| **Net business profit (box 28)** | 30,919 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 29) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 30) | 0 |
-| **Net profit for tax calc (box 31)** | 31,087 |
+| **Net profit for tax calc (box 31)** | 30,919 |
 
 ## Stock
 
@@ -264,7 +264,7 @@ Trade: Private hire and taxi driving services
 |---|------:|
 | Purchases capitalised as fixed assets | 200 |
 | Business miles for the year | 1,674 |
-| Mileage claimed for the year | 753.3 |
+| Mileage claimed for the year | 920.7 |
 
 ## Fixed Assets
 
@@ -299,7 +299,7 @@ Trade: Private hire and taxi driving services
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
 | Mileage Higher Rate Limit | 10,000 |
-| Mileage Higher Rate Pence | 0.45 |
+| Mileage Higher Rate Pence | 0.55 |
 | Mileage Lower Rate Start | 10,001 |
 | Mileage Lower Rate Pence | 0.25 |
 | VAT Registration Threshold | 90,000 |
@@ -330,21 +330,21 @@ Trade: Private hire and taxi driving services
 | C12 | Premises Costs | 0 | accounts.purchases.5200 |
 | C13 | Repairs & Maintenance | 580 | accounts.purchases.5400 |
 | C14 | General Admin | 420 | accounts.purchases.5501 |
-| C15 | Motor Expenses | 3233 | accounts.purchases.5601 |
+| C15 | Motor Expenses | 3401 | accounts.purchases.5601 |
 | C16 | Travel & Subsistence | 0 | accounts.purchases.5600 |
 | C17 | Advertising | 150 | accounts.purchases.5500 |
 | C18 | Legal & Professional | 750 | accounts.purchases.5800 |
 | C19 | Bad Debts | 0 | accounts.purchases.5801 (badDebts) |
 | C20 | Interest & Finance | 0 | accounts.purchases.5803 |
 | C21 | Other Expenses | 1580 | accounts.purchases (other) |
-| C22 | Total Expenses | 6713 | gl-cor:amount (totalExpenses) |
-| C24 | **Net Profit** | 31287 | gl-cor:amount (netProfit) |
+| C22 | Total Expenses | 6881 | gl-cor:amount (totalExpenses) |
+| C24 | **Net Profit** | 31119 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 200 | tax.capitalAllowances |
-| C28 | Taxable Profit | 31087 | gl-cor:amount (taxableProfit) |
+| C28 | Taxable Profit | 30919 | gl-cor:amount (taxableProfit) |
 | C30 | Other Income received | 0 | gl-cor:amount (otherIncomeReceived) |
-| C32 | Income Tax less CIS deducted | 3703.4 | tax.incomeTax (net of CIS) |
-| C33 | NI Class 4 | 1111.02 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 26272.58 | gl-cor:amount (netIncome) |
+| C32 | Income Tax less CIS deducted | 3669.8 | tax.incomeTax (net of CIS) |
+| C33 | NI Class 4 | 1100.94 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 26148.26 | gl-cor:amount (netIncome) |
 | D4 | Apr | 3162 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 3143 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 3186 | gl-cor:amount (monthlySales.jun) |
@@ -362,39 +362,39 @@ Trade: Private hire and taxi driving services
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 31087 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 30919 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 18517 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 18349 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
 | C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicRateLimit (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| E8 | Tax at Basic Rate | 3703.4 | tax.incomeTax.basicRate |
+| E8 | Tax at Basic Rate | 3669.8 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
 | C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherRateThreshold (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E10 | Tax at Additional Rate | 0 | tax.incomeTax.additionalRate |
-| E11 | **Total Income Tax** | 3703.4 | tax.incomeTax (total) |
+| E11 | **Total Income Tax** | 3669.8 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
-| E15 | NI Class 4 (lower band) | 1111.02 | tax.nationalInsurance.class4MainRate |
+| E15 | NI Class 4 (lower band) | 1100.94 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 4814.42 | gl-cor:taxAmount (totalTaxNI) |
+| E18 | **Total Tax + NI** | 4770.74 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 38000 | gl-cor:amount (sa103s.turnover) |
-| D71 | **Net profit/loss** | 31287 | gl-cor:amount (sa103s.netProfit) |
+| D71 | **Net profit/loss** | 31119 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 22) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 200 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Net business profit (box 28)** | 31087 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Net business profit (box 28)** | 30919 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 29) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Other business income (box 30) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc (box 31)** | 31087 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc (box 31)** | 30919 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
@@ -417,7 +417,7 @@ Trade: Private hire and taxi driving services
 |------|-----------|-------|-----------------|
 | X1 | Purchases capitalised as fixed assets | 200 | fixedAssets (purchased, year total) |
 | C1 | Business miles for the year | 1674 | gl-bus:measurableQuantity (miles) |
-| A1 | Mileage claimed for the year | 753.3 | tax.mileage (claim) |
+| A1 | Mileage claimed for the year | 920.7 | tax.mileage (claim) |
 
 ### Fixed Assets
 
@@ -452,7 +452,7 @@ Trade: Private hire and taxi driving services
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| G21 | Mileage Higher Rate Pence | 0.55 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
 | G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
