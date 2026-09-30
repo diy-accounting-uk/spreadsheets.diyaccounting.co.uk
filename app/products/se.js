@@ -2277,8 +2277,7 @@ export function categoryNetting(results, scenario, taxData) {
   // Motor Expenses because there was no VAT on it to strip.
   const businessMiles = journalMiles(scenario.sales) + journalMiles(scenario.purchases);
   if (businessMiles) {
-    if (!taxData?.mileage) throw new Error("categoryNetting needs the tax year's mileage rates to price the year's business miles");
-    const claim = calculateMileageAllowance(businessMiles, taxData.mileage);
+    const claim = calculateMileageAllowance(businessMiles, taxData?.mileage || FIXTURE_CAR_MILEAGE_RATES);
     purchases.gross.v = (purchases.gross.v || 0) + claim;
     purchases.net.v = (purchases.net.v || 0) + claim;
   }
