@@ -128,6 +128,8 @@
       checkForSavedBook().then(function () {
         if (deepLink.book !== null) {
           bootFromBookFragment(deepLink);
+        } else if (deepLink.bookUrl) {
+          bootFromBookUrl(deepLink);
         } else if (deepLink.example) {
           bootFromDeepLink(deepLink);
         } else if (!state.loaded) {
@@ -243,6 +245,8 @@
   // app/lib/diya-gl-link.js for the format) and loads it through the same
   // path an uploaded file takes, never writing the autosave record; the
   // fragment leaves the address bar once the load has finished.
+  // ?book=<url> fetches a book from an allow-listed host (link-hosts.js) and
+  // loads it the same way, then drops book from the query string.
   // Unknown view/month values are ignored; an unknown example shows the
   // empty state with a message naming the ids the manifest knows. A page
   // that names its own example in body[data-default-example] (with
@@ -252,9 +256,10 @@
   function parseDeepLinkParams() {
     var params = new URLSearchParams(window.location.search);
     var defaults = document.body.dataset;
-    var fromPageDefault = !params.get("example") && !!defaults.defaultExample && bookFragmentData() === null;
+    var fromPageDefault = !params.get("example") && !!defaults.defaultExample && bookFragmentData() === null && !params.get("book");
     return {
       book: bookFragmentData(),
+      bookUrl: params.get("book"),
       example: params.get("example") || defaults.defaultExample || null,
       view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
       month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
@@ -337,6 +342,72 @@
       { skipAutosave: true },
     ).then(function (snapshot) {
       clearBookFragmentFromUrl();
+      if (snapshot) {
+        sendBookLoadedEvent(snapshot.source.product, "link");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");
+        applyDeepLinkViewAndMonth(deepLink, snapshot);
+      }
+    });
+  }
+
+  function clearBookUrlFromQuery() {
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has("book")) return;
+    params.delete("book");
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+  }
+
+  // A diya-gl zip, a diya-gl JSON file or { toml, lines } JSON. The sniffer
+  // reads content, so the file name only has to say which of the two shapes
+  // the bytes are.
+  async function fetchBookFromUrl(checked) {
+    var response;
+    try {
+      response = await fetch(checked.url, { credentials: "omit" });
+    } catch (error) {
+      throw new Error(
+        "The book link could not be fetched (" + error.message + "). The link may have expired or the host refused this page.",
+      );
+    }
+    if (!response.ok) {
+      throw new Error("The book link returned " + response.status + ". The link may have expired.");
+    }
+    var bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > MAX_BOOK_FRAGMENT_BYTES) {
+      throw new Error("The book at the link is larger than 25 MB, more than this page reads.");
+    }
+    if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
+      return window.DiyaGlLoader.sniff(new File([bytes], "book.zip"));
+    }
+    var document;
+    try {
+      document = JSON.parse(new TextDecoder().decode(bytes));
+    } catch (error) {
+      document = null;
+    }
+    if (document && typeof document.toml === "string" && typeof document.lines === "string") {
+      return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
+    }
+    return window.DiyaGlLoader.sniff(new File([bytes], "book.json"));
+  }
+
+  function bootFromBookUrl(deepLink) {
+    var checked = window.DiyaGlLinkHosts.checkBookUrl(deepLink.bookUrl);
+    if (!checked.ok) {
+      clearBookUrlFromQuery();
+      showEmptyStateMessage(checked.message, true);
+      return;
+    }
+    loadThrough(
+      "Opening the book from the link…",
+      fetchBookFromUrl(checked),
+      function (sniffed, manifest) {
+        return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
+      },
+      { skipAutosave: true },
+    ).then(function (snapshot) {
+      clearBookUrlFromQuery();
       if (snapshot) {
         sendBookLoadedEvent(snapshot.source.product, "link");
         showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");

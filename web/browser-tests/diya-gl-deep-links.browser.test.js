@@ -10,6 +10,9 @@
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
+import http from "node:http";
+import os from "node:os";
+import JSZip from "jszip";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 import { encodeBookFragment } from "../../app/lib/diya-gl-link.js";
@@ -218,5 +221,87 @@ test.describe("DIYA-GL page — SE deep links", () => {
     const buttonKeys = await page.locator("[data-example]").evaluateAll((buttons) => buttons.map((b) => b.getAttribute("data-example")));
     expect(buttonKeys).toEqual(SE_EXAMPLE_KEYS);
     for (const key of SE_EXAMPLE_KEYS) await expect(message).toContainText(key);
+  });
+});
+
+test.describe("DIYA-GL page — ?book=<url> opens a book from an allowed host", () => {
+  let bookServer;
+  let pageServer;
+  let bookOrigin;
+  let headersDir;
+  const bookToml = fs.readFileSync(path.join(process.cwd(), "examples", "precision-code-ltd/bst", "book.toml"), "utf8");
+  const bookLines = fs.readFileSync(path.join(process.cwd(), "examples", "precision-code-ltd/bst", "lines.jsonl"), "utf8");
+
+  test.beforeAll(async () => {
+    const zip = new JSZip();
+    zip.file("book.toml", bookToml);
+    zip.file("lines.jsonl", bookLines);
+    const zipBytes = await zip.generateAsync({ type: "nodebuffer" });
+    const jsonBytes = Buffer.from(JSON.stringify({ toml: bookToml, lines: bookLines }));
+
+    bookServer = http.createServer((req, res) => {
+      res.setHeader("access-control-allow-origin", "*");
+      if (req.url.startsWith("/book.zip")) res.writeHead(200, { "content-type": "application/zip" }).end(zipBytes);
+      else if (req.url.startsWith("/book.json")) res.writeHead(200, { "content-type": "application/json" }).end(jsonBytes);
+      else res.writeHead(403, { "content-type": "application/xml" }).end("<Error><Code>AccessDenied</Code></Error>");
+    });
+    await new Promise((resolve) => bookServer.listen(0, "127.0.0.1", resolve));
+    bookOrigin = `http://127.0.0.1:${bookServer.address().port}`;
+
+    // The page's policy names only the production hosts, so the page server
+    // gets the same policy with the in-test book server added to connect-src.
+    const headers = JSON.parse(fs.readFileSync(path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"), "utf8"));
+    headers.contentSecurityPolicy = headers.contentSecurityPolicy.replace("connect-src 'self' ", `connect-src 'self' ${bookOrigin} `);
+    headersDir = fs.mkdtempSync(path.join(os.tmpdir(), "diya-gl-headers-"));
+    const headersPath = path.join(headersDir, "headers.json");
+    fs.writeFileSync(headersPath, JSON.stringify(headers));
+    pageServer = await startStaticServer(publicDir, headersPath);
+  });
+
+  test.afterAll(async () => {
+    await pageServer.close();
+    await new Promise((resolve) => bookServer.close(resolve));
+    fs.rmSync(headersDir, { recursive: true, force: true });
+  });
+
+  for (const [file, label] of [
+    ["book.zip", "a diya-gl zip"],
+    ["book.json", "{ toml, lines } JSON"],
+  ]) {
+    test(`?book=<url of ${label}> loads the book and leaves the query string without book`, async ({ page }) => {
+      await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+      await page.goto(`${pageServer.baseUrl}/bst.html?view=profit-loss&book=${encodeURIComponent(`${bookOrigin}/${file}`)}`, {
+        waitUntil: "domcontentloaded",
+      });
+
+      await expect(page.locator("#app-title")).toContainText("Precision Code Trading", { timeout: 30_000 });
+      await expect(page.locator(".empty-state")).toHaveCount(0);
+      await expect(page.locator('.tab-btn[data-view="profit-loss"]')).toHaveAttribute("aria-selected", "true");
+      await expect.poll(() => new URL(page.url()).searchParams.has("book")).toBe(false);
+      expect(new URL(page.url()).search).toBe("?view=profit-loss");
+      if (file === "book.zip") await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-book-url-loaded.png") });
+    });
+  }
+
+  test("a host off the allow-list is refused with the places books open from", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(`${pageServer.baseUrl}/bst.html?book=${encodeURIComponent("https://example.com/x.zip")}`, {
+      waitUntil: "domcontentloaded",
+    });
+
+    await expect(page.locator(".empty-state")).toBeVisible();
+    await expect(page.locator("#empty-state-message")).toContainText("This page opens books only from", { timeout: 30_000 });
+    await expect(page.locator("#empty-state-message")).toContainText("d2hg4qibpn6ch3.cloudfront.net");
+  });
+
+  test("a 403 from the book host says the link may have expired, naming the status", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(`${pageServer.baseUrl}/bst.html?book=${encodeURIComponent(`${bookOrigin}/expired.zip`)}`, {
+      waitUntil: "domcontentloaded",
+    });
+
+    await expect(page.locator(".empty-state")).toBeVisible();
+    await expect(page.locator("#empty-state-message")).toContainText("returned 403", { timeout: 30_000 });
+    await expect(page.locator("#empty-state-message")).toContainText("may have expired");
   });
 });
