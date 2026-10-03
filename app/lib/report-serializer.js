@@ -20,6 +20,12 @@
 // a reader names a figure in the spreadsheet's own words rather than in the
 // key's slug.
 //
+// Where the run was given an attribution (entry-attribution.js), a cell entry
+// the calculator attributed carries entryNumbers, the sorted ledger entries
+// behind it; a section entry carries its source cell's, and a derived total
+// the union of its operands'. The Excel engine has no attribution, so the
+// field is evidence for a reader and never part of the comparison.
+//
 // A value is always a string, never a JSON number, so no reader has to
 // re-derive the precision the engine produced. A missing value is an absent
 // entry, never null or an em dash: that is what makes "no JS value" a count
@@ -34,6 +40,7 @@ import {
   NETTING_COLUMNS,
 } from "./report-generator.js";
 import { provenanceHeader } from "./provenance.js";
+import { sortedEntries } from "./entry-attribution.js";
 
 // The hub every multi-file package hangs off. A results key with no "!" in
 // it names a sheet on this file; a key that carries one already names its
@@ -180,17 +187,19 @@ function takeSourceCell(byLabel, consumed, label, value) {
 // Every cell the read set produced, in results order, with the key R uses
 // and the key cellLabels() is indexed by. A cell with no value is left out:
 // an absent entry is what makes "no JS value" countable.
-function collectCellEntries(results, multiFile) {
+function collectCellEntries(results, multiFile, attribution) {
   const entries = [];
   for (const [resultsKey, cells] of Object.entries(results || {})) {
     if (!cells || typeof cells !== "object") continue;
     for (const [cell, raw] of Object.entries(cells)) {
       const value = canonicalValue(raw);
       if (value === null) continue;
+      const attributed = attribution?.[resultsKey]?.[cell];
       entries.push({
         key: cellKey(resultsKey, cell, multiFile),
         labelKey: `${resultsKey}!${cell}`,
         value,
+        ...(attributed ? { entryNumbers: sortedEntries(attributed) } : {}),
       });
     }
   }
@@ -251,8 +260,10 @@ function bridgeEntries(bridge, multiFile) {
     if (source) entry.source = source;
     entries.push(entry);
   }
+  const computedKey = `section/${sectionSlug}/${slug(BRIDGE_COMPUTED_LABEL)}`;
+  const sheetKey = `section/${sectionSlug}/${slug(BRIDGE_SHEET_LABEL)}`;
   entries.push({
-    key: `section/${sectionSlug}/${slug(BRIDGE_COMPUTED_LABEL)}`,
+    key: computedKey,
     label: BRIDGE_COMPUTED_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.computed),
@@ -260,7 +271,7 @@ function bridgeEntries(bridge, multiFile) {
   });
   const sheetSource = bridge.sheetCell ? referenceKey(bridge.sheetCell, multiFile) : null;
   entries.push({
-    key: `section/${sectionSlug}/${slug(BRIDGE_SHEET_LABEL)}`,
+    key: sheetKey,
     label: BRIDGE_SHEET_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.sheetProfit),
@@ -271,6 +282,9 @@ function bridgeEntries(bridge, multiFile) {
     label: BRIDGE_RESIDUE_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.residue),
+    // The residue is scored in its own right, so it names no derivedFrom,
+    // but its lines are those of the two figures it is the difference of.
+    entriesFrom: [computedKey, sheetKey],
   });
   return entries;
 }
@@ -317,6 +331,32 @@ function nettingEntries(netting, multiFile) {
   return entries;
 }
 
+// A section entry takes the entryNumbers of the cell it reprints, and a
+// derived total (or the bridge residue) the union of its operands' once every
+// operand has its own.
+function attributeEntries(values) {
+  const byKey = new Map(values.map((entry) => [entry.key, entry]));
+  for (const entry of values) {
+    if (entry.entryNumbers || !entry.source) continue;
+    // A source cell R carries no value for is one the calculator left blank,
+    // and a blank cell has no line behind it.
+    const source = byKey.has(entry.source) ? byKey.get(entry.source).entryNumbers : [];
+    if (source) entry.entryNumbers = source;
+  }
+  let settled = false;
+  while (!settled) {
+    settled = true;
+    for (const entry of values) {
+      const from = entry.derivedFrom ?? entry.entriesFrom;
+      if (entry.entryNumbers || !from) continue;
+      const operands = from.map((key) => byKey.get(key)?.entryNumbers);
+      if (!operands.every(Boolean)) continue;
+      entry.entryNumbers = sortedEntries(operands.flat());
+      settled = false;
+    }
+  }
+}
+
 function checkEntries(checks) {
   const entries = [];
   const occurrences = new Map();
@@ -354,17 +394,30 @@ function checkEntries(checks) {
  * @param {Array} [options.checks] - checkCompliance() output, where the run has one
  * @param {string} [options.scenarioName]
  * @param {string} [options.yearEnd] - YYYY-MM-DD
+ * @param {Object} [options.attribution] - { Sheet: { Cell: Set<entryNumber> } } from the JS calculator
  * @returns {Object} the R document, entries sorted by key
  */
-export function buildReportDocument({ packageName, engine, results, productMod, scenario, taxData, checks, scenarioName, yearEnd }) {
+export function buildReportDocument({
+  packageName,
+  engine,
+  results,
+  productMod,
+  scenario,
+  taxData,
+  checks,
+  scenarioName,
+  yearEnd,
+  attribution,
+}) {
   const multiFile = Boolean(productMod.MULTI_FILE);
   const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
-  const cellEntries = collectCellEntries(results, multiFile);
+  const cellEntries = collectCellEntries(results, multiFile, attribution);
 
   const values = cellEntries.map((entry) => ({
     key: entry.key,
     unit: labels[entry.labelKey]?.unit,
     value: entry.value,
+    entryNumbers: entry.entryNumbers,
   }));
 
   const byLabel = buildCellIndexByLabel(labels, cellEntries);
@@ -380,6 +433,7 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
     values.push(...nettingEntries(productMod.categoryNetting(results, scenario, taxData), multiFile));
   }
   values.push(...checkEntries(checks));
+  if (attribution) attributeEntries(values);
 
   values.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 
@@ -402,6 +456,7 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
     out.value = entry.value;
     if (entry.source) out.source = entry.source;
     if (entry.derivedFrom) out.derivedFrom = entry.derivedFrom;
+    if (entry.entryNumbers) out.entryNumbers = entry.entryNumbers;
     if (entry.expected !== undefined) out.expected = entry.expected;
     if (entry.actual !== undefined) out.actual = entry.actual;
     if (entry.tolerance !== undefined) out.tolerance = entry.tolerance;

@@ -99,9 +99,18 @@ function requireLoaded(session) {
   }
 }
 
-function reportFor(book, lines) {
+// entryNumbers: true gives every attributed figure the entryNumbers of the
+// lines behind it; an array of R keys gives them to those keys alone, so a
+// caller drilling into one figure is not handed every line under every
+// total.
+function reportFor(book, lines, entryNumbers) {
   const product = productOf(book);
-  return buildFileReportDocument(book, lines, product, productModule(product));
+  const document = buildFileReportDocument(book, lines, product, productModule(product), { attribute: Boolean(entryNumbers) });
+  if (Array.isArray(entryNumbers)) {
+    const wanted = new Set(entryNumbers);
+    for (const entry of document.values) if (!wanted.has(entry.key)) delete entry.entryNumbers;
+  }
+  return document;
 }
 
 // The book checks and warnings, with the book's own tax year's data behind
@@ -175,7 +184,7 @@ async function report(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
-  return { report: reportFor(book, lines), bookChecks: await bookChecksFor(book, lines) };
+  return { report: reportFor(book, lines, params.entryNumbers), bookChecks: await bookChecksFor(book, lines) };
 }
 
 /**
@@ -288,12 +297,17 @@ export const TOOLS = {
   report: {
     name: "report",
     description:
-      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book.",
+      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book. Each report-section figure carries the label the spreadsheet prints for it.",
     inputSchema: {
       type: "object",
       properties: {
         book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
+        entryNumbers: {
+          anyOf: [{ type: "boolean" }, { type: "array", items: { type: "string" } }],
+          description:
+            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only. Attributed today: Basic Sole Trader and Taxi Driver books.",
+        },
       },
     },
     handler: report,

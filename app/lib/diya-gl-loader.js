@@ -35,6 +35,7 @@ import {
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
+import { tagEntry } from "./entry-attribution.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -702,12 +703,17 @@ export function diyaGlToScenario(book, lines, product) {
   if (product === "bst" || product === "taxi") {
     const additions = purchaseLines
       .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
-      .map((l) => ({
-        date: l.postingDate,
-        description: l.lineItemComment || "",
-        reference: l.documentReference || "",
-        cost: l.amount,
-      }));
+      .map((l) =>
+        tagEntry(
+          {
+            date: l.postingDate,
+            description: l.lineItemComment || "",
+            reference: l.documentReference || "",
+            cost: l.amount,
+          },
+          l.entryNumber,
+        ),
+      );
     if (additions.length > 0) {
       scenario.fixed_asset_additions = additions;
       expected.fixed_asset_cost = additions.reduce((total, asset) => total + asset.cost, 0);

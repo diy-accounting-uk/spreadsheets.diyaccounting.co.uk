@@ -6,6 +6,7 @@
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync } from "fs";
+import { tagEntry, entryOf } from "./entry-attribution.js";
 
 export const MONTH_SHEETS = {
   apr: "Apr",
@@ -57,7 +58,7 @@ export function fixedAssetAdditions(scenario, capitalCode) {
   for (const transactions of Object.values(scenario.purchases || {})) {
     for (const tx of transactions) {
       if (tx.code !== capitalCode) continue;
-      additions.push({ date: tx.date, description: tx.supplier, reference: tx.supplier, cost: tx.amount });
+      additions.push(tagEntry({ date: tx.date, description: tx.supplier, reference: tx.supplier, cost: tx.amount }, entryOf(tx)));
     }
   }
   return additions;

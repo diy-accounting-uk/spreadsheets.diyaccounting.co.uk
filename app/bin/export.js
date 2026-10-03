@@ -132,10 +132,16 @@ function parseArgs(argv) {
 // buildReportDocument -- the same loop report.js's --data mode runs, so the
 // CLI's --file mode, report.js and the MCP server's tools never diverge on
 // how R is built from the same D. Pure: no disk access, no console output.
-export function buildFileReportDocument(book, lines, packageName, productMod) {
+//
+// attribute asks for each attributed figure's entryNumbers. A year's book
+// lists every line under each total it reaches, which multiplies R's size
+// many times over, so the written report.json leaves them out and a caller
+// that drills from a figure to its lines asks for them.
+export function buildFileReportDocument(book, lines, packageName, productMod, { attribute = false } = {}) {
   const taxData = extractTaxDataFromBook(book, packageName);
   const scenario = diyaGlToScenario(book, lines, packageName);
-  const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
+  const attribution = attribute ? {} : undefined;
+  const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario, { attribution });
   const mergedScenario = { ...scenario, ...scenario.expected };
   const periodEnd = book.documentInfo?.periodCoveredEnd;
   const yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
@@ -147,6 +153,7 @@ export function buildFileReportDocument(book, lines, packageName, productMod) {
     packageName,
     engine: "js",
     results,
+    attribution,
     productMod,
     scenario: mergedScenario,
     taxData,

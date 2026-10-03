@@ -25,11 +25,14 @@ export { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmissio
  * @param {string} product - 'bst' | 'taxi' | 'se' | 'ltd'
  * @param {Object} taxData - tax rates from app/data/*.toml format
  * @param {Object} [scenario] - optional scenario with stock/debtors/creditors
+ * @param {Object} [options]
+ * @param {Object} [options.attribution] - filled in place with { "SheetName": { "CellRef": Set<entryNumber> } },
+ *   the ledger entries behind each cell the product's calculator attributes (entry-attribution.js)
  * @returns {Object} { "SheetName": { "CellRef": value, ... }, ... }
  */
-export function calculateFromDiyaGl(book, lines, product, taxData, scenario = {}) {
-  if (product === "bst") return calculateBstResults(book, lines, taxData, scenario);
-  if (product === "taxi") return calculateTaxiResults(book, lines, taxData, scenario);
+export function calculateFromDiyaGl(book, lines, product, taxData, scenario = {}, { attribution } = {}) {
+  if (product === "bst") return calculateBstResults(book, lines, taxData, scenario, attribution);
+  if (product === "taxi") return calculateTaxiResults(book, lines, taxData, scenario, attribution);
   if (product === "se") return calculateSeResults(book, lines, taxData, scenario);
   if (product === "ltd") return calculateLtdResults(book, lines, taxData, scenario);
   throw new Error(`Product "${product}" not yet supported by JS calculator`);

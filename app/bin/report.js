@@ -13,6 +13,8 @@
 //   --mode saved       (default) Read xlsx cell values as-is from XML. No LibreOffice needed.
 //   --mode recalculate Run xls roundtrip first, then read. Requires LibreOffice.
 //   --data <dir>       Compute reports from diya-gl data via JS engine. No Excel needed.
+//   --entry-numbers    With --data, give each attributed figure in report.json the
+//                      entryNumbers of the ledger lines behind it.
 //
 // Either mode writes report.json beside the markdown: R, the canonical
 // document verify-roundtrip.js scores. --data also writes its own input to
@@ -65,6 +67,7 @@ function parseArgs(argv) {
   const offset = getArg("--offset");
   const years = getArg("--years");
   const yearEndArg = getArg("--year-end");
+  const entryNumbers = args.includes("--entry-numbers");
 
   if (!packageName) {
     console.error("Error: --package is required (bst, taxi, se, ltd)");
@@ -79,7 +82,7 @@ function parseArgs(argv) {
     process.exit(1);
   }
 
-  return { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg };
+  return { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg, entryNumbers };
 }
 
 // R, the canonical report document, beside the markdown. Both engines write
@@ -92,7 +95,7 @@ function writeReportJson(outputDir, options) {
 }
 
 async function main() {
-  const { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg } = parseArgs(process.argv);
+  const { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg, entryNumbers } = parseArgs(process.argv);
 
   const productMod = PRODUCTS[packageName];
   if (!productMod) {
@@ -129,7 +132,8 @@ async function main() {
     // on the Excel side: opening balances, stock, debtors, creditors and
     // business details. Passing it through lights those up on the JS side too.
     const scenario = diyaGlToScenario(book, lines, packageName);
-    const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
+    const attribution = entryNumbers ? {} : undefined;
+    const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario, { attribution });
 
     // Fixture anchors (opening_debtors, closing_creditors, ...) are top-level
     // scenario tables, not [expected] keys, so checks that anchor against
@@ -156,6 +160,7 @@ async function main() {
       packageName,
       engine: "js",
       results,
+      attribution,
       productMod,
       scenario: mergedScenario,
       taxData,

@@ -4,6 +4,7 @@
 // shared.js — Aggregation helpers used by more than one product calculator.
 
 import { getMonthKey, signedAmount } from "../scenario-extractor.js";
+import { entryOf } from "../entry-attribution.js";
 
 /**
  * Group lines by accountMainID and month, computing totals.
@@ -43,13 +44,22 @@ export function annualTotal(aggregated, accountMainID) {
 
 /**
  * Sum amounts for a set of accountMainIDs, mapped through a code map to group by code.
+ * @param {Array} lines
+ * @param {Object} codeMap - accountMainID -> code
+ * @param {Object} [entriesByCode] - filled in place with { code: Set<entryNumber> }, the lines behind each total
  * @returns {Object} { code: total, ... }
  */
-export function aggregateByCode(lines, codeMap) {
+export function aggregateByCode(lines, codeMap, entriesByCode) {
   const byCode = {};
   for (const line of lines) {
     const code = codeMap[line.accountMainID];
-    if (code) byCode[code] = (byCode[code] || 0) + signedAmount(line);
+    if (code) {
+      byCode[code] = (byCode[code] || 0) + signedAmount(line);
+      if (entriesByCode) {
+        const entries = (entriesByCode[code] ??= new Set());
+        if (entryOf(line) !== undefined) entries.add(entryOf(line));
+      }
+    }
   }
   return byCode;
 }
