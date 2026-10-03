@@ -2875,6 +2875,26 @@
       .join("");
   }
 
+  // One offender's line in a check's detail. A check's offenders take one of
+  // five shapes: a ledger line (entryNumber, postingDate, accountMainID, amount;
+  // a schedule row with no date or account leaves those two blank), an employee's
+  // missing month ({ name, month }), an overdrawn month ({ month, closing }), a
+  // band crossing ({ month, milesToDate }), or a bare month ({ month }).
+  function offenderText(o) {
+    if (o.entryNumber !== undefined) {
+      return [o.entryNumber, o.postingDate, o.accountMainID, fmtMoney(o.amount)]
+        .filter(function (part) {
+          return part !== "";
+        })
+        .join(" · ");
+    }
+    if (o.name !== undefined) return o.name + " · " + o.month;
+    if (o.closing !== undefined) return o.month + " · closes at " + fmtMoney(o.closing);
+    if (o.milesToDate !== undefined) return o.month + " · " + o.milesToDate + " miles to date";
+    if (o.month !== undefined) return o.month;
+    throw new Error("A check offender has no known shape: " + JSON.stringify(o));
+  }
+
   function renderBookCheckDetail(check) {
     var offenders = !check.offenders.length
       ? ""
@@ -2882,9 +2902,7 @@
         check.offenders
           .slice(0, 5)
           .map(function (o) {
-            return (
-              "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
-            );
+            return "<li>" + esc(offenderText(o)) + "</li>";
           })
           .join("") +
         (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +

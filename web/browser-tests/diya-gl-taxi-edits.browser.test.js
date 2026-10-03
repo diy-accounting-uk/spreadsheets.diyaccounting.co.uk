@@ -352,6 +352,36 @@ test.describe("DIYA-GL Taxi books page — E2: a fare day has no miles", () => {
   });
 });
 
+test.describe("DIYA-GL Taxi books page — check offender lines", () => {
+  test("every offender line names its month or its date and amount, and none reads undefined or NaN", async ({ page }) => {
+    await openBook(page, /taxi-scenario-sp-sixty/);
+
+    const band = bookCheck(page, "book-taxi-miles-band");
+    await expect(band).toHaveClass(/warn/);
+    await expect(band.locator(".check-offenders li").first()).toHaveText(/^\d{4}-\d{2} · [\d.]+ miles to date$/);
+
+    await openMonth(page, "2025-04");
+    await openWeek(page, "2025-04-07");
+    const milesInput = page.locator('[data-miles-entry="TXN-0001"]');
+    await milesInput.fill("");
+    await milesInput.press("Enter");
+
+    const fareMiles = bookCheck(page, "book-taxi-fare-miles");
+    await expect(fareMiles).toHaveClass(/warn/);
+    await expect(fareMiles.locator(".check-offenders li").first()).toHaveText(/^TXN-0001 · \d{4}-\d{2}-\d{2} · \d+ · £[\d,.]+$/);
+
+    const lines = await page.locator("#inspector .check-offenders li").allInnerTexts();
+    expect(lines.length).toBeGreaterThan(1);
+    for (const line of lines) {
+      expect(line).not.toContain("undefined");
+      expect(line).not.toContain("NaN");
+    }
+
+    await band.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(ROOT, "reports/screenshots/diya-gl-taxi-check-offenders.png") });
+  });
+});
+
 test.describe("DIYA-GL Taxi books page — E2: a vehicle bought is not on the register", () => {
   test("a second 7000 line with no matching register entry warns; the helper registers it", async ({ page }) => {
     await openBook(page, /taxi-scenario-basic/);
