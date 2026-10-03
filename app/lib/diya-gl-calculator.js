@@ -33,8 +33,8 @@ export { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmissio
 export function calculateFromDiyaGl(book, lines, product, taxData, scenario = {}, { attribution } = {}) {
   if (product === "bst") return calculateBstResults(book, lines, taxData, scenario, attribution);
   if (product === "taxi") return calculateTaxiResults(book, lines, taxData, scenario, attribution);
-  if (product === "se") return calculateSeResults(book, lines, taxData, scenario);
-  if (product === "ltd") return calculateLtdResults(book, lines, taxData, scenario);
+  if (product === "se") return calculateSeResults(book, lines, taxData, scenario, attribution);
+  if (product === "ltd") return calculateLtdResults(book, lines, taxData, scenario, attribution);
   throw new Error(`Product "${product}" not yet supported by JS calculator`);
 }
 

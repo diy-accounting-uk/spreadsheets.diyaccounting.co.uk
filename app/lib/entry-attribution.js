@@ -17,6 +17,7 @@
 // entryOf() reads a line's own field or a transaction's tag alike.
 
 const ENTRY_OF = new WeakMap();
+const FIELD_ENTRIES_OF = new WeakMap();
 
 /**
  * Record the entryNumber of the line a derived record was built from.
@@ -37,6 +38,29 @@ export function tagEntry(record, entryNumber) {
 export function entryOf(record) {
   if (!record || typeof record !== "object") return undefined;
   return record.entryNumber ?? ENTRY_OF.get(record);
+}
+
+/**
+ * Record the entryNumbers behind each field of a record folded from many
+ * lines, such as the opening balance a book's opening journal adds up to.
+ * @param {Object} record
+ * @param {Object} entriesByField - { field: Set<entryNumber> }, or a nested
+ *   object of the same shape where the record's own field is an object
+ * @returns {Object} the record
+ */
+export function tagFieldEntries(record, entriesByField) {
+  FIELD_ENTRIES_OF.set(record, entriesByField);
+  return record;
+}
+
+/**
+ * The entryNumbers behind each field of a record tagFieldEntries() tagged;
+ * an untagged record has none.
+ * @param {Object} record
+ * @returns {Object} { field: Set<entryNumber> }
+ */
+export function fieldEntriesOf(record) {
+  return (record && typeof record === "object" && FIELD_ENTRIES_OF.get(record)) || {};
 }
 
 /**

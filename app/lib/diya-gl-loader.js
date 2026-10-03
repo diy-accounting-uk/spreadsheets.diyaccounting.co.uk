@@ -35,7 +35,7 @@ import {
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
-import { tagEntry } from "./entry-attribution.js";
+import { tagEntry, entryOf } from "./entry-attribution.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -500,7 +500,7 @@ export function diyaGlToScenario(book, lines, product) {
       for (const [month, txs] of Object.entries(months)) {
         if (!flatBank[month]) flatBank[month] = [];
         for (const tx of txs) {
-          flatBank[month].push({ ...tx, account: acctId });
+          flatBank[month].push(tagEntry({ ...tx, account: acctId }, entryOf(tx)));
         }
       }
     }
@@ -533,19 +533,24 @@ export function diyaGlToScenario(book, lines, product) {
     for (const line of sortedPayrollLines) {
       const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
       if (!payrollByMonth[month]) payrollByMonth[month] = [];
-      payrollByMonth[month].push({
-        date: line.postingDate,
-        name: line.detailComment,
-        grossPay: line["diya-gl:grossPay"] || line.amount,
-        incomeTax: line["diya-gl:incomeTax"] || 0,
-        employeeNI: line["diya-gl:employeeNI"] || 0,
-        employerNI: line["diya-gl:employerNI"] || 0,
-        netPay: line["diya-gl:netPay"] || 0,
-        employeeID: line["diya-gl:employeeID"] || "",
-        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment) || "",
-        accountMainID: line.accountMainID,
-        reference: line.documentReference,
-      });
+      payrollByMonth[month].push(
+        tagEntry(
+          {
+            date: line.postingDate,
+            name: line.detailComment,
+            grossPay: line["diya-gl:grossPay"] || line.amount,
+            incomeTax: line["diya-gl:incomeTax"] || 0,
+            employeeNI: line["diya-gl:employeeNI"] || 0,
+            employerNI: line["diya-gl:employerNI"] || 0,
+            netPay: line["diya-gl:netPay"] || 0,
+            employeeID: line["diya-gl:employeeID"] || "",
+            taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment) || "",
+            accountMainID: line.accountMainID,
+            reference: line.documentReference,
+          },
+          line.entryNumber,
+        ),
+      );
     }
     scenario.payroll = payrollByMonth;
   }

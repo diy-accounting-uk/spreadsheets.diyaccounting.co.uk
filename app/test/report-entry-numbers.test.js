@@ -14,7 +14,8 @@ import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../lib
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { addSaleLine, addPurchaseLine } from "../lib/diya-gl-edits.js";
-import { BST_SALES_ACCOUNTS, TAXI_SALES_ACCOUNT } from "../lib/scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, TAXI_SALES_ACCOUNT, LTD_SALES_CODE_MAP, isOpeningBalanceLine } from "../lib/scenario-extractor.js";
+import { isLtdOpeningBankLine } from "../lib/ltd-layout.js";
 import { readXlsxCellValues } from "../lib/xlsx-reader.js";
 import { extractBookFromFile, buildFileReportDocument } from "../bin/export.js";
 import { scoreReportDocuments } from "../bin/verify-roundtrip.js";
@@ -29,6 +30,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const PRODUCTS = { bst, taxi, se, ltd };
 const BST_BOOK = resolve(ROOT, "examples", "precision-code-ltd", "bst");
 const TAXI_BOOK = resolve(ROOT, "examples", "kestrel-executive-cars", "taxi");
+const LTD_BOOK = resolve(ROOT, "examples", "precision-code-ltd", "full");
+const SE_BOOK = resolve(ROOT, "examples", "precision-code-ltd", "advanced");
 
 const TURNOVER = "section/profit-loss-account/sales-turnover";
 const NET_PROFIT = "section/profit-loss-account/net-profit";
@@ -106,15 +109,111 @@ describe("entryNumbers on a Taxi Driver book", () => {
   });
 });
 
+// Every section row that names a cell carries that cell's entryNumbers, save
+// the rows of a section no row of which names one.
+function rowsMissingEntryNumbers(report) {
+  return [...report.values()]
+    .filter((entry) => entry.key.startsWith("section/") && entry.source && !entry.entryNumbers)
+    .map((entry) => entry.key);
+}
+
+describe("entryNumbers on a Limited Company book", () => {
+  const { book, lines } = loadDiyaGlData(LTD_BOOK);
+  const report = reportOf(book, lines, "ltd");
+  const LTD_TURNOVER = "section/profit-loss-account/sales-turnover";
+  const LTD_PROFIT = "section/profit-loss-account/profit-before-tax";
+  const LTD_PREMISES = "section/profit-loss-account/premises-code-r";
+  const yearLine = (line) => line["diya-gl:vatPeriodEnd"] === undefined;
+
+  it("gives turnover exactly the entryNumbers of the sales lines on its five turnover codes", () => {
+    const turnoverCodes = new Set(["a", "b", "c", "d", "g"]);
+    const salesLines = lines.filter(
+      (line) => line.sourceJournalID === "sales" && yearLine(line) && turnoverCodes.has(LTD_SALES_CODE_MAP[line.accountMainID]),
+    );
+    expect(salesLines.length).toBeGreaterThan(0);
+    expect(report.get(LTD_TURNOVER).entryNumbers).toEqual(sortedEntryNumbers(salesLines));
+  });
+
+  it("gives a trial balance bank row exactly the lines that post to that account", () => {
+    const utcDay = (value) => new Date(`${String(value instanceof Date ? value.toISOString() : value).slice(0, 10)}T00:00:00Z`);
+    const periodStart = utcDay(book.documentInfo.periodCoveredStart);
+    const posting = lines.filter(
+      (line) =>
+        (isOpeningBalanceLine(line) && line.accountMainID === "1200") ||
+        (line.sourceJournalID === "bank" &&
+          line["diya-gl:bankAccountID"] === "1200" &&
+          !isLtdOpeningBankLine(line["diya-gl:bankCode"], utcDay(line.postingDate), periodStart)),
+    );
+    expect(posting.length).toBeGreaterThan(1);
+    expect(report.get("section/trial-balance/final-bank-current-account").entryNumbers).toEqual(sortedEntryNumbers(posting));
+  });
+
+  it("adds a new purchase to its category row and to profit and nowhere it does not reach", () => {
+    const purchase = newLine(lines.filter(yearLine), {
+      sourceJournalID: "purchases",
+      accountMainID: "5200",
+      entryNumber: "ADDED-PREMISES",
+    });
+    const after = reportOf(book, addPurchaseLine(book, lines, { line: purchase }), "ltd");
+    for (const key of [LTD_PREMISES, LTD_PROFIT]) {
+      expect(after.get(key).entryNumbers).toEqual([...report.get(key).entryNumbers, "ADDED-PREMISES"].sort());
+    }
+    expect(after.get(LTD_TURNOVER).entryNumbers).toEqual(report.get(LTD_TURNOVER).entryNumbers);
+  });
+
+  it("gives every section row that reprints a cell its entryNumbers", () => {
+    expect(rowsMissingEntryNumbers(report)).toEqual([]);
+  });
+});
+
+describe("entryNumbers on a Self Employed book", () => {
+  const { book, lines } = loadDiyaGlData(SE_BOOK);
+  const report = reportOf(book, lines, "se");
+  const SE_TURNOVER = "section/profit-loss-account/sales-turnover";
+  const SE_PROFIT = "section/profit-loss-account/profit-before-tax";
+  const SE_PREMISES = "section/profit-loss-account/premises-rent-rates-power";
+  const yearLine = (line) => line["diya-gl:vatPeriodEnd"] === undefined;
+
+  it("gives turnover exactly the entryNumbers of the sales lines on its four product codes", () => {
+    const turnoverCodes = new Set(["a", "b", "c", "d"]);
+    const salesLines = lines.filter(
+      (line) => line.sourceJournalID === "sales" && yearLine(line) && turnoverCodes.has(LTD_SALES_CODE_MAP[line.accountMainID]),
+    );
+    expect(salesLines.length).toBeGreaterThan(0);
+    expect(report.get(SE_TURNOVER).entryNumbers).toEqual(sortedEntryNumbers(salesLines));
+  });
+
+  it("adds a new purchase to its category row and to profit and nowhere it does not reach", () => {
+    const purchase = newLine(lines.filter(yearLine), {
+      sourceJournalID: "purchases",
+      accountMainID: "5200",
+      entryNumber: "ADDED-PREMISES",
+    });
+    const after = reportOf(book, addPurchaseLine(book, lines, { line: purchase }), "se");
+    for (const key of [SE_PREMISES, SE_PROFIT]) {
+      expect(after.get(key).entryNumbers).toEqual([...report.get(key).entryNumbers, "ADDED-PREMISES"].sort());
+    }
+    expect(after.get(SE_TURNOVER).entryNumbers).toEqual(report.get(SE_TURNOVER).entryNumbers);
+  });
+
+  it("gives every section row that reprints a cell its entryNumbers", () => {
+    expect(rowsMissingEntryNumbers(report)).toEqual([]);
+  });
+});
+
 describe("attribution leaves the calculated values alone", () => {
   const BOOKS = [
     ["bst", BST_BOOK],
     ["taxi", TAXI_BOOK],
     ["se", resolve(ROOT, "examples", "brickwork-pro", "se-vat")],
+    ["se", resolve(ROOT, "examples", "brickwork-pro", "se-nonvat")],
+    ["se", SE_BOOK],
     ["ltd", resolve(ROOT, "examples", "brickwork-pro", "ltd-vat")],
+    ["ltd", resolve(ROOT, "examples", "brickwork-pro", "ltd-nonvat")],
+    ["ltd", LTD_BOOK],
   ];
 
-  it.each(BOOKS)("%s: the results are identical with and without an attribution", (product, dir) => {
+  it.each(BOOKS)("%s %s: the results are identical with and without an attribution", (product, dir) => {
     const { book, lines } = loadDiyaGlData(dir);
     const taxData = extractTaxDataFromBook(book, product);
     const plain = calculateFromDiyaGl(book, lines, product, taxData, diyaGlToScenario(book, lines, product));

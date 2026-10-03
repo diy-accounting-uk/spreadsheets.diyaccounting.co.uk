@@ -27,6 +27,9 @@ import {
   straddlingPeriodTotals,
   vatReturnBoxes,
   vatReturnPeriodEnds,
+  vatinterfaceRowFor,
+  STRADDLING_PERIOD_ROWS,
+  VATINTERFACE_FIRST_MONTH_ROW,
   VATINTERFACE_FIRST_ROW,
   VATINTERFACE_LAST_ROW,
 } from "../tax/vat.js";
@@ -49,6 +52,7 @@ import {
   payslipsWagesPaidCell,
 } from "../payslips-layout.js";
 import { SHEET_BLANK, sheetNumber, sheetSum, excelSerial, dateFromExcelSerial } from "./shared.js";
+import { attributionWriter, entriesOf, entryOf, unionOf } from "../entry-attribution.js";
 
 // The twelve month tabs, in the order the package lays them out, and the profit
 // and loss account column each one feeds.
@@ -158,12 +162,23 @@ function roundedNetOfVat(gross, rate) {
 
 // ── The journal month tabs ─────────────────────────────────────────────────
 
+// Add the entryNumber behind a record to one key's set in an entry sink. A
+// fold given no sink records nothing.
+function addEntry(entries, key, record) {
+  if (!entries) return;
+  const entry = entryOf(record);
+  if (entry !== undefined) (entries[key] ??= new Set()).add(entry);
+}
+
 /**
  * One month tab of a sales or purchase journal: the gross, VAT and net totals
  * its row 1 holds, each analysis column's own total, and the CIS tax withheld.
+ * An entry sink, where given, is filled with the transactions behind them:
+ * `gross` for the three row totals, `byCode` and `cis`.
  */
-function journalMonth(transactions, rate, analysisColumns, defaultCode) {
+function journalMonth(transactions, rate, analysisColumns, defaultCode, entries) {
   const totals = { gross: 0, vat: 0, net: 0, byCode: {}, cis: 0 };
+  if (entries) Object.assign(entries, { gross: new Set(), byCode: {}, cis: new Set() });
   for (const tx of transactions || []) {
     // A mileage-log row states miles where a bought purchase states an
     // amount, and the sheet prices those miles itself. Its own figure never
@@ -173,15 +188,25 @@ function journalMonth(transactions, rate, analysisColumns, defaultCode) {
     totals.gross += tx.amount;
     totals.vat += vat;
     totals.net += net;
+    addEntry(entries, "gross", tx);
     const code = tx.code || defaultCode;
-    if (analysisColumns[code] !== undefined) totals.byCode[code] = (totals.byCode[code] || 0) + net;
-    if (tx.cis_deduction) totals.cis += tx.cis_deduction;
+    if (analysisColumns[code] !== undefined) {
+      totals.byCode[code] = (totals.byCode[code] || 0) + net;
+      addEntry(entries?.byCode, code, tx);
+    }
+    if (tx.cis_deduction) {
+      totals.cis += tx.cis_deduction;
+      addEntry(entries, "cis", tx);
+    }
   }
   return totals;
 }
 
-function journalMonths(journal, rate, analysisColumns, defaultCode) {
-  return MONTH_KEYS.map((month) => journalMonth(journal?.[month], rate, analysisColumns, defaultCode));
+function journalMonths(journal, rate, analysisColumns, defaultCode, entries) {
+  return MONTH_KEYS.map((month, index) => {
+    if (entries) entries[index] = {};
+    return journalMonth(journal?.[month], rate, analysisColumns, defaultCode, entries?.[index]);
+  });
 }
 
 // The business miles one month's transactions carry.
@@ -249,8 +274,12 @@ function runningTotals(months, code) {
  *
  * An opening balance entry is written straight into its month's A1, replacing
  * the formula that would otherwise carry the month before it forward.
+ *
+ * An entry sink, where given, is filled with one object a month holding the
+ * transactions behind its receipts, payments, code columns and written
+ * opening balance.
  */
-function bankBook(bankJournal, fileName) {
+function bankBook(bankJournal, fileName, entries) {
   const layout = BANK_LAYOUTS[fileName];
   const months = MONTH_KEYS.map(() => ({
     receipts: 0,
@@ -259,6 +288,11 @@ function bankBook(bankJournal, fileName) {
     paymentsByCode: {},
     openingWritten: null,
   }));
+  if (entries) {
+    MONTH_KEYS.forEach((_, index) => {
+      entries[index] = { receipts: new Set(), payments: new Set(), receiptsByCode: {}, paymentsByCode: {}, openingWritten: null };
+    });
+  }
 
   for (const [monthKey, transactions] of Object.entries(bankJournal || {})) {
     const index = MONTH_KEYS.indexOf(monthKey);
@@ -267,17 +301,27 @@ function bankBook(bankJournal, fileName) {
       const file = (tx.account || "1200") === "1220" ? "Cash.xlsx" : "Bank.xlsx";
       if (file !== fileName) continue;
       const month = months[index];
+      const monthEntries = entries?.[index];
       if (tx.code === "BC") {
         month.openingWritten = (month.openingWritten || 0) + tx.amount;
+        if (monthEntries) monthEntries.openingWritten = unionOf(monthEntries.openingWritten, [tx]);
         continue;
       }
       if (tx.direction === "in") {
         month.receipts += tx.amount;
-        if (layout.receiptColumns[tx.code]) month.receiptsByCode[tx.code] = (month.receiptsByCode[tx.code] || 0) + tx.amount;
+        addEntry(monthEntries, "receipts", tx);
+        if (layout.receiptColumns[tx.code]) {
+          month.receiptsByCode[tx.code] = (month.receiptsByCode[tx.code] || 0) + tx.amount;
+          addEntry(monthEntries?.receiptsByCode, tx.code, tx);
+        }
       } else if (tx.direction === "out") {
         const code = paymentCodeFor(tx.code);
         month.payments += tx.amount;
-        if (layout.paymentColumns[code]) month.paymentsByCode[code] = (month.paymentsByCode[code] || 0) + tx.amount;
+        addEntry(monthEntries, "payments", tx);
+        if (layout.paymentColumns[code]) {
+          month.paymentsByCode[code] = (month.paymentsByCode[code] || 0) + tx.amount;
+          addEntry(monthEntries?.paymentsByCode, code, tx);
+        }
       }
     }
   }
@@ -558,6 +602,20 @@ function scheduleTotals(rows) {
   return totals;
 }
 
+// The columns a disposal moves: net book value carried forward and the
+// disposal columns. Every other column follows the asset alone.
+const SCHEDULE_DISPOSAL_COLUMNS = new Set(["K", "V", "W", "X", "Y", "Z"]);
+
+// scheduleTotals() over the transactions behind each row.
+function scheduleTotalEntries(rowEntries) {
+  return Object.fromEntries(
+    SCHEDULE_TOTAL_COLUMNS.map((column) => [
+      column,
+      unionOf(...rowEntries.map((row) => (SCHEDULE_DISPOSAL_COLUMNS.has(column) ? unionOf(row.asset, row.disposal) : row.asset))),
+    ]),
+  );
+}
+
 function addScheduleTotals(left, right) {
   const totals = {};
   for (const column of SCHEDULE_TOTAL_COLUMNS) {
@@ -566,7 +624,9 @@ function addScheduleTotals(left, right) {
   return totals;
 }
 
-function buildSchedule(scenario, taxData, rate) {
+// An entry sink, where given, is filled with the transactions behind each
+// block's totals, column by column (`existing`, `additions`, `totals`).
+function buildSchedule(scenario, taxData, rate, entries) {
   const depreciation = taxData?.depreciation || {};
   const wdaRate = taxData?.capital_allowances?.writing_down_allowance ?? 0;
   const specialRate = taxData?.capital_allowances?.writing_down_allowance_special ?? 0;
@@ -577,8 +637,14 @@ function buildSchedule(scenario, taxData, rate) {
     for (const tx of transactions) if (tx.code === "fa") capitalPurchases.push(tx);
   }
   const disposals = [];
+  const disposalEntries = new Map();
   for (const transactions of Object.values(scenario.sales || {})) {
-    for (const tx of transactions) if (tx.code === "fs") disposals.push({ proceeds: roundedNetOfVat(tx.amount, rate) });
+    for (const tx of transactions) {
+      if (tx.code !== "fs") continue;
+      const disposal = { proceeds: roundedNetOfVat(tx.amount, rate) };
+      disposals.push(disposal);
+      disposalEntries.set(disposal, entriesOf([tx]));
+    }
   }
 
   // The writer fills each category's rows in declaration order and pairs a
@@ -594,6 +660,7 @@ function buildSchedule(scenario, taxData, rate) {
   });
 
   const existingRows = [];
+  const existingRowEntries = [];
   // The motor rows' own single asset pool cells, keyed by cell reference:
   // the private use share the writer puts in M, the marker in AD, and the
   // row's AE and AG, so a reconciliation that reads the marked row finds
@@ -614,6 +681,7 @@ function buildSchedule(scenario, taxData, rate) {
         disposal: disposalByAsset.get(asset),
       });
       existingRows.push(row);
+      existingRowEntries.push({ asset: new Set(), disposal: disposalEntries.get(disposalByAsset.get(asset)) ?? new Set() });
       if (category === "motor") {
         const rowNumber = block.rows[index];
         motorRowCells[`M${rowNumber}`] = asset.private_use || 0;
@@ -630,6 +698,14 @@ function buildSchedule(scenario, taxData, rate) {
 
   const existing = scheduleTotals(existingRows);
   const additions = scheduleTotals(newRows);
+  if (entries) {
+    const newRowEntries = capitalPurchases.slice(0, NEW_PLANT_ROW_COUNT).map((tx) => ({ asset: entriesOf([tx]), disposal: new Set() }));
+    entries.existing = scheduleTotalEntries(existingRowEntries);
+    entries.additions = scheduleTotalEntries(newRowEntries);
+    entries.totals = Object.fromEntries(
+      SCHEDULE_TOTAL_COLUMNS.map((column) => [column, unionOf(entries.existing[column], entries.additions[column])]),
+    );
+  }
   return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells };
 }
 
@@ -854,7 +930,7 @@ function buildPayrollCalendar(startYear, taxYearStartSerial) {
  * report's cells and every leaf cell a sibling workbook's link addresses,
  * hub sheets under their bare names and leaf sheets as "File.xlsx!Sheet".
  */
-export function calculateSeCells(book, lines, taxData, scenario = {}) {
+export function calculateSeCells(book, lines, taxData, scenario = {}, attribution) {
   const rate = vatRateFor(scenario);
   const startYear = taxData?.tax_year?.start ? new Date(taxData.tax_year.start).getUTCFullYear() : extractTaxYearStart(scenario);
   const dateSerials = adminDateSerials(startYear);
@@ -897,8 +973,10 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   businessDetails.D69 = sheetNumber(businessDetails.D59) - businessDetails.D64;
   businessDetails.O74 = sheetNumber(businessDetails.O59) - businessDetails.O64 - sheetNumber(businessDetails.O69);
 
-  const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a");
-  const purchasesMonths = journalMonths(scenario.purchases, rate, PURCHASES_ANALYSIS_COLUMNS);
+  const salesEntries = attribution ? [] : null;
+  const purchasesEntries = attribution ? [] : null;
+  const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a", salesEntries);
+  const purchasesMonths = journalMonths(scenario.purchases, rate, PURCHASES_ANALYSIS_COLUMNS, undefined, purchasesEntries);
   const mileage = mileageMonths(scenario, taxData?.mileage);
   purchasesMonths.forEach((month, index) => {
     const claim = mileage[index].claim;
@@ -907,10 +985,13 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     month.net += claim;
     month.byCode.v = (month.byCode.v || 0) + claim;
   });
-  const bank = bankBook(scenario.bank, "Bank.xlsx");
-  const cash = bankBook(scenario.bank, "Cash.xlsx");
+  const bankEntries = attribution ? [] : null;
+  const cashEntries = attribution ? [] : null;
+  const bank = bankBook(scenario.bank, "Bank.xlsx", bankEntries);
+  const cash = bankBook(scenario.bank, "Cash.xlsx", cashEntries);
   const payroll = payrollMonths(scenario.payroll);
-  const schedule = buildSchedule(scenario, taxData, rate);
+  const scheduleEntries = attribution ? {} : null;
+  const schedule = buildSchedule(scenario, taxData, rate, scheduleEntries);
   const scheduleNumber = (column) => sheetNumber(schedule.totals[column]);
   const sba = buildStructuresAndBuildings(scenario, admin, monthOffset);
 
@@ -1609,11 +1690,35 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
     results[`Vat.xlsx!VATQtr${index + 1}`] = vatReturnBoxes(vatinterface, periodEnd);
   });
 
+  if (attribution) {
+    attributeSeResults(attribution, {
+      results,
+      scenario,
+      mileage,
+      salesEntries,
+      purchasesEntries,
+      bankEntries,
+      cashEntries,
+      scheduleEntries,
+      vatinterface,
+      returnPeriodEnds,
+    });
+  }
+
   return results;
 }
 
-export function calculateSeResults(book, lines, taxData, scenario = {}) {
-  return withinReadScope(calculateSeCells(book, lines, taxData, scenario));
+/**
+ * The cells the reconciliation reads.
+ * @param {Object} book
+ * @param {Array} lines
+ * @param {Object} taxData
+ * @param {Object} [scenario]
+ * @param {Object} [attribution] - filled in place with the entryNumbers behind each cell (entry-attribution.js)
+ * @returns {Object} { "SheetName": { "CellRef": value } }
+ */
+export function calculateSeResults(book, lines, taxData, scenario = {}, attribution) {
+  return withinReadScope(calculateSeCells(book, lines, taxData, scenario, attribution));
 }
 
 // The report scores one value per cell the reconciliation reads, so a cell
@@ -1632,4 +1737,386 @@ function withinReadScope(results) {
     for (const cell of cells) if (computed[cell] !== undefined) scoped[sheet][cell] = computed[cell];
   }
   return scoped;
+}
+
+// ── Attribution ────────────────────────────────────────────────────────────
+
+// The entries behind each cell calculateSeCells() writes, cell for cell beside
+// the arithmetic above: a journal, bank or payroll cell takes the transactions
+// it folds, and a derived cell the union of the cells it is computed from. A
+// figure the book states outside its lines (a tax rate, a basis period
+// figure, a disallowable percentage, a stock count, an asset already owned, a
+// Structures and Buildings Allowance claim) has none.
+function attributeSeResults(attribution, context) {
+  const { results, scenario, mileage, salesEntries, purchasesEntries, bankEntries, cashEntries, scheduleEntries } = context;
+  const { vatinterface, returnPeriodEnds } = context;
+  const a = attributionWriter(attribution);
+  const none = () => new Set();
+
+  for (const [sheet, cells] of Object.entries(results)) for (const cell of Object.keys(cells)) a.set(sheet, cell);
+
+  // ── The folds ──
+  // A month's business miles price the claim to date, so every claim cell
+  // reads every mileage transaction up to its month.
+  const mileageTransactions = MONTH_KEYS.map((month) =>
+    [...(scenario.sales?.[month] || []), ...(scenario.purchases?.[month] || [])].filter((tx) => typeof tx.mileage === "number"),
+  );
+  const milesToDate = MONTH_KEYS.map((_, index) => entriesOf(mileageTransactions.slice(0, index + 1).flat()));
+  const claimEntries = MONTH_KEYS.map((_, index) => (mileage[index].claim ? milesToDate[index] : none()));
+  purchasesEntries.forEach((month, index) => {
+    month.gross = unionOf(month.gross, claimEntries[index]);
+    if (mileage[index].claim) month.byCode.v = unionOf(month.byCode.v, claimEntries[index]);
+  });
+  const salesCode = (index, code) => salesEntries[index].byCode[code] ?? none();
+  const purchasesCode = (index, code) => purchasesEntries[index].byCode[code] ?? none();
+  const bankPaymentEntries = (book, index, code) => book[index].paymentsByCode[code] ?? none();
+  const bankReceiptEntries = (book, index, code) => book[index].receiptsByCode[code] ?? none();
+  const payroll = MONTH_KEYS.map((month) => entriesOf(scenario.payroll?.[month]));
+  const schedule = scheduleEntries;
+  const contractorDeductions = unionOf(...salesEntries.map((month) => month.cis));
+
+  // ── Wagesinterface ──
+  payroll.forEach((entries, index) => {
+    for (const column of ["C", "D", "E", "G", "H"]) a.set("Wagesinterface", `${column}${WAGES_MONTH_ROWS[index]}`, entries);
+  });
+
+  // ── Profit and loss account ──
+  const PL = "Profit & Loss Account";
+  const disposalLoss = unionOf(schedule.totals.V, schedule.totals.W, schedule.totals.X);
+  const cellsOf = (col, rows) => a.cells(PL, ...rows.map((row) => `${col}${row}`));
+  MONTH_COLS.forEach((col, index) => {
+    a.set(PL, `${col}5`, salesCode(index, "a"));
+    a.set(PL, `${col}6`, salesCode(index, "b"));
+    a.set(PL, `${col}7`, salesCode(index, "c"));
+    a.set(PL, `${col}8`, salesCode(index, "d"));
+    a.set(PL, `${col}9`, cellsOf(col, [5, 6, 7, 8]));
+    a.set(PL, `${col}11`, salesCode(index, "g"));
+    a.set(PL, `${col}14`, purchasesCode(index, "s"));
+    a.set(PL, `${col}15`, purchasesCode(index, "c"));
+    a.set(PL, `${col}16`, purchasesCode(index, "o"));
+    a.set(PL, `${col}17`, cellsOf(col, [14, 15, 16]));
+    a.set(PL, `${col}19`, cellsOf(col, [9, 11, 17]));
+    a.set(PL, `${col}21`, purchasesCode(index, "w"), payroll[index]);
+    a.set(PL, `${col}22`, purchasesCode(index, "p"));
+    a.set(PL, `${col}23`, purchasesCode(index, "m"));
+    a.set(PL, `${col}24`, purchasesCode(index, "g"));
+    a.set(PL, `${col}25`, purchasesCode(index, "v"));
+    a.set(PL, `${col}26`, purchasesCode(index, "h"));
+    a.set(PL, `${col}27`, purchasesCode(index, "a"), purchasesCode(index, "e"));
+    a.set(PL, `${col}28`, purchasesCode(index, "l"));
+    a.set(PL, `${col}29`, salesCode(index, "o"));
+    a.set(PL, `${col}30`, bankPaymentEntries(bankEntries, index, "J"));
+    a.set(PL, `${col}31`, bankPaymentEntries(cashEntries, index, "J"), bankPaymentEntries(bankEntries, index, "B"));
+    a.set(PL, `${col}32`, purchasesCode(index, "y"));
+    a.set(PL, `${col}33`, disposalLoss);
+    a.set(PL, `${col}34`, schedule.totals.I);
+    a.set(PL, `${col}35`, cellsOf(col, [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]));
+    a.set(PL, `${col}37`, cellsOf(col, [19, 35]));
+    a.set(PL, `${col}38`, bankReceiptEntries(bankEntries, index, "K"));
+    a.set(PL, `${col}39`, cellsOf(col, [37, 38]));
+    a.set(PL, `${col}49`, purchasesCode(index, "e"));
+  });
+  const yearTotal = (row) => a.cells(PL, ...MONTH_COLS.map((col) => `${col}${row}`));
+  for (const row of [5, 6, 7, 8, 11, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 38, 49]) {
+    a.set(PL, `B${row}`, yearTotal(row));
+  }
+  a.set(PL, "B9", cellsOf("B", [5, 6, 7, 8]));
+  a.set(PL, "B17", cellsOf("B", [14, 15, 16]));
+  a.set(PL, "B19", cellsOf("B", [9, 11, 17]));
+  a.set(PL, "B35", cellsOf("B", [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]));
+  a.set(PL, "B37", cellsOf("B", [19, 35]));
+  a.set(PL, "B39", cellsOf("B", [37, 38]));
+  const B = (row) => a.get(PL, `B${row}`);
+
+  // ── VitalTax ──
+  const VT = "VitalTax";
+  const QUARTERS = ["C", "D", "E", "F"];
+  const quarterOf = (rows, quarter) =>
+    unionOf(...rows.flatMap((row) => MONTH_COLS.slice(quarter * 3, quarter * 3 + 3).map((col) => a.get(PL, `${col}${row}`))));
+  const yearOf = (row) => a.cells(VT, ...QUARTERS.map((col) => `${col}${row}`));
+  QUARTERS.forEach((col, quarter) => {
+    a.set(VT, `${col}5`, quarterOf([5, 6, 7], quarter));
+    a.set(VT, `${col}7`, quarterOf([14, 16], quarter));
+  });
+  a.set(VT, "G5", yearOf(5));
+  a.set(VT, "G7", yearOf(7));
+  const ALLOWABLE_PL_ROWS = { 12: [21], 13: [22], 14: [23], 15: [24], 16: [31], 17: [25, 26], 18: [27], 19: [28], 20: [29] };
+  Object.assign(ALLOWABLE_PL_ROWS, { 21: [30], 22: [32], 24: [15], 25: [49], 26: [33, 34] });
+  for (const [row, plRows] of Object.entries(ALLOWABLE_PL_ROWS)) {
+    QUARTERS.forEach((col, quarter) => a.set(VT, `${col}${row}`, quarterOf(plRows, quarter)));
+    a.set(VT, `G${row}`, yearOf(row));
+  }
+  const DISALLOWABLE_ALLOWABLE_ROWS = {
+    36: 7,
+    37: 24,
+    38: 12,
+    39: 17,
+    40: 13,
+    41: 14,
+    42: 15,
+    43: 18,
+    45: 21,
+    46: 16,
+    47: 20,
+    48: 19,
+    50: 22,
+  };
+  for (const [row, allowableRow] of Object.entries(DISALLOWABLE_ALLOWABLE_ROWS)) {
+    for (const col of QUARTERS) a.set(VT, `${col}${row}`, a.get(VT, `${col}${allowableRow}`));
+    a.set(VT, `G${row}`, yearOf(row));
+  }
+  for (const col of QUARTERS) a.set(VT, `${col}44`, a.get(VT, `${col}25`));
+  a.set(VT, "G44", yearOf(44));
+  QUARTERS.forEach((col, quarter) => a.set(VT, `${col}49`, quarterOf([34], quarter)));
+  a.set(VT, "G49", yearOf(49));
+  const ROW29_ROWS = [7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26];
+  for (const col of [...QUARTERS, "G"]) a.set(VT, `${col}29`, a.cells(VT, ...ROW29_ROWS.map((row) => `${col}${row}`)));
+  const disallowable = {
+    O66: a.get(VT, "G36"),
+    O70: a.get(VT, "G37"),
+    O74: a.get(VT, "G38"),
+    O78: a.get(VT, "G39"),
+    O82: a.get(VT, "G40"),
+    O86: a.get(VT, "G41"),
+    O90: a.get(VT, "G42"),
+    O94: a.cells(VT, "G43", "G44"),
+    O98: a.get(VT, "G45"),
+    O102: a.get(VT, "G46"),
+    O106: a.get(VT, "G47"),
+    O110: a.get(VT, "G48"),
+    O118: a.get(VT, "G50"),
+  };
+  const boxes32to45 = unionOf(...Object.values(disallowable), B(34));
+
+  // ── Fixed assets ──
+  const SCHEDULE = "Fixedassets.xlsx!Schedule";
+  a.set(SCHEDULE, "E57", schedule.existing.E);
+  a.set(SCHEDULE, "E110", schedule.additions.E);
+  for (const column of SCHEDULE_TOTAL_COLUMNS) a.set(SCHEDULE, `${column}1`, schedule.totals[column]);
+  const journalCode = (journal, code) =>
+    entriesOf(Object.values(journal || {}).flatMap((transactions) => transactions.filter((tx) => tx.code === code)));
+  const FAR = "Fixedassets.xlsx!FAreconciliation";
+  a.set(FAR, "E11", schedule.additions.E);
+  a.set(FAR, "E13", journalCode(scenario.purchases, "fa"));
+  a.set(FAR, "K11", schedule.totals.V);
+  a.set(FAR, "K13", journalCode(scenario.sales, "fs"));
+  a.set(FAR, "E15", a.cells(FAR, "E13", "E11"));
+  a.set(FAR, "K15", a.cells(FAR, "K13", "K11"));
+
+  // ── Payslips ──
+  payroll.forEach((entries, index) => {
+    for (const column of ["D", "E", "I"]) a.set("Payslips.xlsx!Payment", `${column}${WAGES_MONTH_ROWS[index]}`, entries);
+  });
+  const printedEntries = (scenario.payroll?.[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]] || []).slice(0, 1);
+  if (printedEntries.length > 0) {
+    const PRINT = `Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`;
+    a.set(PRINT, PAYSLIP_PRINT_CELLS.periodEnd, printedEntries);
+    for (const cell of Object.keys(PAYSLIP_PRINT_PERIOD_CELLS)) a.set(PRINT, cell, printedEntries);
+    const toDate = MONTH_KEYS.slice(0, PAYSLIP_PRINT_PERIOD).flatMap((key) => (scenario.payroll?.[key] || []).slice(0, 1));
+    for (const cell of Object.keys(PAYSLIP_PRINT_TO_DATE_CELLS)) a.set(PRINT, cell, toDate);
+    a.set(PRINT, "M18", printedEntries);
+  }
+  for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
+    const key = `Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[monthIndex]]}`;
+    const entries = scenario.payroll?.[MONTH_KEYS[monthIndex]] || [];
+    payslipsMonthEntryRows(monthIndex).forEach((row, index) => {
+      if (!entries[index]) return;
+      for (const column of Object.values(PAYSLIPS_ENTRY_COLUMNS)) a.set(key, `${column}${row}`, [entries[index]]);
+    });
+    if (entries.length > 0) a.set(key, payslipsWagesPaidCell(monthIndex), [entries[0]]);
+  }
+  payroll.forEach((entries, index) => {
+    const key = `Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[index]]}`;
+    for (const field of ["employerNI", "employeeNI", "incomeTax"]) a.set(key, PAYE_SCHEDULE_MONTH_TAB_CELLS[field], entries);
+    a.set(key, "M1", entries);
+  });
+
+  // ── Bank and cash ──
+  for (const [fileName, book] of [
+    ["Bank.xlsx", bankEntries],
+    ["Cash.xlsx", cashEntries],
+  ]) {
+    const layout = BANK_LAYOUTS[fileName];
+    let carried = none();
+    book.forEach((month, index) => {
+      const key = `${fileName}!${MONTH_SHEETS[MONTH_KEYS[index]]}`;
+      const opening = month.openingWritten === null ? carried : month.openingWritten;
+      const closing = unionOf(opening, month.receipts, month.payments);
+      carried = closing;
+      a.set(key, "A1", opening);
+      a.set(key, "A2", closing);
+      for (const [code, column] of Object.entries(layout.receiptColumns)) a.set(key, `${column}1`, month.receiptsByCode[code]);
+      for (const [code, column] of Object.entries(layout.paymentColumns)) a.set(key, `${column}1`, month.paymentsByCode[code]);
+    });
+  }
+
+  // ── Journal month tabs ──
+  let cisToDate = none();
+  let salesFixedAssetsToDate = none();
+  let purchasesFixedAssetsToDate = none();
+  MONTH_KEYS.forEach((month, index) => {
+    const tab = MONTH_SHEETS[month];
+    const sales = salesEntries[index];
+    const purchases = purchasesEntries[index];
+    cisToDate = unionOf(cisToDate, sales.cis);
+    salesFixedAssetsToDate = unionOf(salesFixedAssetsToDate, sales.byCode.fs);
+    purchasesFixedAssetsToDate = unionOf(purchasesFixedAssetsToDate, purchases.byCode.fa);
+    const SALES = `Sales.xlsx!${tab}`;
+    for (const cell of ["G1", "H1", "I1"]) a.set(SALES, cell, sales.gross);
+    a.set(SALES, "W1", sales.cis);
+    a.set(SALES, "X1", cisToDate);
+    a.set(
+      SALES,
+      "D1",
+      (scenario.sales?.[month] || []).filter((tx) => typeof tx.mileage === "number"),
+    );
+    a.set(SALES, "V2", salesFixedAssetsToDate);
+    for (const [code, column] of Object.entries(SALES_ANALYSIS_COLUMNS)) a.set(SALES, `${column}1`, sales.byCode[code]);
+    const PURCHASES = `Purchases.xlsx!${tab}`;
+    for (const cell of ["G1", "H1", "I1"]) a.set(PURCHASES, cell, purchases.gross);
+    a.set(PURCHASES, "AD1", purchases.cis);
+    a.set(PURCHASES, "C2", milesToDate[index]);
+    a.set(PURCHASES, "G2", claimEntries[index]);
+    a.set(PURCHASES, "A2", milesToDate[index]);
+    a.set(PURCHASES, "AB2", purchasesFixedAssetsToDate);
+    a.set(PURCHASES, "A1", purchases.gross, ...Object.values(purchases.byCode));
+    for (const [code, column] of Object.entries(PURCHASES_ANALYSIS_COLUMNS)) a.set(PURCHASES, `${column}1`, purchases.byCode[code]);
+  });
+
+  // ── VAT ──
+  const VI = "Vat.xlsx!Vatinterface";
+  const periodByRow = Object.fromEntries(Object.entries(STRADDLING_PERIOD_ROWS).map(([period, row]) => [row, period]));
+  const straddling = (journal, period) => entriesOf((journal || []).filter((entry) => entry.period === period));
+  for (let row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+    const period = periodByRow[row];
+    const monthIndex = row - VATINTERFACE_FIRST_MONTH_ROW;
+    const sales = period ? straddling(scenario.vat_straddling_sales, period) : salesEntries[monthIndex]?.gross;
+    const purchases = period ? straddling(scenario.vat_straddling_purchases, period) : purchasesEntries[monthIndex]?.gross;
+    for (const column of ["D", "F"]) a.set(VI, `${column}${row}`, sales);
+    for (const column of ["H", "J"]) a.set(VI, `${column}${row}`, purchases);
+  }
+  for (let row = VATINTERFACE_FIRST_MONTH_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+    for (const [column, from] of Object.entries({ E: "D", G: "F", I: "H", K: "J" })) {
+      a.set(VI, `${column}${row}`, a.cells(VI, `${from}${row - 2}`, `${from}${row - 1}`, `${from}${row}`));
+    }
+  }
+  returnPeriodEnds.forEach((periodEnd, index) => {
+    const QTR = `Vat.xlsx!VATQtr${index + 1}`;
+    const row = vatinterfaceRowFor(vatinterface, periodEnd);
+    if (row === null) return;
+    a.set(QTR, "G9", a.get(VI, `G${row}`));
+    a.set(QTR, "G13", a.get(VI, `G${row}`));
+    a.set(QTR, "G15", a.get(VI, `K${row}`));
+    a.set(QTR, "G17", a.cells(VI, `G${row}`, `K${row}`));
+    a.set(QTR, "G21", a.get(VI, `E${row}`), (vatinterface[row].M || 0) > 0 ? a.get(VI, `G${row}`) : none());
+    a.set(QTR, "G23", a.get(VI, `I${row}`));
+  });
+
+  // ── Self assessment, short return ──
+  const S = "SE Short";
+  const short = (cell, ...sources) => a.set(S, cell, ...sources);
+  short("D38", B(9));
+  short("O38", B(38));
+  short("A33", a.get(S, "D38"));
+  short("D46", B(17), disallowable.O66, disallowable.O70);
+  short("O46", B(28), disallowable.O110);
+  short("D51", B(25), B(26), disallowable.O78);
+  short("O51", B(30), B(31), disallowable.O98, disallowable.O102);
+  short("D55", B(21), disallowable.O74);
+  short("O55", B(24), disallowable.O90);
+  short("D60", B(22), disallowable.O82);
+  short("O60", B(27), B(29), B(32), B(33), disallowable.O94, disallowable.O106, disallowable.O118);
+  short("D64", B(23), disallowable.O86);
+  short("O64", B(17), B(35), boxes32to45);
+  short("D71", a.cells(S, "D38", "O38", "O64"));
+  short("O71", a.get(S, "D71"));
+  short("D80", schedule.totals.Q);
+  short("O80", schedule.totals.R, schedule.totals.Y, schedule.totals.AC);
+  const smallPools = unionOf(...["R", "AC", "AE", "AF", "AH", "AI"].map((column) => schedule.totals[column]));
+  short("D85", smallPools);
+  short("O85", schedule.totals.Z);
+  short("D99", a.cells(S, "D71", "O85", "D94", "O71", "D80", "D85", "O80"));
+  short("O99", B(11));
+  short("O106", a.get(S, "D99"));
+  short("O94", a.cells(S, "O106", "D99"));
+  short("D106", a.cells(S, "D99", "O99", "O94"));
+  short("O124", contractorDeductions);
+
+  // ── Self assessment, full return ──
+  const F = "SE Full";
+  const full = (cell, ...sources) => a.set(F, cell, ...sources);
+  full("D55", B(9));
+  full("O55", B(38));
+  full("D66", B(14), B(16));
+  full("D70", B(15));
+  full("D74", B(21));
+  full("D78", B(25), B(26));
+  full("D82", B(22));
+  full("D86", B(23));
+  full("D90", B(24));
+  full("D94", B(27));
+  full("D98", B(30));
+  full("D102", B(31));
+  full("D106", B(29));
+  full("D110", B(28));
+  full("D114", B(33), B(34));
+  full("D118", B(32));
+  full("D122", B(17), B(35));
+  full("O114", B(34));
+  for (const [cell, entries] of Object.entries(disallowable)) full(cell, entries);
+  full("O122", boxes32to45, a.get(F, "O114"));
+  full("D129", a.cells(F, "D55", "O55", "D122"));
+  full("O129", a.get(F, "D129"));
+  full("D139", schedule.totals.Q);
+  full("D147", schedule.totals.AC);
+  full("D144", schedule.totals.R);
+  full("O144", smallPools);
+  full("O149", schedule.totals.Y);
+  full("O154", a.cells(F, "D139", "D144", "D147", "D150", "D152", "D156", "D160", "O139", "O144", "O149"));
+  full("O160", schedule.totals.Z);
+  full("O169", a.cells(F, "O154", "D179"));
+  full("D174", a.cells(F, "O122", "O160", "D169"));
+  full("O174", a.cells(F, "D129", "D174", "O169", "O129"));
+  full("O179", a.cells(F, "O174", "D129", "D174", "O169", "O129"));
+  full("D197", a.cells(F, "O174", "O179"));
+  const adjustedProfit = a.cells(F, "O174", "O179", "D197", "D210");
+  full("O194", adjustedProfit);
+  full("O204", B(11));
+  full("O199", a.cells(F, "O194", "O204", "D179"));
+  full("O210", a.cells(F, "O194", "O199", "O204"));
+  full("D219", adjustedProfit);
+  full("O224", a.get(F, "D219"));
+  full("D231", contractorDeductions);
+
+  // ── Income tax ──
+  const IT = "Income Tax";
+  const taxable = a.get(F, "O210");
+  for (const cell of ["E5", "E6", "E7", "E8", "E9", "E10", "E11"]) a.set(IT, cell, taxable);
+  a.set(IT, "E12", contractorDeductions);
+  for (const cell of ["E14", "E15", "E16"]) a.set(IT, cell, taxable, a.get(F, "D201"));
+  a.set(IT, "E18", a.cells(IT, "E11", "E12", "E14", "E15", "E16"));
+
+  // ── Profit forecast ──
+  const PF = "Profit Forecast";
+  const projected = (row) => unionOf(B(row), B(9));
+  a.set(PF, "C21", B(9));
+  a.set(PF, "C22", projected(9));
+  a.set(PF, "C24", B(11));
+  a.set(PF, "C26", projected(17));
+  a.set(PF, "C28", a.cells(PF, "C22", "C24", "C26"));
+  a.set(PF, "C30", projected(35));
+  a.set(PF, "C32", a.cells(PF, "C28", "C30"));
+  a.set(PF, "C33", B(38));
+  a.set(PF, "C34", a.cells(PF, "C32", "C33"));
+  a.set(PF, "C37", B(33), B(34));
+  a.set(PF, "C38", ...["Q", "R", "AC", "Y", "Z"].map((column) => schedule.totals[column]));
+  a.set(PF, "C39", a.cells(PF, "C34", "C37", "C38"));
+  for (const cell of ["C40", "C41", "C42", "C43", "C44", "C45", "C46"]) a.set(PF, cell, a.get(PF, "C39"));
+
+  // ── The sample invoice ──
+  const INVOICE = "Salesinvoice.xlsx!Invoice Template";
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (firstInvoiceSale && results[INVOICE].L38 === 1) {
+    for (const cell of ["J38", "P38", "V38", "P58", "P62", "P64"]) a.set(INVOICE, cell, [firstInvoiceSale]);
+  }
 }

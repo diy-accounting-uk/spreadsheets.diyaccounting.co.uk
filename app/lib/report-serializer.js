@@ -331,6 +331,15 @@ function nettingEntries(netting, multiFile) {
   return entries;
 }
 
+// A netting row names its cell with a note on how it reads it (" negated",
+// " less the directors' gross pay"); the note changes nothing about which
+// cell's lines stand behind it. A sheet name can hold a space, a cell
+// reference cannot, so the note starts at the first space after the last "!".
+function sourceCellKey(source) {
+  const bang = source.lastIndexOf("!");
+  return bang === -1 ? source : source.slice(0, bang + 1) + source.slice(bang + 1).replace(/\s.*$/, "");
+}
+
 // A section entry takes the entryNumbers of the cell it reprints, and a
 // derived total (or the bridge residue) the union of its operands' once every
 // operand has its own.
@@ -340,7 +349,8 @@ function attributeEntries(values) {
     if (entry.entryNumbers || !entry.source) continue;
     // A source cell R carries no value for is one the calculator left blank,
     // and a blank cell has no line behind it.
-    const source = byKey.has(entry.source) ? byKey.get(entry.source).entryNumbers : [];
+    const sourceKey = sourceCellKey(entry.source);
+    const source = byKey.has(sourceKey) ? byKey.get(sourceKey).entryNumbers : [];
     if (source) entry.entryNumbers = source;
   }
   let settled = false;
