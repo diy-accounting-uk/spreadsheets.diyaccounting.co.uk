@@ -126,7 +126,9 @@
       // arrival shows it on the empty state as before.
       var deepLink = parseDeepLinkParams();
       checkForSavedBook().then(function () {
-        if (deepLink.example) {
+        if (deepLink.book !== null) {
+          bootFromBookFragment(deepLink);
+        } else if (deepLink.example) {
           bootFromDeepLink(deepLink);
         } else if (!state.loaded) {
           render();
@@ -237,6 +239,10 @@
   // ?example=<id> loads the named example the moment the page boots, using
   // the same loader the example buttons use. &view=<data-view id> and
   // &month=YYYY-MM land on a view or an open month once it has loaded.
+  // #book=<data> carries a whole book in the fragment (see
+  // app/lib/diya-gl-link.js for the format) and loads it through the same
+  // path an uploaded file takes, never writing the autosave record; the
+  // fragment leaves the address bar once the load has finished.
   // Unknown view/month values are ignored; an unknown example shows the
   // empty state with a message naming the ids the manifest knows. A page
   // that names its own example in body[data-default-example] (with
@@ -246,13 +252,97 @@
   function parseDeepLinkParams() {
     var params = new URLSearchParams(window.location.search);
     var defaults = document.body.dataset;
-    var fromPageDefault = !params.get("example") && !!defaults.defaultExample;
+    var fromPageDefault = !params.get("example") && !!defaults.defaultExample && bookFragmentData() === null;
     return {
+      book: bookFragmentData(),
       example: params.get("example") || defaults.defaultExample || null,
       view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
       month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
       fromPageDefault: fromPageDefault,
     };
+  }
+
+  var BOOK_FRAGMENT_KEY = "book";
+  var MAX_BOOK_FRAGMENT_BYTES = 25 * 1024 * 1024;
+
+  function bookFragmentData() {
+    return new URLSearchParams(window.location.hash.replace(/^#/, "")).get(BOOK_FRAGMENT_KEY);
+  }
+
+  function clearBookFragmentFromUrl() {
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (!params.has(BOOK_FRAGMENT_KEY)) return;
+    params.delete(BOOK_FRAGMENT_KEY);
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + window.location.search + (rest ? "#" + rest : ""));
+  }
+
+  // base64url, deflate-raw, JSON { toml, lines }: the reverse of
+  // encodeBookFragment. Each way it can fail throws a message naming the
+  // problem, which the empty state shows.
+  async function decodeBookFragment(data) {
+    if (typeof DecompressionStream !== "function") {
+      throw new Error("This browser cannot open a book link: it has no DecompressionStream.");
+    }
+    if (data === "" || !/^[A-Za-z0-9_-]+$/.test(data)) {
+      throw new Error("The book link is damaged: its data is not base64url text.");
+    }
+    var padded = data.replace(/-/g, "+").replace(/_/g, "/");
+    while (padded.length % 4) padded += "=";
+    var compressed = Uint8Array.from(atob(padded), function (ch) {
+      return ch.charCodeAt(0);
+    });
+    var text;
+    try {
+      var reader = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader();
+      var chunks = [];
+      var size = 0;
+      for (;;) {
+        var step = await reader.read();
+        if (step.done) break;
+        size += step.value.byteLength;
+        if (size > MAX_BOOK_FRAGMENT_BYTES) {
+          await reader.cancel();
+          throw new Error("The book link expands to more than 25 MB, more than this page reads.");
+        }
+        chunks.push(step.value);
+      }
+      text = await new Blob(chunks).text();
+    } catch (error) {
+      if (/25 MB/.test(error.message)) throw error;
+      throw new Error("The book link is damaged: its data does not decompress.");
+    }
+    var document;
+    try {
+      document = JSON.parse(text);
+    } catch (error) {
+      throw new Error("The book link is damaged: its data is not JSON.");
+    }
+    if (!document || typeof document.toml !== "string" || typeof document.lines !== "string") {
+      throw new Error("The book link is damaged: it carries no book.toml and lines.jsonl text.");
+    }
+    return document;
+  }
+
+  function bootFromBookFragment(deepLink) {
+    var sniffing = decodeBookFragment(deepLink.book).then(function (document) {
+      return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
+    });
+    loadThrough(
+      "Opening the book from the link…",
+      sniffing,
+      function (sniffed, manifest) {
+        return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
+      },
+      { skipAutosave: true },
+    ).then(function (snapshot) {
+      clearBookFragmentFromUrl();
+      if (snapshot) {
+        sendBookLoadedEvent(snapshot.source.product, "link");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");
+        applyDeepLinkViewAndMonth(deepLink, snapshot);
+      }
+    });
   }
 
   function isAtPageDefault() {

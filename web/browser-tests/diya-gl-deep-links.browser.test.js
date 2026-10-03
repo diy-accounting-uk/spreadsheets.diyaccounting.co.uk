@@ -12,6 +12,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
+import { encodeBookFragment } from "../../app/lib/diya-gl-link.js";
 
 const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -49,6 +50,49 @@ const EXAMPLES = [
 ];
 
 const SE_EXAMPLE_KEYS = ["se-scenario-advanced", "se-brickwork-pro-nonvat", "se-brickwork-pro-vat"];
+
+function encodedExample(dir) {
+  return encodeBookFragment({
+    toml: fs.readFileSync(path.join(process.cwd(), "examples", dir, "book.toml"), "utf8"),
+    lines: fs.readFileSync(path.join(process.cwd(), "examples", dir, "lines.jsonl"), "utf8"),
+  }).fragment;
+}
+
+test.describe("DIYA-GL page — #book= opens a whole book from the link", () => {
+  test("#book=<data> loads the book, then leaves the address bar without the fragment", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(`?view=profit-loss#book=${encodedExample("precision-code-ltd/bst")}`), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading", { timeout: 30_000 });
+    await expect(page.locator(".empty-state")).toHaveCount(0);
+    await expect(page.locator('.tab-btn[data-view="profit-loss"]')).toHaveAttribute("aria-selected", "true");
+    await expect.poll(() => page.url()).not.toContain("#book=");
+    expect(new URL(page.url()).search).toBe("?view=profit-loss");
+    await page.screenshot({ path: path.join(screenshotsDir, "diya-gl-book-link-loaded.png") });
+  });
+
+  test("a link book shows no continue offer and leaves a saved book alone", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /bst-sp-sixty/ }).click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    await page.goto(bstUrl(`#book=${encodedExample("precision-code-ltd/bst")}`), { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading", { timeout: 30_000 });
+    await expect(page.locator(".continue-offer")).toHaveCount(0);
+
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".continue-offer")).toContainText(/sp-sixty/, { timeout: 10_000 });
+  });
+
+  test("a damaged #book= shows the empty state naming the problem", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl("#book=AAAA"), { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator(".empty-state")).toBeVisible();
+    await expect(page.locator("#empty-state-message")).toContainText("The book link is damaged", { timeout: 30_000 });
+  });
+});
 
 test.describe("DIYA-GL page — deep links load an example on arrival", () => {
   for (const example of EXAMPLES) {

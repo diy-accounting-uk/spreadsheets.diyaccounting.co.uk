@@ -37,11 +37,12 @@ docker run --rm -v "$PWD":/data ghcr.io/diy-accounting-uk/diya-gl:latest \
 diya-gl recalc --package bst --data my-book --years se-2025-2026 --output-dir out
 diya-gl read-workbook --file my-workbook.xlsx --output-dir out
 diya-gl write-workbook --data my-book --output-dir out
+diya-gl link my-book
 diya-gl mcp
 ```
 
 Each subcommand is also its own command, if you only want one on your `PATH`:
-`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-mcp`.
+`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-link`, `diya-gl-mcp`.
 
 - **recalc** takes a diya-gl book (`--data`) or a populated workbook (`--source-dir`,
   `--mode saved|recalculate`) and writes `report.json`: every figure, report section and
@@ -51,6 +52,11 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
 - **write-workbook** takes a diya-gl book (`--data` or `--file`) and writes the Excel
   package its product composes onto its template — the same client-side path the DIYA-GL
   pages use, so it never needs LibreOffice. Add `--zip` for the package as one zip.
+- **link** takes a book (a directory with `book.toml` and `lines.jsonl`, a diya-gl zip or a
+  diya-gl JSON file) and prints the `https://diya-gl.co.uk/<product>.html#book=<data>` link that
+  opens it, the whole book carried in the fragment so nothing is uploaded. `--base <url>`
+  replaces the origin. The fragment length goes to stderr, with a warning past 64 KB (about
+  2,000 lines), where chat, email and QR codes start to cut links off.
 - **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with four tools:
   `extract_book`, `report`, `edit_lines`, `save_workbook`. Point an MCP client at
   `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
