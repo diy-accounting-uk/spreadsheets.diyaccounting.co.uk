@@ -55,13 +55,17 @@ async function readBookText(source) {
   return { toml: canonicalBookToml(book), lines: canonicalLinesJsonl(lines), book };
 }
 
-export async function bookLink(source, base = DEFAULT_BASE) {
+export async function readBookFragment(source) {
   const { toml, lines, book } = await readBookText(source);
   const declared = book.entityInformation && book.entityInformation["diya-gl:product"];
   const product = productIdOf(declared);
   if (!product)
     throw new Error(`The book declares no product with a page: entityInformation."diya-gl:product" is ${JSON.stringify(declared)}.`);
-  const { fragment, length, warning } = encodeBookFragment({ toml, lines });
+  return { product, ...encodeBookFragment({ toml, lines }) };
+}
+
+export async function bookLink(source, base = DEFAULT_BASE) {
+  const { product, fragment, length, warning } = await readBookFragment(source);
   return { url: `${base}/${product}.html#${FRAGMENT_KEY}=${fragment}`, length, warning };
 }
 
