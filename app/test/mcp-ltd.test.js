@@ -210,12 +210,16 @@ describe("edit_lines: the Ltd-only edits", () => {
 
     const raise = 100;
     const result = await tools.call("edit_lines", {
-      edit: "changePayrollLine",
-      params: { entryNumber: "TXN-0076", grossPay: grossPayBefore + raise },
+      edits: [
+        {
+          edit: "changePayrollLine",
+          params: { entryNumber: "TXN-0076", grossPay: grossPayBefore + raise },
+        },
+      ],
     });
 
     expect(valueAt(result.report, key)).toBe(grossPayBefore + raise);
-    expect(result.book).toBeUndefined(); // a line edit, not a book edit
+    expect(result.book).toEqual(book); // a line edit leaves the book as it was
 
     const moved = result.movedFigures.find((entry) => entry.key === key);
     expect(moved).toBeDefined();
@@ -234,8 +238,12 @@ describe("edit_lines: the Ltd-only edits", () => {
     const increase = 1000;
     const newAmount = dividendBefore + increase;
     const result = await tools.call("edit_lines", {
-      edit: "setDividend",
-      params: { boardMeetingDate: "2026-02-01", amount: newAmount },
+      edits: [
+        {
+          edit: "setDividend",
+          params: { boardMeetingDate: "2026-02-01", amount: newAmount },
+        },
+      ],
     });
 
     expect(result.book).toBeDefined();
@@ -248,13 +256,35 @@ describe("edit_lines: the Ltd-only edits", () => {
   });
 });
 
+describe("edit_lines: a batch on a company book", () => {
+  it("returns one report for three edits, with a response no larger than one edit's plus the extra edits' lines", async () => {
+    const { book, lines } = loadDiyaGlData(LTD_BOOK_DIR);
+    const key = "cell/Financialaccounts.xlsx!PubP&L!F52";
+    const dividendBefore = valueAt((await toolLayer(book, lines).call("report", {})).report, key);
+    const edits = [
+      { edit: "setDividend", params: { boardMeetingDate: "2026-02-01", amount: dividendBefore + 100 } },
+      { edit: "changePayrollLine", params: { entryNumber: "TXN-0076", grossPay: 1148 } },
+      { edit: "setDividend", params: { boardMeetingDate: "2026-02-01", amount: dividendBefore + 1000 } },
+    ];
+
+    const batch = await toolLayer(book, lines).call("edit_lines", { edits });
+    const single = await toolLayer(book, lines).call("edit_lines", { edits: [edits[0]] });
+
+    expect(Object.keys(batch).filter((name) => name === "report")).toEqual(["report"]);
+    expect(JSON.stringify(batch).match(/"report":/g)).toHaveLength(1);
+    expect(JSON.stringify(batch).length).toBeLessThan(JSON.stringify(single).length * 1.5);
+    expect(valueAt(batch.report, key)).toBe(dividendBefore + 1000);
+    expect(batch.movedFigures.find((entry) => entry.key === key).delta).toBe(1000);
+  });
+});
+
 describe("tools/list: the Ltd edits are named in edit_lines's enum", () => {
   it("lists changePayrollLine, setDividend, setMembers and setCharges alongside the shared edits", async () => {
     const client = startMcpClient();
     try {
       const listResult = await client.request("tools/list");
       const editTool = listResult.tools.find((tool) => tool.name === "edit_lines");
-      const editNames = editTool.inputSchema.properties.edit.enum;
+      const editNames = editTool.inputSchema.properties.edits.items.properties.edit.enum;
       for (const name of ["changePayrollLine", "setDividend", "setMembers", "setCharges"]) {
         expect(editNames).toContain(name);
       }

@@ -49,14 +49,14 @@ describe("diya-gl package", () => {
     }
   });
 
-  it("names the four documented commands plus the dispatcher", () => {
+  it("names the five documented commands plus the dispatcher", () => {
     expect(Object.keys(pkg.bin).sort()).toEqual(
-      ["diya-gl", "diya-gl-mcp", "diya-gl-read-workbook", "diya-gl-recalc", "diya-gl-write-workbook"].sort(),
+      ["diya-gl", "diya-gl-link", "diya-gl-mcp", "diya-gl-read-workbook", "diya-gl-recalc", "diya-gl-write-workbook"].sort(),
     );
   });
 
   it("every dist target the dispatcher and the direct bins spawn exists", () => {
-    const spawned = ["app/bin/report.js", "app/bin/export.js", "app/bin/write-workbook.js", "app/bin/diya-gl-mcp.js"];
+    const spawned = ["app/bin/report.js", "app/bin/export.js", "app/bin/write-workbook.js", "app/bin/link.js", "app/bin/diya-gl-mcp.js"];
     for (const relativePath of spawned) {
       const target = resolve(DIYA_GL_DIR, "dist", relativePath);
       expect(existsSync(target), relativePath).toBe(true);
@@ -80,7 +80,7 @@ describe("diya-gl package", () => {
     expect(existsSync(resolve(DIYA_GL_DIR, "dist", "app", "templates"))).toBe(false);
   });
 
-  it("carries every module the four entry points import", () => {
+  it("carries every module the five entry points import", () => {
     for (const file of engineClosure(ROOT)) {
       expect(existsSync(resolve(DIYA_GL_DIR, "dist", file)), file).toBe(true);
     }
@@ -130,8 +130,8 @@ describe("the packed diya-gl tarball", () => {
     expect(BUILD_SCRIPTS.filter((name) => packedPaths.includes(`dist/app/bin/${name}`))).toEqual([]);
   });
 
-  it("ships the four entry points and the two schemas", () => {
-    for (const name of ["export.js", "report.js", "write-workbook.js", "diya-gl-mcp.js"]) {
+  it("ships the five entry points and the two schemas", () => {
+    for (const name of ["export.js", "report.js", "write-workbook.js", "link.js", "diya-gl-mcp.js"]) {
       expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
     }
     for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {

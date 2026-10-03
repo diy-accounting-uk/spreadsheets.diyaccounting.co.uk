@@ -16,13 +16,31 @@
 //                                 order; #n disambiguates a repeated label
 //   check/<check name>            one per compliance check
 //
+// A section entry also carries the label the report prints for its row, so
+// a reader names a figure in the spreadsheet's own words rather than in the
+// key's slug.
+//
+// Where the run was given an attribution (entry-attribution.js), a cell entry
+// the calculator attributed carries entryNumbers, the sorted ledger entries
+// behind it; a section entry carries its source cell's, and a derived total
+// the union of its operands'. The Excel engine has no attribution, so the
+// field is evidence for a reader and never part of the comparison.
+//
 // A value is always a string, never a JSON number, so no reader has to
 // re-derive the precision the engine produced. A missing value is an absent
 // entry, never null or an em dash: that is what makes "no JS value" a count
 // rather than a diff line.
 
-import { PROFIT_BRIDGE_TITLE, CATEGORY_NETTING_TITLE } from "./report-generator.js";
+import {
+  PROFIT_BRIDGE_TITLE,
+  BRIDGE_COMPUTED_LABEL,
+  BRIDGE_SHEET_LABEL,
+  BRIDGE_RESIDUE_LABEL,
+  CATEGORY_NETTING_TITLE,
+  NETTING_COLUMNS,
+} from "./report-generator.js";
 import { provenanceHeader } from "./provenance.js";
+import { sortedEntries } from "./entry-attribution.js";
 
 // The hub every multi-file package hangs off. A results key with no "!" in
 // it names a sheet on this file; a key that carries one already names its
@@ -169,17 +187,19 @@ function takeSourceCell(byLabel, consumed, label, value) {
 // Every cell the read set produced, in results order, with the key R uses
 // and the key cellLabels() is indexed by. A cell with no value is left out:
 // an absent entry is what makes "no JS value" countable.
-function collectCellEntries(results, multiFile) {
+function collectCellEntries(results, multiFile, attribution) {
   const entries = [];
   for (const [resultsKey, cells] of Object.entries(results || {})) {
     if (!cells || typeof cells !== "object") continue;
     for (const [cell, raw] of Object.entries(cells)) {
       const value = canonicalValue(raw);
       if (value === null) continue;
+      const attributed = attribution?.[resultsKey]?.[cell];
       entries.push({
         key: cellKey(resultsKey, cell, multiFile),
         labelKey: `${resultsKey}!${cell}`,
         value,
+        ...(attributed ? { entryNumbers: sortedEntries(attributed) } : {}),
       });
     }
   }
@@ -207,7 +227,12 @@ function sectionRowEntries(sections, byLabel, consumed, labels) {
       // figure would disagree at a key the cell's own entry compares clean.
       // The bridge rows already carry their raw number for the same reason.
       // The printed value stands for a row that names no cell.
-      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value: source ? source.value : value };
+      const entry = {
+        key,
+        label: plainLabel(row.label),
+        unit: source ? labels[source.labelKey]?.unit : undefined,
+        value: source ? source.value : value,
+      };
       if (source) entry.source = source.key;
       entries.push(entry);
     }
@@ -227,7 +252,7 @@ function bridgeEntries(bridge, multiFile) {
   for (const row of bridge.rows) {
     const key = `section/${sectionSlug}/${slug(row.label)}`;
     operandKeys.push(key);
-    const entry = { key, unit: "money", value: canonicalNumber(row.value) };
+    const entry = { key, label: plainLabel(row.label), unit: "money", value: canonicalNumber(row.value) };
     // A bridge row names the cell it reprints outright, so the link needs no
     // label matching. A row the bridge negates on its way in is still that
     // cell's value; the sign belongs to the bridge, not to the reading.
@@ -235,59 +260,111 @@ function bridgeEntries(bridge, multiFile) {
     if (source) entry.source = source;
     entries.push(entry);
   }
+  const computedKey = `section/${sectionSlug}/${slug(BRIDGE_COMPUTED_LABEL)}`;
+  const sheetKey = `section/${sectionSlug}/${slug(BRIDGE_SHEET_LABEL)}`;
   entries.push({
-    key: `section/${sectionSlug}/tax-profit-the-bridge-computes`,
+    key: computedKey,
+    label: BRIDGE_COMPUTED_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.computed),
     derivedFrom: operandKeys,
   });
   const sheetSource = bridge.sheetCell ? referenceKey(bridge.sheetCell, multiFile) : null;
   entries.push({
-    key: `section/${sectionSlug}/tax-profit-the-sheet-carries`,
+    key: sheetKey,
+    label: BRIDGE_SHEET_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.sheetProfit),
     ...(sheetSource ? { source: sheetSource } : {}),
   });
   entries.push({
-    key: `section/${sectionSlug}/residue`,
+    key: `section/${sectionSlug}/${slug(BRIDGE_RESIDUE_LABEL)}`,
+    label: BRIDGE_RESIDUE_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.residue),
+    // The residue is scored in its own right, so it names no derivedFrom,
+    // but its lines are those of the two figures it is the difference of.
+    entriesFrom: [computedKey, sheetKey],
   });
   return entries;
 }
 
+// The netting table states its rate in a sentence rather than a row.
+const NETTING_RATE_LABEL = "VAT rate the journal amounts include";
+
 function nettingEntries(netting, multiFile) {
   if (!netting || netting.rows.length === 0) return [];
   const sectionSlug = slug(CATEGORY_NETTING_TITLE);
-  const entries = [{ key: `section/${sectionSlug}/rate`, unit: "rate", value: canonicalNumber(netting.rate) }];
+  const entries = [{ key: `section/${sectionSlug}/rate`, label: NETTING_RATE_LABEL, unit: "rate", value: canonicalNumber(netting.rate) }];
   for (const row of netting.rows) {
     const rowSlug = `${slug(row.label)}-${slug(row.code)}`;
+    const category = `${plainLabel(row.label)} (${row.code})`;
+    const label = (column) => `${category}: ${NETTING_COLUMNS[column]}`;
     const gross = `section/${sectionSlug}/${rowSlug}/gross`;
     const net = `section/${sectionSlug}/${rowSlug}/net`;
     const downstream = `section/${sectionSlug}/${rowSlug}/downstream`;
     const downstreamSource = row.cell ? referenceKey(row.cell, multiFile) : null;
-    entries.push({ key: gross, unit: "money", value: canonicalNumber(row.gross) });
+    entries.push({ key: gross, label: label("gross"), unit: "money", value: canonicalNumber(row.gross) });
     entries.push({
       key: `section/${sectionSlug}/${rowSlug}/vat`,
+      label: label("vat"),
       unit: "money",
       value: canonicalNumber(row.vat),
       derivedFrom: [gross, net],
     });
-    entries.push({ key: net, unit: "money", value: canonicalNumber(row.net) });
+    entries.push({ key: net, label: label("net"), unit: "money", value: canonicalNumber(row.net) });
     entries.push({
       key: downstream,
+      label: label("downstream"),
       unit: "money",
       value: canonicalNumber(row.downstream),
       ...(downstreamSource ? { source: downstreamSource } : {}),
     });
     entries.push({
       key: `section/${sectionSlug}/${rowSlug}/residue`,
+      label: label("residue"),
       unit: "money",
       value: canonicalNumber(row.residue),
       derivedFrom: [net, downstream],
     });
   }
   return entries;
+}
+
+// A netting row names its cell with a note on how it reads it (" negated",
+// " less the directors' gross pay"); the note changes nothing about which
+// cell's lines stand behind it. A sheet name can hold a space, a cell
+// reference cannot, so the note starts at the first space after the last "!".
+function sourceCellKey(source) {
+  const bang = source.lastIndexOf("!");
+  return bang === -1 ? source : source.slice(0, bang + 1) + source.slice(bang + 1).replace(/\s.*$/, "");
+}
+
+// A section entry takes the entryNumbers of the cell it reprints, and a
+// derived total (or the bridge residue) the union of its operands' once every
+// operand has its own.
+function attributeEntries(values) {
+  const byKey = new Map(values.map((entry) => [entry.key, entry]));
+  for (const entry of values) {
+    if (entry.entryNumbers || !entry.source) continue;
+    // A source cell R carries no value for is one the calculator left blank,
+    // and a blank cell has no line behind it.
+    const sourceKey = sourceCellKey(entry.source);
+    const source = byKey.has(sourceKey) ? byKey.get(sourceKey).entryNumbers : [];
+    if (source) entry.entryNumbers = source;
+  }
+  let settled = false;
+  while (!settled) {
+    settled = true;
+    for (const entry of values) {
+      const from = entry.derivedFrom ?? entry.entriesFrom;
+      if (entry.entryNumbers || !from) continue;
+      const operands = from.map((key) => byKey.get(key)?.entryNumbers);
+      if (!operands.every(Boolean)) continue;
+      entry.entryNumbers = sortedEntries(operands.flat());
+      settled = false;
+    }
+  }
 }
 
 function checkEntries(checks) {
@@ -327,17 +404,30 @@ function checkEntries(checks) {
  * @param {Array} [options.checks] - checkCompliance() output, where the run has one
  * @param {string} [options.scenarioName]
  * @param {string} [options.yearEnd] - YYYY-MM-DD
+ * @param {Object} [options.attribution] - { Sheet: { Cell: Set<entryNumber> } } from the JS calculator
  * @returns {Object} the R document, entries sorted by key
  */
-export function buildReportDocument({ packageName, engine, results, productMod, scenario, taxData, checks, scenarioName, yearEnd }) {
+export function buildReportDocument({
+  packageName,
+  engine,
+  results,
+  productMod,
+  scenario,
+  taxData,
+  checks,
+  scenarioName,
+  yearEnd,
+  attribution,
+}) {
   const multiFile = Boolean(productMod.MULTI_FILE);
   const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
-  const cellEntries = collectCellEntries(results, multiFile);
+  const cellEntries = collectCellEntries(results, multiFile, attribution);
 
   const values = cellEntries.map((entry) => ({
     key: entry.key,
     unit: labels[entry.labelKey]?.unit,
     value: entry.value,
+    entryNumbers: entry.entryNumbers,
   }));
 
   const byLabel = buildCellIndexByLabel(labels, cellEntries);
@@ -353,6 +443,7 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
     values.push(...nettingEntries(productMod.categoryNetting(results, scenario, taxData), multiFile));
   }
   values.push(...checkEntries(checks));
+  if (attribution) attributeEntries(values);
 
   values.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 
@@ -370,10 +461,12 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
   // invite a reader to treat "null" as a unit of its own.
   document.values = values.map((entry) => {
     const out = { key: entry.key };
+    if (entry.label) out.label = entry.label;
     if (entry.unit) out.unit = entry.unit;
     out.value = entry.value;
     if (entry.source) out.source = entry.source;
     if (entry.derivedFrom) out.derivedFrom = entry.derivedFrom;
+    if (entry.entryNumbers) out.entryNumbers = entry.entryNumbers;
     if (entry.expected !== undefined) out.expected = entry.expected;
     if (entry.actual !== undefined) out.actual = entry.actual;
     if (entry.tolerance !== undefined) out.tolerance = entry.tolerance;

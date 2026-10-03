@@ -13,6 +13,7 @@ import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
 import { calculateMileageAllowance, scenarioBusinessMiles } from "../tax/mileage.js";
 import { aggregateByCode } from "./shared.js";
+import { attributionWriter, entriesOf } from "../entry-attribution.js";
 
 const BST_MONTH_COLS = {
   apr: "D",
@@ -78,7 +79,15 @@ function outstandingTotal(transactions) {
   return (transactions || []).reduce((sum, tx) => (tx.payment || tx.mileage ? sum : sum + (tx.amount || 0)), 0);
 }
 
-export function calculateBstResults(book, lines, taxData, scenario) {
+/**
+ * @param {Object} book - parsed book.toml
+ * @param {Array} lines - parsed lines.jsonl entries
+ * @param {Object} taxData
+ * @param {Object} scenario
+ * @param {Object} [attribution] - filled in place with the entryNumbers behind each cell (entry-attribution.js)
+ * @returns {Object} { "SheetName": { "CellRef": value } }
+ */
+export function calculateBstResults(book, lines, taxData, scenario, attribution) {
   // A book's own declared chart can number its purchase accounts under a
   // scheme other than the Basic Sole Trader master's own (see
   // resolveBstPurchaseCodeMap in diya-gl-loader.js); this must resolve to
@@ -105,7 +114,8 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // nothing, and cellWrites gives the sheet its miles rather than its amount
   // so the sheet can price the claim at its own Admin rates.
   const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
-  const byCode = aggregateByCode(cashPurchaseLines, purchaseCodeMap);
+  const purchaseEntries = {};
+  const byCode = aggregateByCode(cashPurchaseLines, purchaseCodeMap, purchaseEntries);
 
   // The mileage claim the sheet makes of those miles. It reaches Motor
   // Expenses (verified against the template: PurchasesApr!G4 bands the running
@@ -377,5 +387,107 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   results.PurchasesMar.C1 = businessMiles;
   results.PurchasesMar.A1 = Math.round(mileageAllowance * 100) / 100;
 
+  if (attribution) attributeBstResults(attribution, { results, scenario, salesLines, purchaseEntries, assetAdditions });
   return results;
+}
+
+// The scenario transactions a mileage figure is read from: every one that
+// records business miles, the same set scenarioBusinessMiles() sums.
+function mileageTransactions(scenario) {
+  const transactions = [];
+  for (const table of [scenario.sales, scenario.purchases]) {
+    for (const monthTransactions of Object.values(table || {})) {
+      for (const tx of monthTransactions) if (typeof tx.mileage === "number") transactions.push(tx);
+    }
+  }
+  return transactions;
+}
+
+// The entries behind each cell calculateBstResults() writes, cell for cell
+// beside the arithmetic above: a line-fed cell takes its own lines, and a
+// derived cell the union of the cells it is computed from.
+function attributeBstResults(attribution, { results, scenario, salesLines, purchaseEntries, assetAdditions }) {
+  const a = attributionWriter(attribution);
+  const PL = "Profit & Loss Acc";
+  const code = (letter) => purchaseEntries[letter];
+  const mileage = entriesOf(mileageTransactions(scenario));
+  const assets = entriesOf(assetAdditions);
+
+  for (const sheet of ["Admin", "Business Details", "PurchasesStock"]) {
+    for (const cell of Object.keys(results[sheet])) a.set(sheet, cell);
+  }
+
+  a.set(PL, "C4", salesLines);
+  for (const month of MONTH_ORDER) {
+    a.set(
+      PL,
+      `${BST_MONTH_COLS[month]}4`,
+      salesLines.filter((line) => getMonthKey(line.postingDate) === month),
+    );
+  }
+  a.set(PL, "C6", code("s"));
+  a.set(PL, "C7", code("d"));
+  a.set(PL, "C9", a.cells(PL, "C4", "C6", "C7"));
+  const expenseCells = { C11: "e", C12: "p", C13: "r", C14: "g", C16: "t", C17: "a", C18: "l", C19: "b", C20: "i", C21: "o" };
+  for (const [cell, letter] of Object.entries(expenseCells)) a.set(PL, cell, code(letter));
+  a.set(PL, "C15", code("m"), mileage);
+  a.set(PL, "C22", a.cells(PL, "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21"));
+  a.set(PL, "C24", a.cells(PL, "C9", "C22"));
+
+  for (const cell of Object.keys(results["Fixed Assets"])) a.set("Fixed Assets", cell, assets);
+  a.set("PurchasesMar", "X1", assets);
+  a.set("PurchasesMar", "C1", mileage);
+  a.set("PurchasesMar", "A1", mileage);
+
+  const SE = "SE Short";
+  for (const cell of ["D80", "O80", "D85", "O85"]) a.set(SE, cell, assets);
+  a.set(PL, "C26", assets);
+  a.set(PL, "C28", a.cells(PL, "C24", "C26"));
+  a.set(PL, "C30");
+
+  a.set(SE, "D38", a.get(PL, "C4"));
+  if (results[SE].D46 !== undefined) {
+    a.set(SE, "D46", a.cells(PL, "C6", "C7"));
+    a.set(SE, "D51", a.cells(PL, "C15", "C16"));
+    a.set(SE, "D55", a.get(PL, "C11"));
+    a.set(SE, "D60", a.get(PL, "C12"));
+    a.set(SE, "D64", a.get(PL, "C13"));
+  }
+  a.set(SE, "D71", a.cells(PL, "C4", "C6", "C7", "C22"));
+  a.set(SE, "O71", a.get(SE, "D71"));
+  a.set(SE, "D94");
+  a.set(SE, "O94");
+  a.set(SE, "D99", a.cells(SE, "D71", "O71", "D80", "D85", "O80", "O85"));
+  a.set(SE, "O99", a.get(PL, "C30"));
+  a.set(SE, "D106", a.cells(SE, "D99", "O99"));
+
+  const IT = "Income Tax";
+  const profit = a.get(SE, "D106");
+  for (const cell of ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16"]) a.set(IT, cell, profit);
+  for (const cell of ["D8", "C9", "D9", "C10", "D10"]) a.set(IT, cell);
+  a.set(
+    IT,
+    "E12",
+    salesLines.filter((line) => line[CIS_DEDUCTION_FIELD]),
+  );
+  a.set(IT, "E18", a.cells(IT, "E11", "E12", "E15", "E16"));
+  a.set(PL, "C32", a.cells(IT, "E11", "E12"));
+  a.set(PL, "C33", a.cells(IT, "E15", "E16"));
+  a.set(PL, "C35", a.cells(PL, "C28", "C30", "C32", "C33"));
+
+  // Debtors & Creditors: each month row is the month's transactions with
+  // nothing recorded in the payment column, the same rows outstandingTotal()
+  // sums; the column totals add the opening figure the book states.
+  const outstanding = (transactions) => (transactions || []).filter((tx) => !(tx.payment || tx.mileage));
+  const DC = "Debtors & Creditors";
+  a.set(DC, "C3");
+  a.set(DC, "F3");
+  MONTH_ORDER.forEach((month, index) => {
+    const row = 5 + index * 2;
+    a.set(DC, `C${row}`, entriesOf(outstanding(scenario.sales?.[month])));
+    a.set(DC, `F${row}`, entriesOf(outstanding(scenario.purchases?.[month])));
+  });
+  const rows = MONTH_ORDER.map((_, index) => 5 + index * 2);
+  a.set(DC, "C29", a.cells(DC, "C3", ...rows.map((row) => `C${row}`)));
+  a.set(DC, "F29", a.cells(DC, "F3", ...rows.map((row) => `F${row}`)));
 }

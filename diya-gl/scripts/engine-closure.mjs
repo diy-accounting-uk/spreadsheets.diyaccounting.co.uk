@@ -3,7 +3,7 @@
 //
 // engine-closure.mjs — which files under app/ the packaged engine is made of.
 //
-// The package's four entry points and everything they import, directly or
+// The package's five entry points and everything they import, directly or
 // through another module. prepack.mjs copies exactly this set, so a module the
 // entry points stop importing leaves the tarball on its own, and a module they
 // start importing arrives on its own.
@@ -11,13 +11,19 @@
 import { existsSync, readFileSync } from "fs";
 import { dirname, relative, resolve } from "path";
 
-export const ENTRY_POINTS = ["app/bin/export.js", "app/bin/report.js", "app/bin/write-workbook.js", "app/bin/diya-gl-mcp.js"];
+export const ENTRY_POINTS = [
+  "app/bin/export.js",
+  "app/bin/report.js",
+  "app/bin/write-workbook.js",
+  "app/bin/link.js",
+  "app/bin/diya-gl-mcp.js",
+];
 
 const STATIC_IMPORT = /(?:^|[^\w.])(?:import\s+[\s\S]*?\s+from\s*|import\s*|export\s+[\s\S]*?\s+from\s*)["']([^"']+)["']/g;
 const DYNAMIC_IMPORT = /import\(\s*["']([^"']+)["']\s*\)/g;
 
 /**
- * Every file under app/ the four entry points reach, as repository-relative
+ * Every file under app/ the five entry points reach, as repository-relative
  * slash-separated paths, sorted.
  *
  * @param {string} repoRoot - the repository root the paths are relative to

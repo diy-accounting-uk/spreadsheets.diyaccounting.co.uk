@@ -24,6 +24,7 @@ const SHARED_IDS = [
   "book-vat-threshold",
   "book-duplicate-entries",
   "book-empty-detail",
+  "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
 ];
@@ -61,7 +62,7 @@ const FULL = loadLtd("examples/precision-code-ltd/full");
 // Read as they stand, not as they are hoped to be.
 
 describe("the Ltd example books", () => {
-  it("Precision Code Ltd runs sixteen rules: every check passes but the shared VAT threshold", () => {
+  it("Precision Code Ltd runs seventeen rules: every check passes but the shared VAT threshold", () => {
     const { results, summary } = runBookChecks(clone(FULL));
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
@@ -85,13 +86,13 @@ describe("the Ltd example books", () => {
     // still read as no duplicate.
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
     expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
-    expect(summary).toEqual({ pass: 15, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 16, warn: 1, fail: 0 });
   });
 
-  it("BrickWork Pro (Company, non-VAT): all sixteen rules pass", () => {
+  it("BrickWork Pro (Company, non-VAT): all seventeen rules pass", () => {
     const { results, summary } = runBookChecks(loadLtd("examples/brickwork-pro/ltd-nonvat"));
     for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 16, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
   });
 
   it("BrickWork Pro (Company, VAT): every rule but the shared VAT threshold passes", () => {
@@ -240,6 +241,7 @@ describe("each Ltd rule is breakable by one crafted change, and only that rule f
       fixture.lines.push({
         entryNumber: `BREAK-FS-${i}`,
         sourceJournalID: "sales",
+        documentReference: "INV-BREAK",
         postingDate: "2025-10-1" + (i % 10),
         accountMainID: "4006",
         amount: 500.0 + i,
@@ -343,7 +345,7 @@ describe("bookChecksJson over a Company book", () => {
     expect(bookChecksJson(runBookChecks(reversed).results)).toBe(bookChecksJson(runBookChecks(fixture).results));
   });
 
-  it("lists the sixteen ids in id order", () => {
+  it("lists the seventeen ids in id order", () => {
     const parsed = JSON.parse(bookChecksJson(runBookChecks(baseline()).results));
     expect(parsed.map((r) => r.id)).toEqual(ALL_IDS.slice().sort());
   });

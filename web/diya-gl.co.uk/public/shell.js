@@ -126,7 +126,11 @@
       // arrival shows it on the empty state as before.
       var deepLink = parseDeepLinkParams();
       checkForSavedBook().then(function () {
-        if (deepLink.example) {
+        if (deepLink.book !== null) {
+          bootFromBookFragment(deepLink);
+        } else if (deepLink.bookUrl) {
+          bootFromBookUrl(deepLink);
+        } else if (deepLink.example) {
           bootFromDeepLink(deepLink);
         } else if (!state.loaded) {
           render();
@@ -237,6 +241,12 @@
   // ?example=<id> loads the named example the moment the page boots, using
   // the same loader the example buttons use. &view=<data-view id> and
   // &month=YYYY-MM land on a view or an open month once it has loaded.
+  // #book=<data> carries a whole book in the fragment (see
+  // app/lib/diya-gl-link.js for the format) and loads it through the same
+  // path an uploaded file takes, never writing the autosave record; the
+  // fragment leaves the address bar once the load has finished.
+  // ?book=<url> fetches a book from an allow-listed host (link-hosts.js) and
+  // loads it the same way, then drops book from the query string.
   // Unknown view/month values are ignored; an unknown example shows the
   // empty state with a message naming the ids the manifest knows. A page
   // that names its own example in body[data-default-example] (with
@@ -246,13 +256,164 @@
   function parseDeepLinkParams() {
     var params = new URLSearchParams(window.location.search);
     var defaults = document.body.dataset;
-    var fromPageDefault = !params.get("example") && !!defaults.defaultExample;
+    var fromPageDefault = !params.get("example") && !!defaults.defaultExample && bookFragmentData() === null && !params.get("book");
     return {
+      book: bookFragmentData(),
+      bookUrl: params.get("book"),
       example: params.get("example") || defaults.defaultExample || null,
       view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
       month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
       fromPageDefault: fromPageDefault,
     };
+  }
+
+  var BOOK_FRAGMENT_KEY = "book";
+  var MAX_BOOK_FRAGMENT_BYTES = 25 * 1024 * 1024;
+
+  function bookFragmentData() {
+    return new URLSearchParams(window.location.hash.replace(/^#/, "")).get(BOOK_FRAGMENT_KEY);
+  }
+
+  function clearBookFragmentFromUrl() {
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (!params.has(BOOK_FRAGMENT_KEY)) return;
+    params.delete(BOOK_FRAGMENT_KEY);
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + window.location.search + (rest ? "#" + rest : ""));
+  }
+
+  // base64url, deflate-raw, JSON { toml, lines }: the reverse of
+  // encodeBookFragment. Each way it can fail throws a message naming the
+  // problem, which the empty state shows.
+  async function decodeBookFragment(data) {
+    if (typeof DecompressionStream !== "function") {
+      throw new Error("This browser cannot open a book link: it has no DecompressionStream.");
+    }
+    if (data === "" || !/^[A-Za-z0-9_-]+$/.test(data)) {
+      throw new Error("The book link is damaged: its data is not base64url text.");
+    }
+    var padded = data.replace(/-/g, "+").replace(/_/g, "/");
+    while (padded.length % 4) padded += "=";
+    var compressed = Uint8Array.from(atob(padded), function (ch) {
+      return ch.charCodeAt(0);
+    });
+    var text;
+    try {
+      var reader = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader();
+      var chunks = [];
+      var size = 0;
+      for (;;) {
+        var step = await reader.read();
+        if (step.done) break;
+        size += step.value.byteLength;
+        if (size > MAX_BOOK_FRAGMENT_BYTES) {
+          await reader.cancel();
+          throw new Error("The book link expands to more than 25 MB, more than this page reads.");
+        }
+        chunks.push(step.value);
+      }
+      text = await new Blob(chunks).text();
+    } catch (error) {
+      if (/25 MB/.test(error.message)) throw error;
+      throw new Error("The book link is damaged: its data does not decompress.");
+    }
+    var document;
+    try {
+      document = JSON.parse(text);
+    } catch (error) {
+      throw new Error("The book link is damaged: its data is not JSON.");
+    }
+    if (!document || typeof document.toml !== "string" || typeof document.lines !== "string") {
+      throw new Error("The book link is damaged: it carries no book.toml and lines.jsonl text.");
+    }
+    return document;
+  }
+
+  function bootFromBookFragment(deepLink) {
+    var sniffing = decodeBookFragment(deepLink.book).then(function (document) {
+      return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
+    });
+    loadThrough(
+      "Opening the book from the link…",
+      sniffing,
+      function (sniffed, manifest) {
+        return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
+      },
+      { skipAutosave: true },
+    ).then(function (snapshot) {
+      clearBookFragmentFromUrl();
+      if (snapshot) {
+        sendBookLoadedEvent(snapshot.source.product, "link");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");
+        applyDeepLinkViewAndMonth(deepLink, snapshot);
+      }
+    });
+  }
+
+  function clearBookUrlFromQuery() {
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has("book")) return;
+    params.delete("book");
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+  }
+
+  // A diya-gl zip, a diya-gl JSON file or { toml, lines } JSON. The sniffer
+  // reads content, so the file name only has to say which of the two shapes
+  // the bytes are.
+  async function fetchBookFromUrl(checked) {
+    var response;
+    try {
+      response = await fetch(checked.url, { credentials: "omit" });
+    } catch (error) {
+      throw new Error(
+        "The book link could not be fetched (" + error.message + "). The link may have expired or the host refused this page.",
+      );
+    }
+    if (!response.ok) {
+      throw new Error("The book link returned " + response.status + ". The link may have expired.");
+    }
+    var bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > MAX_BOOK_FRAGMENT_BYTES) {
+      throw new Error("The book at the link is larger than 25 MB, more than this page reads.");
+    }
+    if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
+      return window.DiyaGlLoader.sniff(new File([bytes], "book.zip"));
+    }
+    var document;
+    try {
+      document = JSON.parse(new TextDecoder().decode(bytes));
+    } catch (error) {
+      document = null;
+    }
+    if (document && typeof document.toml === "string" && typeof document.lines === "string") {
+      return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
+    }
+    return window.DiyaGlLoader.sniff(new File([bytes], "book.json"));
+  }
+
+  function bootFromBookUrl(deepLink) {
+    var checked = window.DiyaGlLinkHosts.checkBookUrl(deepLink.bookUrl);
+    if (!checked.ok) {
+      clearBookUrlFromQuery();
+      showEmptyStateMessage(checked.message, true);
+      return;
+    }
+    loadThrough(
+      "Opening the book from the link…",
+      fetchBookFromUrl(checked),
+      function (sniffed, manifest) {
+        return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
+      },
+      { skipAutosave: true },
+    ).then(function (snapshot) {
+      clearBookUrlFromQuery();
+      if (snapshot) {
+        sendBookLoadedEvent(snapshot.source.product, "link");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");
+        applyDeepLinkViewAndMonth(deepLink, snapshot);
+      }
+    });
   }
 
   function isAtPageDefault() {
@@ -2058,6 +2219,13 @@
       accountOptions +
       "</select>" +
       extraFields.map(extraFieldHtml).join("") +
+      (journal === "sales"
+        ? '<input class="entry-add-reference" data-add-field="documentReference" placeholder="Invoice or receipt no." value="' +
+          esc(draft.documentReference || "") +
+          '" aria-label="' +
+          esc(fieldLabel("Invoice or receipt reference")) +
+          '" />'
+        : "") +
       '<input class="entry-add-detail" data-add-field="detail" placeholder="Detail" value="' +
       esc(draft.detail || "") +
       '" aria-label="' +
@@ -2707,6 +2875,26 @@
       .join("");
   }
 
+  // One offender's line in a check's detail. A check's offenders take one of
+  // five shapes: a ledger line (entryNumber, postingDate, accountMainID, amount;
+  // a schedule row with no date or account leaves those two blank), an employee's
+  // missing month ({ name, month }), an overdrawn month ({ month, closing }), a
+  // band crossing ({ month, milesToDate }), or a bare month ({ month }).
+  function offenderText(o) {
+    if (o.entryNumber !== undefined) {
+      return [o.entryNumber, o.postingDate, o.accountMainID, fmtMoney(o.amount)]
+        .filter(function (part) {
+          return part !== "";
+        })
+        .join(" · ");
+    }
+    if (o.name !== undefined) return o.name + " · " + o.month;
+    if (o.closing !== undefined) return o.month + " · closes at " + fmtMoney(o.closing);
+    if (o.milesToDate !== undefined) return o.month + " · " + o.milesToDate + " miles to date";
+    if (o.month !== undefined) return o.month;
+    throw new Error("A check offender has no known shape: " + JSON.stringify(o));
+  }
+
   function renderBookCheckDetail(check) {
     var offenders = !check.offenders.length
       ? ""
@@ -2714,9 +2902,7 @@
         check.offenders
           .slice(0, 5)
           .map(function (o) {
-            return (
-              "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
-            );
+            return "<li>" + esc(offenderText(o)) + "</li>";
           })
           .join("") +
         (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +

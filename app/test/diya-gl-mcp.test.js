@@ -651,6 +651,27 @@ function toolLayer(book, lines) {
   };
 }
 
+// The moved figures between two reports, computed independently of the tool
+// layer: every key whose value differs, with the numeric delta.
+function diffAgainst(beforeDocument, afterDocument) {
+  const before = new Map(beforeDocument.values.map((entry) => [entry.key, entry.value]));
+  const after = new Map(afterDocument.values.map((entry) => [entry.key, entry.value]));
+  const moved = [];
+  for (const key of new Set([...before.keys(), ...after.keys()])) {
+    const beforeValue = before.has(key) ? before.get(key) : null;
+    const afterValue = after.has(key) ? after.get(key) : null;
+    if (beforeValue === afterValue) continue;
+    const beforeNumber = beforeValue === null ? null : Number(beforeValue);
+    const afterNumber = afterValue === null ? null : Number(afterValue);
+    const delta =
+      beforeNumber !== null && afterNumber !== null && Number.isFinite(beforeNumber) && Number.isFinite(afterNumber)
+        ? Number((afterNumber - beforeNumber).toFixed(6))
+        : null;
+    moved.push({ key, before: beforeValue, after: afterValue, delta });
+  }
+  return moved.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
 for (const fixture of FIXTURES) {
   describe(`diya-gl edit-recalc replay through the tool layer: ${fixture.name}`, () => {
     const { book, lines } = loadDiyaGlData(fixture.dir);
@@ -670,7 +691,7 @@ for (const fixture of FIXTURES) {
 
     it("adds a purchase of X: profit falls by X, turnover is unchanged", async () => {
       const tools = toolLayer(book, lines);
-      const result = await tools.call("edit_lines", { edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } });
+      const result = await tools.call("edit_lines", { edits: [{ edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } }] });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C4"));
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C24") - valueAt(baseline, "cell/Profit & Loss Acc!C24")).toBe(
@@ -684,7 +705,7 @@ for (const fixture of FIXTURES) {
 
     it("adds a sale of Y: profit and turnover both rise by Y", async () => {
       const tools = toolLayer(book, lines);
-      const result = await tools.call("edit_lines", { edit: "addSaleLine", params: { line: fixture.addSale.line } });
+      const result = await tools.call("edit_lines", { edits: [{ edit: "addSaleLine", params: { line: fixture.addSale.line } }] });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4") - valueAt(baseline, "cell/Profit & Loss Acc!C4")).toBe(
         fixture.addSale.amount,
@@ -698,7 +719,7 @@ for (const fixture of FIXTURES) {
     it("changes a sales line's amount: turnover and net profit move by the difference, checks stay green", async () => {
       const tools = toolLayer(book, lines);
       const { entryNumber, newAmount, delta } = fixture.changeSaleLine;
-      const result = await tools.call("edit_lines", { edit: "changeLineAmount", params: { entryNumber, newAmount } });
+      const result = await tools.call("edit_lines", { edits: [{ edit: "changeLineAmount", params: { entryNumber, newAmount } }] });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4") - valueAt(baseline, "cell/Profit & Loss Acc!C4")).toBe(delta);
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C24") - valueAt(baseline, "cell/Profit & Loss Acc!C24")).toBe(delta);
@@ -708,7 +729,7 @@ for (const fixture of FIXTURES) {
     it("changes a purchase line's amount: its category and net profit move by the difference, checks stay green", async () => {
       const tools = toolLayer(book, lines);
       const { entryNumber, newAmount, delta, categoryCell } = fixture.changePurchaseLine;
-      const result = await tools.call("edit_lines", { edit: "changeLineAmount", params: { entryNumber, newAmount } });
+      const result = await tools.call("edit_lines", { edits: [{ edit: "changeLineAmount", params: { entryNumber, newAmount } }] });
 
       const before = valueAt(baseline, `cell/Profit & Loss Acc!${categoryCell}`);
       const after = valueAt(result.report, `cell/Profit & Loss Acc!${categoryCell}`);
@@ -718,35 +739,98 @@ for (const fixture of FIXTURES) {
       expectAllChecksPass(result.report);
     });
 
-    it("edit_lines composes: the session's lines carry the first edit into the second", async () => {
+    it("edit_lines applies a batch in order: the second edit builds on the first, and one report comes back", async () => {
+      const tools = toolLayer(book, lines);
+      const result = await tools.call("edit_lines", {
+        edits: [
+          { edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } },
+          { edit: "addSaleLine", params: { line: fixture.addSale.line } },
+        ],
+      });
+
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(
+        valueAt(baseline, "cell/Profit & Loss Acc!C4") + fixture.addSale.amount,
+      );
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C24")).toBe(
+        valueAt(baseline, "cell/Profit & Loss Acc!C24") - fixture.addPurchase.amount + fixture.addSale.amount,
+      );
+      expect(result.lines.length).toBe(lines.length + 2);
+    });
+
+    it("two successive edit_lines calls compose: the session's lines carry the first call into the second", async () => {
       const session = createSession();
       loadIntoSession(session, book, lines);
       const methods = createMethods(session);
 
-      const first = await methods["tools/call"]({
+      await methods["tools/call"]({
         name: "edit_lines",
-        arguments: { edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } },
+        arguments: { edits: [{ edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } }] },
       });
       const second = await methods["tools/call"]({
         name: "edit_lines",
-        arguments: { edit: "addSaleLine", params: { line: fixture.addSale.line } },
+        arguments: { edits: [{ edit: "addSaleLine", params: { line: fixture.addSale.line } }] },
       });
 
       const secondDocument = second.structuredContent.report;
-      const expectedTurnover = valueAt(baseline, "cell/Profit & Loss Acc!C4") + fixture.addSale.amount;
-      const expectedProfit = valueAt(baseline, "cell/Profit & Loss Acc!C24") - fixture.addPurchase.amount + fixture.addSale.amount;
-      expect(valueAt(secondDocument, "cell/Profit & Loss Acc!C4")).toBe(expectedTurnover);
-      expect(valueAt(secondDocument, "cell/Profit & Loss Acc!C24")).toBe(expectedProfit);
+      expect(valueAt(secondDocument, "cell/Profit & Loss Acc!C4")).toBe(
+        valueAt(baseline, "cell/Profit & Loss Acc!C4") + fixture.addSale.amount,
+      );
+      expect(valueAt(secondDocument, "cell/Profit & Loss Acc!C24")).toBe(
+        valueAt(baseline, "cell/Profit & Loss Acc!C24") - fixture.addPurchase.amount + fixture.addSale.amount,
+      );
 
       // report with no arguments reads the session's now-twice-edited lines.
       const reported = await methods["tools/call"]({ name: "report", arguments: {} });
       expect(reported.structuredContent.report).toEqual(secondDocument);
-      void first;
+    });
+
+    it("a batch of three edits equals three one-edit batches in sequence, figures and movedFigures included", async () => {
+      const batch = [
+        { edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } },
+        { edit: "addSaleLine", params: { line: fixture.addSale.line } },
+        {
+          edit: "changeLineAmount",
+          params: { entryNumber: fixture.changeSaleLine.entryNumber, newAmount: fixture.changeSaleLine.newAmount },
+        },
+      ];
+      const batched = await toolLayer(book, lines).call("edit_lines", { edits: batch });
+
+      const sequential = toolLayer(book, lines);
+      let last;
+      for (const single of batch) last = await sequential.call("edit_lines", { edits: [single] });
+
+      expect(batched.report).toEqual(last.report);
+      expect(batched.lines).toEqual(last.lines);
+      expect(batched.movedFigures).toEqual(diffAgainst(baseline, last.report));
+    });
+
+    it("a refusal mid-batch names the edit's index and name and leaves the session's lines as they were", async () => {
+      const session = createSession();
+      loadIntoSession(session, book, lines);
+      const methods = createMethods(session);
+
+      await expect(
+        methods["tools/call"]({
+          name: "edit_lines",
+          arguments: {
+            edits: [
+              { edit: "addPurchaseLine", params: { line: fixture.addPurchase.line } },
+              { edit: "removeLine", params: { entryNumber: "NO-SUCH-ENTRY" } },
+            ],
+          },
+        }),
+      ).rejects.toThrow(/^edits\[1\] "removeLine": /);
+
+      expect(session.lines).toEqual(lines);
+      const reported = await methods["tools/call"]({ name: "report", arguments: {} });
+      expect(reported.structuredContent.report).toEqual(baseline);
     });
 
     it("removes a sale of Y: profit and turnover both fall by Y", async () => {
       const tools = toolLayer(book, lines);
-      const result = await tools.call("edit_lines", { edit: "removeLine", params: { entryNumber: fixture.removeSaleLine.entryNumber } });
+      const result = await tools.call("edit_lines", {
+        edits: [{ edit: "removeLine", params: { entryNumber: fixture.removeSaleLine.entryNumber } }],
+      });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4") - valueAt(baseline, "cell/Profit & Loss Acc!C4")).toBe(
         -fixture.removeSaleLine.amount,
@@ -763,7 +847,9 @@ for (const fixture of FIXTURES) {
     it("changes a sales line's posting date: its old and new month move by the amount, the year total is unmoved, checks stay green", async () => {
       const tools = toolLayer(book, lines);
       const { entryNumber, newPostingDate, oldMonthCell, newMonthCell, amount } = fixture.changeDateLine;
-      const result = await tools.call("edit_lines", { edit: "changeLinePostingDate", params: { entryNumber, newPostingDate } });
+      const result = await tools.call("edit_lines", {
+        edits: [{ edit: "changeLinePostingDate", params: { entryNumber, newPostingDate } }],
+      });
 
       const beforeOld = valueAt(baseline, `cell/Profit & Loss Acc!${oldMonthCell}`);
       const afterOld = valueAt(result.report, `cell/Profit & Loss Acc!${oldMonthCell}`);
@@ -778,7 +864,7 @@ for (const fixture of FIXTURES) {
     it("changes a purchase line's account: its old and new category move by the amount, net profit is unmoved, checks stay green", async () => {
       const tools = toolLayer(book, lines);
       const { entryNumber, newAccountMainID, oldCategoryCell, newCategoryCell, amount } = fixture.changeAccountLine;
-      const result = await tools.call("edit_lines", { edit: "changeLineAccount", params: { entryNumber, newAccountMainID } });
+      const result = await tools.call("edit_lines", { edits: [{ edit: "changeLineAccount", params: { entryNumber, newAccountMainID } }] });
 
       const beforeOld = valueAt(baseline, `cell/Profit & Loss Acc!${oldCategoryCell}`);
       const afterOld = valueAt(result.report, `cell/Profit & Loss Acc!${oldCategoryCell}`);
@@ -793,8 +879,12 @@ for (const fixture of FIXTURES) {
     it("removes a purchase of Z: profit rises by Z, turnover is unchanged", async () => {
       const tools = toolLayer(book, lines);
       const result = await tools.call("edit_lines", {
-        edit: "removeLine",
-        params: { entryNumber: fixture.removePurchaseLine.entryNumber },
+        edits: [
+          {
+            edit: "removeLine",
+            params: { entryNumber: fixture.removePurchaseLine.entryNumber },
+          },
+        ],
       });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C4"));
@@ -823,7 +913,7 @@ describe("diya-gl MCP: addPayrollLine", () => {
       client.notify("notifications/initialized");
       const listResult = await client.request("tools/list");
       const editTool = listResult.tools.find((tool) => tool.name === "edit_lines");
-      expect(editTool.inputSchema.properties.edit.enum).toContain("addPayrollLine");
+      expect(editTool.inputSchema.properties.edits.items.properties.edit.enum).toContain("addPayrollLine");
     } finally {
       client.close();
     }
@@ -849,7 +939,7 @@ describe("diya-gl MCP: addPayrollLine", () => {
       "diya-gl:employeeNI": 100,
       "diya-gl:employerNI": 138,
     };
-    const result = await tools.call("edit_lines", { edit: "addPayrollLine", params: { line } });
+    const result = await tools.call("edit_lines", { edits: [{ edit: "addPayrollLine", params: { line } }] });
 
     expect(result.lines.length).toBe(lines.length + 1);
     const added = result.lines.find((entry) => entry.entryNumber === "TEST-PAYROLL-MCP-1");

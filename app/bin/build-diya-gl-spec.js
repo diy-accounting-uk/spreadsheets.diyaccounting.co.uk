@@ -223,6 +223,7 @@ const CHECK_DESCRIPTIONS = {
   "book-vat-threshold": "Turnover for the year against the VAT registration threshold for that year.",
   "book-duplicate-entries": "No two entries share the same journal, date, amount and detail without being each other's two sides.",
   "book-empty-detail": "Every entry names who or what it was with.",
+  "book-missing-document-reference": "Every sale names its invoice or receipt.",
   "book-negative-amount": "Every sale and purchase amount is zero or more.",
   "book-empty-month": "Every month between the first and last entry has at least one entry.",
   "book-cash-never-overdrawn": "The cash book closes every month at zero or more.",

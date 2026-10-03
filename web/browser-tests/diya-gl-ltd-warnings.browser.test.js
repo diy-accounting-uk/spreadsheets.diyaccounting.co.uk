@@ -139,6 +139,7 @@ const SHARED_IDS = [
   "book-vat-threshold",
   "book-duplicate-entries",
   "book-empty-detail",
+  "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
 ];

@@ -21,11 +21,12 @@ const SHARED_IDS = [
   "book-vat-threshold",
   "book-duplicate-entries",
   "book-empty-detail",
+  "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
 ];
 const TAXI_IDS = ["book-taxi-fare-miles", "book-taxi-vehicle-register", "book-taxi-miles-band"];
-const ALL_IDS = SHARED_IDS.concat(TAXI_IDS);
+const ALL_IDS = SHARED_IDS.filter((id) => id !== "book-missing-document-reference").concat(TAXI_IDS);
 
 function resultFor(results, id) {
   return results.find((r) => r.id === id);
@@ -210,7 +211,7 @@ describe("the register helper", () => {
 // ============================== a BST book carries none of the three ids ==============================
 
 describe("a BST book carries none of the three Taxi ids", () => {
-  it("the shared eight run alone", () => {
+  it("the shared nine run alone", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "precision-code-ltd", "bst"));
     const taxData = extractTaxDataFromBook(book, "bst");
     const { results } = runBookChecks({ book, lines, taxData });
@@ -231,5 +232,13 @@ describe("bookChecksJson over a Taxi book", () => {
 
     const ids = JSON.parse(a).map((r) => r.id);
     expect(ids).toEqual(ALL_IDS.slice().sort());
+  });
+});
+
+describe("a Taxi book leaves out the shared document reference warning", () => {
+  it("runs no book-missing-document-reference rule over sales that carry no reference", () => {
+    const { book, lines, taxData } = loadTaxi("examples/basic-taxi-driver/taxi");
+    const { results } = runBookChecks({ book, lines, taxData });
+    expect(results.map((r) => r.id)).not.toContain("book-missing-document-reference");
   });
 });

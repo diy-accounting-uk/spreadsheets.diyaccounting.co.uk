@@ -5,10 +5,10 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.37+907683df0",
-    "taxDataHash": "3221a7c2f39c",
+    "engineVersion": "1.2.40+57de8f55b",
+    "taxDataHash": "89424bd36c0d",
     "templateHash": "064605ae76ed",
-    "templateScorecard": "7982 passed, 0 warnings, 0 failed",
+    "templateScorecard": "8014 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
   },
   "values": [
@@ -13415,119 +13415,139 @@
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-back-the-year-s-loss-carried-forward-rather-than-reducing-tax-below-nil",
+      "label": "Add back the year's loss, carried forward rather than reducing tax below nil",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O179"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-26",
+      "label": "Add balancing charges (box 26)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O85"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-disallowable-expenses-added-back-box-46",
+      "label": "Add disallowable expenses added back (box 46)",
       "unit": "money",
       "value": "30230.5835",
       "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
+      "label": "Add goods and services for own use (box 27)",
       "unit": "money",
       "value": "640",
       "source": "cell/Financialaccounts.xlsx!SE Short!D94"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-grants-as-other-business-income-box-30",
+      "label": "Add grants as other business income (box 30)",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!SE Short!O99"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-the-full-return-s-own-box-71-adjustment-for-change-of-accounting-practice",
+      "label": "Add the full return's own box 71 adjustment for change of accounting practice",
       "unit": "money",
       "value": "90",
       "source": "cell/Financialaccounts.xlsx!SE Full!D210"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
+      "label": "Less annual investment allowance (box 23)",
       "unit": "money",
       "value": "-52500",
       "source": "cell/Financialaccounts.xlsx!SE Short!D80"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-grants-taxed-as-other-business-income-below",
+      "label": "Less grants, taxed as other business income below",
       "unit": "money",
       "value": "-2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B11"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29",
+      "label": "Less loss brought forward (box 29)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O94"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-25",
+      "label": "Less other capital allowances (box 25)",
       "unit": "money",
       "value": "-12824",
       "source": "cell/Financialaccounts.xlsx!SE Short!O80"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-24",
+      "label": "Less small-balance allowance (box 24)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!D85"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-box-62-adjustment",
+      "label": "Less the full return's own box 62 adjustment",
       "unit": "money",
       "value": "-350",
       "source": "cell/Financialaccounts.xlsx!SE Full!D179"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-electric-charge-point-allowance-box-54",
+      "label": "Less the full return's own electric charge-point allowance (box 54)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O139"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-freeport-and-investment-zone-structures-and-buildings-allowance-box-53-1",
+      "label": "Less the full return's own Freeport and Investment Zone Structures and Buildings Allowance (box 53.1)",
       "unit": "money",
       "value": "-1024.65753424658",
       "source": "cell/Financialaccounts.xlsx!SE Full!D160"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-structures-and-buildings-allowance-box-53",
+      "label": "Less the full return's own Structures and Buildings Allowance (box 53)",
       "unit": "money",
       "value": "-1800",
       "source": "cell/Financialaccounts.xlsx!SE Full!D156"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-car-allowance-box-52-1",
+      "label": "Less the full return's own zero-emission car allowance (box 52.1)",
       "unit": "money",
       "value": "-2500",
       "source": "cell/Financialaccounts.xlsx!SE Full!D152"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-the-full-return-s-own-zero-emission-goods-vehicle-allowance-box-52",
+      "label": "Less the full return's own zero-emission goods vehicle allowance (box 52)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D150"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/profit-before-tax-per-the-profit-and-loss-account",
+      "label": "Profit before tax per the profit and loss account",
       "unit": "money",
       "value": "164219.85",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B39"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/residue",
+      "label": "Residue",
       "unit": "money",
       "value": "-0.000000000073"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
+      "label": "Tax profit the bridge computes",
       "unit": "money",
       "value": "124181.775965753",
       "derivedFrom": [
@@ -13553,378 +13573,445 @@
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
+      "label": "Tax profit the sheet carries",
       "unit": "money",
       "value": "124181.775965753",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
       "key": "section/admin-generator-injected/additional-rate",
+      "label": "Additional Rate",
       "unit": "rate",
       "value": "0.45",
       "source": "cell/Financialaccounts.xlsx!Admin!N8"
     },
     {
       "key": "section/admin-generator-injected/annual-investment-allowance-rate",
+      "label": "Annual Investment Allowance Rate",
       "unit": "rate",
       "value": "1",
       "source": "cell/Financialaccounts.xlsx!Admin!G4"
     },
     {
       "key": "section/admin-generator-injected/basic-band-end",
+      "label": "Basic Band End",
       "unit": "money",
       "value": "37700",
       "source": "cell/Financialaccounts.xlsx!Admin!M11"
     },
     {
       "key": "section/admin-generator-injected/basic-rate",
+      "label": "Basic Rate",
       "unit": "rate",
       "value": "0.2",
       "source": "cell/Financialaccounts.xlsx!Admin!N6"
     },
     {
       "key": "section/admin-generator-injected/freeport-and-investment-zone-sba-rate",
+      "label": "Freeport and Investment Zone SBA Rate",
       "unit": "rate",
       "value": "0.1",
       "source": "cell/Financialaccounts.xlsx!Admin!G10"
     },
     {
       "key": "section/admin-generator-injected/higher-band-end",
+      "label": "Higher Band End",
       "unit": "money",
       "value": "125140",
       "source": "cell/Financialaccounts.xlsx!Admin!N13"
     },
     {
       "key": "section/admin-generator-injected/higher-band-start",
+      "label": "Higher Band Start",
       "unit": "money",
       "value": "37701",
       "source": "cell/Financialaccounts.xlsx!Admin!N12"
     },
     {
       "key": "section/admin-generator-injected/higher-rate",
+      "label": "Higher Rate",
       "unit": "rate",
       "value": "0.4",
       "source": "cell/Financialaccounts.xlsx!Admin!N7"
     },
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-limit",
+      "label": "Mileage Higher Rate Limit",
       "unit": "count",
       "value": "10000",
       "source": "cell/Financialaccounts.xlsx!Admin!F21"
     },
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-pence",
+      "label": "Mileage Higher Rate Pence",
       "unit": "rate",
       "value": "0.55",
       "source": "cell/Financialaccounts.xlsx!Admin!G21"
     },
     {
       "key": "section/admin-generator-injected/mileage-lower-rate-pence",
+      "label": "Mileage Lower Rate Pence",
       "unit": "rate",
       "value": "0.25",
       "source": "cell/Financialaccounts.xlsx!Admin!G22"
     },
     {
       "key": "section/admin-generator-injected/mileage-lower-rate-start",
+      "label": "Mileage Lower Rate Start",
       "unit": "count",
       "value": "10001",
       "source": "cell/Financialaccounts.xlsx!Admin!F22"
     },
     {
       "key": "section/admin-generator-injected/ni-class-2-small-profits-threshold",
+      "label": "NI Class 2 Small Profits Threshold",
       "unit": "money",
       "value": "7105",
       "source": "cell/Financialaccounts.xlsx!Admin!N16"
     },
     {
       "key": "section/admin-generator-injected/ni-class-2-weekly-rate",
+      "label": "NI Class 2 Weekly Rate",
       "unit": "money",
       "value": "3.65",
       "source": "cell/Financialaccounts.xlsx!Admin!L16"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-lower-limit",
+      "label": "NI Class 4 Lower Limit",
       "unit": "money",
       "value": "12570",
       "source": "cell/Financialaccounts.xlsx!Admin!N20"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-lower-rate",
+      "label": "NI Class 4 Lower Rate",
       "unit": "rate",
       "value": "0.06",
       "source": "cell/Financialaccounts.xlsx!Admin!L20"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-upper-limit",
+      "label": "NI Class 4 Upper Limit",
       "unit": "money",
       "value": "50270",
       "source": "cell/Financialaccounts.xlsx!Admin!N23"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-upper-rate",
+      "label": "NI Class 4 Upper Rate",
       "unit": "rate",
       "value": "0.02",
       "source": "cell/Financialaccounts.xlsx!Admin!L23"
     },
     {
       "key": "section/admin-generator-injected/personal-allowance",
+      "label": "Personal Allowance",
       "unit": "money",
       "value": "12570",
       "source": "cell/Financialaccounts.xlsx!Admin!N4"
     },
     {
       "key": "section/admin-generator-injected/personal-allowance-taper-threshold",
+      "label": "Personal Allowance Taper Threshold",
       "unit": "money",
       "value": "100000",
       "source": "cell/Financialaccounts.xlsx!Admin!N5"
     },
     {
       "key": "section/admin-generator-injected/special-rate-writing-down-allowance-rate",
+      "label": "Special Rate Writing Down Allowance Rate",
       "unit": "rate",
       "value": "0.06",
       "source": "cell/Financialaccounts.xlsx!Admin!G6"
     },
     {
       "key": "section/admin-generator-injected/structures-and-buildings-allowance-rate",
+      "label": "Structures and Buildings Allowance Rate",
       "unit": "rate",
       "value": "0.03",
       "source": "cell/Financialaccounts.xlsx!Admin!G9"
     },
     {
       "key": "section/admin-generator-injected/vat-registration-threshold",
+      "label": "VAT Registration Threshold",
       "unit": "money",
       "value": "90000",
       "source": "cell/Financialaccounts.xlsx!Admin!F26"
     },
     {
       "key": "section/admin-generator-injected/vat-standard-rate",
+      "label": "VAT Standard Rate",
       "unit": "rate",
       "value": "0.2",
       "source": "cell/Financialaccounts.xlsx!Admin!F27"
     },
     {
       "key": "section/admin-generator-injected/writing-down-allowance-rate",
+      "label": "Writing Down Allowance Rate",
       "unit": "rate",
       "value": "0.14",
       "source": "cell/Financialaccounts.xlsx!Admin!G5"
     },
     {
       "key": "section/business-details/accounting-period-end-date-box-9",
+      "label": "Accounting period end date (box 9)",
       "unit": "date",
       "value": "46477",
       "source": "cell/Financialaccounts.xlsx!Business Details!N32"
     },
     {
       "key": "section/business-details/accounting-period-start-date-box-8",
+      "label": "Accounting period start date (box 8)",
       "unit": "date",
       "value": "46113",
       "source": "cell/Financialaccounts.xlsx!Business Details!N27"
     },
     {
       "key": "section/business-details/additional-transition-profit-elected-this-year-feeds-box-73-3",
+      "label": "Additional transition profit elected this year (feeds box 73.3)",
       "unit": "text",
       "value": "1000",
       "source": "cell/Financialaccounts.xlsx!Business Details!O69"
     },
     {
       "key": "section/business-details/business-name",
+      "label": "Business Name",
       "unit": "text",
       "value": "Precision Code Trading",
       "source": "cell/Financialaccounts.xlsx!Business Details!C5"
     },
     {
       "key": "section/business-details/overlap-profit-brought-forward-feeds-box-69",
+      "label": "Overlap profit brought forward (feeds box 69)",
       "unit": "text",
       "value": "2400",
       "source": "cell/Financialaccounts.xlsx!Business Details!D59"
     },
     {
       "key": "section/business-details/overlap-profit-carried-forward",
+      "label": "Overlap profit carried forward",
       "unit": "text",
       "value": "2400",
       "source": "cell/Financialaccounts.xlsx!Business Details!D69"
     },
     {
       "key": "section/business-details/overlap-relief-used-this-year-box-69",
+      "label": "Overlap relief used this year (box 69)",
       "unit": "text",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Business Details!D64"
     },
     {
       "key": "section/business-details/transition-profit-carried-forward-to-next-year",
+      "label": "Transition profit carried forward to next year",
       "unit": "text",
       "value": "2000",
       "source": "cell/Financialaccounts.xlsx!Business Details!O74"
     },
     {
       "key": "section/business-details/transition-profit-not-yet-treated-as-arising",
+      "label": "Transition profit not yet treated as arising",
       "unit": "text",
       "value": "6000",
       "source": "cell/Financialaccounts.xlsx!Business Details!O59"
     },
     {
       "key": "section/business-details/transition-profit-treated-as-arising-this-year-before-election-feeds-box-73-3",
+      "label": "Transition profit treated as arising this year, before election (feeds box 73.3)",
       "unit": "text",
       "value": "3000",
       "source": "cell/Financialaccounts.xlsx!Business Details!O64"
     },
     {
       "key": "section/business-details/value-of-goods-and-services-for-own-use-box-24",
+      "label": "Value of goods and services for own use (box 24)",
       "unit": "text",
       "value": "640",
       "source": "cell/Financialaccounts.xlsx!Business Details!O50"
     },
     {
       "key": "section/fixed-asset-schedule/accumulated-depreciation-brought-forward-schedule-f1",
+      "label": "Accumulated depreciation brought forward (Schedule F1)",
       "value": "19098"
     },
     {
       "key": "section/fixed-asset-schedule/accumulated-depreciation-carried-forward-disposals-removed",
+      "label": "Accumulated depreciation carried forward, disposals removed",
       "value": "22635"
     },
     {
       "key": "section/fixed-asset-schedule/accumulated-depreciation-on-the-assets-sold-schedule-x1",
+      "label": "Accumulated depreciation on the assets sold (Schedule X1)",
       "value": "17328"
     },
     {
       "key": "section/fixed-asset-schedule/additions-in-the-year-schedule-e110",
+      "label": "Additions in the year (Schedule E110)",
       "value": "52500"
     },
     {
       "key": "section/fixed-asset-schedule/cost-brought-forward-schedule-e57",
+      "label": "Cost brought forward (Schedule E57)",
       "value": "61500"
     },
     {
       "key": "section/fixed-asset-schedule/cost-carried-forward-disposals-removed",
+      "label": "Cost carried forward, disposals removed",
       "value": "84000"
     },
     {
       "key": "section/fixed-asset-schedule/cost-of-the-assets-sold-in-the-year-schedule-w1",
+      "label": "Cost of the assets sold in the year (Schedule W1)",
       "value": "30000"
     },
     {
       "key": "section/fixed-asset-schedule/depreciation-charged-for-the-year-schedule-i1",
+      "label": "Depreciation charged for the year (Schedule I1)",
       "value": "20865"
     },
     {
       "key": "section/fixed-asset-schedule/net-book-value-at-the-year-end-schedule-k1",
+      "label": "Net book value at the year end (Schedule K1)",
       "value": "61365"
     },
     {
       "key": "section/fixed-asset-schedule/net-book-value-of-the-assets-sold-at-the-date-of-sale",
+      "label": "Net book value of the assets sold at the date of sale",
       "value": "12672"
     },
     {
       "key": "section/fixed-asset-schedule/sale-proceeds-of-the-assets-sold-net-of-vat-schedule-v1",
+      "label": "Sale proceeds of the assets sold, net of VAT (Schedule V1)",
       "value": "12500"
     },
     {
       "key": "section/income-tax-calculation/additional-rate-the-sheet-applies",
+      "label": "Additional rate the sheet applies",
       "unit": "rate",
       "value": "0.45",
       "source": "cell/Financialaccounts.xlsx!Income Tax!D10"
     },
     {
       "key": "section/income-tax-calculation/additional-rate-threshold-the-sheet-applies",
+      "label": "Additional rate threshold the sheet applies",
       "unit": "money",
       "value": "125140",
       "source": "cell/Financialaccounts.xlsx!Income Tax!C10"
     },
     {
       "key": "section/income-tax-calculation/basic-band-ceiling-the-sheet-applies",
+      "label": "Basic band ceiling the sheet applies",
       "unit": "money",
       "value": "37700",
       "source": "cell/Financialaccounts.xlsx!Income Tax!C9"
     },
     {
       "key": "section/income-tax-calculation/income-tax-on-transition-profit-box-73-3-top-sliced",
+      "label": "Income Tax on transition profit (box 73.3), top-sliced",
       "unit": "money",
       "value": "1728.1331974315",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E14"
     },
     {
       "key": "section/income-tax-calculation/less-cis-deducted",
+      "label": "Less: CIS Deducted",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E12"
     },
     {
       "key": "section/income-tax-calculation/less-personal-allowance",
+      "label": "Less: Personal Allowance",
       "unit": "money",
       "value": "479.112017123269",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E6"
     },
     {
       "key": "section/income-tax-calculation/ni-class-4-lower-band",
+      "label": "NI Class 4 (lower band)",
       "unit": "money",
       "value": "2262",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E15"
     },
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
+      "label": "NI Class 4 (upper band)",
       "unit": "money",
       "value": "1558.23551931507",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
+      "label": "Profit from Self Employment",
       "unit": "money",
       "value": "124181.775965753",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate-45",
+      "label": "Tax at Additional Rate (45%)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E10"
     },
     {
       "key": "section/income-tax-calculation/tax-at-basic-rate-20",
+      "label": "Tax at Basic Rate (20%)",
       "unit": "money",
       "value": "7540",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E8"
     },
     {
       "key": "section/income-tax-calculation/tax-at-higher-rate-40",
+      "label": "Tax at Higher Rate (40%)",
       "unit": "money",
       "value": "34401.0655794521",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E9"
     },
     {
       "key": "section/income-tax-calculation/taxable-income",
+      "label": "Taxable Income",
       "unit": "money",
       "value": "123702.66394863",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
+      "label": "Total Income Tax",
       "unit": "money",
       "value": "41941.0655794521",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
+      "label": "Total Tax + NI",
       "unit": "money",
       "value": "47489.4342961987",
       "source": "cell/Financialaccounts.xlsx!Income Tax!E18"
     },
     {
       "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/downstream",
+      "label": "Advertising Promotion & Entertainment (purchases a): Figure there",
       "unit": "money",
       "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B27"
     },
     {
       "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/gross",
+      "label": "Advertising Promotion & Entertainment (purchases a): Gross per the journal",
       "unit": "money",
       "value": "4910"
     },
     {
       "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/net",
+      "label": "Advertising Promotion & Entertainment (purchases a): Net",
       "unit": "money",
       "value": "4091.66666666667"
     },
     {
       "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/residue",
+      "label": "Advertising Promotion & Entertainment (purchases a): Residue",
       "unit": "money",
       "value": "-0.000000000000",
       "derivedFrom": [
@@ -13934,6 +14021,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/advertising-promotion-entertainment-purchases-a/vat",
+      "label": "Advertising Promotion & Entertainment (purchases a): VAT stripped",
       "unit": "money",
       "value": "818.333333333333",
       "derivedFrom": [
@@ -13943,22 +14031,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/bad-debts-written-off-sales-o/downstream",
+      "label": "Bad Debts written off (sales o): Figure there",
       "unit": "money",
       "value": "300",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B29 negated"
     },
     {
       "key": "section/journal-category-vat-netting/bad-debts-written-off-sales-o/gross",
+      "label": "Bad Debts written off (sales o): Gross per the journal",
       "unit": "money",
       "value": "360"
     },
     {
       "key": "section/journal-category-vat-netting/bad-debts-written-off-sales-o/net",
+      "label": "Bad Debts written off (sales o): Net",
       "unit": "money",
       "value": "300"
     },
     {
       "key": "section/journal-category-vat-netting/bad-debts-written-off-sales-o/residue",
+      "label": "Bad Debts written off (sales o): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -13968,6 +14060,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/bad-debts-written-off-sales-o/vat",
+      "label": "Bad Debts written off (sales o): VAT stripped",
       "unit": "money",
       "value": "60",
       "derivedFrom": [
@@ -13977,22 +14070,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/downstream",
+      "label": "Business Entertainment (memo) (purchases e): Figure there",
       "unit": "money",
       "value": "291.666666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B49"
     },
     {
       "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/gross",
+      "label": "Business Entertainment (memo) (purchases e): Gross per the journal",
       "unit": "money",
       "value": "350"
     },
     {
       "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/net",
+      "label": "Business Entertainment (memo) (purchases e): Net",
       "unit": "money",
       "value": "291.666666666667"
     },
     {
       "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/residue",
+      "label": "Business Entertainment (memo) (purchases e): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14002,6 +14099,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/business-entertainment-memo-purchases-e/vat",
+      "label": "Business Entertainment (memo) (purchases e): VAT stripped",
       "unit": "money",
       "value": "58.3333333333333",
       "derivedFrom": [
@@ -14011,22 +14109,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/capitalised-fixed-asset-spend-purchases-fa/downstream",
+      "label": "Capitalised fixed asset spend (purchases fa): Figure there",
       "unit": "money",
       "value": "52500",
       "source": "cell/Fixedassets.xlsx!FAreconciliation!E11"
     },
     {
       "key": "section/journal-category-vat-netting/capitalised-fixed-asset-spend-purchases-fa/gross",
+      "label": "Capitalised fixed asset spend (purchases fa): Gross per the journal",
       "unit": "money",
       "value": "63000"
     },
     {
       "key": "section/journal-category-vat-netting/capitalised-fixed-asset-spend-purchases-fa/net",
+      "label": "Capitalised fixed asset spend (purchases fa): Net",
       "unit": "money",
       "value": "52500"
     },
     {
       "key": "section/journal-category-vat-netting/capitalised-fixed-asset-spend-purchases-fa/residue",
+      "label": "Capitalised fixed asset spend (purchases fa): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14036,6 +14138,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/capitalised-fixed-asset-spend-purchases-fa/vat",
+      "label": "Capitalised fixed asset spend (purchases fa): VAT stripped",
       "unit": "money",
       "value": "10500",
       "derivedFrom": [
@@ -14045,22 +14148,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/fixed-asset-disposal-proceeds-sales-fs/downstream",
+      "label": "Fixed asset disposal proceeds (sales fs): Figure there",
       "unit": "money",
       "value": "12500",
       "source": "cell/Fixedassets.xlsx!FAreconciliation!K11"
     },
     {
       "key": "section/journal-category-vat-netting/fixed-asset-disposal-proceeds-sales-fs/gross",
+      "label": "Fixed asset disposal proceeds (sales fs): Gross per the journal",
       "unit": "money",
       "value": "15000"
     },
     {
       "key": "section/journal-category-vat-netting/fixed-asset-disposal-proceeds-sales-fs/net",
+      "label": "Fixed asset disposal proceeds (sales fs): Net",
       "unit": "money",
       "value": "12500"
     },
     {
       "key": "section/journal-category-vat-netting/fixed-asset-disposal-proceeds-sales-fs/residue",
+      "label": "Fixed asset disposal proceeds (sales fs): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14070,6 +14177,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/fixed-asset-disposal-proceeds-sales-fs/vat",
+      "label": "Fixed asset disposal proceeds (sales fs): VAT stripped",
       "unit": "money",
       "value": "2500",
       "derivedFrom": [
@@ -14079,22 +14187,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/general-administrative-expenses-purchases-g/downstream",
+      "label": "General Administrative Expenses (purchases g): Figure there",
       "unit": "money",
       "value": "3035",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B24"
     },
     {
       "key": "section/journal-category-vat-netting/general-administrative-expenses-purchases-g/gross",
+      "label": "General Administrative Expenses (purchases g): Gross per the journal",
       "unit": "money",
       "value": "3642"
     },
     {
       "key": "section/journal-category-vat-netting/general-administrative-expenses-purchases-g/net",
+      "label": "General Administrative Expenses (purchases g): Net",
       "unit": "money",
       "value": "3035"
     },
     {
       "key": "section/journal-category-vat-netting/general-administrative-expenses-purchases-g/residue",
+      "label": "General Administrative Expenses (purchases g): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14104,6 +14216,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/general-administrative-expenses-purchases-g/vat",
+      "label": "General Administrative Expenses (purchases g): VAT stripped",
       "unit": "money",
       "value": "607",
       "derivedFrom": [
@@ -14113,22 +14226,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/investment-grants-received-sales-g/downstream",
+      "label": "Investment Grants received (sales g): Figure there",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B11"
     },
     {
       "key": "section/journal-category-vat-netting/investment-grants-received-sales-g/gross",
+      "label": "Investment Grants received (sales g): Gross per the journal",
       "unit": "money",
       "value": "2500"
     },
     {
       "key": "section/journal-category-vat-netting/investment-grants-received-sales-g/net",
+      "label": "Investment Grants received (sales g): Net",
       "unit": "money",
       "value": "2083.33333333333"
     },
     {
       "key": "section/journal-category-vat-netting/investment-grants-received-sales-g/residue",
+      "label": "Investment Grants received (sales g): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14138,6 +14255,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/investment-grants-received-sales-g/vat",
+      "label": "Investment Grants received (sales g): VAT stripped",
       "unit": "money",
       "value": "416.666666666667",
       "derivedFrom": [
@@ -14147,22 +14265,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/legal-professional-fees-purchases-l/downstream",
+      "label": "Legal & Professional Fees (purchases l): Figure there",
       "unit": "money",
       "value": "6925",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B28"
     },
     {
       "key": "section/journal-category-vat-netting/legal-professional-fees-purchases-l/gross",
+      "label": "Legal & Professional Fees (purchases l): Gross per the journal",
       "unit": "money",
       "value": "8310"
     },
     {
       "key": "section/journal-category-vat-netting/legal-professional-fees-purchases-l/net",
+      "label": "Legal & Professional Fees (purchases l): Net",
       "unit": "money",
       "value": "6925"
     },
     {
       "key": "section/journal-category-vat-netting/legal-professional-fees-purchases-l/residue",
+      "label": "Legal & Professional Fees (purchases l): Residue",
       "unit": "money",
       "value": "-0.000000000001",
       "derivedFrom": [
@@ -14172,6 +14294,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/legal-professional-fees-purchases-l/vat",
+      "label": "Legal & Professional Fees (purchases l): VAT stripped",
       "unit": "money",
       "value": "1385",
       "derivedFrom": [
@@ -14181,22 +14304,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/downstream",
+      "label": "Motor Expenses (purchases v): Figure there",
       "unit": "money",
       "value": "6570.75",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B25"
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/gross",
+      "label": "Motor Expenses (purchases v): Gross per the journal",
       "unit": "money",
       "value": "7734.75"
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/net",
+      "label": "Motor Expenses (purchases v): Net",
       "unit": "money",
       "value": "6570.75"
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/residue",
+      "label": "Motor Expenses (purchases v): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14206,6 +14333,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/motor-expenses-purchases-v/vat",
+      "label": "Motor Expenses (purchases v): VAT stripped",
       "unit": "money",
       "value": "1164",
       "derivedFrom": [
@@ -14215,22 +14343,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-direct-cost-of-sales-purchases-o/downstream",
+      "label": "Other Direct Cost of Sales (purchases o): Figure there",
       "unit": "money",
       "value": "4020",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B16"
     },
     {
       "key": "section/journal-category-vat-netting/other-direct-cost-of-sales-purchases-o/gross",
+      "label": "Other Direct Cost of Sales (purchases o): Gross per the journal",
       "unit": "money",
       "value": "4824"
     },
     {
       "key": "section/journal-category-vat-netting/other-direct-cost-of-sales-purchases-o/net",
+      "label": "Other Direct Cost of Sales (purchases o): Net",
       "unit": "money",
       "value": "4020"
     },
     {
       "key": "section/journal-category-vat-netting/other-direct-cost-of-sales-purchases-o/residue",
+      "label": "Other Direct Cost of Sales (purchases o): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14240,6 +14372,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-direct-cost-of-sales-purchases-o/vat",
+      "label": "Other Direct Cost of Sales (purchases o): VAT stripped",
       "unit": "money",
       "value": "804",
       "derivedFrom": [
@@ -14249,22 +14382,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-expenses-purchases-y/downstream",
+      "label": "Other Expenses (purchases y): Figure there",
       "unit": "money",
       "value": "3231.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B32"
     },
     {
       "key": "section/journal-category-vat-netting/other-expenses-purchases-y/gross",
+      "label": "Other Expenses (purchases y): Gross per the journal",
       "unit": "money",
       "value": "3878"
     },
     {
       "key": "section/journal-category-vat-netting/other-expenses-purchases-y/net",
+      "label": "Other Expenses (purchases y): Net",
       "unit": "money",
       "value": "3231.66666666667"
     },
     {
       "key": "section/journal-category-vat-netting/other-expenses-purchases-y/residue",
+      "label": "Other Expenses (purchases y): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14274,6 +14411,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-expenses-purchases-y/vat",
+      "label": "Other Expenses (purchases y): VAT stripped",
       "unit": "money",
       "value": "646.333333333333",
       "derivedFrom": [
@@ -14283,22 +14421,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-income-sales-d/downstream",
+      "label": "Other Income (sales d): Figure there",
       "unit": "money",
       "value": "3700",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B8"
     },
     {
       "key": "section/journal-category-vat-netting/other-income-sales-d/gross",
+      "label": "Other Income (sales d): Gross per the journal",
       "unit": "money",
       "value": "4440"
     },
     {
       "key": "section/journal-category-vat-netting/other-income-sales-d/net",
+      "label": "Other Income (sales d): Net",
       "unit": "money",
       "value": "3700"
     },
     {
       "key": "section/journal-category-vat-netting/other-income-sales-d/residue",
+      "label": "Other Income (sales d): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14308,6 +14450,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/other-income-sales-d/vat",
+      "label": "Other Income (sales d): VAT stripped",
       "unit": "money",
       "value": "740",
       "derivedFrom": [
@@ -14317,22 +14460,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/downstream",
+      "label": "Premises Rent Rates Power (purchases p): Figure there",
       "unit": "money",
       "value": "13200",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B22"
     },
     {
       "key": "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/gross",
+      "label": "Premises Rent Rates Power (purchases p): Gross per the journal",
       "unit": "money",
       "value": "15840"
     },
     {
       "key": "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/net",
+      "label": "Premises Rent Rates Power (purchases p): Net",
       "unit": "money",
       "value": "13200"
     },
     {
       "key": "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/residue",
+      "label": "Premises Rent Rates Power (purchases p): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14342,6 +14489,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/vat",
+      "label": "Premises Rent Rates Power (purchases p): VAT stripped",
       "unit": "money",
       "value": "2640",
       "derivedFrom": [
@@ -14351,22 +14499,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/purchases-after-stock-adjustment-less-the-year-s-stock-movement-purchases-s/downstream",
+      "label": "Purchases after stock adjustment, less the year's stock movement (purchases s): Figure there",
       "unit": "money",
       "value": "5450",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B14 less the stock movement"
     },
     {
       "key": "section/journal-category-vat-netting/purchases-after-stock-adjustment-less-the-year-s-stock-movement-purchases-s/gross",
+      "label": "Purchases after stock adjustment, less the year's stock movement (purchases s): Gross per the journal",
       "unit": "money",
       "value": "6540"
     },
     {
       "key": "section/journal-category-vat-netting/purchases-after-stock-adjustment-less-the-year-s-stock-movement-purchases-s/net",
+      "label": "Purchases after stock adjustment, less the year's stock movement (purchases s): Net",
       "unit": "money",
       "value": "5450"
     },
     {
       "key": "section/journal-category-vat-netting/purchases-after-stock-adjustment-less-the-year-s-stock-movement-purchases-s/residue",
+      "label": "Purchases after stock adjustment, less the year's stock movement (purchases s): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14376,6 +14528,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/purchases-after-stock-adjustment-less-the-year-s-stock-movement-purchases-s/vat",
+      "label": "Purchases after stock adjustment, less the year's stock movement (purchases s): VAT stripped",
       "unit": "money",
       "value": "1090",
       "derivedFrom": [
@@ -14385,27 +14538,32 @@
     },
     {
       "key": "section/journal-category-vat-netting/rate",
+      "label": "VAT rate the journal amounts include",
       "unit": "rate",
       "value": "0.2"
     },
     {
       "key": "section/journal-category-vat-netting/repairs-maintenance-purchases-m/downstream",
+      "label": "Repairs & Maintenance (purchases m): Figure there",
       "unit": "money",
       "value": "950",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B23"
     },
     {
       "key": "section/journal-category-vat-netting/repairs-maintenance-purchases-m/gross",
+      "label": "Repairs & Maintenance (purchases m): Gross per the journal",
       "unit": "money",
       "value": "1140"
     },
     {
       "key": "section/journal-category-vat-netting/repairs-maintenance-purchases-m/net",
+      "label": "Repairs & Maintenance (purchases m): Net",
       "unit": "money",
       "value": "950"
     },
     {
       "key": "section/journal-category-vat-netting/repairs-maintenance-purchases-m/residue",
+      "label": "Repairs & Maintenance (purchases m): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14415,6 +14573,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/repairs-maintenance-purchases-m/vat",
+      "label": "Repairs & Maintenance (purchases m): VAT stripped",
       "unit": "money",
       "value": "190",
       "derivedFrom": [
@@ -14424,22 +14583,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-a-sales-a/downstream",
+      "label": "Sales Product A (sales a): Figure there",
       "unit": "money",
       "value": "311600",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B5"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-a-sales-a/gross",
+      "label": "Sales Product A (sales a): Gross per the journal",
       "unit": "money",
       "value": "373920"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-a-sales-a/net",
+      "label": "Sales Product A (sales a): Net",
       "unit": "money",
       "value": "311600"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-a-sales-a/residue",
+      "label": "Sales Product A (sales a): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14449,6 +14612,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-a-sales-a/vat",
+      "label": "Sales Product A (sales a): VAT stripped",
       "unit": "money",
       "value": "62320",
       "derivedFrom": [
@@ -14458,22 +14622,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-b-sales-b/downstream",
+      "label": "Sales Product B (sales b): Figure there",
       "unit": "money",
       "value": "13600",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B6"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-b-sales-b/gross",
+      "label": "Sales Product B (sales b): Gross per the journal",
       "unit": "money",
       "value": "16320"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-b-sales-b/net",
+      "label": "Sales Product B (sales b): Net",
       "unit": "money",
       "value": "13600"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-b-sales-b/residue",
+      "label": "Sales Product B (sales b): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14483,6 +14651,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-b-sales-b/vat",
+      "label": "Sales Product B (sales b): VAT stripped",
       "unit": "money",
       "value": "2720",
       "derivedFrom": [
@@ -14492,22 +14661,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-c-sales-c/downstream",
+      "label": "Sales Product C (sales c): Figure there",
       "unit": "money",
       "value": "10300",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B7"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-c-sales-c/gross",
+      "label": "Sales Product C (sales c): Gross per the journal",
       "unit": "money",
       "value": "12360"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-c-sales-c/net",
+      "label": "Sales Product C (sales c): Net",
       "unit": "money",
       "value": "10300"
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-c-sales-c/residue",
+      "label": "Sales Product C (sales c): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14517,6 +14690,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/sales-product-c-sales-c/vat",
+      "label": "Sales Product C (sales c): VAT stripped",
       "unit": "money",
       "value": "2060",
       "derivedFrom": [
@@ -14526,22 +14700,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/sub-contractors-purchases-c/downstream",
+      "label": "Sub contractors (purchases c): Figure there",
       "unit": "money",
       "value": "6666.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B15"
     },
     {
       "key": "section/journal-category-vat-netting/sub-contractors-purchases-c/gross",
+      "label": "Sub contractors (purchases c): Gross per the journal",
       "unit": "money",
       "value": "8000"
     },
     {
       "key": "section/journal-category-vat-netting/sub-contractors-purchases-c/net",
+      "label": "Sub contractors (purchases c): Net",
       "unit": "money",
       "value": "6666.66666666667"
     },
     {
       "key": "section/journal-category-vat-netting/sub-contractors-purchases-c/residue",
+      "label": "Sub contractors (purchases c): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14551,6 +14729,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/sub-contractors-purchases-c/vat",
+      "label": "Sub contractors (purchases c): VAT stripped",
       "unit": "money",
       "value": "1333.33333333333",
       "derivedFrom": [
@@ -14560,22 +14739,26 @@
     },
     {
       "key": "section/journal-category-vat-netting/travel-hotel-subsistence-purchases-h/downstream",
+      "label": "Travel Hotel & Subsistence (purchases h): Figure there",
       "unit": "money",
       "value": "1550",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B26"
     },
     {
       "key": "section/journal-category-vat-netting/travel-hotel-subsistence-purchases-h/gross",
+      "label": "Travel Hotel & Subsistence (purchases h): Gross per the journal",
       "unit": "money",
       "value": "1860"
     },
     {
       "key": "section/journal-category-vat-netting/travel-hotel-subsistence-purchases-h/net",
+      "label": "Travel Hotel & Subsistence (purchases h): Net",
       "unit": "money",
       "value": "1550"
     },
     {
       "key": "section/journal-category-vat-netting/travel-hotel-subsistence-purchases-h/residue",
+      "label": "Travel Hotel & Subsistence (purchases h): Residue",
       "unit": "money",
       "value": "0",
       "derivedFrom": [
@@ -14585,6 +14768,7 @@
     },
     {
       "key": "section/journal-category-vat-netting/travel-hotel-subsistence-purchases-h/vat",
+      "label": "Travel Hotel & Subsistence (purchases h): VAT stripped",
       "unit": "money",
       "value": "310",
       "derivedFrom": [
@@ -14594,988 +14778,1162 @@
     },
     {
       "key": "section/payroll-summary/apr-employer-ni",
+      "label": "Apr Employer NI",
       "unit": "money",
       "value": "577.2",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!H4"
     },
     {
       "key": "section/payroll-summary/apr-gross-pay",
+      "label": "Apr Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C4"
     },
     {
       "key": "section/payroll-summary/apr-paye",
+      "label": "Apr PAYE",
       "unit": "money",
       "value": "800",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!D4"
     },
     {
       "key": "section/payroll-summary/aug-gross-pay",
+      "label": "Aug Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C8"
     },
     {
       "key": "section/payroll-summary/dec-gross-pay",
+      "label": "Dec Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C12"
     },
     {
       "key": "section/payroll-summary/feb-gross-pay",
+      "label": "Feb Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C14"
     },
     {
       "key": "section/payroll-summary/jan-gross-pay",
+      "label": "Jan Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C13"
     },
     {
       "key": "section/payroll-summary/jul-gross-pay",
+      "label": "Jul Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C7"
     },
     {
       "key": "section/payroll-summary/jun-gross-pay",
+      "label": "Jun Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C6"
     },
     {
       "key": "section/payroll-summary/mar-gross-pay",
+      "label": "Mar Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C15"
     },
     {
       "key": "section/payroll-summary/may-gross-pay",
+      "label": "May Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C5"
     },
     {
       "key": "section/payroll-summary/nov-gross-pay",
+      "label": "Nov Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C11"
     },
     {
       "key": "section/payroll-summary/oct-gross-pay",
+      "label": "Oct Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C10"
     },
     {
       "key": "section/payroll-summary/sep-gross-pay",
+      "label": "Sep Gross Pay",
       "unit": "money",
       "value": "6748",
       "source": "cell/Financialaccounts.xlsx!Wagesinterface!C9"
     },
     {
       "key": "section/profit-forecast/add-depreciation",
+      "label": "Add Depreciation",
       "unit": "money",
       "value": "21037",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C37"
     },
     {
       "key": "section/profit-forecast/forecast-cost-of-sales",
+      "label": "Forecast Cost of Sales",
       "unit": "money",
       "value": "20136.6666666667",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C26"
     },
     {
       "key": "section/profit-forecast/forecast-general-expenses",
+      "label": "Forecast General Expenses",
       "unit": "money",
       "value": "156926.816666667",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C30"
     },
     {
       "key": "section/profit-forecast/forecast-interest-received",
+      "label": "Forecast Interest Received",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C33"
     },
     {
       "key": "section/profit-forecast/forecast-investment-grants",
+      "label": "Forecast Investment Grants",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C24"
     },
     {
       "key": "section/profit-forecast/forecast-profit-before-tax",
+      "label": "Forecast Profit before Tax",
       "unit": "money",
       "value": "164219.85",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C34"
     },
     {
       "key": "section/profit-forecast/forecast-sales-turnover",
+      "label": "Forecast Sales Turnover",
       "unit": "money",
       "value": "339200",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C22"
     },
     {
       "key": "section/profit-forecast/forecast-tax-ni-liability",
+      "label": "Forecast Tax & NI Liability",
       "unit": "money",
       "value": "43046.967",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C46"
     },
     {
       "key": "section/profit-forecast/less-capital-allowances",
+      "label": "Less Capital Allowances",
       "unit": "money",
       "value": "65324",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C38"
     },
     {
       "key": "section/profit-forecast/months-of-actual-trade",
+      "label": "Months of actual trade",
       "unit": "count",
       "value": "12",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C21"
     },
     {
       "key": "section/profit-forecast/national-insurance",
+      "label": "National Insurance",
       "unit": "money",
       "value": "3655.257",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C45"
     },
     {
       "key": "section/profit-forecast/personal-allowance",
+      "label": "Personal Allowance",
       "unit": "money",
       "value": "2603.57500000003",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C40"
     },
     {
       "key": "section/profit-forecast/profit-after-allowance",
+      "label": "Profit after Allowance",
       "unit": "money",
       "value": "117329.275",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C41"
     },
     {
       "key": "section/profit-forecast/profit-before-tax",
+      "label": "Profit before Tax",
       "unit": "money",
       "value": "119932.85",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C39"
     },
     {
       "key": "section/profit-forecast/tax-at-additional-rate",
+      "label": "Tax at additional rate",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C44"
     },
     {
       "key": "section/profit-forecast/tax-at-higher-rate",
+      "label": "Tax at higher rate",
       "unit": "money",
       "value": "31851.71",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C43"
     },
     {
       "key": "section/profit-forecast/tax-at-standard-rate",
+      "label": "Tax at standard rate",
       "unit": "money",
       "value": "7540",
       "source": "cell/Financialaccounts.xlsx!Profit Forecast!C42"
     },
     {
       "key": "section/profit-loss-account/advertising",
+      "label": "Advertising",
       "unit": "money",
       "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B27"
     },
     {
       "key": "section/profit-loss-account/bad-debts",
+      "label": "Bad Debts",
       "unit": "money",
       "value": "-300",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B29"
     },
     {
       "key": "section/profit-loss-account/bank-interest-paid",
+      "label": "Bank Interest Paid",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B30"
     },
     {
       "key": "section/profit-loss-account/cost-of-sales",
+      "label": "Cost of Sales",
       "unit": "money",
       "value": "20136.6666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B17"
     },
     {
       "key": "section/profit-loss-account/depreciation",
+      "label": "Depreciation",
       "unit": "money",
       "value": "20865",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B34"
     },
     {
       "key": "section/profit-loss-account/general-admin",
+      "label": "General Admin",
       "unit": "money",
       "value": "3035",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B24"
     },
     {
       "key": "section/profit-loss-account/grants-received",
+      "label": "Grants Received",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B11"
     },
     {
       "key": "section/profit-loss-account/gross-profit",
+      "label": "Gross Profit",
       "unit": "money",
       "value": "321146.666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B19"
     },
     {
       "key": "section/profit-loss-account/hp-interest-lease-bank-charges",
+      "label": "HP Interest, Lease, Bank Charges",
       "unit": "money",
       "value": "3900",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B31"
     },
     {
       "key": "section/profit-loss-account/legal-professional",
+      "label": "Legal & Professional",
       "unit": "money",
       "value": "6925",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B28"
     },
     {
       "key": "section/profit-loss-account/loss-profit-on-disposal-of-assets",
+      "label": "Loss (Profit) on Disposal of Assets",
       "unit": "money",
       "value": "172",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B33"
     },
     {
       "key": "section/profit-loss-account/materials-stock",
+      "label": "Materials / Stock",
       "unit": "money",
       "value": "9450",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B14"
     },
     {
       "key": "section/profit-loss-account/motor-expenses",
+      "label": "Motor Expenses",
       "unit": "money",
       "value": "6570.75",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B25"
     },
     {
       "key": "section/profit-loss-account/operating-profit",
+      "label": "Operating Profit",
       "unit": "money",
       "value": "164219.85",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B37"
     },
     {
       "key": "section/profit-loss-account/other-direct-costs",
+      "label": "Other Direct Costs",
       "unit": "money",
       "value": "4020",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B16"
     },
     {
       "key": "section/profit-loss-account/other-expenses",
+      "label": "Other Expenses",
       "unit": "money",
       "value": "3231.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B32"
     },
     {
       "key": "section/profit-loss-account/other-income",
+      "label": "Other Income",
       "unit": "money",
       "value": "3700",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B8"
     },
     {
       "key": "section/profit-loss-account/premises-rent-rates-power",
+      "label": "Premises Rent Rates Power",
       "unit": "money",
       "value": "13200",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B22"
     },
     {
       "key": "section/profit-loss-account/product-a-sales-code-a",
+      "label": "Product A sales (code a)",
       "unit": "money",
       "value": "311600",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B5"
     },
     {
       "key": "section/profit-loss-account/product-b-sales-code-b",
+      "label": "Product B sales (code b)",
       "unit": "money",
       "value": "13600",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B6"
     },
     {
       "key": "section/profit-loss-account/product-c-sales-code-c",
+      "label": "Product C sales (code c)",
       "unit": "money",
       "value": "10300",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B7"
     },
     {
       "key": "section/profit-loss-account/profit-before-tax",
+      "label": "Profit Before Tax",
       "unit": "money",
       "value": "164219.85",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B39"
     },
     {
       "key": "section/profit-loss-account/repairs-maintenance",
+      "label": "Repairs & Maintenance",
       "unit": "money",
       "value": "950",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B23"
     },
     {
       "key": "section/profit-loss-account/sales-turnover",
+      "label": "Sales Turnover",
       "unit": "money",
       "value": "339200",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B9"
     },
     {
       "key": "section/profit-loss-account/sub-contractors",
+      "label": "Sub-Contractors",
       "unit": "money",
       "value": "6666.66666666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B15"
     },
     {
       "key": "section/profit-loss-account/total-admin-expenses",
+      "label": "Total Admin Expenses",
       "unit": "money",
       "value": "156926.816666667",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B35"
     },
     {
       "key": "section/profit-loss-account/travel-subsistence",
+      "label": "Travel & Subsistence",
       "unit": "money",
       "value": "1550",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B26"
     },
     {
       "key": "section/profit-loss-account/wages-salaries",
+      "label": "Wages & Salaries",
       "unit": "money",
       "value": "92735.7333333333",
       "source": "cell/Financialaccounts.xlsx!Profit & Loss Account!B21"
     },
     {
       "key": "section/quarterly-summary/annual-expenses",
+      "label": "Annual Expenses",
       "unit": "money",
       "value": "13470",
       "source": "cell/Financialaccounts.xlsx!VitalTax!G7"
     },
     {
       "key": "section/quarterly-summary/annual-sales",
+      "label": "Annual Sales",
       "unit": "money",
       "value": "335500",
       "source": "cell/Financialaccounts.xlsx!VitalTax!G5"
     },
     {
       "key": "section/quarterly-summary/q1-expenses",
+      "label": "Q1 Expenses",
       "unit": "money",
       "value": "2282.5",
       "source": "cell/Financialaccounts.xlsx!VitalTax!C7"
     },
     {
       "key": "section/quarterly-summary/q1-sales",
+      "label": "Q1 Sales",
       "unit": "money",
       "value": "83900",
       "source": "cell/Financialaccounts.xlsx!VitalTax!C5"
     },
     {
       "key": "section/quarterly-summary/q2-expenses",
+      "label": "Q2 Expenses",
       "unit": "money",
       "value": "2602.5",
       "source": "cell/Financialaccounts.xlsx!VitalTax!D7"
     },
     {
       "key": "section/quarterly-summary/q2-sales",
+      "label": "Q2 Sales",
       "unit": "money",
       "value": "83000",
       "source": "cell/Financialaccounts.xlsx!VitalTax!D5"
     },
     {
       "key": "section/quarterly-summary/q3-expenses",
+      "label": "Q3 Expenses",
       "unit": "money",
       "value": "2182.5",
       "source": "cell/Financialaccounts.xlsx!VitalTax!E7"
     },
     {
       "key": "section/quarterly-summary/q3-sales",
+      "label": "Q3 Sales",
       "unit": "money",
       "value": "85700",
       "source": "cell/Financialaccounts.xlsx!VitalTax!E5"
     },
     {
       "key": "section/quarterly-summary/q4-expenses",
+      "label": "Q4 Expenses",
       "unit": "money",
       "value": "6402.5",
       "source": "cell/Financialaccounts.xlsx!VitalTax!F7"
     },
     {
       "key": "section/quarterly-summary/q4-sales",
+      "label": "Q4 Sales",
       "unit": "money",
       "value": "82900",
       "source": "cell/Financialaccounts.xlsx!VitalTax!F5"
     },
     {
       "key": "section/self-assessment-sa103f/100-and-other-enhanced-capital-allowances-box-55",
+      "label": "100% and other enhanced capital allowances (box 55)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O144"
     },
     {
       "key": "section/self-assessment-sa103f/accountancy-legal-and-professional-fees-box-28",
+      "label": "Accountancy, legal and professional fees (box 28)",
       "unit": "money",
       "value": "6925",
       "source": "cell/Financialaccounts.xlsx!SE Full!D110"
     },
     {
       "key": "section/self-assessment-sa103f/adjusted-loss-box-77",
+      "label": "Adjusted loss (box 77)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D219"
     },
     {
       "key": "section/self-assessment-sa103f/adjusted-profit-box-73",
+      "label": "Adjusted profit (box 73)",
       "unit": "money",
       "value": "122098.44263242",
       "source": "cell/Financialaccounts.xlsx!SE Full!O194"
     },
     {
       "key": "section/self-assessment-sa103f/adjustment-for-change-of-accounting-practice-box-71",
+      "label": "Adjustment for change of accounting practice (box 71)",
       "unit": "money",
       "value": "90",
       "source": "cell/Financialaccounts.xlsx!SE Full!D210"
     },
     {
       "key": "section/self-assessment-sa103f/adjustment-where-accounting-period-was-not-12-months-long-box-68",
+      "label": "Adjustment where accounting period was not 12 months long (box 68)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D197"
     },
     {
       "key": "section/self-assessment-sa103f/advertising-and-entertainment-box-24",
+      "label": "Advertising and entertainment (box 24)",
       "unit": "money",
       "value": "4091.66666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D94"
     },
     {
       "key": "section/self-assessment-sa103f/allowances-on-sale-or-cessation-box-56",
+      "label": "Allowances on sale or cessation (box 56)",
       "unit": "money",
       "value": "8140",
       "source": "cell/Financialaccounts.xlsx!SE Full!O149"
     },
     {
       "key": "section/self-assessment-sa103f/annual-investment-allowance-box-49",
+      "label": "Annual investment allowance (box 49)",
       "unit": "money",
       "value": "52500",
       "source": "cell/Financialaccounts.xlsx!SE Full!D139"
     },
     {
       "key": "section/self-assessment-sa103f/balancing-charge-box-59",
+      "label": "Balancing charge (box 59)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O160"
     },
     {
       "key": "section/self-assessment-sa103f/bank-credit-card-and-finance-charges-box-26",
+      "label": "Bank, credit card and finance charges (box 26)",
       "unit": "money",
       "value": "3900",
       "source": "cell/Financialaccounts.xlsx!SE Full!D102"
     },
     {
       "key": "section/self-assessment-sa103f/capital-allowances-at-18-box-50",
+      "label": "Capital allowances at 18% (box 50)",
       "unit": "money",
       "value": "4144",
       "source": "cell/Financialaccounts.xlsx!SE Full!D144"
     },
     {
       "key": "section/self-assessment-sa103f/capital-allowances-at-6-box-51",
+      "label": "Capital allowances at 6% (box 51)",
       "unit": "money",
       "value": "540",
       "source": "cell/Financialaccounts.xlsx!SE Full!D147"
     },
     {
       "key": "section/self-assessment-sa103f/car-van-and-travel-expenses-box-20",
+      "label": "Car, van and travel expenses (box 20)",
       "unit": "money",
       "value": "8120.75",
       "source": "cell/Financialaccounts.xlsx!SE Full!D78"
     },
     {
       "key": "section/self-assessment-sa103f/contractor-deductions-taken-off-box-81",
+      "label": "Contractor deductions taken off (box 81)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D231"
     },
     {
       "key": "section/self-assessment-sa103f/depreciation-and-loss-on-sale-of-assets-box-29",
+      "label": "Depreciation and loss on sale of assets (box 29)",
       "unit": "money",
       "value": "21037",
       "source": "cell/Financialaccounts.xlsx!SE Full!D114"
     },
     {
       "key": "section/self-assessment-sa103f/disallowable-depreciation-box-44",
+      "label": "Disallowable depreciation (box 44)",
       "unit": "money",
       "value": "20865",
       "source": "cell/Financialaccounts.xlsx!SE Full!O114"
     },
     {
       "key": "section/self-assessment-sa103f/freeport-and-investment-zones-structures-and-buildings-allowance-box-53-1",
+      "label": "Freeport and Investment Zones Structures and Buildings Allowance (box 53.1)",
       "unit": "money",
       "value": "1024.65753424658",
       "source": "cell/Financialaccounts.xlsx!SE Full!D160"
     },
     {
       "key": "section/self-assessment-sa103f/goods-and-services-for-own-use-box-60",
+      "label": "Goods and services for own use (box 60)",
       "unit": "money",
       "value": "640",
       "source": "cell/Financialaccounts.xlsx!SE Full!D169"
     },
     {
       "key": "section/self-assessment-sa103f/goods-bought-for-resale-box-17",
+      "label": "Goods bought for resale (box 17)",
       "unit": "money",
       "value": "13470",
       "source": "cell/Financialaccounts.xlsx!SE Full!D66"
     },
     {
       "key": "section/self-assessment-sa103f/income-included-but-not-taxable-as-business-profits-box-62",
+      "label": "Income included but not taxable as business profits (box 62)",
       "unit": "money",
       "value": "350",
       "source": "cell/Financialaccounts.xlsx!SE Full!D179"
     },
     {
       "key": "section/self-assessment-sa103f/interest-on-bank-and-other-loans-box-25",
+      "label": "Interest on bank and other loans (box 25)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!D98"
     },
     {
       "key": "section/self-assessment-sa103f/irrecoverable-debts-written-off-box-27",
+      "label": "Irrecoverable debts written off (box 27)",
       "unit": "money",
       "value": "-300",
       "source": "cell/Financialaccounts.xlsx!SE Full!D106"
     },
     {
       "key": "section/self-assessment-sa103f/loss-brought-forward-set-against-this-year-box-74",
+      "label": "Loss brought forward set against this year (box 74)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O199"
     },
     {
       "key": "section/self-assessment-sa103f/net-business-loss-for-tax-purposes-box-65",
+      "label": "Net business loss for tax purposes (box 65)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O179"
     },
     {
       "key": "section/self-assessment-sa103f/net-business-profit-for-tax-purposes-box-64",
+      "label": "Net business profit for tax purposes (box 64)",
       "unit": "money",
       "value": "122008.44263242",
       "source": "cell/Financialaccounts.xlsx!SE Full!O174"
     },
     {
       "key": "section/self-assessment-sa103f/net-loss-box-48",
+      "label": "Net loss (box 48)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O129"
     },
     {
       "key": "section/self-assessment-sa103f/net-profit-box-47",
+      "label": "Net profit (box 47)",
       "unit": "money",
       "value": "162136.516666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D129"
     },
     {
       "key": "section/self-assessment-sa103f/other-business-expenses-box-30",
+      "label": "Other business expenses (box 30)",
       "unit": "money",
       "value": "3231.66666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D118"
     },
     {
       "key": "section/self-assessment-sa103f/other-business-income-box-16",
+      "label": "Other business income (box 16)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O55"
     },
     {
       "key": "section/self-assessment-sa103f/other-business-income-not-in-boxes-15-16-or-60-box-75",
+      "label": "Other business income not in boxes 15, 16 or 60 (box 75)",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!SE Full!O204"
     },
     {
       "key": "section/self-assessment-sa103f/phone-stationery-and-office-costs-box-23",
+      "label": "Phone, stationery and office costs (box 23)",
       "unit": "money",
       "value": "3035",
       "source": "cell/Financialaccounts.xlsx!SE Full!D90"
     },
     {
       "key": "section/self-assessment-sa103f/rent-rates-power-and-insurance-box-21",
+      "label": "Rent, rates, power and insurance (box 21)",
       "unit": "money",
       "value": "13200",
       "source": "cell/Financialaccounts.xlsx!SE Full!D82"
     },
     {
       "key": "section/self-assessment-sa103f/repairs-and-maintenance-box-22",
+      "label": "Repairs and maintenance (box 22)",
       "unit": "money",
       "value": "950",
       "source": "cell/Financialaccounts.xlsx!SE Full!D86"
     },
     {
       "key": "section/self-assessment-sa103f/spread-of-the-transition-profit-treated-as-arising-this-year-box-73-3",
+      "label": "Spread of the transition profit treated as arising this year (box 73.3)",
       "unit": "money",
       "value": "4000",
       "source": "cell/Financialaccounts.xlsx!SE Full!D201"
     },
     {
       "key": "section/self-assessment-sa103f/structures-and-buildings-allowance-box-53",
+      "label": "Structures and Buildings Allowance (box 53)",
       "unit": "money",
       "value": "1800",
       "source": "cell/Financialaccounts.xlsx!SE Full!D156"
     },
     {
       "key": "section/self-assessment-sa103f/subcontractor-payments-box-18",
+      "label": "Subcontractor payments (box 18)",
       "unit": "money",
       "value": "6666.66666666667",
       "source": "cell/Financialaccounts.xlsx!SE Full!D70"
     },
     {
       "key": "section/self-assessment-sa103f/total-additions-to-net-profit-box-61",
+      "label": "Total additions to net profit (box 61)",
       "unit": "money",
       "value": "30870.5835",
       "source": "cell/Financialaccounts.xlsx!SE Full!D174"
     },
     {
       "key": "section/self-assessment-sa103f/total-capital-allowances-box-57",
+      "label": "Total capital allowances (box 57)",
       "unit": "money",
       "value": "70648.6575342466",
       "source": "cell/Financialaccounts.xlsx!SE Full!O154"
     },
     {
       "key": "section/self-assessment-sa103f/total-deductions-from-net-profit-box-63",
+      "label": "Total deductions from net profit (box 63)",
       "unit": "money",
       "value": "70998.6575342466",
       "source": "cell/Financialaccounts.xlsx!SE Full!O169"
     },
     {
       "key": "section/self-assessment-sa103f/total-disallowable-expenses-box-46",
+      "label": "Total disallowable expenses (box 46)",
       "unit": "money",
       "value": "30230.5835",
       "source": "cell/Financialaccounts.xlsx!SE Full!O122"
     },
     {
       "key": "section/self-assessment-sa103f/total-expenses-box-31",
+      "label": "Total expenses (box 31)",
       "unit": "money",
       "value": "177063.483333333",
       "source": "cell/Financialaccounts.xlsx!SE Full!D122"
     },
     {
       "key": "section/self-assessment-sa103f/total-loss-to-carry-forward-box-80",
+      "label": "Total loss to carry forward (box 80)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Full!O224"
     },
     {
       "key": "section/self-assessment-sa103f/total-taxable-profits-from-this-business-box-76",
+      "label": "Total taxable profits from this business (box 76)",
       "unit": "money",
       "value": "124181.775965753",
       "source": "cell/Financialaccounts.xlsx!SE Full!O210"
     },
     {
       "key": "section/self-assessment-sa103f/turnover-box-15",
+      "label": "Turnover (box 15)",
       "unit": "money",
       "value": "339200",
       "source": "cell/Financialaccounts.xlsx!SE Full!D55"
     },
     {
       "key": "section/self-assessment-sa103f/wages-salaries-and-staff-costs-box-19",
+      "label": "Wages, salaries and staff costs (box 19)",
       "unit": "money",
       "value": "92735.7333333333",
       "source": "cell/Financialaccounts.xlsx!SE Full!D74"
     },
     {
       "key": "section/self-assessment-sa103f/zero-emission-car-allowance-box-52-1",
+      "label": "Zero-emission car allowance (box 52.1)",
       "unit": "money",
       "value": "2500",
       "source": "cell/Financialaccounts.xlsx!SE Full!D152"
     },
     {
       "key": "section/self-assessment-sa103s/accountancy-legal-and-professional",
+      "label": "Accountancy, legal and professional",
       "unit": "money",
       "value": "6094",
       "source": "cell/Financialaccounts.xlsx!SE Short!O46"
     },
     {
       "key": "section/self-assessment-sa103s/accounting-date",
+      "label": "Accounting date",
       "unit": "date",
       "value": "46118",
       "source": "cell/Financialaccounts.xlsx!SE Short!S17"
     },
     {
       "key": "section/self-assessment-sa103s/aia-wda-claimed",
+      "label": "AIA / WDA claimed",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!D85"
     },
     {
       "key": "section/self-assessment-sa103s/balancing-charges-box-26",
+      "label": "Balancing charges (box 26)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O85"
     },
     {
       "key": "section/self-assessment-sa103s/business-name",
+      "label": "Business name",
       "unit": "text",
       "value": "Precision Code Trading",
       "source": "cell/Financialaccounts.xlsx!SE Short!C8"
     },
     {
       "key": "section/self-assessment-sa103s/capital-allowances",
+      "label": "Capital allowances",
       "unit": "money",
       "value": "52500",
       "source": "cell/Financialaccounts.xlsx!SE Short!D80"
     },
     {
       "key": "section/self-assessment-sa103s/car-van-and-travel",
+      "label": "Car, van and travel",
       "unit": "money",
       "value": "6090.5625",
       "source": "cell/Financialaccounts.xlsx!SE Short!D51"
     },
     {
       "key": "section/self-assessment-sa103s/cost-of-sales",
+      "label": "Cost of sales",
       "unit": "money",
       "value": "19667.2666666667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D46"
     },
     {
       "key": "section/self-assessment-sa103s/deductions-by-contractors-box-38",
+      "label": "Deductions by contractors (box 38)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O124"
     },
     {
       "key": "section/self-assessment-sa103s/employee-costs",
+      "label": "Employee costs",
       "unit": "money",
       "value": "89026.304",
       "source": "cell/Financialaccounts.xlsx!SE Short!D55"
     },
     {
       "key": "section/self-assessment-sa103s/grants-as-other-business-income-box-30",
+      "label": "Grants as other business income (box 30)",
       "unit": "money",
       "value": "2083.33333333333",
       "source": "cell/Financialaccounts.xlsx!SE Short!O99"
     },
     {
       "key": "section/self-assessment-sa103s/interest-and-bank-charges",
+      "label": "Interest and bank charges",
       "unit": "money",
       "value": "3510",
       "source": "cell/Financialaccounts.xlsx!SE Short!O51"
     },
     {
       "key": "section/self-assessment-sa103s/loss-brought-forward-box-29",
+      "label": "Loss brought forward (box 29)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O94"
     },
     {
       "key": "section/self-assessment-sa103s/net-business-profit-box-28",
+      "label": "Net business profit (box 28)",
       "unit": "money",
       "value": "127683.100166667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D99"
     },
     {
       "key": "section/self-assessment-sa103s/net-loss-box-22",
+      "label": "Net loss (box 22)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O71"
     },
     {
       "key": "section/self-assessment-sa103s/net-loss-for-tax-calc",
+      "label": "Net loss for tax calc",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
+      "label": "Net profit for tax calc (box 31)",
       "unit": "money",
       "value": "129766.4335",
       "source": "cell/Financialaccounts.xlsx!SE Short!D106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-loss",
+      "label": "Net profit/loss",
       "unit": "money",
       "value": "192367.100166667",
       "source": "cell/Financialaccounts.xlsx!SE Short!D71"
     },
     {
       "key": "section/self-assessment-sa103s/other-business-expenses",
+      "label": "Other business expenses",
       "unit": "money",
       "value": "6189.21666666667",
       "source": "cell/Financialaccounts.xlsx!SE Short!O60"
     },
     {
       "key": "section/self-assessment-sa103s/other-business-income",
+      "label": "Other business income",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!O38"
     },
     {
       "key": "section/self-assessment-sa103s/other-capital-allowances-box-25",
+      "label": "Other capital allowances (box 25)",
       "unit": "money",
       "value": "12824",
       "source": "cell/Financialaccounts.xlsx!SE Short!O80"
     },
     {
       "key": "section/self-assessment-sa103s/other-tax-adjustments",
+      "label": "Other tax adjustments",
       "unit": "money",
       "value": "640",
       "source": "cell/Financialaccounts.xlsx!SE Short!D94"
     },
     {
       "key": "section/self-assessment-sa103s/phone-stationery-and-office-costs",
+      "label": "Phone, stationery and office costs",
       "unit": "money",
       "value": "2822.55",
       "source": "cell/Financialaccounts.xlsx!SE Short!O55"
     },
     {
       "key": "section/self-assessment-sa103s/premises-costs",
+      "label": "Premises costs",
       "unit": "money",
       "value": "12540",
       "source": "cell/Financialaccounts.xlsx!SE Short!D60"
     },
     {
       "key": "section/self-assessment-sa103s/repairs-and-renewals",
+      "label": "Repairs and renewals",
       "unit": "money",
       "value": "893",
       "source": "cell/Financialaccounts.xlsx!SE Short!D64"
     },
     {
       "key": "section/self-assessment-sa103s/total-expenses",
+      "label": "Total expenses",
       "unit": "money",
       "value": "146832.899833333",
       "source": "cell/Financialaccounts.xlsx!SE Short!O64"
     },
     {
       "key": "section/self-assessment-sa103s/total-loss-to-carry-forward-box-35",
+      "label": "Total loss to carry forward (box 35)",
       "unit": "money",
       "value": "0",
       "source": "cell/Financialaccounts.xlsx!SE Short!D124"
     },
     {
       "key": "section/self-assessment-sa103s/turnover",
+      "label": "Turnover",
       "unit": "money",
       "value": "339200",
       "source": "cell/Financialaccounts.xlsx!SE Short!D38"
     },
     {
       "key": "section/self-assessment-sa103s/turnover-note",
+      "label": "Turnover note",
       "unit": "text",
       "value": "SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold",
       "source": "cell/Financialaccounts.xlsx!SE Short!A33"
     },
     {
       "key": "section/vat-returns/input-vat-on-those",
+      "label": "Input VAT on those",
       "value": "0"
     },
     {
       "key": "section/vat-returns/output-vat-on-those",
+      "label": "Output VAT on those",
       "value": "0"
     },
     {
       "key": "section/vat-returns/purchases-invoiced-including-vat",
+      "label": "Purchases invoiced including VAT",
       "value": "135478.75"
     },
     {
       "key": "section/vat-returns/purchases-net-of-vat",
+      "label": "Purchases net of VAT",
       "value": "113024.08"
     },
     {
       "key": "section/vat-returns/q1-covers-the-periods-ending",
+      "label": "Q1 covers the periods ending",
       "value": "30 April 2026, 31 May 2026, 30 June 2026"
     },
     {
       "key": "section/vat-returns/q1-period-ending-30-june-2026-box-1-vat-due-on-sales",
+      "label": "Q1 (period ending 30 June 2026) box 1: VAT due on sales",
       "value": "16920"
     },
     {
       "key": "section/vat-returns/q1-period-ending-30-june-2026-box-4-vat-reclaimed-on-purchases",
+      "label": "Q1 (period ending 30 June 2026) box 4: VAT reclaimed on purchases",
       "value": "5993.5"
     },
     {
       "key": "section/vat-returns/q1-period-ending-30-june-2026-box-5-net-vat-due",
+      "label": "Q1 (period ending 30 June 2026) box 5: net VAT due",
       "value": "10926.5"
     },
     {
       "key": "section/vat-returns/q2-covers-the-periods-ending",
+      "label": "Q2 covers the periods ending",
       "value": "31 July 2026, 31 August 2026, 30 September 2026"
     },
     {
       "key": "section/vat-returns/q2-period-ending-30-september-2026-box-1-vat-due-on-sales",
+      "label": "Q2 (period ending 30 September 2026) box 1: VAT due on sales",
       "value": "17256.67"
     },
     {
       "key": "section/vat-returns/q2-period-ending-30-september-2026-box-4-vat-reclaimed-on-purchases",
+      "label": "Q2 (period ending 30 September 2026) box 4: VAT reclaimed on purchases",
       "value": "4509.83"
     },
     {
       "key": "section/vat-returns/q2-period-ending-30-september-2026-box-5-net-vat-due",
+      "label": "Q2 (period ending 30 September 2026) box 5: net VAT due",
       "value": "12746.83"
     },
     {
       "key": "section/vat-returns/q3-covers-the-periods-ending",
+      "label": "Q3 covers the periods ending",
       "value": "31 October 2026, 30 November 2026, 31 December 2026"
     },
     {
       "key": "section/vat-returns/q3-period-ending-31-december-2026-box-1-vat-due-on-sales",
+      "label": "Q3 (period ending 31 December 2026) box 1: VAT due on sales",
       "value": "19780"
     },
     {
       "key": "section/vat-returns/q3-period-ending-31-december-2026-box-4-vat-reclaimed-on-purchases",
+      "label": "Q3 (period ending 31 December 2026) box 4: VAT reclaimed on purchases",
       "value": "9867"
     },
     {
       "key": "section/vat-returns/q3-period-ending-31-december-2026-box-5-net-vat-due",
+      "label": "Q3 (period ending 31 December 2026) box 5: net VAT due",
       "value": "9913"
     },
     {
       "key": "section/vat-returns/q4-covers-the-periods-ending",
+      "label": "Q4 covers the periods ending",
       "value": "31 January 2027, 28 February 2027, 31 March 2027"
     },
     {
       "key": "section/vat-returns/q4-period-ending-31-march-2027-box-1-vat-due-on-sales",
+      "label": "Q4 (period ending 31 March 2027) box 1: VAT due on sales",
       "value": "16860"
     },
     {
       "key": "section/vat-returns/q4-period-ending-31-march-2027-box-4-vat-reclaimed-on-purchases",
+      "label": "Q4 (period ending 31 March 2027) box 4: VAT reclaimed on purchases",
       "value": "2084.33"
     },
     {
       "key": "section/vat-returns/q4-period-ending-31-march-2027-box-5-net-vat-due",
+      "label": "Q4 (period ending 31 March 2027) box 5: net VAT due",
       "value": "14775.67"
     },
     {
       "key": "section/vat-returns/q5-covers-the-periods-ending",
+      "label": "Q5 covers the periods ending",
       "value": "30 April 2027, 31 May 2027, 30 June 2027"
     },
     {
       "key": "section/vat-returns/q5-period-ending-30-june-2027-box-1-vat-due-on-sales",
+      "label": "Q5 (period ending 30 June 2027) box 1: VAT due on sales",
       "value": "0"
     },
     {
       "key": "section/vat-returns/q5-period-ending-30-june-2027-box-4-vat-reclaimed-on-purchases",
+      "label": "Q5 (period ending 30 June 2027) box 4: VAT reclaimed on purchases",
       "value": "0"
     },
     {
       "key": "section/vat-returns/q5-period-ending-30-june-2027-box-5-net-vat-due",
+      "label": "Q5 (period ending 30 June 2027) box 5: net VAT due",
       "value": "0"
     },
     {
       "key": "section/vat-returns/sales-invoiced-including-vat",
+      "label": "Sales invoiced including VAT",
       "value": "424900"
     },
     {
       "key": "section/vat-returns/sales-net-of-vat",
+      "label": "Sales net of VAT",
       "value": "354083.33"
     },
     {
       "key": "section/vat-returns/vat-charged-on-sales",
+      "label": "VAT charged on sales",
       "value": "70816.67"
     },
     {
       "key": "section/vat-returns/vat-due-for-the-year",
+      "label": "VAT due for the year",
       "value": "48362"
     },
     {
       "key": "section/vat-returns/vat-reclaimed-on-purchases",
+      "label": "VAT reclaimed on purchases",
       "value": "22454.67"
     }
   ]

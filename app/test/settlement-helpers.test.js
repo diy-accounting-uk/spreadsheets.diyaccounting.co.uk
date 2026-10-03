@@ -459,7 +459,7 @@ describe("edit_lines carrying addBankLine", () => {
     const listed = await createMethods(session)["tools/list"]({});
     const editLines = listed.tools.find((tool) => tool.name === "edit_lines");
 
-    expect(editLines.inputSchema.properties.edit.enum).toEqual(
+    expect(editLines.inputSchema.properties.edits.items.properties.edit.enum).toEqual(
       expect.arrayContaining([
         "addSaleLine",
         "addPurchaseLine",
@@ -477,8 +477,12 @@ describe("edit_lines carrying addBankLine", () => {
     const call = toolLayer(book, lines);
 
     const result = await call("edit_lines", {
-      edit: "addBankLine",
-      params: { line: unexplainedReceipt({ entryNumber: "TEST-BANK-500", amount: 500 }) },
+      edits: [
+        {
+          edit: "addBankLine",
+          params: { line: unexplainedReceipt({ entryNumber: "TEST-BANK-500", amount: 500 }) },
+        },
+      ],
     });
 
     const moved = result.movedFigures.find((entry) => entry.key === BANK_CLOSING);
@@ -492,7 +496,7 @@ describe("edit_lines carrying addBankLine", () => {
     const call = toolLayer(book, lines);
 
     await expect(
-      call("edit_lines", { edit: "addBankLine", params: { line: unexplainedReceipt({ "diya-gl:bankAccountID": "1220" }) } }),
+      call("edit_lines", { edits: [{ edit: "addBankLine", params: { line: unexplainedReceipt({ "diya-gl:bankAccountID": "1220" }) } }] }),
     ).rejects.toThrow('addBankLine expects a diya-gl:bankAccountID declared in the book\'s own chart, got "1220"');
   });
 });

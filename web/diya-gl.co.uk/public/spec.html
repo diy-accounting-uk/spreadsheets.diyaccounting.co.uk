@@ -499,11 +499,11 @@
       <p>
         A book is read in three stages. The two JSON Schemas validate <code>book.toml</code> and every line of <code>lines.jsonl</code>. The
         validator then refuses a file whose lines reach an account the book does not declare, or name a hire purchase agreement, an asset or
-        a member the registers do not hold. Last, the 27 book checks below run over the data itself.
+        a member the registers do not hold. Last, the 28 book checks below run over the data itself.
       </p>
       <p>
         A <strong>check</strong> passes or fails, and a failure names the entries that caused it; 13 of the rules are checks. A
-        <strong>warning</strong> passes or warns and never blocks a save; 14 of them are warnings. Which rules a book runs
+        <strong>warning</strong> passes or warns and never blocks a save; 15 of them are warnings. Which rules a book runs
         depends on the product it declares. Every result is written to <code>bookchecks.json</code> in the zip.
       </p>
       <p>
@@ -538,6 +538,7 @@
             <tr><td><code>book-ltd-cis-on-subcontractor-line</code></td><td>Every CIS deduction sits on a sub-contractor purchase.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-ltd-dividend-within-distributable-profits</code></td><td>Dividends declared against the retained profits available to pay them.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-ltd-transfer-has-counter-leg</code></td><td>Every transfer between the company's own accounts appears on both of them.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-missing-document-reference</code></td><td>Every sale names its invoice or receipt.</td><td>warning</td><td>Basic Sole Trader, Self Employed, Limited Company</td></tr>
             <tr><td><code>book-taxi-fare-miles</code></td><td>Every fare day that carries miles elsewhere carries its own.</td><td>warning</td><td>Taxi Driver</td></tr>
             <tr><td><code>book-taxi-miles-band</code></td><td>Business miles stay inside the higher-rate mileage band.</td><td>warning</td><td>Taxi Driver</td></tr>
             <tr><td><code>book-taxi-vehicle-register</code></td><td>Every vehicle bought is on the fixed asset register.</td><td>warning</td><td>Taxi Driver</td></tr>

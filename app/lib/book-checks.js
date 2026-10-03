@@ -407,6 +407,26 @@ function emptyDetailWarning(ctx) {
   };
 }
 
+function missingDocumentReferenceWarning(ctx) {
+  const offenders = ctx.lines
+    .filter(function (line) {
+      return line.sourceJournalID === "sales" && (!line.documentReference || !String(line.documentReference).trim());
+    })
+    .sort(byEntryNumber);
+  const warn = offenders.length > 0;
+  return {
+    id: "book-missing-document-reference",
+    tier: "warning",
+    label: "Every sale names its invoice or receipt",
+    result: warn ? "warn" : "pass",
+    actual: offenders.length,
+    consequence: warn
+      ? "A sale with no invoice or receipt reference cannot be matched to its document when the books are reviewed later."
+      : null,
+    offenders: offenders.map(offenderOf),
+  };
+}
+
 function negativeAmountWarning(ctx) {
   const offenders = ctx.lines
     .filter(function (line) {
@@ -469,14 +489,20 @@ function runWarnings(ctx, taxData, results) {
     vatWarning(ctx, taxData),
     duplicateEntriesWarning(ctx),
     emptyDetailWarning(ctx),
+    missingDocumentReferenceWarning(ctx),
     negativeAmountWarning(ctx),
     emptyMonthWarning(ctx),
-  ].map(function (warning) {
-    // A product whose sheets measure a shared warning differently replaces
-    // the whole result, keeping its id; every other product keeps this one.
-    const readDifferently = (ctx.productRules.sharedWarnings || {})[warning.id];
-    return readDifferently ? readDifferently(ctx, taxData, warning) : warning;
-  });
+  ]
+    .filter(function (warning) {
+      // A product whose sales carry no document leaves that shared warning out.
+      return !(ctx.productRules.omittedSharedWarnings || []).includes(warning.id);
+    })
+    .map(function (warning) {
+      // A product whose sheets measure a shared warning differently replaces
+      // the whole result, keeping its id; every other product keeps this one.
+      const readDifferently = (ctx.productRules.sharedWarnings || {})[warning.id];
+      return readDifferently ? readDifferently(ctx, taxData, warning) : warning;
+    });
   return shared.concat(
     ctx.productRules.warnings.map(function (warning) {
       return warning(ctx, taxData, results);

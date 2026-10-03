@@ -308,6 +308,21 @@
     return productId;
   }
 
+  /**
+   * What a book carried as text -- the book.toml and lines.jsonl a link
+   * brings -- is, in the shape sniff() gives a file, so loadSniffed builds
+   * the snapshot the same way it does for an upload.
+   * @param {string} name
+   * @param {string} bookToml
+   * @param {string} linesRaw
+   * @returns {Promise<{kind: string, name: string, productId: string, book: Object, lines: Array}>}
+   */
+  async function sniffBookText(name, bookToml, linesRaw) {
+    var loaded = await loadEngineAndResources();
+    var parsed = loaded.engine.parseDiyaGlData(bookToml, linesRaw);
+    return { kind: "link", name: name, productId: await productIdOfBook(parsed.book), book: parsed.book, lines: parsed.lines };
+  }
+
   // ============================== the loaders ==============================
 
   function periodFromLines(lines) {
@@ -656,6 +671,7 @@
   global.DiyaGlLoader = {
     sniff: sniff,
     productIdOfBook: productIdOfBook,
+    sniffBookText: sniffBookText,
     loadSniffed: loadSniffed,
     loadExample: loadExample,
     createNewBook: createNewBook,

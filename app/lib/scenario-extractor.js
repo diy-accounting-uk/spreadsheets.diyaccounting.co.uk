@@ -6,6 +6,7 @@
 
 import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths } from "./generator.js";
+import { tagEntry, entryOf, tagFieldEntries } from "./entry-attribution.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -253,12 +254,17 @@ export function buildOpeningBalance(lines) {
   const balance = {};
   const cost = {};
   const depreciation = {};
+  const entries = { fixed_asset_cost: {}, fixed_asset_depreciation: {} };
+  const addEntry = (sets, key, line) => {
+    if (line.entryNumber !== undefined) (sets[key] ??= new Set()).add(line.entryNumber);
+  };
 
   for (const line of lines.filter(isOpeningBalanceLine)) {
     const assetClass = OPENING_FIXED_ASSET_CLASSES[line.accountMainID];
     if (assetClass) {
       const band = line.debitCreditCode === "D" ? cost : depreciation;
       band[assetClass] = (band[assetClass] || 0) + line.amount;
+      addEntry(line.debitCreditCode === "D" ? entries.fixed_asset_cost : entries.fixed_asset_depreciation, assetClass, line);
       continue;
     }
     const account = OPENING_BALANCE_LINES[line.accountMainID];
@@ -269,11 +275,12 @@ export function buildOpeningBalance(lines) {
     }
     const signed = line.debitCreditCode === account.normalSide ? line.amount : -line.amount;
     balance[account.key] = (balance[account.key] || 0) + signed;
+    addEntry(entries, account.key, line);
   }
 
   if (Object.keys(cost).length > 0) balance.fixed_asset_cost = cost;
   if (Object.keys(depreciation).length > 0) balance.fixed_asset_depreciation = depreciation;
-  return balance;
+  return tagFieldEntries(balance, entries);
 }
 
 // buildOpeningBalance()'s keys, snake_case and grouped by scenario concept,
@@ -468,13 +475,18 @@ export function deriveStraddlingEntries(straddlingLines, journalType, nameField,
   return straddlingLines
     .filter((l) => l.sourceJournalID === journalType)
     .sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0))
-    .map((line) => ({
-      period: straddlingPeriodLabel(line["diya-gl:vatPeriodEnd"], periodCoveredStart, periodCoveredEnd),
-      date: line.postingDate,
-      [nameField]: line.detailComment,
-      invoice: line.documentReference,
-      amount: line.amount,
-    }));
+    .map((line) =>
+      tagEntry(
+        {
+          period: straddlingPeriodLabel(line["diya-gl:vatPeriodEnd"], periodCoveredStart, periodCoveredEnd),
+          date: line.postingDate,
+          [nameField]: line.detailComment,
+          invoice: line.documentReference,
+          amount: line.amount,
+        },
+        line.entryNumber,
+      ),
+    );
 }
 
 // ============================================================================
@@ -671,7 +683,7 @@ export function takingsOnlySales(grouped) {
         takings.customer = txn.customer;
         takings.account = txn.account;
       }
-      return takings;
+      return tagEntry(takings, entryOf(txn));
     });
   }
   return grouped;
@@ -691,12 +703,17 @@ export function takingsOnlySales(grouped) {
 export function fixedAssetAdditions(lines, purchaseCodeMap, capitalCode) {
   return lines
     .filter((line) => line.sourceJournalID === "purchases" && purchaseCodeMap[line.accountMainID] === capitalCode)
-    .map((line) => ({
-      date: line.postingDate,
-      description: line.lineItemComment,
-      reference: line.documentReference,
-      cost: line.amount,
-    }));
+    .map((line) =>
+      tagEntry(
+        {
+          date: line.postingDate,
+          description: line.lineItemComment,
+          reference: line.documentReference,
+          cost: line.amount,
+        },
+        line.entryNumber,
+      ),
+    );
 }
 
 /**
@@ -846,7 +863,7 @@ export function buildGrouped(
       if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) sale.cis_deduction = line[CIS_DEDUCTION_FIELD];
       const saleMileage = carriesMileage === "all" ? lineMileage(line) : undefined;
       if (saleMileage !== undefined) sale.mileage = saleMileage;
-      sales[month].push(sale);
+      sales[month].push(tagEntry(sale, line.entryNumber));
     } else if (line.sourceJournalID === "purchases") {
       const code = purchaseCodeMap[line.accountMainID];
       if (!code) continue;
@@ -866,7 +883,7 @@ export function buildGrouped(
       if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) purchase.cis_deduction = line[CIS_DEDUCTION_FIELD];
       const purchaseMileage = carriesMileage === "none" ? undefined : lineMileage(line);
       if (purchaseMileage !== undefined) purchase.mileage = purchaseMileage;
-      purchases[month].push(purchase);
+      purchases[month].push(tagEntry(purchase, line.entryNumber));
     } else if (line.sourceJournalID === "bank") {
       // A line with neither "D" nor "C" cannot be written to a receipts or
       // payments block -- there is no third block to put it in -- so it is
@@ -879,15 +896,20 @@ export function buildGrouped(
       const acctId = line["diya-gl:bankAccountID"];
       if (!bank[acctId]) bank[acctId] = {};
       if (!bank[acctId][month]) bank[acctId][month] = [];
-      bank[acctId][month].push({
-        date: line.postingDate,
-        source: line.detailComment,
-        code: line["diya-gl:bankCode"],
-        direction: debitCredit === "D" ? "in" : "out",
-        amount: line.amount,
-        description: line.lineItemComment || "",
-        reference: line.documentReference,
-      });
+      bank[acctId][month].push(
+        tagEntry(
+          {
+            date: line.postingDate,
+            source: line.detailComment,
+            code: line["diya-gl:bankCode"],
+            direction: debitCredit === "D" ? "in" : "out",
+            amount: line.amount,
+            description: line.lineItemComment || "",
+            reference: line.documentReference,
+          },
+          line.entryNumber,
+        ),
+      );
     }
   }
 

@@ -17,9 +17,9 @@
 //
 // State: one loaded book per session (a plain object this module owns the
 // shape of), held in memory. extract_book replaces it outright. edit_lines
-// applies a named edit to the session's current lines and keeps the result
-// as the session's new lines, so a second edit_lines call composes onto the
-// first the way undo-less in-memory editing implies -- report and
+// applies a batch of named edits to the session's current book and lines and
+// keeps the result as the session's new state, so a second edit_lines call
+// composes onto the first the way undo-less in-memory editing implies -- report and
 // save_workbook always see whatever the most recent extract_book or
 // edit_lines left behind. report and edit_lines also accept an explicit
 // {book, lines} pair, bypassing the session, for a caller (a test replaying
@@ -99,9 +99,18 @@ function requireLoaded(session) {
   }
 }
 
-function reportFor(book, lines) {
+// entryNumbers: true gives every attributed figure the entryNumbers of the
+// lines behind it; an array of R keys gives them to those keys alone, so a
+// caller drilling into one figure is not handed every line under every
+// total.
+function reportFor(book, lines, entryNumbers) {
   const product = productOf(book);
-  return buildFileReportDocument(book, lines, product, productModule(product));
+  const document = buildFileReportDocument(book, lines, product, productModule(product), { attribute: Boolean(entryNumbers) });
+  if (Array.isArray(entryNumbers)) {
+    const wanted = new Set(entryNumbers);
+    for (const entry of document.values) if (!wanted.has(entry.key)) delete entry.entryNumbers;
+  }
+  return document;
 }
 
 // The book checks and warnings, with the book's own tax year's data behind
@@ -175,50 +184,53 @@ async function report(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
-  return { report: reportFor(book, lines), bookChecks: await bookChecksFor(book, lines) };
+  return { report: reportFor(book, lines, params.entryNumbers), bookChecks: await bookChecksFor(book, lines) };
 }
 
 /**
- * edit_lines: a named edit from diya-gl-edits.js or diya-gl-edits-ltd.js
- * plus its params in, the new R out, alongside the figures that moved
- * between the report just before the edit and the report just after it. A
- * line edit returns the edited lines and becomes the session's new lines; a
- * book edit (Ltd's setDividend, setMembers, setCharges) returns the edited
- * book instead and becomes the session's new book. Either way a second
- * edit_lines call builds on this one.
+ * edit_lines: a batch of named edits from diya-gl-edits.js or
+ * diya-gl-edits-ltd.js, each { edit, params }, applied in order to the
+ * session's book and lines. Returns the edited book and lines, one R for
+ * the end state, and the figures that moved between the report before the
+ * first edit and the report after the last. A line edit replaces the lines
+ * and a book edit (Ltd's setDividend, setMembers, setCharges) replaces the
+ * book; the session takes the result only when every edit succeeded, so a
+ * refusal at any index leaves the session as it was before the batch. A
+ * second edit_lines call builds on the first.
  */
-function editLines(session, { edit, params, book: explicitBook, lines: explicitLines } = {}) {
-  if (!edit) throw new Error("edit_lines requires an edit name");
-  const fn = EDITS[edit];
-  if (!fn) throw new Error(`Unknown edit "${edit}". Known edits: ${Object.keys(EDITS).join(", ")}`);
+function editLines(session, { edits, book: explicitBook, lines: explicitLines } = {}) {
+  if (!Array.isArray(edits) || edits.length === 0) throw new Error("edit_lines requires a non-empty edits array");
 
-  const book = explicitBook ?? session.book;
-  const lines = explicitLines ?? session.lines;
-  if (!book || !lines) requireLoaded(session);
+  const startBook = explicitBook ?? session.book;
+  const startLines = explicitLines ?? session.lines;
+  if (!startBook || !startLines) requireLoaded(session);
 
-  const before = reportFor(book, lines);
+  edits.forEach(({ edit } = {}, index) => {
+    if (!edit) throw new Error(`edits[${index}] requires an edit name`);
+    if (!EDITS[edit]) throw new Error(`edits[${index}] "${edit}": unknown edit. Known edits: ${Object.keys(EDITS).join(", ")}`);
+  });
 
-  if (BOOK_EDIT_NAMES.has(edit)) {
-    const editedBook = fn(book, lines, params ?? {});
-    const after = reportFor(editedBook, lines);
-    if (!explicitBook) session.book = editedBook;
-    return {
-      book: editedBook,
-      lines,
-      linesJsonl: canonicalLinesJsonl(lines),
-      report: after,
-      movedFigures: diffFigures(before, after),
-    };
-  }
+  const before = reportFor(startBook, startLines);
 
-  const editedLines = fn(book, lines, params ?? {});
-  const after = reportFor(book, editedLines);
+  let book = startBook;
+  let lines = startLines;
+  edits.forEach(({ edit, params }, index) => {
+    try {
+      if (BOOK_EDIT_NAMES.has(edit)) book = EDITS[edit](book, lines, params ?? {});
+      else lines = EDITS[edit](book, lines, params ?? {});
+    } catch (error) {
+      throw new Error(`edits[${index}] "${edit}": ${error.message}`);
+    }
+  });
 
-  if (!explicitLines) session.lines = editedLines;
+  const after = reportFor(book, lines);
+  if (!explicitBook) session.book = book;
+  if (!explicitLines) session.lines = lines;
 
   return {
-    lines: editedLines,
-    linesJsonl: canonicalLinesJsonl(editedLines),
+    book,
+    lines,
+    linesJsonl: canonicalLinesJsonl(lines),
     report: after,
     movedFigures: diffFigures(before, after),
   };
@@ -285,12 +297,17 @@ export const TOOLS = {
   report: {
     name: "report",
     description:
-      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book.",
+      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book. Each report-section figure carries the label the spreadsheet prints for it.",
     inputSchema: {
       type: "object",
       properties: {
         book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
+        entryNumbers: {
+          anyOf: [{ type: "boolean" }, { type: "array", items: { type: "string" } }],
+          description:
+            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only. Attributed today: Basic Sole Trader and Taxi Driver books.",
+        },
       },
     },
     handler: report,
@@ -298,18 +315,29 @@ export const TOOLS = {
   edit_lines: {
     name: "edit_lines",
     description:
-      "Apply one named edit from app/lib/diya-gl-edits.js (" +
+      "Apply a batch of named edits from app/lib/diya-gl-edits.js (" +
       Object.keys(EDITS).join(", ") +
-      ") to the session's currently loaded lines, and return the edited lines, the recomputed R, and the figures that moved.",
+      ") in order to the session's currently loaded book and lines, and return the edited book and lines, one recomputed R for the end state, and the figures that moved between before the first edit and after the last. A refusal names the edit's index and name and leaves the session as it was before the batch.",
     inputSchema: {
       type: "object",
       properties: {
-        edit: { type: "string", enum: Object.keys(EDITS), description: "The named edit to apply" },
-        params: { type: "object", description: "Parameters for the named edit; see app/lib/diya-gl-edits.js" },
+        edits: {
+          type: "array",
+          minItems: 1,
+          description: "The edits to apply, in order",
+          items: {
+            type: "object",
+            properties: {
+              edit: { type: "string", enum: Object.keys(EDITS), description: "The named edit to apply" },
+              params: { type: "object", description: "Parameters for the named edit; see app/lib/diya-gl-edits.js" },
+            },
+            required: ["edit", "params"],
+          },
+        },
         book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
       },
-      required: ["edit", "params"],
+      required: ["edits"],
     },
     handler: editLines,
   },

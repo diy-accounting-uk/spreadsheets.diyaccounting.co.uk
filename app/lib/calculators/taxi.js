@@ -17,6 +17,7 @@ import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
 import { calculateMileageAllowance } from "../tax/mileage.js";
 import { aggregateByCode } from "./shared.js";
+import { attributionWriter, entriesOf, entryOf } from "../entry-attribution.js";
 
 // P&L monthly columns, Apr through Mar (matches app/products/taxi.js's own
 // MONTH_COLS, verified against the template: 'Profit & Loss Acc'!C2:N2 read
@@ -83,7 +84,9 @@ function seShortCapitalAllowances(fa) {
 // by the same getMonthKey() the scenario's own purchases table uses), not
 // the week-based tab sales use, so a purchase dated just before the tax
 // year's own 6 April start still lands somewhere.
-function aggregateByCodeAndMonth(lines, codeMap) {
+// entriesByMonth, where given, is filled in place with { month: { code:
+// Set<entryNumber> } }, the lines behind each month's total.
+function aggregateByCodeAndMonth(lines, codeMap, entriesByMonth) {
   const byMonth = {};
   for (const month of MONTH_ORDER) byMonth[month] = {};
   for (const line of lines) {
@@ -91,11 +94,20 @@ function aggregateByCodeAndMonth(lines, codeMap) {
     if (!code) continue;
     const month = getMonthKey(line.postingDate);
     byMonth[month][code] = (byMonth[month][code] || 0) + signedAmount(line);
+    if (entriesByMonth && entryOf(line) !== undefined) ((entriesByMonth[month] ??= {})[code] ??= new Set()).add(entryOf(line));
   }
   return byMonth;
 }
 
-export function calculateTaxiResults(book, lines, taxData, scenario) {
+/**
+ * @param {Object} book - parsed book.toml
+ * @param {Array} lines - parsed lines.jsonl entries
+ * @param {Object} taxData
+ * @param {Object} scenario
+ * @param {Object} [attribution] - filled in place with the entryNumbers behind each cell (entry-attribution.js)
+ * @returns {Object} { "SheetName": { "CellRef": value } }
+ */
+export function calculateTaxiResults(book, lines, taxData, scenario, attribution) {
   const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && String(l.accountMainID) === TAXI_SALES_ACCOUNT);
   // A 4001 line is other business income, never a fare: the P&L keeps it off
   // turnover (B5) and on its own row (B24), so it is gathered separately
@@ -115,8 +127,10 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   // A mileage-log entry buys nothing: cellWrites gives the sheet its miles
   // rather than its amount, so it never reaches a running-cost column.
   const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
-  const byCode = aggregateByCode(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
-  const byCodeAndMonth = aggregateByCodeAndMonth(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
+  const purchaseEntries = {};
+  const purchaseEntriesByMonth = {};
+  const byCode = aggregateByCode(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP, purchaseEntries);
+  const byCodeAndMonth = aggregateByCodeAndMonth(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP, purchaseEntriesByMonth);
 
   const totalSales = Math.floor(salesLines.reduce((s, l) => s + signedAmount(l), 0));
   const monthlySales = {};
@@ -458,5 +472,131 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     forecast.C41 = forecastIncomeTax.totalIncomeTax + forecastNI.total;
   }
 
+  if (attribution) {
+    attributeTaxiResults(attribution, {
+      results,
+      salesLines,
+      otherIncomeLines,
+      purchaseLines,
+      purchaseEntries,
+      purchaseEntriesByMonth,
+      assetAdditions,
+      takesMileageRoute,
+      byDate,
+    });
+  }
   return results;
+}
+
+const VEHICLE_CODES = ["d", "h", "r", "t"];
+const GENERAL_EXPENSE_CODES = ["e", "p", "g", "a", "l", "i", "b", "o"];
+
+// The entries behind each cell calculateTaxiResults() writes, cell for cell
+// beside the arithmetic above: a line-fed cell takes its own lines, and a
+// derived cell the union of the cells it is computed from. On the mileage
+// route the running-cost lines contribute nothing to the figures (the sheet
+// charges the mileage claim instead), and off it the miles contribute
+// nothing, so each side takes only the lines its figure is built from; the
+// route cell itself is decided by both.
+function attributeTaxiResults(attribution, context) {
+  const { results, salesLines, otherIncomeLines, purchaseLines, purchaseEntries, purchaseEntriesByMonth, assetAdditions } = context;
+  const { takesMileageRoute, byDate } = context;
+  const a = attributionWriter(attribution);
+  const PL = "Profit & Loss Acc";
+  const codes = (letters) => letters.map((letter) => purchaseEntries[letter]);
+  const monthCodes = (month, letters) => letters.map((letter) => purchaseEntriesByMonth[month]?.[letter]);
+  const assets = entriesOf(assetAdditions);
+  const milesLines = [...salesLines, ...purchaseLines].filter(carriesBusinessMiles);
+  const milesMonth = (line) => (line.sourceJournalID === "sales" ? byDate.get(line.postingDate) : getMonthKey(line.postingDate));
+  const mileage = entriesOf(milesLines);
+
+  for (const sheet of ["Admin", "Business Details"]) {
+    for (const cell of Object.keys(results[sheet])) a.set(sheet, cell);
+  }
+
+  a.set(PL, "B5", salesLines);
+  a.set(PL, "B24", otherIncomeLines);
+  const runningCosts = ["B6", "B7", "B8", "B9"];
+  runningCosts.forEach((cell, index) => a.set(PL, cell, ...(takesMileageRoute ? [] : codes([VEHICLE_CODES[index]]))));
+  a.set(PL, "B10", ...(takesMileageRoute ? [] : [assets]));
+  a.set(PL, "B11", ...(takesMileageRoute ? [mileage] : []));
+  a.set(PL, "B12", a.cells(PL, ...runningCosts, "B10", "B11"));
+  a.set(PL, "B13", a.cells(PL, "B5", "B12"));
+  const generalCells = ["B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21"];
+  generalCells.forEach((cell, index) => a.set(PL, cell, ...codes([GENERAL_EXPENSE_CODES[index]])));
+  a.set(PL, "B22", a.cells(PL, ...generalCells));
+  a.set(PL, "B23", a.cells(PL, "B13", "B22"));
+  a.set("PurchasesMar", "I2", ...codes(VEHICLE_CODES));
+  a.set(PL, "J1", a.get("PurchasesMar", "I2"), assets);
+  if (results[PL].C1 !== undefined) a.set(PL, "C1", a.get(PL, "J1"), mileage);
+
+  a.set("PurchasesMar", "A1", mileage);
+  a.set("PurchasesMar", "A2", mileage);
+  a.set("PurchasesMar", "T1", assets);
+  for (const cell of Object.keys(results["Fixed Assets"])) a.set("Fixed Assets", cell, assets);
+
+  const SE = "SE Short";
+  a.set(SE, "D38", a.get(PL, "B5"));
+  a.set(SE, "D71", a.cells(PL, "B5", "B12", "B22"));
+  a.set(SE, "O71", a.get(SE, "D71"));
+  for (const cell of ["D80", "O80", "D85", "O85"]) a.set(SE, cell, assets);
+  a.set(SE, "D94");
+  a.set(SE, "O94");
+  a.set(SE, "D99", a.cells(SE, "D71", "O71", "D80", "D85", "O80", "O85"));
+  a.set(SE, "O99", a.get(PL, "B24"));
+  a.set(SE, "D106", a.cells(SE, "D99", "O99"));
+
+  const TAX = "Draft Tax calculation";
+  const profit = a.get(SE, "D106");
+  for (const cell of ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E14", "E15", "E17", "E25", "E26"]) a.set(TAX, cell, profit);
+  for (const cell of ["D8", "C9", "D9", "C10", "D10"]) a.set(TAX, cell);
+
+  // The month columns. A month's mileage claim is banded off the running
+  // total, so it rests on the miles of every month up to and including it.
+  const milesToDate = [];
+  for (const month of MONTH_ORDER) {
+    const col = MONTH_COLS[month];
+    milesToDate.push(...milesLines.filter((line) => milesMonth(line) === month));
+    a.set(
+      PL,
+      `${col}5`,
+      salesLines.filter((line) => byDate.get(line.postingDate) === month),
+    );
+    a.set(
+      PL,
+      `${col}24`,
+      otherIncomeLines.filter((line) => byDate.get(line.postingDate) === month),
+    );
+    a.set(PL, `${col}12`, ...(takesMileageRoute ? [entriesOf(milesToDate)] : [...monthCodes(month, VEHICLE_CODES), a.get(PL, "B10")]));
+    a.set(PL, `${col}22`, ...monthCodes(month, GENERAL_EXPENSE_CODES));
+  }
+
+  const quarters = [
+    ["apr", "may", "jun"],
+    ["jul", "aug", "sep"],
+    ["oct", "nov", "dec"],
+    ["jan", "feb", "mar"],
+  ];
+  const monthCells = (months, ...rows) => months.flatMap((month) => rows.map((row) => `${MONTH_COLS[month]}${row}`));
+  ["C", "D", "E", "F"].forEach((col, q) => {
+    a.set("VitalTax", `${col}5`, a.cells(PL, ...monthCells(quarters[q], 5)));
+    a.set("VitalTax", `${col}6`, a.cells(PL, ...monthCells(quarters[q], 24)));
+    a.set("VitalTax", `${col}29`, a.cells(PL, ...monthCells(quarters[q], 12, 22)));
+  });
+  a.set("VitalTax", "G5", a.cells(PL, ...monthCells(MONTH_ORDER, 5)));
+  a.set("VitalTax", "G6", a.cells(PL, ...monthCells(MONTH_ORDER, 24)));
+  a.set("VitalTax", "G29", a.cells(PL, ...monthCells(MONTH_ORDER, 12, 22)));
+
+  // The forecast spreads the year's own totals over the months that did not
+  // trade, so each projected figure rests on the whole year's row.
+  const WF = "Wages Forecast";
+  a.set(WF, "C19", a.cells(PL, ...monthCells(MONTH_ORDER, 5)));
+  if (results[WF].C20 !== undefined) {
+    a.set(WF, "C20", a.cells(PL, ...monthCells(MONTH_ORDER, 5)));
+    a.set(WF, "C22", a.cells(PL, ...monthCells(MONTH_ORDER, 24)));
+    a.set(WF, "C24", a.cells(PL, ...monthCells(MONTH_ORDER, 5, 12), "B10"));
+    a.set(WF, "C28", a.cells(PL, ...monthCells(MONTH_ORDER, 5, 22)));
+    a.set(WF, "C30", a.cells(WF, "C20", "C22", "C24", "C28"));
+    for (const cell of ["C34", "C35", "C36", "C37", "C38", "C39", "C40", "C41"]) a.set(WF, cell, a.get(WF, "C30"));
+  }
 }
