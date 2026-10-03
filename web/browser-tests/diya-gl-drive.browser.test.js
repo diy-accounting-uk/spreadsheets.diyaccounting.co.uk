@@ -118,6 +118,76 @@ async function withFakeGoogleIdentity(page) {
   });
 }
 
+// Fakes google.picker (call after withFakeGoogleIdentity, which owns
+// window.google) so the Picker never loads apis.google.com or opens a frame.
+// Each built picker is recorded; window.__pickerOutcome ("picked" by default,
+// or "cancel") and window.__pickedFile say what the callback receives.
+async function withFakeGooglePicker(page) {
+  await page.addInitScript(() => {
+    window.__pickerBuilds = [];
+    window.__pickerOutcome = "picked";
+    window.__pickedFile = { id: "picked-1", name: "Picked Book.diya-gl.zip" };
+    window.google.picker = {
+      ViewId: { DOCS: "docs" },
+      Response: { ACTION: "action", DOCUMENTS: "docs" },
+      Action: { PICKED: "picked", CANCEL: "cancel" },
+      Document: { ID: "id", NAME: "name" },
+      DocsView: function (viewId) {
+        this.viewId = viewId;
+        this.setMimeTypes = function (mimeTypes) {
+          this.mimeTypes = mimeTypes;
+          return this;
+        };
+      },
+      PickerBuilder: function () {
+        var record = {};
+        var builder = this;
+        window.__pickerBuilds.push(record);
+        builder.addView = function (view) {
+          record.mimeTypes = view.mimeTypes;
+          return builder;
+        };
+        builder.setOAuthToken = function (token) {
+          record.token = token;
+          return builder;
+        };
+        builder.setDeveloperKey = function (key) {
+          record.developerKey = key;
+          return builder;
+        };
+        builder.setAppId = function (appId) {
+          record.appId = appId;
+          return builder;
+        };
+        builder.setCallback = function (callback) {
+          record.callback = callback;
+          return builder;
+        };
+        builder.build = function () {
+          return {
+            setVisible: function () {
+              setTimeout(function () {
+                var data = {};
+                data.action = window.__pickerOutcome;
+                if (window.__pickerOutcome === "picked") data.docs = [window.__pickedFile];
+                record.callback(data);
+              }, 0);
+            },
+          };
+        };
+      },
+    };
+  });
+}
+
+// The Picker API key lives in cloud-config.js; a test sets it on the resolved
+// config once the page has loaded.
+async function withPickerApiKey(page) {
+  await page.evaluate(() => {
+    window.DIYA_GL_CLOUD_CONFIG.googlePickerApiKey = "test-picker-key";
+  });
+}
+
 async function loadExample(page) {
   await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
@@ -578,5 +648,127 @@ test.describe("DIYA-GL page — Drive's own list, separate from the account's bo
 
     await expect(page.locator('.account-row[data-book-id="drive-book"]')).toHaveCount(0, { timeout: 15_000 });
     expect(backend.calls.trash).toEqual(["drive-book"]);
+  });
+});
+
+test.describe("DIYA-GL page — Open from Google Drive through the Picker", () => {
+  test("no Picker API key configured keeps the Open from Google Drive button off the panel", async ({ page }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    await withFakeGooglePicker(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => {
+      window.DIYA_GL_CLOUD_CONFIG.googlePickerApiKey = null;
+    });
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await page.locator('[data-action="connect-drive"]').waitFor({ state: "visible" });
+    await expect(page.locator('[data-action="pick-drive"]')).toHaveCount(0);
+  });
+
+  test("signed out and not connected: the button asks for drive.file, opens the Picker with the key and project, and opens the picked book", async ({
+    page,
+  }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    await withFakeGooglePicker(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await withPickerApiKey(page);
+
+    let booksApiHit = false;
+    await page.route(`${PROD_API_BASE}/**`, (route) => {
+      booksApiHit = true;
+      return route.fulfill({ status: 500, contentType: "application/json", body: "{}" });
+    });
+    const backend = createDriveBackend([
+      {
+        id: "picked-1",
+        name: "Picked Book.diya-gl.zip",
+        size: 15000,
+        modifiedTime: "2026-03-01T09:00:00.000Z",
+        headRevisionId: "rev-picked",
+        appProperties: {},
+      },
+    ]);
+    await page.route(`${GOOGLE_API}/**`, backend.handle);
+
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await page.locator('[data-action="pick-drive"]').click();
+
+    await expect(page.locator("#account-panel")).toBeHidden({ timeout: 15_000 });
+    const builds = await page.evaluate(() =>
+      window.__pickerBuilds.map((b) => ({ token: b.token, developerKey: b.developerKey, appId: b.appId, mimeTypes: b.mimeTypes })),
+    );
+    expect(builds).toEqual([
+      {
+        token: "fake-drive-token",
+        developerKey: "test-picker-key",
+        appId: "test-drive-client".split("-")[0],
+        mimeTypes: "application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json",
+      },
+    ]);
+    expect(await page.evaluate(() => window.__driveRequestAccessTokenCalls)).toEqual([{ prompt: "consent" }]);
+    expect(await page.evaluate(() => JSON.parse(window.sessionStorage.getItem("diya-gl.cloud.driveLink")))).toEqual({
+      fileId: "picked-1",
+      headRevisionId: "rev-picked",
+    });
+    expect(await gaEvents(page, "cloud_drive_open")).toEqual([{ source: "picker" }]);
+    expect(booksApiHit).toBe(false);
+  });
+
+  test("a token already held skips the consent step before the Picker opens", async ({ page }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    await withFakeGooglePicker(page);
+    await withDriveToken(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await withPickerApiKey(page);
+
+    const backend = createDriveBackend([
+      {
+        id: "picked-1",
+        name: "Picked Book.diya-gl.zip",
+        size: 15000,
+        modifiedTime: "2026-03-01T09:00:00.000Z",
+        headRevisionId: "rev-picked",
+        appProperties: {},
+      },
+    ]);
+    await page.route(`${GOOGLE_API}/**`, backend.handle);
+
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
+    await page.locator('[data-action="pick-drive"]').click();
+
+    await expect(page.locator("#account-panel")).toBeHidden({ timeout: 15_000 });
+    expect(await page.evaluate(() => window.__driveRequestAccessTokenCalls)).toEqual([]);
+    expect((await page.evaluate(() => window.__pickerBuilds)).length).toBe(1);
+  });
+
+  test("closing the Picker without a choice opens nothing and leaves the panel as it was", async ({ page }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    await withFakeGooglePicker(page);
+    await withDriveToken(page);
+    await page.addInitScript(() => {
+      window.__pickerOutcome = "cancel";
+    });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await withPickerApiKey(page);
+
+    const backend = createDriveBackend();
+    await page.route(`${GOOGLE_API}/**`, backend.handle);
+
+    await loadExample(page);
+    await clickSaveToDrive(page);
+    await expect(page.locator("#toast")).toContainText("DIYA-GL folder", { timeout: 10_000 });
+    await page.locator('[data-action="pick-drive"]').click();
+
+    await expect.poll(() => page.evaluate(() => window.__pickerBuilds.length)).toBe(1);
+    await expect(page.locator("#account-panel")).toBeVisible();
+    expect(await gaEvents(page, "cloud_drive_open")).toEqual([]);
+    expect(backend.calls.get).toEqual([]);
   });
 });
