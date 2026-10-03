@@ -11,6 +11,14 @@ import {
   referenceKey,
   slug,
 } from "../lib/report-serializer.js";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
+import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
+import { scoreReportDocuments } from "../bin/verify-roundtrip.js";
+import * as bst from "../products/bst.js";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 // A stand-in product with two sheets, a section that reprints one of them,
 // a bridge and a netting table. Small enough that every key the serializer
@@ -278,5 +286,72 @@ describe("buildReportDocument across engines", () => {
     expect(excel.values[0].key).toBe("cell/Financialaccounts.xlsx!Profit & Loss Acc!B20");
     expect(js.values[0].key).toBe(excel.values[0].key);
     expect(excel.values.map((entry) => entry.key)).toContain("cell/Vatreturns.xlsx!VATQtr1!G9");
+  });
+});
+
+describe("buildReportDocument labels", () => {
+  it("gives every section entry the label its row prints", () => {
+    const sections = build().values.filter((entry) => entry.key.startsWith("section/"));
+    expect(sections.length).toBeGreaterThan(0);
+    for (const entry of sections) expect(entry.label, entry.key).toMatch(/\S/);
+  });
+
+  it("prints a row's label without its markdown emphasis or indent markup", () => {
+    const productMod = stubProduct();
+    productMod.reportSections = () => [
+      {
+        title: "Profit & Loss Account",
+        rows: [
+          { label: "**Net profit**", value: "3,500.5", indent: 0 },
+          { label: "&nbsp;&nbsp;Not a cell", value: "99", indent: 1 },
+        ],
+      },
+    ];
+    const keys = byKey(build({ productMod }));
+    expect(keys.get("section/profit-loss-account/net-profit").label).toBe("Net profit");
+    expect(keys.get("section/profit-loss-account/not-a-cell").label).toBe("Not a cell");
+  });
+
+  it("labels the bridge and netting entries with the text their tables print", () => {
+    const keys = byKey(build());
+    const bridge = "section/accounting-profit-to-tax-profit-bridge";
+    expect(keys.get(`${bridge}/net-profit-per-the-profit-and-loss-account`).label).toBe("Net profit per the profit and loss account");
+    expect(keys.get(`${bridge}/tax-profit-the-bridge-computes`).label).toBe("Tax profit the bridge computes");
+    expect(keys.get(`${bridge}/tax-profit-the-sheet-carries`).label).toBe("Tax profit the sheet carries");
+    expect(keys.get(`${bridge}/residue`).label).toBe("Residue");
+    const netting = "section/journal-category-vat-netting/stock-s";
+    expect(keys.get(`${netting}/gross`).label).toBe("Stock (s): Gross per the journal");
+    expect(keys.get(`${netting}/downstream`).label).toBe("Stock (s): Figure there");
+  });
+
+  it("leaves cell and check entries unlabelled", () => {
+    const checks = [{ name: "A", actual: 1, expected: 1, pass: true, diff: 0 }];
+    const keys = byKey(build({ checks }));
+    expect(keys.get("cell/Profit & Loss Acc!C4")).not.toHaveProperty("label");
+    expect(keys.get("check/A")).not.toHaveProperty("label");
+  });
+
+  describe("on an example Basic Sole Trader book", () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+    const taxData = extractTaxDataFromBook(book, "bst");
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const results = calculateFromDiyaGl(book, lines, "bst", taxData, scenario);
+    const reportFrom = (engine) => buildReportDocument({ packageName: "bst", engine, results, productMod: bst, scenario, taxData });
+
+    it("labels a named row with the text the spreadsheet prints", () => {
+      const keys = byKey(reportFrom("js"));
+      expect(keys.get("section/profit-loss-account/sales-turnover").label).toBe("Sales Turnover");
+      expect(keys.get("section/profit-loss-account/net-profit").label).toBe("Net Profit");
+    });
+
+    it("carries identical labels from either engine and scores them all equal", () => {
+      const excel = reportFrom("excel");
+      const js = reportFrom("js");
+      expect(js.values.map((entry) => entry.label)).toEqual(excel.values.map((entry) => entry.label));
+      const score = scoreReportDocuments(excel, js);
+      expect(score.differing).toBe(0);
+      expect(score.noJsValue).toBe(0);
+      expect(score.noExcelValue).toBe(0);
+    });
   });
 });

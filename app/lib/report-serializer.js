@@ -16,12 +16,23 @@
 //                                 order; #n disambiguates a repeated label
 //   check/<check name>            one per compliance check
 //
+// A section entry also carries the label the report prints for its row, so
+// a reader names a figure in the spreadsheet's own words rather than in the
+// key's slug.
+//
 // A value is always a string, never a JSON number, so no reader has to
 // re-derive the precision the engine produced. A missing value is an absent
 // entry, never null or an em dash: that is what makes "no JS value" a count
 // rather than a diff line.
 
-import { PROFIT_BRIDGE_TITLE, CATEGORY_NETTING_TITLE } from "./report-generator.js";
+import {
+  PROFIT_BRIDGE_TITLE,
+  BRIDGE_COMPUTED_LABEL,
+  BRIDGE_SHEET_LABEL,
+  BRIDGE_RESIDUE_LABEL,
+  CATEGORY_NETTING_TITLE,
+  NETTING_COLUMNS,
+} from "./report-generator.js";
 import { provenanceHeader } from "./provenance.js";
 
 // The hub every multi-file package hangs off. A results key with no "!" in
@@ -207,7 +218,12 @@ function sectionRowEntries(sections, byLabel, consumed, labels) {
       // figure would disagree at a key the cell's own entry compares clean.
       // The bridge rows already carry their raw number for the same reason.
       // The printed value stands for a row that names no cell.
-      const entry = { key, unit: source ? labels[source.labelKey]?.unit : undefined, value: source ? source.value : value };
+      const entry = {
+        key,
+        label: plainLabel(row.label),
+        unit: source ? labels[source.labelKey]?.unit : undefined,
+        value: source ? source.value : value,
+      };
       if (source) entry.source = source.key;
       entries.push(entry);
     }
@@ -227,7 +243,7 @@ function bridgeEntries(bridge, multiFile) {
   for (const row of bridge.rows) {
     const key = `section/${sectionSlug}/${slug(row.label)}`;
     operandKeys.push(key);
-    const entry = { key, unit: "money", value: canonicalNumber(row.value) };
+    const entry = { key, label: plainLabel(row.label), unit: "money", value: canonicalNumber(row.value) };
     // A bridge row names the cell it reprints outright, so the link needs no
     // label matching. A row the bridge negates on its way in is still that
     // cell's value; the sign belongs to the bridge, not to the reading.
@@ -236,52 +252,63 @@ function bridgeEntries(bridge, multiFile) {
     entries.push(entry);
   }
   entries.push({
-    key: `section/${sectionSlug}/tax-profit-the-bridge-computes`,
+    key: `section/${sectionSlug}/${slug(BRIDGE_COMPUTED_LABEL)}`,
+    label: BRIDGE_COMPUTED_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.computed),
     derivedFrom: operandKeys,
   });
   const sheetSource = bridge.sheetCell ? referenceKey(bridge.sheetCell, multiFile) : null;
   entries.push({
-    key: `section/${sectionSlug}/tax-profit-the-sheet-carries`,
+    key: `section/${sectionSlug}/${slug(BRIDGE_SHEET_LABEL)}`,
+    label: BRIDGE_SHEET_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.sheetProfit),
     ...(sheetSource ? { source: sheetSource } : {}),
   });
   entries.push({
-    key: `section/${sectionSlug}/residue`,
+    key: `section/${sectionSlug}/${slug(BRIDGE_RESIDUE_LABEL)}`,
+    label: BRIDGE_RESIDUE_LABEL,
     unit: "money",
     value: canonicalNumber(bridge.residue),
   });
   return entries;
 }
 
+// The netting table states its rate in a sentence rather than a row.
+const NETTING_RATE_LABEL = "VAT rate the journal amounts include";
+
 function nettingEntries(netting, multiFile) {
   if (!netting || netting.rows.length === 0) return [];
   const sectionSlug = slug(CATEGORY_NETTING_TITLE);
-  const entries = [{ key: `section/${sectionSlug}/rate`, unit: "rate", value: canonicalNumber(netting.rate) }];
+  const entries = [{ key: `section/${sectionSlug}/rate`, label: NETTING_RATE_LABEL, unit: "rate", value: canonicalNumber(netting.rate) }];
   for (const row of netting.rows) {
     const rowSlug = `${slug(row.label)}-${slug(row.code)}`;
+    const category = `${plainLabel(row.label)} (${row.code})`;
+    const label = (column) => `${category}: ${NETTING_COLUMNS[column]}`;
     const gross = `section/${sectionSlug}/${rowSlug}/gross`;
     const net = `section/${sectionSlug}/${rowSlug}/net`;
     const downstream = `section/${sectionSlug}/${rowSlug}/downstream`;
     const downstreamSource = row.cell ? referenceKey(row.cell, multiFile) : null;
-    entries.push({ key: gross, unit: "money", value: canonicalNumber(row.gross) });
+    entries.push({ key: gross, label: label("gross"), unit: "money", value: canonicalNumber(row.gross) });
     entries.push({
       key: `section/${sectionSlug}/${rowSlug}/vat`,
+      label: label("vat"),
       unit: "money",
       value: canonicalNumber(row.vat),
       derivedFrom: [gross, net],
     });
-    entries.push({ key: net, unit: "money", value: canonicalNumber(row.net) });
+    entries.push({ key: net, label: label("net"), unit: "money", value: canonicalNumber(row.net) });
     entries.push({
       key: downstream,
+      label: label("downstream"),
       unit: "money",
       value: canonicalNumber(row.downstream),
       ...(downstreamSource ? { source: downstreamSource } : {}),
     });
     entries.push({
       key: `section/${sectionSlug}/${rowSlug}/residue`,
+      label: label("residue"),
       unit: "money",
       value: canonicalNumber(row.residue),
       derivedFrom: [net, downstream],
@@ -370,6 +397,7 @@ export function buildReportDocument({ packageName, engine, results, productMod, 
   // invite a reader to treat "null" as a unit of its own.
   document.values = values.map((entry) => {
     const out = { key: entry.key };
+    if (entry.label) out.label = entry.label;
     if (entry.unit) out.unit = entry.unit;
     out.value = entry.value;
     if (entry.source) out.source = entry.source;

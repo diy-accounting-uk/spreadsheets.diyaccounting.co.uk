@@ -12,6 +12,9 @@ import { canonicalForUnit, roundHalfUp, MONEY_DECIMALS } from "./canonical-repor
 // check name and the table shape are the same for all four so a reader who
 // has seen one has seen them all.
 export const PROFIT_BRIDGE_TITLE = "Accounting profit to tax profit bridge";
+export const BRIDGE_COMPUTED_LABEL = "Tax profit the bridge computes";
+export const BRIDGE_SHEET_LABEL = "Tax profit the sheet carries";
+export const BRIDGE_RESIDUE_LABEL = "Residue";
 export const PROFIT_BRIDGE_CHECK = "Accounting profit to tax profit bridge closes to zero";
 
 // A number written out in decimal digits, whatever its magnitude. String()
@@ -46,9 +49,9 @@ export function profitBridgeLines(bridge) {
   for (const row of bridge.rows) {
     lines.push(`| ${row.label} | ${row.cell} | ${reportAmount(row.value)} |`);
   }
-  lines.push(`| **Tax profit the bridge computes** | | **${reportAmount(bridge.computed)}** |`);
-  lines.push(`| Tax profit the sheet carries | ${bridge.sheetCell} | ${reportAmount(bridge.sheetProfit)} |`);
-  lines.push(`| **Residue** | | **${reportAmount(bridge.residue, 4)}** |`);
+  lines.push(`| **${BRIDGE_COMPUTED_LABEL}** | | **${reportAmount(bridge.computed)}** |`);
+  lines.push(`| ${BRIDGE_SHEET_LABEL} | ${bridge.sheetCell} | ${reportAmount(bridge.sheetProfit)} |`);
+  lines.push(`| **${BRIDGE_RESIDUE_LABEL}** | | **${reportAmount(bridge.residue, 4)}** |`);
   return lines;
 }
 
@@ -69,6 +72,13 @@ export function buildProfitBridge(rows, sheetCell, sheetProfit) {
 // category at a time: what the journal holds, what comes off, what is left,
 // where that lands, and what the two differ by.
 export const CATEGORY_NETTING_TITLE = "Journal category VAT netting";
+export const NETTING_COLUMNS = {
+  gross: "Gross per the journal",
+  vat: "VAT stripped",
+  net: "Net",
+  downstream: "Figure there",
+  residue: "Residue",
+};
 
 export function categoryNettingCheckName(row) {
   return `Category netting: ${row.label} (${row.code}) net reaches ${row.cell} with no residue`;
@@ -98,7 +108,9 @@ export function categoryNettingLines(netting) {
   }
   lines.push(`Journal amounts include VAT at ${(netting.rate * 100).toLocaleString("en-GB")}%.`);
   lines.push("");
-  lines.push("| Journal category | Gross per the journal | VAT stripped | Net | Where the net lands | Figure there | Residue |");
+  lines.push(
+    `| Journal category | ${NETTING_COLUMNS.gross} | ${NETTING_COLUMNS.vat} | ${NETTING_COLUMNS.net} | Where the net lands | ${NETTING_COLUMNS.downstream} | ${NETTING_COLUMNS.residue} |`,
+  );
   lines.push("|------------------|----------------------:|-------------:|----:|---------------------|-------------:|--------:|");
   for (const row of netting.rows) {
     lines.push(

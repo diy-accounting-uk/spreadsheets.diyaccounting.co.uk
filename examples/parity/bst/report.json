@@ -5,8 +5,8 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.37+907683df0",
-    "taxDataHash": "3221a7c2f39c",
+    "engineVersion": "1.2.40+57de8f55b",
+    "taxDataHash": "89424bd36c0d",
     "templateHash": "0d003e10e00c",
     "templateScorecard": "812 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
@@ -1425,71 +1425,83 @@
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-26",
+      "label": "Add balancing charges (box 26)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O85"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-27",
+      "label": "Add goods and services for own use (box 27)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!D94"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-10",
+      "label": "Add other business income (box 10)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O38"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-30",
+      "label": "Add other business income (box 30)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O99"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-23",
+      "label": "Less annual investment allowance (box 23)",
       "unit": "money",
       "value": "-39000",
       "source": "cell/SE Short!D80"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-29",
+      "label": "Less loss brought forward (box 29)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O94"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-net-loss-for-the-year-box-22",
+      "label": "Less net loss for the year (box 22)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O71"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-25",
+      "label": "Less other capital allowances (box 25)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O80"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-24",
+      "label": "Less small-balance allowance (box 24)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!D85"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
+      "label": "Net profit per the profit and loss account",
       "unit": "money",
       "value": "265371",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/residue",
+      "label": "Residue",
       "unit": "money",
       "value": "0"
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
+      "label": "Tax profit the bridge computes",
       "unit": "money",
       "value": "226371",
       "derivedFrom": [
@@ -1507,816 +1519,952 @@
     },
     {
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
+      "label": "Tax profit the sheet carries",
       "unit": "money",
       "value": "226371",
       "source": "cell/Income Tax!E5"
     },
     {
       "key": "section/admin-generator-injected/additional-rate",
+      "label": "Additional Rate",
       "unit": "rate",
       "value": "0.45",
       "source": "cell/Admin!N9"
     },
     {
       "key": "section/admin-generator-injected/annual-investment-allowance-rate",
+      "label": "Annual Investment Allowance Rate",
       "unit": "rate",
       "value": "1",
       "source": "cell/Admin!G4"
     },
     {
       "key": "section/admin-generator-injected/basic-band-end",
+      "label": "Basic Band End",
       "unit": "money",
       "value": "37700",
       "source": "cell/Admin!M12"
     },
     {
       "key": "section/admin-generator-injected/basic-rate",
+      "label": "Basic Rate",
       "unit": "rate",
       "value": "0.2",
       "source": "cell/Admin!N7"
     },
     {
       "key": "section/admin-generator-injected/higher-band-end",
+      "label": "Higher Band End",
       "unit": "money",
       "value": "125140",
       "source": "cell/Admin!N14"
     },
     {
       "key": "section/admin-generator-injected/higher-band-start",
+      "label": "Higher Band Start",
       "unit": "money",
       "value": "37701",
       "source": "cell/Admin!N13"
     },
     {
       "key": "section/admin-generator-injected/higher-rate",
+      "label": "Higher Rate",
       "unit": "rate",
       "value": "0.4",
       "source": "cell/Admin!N8"
     },
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-limit",
+      "label": "Mileage Higher Rate Limit",
       "unit": "count",
       "value": "10000",
       "source": "cell/Admin!F21"
     },
     {
       "key": "section/admin-generator-injected/mileage-higher-rate-pence",
+      "label": "Mileage Higher Rate Pence",
       "unit": "rate",
       "value": "0.55",
       "source": "cell/Admin!G21"
     },
     {
       "key": "section/admin-generator-injected/mileage-lower-rate-pence",
+      "label": "Mileage Lower Rate Pence",
       "unit": "rate",
       "value": "0.25",
       "source": "cell/Admin!G22"
     },
     {
       "key": "section/admin-generator-injected/mileage-lower-rate-start",
+      "label": "Mileage Lower Rate Start",
       "unit": "count",
       "value": "10001",
       "source": "cell/Admin!F22"
     },
     {
       "key": "section/admin-generator-injected/ni-class-2-rate",
+      "label": "NI Class 2 Rate",
       "unit": "rate",
       "value": "3.65",
       "source": "cell/Admin!L17"
     },
     {
       "key": "section/admin-generator-injected/ni-class-2-small-profits-threshold",
+      "label": "NI Class 2 Small Profits Threshold",
       "unit": "money",
       "value": "7105",
       "source": "cell/Admin!N17"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-lower-limit",
+      "label": "NI Class 4 Lower Limit",
       "unit": "money",
       "value": "12570",
       "source": "cell/Admin!N20"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-lower-rate",
+      "label": "NI Class 4 Lower Rate",
       "unit": "rate",
       "value": "0.06",
       "source": "cell/Admin!L20"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-upper-limit",
+      "label": "NI Class 4 Upper Limit",
       "unit": "money",
       "value": "50270",
       "source": "cell/Admin!N23"
     },
     {
       "key": "section/admin-generator-injected/ni-class-4-upper-rate",
+      "label": "NI Class 4 Upper Rate",
       "unit": "rate",
       "value": "0.02",
       "source": "cell/Admin!L23"
     },
     {
       "key": "section/admin-generator-injected/personal-allowance",
+      "label": "Personal Allowance",
       "unit": "money",
       "value": "12570",
       "source": "cell/Admin!N4"
     },
     {
       "key": "section/admin-generator-injected/personal-allowance-taper-threshold",
+      "label": "Personal Allowance Taper Threshold",
       "unit": "money",
       "value": "100000",
       "source": "cell/Admin!N5"
     },
     {
       "key": "section/admin-generator-injected/vat-registration-threshold",
+      "label": "VAT Registration Threshold",
       "unit": "money",
       "value": "90000",
       "source": "cell/Admin!F26"
     },
     {
       "key": "section/admin-generator-injected/writing-down-allowance-rate",
+      "label": "Writing Down Allowance Rate",
       "unit": "rate",
       "value": "0.14",
       "source": "cell/Admin!G5"
     },
     {
       "key": "section/business-details/address",
+      "label": "Address",
       "unit": "text",
       "value": "123 High Street",
       "source": "cell/Business Details!C8"
     },
     {
       "key": "section/business-details/business-name",
+      "label": "Business Name",
       "unit": "text",
       "value": "Precision Code Trading",
       "source": "cell/Business Details!C5"
     },
     {
       "key": "section/business-details/description",
+      "label": "Description",
       "unit": "text",
       "value": "IT consultancy and software development",
       "source": "cell/Business Details!C7"
     },
     {
       "key": "section/business-details/postcode",
+      "label": "Postcode",
       "unit": "text",
       "value": "M1 1AA",
       "source": "cell/Business Details!C12"
     },
     {
       "key": "section/business-details/town",
+      "label": "Town",
       "unit": "text",
       "value": "Manchester",
       "source": "cell/Business Details!C10"
     },
     {
       "key": "section/debtors-creditors/amount-owed-by-customers",
+      "label": "Amount owed by customers",
       "unit": "money",
       "value": "420700",
       "source": "cell/Debtors & Creditors!C29"
     },
     {
       "key": "section/debtors-creditors/amount-owed-to-suppliers",
+      "label": "Amount owed to suppliers",
       "unit": "money",
       "value": "180998",
       "source": "cell/Debtors & Creditors!F29"
     },
     {
       "key": "section/debtors-creditors/apr-purchases-still-to-be-paid",
+      "label": "Apr purchases still to be paid",
       "unit": "money",
       "value": "10773",
       "source": "cell/Debtors & Creditors!F5"
     },
     {
       "key": "section/debtors-creditors/apr-sales-not-yet-received",
+      "label": "Apr sales not yet received",
       "unit": "money",
       "value": "33400",
       "source": "cell/Debtors & Creditors!C5"
     },
     {
       "key": "section/debtors-creditors/aug-purchases-still-to-be-paid",
+      "label": "Aug purchases still to be paid",
       "unit": "money",
       "value": "10067",
       "source": "cell/Debtors & Creditors!F13"
     },
     {
       "key": "section/debtors-creditors/aug-sales-not-yet-received",
+      "label": "Aug sales not yet received",
       "unit": "money",
       "value": "36020",
       "source": "cell/Debtors & Creditors!C13"
     },
     {
       "key": "section/debtors-creditors/dec-purchases-still-to-be-paid",
+      "label": "Dec purchases still to be paid",
       "unit": "money",
       "value": "15102",
       "source": "cell/Debtors & Creditors!F21"
     },
     {
       "key": "section/debtors-creditors/dec-sales-not-yet-received",
+      "label": "Dec sales not yet received",
       "unit": "money",
       "value": "32800",
       "source": "cell/Debtors & Creditors!C21"
     },
     {
       "key": "section/debtors-creditors/feb-purchases-still-to-be-paid",
+      "label": "Feb purchases still to be paid",
       "unit": "money",
       "value": "10065",
       "source": "cell/Debtors & Creditors!F25"
     },
     {
       "key": "section/debtors-creditors/feb-sales-not-yet-received",
+      "label": "Feb sales not yet received",
       "unit": "money",
       "value": "34360",
       "source": "cell/Debtors & Creditors!C25"
     },
     {
       "key": "section/debtors-creditors/jan-purchases-still-to-be-paid",
+      "label": "Jan purchases still to be paid",
       "unit": "money",
       "value": "10173",
       "source": "cell/Debtors & Creditors!F23"
     },
     {
       "key": "section/debtors-creditors/jan-sales-not-yet-received",
+      "label": "Jan sales not yet received",
       "unit": "money",
       "value": "35440",
       "source": "cell/Debtors & Creditors!C23"
     },
     {
       "key": "section/debtors-creditors/jul-purchases-still-to-be-paid",
+      "label": "Jul purchases still to be paid",
       "unit": "money",
       "value": "14739",
       "source": "cell/Debtors & Creditors!F11"
     },
     {
       "key": "section/debtors-creditors/jul-sales-not-yet-received",
+      "label": "Jul sales not yet received",
       "unit": "money",
       "value": "33760",
       "source": "cell/Debtors & Creditors!C11"
     },
     {
       "key": "section/debtors-creditors/jun-purchases-still-to-be-paid",
+      "label": "Jun purchases still to be paid",
       "unit": "money",
       "value": "14667",
       "source": "cell/Debtors & Creditors!F9"
     },
     {
       "key": "section/debtors-creditors/jun-sales-not-yet-received",
+      "label": "Jun sales not yet received",
       "unit": "money",
       "value": "35200",
       "source": "cell/Debtors & Creditors!C9"
     },
     {
       "key": "section/debtors-creditors/mar-purchases-still-to-be-paid",
+      "label": "Mar purchases still to be paid",
       "unit": "money",
       "value": "9368",
       "source": "cell/Debtors & Creditors!F27"
     },
     {
       "key": "section/debtors-creditors/mar-sales-not-yet-received",
+      "label": "Mar sales not yet received",
       "unit": "money",
       "value": "31360",
       "source": "cell/Debtors & Creditors!C27"
     },
     {
       "key": "section/debtors-creditors/may-purchases-still-to-be-paid",
+      "label": "May purchases still to be paid",
       "unit": "money",
       "value": "12021",
       "source": "cell/Debtors & Creditors!F7"
     },
     {
       "key": "section/debtors-creditors/may-sales-not-yet-received",
+      "label": "May sales not yet received",
       "unit": "money",
       "value": "32920",
       "source": "cell/Debtors & Creditors!C7"
     },
     {
       "key": "section/debtors-creditors/nov-purchases-still-to-be-paid",
+      "label": "Nov purchases still to be paid",
       "unit": "money",
       "value": "12537",
       "source": "cell/Debtors & Creditors!F19"
     },
     {
       "key": "section/debtors-creditors/nov-sales-not-yet-received",
+      "label": "Nov sales not yet received",
       "unit": "money",
       "value": "35320",
       "source": "cell/Debtors & Creditors!C19"
     },
     {
       "key": "section/debtors-creditors/oct-purchases-still-to-be-paid",
+      "label": "Oct purchases still to be paid",
       "unit": "money",
       "value": "48663",
       "source": "cell/Debtors & Creditors!F17"
     },
     {
       "key": "section/debtors-creditors/oct-sales-not-yet-received",
+      "label": "Oct sales not yet received",
       "unit": "money",
       "value": "35560",
       "source": "cell/Debtors & Creditors!C17"
     },
     {
       "key": "section/debtors-creditors/owed-by-customers-at-start-of-year",
+      "label": "Owed by customers at start of year",
       "unit": "money",
       "value": "10800",
       "source": "cell/Debtors & Creditors!C3"
     },
     {
       "key": "section/debtors-creditors/owed-to-suppliers-at-start-of-year",
+      "label": "Owed to suppliers at start of year",
       "unit": "money",
       "value": "2220",
       "source": "cell/Debtors & Creditors!F3"
     },
     {
       "key": "section/debtors-creditors/sep-purchases-still-to-be-paid",
+      "label": "Sep purchases still to be paid",
       "unit": "money",
       "value": "10603",
       "source": "cell/Debtors & Creditors!F15"
     },
     {
       "key": "section/debtors-creditors/sep-sales-not-yet-received",
+      "label": "Sep sales not yet received",
       "unit": "money",
       "value": "33760",
       "source": "cell/Debtors & Creditors!C15"
     },
     {
       "key": "section/fixed-assets/new-asset-cost-plant-machinery",
+      "label": "New Asset Cost (Plant & Machinery)",
       "unit": "money",
       "value": "1800",
       "source": "cell/Fixed Assets!E67"
     },
     {
       "key": "section/fixed-assets/total-balancing-charge",
+      "label": "Total Balancing Charge",
       "unit": "money",
       "value": "0",
       "source": "cell/Fixed Assets!R1"
     },
     {
       "key": "section/fixed-assets/total-capital-allowance-on-disposal",
+      "label": "Total Capital Allowance on Disposal",
       "unit": "money",
       "value": "0",
       "source": "cell/Fixed Assets!Q1"
     },
     {
       "key": "section/fixed-assets/total-first-year-allowance-aia",
+      "label": "Total First Year Allowance / AIA",
       "unit": "money",
       "value": "39000",
       "source": "cell/Fixed Assets!K1"
     },
     {
       "key": "section/fixed-assets/total-original-cost",
+      "label": "Total Original Cost",
       "unit": "money",
       "value": "39000",
       "source": "cell/Fixed Assets!E1"
     },
     {
       "key": "section/fixed-assets/total-writing-down-allowance",
+      "label": "Total Writing Down Allowance",
       "unit": "money",
       "value": "0",
       "source": "cell/Fixed Assets!L1"
     },
     {
       "key": "section/fixed-assets/total-written-down-tax-value",
+      "label": "Total Written Down Tax Value",
       "unit": "money",
       "value": "0",
       "source": "cell/Fixed Assets!M1"
     },
     {
       "key": "section/income-tax-calculation/additional-rate-the-sheet-applies",
+      "label": "Additional rate the sheet applies",
       "unit": "rate",
       "value": "0.45",
       "source": "cell/Income Tax!D10"
     },
     {
       "key": "section/income-tax-calculation/additional-rate-threshold-the-sheet-applies",
+      "label": "Additional rate threshold the sheet applies",
       "unit": "money",
       "value": "125140",
       "source": "cell/Income Tax!C10"
     },
     {
       "key": "section/income-tax-calculation/basic-band-ceiling-the-sheet-applies",
+      "label": "Basic band ceiling the sheet applies",
       "unit": "money",
       "value": "37700",
       "source": "cell/Income Tax!C9"
     },
     {
       "key": "section/income-tax-calculation/basic-rate-the-sheet-applies",
+      "label": "Basic rate the sheet applies",
       "unit": "rate",
       "value": "0.2",
       "source": "cell/Income Tax!D8"
     },
     {
       "key": "section/income-tax-calculation/higher-rate-the-sheet-applies",
+      "label": "Higher rate the sheet applies",
       "unit": "rate",
       "value": "0.4",
       "source": "cell/Income Tax!D9"
     },
     {
       "key": "section/income-tax-calculation/less-cis-deducted",
+      "label": "Less: CIS Deducted",
       "unit": "money",
       "value": "0",
       "source": "cell/Income Tax!E12"
     },
     {
       "key": "section/income-tax-calculation/less-personal-allowance",
+      "label": "Less: Personal Allowance",
       "unit": "money",
       "value": "0",
       "source": "cell/Income Tax!E6"
     },
     {
       "key": "section/income-tax-calculation/ni-class-4-lower-band",
+      "label": "NI Class 4 (lower band)",
       "unit": "money",
       "value": "2262",
       "source": "cell/Income Tax!E15"
     },
     {
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
+      "label": "NI Class 4 (upper band)",
       "unit": "money",
       "value": "3522.02",
       "source": "cell/Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
+      "label": "Profit from Self Employment",
       "unit": "money",
       "value": "226371",
       "source": "cell/Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate",
+      "label": "Tax at Additional Rate",
       "unit": "money",
       "value": "45553.95",
       "source": "cell/Income Tax!E10"
     },
     {
       "key": "section/income-tax-calculation/tax-at-basic-rate",
+      "label": "Tax at Basic Rate",
       "unit": "money",
       "value": "7540",
       "source": "cell/Income Tax!E8"
     },
     {
       "key": "section/income-tax-calculation/tax-at-higher-rate",
+      "label": "Tax at Higher Rate",
       "unit": "money",
       "value": "34976",
       "source": "cell/Income Tax!E9"
     },
     {
       "key": "section/income-tax-calculation/taxable-income",
+      "label": "Taxable Income",
       "unit": "money",
       "value": "226371",
       "source": "cell/Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
+      "label": "Total Income Tax",
       "unit": "money",
       "value": "88069.95",
       "source": "cell/Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
+      "label": "Total Tax + NI",
       "unit": "money",
       "value": "93853.97",
       "source": "cell/Income Tax!E18"
     },
     {
       "key": "section/monthly-sales/apr",
+      "label": "Apr",
       "unit": "money",
       "value": "33400",
       "source": "cell/Profit & Loss Acc!D4"
     },
     {
       "key": "section/monthly-sales/aug",
+      "label": "Aug",
       "unit": "money",
       "value": "36020",
       "source": "cell/Profit & Loss Acc!H4"
     },
     {
       "key": "section/monthly-sales/dec",
+      "label": "Dec",
       "unit": "money",
       "value": "32800",
       "source": "cell/Profit & Loss Acc!L4"
     },
     {
       "key": "section/monthly-sales/feb",
+      "label": "Feb",
       "unit": "money",
       "value": "34360",
       "source": "cell/Profit & Loss Acc!N4"
     },
     {
       "key": "section/monthly-sales/jan",
+      "label": "Jan",
       "unit": "money",
       "value": "35440",
       "source": "cell/Profit & Loss Acc!M4"
     },
     {
       "key": "section/monthly-sales/jul",
+      "label": "Jul",
       "unit": "money",
       "value": "33760",
       "source": "cell/Profit & Loss Acc!G4"
     },
     {
       "key": "section/monthly-sales/jun",
+      "label": "Jun",
       "unit": "money",
       "value": "35200",
       "source": "cell/Profit & Loss Acc!F4"
     },
     {
       "key": "section/monthly-sales/mar",
+      "label": "Mar",
       "unit": "money",
       "value": "31360",
       "source": "cell/Profit & Loss Acc!O4"
     },
     {
       "key": "section/monthly-sales/may",
+      "label": "May",
       "unit": "money",
       "value": "32920",
       "source": "cell/Profit & Loss Acc!E4"
     },
     {
       "key": "section/monthly-sales/nov",
+      "label": "Nov",
       "unit": "money",
       "value": "35320",
       "source": "cell/Profit & Loss Acc!K4"
     },
     {
       "key": "section/monthly-sales/oct",
+      "label": "Oct",
       "unit": "money",
       "value": "35560",
       "source": "cell/Profit & Loss Acc!J4"
     },
     {
       "key": "section/monthly-sales/sep",
+      "label": "Sep",
       "unit": "money",
       "value": "33760",
       "source": "cell/Profit & Loss Acc!I4"
     },
     {
       "key": "section/profit-loss-account/advertising",
+      "label": "Advertising",
       "unit": "money",
       "value": "4560",
       "source": "cell/Profit & Loss Acc!C17"
     },
     {
       "key": "section/profit-loss-account/bad-debts",
+      "label": "Bad Debts",
       "unit": "money",
       "value": "500",
       "source": "cell/Profit & Loss Acc!C19"
     },
     {
       "key": "section/profit-loss-account/capital-allowances",
+      "label": "Capital Allowances",
       "unit": "money",
       "value": "39000",
       "source": "cell/Profit & Loss Acc!C26"
     },
     {
       "key": "section/profit-loss-account/cost-of-sales-stock-direct",
+      "label": "Cost of Sales (stock + direct)",
       "unit": "money",
       "value": "10540",
       "source": "cell/Profit & Loss Acc!C6"
     },
     {
       "key": "section/profit-loss-account/direct-costs",
+      "label": "Direct Costs",
       "unit": "money",
       "value": "8000",
       "source": "cell/Profit & Loss Acc!C7"
     },
     {
       "key": "section/profit-loss-account/employee-costs",
+      "label": "Employee Costs",
       "unit": "money",
       "value": "69200",
       "source": "cell/Profit & Loss Acc!C11"
     },
     {
       "key": "section/profit-loss-account/general-admin",
+      "label": "General Admin",
       "unit": "money",
       "value": "1962",
       "source": "cell/Profit & Loss Acc!C14"
     },
     {
       "key": "section/profit-loss-account/gross-profit",
+      "label": "Gross Profit",
       "unit": "money",
       "value": "391360",
       "source": "cell/Profit & Loss Acc!C9"
     },
     {
       "key": "section/profit-loss-account/income-tax-less-cis-deducted",
+      "label": "Income Tax less CIS deducted",
       "unit": "money",
       "value": "88069.95",
       "source": "cell/Profit & Loss Acc!C32"
     },
     {
       "key": "section/profit-loss-account/interest-finance",
+      "label": "Interest & Finance",
       "unit": "money",
       "value": "750",
       "source": "cell/Profit & Loss Acc!C20"
     },
     {
       "key": "section/profit-loss-account/legal-professional",
+      "label": "Legal & Professional",
       "unit": "money",
       "value": "4560",
       "source": "cell/Profit & Loss Acc!C18"
     },
     {
       "key": "section/profit-loss-account/motor-expenses",
+      "label": "Motor Expenses",
       "unit": "money",
       "value": "7735",
       "source": "cell/Profit & Loss Acc!C15"
     },
     {
       "key": "section/profit-loss-account/net-income-after-tax",
+      "label": "Net Income After Tax",
       "unit": "money",
       "value": "132517.03",
       "source": "cell/Profit & Loss Acc!C35"
     },
     {
       "key": "section/profit-loss-account/net-profit",
+      "label": "Net Profit",
       "unit": "money",
       "value": "265371",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
       "key": "section/profit-loss-account/ni-class-4",
+      "label": "NI Class 4",
       "unit": "money",
       "value": "5784.02",
       "source": "cell/Profit & Loss Acc!C33"
     },
     {
       "key": "section/profit-loss-account/other-expenses",
+      "label": "Other Expenses",
       "unit": "money",
       "value": "17882",
       "source": "cell/Profit & Loss Acc!C21"
     },
     {
       "key": "section/profit-loss-account/other-income-received",
+      "label": "Other Income received",
       "unit": "money",
       "value": "0",
       "source": "cell/Profit & Loss Acc!C30"
     },
     {
       "key": "section/profit-loss-account/premises-costs",
+      "label": "Premises Costs",
       "unit": "money",
       "value": "15840",
       "source": "cell/Profit & Loss Acc!C12"
     },
     {
       "key": "section/profit-loss-account/repairs-maintenance",
+      "label": "Repairs & Maintenance",
       "unit": "money",
       "value": "1140",
       "source": "cell/Profit & Loss Acc!C13"
     },
     {
       "key": "section/profit-loss-account/sales-turnover",
+      "label": "Sales Turnover",
       "unit": "money",
       "value": "409900",
       "source": "cell/Profit & Loss Acc!C4"
     },
     {
       "key": "section/profit-loss-account/taxable-profit",
+      "label": "Taxable Profit",
       "unit": "money",
       "value": "226371",
       "source": "cell/Profit & Loss Acc!C28"
     },
     {
       "key": "section/profit-loss-account/total-expenses",
+      "label": "Total Expenses",
       "unit": "money",
       "value": "125989",
       "source": "cell/Profit & Loss Acc!C22"
     },
     {
       "key": "section/profit-loss-account/travel-subsistence",
+      "label": "Travel & Subsistence",
       "unit": "money",
       "value": "1860",
       "source": "cell/Profit & Loss Acc!C16"
     },
     {
       "key": "section/purchase-analysis/business-miles-for-the-year",
+      "label": "Business miles for the year",
       "unit": "count",
       "value": "1365",
       "source": "cell/PurchasesMar!C1"
     },
     {
       "key": "section/purchase-analysis/mileage-claimed-for-the-year",
+      "label": "Mileage claimed for the year",
       "unit": "money",
       "value": "750.75",
       "source": "cell/PurchasesMar!A1"
     },
     {
       "key": "section/purchase-analysis/purchases-capitalised-as-fixed-assets",
+      "label": "Purchases capitalised as fixed assets",
       "unit": "money",
       "value": "39000",
       "source": "cell/PurchasesMar!X1"
     },
     {
       "key": "section/self-assessment-sa103s/aia-wda-claimed",
+      "label": "AIA / WDA claimed",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!D85"
     },
     {
       "key": "section/self-assessment-sa103s/balancing-charge",
+      "label": "Balancing Charge",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O85"
     },
     {
       "key": "section/self-assessment-sa103s/capital-allowances",
+      "label": "Capital allowances",
       "unit": "money",
       "value": "39000",
       "source": "cell/SE Short!D80"
     },
     {
       "key": "section/self-assessment-sa103s/cost-of-goods",
+      "label": "Cost of goods",
       "unit": "money",
       "value": "18540",
       "source": "cell/SE Short!D46"
     },
     {
       "key": "section/self-assessment-sa103s/employee-costs",
+      "label": "Employee costs",
       "unit": "money",
       "value": "69200",
       "source": "cell/SE Short!D55"
     },
     {
       "key": "section/self-assessment-sa103s/loss-brought-forward-box-29",
+      "label": "Loss brought forward (box 29)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O94"
     },
     {
       "key": "section/self-assessment-sa103s/motor-travel-expenses",
+      "label": "Motor & travel expenses",
       "unit": "money",
       "value": "9595",
       "source": "cell/SE Short!D51"
     },
     {
       "key": "section/self-assessment-sa103s/net-business-profit-box-28",
+      "label": "Net business profit (box 28)",
       "unit": "money",
       "value": "226371",
       "source": "cell/SE Short!D99"
     },
     {
       "key": "section/self-assessment-sa103s/net-loss-box-22",
+      "label": "Net loss (box 22)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O71"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
+      "label": "Net profit for tax calc (box 31)",
       "unit": "money",
       "value": "226371",
       "source": "cell/SE Short!D106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-loss",
+      "label": "Net profit/loss",
       "unit": "money",
       "value": "265371",
       "source": "cell/SE Short!D71"
     },
     {
       "key": "section/self-assessment-sa103s/other-business-income-box-30",
+      "label": "Other business income (box 30)",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O99"
     },
     {
       "key": "section/self-assessment-sa103s/other-tax-adjustments",
+      "label": "Other tax adjustments",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!D94"
     },
     {
       "key": "section/self-assessment-sa103s/premises-costs",
+      "label": "Premises costs",
       "unit": "money",
       "value": "15840",
       "source": "cell/SE Short!D60"
     },
     {
       "key": "section/self-assessment-sa103s/repairs-maintenance",
+      "label": "Repairs & maintenance",
       "unit": "money",
       "value": "1140",
       "source": "cell/SE Short!D64"
     },
     {
       "key": "section/self-assessment-sa103s/turnover",
+      "label": "Turnover",
       "unit": "money",
       "value": "409900",
       "source": "cell/SE Short!D38"
     },
     {
       "key": "section/self-assessment-sa103s/wda-capital-allowance-claimed",
+      "label": "WDA + Capital Allowance claimed",
       "unit": "money",
       "value": "0",
       "source": "cell/SE Short!O80"
     },
     {
       "key": "section/stock/closing-stock",
+      "label": "Closing Stock",
       "unit": "money",
       "value": "6000",
       "source": "cell/PurchasesStock!D30"
     },
     {
       "key": "section/stock/opening-stock",
+      "label": "Opening Stock",
       "unit": "money",
       "value": "10000",
       "source": "cell/PurchasesStock!D5"
     },
     {
       "key": "section/stock/stock-at-cost",
+      "label": "Stock at Cost",
       "unit": "money",
       "value": "10000",
       "source": "cell/PurchasesStock!D7"
