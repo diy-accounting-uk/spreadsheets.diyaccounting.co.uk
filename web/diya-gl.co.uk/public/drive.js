@@ -4,7 +4,9 @@
 // diya-gl/drive.js
 //
 // Google Drive as a second store for a DIYA-GL book, free and browser-only
-// -- no Submit sign-in, no subscription. Cognito's hosted UI never carries
+// -- no Submit sign-in, no subscription. The Google Picker opens a file the
+// reader chooses; the browser OAuth client id and the Picker API key come
+// from cloud-config.js. Cognito's hosted UI never carries
 // a Google Drive token -- Google's own token stays out of the user pool --
 // so this file asks Google for one of its own, scoped to drive.file (files
 // this page creates, nothing else in the reader's Drive), and keeps it in
@@ -25,6 +27,9 @@
   var STORAGE_PREFIX = "diya-gl.cloud.";
   var DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
   var GIS_SRC = "https://accounts.google.com/gsi/client";
+  var PICKER_LOADER_SRC = "https://apis.google.com/js/api.js";
+  var XLSX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  var PICKER_MIME_TYPES = "application/zip," + XLSX_MIME_TYPE + ",application/json";
   var DRIVE_API = "https://www.googleapis.com/drive/v3";
   var DRIVE_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
   var FOLDER_NAME = "DIYA-GL";
@@ -72,6 +77,13 @@
   // Submit sign-in, no subscription.
   function isOffered() {
     return isConfigured();
+  }
+
+  // The Picker needs the Picker API key from the same config as the client
+  // id; without one the Picker button stays off the page and the folder
+  // list remains the way to open a book.
+  function isPickerOffered() {
+    return isConfigured() && !!window.DIYA_GL_CLOUD_CONFIG.googlePickerApiKey;
   }
 
   // ============================== the token ==============================
@@ -132,6 +144,32 @@
     return gisLoadPromise;
   }
 
+  var pickerLoadPromise = null;
+
+  function loadPicker() {
+    if (window.google && window.google.picker) return Promise.resolve();
+    if (pickerLoadPromise) return pickerLoadPromise;
+    pickerLoadPromise = new Promise(function (resolveLoad, rejectLoad) {
+      function failed() {
+        pickerLoadPromise = null;
+        rejectLoad(new Error("The Google Picker could not be loaded."));
+      }
+      function loadPickerModule() {
+        window.gapi.load("picker", { callback: resolveLoad, onerror: failed });
+      }
+      if (window.gapi && typeof window.gapi.load === "function") {
+        loadPickerModule();
+        return;
+      }
+      var script = document.createElement("script");
+      script.src = PICKER_LOADER_SRC;
+      script.onload = loadPickerModule;
+      script.onerror = failed;
+      document.head.appendChild(script);
+    });
+    return pickerLoadPromise;
+  }
+
   // The consent screen's hint: the email off the reader's signed-in Cognito
   // session, read straight out of storage rather than through cloud.js so
   // this file needs no reference back to it.
@@ -183,6 +221,55 @@
 
   function connect() {
     return requestToken("consent");
+  }
+
+  // The Google Picker over the reader's Drive: drive.file lets this page
+  // read exactly the file picked, so a book saved elsewhere or an
+  // .xlsx kept in Drive opens. The project number (the client id's leading
+  // digits) is the Picker's app id, which is what attaches the grant for the
+  // picked file to this project. Resolves with {id, name}, or null when the
+  // reader closes the Picker without choosing.
+  function pick() {
+    var config = window.DIYA_GL_CLOUD_CONFIG;
+    var tokenReady = hasToken() ? ensureToken() : connect();
+    return tokenReady.then(function (token) {
+      return loadPicker().then(function () {
+        return new Promise(function (resolvePick) {
+          var picker = window.google.picker;
+          var view = new picker.DocsView(picker.ViewId.DOCS).setMimeTypes(PICKER_MIME_TYPES);
+          new picker.PickerBuilder()
+            .addView(view)
+            .setOAuthToken(token)
+            .setDeveloperKey(config.googlePickerApiKey)
+            .setAppId(config.googleClientId.split("-")[0])
+            .setCallback(function (data) {
+              var action = data[picker.Response.ACTION];
+              if (action === picker.Action.PICKED) {
+                var doc = data[picker.Response.DOCUMENTS][0];
+                resolvePick({ id: doc[picker.Document.ID], name: doc[picker.Document.NAME] });
+              } else if (action === picker.Action.CANCEL) {
+                resolvePick(null);
+              }
+            })
+            .build()
+            .setVisible(true);
+        });
+      });
+    });
+  }
+
+  // The head revision of a file the Picker returned, so a later save over a
+  // picked book carries the same conflict check a listed one does.
+  function headRevision(fileId) {
+    return ensureToken().then(function (token) {
+      return driveRequest(token, DRIVE_API + "/files/" + fileId + "?fields=headRevisionId", { method: "GET" })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (body) {
+          return body.headRevisionId;
+        });
+    });
   }
 
   // Every Drive call goes through this: a token held and not within 60
@@ -480,8 +567,11 @@
 
   window.DiyaGlDrive = {
     isOffered: isOffered,
+    isPickerOffered: isPickerOffered,
     hasToken: hasToken,
     connect: connect,
+    pick: pick,
+    headRevision: headRevision,
     list: list,
     save: save,
     open: open,

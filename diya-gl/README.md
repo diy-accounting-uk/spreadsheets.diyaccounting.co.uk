@@ -71,6 +71,78 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   `extract_book`, `report`, `edit_lines`, `save_workbook`. Point an MCP client at
   `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
 
+## API
+
+The package root exports three functions that turn a book into the figures HMRC's MTD APIs
+take. Each takes the parsed book, its lines and a parameters object, and returns a promise.
+Nothing is sent anywhere: the answer is the request body to send, plus what fed it.
+
+Load a book first:
+
+```js
+import { readFileSync } from "node:fs";
+import { parse } from "smol-toml";
+
+function loadBook(dir) {
+  const book = parse(readFileSync(`${dir}/book.toml`, "utf8"));
+  const lines = readFileSync(`${dir}/lines.jsonl`, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  return { book, lines };
+}
+```
+
+### `deriveVatReturn(book, lines, { periodEnd, periodStart?, periodKey? })`
+
+The nine VAT return boxes for the three-month period ending `periodEnd` (YYYY-MM-DD), from a
+Limited Company book that declares `diya-gl:vatRegistered = true`. `periodStart`, when given,
+must open that quarter; `periodKey` is echoed back. The answer carries `boxes` (box1 to box9),
+`hmrc` (the same figures under HMRC's field names, boxes 1 to 5 to the penny and 6 to 9 in
+whole pounds), `months`, `dueDate`, `scheme`, and `lines`: the journal lines behind boxes 1, 4,
+6 and 7, each with what it contributes. A book whose lines do not reconcile with its VAT
+interface is refused.
+
+```js
+import { deriveVatReturn } from "@diy-accounting-uk/diya-gl";
+
+const { book, lines } = loadBook("my-company-book");
+const answer = await deriveVatReturn(book, lines, { periodStart: "2025-07-01", periodEnd: "2025-09-30" });
+console.log(answer.hmrc); // { vatDueSales, vatDueAcquisitions, totalVatDue, ..., totalAcquisitionsExVAT }
+```
+
+### `deriveItsaQuarterlyUpdate(book, lines, { periodEndDate?, quarterlyPeriodType?, taxYear? })`
+
+One period of HMRC's Self Employment Business API from a Self Employed book. In 2023-24 and
+2024-25 each period carries its own figures; from 2025-26 each carries the running total from
+6 April. `periodEndDate` picks the period among the year's four; without it every period is
+answered. `quarterlyPeriodType` is `standard` (6 April quarters, the default) or `calendar`.
+`taxYear` (as `2025-26`) overrides the year the book's dates imply. Each period lists the fields
+the book cannot source under `omitted`; those are left out of the body, never sent as zero.
+
+```js
+import { deriveItsaQuarterlyUpdate } from "@diy-accounting-uk/diya-gl";
+
+const { book, lines } = loadBook("my-self-employed-book");
+const answer = await deriveItsaQuarterlyUpdate(book, lines, { periodEndDate: "2025-10-05" });
+const [period] = answer.periods; // { periodDates, periodIncome, periodExpenses, ..., omitted, covers }
+```
+
+### `deriveItsaAnnualSubmission(book, lines, { taxYear? })`
+
+The year's allowances and adjustments for the same API's annual submission, from a Self
+Employed book, restricted to the fields HMRC accepts for that tax year. `taxYear` (as
+`2025-26`) overrides the year the book's dates imply. The answer carries `allowances`,
+`adjustments`, `omitted` and `warnings`.
+
+```js
+import { deriveItsaAnnualSubmission } from "@diy-accounting-uk/diya-gl";
+
+const { book, lines } = loadBook("my-self-employed-book");
+const answer = await deriveItsaAnnualSubmission(book, lines, { taxYear: "2025-26" });
+console.log(answer.allowances.annualInvestmentAllowance);
+```
+
 ## The format
 
 A diya-gl book's fields are drawn from the XBRL Global Ledger Taxonomy Framework 2015 and

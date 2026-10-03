@@ -16,6 +16,12 @@
 // diya-gl.co.uk and ci.diya-gl.co.uk among its JavaScript origins (Submit's
 // infra/google/gcp/oauth.toml, purpose drive_browser). A null id keeps
 // every Drive control off the page.
+//
+// googlePickerApiKey is the restricted API key for the Google Picker on Drive
+// operations (infra/google/gcp/api-keys.toml, id drive-picker-browser),
+// stored in GitHub repository variables and read at build time. The key is
+// public by design, with restrictions protecting it: only the Drive and Picker
+// APIs, only the referrers listed in the key's config.
 (function () {
   "use strict";
 
@@ -24,6 +30,7 @@
     hostedUi: "https://prod-auth.diyaccounting.co.uk",
     clientId: "1c8hjrjp5g5ipm8o47t6qkks4r",
     googleClientId: "670010122633-56q89d0h9c4skb9cpj4h9j2gr3kq06vd.apps.googleusercontent.com",
+    googlePickerApiKey: "",
   };
 
   // A browser test's addInitScript sets these before any page script runs

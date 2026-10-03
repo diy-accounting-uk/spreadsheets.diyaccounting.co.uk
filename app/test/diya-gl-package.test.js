@@ -9,11 +9,13 @@
 //
 // The second suite packs the tarball and reads its listing, which is what
 // proves the templates and the build scripts stay out of the published
-// package and the licence and notice go into it.
+// package and the licence and notice go into it. The third packs it for real,
+// unpacks it into a node_modules directory and imports the package by name,
+// the way an installed caller does.
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { execFileSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, mkdirSync, rmSync } from "fs";
 import { readFile } from "fs/promises";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -23,6 +25,8 @@ import { engineClosure } from "../../diya-gl/scripts/engine-closure.mjs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const DIYA_GL_DIR = resolve(ROOT, "diya-gl");
+
+const pence = (value) => Math.round(value * 100) / 100;
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, "utf8"));
@@ -99,7 +103,7 @@ describe("diya-gl package", () => {
     expect(existsSync(resolve(DIYA_GL_DIR, "dist", "web", "diya-gl.co.uk"))).toBe(false);
   });
 
-  it("carries every module the six entry points import", () => {
+  it("carries every module the seven entry points import", () => {
     for (const file of engineClosure(ROOT)) {
       expect(existsSync(resolve(DIYA_GL_DIR, "dist", file)), file).toBe(true);
     }
@@ -153,12 +157,68 @@ describe("the packed diya-gl tarball", () => {
     expect(BUILD_SCRIPTS.filter((name) => packedPaths.includes(`dist/app/bin/${name}`))).toEqual([]);
   });
 
-  it("ships the six entry points and the two schemas", () => {
+  it("ships the seven entry points and the two schemas", () => {
     for (const name of ["export.js", "report.js", "write-workbook.js", "link.js", "view.js", "diya-gl-mcp.js"]) {
       expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
     }
+    expect(packedPaths).toContain("dist/app/lib/derivations/index.js");
     for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
       expect(packedPaths, name).toContain(`dist/web/spreadsheets.diyaccounting.co.uk/public/schema/${name}`);
     }
+  });
+});
+
+// Unpacked under target/ so the package's own dependencies resolve from the
+// repository's node_modules, as they would from an installing project's.
+const IMPORT_DIR = resolve(ROOT, "target", "diya-gl-package-import");
+
+function importByName(script) {
+  const output = execFileSync(process.execPath, ["--input-type=module", "-e", script], { cwd: IMPORT_DIR, encoding: "utf8" });
+  return JSON.parse(output);
+}
+
+describe("the packed diya-gl package imported by name", () => {
+  beforeAll(() => {
+    rmSync(IMPORT_DIR, { recursive: true, force: true });
+    const installed = resolve(IMPORT_DIR, "node_modules", "@diy-accounting-uk", "diya-gl");
+    mkdirSync(installed, { recursive: true });
+    const output = execFileSync("npm", ["pack", "--json", "--pack-destination", IMPORT_DIR], { cwd: DIYA_GL_DIR, encoding: "utf8" });
+    const tarball = resolve(IMPORT_DIR, JSON.parse(output)[0].filename);
+    execFileSync("tar", ["-xzf", tarball, "-C", installed, "--strip-components=1"]);
+  }, 180000);
+
+  it("exports the three filing derivations from the package root", () => {
+    const names = importByName('const m = await import("@diy-accounting-uk/diya-gl"); console.log(JSON.stringify(Object.keys(m).sort()));');
+    expect(names).toEqual(["deriveItsaAnnualSubmission", "deriveItsaQuarterlyUpdate", "deriveVatReturn"]);
+  });
+
+  it("derives a VAT return and both ITSA answers from an example book", () => {
+    const examples = resolve(ROOT, "examples", "brickwork-pro");
+    const answer = importByName(`
+      import { readFileSync } from "node:fs";
+      import { parse } from "smol-toml";
+      import { deriveVatReturn, deriveItsaQuarterlyUpdate, deriveItsaAnnualSubmission } from "@diy-accounting-uk/diya-gl";
+      const load = (dir) => ({
+        book: parse(readFileSync(dir + "/book.toml", "utf8")),
+        lines: readFileSync(dir + "/lines.jsonl", "utf8").split("\\n").filter(Boolean).map((line) => JSON.parse(line)),
+      });
+      const ltd = load(${JSON.stringify(resolve(examples, "ltd-vat"))});
+      const se = load(${JSON.stringify(resolve(examples, "se-vat"))});
+      const vat = await deriveVatReturn(ltd.book, ltd.lines, { periodStart: "2025-07-01", periodEnd: "2025-09-30" });
+      const quarter = await deriveItsaQuarterlyUpdate(se.book, se.lines, { periodEndDate: "2025-10-05" });
+      const annual = await deriveItsaAnnualSubmission(se.book, se.lines);
+      console.log(JSON.stringify({ vat: vat.hmrc, quarter: quarter.periods[0], annual: annual.allowances }));
+    `);
+    expect(answer.vat.netVatDue).toBe(pence(answer.vat.totalVatDue - answer.vat.vatReclaimedCurrPeriod));
+    expect(answer.vat.vatDueSales).toBeGreaterThan(0);
+    expect(answer.quarter.periodIncome.turnover).toBe(28050 + 27900);
+    expect(answer.annual.annualInvestmentAllowance).toBe(12000);
+  });
+
+  it("still serves the dist modules by their own paths", () => {
+    const names = importByName(
+      'const m = await import("@diy-accounting-uk/diya-gl/dist/app/bin/export.js"); console.log(JSON.stringify(typeof m.calculatedResultsFor));',
+    );
+    expect(names).toBe("function");
   });
 });

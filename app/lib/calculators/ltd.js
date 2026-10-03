@@ -60,7 +60,7 @@ import { attributionWriter, entriesOf, entryOf, fieldEntriesOf, unionOf } from "
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
-const VAT_RATE = 0.2;
+export const VAT_RATE = 0.2;
 
 // Sales and Purchases analysis columns, code letter by column letter, in the
 // order row 5 of each month tab tests them. Column AK of a Purchases month

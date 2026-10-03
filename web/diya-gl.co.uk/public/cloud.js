@@ -749,13 +749,20 @@
   // show. Connected, the rows below reuse renderBookRow -- toBookRow() in
   // drive.js already shapes a Drive file the same way an account book
   // arrives from Submit's list.
+  function renderPickDriveButton() {
+    return window.DiyaGlDrive.isPickerOffered()
+      ? '<p><button type="button" class="btn" data-action="pick-drive">Open from Google Drive</button></p>'
+      : "";
+  }
+
   function renderDrive(state) {
     if (!(window.DiyaGlDrive && window.DiyaGlDrive.hasToken())) {
       var message = state.driveConnectMessage;
       return (
         '<p class="account-panel-head">Save this book to a "DIYA-GL" folder in your own Google Drive.</p>' +
         (message ? '<p class="account-row-meta account-error">' + esc(message) + "</p>" : "") +
-        '<button type="button" class="btn btn-primary" data-action="connect-drive">Connect Google Drive</button>'
+        '<button type="button" class="btn btn-primary" data-action="connect-drive">Connect Google Drive</button>' +
+        renderPickDriveButton()
       );
     }
     var sorted = (state.books || []).slice().sort(function (a, b) {
@@ -765,7 +772,7 @@
     var rowsHtml = sorted.length
       ? sorted.map(renderBookRow).join("")
       : '<p class="account-empty">No books in your Google Drive folder yet.' + (current ? " Save this book to Google Drive." : "") + "</p>";
-    return '<div class="account-panel-head">Your Google Drive</div>' + rowsHtml;
+    return '<div class="account-panel-head">Your Google Drive</div>' + renderPickDriveButton() + rowsHtml;
   }
 
   function renderList(books, entitlement, session) {
@@ -1172,6 +1179,41 @@
           clearLink();
           setDriveLink({ fileId: book.driveFileId, headRevisionId: revisionId || book.driveHeadRevisionId });
           sendCloudEvent(window.buildCloudDriveOpenEvent(revisionId ? "revision" : "latest"));
+          closePanel();
+        });
+      })
+      .catch(function (error) {
+        handleDriveError(error);
+      });
+  }
+
+  // The Picker's choice: any .xlsx, package zip or diya-gl zip in the
+  // reader's Drive. Only a diya-gl zip becomes the tab's Drive link, so a
+  // later save never overwrites a workbook the reader picked.
+  function openPickedFile(picked) {
+    panelState = { status: "loading" };
+    renderPanel();
+    return window.DiyaGlDrive.open(picked.id, null).then(function (blob) {
+      var file = new File([blob], picked.name, { type: blob.type });
+      return window.DiyaGlPage.loadFile(file).then(function () {
+        clearLink();
+        if (!/\.diya-gl\.zip$/.test(picked.name)) {
+          setDriveLink(null);
+          return null;
+        }
+        return window.DiyaGlDrive.headRevision(picked.id).then(function (headRevisionId) {
+          setDriveLink({ fileId: picked.id, headRevisionId: headRevisionId });
+        });
+      });
+    });
+  }
+
+  function performDrivePick() {
+    window.DiyaGlDrive.pick()
+      .then(function (picked) {
+        if (!picked) return;
+        return openPickedFile(picked).then(function () {
+          sendCloudEvent(window.buildCloudDriveOpenEvent("picker"));
           closePanel();
         });
       })
@@ -1746,6 +1788,8 @@
       toggleVersions(bookId);
     } else if (action === "connect-drive") {
       connectDrive();
+    } else if (action === "pick-drive") {
+      performDrivePick();
     } else if (action === "drive-conflict-retry") {
       performDriveSave();
     } else if (action === "drive-conflict-cancel") {
