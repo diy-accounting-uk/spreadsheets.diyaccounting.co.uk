@@ -38,11 +38,12 @@ diya-gl recalc --package bst --data my-book --years se-2025-2026 --output-dir ou
 diya-gl read-workbook --file my-workbook.xlsx --output-dir out
 diya-gl write-workbook --data my-book --output-dir out
 diya-gl link my-book
+diya-gl view my-book
 diya-gl mcp
 ```
 
 Each subcommand is also its own command, if you only want one on your `PATH`:
-`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-link`, `diya-gl-mcp`.
+`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-link`, `diya-gl-view`, `diya-gl-mcp`.
 
 - **recalc** takes a diya-gl book (`--data`) or a populated workbook (`--source-dir`,
   `--mode saved|recalculate`) and writes `report.json`: every figure, report section and
@@ -57,6 +58,15 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   opens it, the whole book carried in the fragment so nothing is uploaded. `--base <url>`
   replaces the origin. The fragment length goes to stderr, with a warning past 64 KB (about
   2,000 lines), where chat, email and QR codes start to cut links off.
+- **view** takes the same book sources as **link**, serves the full diya-gl pages on
+  `127.0.0.1` (`--port <number>`, default a free port) and opens the book in your default
+  browser (`--no-open` prints the address only). The pages are not in this package: the local
+  server fetches each file from https://diya-gl.co.uk on first use and caches it under the
+  system temporary directory, one directory per package version, so the first run needs the
+  network and later runs of the same version reuse the cache. `--origin <url>` fetches from
+  another site. The book stays in the browser (the part of the address after `#` is never sent
+  anywhere). The server stays up until Ctrl-C. The workbook templates come from
+  spreadsheets.diyaccounting.co.uk the first time a page action needs one.
 - **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with four tools:
   `extract_book`, `report`, `edit_lines`, `save_workbook`. Point an MCP client at
   `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.

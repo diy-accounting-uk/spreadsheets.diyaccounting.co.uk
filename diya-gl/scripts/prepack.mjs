@@ -9,8 +9,8 @@
 // does inside the parent repo. Run automatically by npm before pack and
 // publish; safe to re-run, since it clears dist/ first.
 //
-// What ships is the five entry points' import closure, the runtime data and
-// the two schemas. The workbook templates and the repository's build scripts
+// What ships is the six entry points' import closure, the runtime data, the
+// two schemas and the diya-gl pages with their engine bundle. The workbook templates and the repository's build scripts
 // stay behind: they are the company's own work under different terms, and the
 // engine fetches a template from the site when it first needs one.
 
@@ -40,7 +40,7 @@ if (ownPkg.version !== rootPkg.version) {
 rmSync(DIST, { recursive: true, force: true });
 mkdirSync(DIST, { recursive: true });
 
-// The five entry points and every module they reach, one file at a time.
+// The six entry points and every module they reach, one file at a time.
 // engineClosure throws on an import that resolves to nothing, so a moved
 // file fails here rather than at publish.
 const closure = engineClosure(REPO_ROOT);
