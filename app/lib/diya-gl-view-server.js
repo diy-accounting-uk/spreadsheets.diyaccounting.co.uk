@@ -21,6 +21,9 @@ import { extname, resolve, sep } from "path";
 export const DEFAULT_ORIGIN = "https://diya-gl.co.uk";
 export const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets";
 const TEMPLATE_URL_PREFIX = "/assets/templates/";
+// A template is "meta.toml" or "<product>/<file>" with a workbook or TOML extension; nothing else
+// is proxied, so the upstream URL is always the template source plus one of these names.
+const TEMPLATE_NAME = /^(?:[a-z]+\/)?[A-Za-z0-9][A-Za-z0-9._-]*\.(?:xlsx|toml)$/;
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -121,19 +124,25 @@ async function serveFromOrigin(request, response, { origin, cacheReal, urlPath, 
 }
 
 async function proxyTemplate(response, templateSource, urlPath) {
-  const url = `${templateSource.replace(/\/$/, "")}/templates/${urlPath.slice(TEMPLATE_URL_PREFIX.length)}`;
+  const requested = urlPath.slice(TEMPLATE_URL_PREFIX.length);
+  const base = `${templateSource.replace(/\/$/, "")}/templates/`;
+  const url = TEMPLATE_NAME.test(requested) ? new URL(requested, base) : null;
+  if (!url || url.origin !== new URL(base).origin || !url.href.startsWith(base)) {
+    send(response, 404, "Not found\n");
+    return;
+  }
   let upstream;
   try {
     upstream = await fetch(url);
   } catch (cause) {
-    send(response, 502, `The workbook template could not be fetched from ${url}: ${cause.message}\n`);
+    send(response, 502, `The workbook template could not be fetched from ${url.href}: ${cause.message}\n`);
     return;
   }
   if (!upstream.ok) {
-    send(response, upstream.status === 404 ? 404 : 502, `${url} returned ${upstream.status}\n`);
+    send(response, upstream.status === 404 ? 404 : 502, `${url.href} returned ${upstream.status}\n`);
     return;
   }
-  send(response, 200, Buffer.from(await upstream.arrayBuffer()), CONTENT_TYPES[extname(urlPath)] ?? "application/octet-stream");
+  send(response, 200, Buffer.from(await upstream.arrayBuffer()), CONTENT_TYPES[extname(url.pathname)] ?? "application/octet-stream");
 }
 
 /**
@@ -165,10 +174,6 @@ export async function startViewServer({ cacheDir, origin = DEFAULT_ORIGIN, port 
         return;
       }
       if (urlPath.startsWith(TEMPLATE_URL_PREFIX)) {
-        if (urlPath.includes("..")) {
-          send(response, 404, "Not found\n");
-          return;
-        }
         await proxyTemplate(response, templateSource, urlPath);
         return;
       }

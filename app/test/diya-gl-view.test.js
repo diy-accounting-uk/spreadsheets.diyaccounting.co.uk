@@ -139,6 +139,16 @@ describe("diya-gl view server", () => {
     expect(await response.text()).toBe("template-bytes");
   });
 
+  it("proxies only template names, so the upstream URL cannot leave the templates directory", async () => {
+    const before = hits.length;
+    expect(await rawStatus("/assets/templates/../bst.html")).toBe(404);
+    expect(await rawStatus("/assets/templates/%2e%2e/bst.html")).toBe(404);
+    expect(await rawStatus("/assets/templates/bst/meta.toml%3F..%2F..%2Fx.xlsx")).toBe(404);
+    expect(await rawStatus("/assets/templates/bst/meta.js")).toBe(404);
+    expect(await rawStatus("/assets/templates//evil.example/x.xlsx")).toBe(404);
+    expect(hits.length).toBe(before);
+  });
+
   it("stores fetched files only under its cache directory", () => {
     expect(readdirSync(running.cacheDir).sort()).toEqual(["body", "type"]);
   });
