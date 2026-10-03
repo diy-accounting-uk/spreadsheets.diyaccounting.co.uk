@@ -971,6 +971,12 @@ describe("setPath — a mapping field name cannot reach the prototype chain", ()
     expect({}.polluted).toBeUndefined();
   });
 
+  it("leaves the target untouched when a later segment is refused", () => {
+    const target = {};
+    expect(() => setPath(target, "adjustments.constructor.prototype.x", 1)).toThrow(/constructor/);
+    expect(target).toEqual({});
+  });
+
   it("still writes an ordinary nested path", () => {
     const target = {};
     setPath(target, "periodIncome.turnover", 123.45);

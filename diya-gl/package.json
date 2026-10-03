@@ -20,6 +20,11 @@
     "diya-gl-view": "bin/diya-gl-view.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },
+  "exports": {
+    ".": "./dist/app/lib/derivations/index.js",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
   "files": ["bin/", "dist/", "README.md", "NOTICE"],
   "scripts": {
     "prepack": "node scripts/prepack.mjs"

@@ -26,7 +26,7 @@ let cachedMapping = null;
 
 // Resolved on first use, not at import: the engine bundle loads in the browser,
 // where import.meta.url is an http URL and fileURLToPath throws.
-function loadMapping() {
+export function loadMapping() {
   if (!cachedMapping) {
     const here = dirname(fileURLToPath(import.meta.url));
     const mappingPath = resolve(here, "..", "..", "data", "hmrc", "sa103-mtd-mapping.json");
@@ -50,7 +50,7 @@ function boxEntry(boxes, boxNumber) {
 // first is the one this template's cell actually answers -- section 8 of the
 // design records which, box by box -- so a caller asking for "the field this
 // box answers" gets that one unless told to reach past it.
-function fieldsOf(entry) {
+export function fieldsOf(entry) {
   return entry.field.split("|").map((field) => field.trim());
 }
 
@@ -63,11 +63,15 @@ function primaryField(boxes, boxNumber) {
 // rather than the object this call meant to build. Every path here comes from
 // sa103-mtd-mapping.json's own "field" column, so a segment like this is a
 // defect in that mapping file and must fail loudly rather than land quietly
-// on some other object. The check sits inside the walk, as literal
-// comparisons, and each intermediate node is only reused when it is the
-// object's own property: the shape static analysis recognises as guarded.
+// on some other object. The whole path is refused before anything is
+// written, so a refused path leaves the target untouched. The check is
+// repeated inside the walk, as literal comparisons, and each intermediate
+// node is only reused when it is the object's own property: the shape static
+// analysis recognises as guarded.
 export function setPath(target, path, value) {
   const parts = path.split(".");
+  const refused = parts.find((part) => part === "__proto__" || part === "constructor" || part === "prototype");
+  if (refused !== undefined) throw new Error(`setPath: "${refused}" is not a field name, in path "${path}"`);
   let node = target;
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
@@ -491,7 +495,7 @@ const NO_SOURCE_ANNUAL_BOXES = [
 // 2026-27 additions, gated behind HMRC test flags) is not treated as a
 // live field here -- neither has a cell in this template regardless, so
 // the payload does not change, only whether the gap is worth warning about.
-function annualFieldsUnavailableForYear(taxYear) {
+export function annualFieldsUnavailableForYear(taxYear) {
   const years = loadMapping().api.years;
   const order = Object.keys(years);
   const index = order.indexOf(taxYear);
