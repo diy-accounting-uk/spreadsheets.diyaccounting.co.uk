@@ -24,6 +24,7 @@ const SHARED_IDS = [
   "book-vat-threshold",
   "book-duplicate-entries",
   "book-empty-detail",
+  "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
 ];
@@ -57,11 +58,11 @@ function brickworkNonVat() {
 // Read as they stand, not as they are hoped to be.
 
 describe("the three Self Employed example books", () => {
-  it("BrickWork Pro not registered: all sixteen rules pass, turnover under the threshold", () => {
+  it("BrickWork Pro not registered: all seventeen rules pass, turnover under the threshold", () => {
     const { results, summary } = runBookChecks(brickworkNonVat());
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
-    expect(summary).toEqual({ pass: 16, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
     expect(resultFor(results, "book-vat-threshold").label).toBe(
       "Turnover for the year is £75,000.00, against a £90,000.00 VAT registration threshold.",
     );
@@ -70,7 +71,7 @@ describe("the three Self Employed example books", () => {
   it("BrickWork Pro registered: turnover is measured net of VAT and the threshold warning passes", () => {
     const { results, summary } = runBookChecks(loadSe("examples/brickwork-pro/se-vat"));
 
-    expect(summary).toEqual({ pass: 16, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
     const vat = resultFor(results, "book-vat-threshold");
     expect(vat.result).toBe("pass");
     expect(vat.label).toBe(
@@ -82,7 +83,7 @@ describe("the three Self Employed example books", () => {
   it("Precision Code advanced: two bank accounts, three employees, five new assets and two agreements all fit", () => {
     const { results, summary } = runBookChecks(loadSe("examples/precision-code-ltd/advanced"));
 
-    expect(summary).toEqual({ pass: 16, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
     expect(resultFor(results, "book-vat-threshold").label).toBe(
       "Turnover for the year is £354,083.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
     );
@@ -372,6 +373,7 @@ describe("each Self Employed rule is breakable by one crafted change, and only t
     const mutated = withLine({
       entryNumber: "BREAK-TURNOVER",
       sourceJournalID: "sales",
+      documentReference: "INV-BREAK",
       postingDate: "2026-03-20",
       accountMainID: "4000",
       amount: 20000,
@@ -387,6 +389,7 @@ describe("each Self Employed rule is breakable by one crafted change, and only t
     const straddling = {
       "entryNumber": "BREAK-STRADDLE",
       "sourceJournalID": "sales",
+      "documentReference": "INV-BREAK-STRADDLE",
       "postingDate": "2026-04-15",
       "accountMainID": "4000",
       "amount": 1000,

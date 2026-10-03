@@ -2148,6 +2148,13 @@
       accountOptions +
       "</select>" +
       extraFields.map(extraFieldHtml).join("") +
+      (journal === "sales"
+        ? '<input class="entry-add-reference" data-add-field="documentReference" placeholder="Invoice or receipt no." value="' +
+          esc(draft.documentReference || "") +
+          '" aria-label="' +
+          esc(fieldLabel("Invoice or receipt reference")) +
+          '" />'
+        : "") +
       '<input class="entry-add-detail" data-add-field="detail" placeholder="Detail" value="' +
       esc(draft.detail || "") +
       '" aria-label="' +

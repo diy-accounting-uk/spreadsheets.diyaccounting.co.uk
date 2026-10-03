@@ -1060,6 +1060,9 @@ td.entry-actions {
 .entry-add-form .entry-add-account {
   flex: 1 1 8rem;
 }
+.entry-add-form .entry-add-reference {
+  flex: 1 1 7rem;
+}
 .entry-add-form .entry-add-detail {
   flex: 2 1 8rem;
 }

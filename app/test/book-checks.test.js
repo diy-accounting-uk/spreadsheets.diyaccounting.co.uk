@@ -28,7 +28,14 @@ function clone(value) {
 }
 
 const CHECK_IDS = ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"];
-const WARNING_IDS = ["book-vat-threshold", "book-duplicate-entries", "book-empty-detail", "book-negative-amount", "book-empty-month"];
+const WARNING_IDS = [
+  "book-vat-threshold",
+  "book-duplicate-entries",
+  "book-empty-detail",
+  "book-missing-document-reference",
+  "book-negative-amount",
+  "book-empty-month",
+];
 const ALL_IDS = CHECK_IDS.concat(WARNING_IDS);
 
 // ============================== the three example books ==============================
@@ -45,13 +52,19 @@ describe("the three example books", () => {
     expect(vat.result).toBe("warn");
     expect(vat.actual).toBeCloseTo(409900, 2);
 
-    for (const id of ["book-duplicate-entries", "book-empty-detail", "book-negative-amount", "book-empty-month"]) {
+    for (const id of [
+      "book-duplicate-entries",
+      "book-empty-detail",
+      "book-missing-document-reference",
+      "book-negative-amount",
+      "book-empty-month",
+    ]) {
       expect(resultFor(results, id).result, id).toBe("pass");
     }
-    expect(summary).toEqual({ pass: 7, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 8, warn: 1, fail: 0 });
   });
 
-  it("SP Sixty Driving: every entry sits inside the declared period, and every check and warning pass", () => {
+  it("SP Sixty Driving: every entry sits inside the declared period, and only the 180 sales without a document reference warn", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "sp-sixty-driving", "bst"));
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
 
@@ -62,9 +75,12 @@ describe("the three example books", () => {
 
     expect(resultFor(results, "book-accounts-in-chart").result).toBe("pass");
     expect(resultFor(results, "book-amounts-whole-pence").result).toBe("pass");
-    for (const id of WARNING_IDS) expect(resultFor(results, id).result, id).toBe("pass");
+    for (const id of WARNING_IDS.filter((warningId) => warningId !== "book-missing-document-reference")) {
+      expect(resultFor(results, id).result, id).toBe("pass");
+    }
+    expect(resultFor(results, "book-missing-document-reference").actual).toBe(180);
 
-    expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 8, warn: 1, fail: 0 });
   });
 
   it("Kestrel Executive Cars: every entry sits inside the declared period", () => {
@@ -79,7 +95,7 @@ describe("the three example books", () => {
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
 
     for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 9, warn: 0, fail: 0 });
   });
 });
 
@@ -103,6 +119,7 @@ const BASE_LINES = [
     accountMainID: "4000",
     amount: 1000.0,
     detailComment: "Acme Ltd invoice 1",
+    documentReference: "INV-1",
   },
   {
     entryNumber: "BASE-02",
@@ -151,6 +168,7 @@ const BASE_LINES = [
     accountMainID: "4000",
     amount: 2000.0,
     detailComment: "Acme Ltd invoice 2",
+    documentReference: "INV-2",
   },
   {
     entryNumber: "BASE-08",
@@ -203,11 +221,11 @@ function baseline() {
 }
 
 describe("the controlled fixture starts clean", () => {
-  it("passes all eight rules", () => {
+  it("passes all nine rules", () => {
     const { book, lines, taxData } = baseline();
     const { results, summary } = runBookChecks({ book, lines, taxData });
     for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 9, warn: 0, fail: 0 });
   });
 });
 
@@ -320,6 +338,20 @@ describe("each rule is breakable by one crafted change, and only that rule flips
       detailComment: "   ",
     });
     assertOnlyThisRuleFlips(fixture, "book-empty-detail", "warn");
+  });
+
+  it("book-missing-document-reference: a sale with a blank document reference", () => {
+    const fixture = baseline();
+    fixture.lines.push({
+      entryNumber: "BREAK-DOCUMENT-REFERENCE",
+      sourceJournalID: "sales",
+      postingDate: "2025-05-24",
+      accountMainID: "4000",
+      amount: 80.0,
+      detailComment: "Walk-in customer",
+      documentReference: "  ",
+    });
+    assertOnlyThisRuleFlips(fixture, "book-missing-document-reference", "warn");
   });
 
   it("book-negative-amount: a purchase with an amount below zero", () => {

@@ -21,6 +21,7 @@ import { startStaticServer } from "./serve.js";
 import { parseFigure } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
+const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
 
@@ -52,11 +53,12 @@ async function openAprilEntries(page) {
   await expect(page.locator("table.entries-table")).toHaveCount(2);
 }
 
-async function addEntry(page, journal, { date, account, detail, amount }) {
+async function addEntry(page, journal, { date, account, detail, amount, reference }) {
   const row = page.locator(`.entry-add-row[data-add-journal="${journal}"]`);
   if (date) await row.locator('[data-add-field="date"]').fill(date);
   if (account) await row.locator('[data-add-field="account"]').selectOption(account);
   if (detail) await row.locator('[data-add-field="detail"]').fill(detail);
+  if (reference) await row.locator('[data-add-field="documentReference"]').fill(reference);
   await row.locator('[data-add-field="amount"]').fill(String(amount));
   await row.locator("[data-add-entry]").click();
   await expect(page.locator(`.entry-add-row[data-add-journal="${journal}"] [data-add-field="amount"]`)).toHaveValue("");
@@ -76,6 +78,7 @@ const BOOK_CHECK_IDS = [
   "book-vat-threshold",
   "book-duplicate-entries",
   "book-empty-detail",
+  "book-missing-document-reference",
   "book-negative-amount",
 ];
 
@@ -272,7 +275,7 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
     await addEntry(page, "sales", { date: "2025-04-25", account: "4000", detail: "New commercial contract", amount: topUp });
 
     const after = await bookCheckStates(page);
-    expect(flippedIds(before, after)).toEqual(["book-vat-threshold"]);
+    expect(flippedIds(before, after)).toEqual(["book-missing-document-reference", "book-vat-threshold"]);
     const vat = bookCheck(page, "book-vat-threshold");
     await expect(vat).toHaveClass(/warn/);
     await expect(vat).toContainText("VAT registration threshold");
@@ -293,11 +296,11 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
     const entry = { date: "2025-04-08", account: "4000", detail: "Repeat billing test", amount: 640 };
     await addEntry(page, "sales", entry);
     const afterFirst = await bookCheckStates(page);
-    expect(flippedIds(before, afterFirst)).toEqual([]);
+    expect(flippedIds(before, afterFirst)).toEqual(["book-missing-document-reference"]);
 
     await addEntry(page, "sales", entry);
     const after = await bookCheckStates(page);
-    expect(flippedIds(before, after)).toEqual(["book-duplicate-entries"]);
+    expect(flippedIds(before, after)).toEqual(["book-duplicate-entries", "book-missing-document-reference"]);
     await expect(bookCheck(page, "book-duplicate-entries")).toHaveClass(/warn/);
   });
 
@@ -311,6 +314,38 @@ test.describe("DIYA-GL page — E2: deliberate warnings and failures", () => {
     const after = await bookCheckStates(page);
     expect(flippedIds(before, after)).toEqual(["book-empty-detail"]);
     await expect(bookCheck(page, "book-empty-detail")).toHaveClass(/warn/);
+  });
+
+  test("a sale added on the page without a reference flips book-missing-document-reference alone", async ({ page }) => {
+    await openBook(page, /bst-brickwork-pro-nonvat/);
+    await openAprilEntries(page);
+    const before = await bookCheckStates(page);
+
+    await addEntry(page, "sales", { date: "2025-04-09", account: "4000", detail: "Walk-in customer", amount: 75 });
+
+    const after = await bookCheckStates(page);
+    expect(flippedIds(before, after)).toEqual(["book-missing-document-reference"]);
+    await expect(bookCheck(page, "book-missing-document-reference")).toHaveClass(/warn/);
+  });
+
+  test("a sale added on the page with a reference flips nothing", async ({ page }) => {
+    await openBook(page, /bst-brickwork-pro-nonvat/);
+    await openAprilEntries(page);
+    const before = await bookCheckStates(page);
+
+    const row = page.locator('.entry-add-row[data-add-journal="sales"]');
+    await row.locator('[data-add-field="date"]').fill("2025-04-09");
+    await row.locator('[data-add-field="documentReference"]').fill("INV-2025-0409");
+    await row.locator('[data-add-field="detail"]').fill("Walk-in customer");
+    await row.locator('[data-add-field="amount"]').fill("75");
+    fs.mkdirSync(screenshotsDir, { recursive: true });
+    await row.screenshot({ path: path.join(screenshotsDir, "diya-gl-add-entry-reference.png") });
+    await row.locator("[data-add-entry]").click();
+    await expect(row.locator('[data-add-field="amount"]')).toHaveValue("");
+
+    const after = await bookCheckStates(page);
+    expect(flippedIds(before, after)).toEqual([]);
+    await expect(bookCheck(page, "book-missing-document-reference")).toHaveClass(/ pass/);
   });
 
   test("a negative amount flips book-negative-amount alone", async ({ page }) => {

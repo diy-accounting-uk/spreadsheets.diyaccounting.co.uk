@@ -242,6 +242,7 @@
       documentType: entry.documentType || "invoice",
       detailComment: entry.detail || "",
     };
+    if (entry.documentReference && entry.documentReference.trim()) line.documentReference = entry.documentReference.trim();
     var added = entry.journal === "sales" ? api.addSaleLine(book, lines, { line: line }) : api.addPurchaseLine(book, lines, { line: line });
     if (!(entry.miles > 0)) return added;
     return api.changeLineQuantity(book, added, { entryNumber: line.entryNumber, quantity: entry.miles, unit: "miles" });

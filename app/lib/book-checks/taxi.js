@@ -212,4 +212,10 @@ export const TAXI_BOOK_HELPERS = {
   },
 };
 
-export const TAXI_PRODUCT_RULES = { checks: [], warnings: TAXI_WARNINGS, sharedOffenders: {}, bookHelpers: TAXI_BOOK_HELPERS };
+export const TAXI_PRODUCT_RULES = {
+  checks: [],
+  warnings: TAXI_WARNINGS,
+  sharedOffenders: {},
+  omittedSharedWarnings: ["book-missing-document-reference"],
+  bookHelpers: TAXI_BOOK_HELPERS,
+};

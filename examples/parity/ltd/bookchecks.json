@@ -126,6 +126,15 @@
     "offenders": []
   },
   {
+    "id": "book-missing-document-reference",
+    "tier": "warning",
+    "label": "Every sale names its invoice or receipt",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
     "id": "book-negative-amount",
     "tier": "warning",
     "label": "Every sale and purchase amount is zero or more",
