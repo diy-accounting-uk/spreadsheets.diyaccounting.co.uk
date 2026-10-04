@@ -24,6 +24,16 @@ echo "scratch dir: $SCRATCH"
 source "$DIYA_GL_DIR/scripts/pack-and-install.sh"
 BIN=$(pack_and_install "$DIYA_GL_DIR" "$SCRATCH")
 
+echo "--- engine stamp ---"
+PACKAGE_VERSION=$(node -p "require('$DIYA_GL_DIR/package.json').version")
+PACKED_STAMP=$(find "$SCRATCH" -path '*dist/app/lib/provenance-data.js' | head -1)
+test -n "$PACKED_STAMP" || { echo "no provenance-data.js in the packed tarball" >&2; exit 1; }
+PACKED_ENGINE_VERSION=$(sed -n 's/.*engineVersion: "\([^"]*\)".*/\1/p' "$PACKED_STAMP")
+case "$PACKED_ENGINE_VERSION" in
+  "$PACKAGE_VERSION"+*) echo "engineVersion $PACKED_ENGINE_VERSION" ;;
+  *) echo "packed engineVersion '$PACKED_ENGINE_VERSION' does not start with package version $PACKAGE_VERSION" >&2; exit 1 ;;
+esac
+
 echo "--- recalc ---"
 "$BIN/diya-gl-recalc" --package bst --data "$REPO_ROOT/examples/precision-code-ltd/bst" --years se-2025-2026 \
   --output-dir "$SCRATCH/recalc-out"

@@ -24,6 +24,11 @@
 // Usage:
 //   node scripts/build-provenance-data.mjs
 //   node scripts/build-provenance-data.mjs --reconciled-commit <sha>
+//   node scripts/build-provenance-data.mjs --release
+//
+// --release is the publish workflow's flag: it always writes the file, so the
+// tarball and the release record carry the version being published even when
+// engineVersion is the only value that moved.
 //
 // --reconciled-commit is the hook a generate workflow's commit job calls
 // with the commit its reconciliation run just passed against (github.sha),
@@ -157,7 +162,7 @@ function existingReconciledCommit() {
 
 function parseArgs(argv) {
   const idx = argv.indexOf("--reconciled-commit");
-  return { reconciledCommit: idx !== -1 ? argv[idx + 1] : null };
+  return { reconciledCommit: idx !== -1 ? argv[idx + 1] : null, release: argv.includes("--release") };
 }
 
 // engineVersion moves whenever this script runs from a local checkout whose
@@ -176,7 +181,7 @@ export function differsOnlyByEngineVersion(before, after) {
 }
 
 async function main() {
-  const { reconciledCommit } = parseArgs(process.argv.slice(2));
+  const { reconciledCommit, release } = parseArgs(process.argv.slice(2));
   const data = {
     formatVersion: FORMAT_VERSION,
     engineVersion: `${packageVersion()}+${gitCommit()}`,
@@ -207,7 +212,7 @@ export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
   const config = await prettier.resolveConfig(OUT_FILE);
   const formatted = await prettier.format(body, { ...config, filepath: OUT_FILE });
   const existing = existsSync(OUT_FILE) ? readFileSync(OUT_FILE, "utf8") : null;
-  if (existing !== null && differsOnlyByEngineVersion(existing, formatted)) {
+  if (!release && existing !== null && differsOnlyByEngineVersion(existing, formatted)) {
     console.log(
       `provenance data: ${OUT_FILE.replace(ROOT + "/", "")} left as committed -- the only difference is engineVersion (${data.engineVersion}), which this checkout's own installed version or commit produces, not an engine, tax data or template change.`,
     );

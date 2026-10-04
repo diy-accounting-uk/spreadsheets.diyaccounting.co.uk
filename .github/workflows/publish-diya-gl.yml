@@ -102,8 +102,10 @@ jobs:
           NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Build provenance data
-        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
-        run: npm run build:provenance-data
+        # --release writes engineVersion even when it is the only change. Also on a
+        # finish-only run, because the release record reads this file.
+        if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' || steps.version.outputs.finish == 'true' }}
+        run: npm run build:provenance-data -- --release
 
       - name: diya-gl package dependencies
         if: ${{ steps.version.outputs.publish == 'true' || steps.version.outputs.image == 'true' }}
@@ -207,7 +209,7 @@ jobs:
         id: push
         continue-on-error: true
         run: |
-          git add app/data/releases.json \
+          git add app/data/releases.json app/lib/provenance-data.js \
             web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.html \
             web/spreadsheets.diyaccounting.co.uk/public/reconciliation/releases.json \
             package.json package-lock.json diya-gl/package.json diya-gl/package-lock.json
