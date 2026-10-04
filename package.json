@@ -38,6 +38,7 @@
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",
     "build:redirects": "node scripts/build-spreadsheets-redirects.cjs --site spreadsheets && node scripts/build-spreadsheets-redirects.cjs --site diya-gl",
     "build:donate-page": "node scripts/build-donate-page.mjs",
+    "build:picker-api-key": "node scripts/build-picker-api-key.mjs",
     "build:diya-gl-bundle": "node scripts/build-diya-gl-bundle.mjs",
     "build:runners": "node scripts/build-runner.mjs",
     "build:provenance-data": "node scripts/build-provenance-data.mjs",
