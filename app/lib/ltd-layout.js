@@ -126,6 +126,49 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((fileName) => [fileName, bankLayout(fileName)]));
 
+// A refund runs the opposite way to the code's own trade: a payment coded DR
+// refunds a customer, a receipt coded CR is a refund from a supplier. All
+// four workbooks analyse DR on receipts only and CR on payments only, so a
+// refund lands in the opposite block under its own code with its amount
+// negated. A negative DR receipt debits trade debtors and credits the bank,
+// the same double entry as the refund itself.
+const REFUND_CODES = new Set(["DR", "CR"]);
+
+/**
+ * Where a bank entry lands in its workbook's month tab.
+ * @param {string} fileName - one of BANK_ACCOUNT_FILES' workbooks
+ * @param {boolean} isReceipt - money in (debitCreditCode "D", direction "in")
+ * @param {string} code - the entry's bank code letter
+ * @param {number} amount - the entry's own amount, positive
+ * @returns {{receipt: boolean, amount: number, analysed: boolean}} the block
+ *   it lands in, the signed amount it lands with, and whether that block has
+ *   a column for its code
+ */
+export function ltdBankPlacement(fileName, isReceipt, code, amount) {
+  const layout = BANK_LAYOUTS[fileName];
+  const own = isReceipt ? layout.receiptCodes : layout.paymentCodes;
+  const opposite = isReceipt ? layout.paymentCodes : layout.receiptCodes;
+  if (!own.includes(code) && REFUND_CODES.has(code) && opposite.includes(code)) {
+    return { receipt: !isReceipt, amount: -amount, analysed: true };
+  }
+  return { receipt: isReceipt, amount, analysed: own.includes(code) };
+}
+
+/**
+ * The entry a workbook row stands for: the inverse of ltdBankPlacement. A
+ * negative DR receipt or CR payment row reads back as the refund it records.
+ * @param {boolean} inReceiptBlock - the row sits in the receipts block
+ * @param {string} code - the row's bank code letter
+ * @param {number} amount - the row's amount as the sheet holds it
+ * @returns {{debitCreditCode: string, amount: number}}
+ */
+export function ltdBankEntryOfRow(inReceiptBlock, code, amount) {
+  if (amount < 0 && ((inReceiptBlock && code === "DR") || (!inReceiptBlock && code === "CR"))) {
+    return { debitCreditCode: inReceiptBlock ? "C" : "D", amount: -amount };
+  }
+  return { debitCreditCode: inReceiptBlock ? "D" : "C", amount };
+}
+
 // OpenAccounts row 13 splits opening fixed assets across cost (G:K) and
 // depreciation (M:Q), one column per asset class.
 const OPENING_FIXED_ASSET_COLUMNS = {

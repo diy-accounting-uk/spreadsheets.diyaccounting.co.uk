@@ -684,9 +684,13 @@ function bankEntries(lines, bankCode, side) {
 // straddling invoice is returned on a VAT period outside that year and is
 // banked in a book this one does not hold, so it neither needs a settlement
 // of its own nor takes up a bank line another invoice is waiting for.
-function journalEntries(lines, journal) {
+// A credit note runs the other way from an invoice: its money goes back out
+// as a refund (DR on a payment, CR on a receipt), or it is offset or written
+// off and never reaches the bank. It neither wants a receipt or a payment
+// the way an invoice does nor takes up one an invoice is waiting for.
+function invoiceEntries(lines, journal) {
   return lines.filter(function (line) {
-    return line.sourceJournalID === journal && !isStraddlingLine(line);
+    return line.sourceJournalID === journal && line.documentType !== "credit-note" && !isStraddlingLine(line);
   });
 }
 
@@ -769,7 +773,7 @@ const SETTLEMENT_KINDS = [
     actionLabel: "Add the sale",
     what: "sale",
     sources: function (ctx) {
-      return unpaired(bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"), journalEntries(ctx.lines, "sales"));
+      return unpaired(bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"), invoiceEntries(ctx.lines, "sales"));
     },
     account: function (ctx) {
       return ctx.chart.sales[0] || null;
@@ -785,7 +789,7 @@ const SETTLEMENT_KINDS = [
     actionLabel: "Add the purchase",
     what: "purchase",
     sources: function (ctx) {
-      return unpaired(bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"), journalEntries(ctx.lines, "purchases"));
+      return unpaired(bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"), invoiceEntries(ctx.lines, "purchases"));
     },
     account: function (ctx) {
       return repostAccount(ctx, "purchases");
@@ -801,7 +805,7 @@ const SETTLEMENT_KINDS = [
     actionLabel: "Add the receipt",
     what: "receipt",
     sources: function (ctx) {
-      return unpaired(journalEntries(ctx.lines, "sales"), bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"));
+      return unpaired(invoiceEntries(ctx.lines, "sales"), bankEntries(ctx.lines, RECEIPT_BANK_CODE, "D"));
     },
     account: settlementBankAccount,
     build: function (ctx, source, account, entryNumber) {
@@ -815,7 +819,7 @@ const SETTLEMENT_KINDS = [
     actionLabel: "Add the payment",
     what: "payment",
     sources: function (ctx) {
-      return unpaired(journalEntries(ctx.lines, "purchases"), bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"));
+      return unpaired(invoiceEntries(ctx.lines, "purchases"), bankEntries(ctx.lines, PAYMENT_BANK_CODE, "C"));
     },
     account: settlementBankAccount,
     build: function (ctx, source, account, entryNumber) {

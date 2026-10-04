@@ -24,7 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine, ltdBankPlacement } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -451,10 +451,11 @@ function bankMonthTotals(scenario, tabs, periodStart, entries) {
       const tab = SHORT_MONTHS[parseDate(transaction.date).getUTCMonth()];
       const month = file.months[tab];
       if (!month) continue;
-      const receipt = transaction.direction === "in";
-      month[receipt ? "receipts" : "payments"] += transaction.amount;
+      const placement = ltdBankPlacement(fileName, transaction.direction === "in", transaction.code, transaction.amount);
+      const receipt = placement.receipt;
+      month[receipt ? "receipts" : "payments"] += placement.amount;
       const codes = receipt ? month.receiptCodes : month.paymentCodes;
-      codes[transaction.code] = (codes[transaction.code] || 0) + transaction.amount;
+      codes[transaction.code] = (codes[transaction.code] || 0) + placement.amount;
       if (entries) {
         const monthEntries = entries[fileName].months[tab];
         addEntry(monthEntries, receipt ? "receipts" : "payments", transaction);

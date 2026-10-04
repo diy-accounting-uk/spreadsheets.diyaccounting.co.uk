@@ -34,7 +34,13 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
+import {
+  BANK_ACCOUNT_FILES,
+  BANK_LAYOUTS,
+  OPENING_FIXED_ASSET_COLUMNS,
+  isLtdOpeningBankLine,
+  ltdBankPlacement,
+} from "../lib/ltd-layout.js";
 import { apportionCorporationTax, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -1009,12 +1015,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
           throw new Error(`Bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
         }
         const layout = BANK_LAYOUTS[fileName];
-        const isReceipt = tx.direction === "in";
-        const block = isReceipt ? layout.receipt : layout.payment;
-        const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
-        if (!analysedCodes.includes(tx.code)) {
-          throw new Error(`${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code ${tx.code}`);
+        const placement = ltdBankPlacement(fileName, tx.direction === "in", tx.code, tx.amount);
+        if (!placement.analysed) {
+          throw new Error(`${fileName} analyses no ${tx.direction === "in" ? "receipt" : "payment"} under code ${tx.code}`);
         }
+        const isReceipt = placement.receipt;
+        const block = isReceipt ? layout.receipt : layout.payment;
 
         const rowKey = `${fileName}:${tabName}`;
         const rows = isReceipt ? receiptRows : paymentRows;
@@ -1025,7 +1031,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
         if (tx.description) sheet[`${block.comment}${row}`] = tx.description;
         sheet[`${block.code}${row}`] = tx.code;
-        sheet[`${block.amount}${row}`] = tx.amount;
+        sheet[`${block.amount}${row}`] = placement.amount;
       }
     }
   }
