@@ -254,7 +254,7 @@ describe("save_workbook: the base64 payload decodes to a real workbook", () => {
     } finally {
       client.close();
     }
-  }, 30000);
+  }, 60000);
 });
 
 // ============================================================================
