@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// diya-gl-tools.js — the four MCP tools, each a thin call into a function
-// phase 1 already tests: extract_book wraps export.js's --file pipeline
+// diya-gl-tools.js — the MCP tools, each a thin call into a function
+// tested on its own: extract_book wraps export.js's --file pipeline
 // (diya-gl-interchange.js underneath, so every kind it reads loads here too),
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
 // and diya-gl-edits.js, save_workbook wraps product-workbook.js for a workbook
-// or package zip and diya-gl-interchange.js for the two diya-gl formats. No
-// engine code lives here.
+// or package zip and diya-gl-interchange.js for the two diya-gl formats, and
+// lines, chart, book and checks wrap book-queries.js. No engine code lives
+// here.
 //
 // extract_book and report both carry a bookChecks field alongside report --
 // the same app/lib/book-checks.js results and summary export.js writes as
@@ -45,9 +46,11 @@ import {
   changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
+  setLineReference,
 } from "../diya-gl-edits.js";
 import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
+import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
 
 // Every edit fn takes (book, lines, params); a line edit returns a new
 // lines array and a book edit (Ltd's own dividend, members and charges
@@ -65,6 +68,7 @@ const EDITS = {
   changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
+  setLineReference,
   ...LTD_LINE_EDITS,
   ...LTD_BOOK_EDITS,
 };
@@ -269,8 +273,47 @@ async function buildDownload(session, params = {}) {
   return { filename, format, base64: Buffer.from(workbook).toString("base64") };
 }
 
+// The book and lines a read tool answers over: an explicit pair, or the
+// session's.
+function bookAndLines(session, params) {
+  const book = params.book ?? session.book;
+  const lines = params.lines ?? session.lines;
+  if (!book || !lines) requireLoaded(session);
+  return { book, lines };
+}
+
+function lines(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  return queryLines(book, bookLines, params);
+}
+
+function chart(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  return { product: productOf(book), accounts: chartOfAccounts(book, bookLines, reportFor(book, bookLines, true)) };
+}
+
+function profile(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  return bookProfile(book, bookLines, productOf(book));
+}
+
+async function checks(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  return checksWithEntries(await bookChecksFor(book, bookLines));
+}
+
+const BYPASS_PROPERTIES = {
+  book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
+  lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
+};
+
+const ONE_OR_MANY = (description) => ({
+  anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }],
+  description,
+});
+
 /**
- * The four tools, keyed by their MCP name: schema plus handler. tools/list
+ * The tools, keyed by their MCP name: schema plus handler. tools/list
  * reads name/description/inputSchema straight off this table; tools/call
  * looks the name up and calls handler(session, arguments).
  */
@@ -297,7 +340,7 @@ export const TOOLS = {
   report: {
     name: "report",
     description:
-      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book. Each report-section figure carries the label the spreadsheet prints for it.",
+      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book. Each report-section figure carries the label the spreadsheet prints for it. Answers: What was my profit? What is my turnover, my tax bill, my VAT due? Which lines make up this figure (entryNumbers)?",
     inputSchema: {
       type: "object",
       properties: {
@@ -306,7 +349,7 @@ export const TOOLS = {
         entryNumbers: {
           anyOf: [{ type: "boolean" }, { type: "array", items: { type: "string" } }],
           description:
-            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only. Attributed today: Basic Sole Trader and Taxi Driver books.",
+            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only.",
         },
       },
     },
@@ -354,5 +397,50 @@ export const TOOLS = {
       },
     },
     handler: buildDownload,
+  },
+  lines: {
+    name: "lines",
+    description:
+      "Read every ledger line of the loaded book (every sale, purchase, bank movement, payslip and journal entry, with its entryNumber, journal, accountMainID, postingDate, amount, detailComment naming the customer, supplier or payee, lineItemComment, documentReference and VAT fields), filtered and optionally grouped with a count and a total in pence. Answers: Who is my best customer? Which suppliers cost most? What did I spend on fuel in June? How much did I invoice each month? What are my five largest purchases? Which lines carry invoice INV-0012? Filters combine: journal, accountMainID, from/to posting dates, text in detailComment or lineItemComment, documentReference. groupBy detailComment (customer or supplier) or accountMainID gives groups largest total first; groupBy month gives them in date order. top keeps the first N groups, or without groupBy the N largest lines. Totals are signed: credit notes reduce their sale or purchase (a bad debt written off reduces that customer's sales), and credits on the bank or journal (money out) are negative.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        journal: ONE_OR_MANY("Optional: sourceJournalID to keep, e.g. sales, purchases, bank, payroll, journal"),
+        accountMainID: ONE_OR_MANY("Optional: account ids to keep, e.g. 4000 (see the chart tool)"),
+        from: { type: "string", description: "Optional: earliest postingDate kept, YYYY-MM-DD inclusive" },
+        to: { type: "string", description: "Optional: latest postingDate kept, YYYY-MM-DD inclusive" },
+        text: { type: "string", description: "Optional: case-insensitive text found in detailComment or lineItemComment" },
+        documentReference: { type: "string", description: "Optional: case-insensitive text found in documentReference" },
+        groupBy: {
+          type: "string",
+          enum: LINE_GROUPINGS,
+          description: "Optional: detailComment (customer or supplier), accountMainID or month (YYYY-MM)",
+        },
+        top: { type: "integer", minimum: 1, description: "Optional: keep at most this many groups, or the largest lines" },
+        ...BYPASS_PROPERTIES,
+      },
+    },
+    handler: lines,
+  },
+  chart: {
+    name: "chart",
+    description:
+      "The loaded book's chart of accounts: each account's id, name, group (sales, purchases, bank, capital, assets, liabilities), its declared fields (the workbook column it lands in), how many lines post to it and their total in pence, and feeds, the report rows (key and printed label) its lines reach. Answers: Which account is fuel? Where does rent show in my accounts? What accounts can I post to? Which accounts have no activity this year?",
+    inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
+    handler: chart,
+  },
+  book: {
+    name: "book",
+    description:
+      "The loaded book's profile from book.toml: product (bst, taxi, se, ltd), accounting period, the business (name, trade, address, UTR, VAT registration, cash or accruals basis), tax settings (income tax, NI, VAT, corporation tax, capital allowances, mileage rates), bank accounts, the journals present with their line counts and date range, and every register the book carries (directors, employees, debtors, creditors, fixed assets, HP agreements, dividends, members, charges, opening balances, stock). Answers: What period do these accounts cover? Am I VAT registered? Who are the directors and employees? What fixed assets do I own? Who owes me money at the year end?",
+    inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
+    handler: profile,
+  },
+  checks: {
+    name: "checks",
+    description:
+      "Every book check and warning over the loaded book, each with its verdict (pass, warn or fail), what it means, and the entryNumbers of the lines that fail it, plus the pass/warn/fail summary. Answers: Is anything wrong with my books? Which entries are dated outside the year? Which sales have no invoice number? Are there duplicate entries? Am I near the VAT threshold?",
+    inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
+    handler: checks,
   },
 };

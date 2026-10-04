@@ -13,8 +13,15 @@ import { fileURLToPath } from "url";
 import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
-import { addSaleLine, addPurchaseLine } from "../lib/diya-gl-edits.js";
-import { BST_SALES_ACCOUNTS, TAXI_SALES_ACCOUNT, LTD_SALES_CODE_MAP, isOpeningBalanceLine } from "../lib/scenario-extractor.js";
+import { addSaleLine, addPurchaseLine, changeLineAccount } from "../lib/diya-gl-edits.js";
+import {
+  BST_SALES_ACCOUNTS,
+  TAXI_SALES_ACCOUNT,
+  LTD_SALES_CODE_MAP,
+  LTD_PURCHASE_CODE_MAP,
+  SE_PURCHASE_CODE_MAP,
+  isOpeningBalanceLine,
+} from "../lib/scenario-extractor.js";
 import { isLtdOpeningBankLine } from "../lib/ltd-layout.js";
 import { readXlsxCellValues } from "../lib/xlsx-reader.js";
 import { extractBookFromFile, buildFileReportDocument } from "../bin/export.js";
@@ -164,6 +171,46 @@ describe("entryNumbers on a Limited Company book", () => {
   it("gives every section row that reprints a cell its entryNumbers", () => {
     expect(rowsMissingEntryNumbers(report)).toEqual([]);
   });
+
+  const PREMISES_GROSS = "section/journal-category-vat-netting/premises-rent-rates-purchases-r/gross";
+  const premisesLines = (book) =>
+    book.filter((line) => line.sourceJournalID === "purchases" && yearLine(line) && LTD_PURCHASE_CODE_MAP[line.accountMainID] === "r");
+
+  it("gives a netting row's gross exactly the year's purchases on its category's accounts", () => {
+    expect(premisesLines(lines).length).toBeGreaterThan(1);
+    expect(report.get(PREMISES_GROSS).entryNumbers).toEqual(sortedEntryNumbers(premisesLines(lines)));
+  });
+
+  it("moves a line out of a netting row when its account moves to another category", () => {
+    const moved = premisesLines(lines)[0];
+    const edited = changeLineAccount(book, lines, { entryNumber: moved.entryNumber, newAccountMainID: "5201" });
+    const after = reportOf(book, edited, "ltd");
+    expect(after.get(PREMISES_GROSS).entryNumbers).not.toContain(moved.entryNumber);
+    expect(after.get(PREMISES_GROSS).entryNumbers).not.toEqual(sortedEntryNumbers(premisesLines(lines)));
+    expect(after.get(PREMISES_GROSS).entryNumbers).toEqual(sortedEntryNumbers(premisesLines(edited)));
+  });
+
+  it("gives called up share capital exactly the book's share capital line, on both statements that print it", () => {
+    const shareCapital = lines.filter((line) => line.accountMainID === "3000");
+    expect(shareCapital).toHaveLength(1);
+    for (const key of [
+      "section/opening-balance-sheet/called-up-share-capital",
+      "section/published-balance-sheet/called-up-share-capital",
+    ]) {
+      expect(report.get(key).entryNumbers).toEqual(sortedEntryNumbers(shareCapital));
+    }
+  });
+
+  it("gives VAT charged on sales exactly the year's sales lines", () => {
+    const sales = lines.filter((line) => line.sourceJournalID === "sales" && yearLine(line));
+    expect(report.get("section/vat-returns/vat-charged-on-sales").entryNumbers).toEqual(sortedEntryNumbers(sales));
+  });
+
+  it("gives every section row its entryNumbers", () => {
+    expect(
+      [...report.values()].filter((entry) => entry.key.startsWith("section/") && !entry.entryNumbers).map((entry) => entry.key),
+    ).toEqual([]);
+  });
 });
 
 describe("entryNumbers on a Self Employed book", () => {
@@ -198,6 +245,45 @@ describe("entryNumbers on a Self Employed book", () => {
 
   it("gives every section row that reprints a cell its entryNumbers", () => {
     expect(rowsMissingEntryNumbers(report)).toEqual([]);
+  });
+
+  const PREMISES_GROSS = "section/journal-category-vat-netting/premises-rent-rates-power-purchases-p/gross";
+  const premisesLines = (book) =>
+    book.filter((line) => line.sourceJournalID === "purchases" && yearLine(line) && SE_PURCHASE_CODE_MAP[line.accountMainID] === "p");
+
+  it("gives a netting row's gross exactly the year's purchases on its category's two accounts", () => {
+    expect(new Set(premisesLines(lines).map((line) => line.accountMainID))).toEqual(new Set(["5200", "5201"]));
+    expect(report.get(PREMISES_GROSS).entryNumbers).toEqual(sortedEntryNumbers(premisesLines(lines)));
+  });
+
+  it("moves a line out of a netting row when its account moves to another category", () => {
+    const moved = premisesLines(lines)[0];
+    const edited = changeLineAccount(book, lines, { entryNumber: moved.entryNumber, newAccountMainID: "5400" });
+    const after = reportOf(book, edited, "se");
+    expect(after.get(PREMISES_GROSS).entryNumbers).not.toContain(moved.entryNumber);
+    expect(after.get(PREMISES_GROSS).entryNumbers).not.toEqual(sortedEntryNumbers(premisesLines(lines)));
+    expect(after.get(PREMISES_GROSS).entryNumbers).toEqual(sortedEntryNumbers(premisesLines(edited)));
+  });
+
+  it("gives the fixed asset schedule's additions exactly the year's capitalised purchases", () => {
+    const capitalised = lines.filter(
+      (line) => line.sourceJournalID === "purchases" && yearLine(line) && SE_PURCHASE_CODE_MAP[line.accountMainID] === "fa",
+    );
+    expect(capitalised.length).toBeGreaterThan(0);
+    expect(report.get("section/fixed-asset-schedule/additions-in-the-year-schedule-e110").entryNumbers).toEqual(
+      sortedEntryNumbers(capitalised),
+    );
+  });
+
+  it("gives VAT charged on sales exactly the year's sales lines", () => {
+    const sales = lines.filter((line) => line.sourceJournalID === "sales" && yearLine(line));
+    expect(report.get("section/vat-returns/vat-charged-on-sales").entryNumbers).toEqual(sortedEntryNumbers(sales));
+  });
+
+  it("gives every section row its entryNumbers", () => {
+    expect(
+      [...report.values()].filter((entry) => entry.key.startsWith("section/") && !entry.entryNumbers).map((entry) => entry.key),
+    ).toEqual([]);
   });
 });
 
@@ -239,6 +325,22 @@ describe("the Excel-side comparison with entryNumbers present", () => {
     const { book, lines } = loadDiyaGlData(BST_BOOK);
     const document = buildFileReportDocument(book, lines, "bst", bst);
     expect(document.values.some((entry) => "entryNumbers" in entry)).toBe(false);
+  });
+});
+
+describe("the MCP report tool on every product", () => {
+  it.each([
+    ["se", SE_BOOK],
+    ["ltd", LTD_BOOK],
+  ])("%s: gives every report row its entryNumbers when asked with true", async (product, dir) => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const session = createSession();
+    loadIntoSession(session, book, lines);
+    const response = await createMethods(session)["tools/call"]({ name: "report", arguments: { entryNumbers: true } });
+    const values = response.structuredContent.report.values;
+    expect(values.filter((entry) => entry.key.startsWith("section/") && !entry.entryNumbers).map((entry) => entry.key)).toEqual([]);
+    const tools = (await createMethods(session)["tools/list"]()).tools;
+    expect(tools.find((tool) => tool.name === "report").inputSchema.properties.entryNumbers.description).not.toMatch(/Attributed today/);
   });
 });
 

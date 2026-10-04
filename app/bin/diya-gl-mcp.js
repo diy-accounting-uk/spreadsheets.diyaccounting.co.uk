@@ -3,7 +3,8 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-mcp.js — a stdio MCP server exposing the diya-gl pipeline as
-// four tools: extract_book, report, edit_lines, save_workbook, over any of
+// tools: extract_book, report, edit_lines, save_workbook, lines, chart,
+// book and checks, over any of
 // the four products (Basic Sole Trader, Taxi Driver, Self Employed, Company).
 //
 // Transport: hand-rolled newline-delimited JSON-RPC 2.0

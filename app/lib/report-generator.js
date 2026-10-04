@@ -130,16 +130,23 @@ export function categoryNettingLines(netting) {
 // shown return reaches and what VAT is on them, which covered periods fall
 // outside the year, and where two shown returns cover the same period twice.
 //
-// periods: [{ row, endLabel, outputVat, inputVat, inAccountingYear }] in row
-// order, one per VAT period the interface carries.
+// periods: [{ row, endLabel, outputVat, inputVat, inAccountingYear, cells }]
+// in row order, one per VAT period the interface carries; cells names the
+// interface cells each figure is read from ({ end, output, input }), so every
+// row says which cells stand behind it.
 // forms:   [{ name, end }] where end is the row the form's own period end
 // date matches, or null when it matches none.
 export function vatCycleRows(periods, forms) {
   const { byRow, coverage, placed, missed, outside, shared } = vatReturnCoverage(periods, forms);
+  const cellsOf = (list, figure) => list.map((period) => period.cells?.[figure]).filter(Boolean);
   const rows = placed.map((form) => ({
     label: `${form.name} covers the periods ending`,
     value: form.covers.map((row) => byRow.get(row).endLabel).join(", "),
     indent: 1,
+    cells: cellsOf(
+      form.covers.map((row) => byRow.get(row)),
+      "end",
+    ),
   }));
   if (rows.length === 0) return [];
 
@@ -149,8 +156,18 @@ export function vatCycleRows(periods, forms) {
       label: `No return above covers the accounting year's ${missed.length === 1 ? "month" : "months"} ending ${named}. That month sat on the previous return of the same cycle, which is why the quarters below fall short of the year's own VAT lines.`,
       value: "",
     });
-    rows.push({ label: "Output VAT on it", value: reportAmount(missed.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
-    rows.push({ label: "Input VAT on it", value: reportAmount(missed.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
+    rows.push({
+      label: "Output VAT on it",
+      value: reportAmount(missed.reduce((total, p) => total + p.outputVat, 0)),
+      indent: 1,
+      cells: cellsOf(missed, "output"),
+    });
+    rows.push({
+      label: "Input VAT on it",
+      value: reportAmount(missed.reduce((total, p) => total + p.inputVat, 0)),
+      indent: 1,
+      cells: cellsOf(missed, "input"),
+    });
   }
 
   if (outside.length > 0) {
@@ -158,8 +175,18 @@ export function vatCycleRows(periods, forms) {
       label: `The returns above also cover the ${outside.length === 1 ? "period" : "periods"} ending ${outside.map((period) => period.endLabel).join(", ")}, ${outside.length === 1 ? "which falls" : "which fall"} outside the accounting year.`,
       value: "",
     });
-    rows.push({ label: "Output VAT on those", value: reportAmount(outside.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
-    rows.push({ label: "Input VAT on those", value: reportAmount(outside.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
+    rows.push({
+      label: "Output VAT on those",
+      value: reportAmount(outside.reduce((total, p) => total + p.outputVat, 0)),
+      indent: 1,
+      cells: cellsOf(outside, "output"),
+    });
+    rows.push({
+      label: "Input VAT on those",
+      value: reportAmount(outside.reduce((total, p) => total + p.inputVat, 0)),
+      indent: 1,
+      cells: cellsOf(outside, "input"),
+    });
   }
 
   if (shared.length > 0) {
@@ -173,11 +200,13 @@ export function vatCycleRows(periods, forms) {
       label: `Output VAT on ${shared.length === 1 ? "it" : "those"}`,
       value: reportAmount(shared.reduce((total, p) => total + p.outputVat, 0)),
       indent: 1,
+      cells: cellsOf(shared, "output"),
     });
     rows.push({
       label: `Input VAT on ${shared.length === 1 ? "it" : "those"}`,
       value: reportAmount(shared.reduce((total, p) => total + p.inputVat, 0)),
       indent: 1,
+      cells: cellsOf(shared, "input"),
     });
   }
 

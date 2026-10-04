@@ -22,6 +22,7 @@ import {
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 import { financialYearRatesFor, financialYearNumber } from "./tax/corporation-tax.js";
+import { refreshCachedValues, refreshZipCachedValues } from "./cached-values.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -1481,6 +1482,11 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     }
   }
 
+  // An application that shows cached values instead of recalculating reads
+  // every formula the edits above reach as the template left it, so those
+  // results are recalculated here and written beside their formulas.
+  await refreshZipCachedValues(zip, await JSZip.loadAsync(templateBuffer));
+
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   const wbXml = await zip.file("xl/workbook.xml").async("string");
   const wbDate = zip.file("xl/workbook.xml").date;
@@ -1976,7 +1982,8 @@ export async function applyYearEndSequence(xlsxBuffer, templateFile, sheetsConfi
     buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
   }
 
-  return buffer;
+  if (buffer === xlsxBuffer || !templateFile.endsWith(".xlsx")) return buffer;
+  return refreshCachedValues(xlsxBuffer, buffer);
 }
 
 export function formatDateDDMMYY(date) {

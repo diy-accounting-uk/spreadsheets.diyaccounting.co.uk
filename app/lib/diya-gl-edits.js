@@ -318,6 +318,31 @@ export function changeLineDetail(book, lines, params) {
   return changed;
 }
 
+/**
+ * Set one existing line's document reference, identified by its entryNumber:
+ * the invoice, receipt or statement number the entry is filed under. Every
+ * other field, including the line's position in the array and its
+ * entryNumber, is carried over unchanged.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string, documentReference: string}} params
+ * @returns {Array} a new lines array with the named line's reference set
+ */
+export function setLineReference(book, lines, params) {
+  const { entryNumber, documentReference } = params;
+  if (typeof documentReference !== "string") {
+    throw new Error(`setLineReference expects documentReference to be a string, got "${documentReference}"`);
+  }
+  let found = false;
+  const changed = lines.map((line) => {
+    if (line.entryNumber !== entryNumber) return line;
+    found = true;
+    return { ...line, documentReference };
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return changed;
+}
+
 // A measured quantity is three fields at once -- how many, of what, and
 // what the measurement is of -- so they are written and removed together.
 // Miles name themselves: a Taxi fare day's quantity is always the business

@@ -42,6 +42,7 @@ on:
       - 'examples/**'
       - 'scripts/example-books.json'
       - 'scripts/build-diya-gl-bundle.mjs'
+      - 'scripts/build-picker-api-key.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
     inputs:
@@ -270,6 +271,11 @@ jobs:
         run: npm run build:donate-page
         env:
           ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+
+      - name: Write the Google Picker API key
+        run: npm run build:picker-api-key
+        env:
+          GOOGLE_DRIVE_PICKER_API_KEY: ${{ vars.GOOGLE_DRIVE_PICKER_API_KEY }}
 
       - name: Build provenance data
         run: npm run build:provenance-data

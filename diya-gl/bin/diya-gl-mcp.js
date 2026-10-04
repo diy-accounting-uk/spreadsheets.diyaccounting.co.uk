@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// diya-gl-mcp.js — the stdio MCP server, four tools over a loaded diya-gl
-// book: extract_book, report, edit_lines, save_workbook. See
+// diya-gl-mcp.js — the stdio MCP server over a loaded diya-gl book:
+// extract_book, report, edit_lines, save_workbook, lines, chart, book and
+// checks. See
 // app/lib/mcp/server.js in the source repository for the method table.
 
 import { runDistBin } from "./run-dist-bin.js";
