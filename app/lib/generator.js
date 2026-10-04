@@ -116,6 +116,7 @@ async function writeCoreProperties(zip) {
 /**
  * The company and the terms in an already-composed package: the workbooks the
  * generator has no cells to edit, and the Company package's dividend voucher.
+ * A workbook also has every formula's cached value recalculated.
  *
  * @param {Uint8Array|Buffer} packageBuffer - an xlsx or docx
  * @returns {Promise<Uint8Array>}
@@ -123,6 +124,7 @@ async function writeCoreProperties(zip) {
 export async function applyCoreProperties(packageBuffer) {
   const zip = await JSZip.loadAsync(packageBuffer);
   await writeCoreProperties(zip);
+  if (zip.file("xl/workbook.xml")) await refreshZipCachedValues(zip);
   stabilizeDirDates(zip);
   return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
@@ -1483,9 +1485,10 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   }
 
   // An application that shows cached values instead of recalculating reads
-  // every formula the edits above reach as the template left it, so those
-  // results are recalculated here and written beside their formulas.
-  await refreshZipCachedValues(zip, await JSZip.loadAsync(templateBuffer));
+  // every formula as the template left it, including those the template
+  // itself caches stale, so every result is recalculated here and written
+  // beside its formula.
+  await refreshZipCachedValues(zip);
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   const wbXml = await zip.file("xl/workbook.xml").async("string");
@@ -1983,7 +1986,7 @@ export async function applyYearEndSequence(xlsxBuffer, templateFile, sheetsConfi
   }
 
   if (buffer === xlsxBuffer || !templateFile.endsWith(".xlsx")) return buffer;
-  return refreshCachedValues(xlsxBuffer, buffer);
+  return refreshCachedValues(null, buffer);
 }
 
 export function formatDateDDMMYY(date) {

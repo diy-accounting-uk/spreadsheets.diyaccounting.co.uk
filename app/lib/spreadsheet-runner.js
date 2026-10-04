@@ -195,9 +195,10 @@ export async function applyCellWrites(xlsxBuffer, cellWrites, { refreshFormulaRe
   }
 
   // The formulas reading the written cells carry results computed from the
-  // values the cells held before; a workbook LibreOffice recalculates anyway
-  // can skip bringing them up to date.
-  if (refreshFormulaResults) await refreshZipCachedValues(zip, await JSZip.loadAsync(xlsxBuffer));
+  // values the cells held before, and the template caches some results its
+  // formulas do not produce; a workbook LibreOffice recalculates anyway can
+  // skip bringing them up to date.
+  if (refreshFormulaResults) await refreshZipCachedValues(zip);
 
   return zip.generateAsync({
     type: "uint8array",

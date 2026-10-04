@@ -261,3 +261,62 @@ describe("a generated package caches the year it was generated for", () => {
     expect(mismatches[0]).toMatch(/^Profit & Loss Acc!C2 caches /);
   }, 120000);
 });
+
+// ── No generated workbook caches a value its formulas do not produce ────
+
+// Every formula's cached value a workbook holds that the evaluator does not
+// reproduce. A formula the evaluator cannot read (TODAY()) keeps its cache and
+// is not counted.
+async function staleCaches(bytes) {
+  const { changed } = await analyseCachedValues(null, bytes);
+  return changed.map(
+    ({ sheet, cell: ref, from, to }) => `${sheet}!${ref} caches ${JSON.stringify(from)}, formula gives ${JSON.stringify(to)}`,
+  );
+}
+
+describe("a generated package caches only values its formulas produce", () => {
+  let workDir;
+  beforeAll(() => {
+    workDir = mkdtempSync(join(tmpdir(), "cached-values-stale-"));
+  });
+  afterAll(() => {
+    if (workDir) rmSync(workDir, { recursive: true, force: true });
+  });
+
+  for (const [product, args] of [
+    ["Basic Sole Trader", ["--package", "bst", "--years", "se-2026-2027"]],
+    ["Self Employed", ["--package", "se", "--years", "se-2026-2027"]],
+    ["Company, March year end", ["--package", "ltd", "--years", "ltd-2026", "--year-end", "2027-03-31"]],
+    ["Company, September year end", ["--package", "ltd", "--years", "ltd-2026", "--year-end", "2026-09-30"]],
+  ]) {
+    it(`${product}: no workbook of the package caches a stale value`, async () => {
+      const outDir = join(workDir, product.replace(/\W+/g, "_"));
+      execFileSync(process.execPath, [GENERATE_JS, ...args, "--skip-guide", "--output-dir", outDir], { stdio: "pipe" });
+      const [packageDir] = readdirSync(outDir);
+      const stale = [];
+      for (const name of readdirSync(join(outDir, packageDir)).filter((file) => file.endsWith(".xlsx"))) {
+        for (const line of await staleCaches(readFileSync(join(outDir, packageDir, name)))) stale.push(`${name}: ${line}`);
+      }
+      expect(stale).toEqual([]);
+    }, 600000);
+  }
+
+  it("names the cell whose cached value was changed after generation", async () => {
+    const meta = parseTOML(readFileSync(resolve(APP_DIR, "templates/bst/meta.toml"), "utf8"));
+    const taxData = parseTOML(readFileSync(resolve(APP_DIR, "data/se-2026-2027.toml"), "utf8"));
+    const template = readFileSync(resolve(APP_DIR, "templates/bst", meta.template.spreadsheet));
+    const generated = await generateSpreadsheet(template, taxData, meta.sheets);
+    expect(await staleCaches(generated)).toEqual([]);
+
+    const zip = await JSZip.loadAsync(generated);
+    const path = (await buildSheetMap(zip)).get("Profit & Loss Acc");
+    const xml = await zip.file(path).async("string");
+    const corrupted = xml.replace(/(<c r="C2"[^>]*><f>[^<]*<\/f><v>)[^<]*(<\/v>)/, "$1corrupted$2");
+    expect(corrupted).not.toBe(xml);
+    zip.file(path, corrupted);
+
+    const stale = await staleCaches(await zip.generateAsync({ type: "uint8array" }));
+    expect(stale).toHaveLength(1);
+    expect(stale[0]).toMatch(/^Profit & Loss Acc!C2 caches "corrupted"/);
+  }, 120000);
+});
