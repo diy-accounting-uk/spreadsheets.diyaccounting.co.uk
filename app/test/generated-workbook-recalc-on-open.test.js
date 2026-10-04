@@ -56,10 +56,25 @@ const GENERATED = [
   },
 ];
 
+function localeRegistry(locale) {
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
+    `<item oor:path="/org.openoffice.Setup/L10N"><prop oor:name="ooSetupSystemLocale" oor:op="fuse"><value>${locale}</value></prop></item>\n` +
+    "</oor:items>\n"
+  );
+}
+
 // The first three rows of one sheet as LibreOffice shows them on open.
 function headingRows(workbookPath, sheet, workDir) {
   const csvDir = join(workDir, "csv");
   mkdirSync(csvDir, { recursive: true });
+  // LibreOffice prints dates in its profile's locale, which otherwise follows
+  // the machine: a Linux runner prints 04/30/2026 where a UK desktop prints
+  // 30/04/2026.
+  const profileUser = join(workDir, "profile", "user");
+  mkdirSync(profileUser, { recursive: true });
+  writeFileSync(join(profileUser, "registrymodifications.xcu"), localeRegistry("en-GB"));
   execFileSync(
     getLibreOffice(),
     [

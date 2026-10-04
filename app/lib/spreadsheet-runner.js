@@ -71,7 +71,7 @@ function releaseSharedFormula(xml, cellRef) {
   const follower = new RegExp(`(<c r="([A-Z]+)(\\d+)"[^>]*>)<f(?=[^>]*\\bt="shared")(?=[^>]*\\bsi="${si}")[^>]*/>`, "g");
   return xml.replace(follower, (whole, open, col, row) => {
     const formula = shiftFormula(text, parseInt(row, 10) - parseInt(masterRow, 10), colToNum(col) - colToNum(masterCol));
-    return `${open}<f>${formula.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</f>`;
+    return `${open}<f>${escapeXml(formula)}</f>`;
   });
 }
 

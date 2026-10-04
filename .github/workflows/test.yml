@@ -627,7 +627,7 @@ jobs:
         run: cd diya-gl && npm ci
 
       - name: Pack diya-gl and run each bin from the tarball
-        run: diya-gl/smoke.sh target/diya-gl-smoke
+        run: bash scripts/smoke-diya-gl.sh target/diya-gl-smoke
 
       - name: Find the packed tarball
         id: tarball
