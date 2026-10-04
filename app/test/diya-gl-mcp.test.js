@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-mcp.test.js — the stdio MCP server exposing the diya-gl BST
-// pipeline as four tools (Phase 2 of
+// pipeline as MCP tools (Phase 2 of
 // PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md). Three things are proved here:
 //
 //   - the JSON-RPC handshake and tool listing work over the real stdio
@@ -122,7 +122,7 @@ function startMcpClient() {
 // ============================================================================
 
 describe("diya-gl MCP server: stdio handshake", () => {
-  it("initializes, lists exactly the four planned tools, and answers tools/call", async () => {
+  it("initializes, lists exactly the eight tools, and answers tools/call", async () => {
     const client = startMcpClient();
     try {
       const initResult = await client.request("initialize", { protocolVersion: "2025-06-18" });
@@ -133,7 +133,7 @@ describe("diya-gl MCP server: stdio handshake", () => {
 
       const listResult = await client.request("tools/list");
       const names = listResult.tools.map((tool) => tool.name).sort();
-      expect(names).toEqual(["edit_lines", "extract_book", "report", "save_workbook"]);
+      expect(names).toEqual(["book", "chart", "checks", "edit_lines", "extract_book", "lines", "report", "save_workbook"]);
       for (const tool of listResult.tools) {
         expect(typeof tool.description).toBe("string");
         expect(tool.inputSchema.type).toBe("object");
@@ -945,5 +945,152 @@ describe("diya-gl MCP: addPayrollLine", () => {
     const added = result.lines.find((entry) => entry.entryNumber === "TEST-PAYROLL-MCP-1");
     expect(added["diya-gl:netPay"]).toBe(1600);
     expect(added.amount).toBe(2000);
+  });
+});
+
+// ============================================================================
+// The read tools: lines, chart, book and checks, over a Basic Sole Trader and
+// a Limited Company example book, through tools/list and tools/call.
+// ============================================================================
+
+describe("diya-gl MCP server: reading every detail of the book", () => {
+  const bstBook = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+  const ltdBook = loadDiyaGlData(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+  const pence = (amount) => Math.round(amount * 100);
+
+  it("advertises each read tool with the questions it answers", async () => {
+    const { tools } = await createMethods()["tools/list"]();
+    const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
+    expect(byName.lines.description).toContain("Who is my best customer?");
+    expect(byName.lines.description).toContain("Which suppliers cost most?");
+    expect(byName.lines.description).toContain("What did I spend on fuel in June?");
+    for (const name of ["chart", "book", "checks"]) expect(byName[name].description).toMatch(/Answers: .+\?/);
+    expect(Object.keys(byName.lines.inputSchema.properties)).toEqual(
+      expect.arrayContaining(["journal", "accountMainID", "from", "to", "text", "documentReference", "groupBy", "top", "book", "lines"]),
+    );
+  });
+
+  it("names the best customer of a Basic Sole Trader book with its sales total in pence", async () => {
+    const { book, lines } = bstBook;
+    const answer = await toolLayer(book, lines).call("lines", { journal: "sales", groupBy: "detailComment", top: 1 });
+    const totals = {};
+    for (const line of lines.filter((entry) => entry.sourceJournalID === "sales")) {
+      totals[line.detailComment] = (totals[line.detailComment] || 0) + pence(line.amount);
+    }
+    const [bestName, bestPence] = Object.entries(totals).sort((a, b) => b[1] - a[1])[0];
+    expect(answer.groups).toHaveLength(1);
+    expect(answer.groups[0]).toMatchObject({ key: bestName, totalPence: bestPence });
+    expect(answer.groups[0].entryNumbers).toEqual(
+      lines.filter((line) => line.sourceJournalID === "sales" && line.detailComment === bestName).map((line) => line.entryNumber),
+    );
+    expect(answer.count).toBe(lines.filter((line) => line.sourceJournalID === "sales").length);
+  });
+
+  it("reduces a customer's total by a credit note against them", async () => {
+    const { book, lines } = bstBook;
+    const credit = {
+      ...lines.find((line) => line.detailComment === "Acme Corp"),
+      entryNumber: "CREDIT-1",
+      amount: 100,
+      documentType: "credit-note",
+    };
+    const tools = toolLayer(book, [...lines, credit]);
+    const before = await toolLayer(book, lines).call("lines", { journal: "sales", text: "Acme Corp" });
+    const after = await tools.call("lines", { journal: "sales", text: "Acme Corp" });
+    expect(after.totalPence).toBe(before.totalPence - 10000);
+  });
+
+  it("answers what was spent on fuel in June: motor lines dated in June, text match, totalled", async () => {
+    const { book, lines } = bstBook;
+    const answer = await toolLayer(book, lines).call("lines", { journal: "purchases", text: "FUEL", from: "2025-06-01", to: "2025-06-30" });
+    const expected = lines.filter(
+      (line) =>
+        line.sourceJournalID === "purchases" &&
+        line.postingDate >= "2025-06-01" &&
+        line.postingDate <= "2025-06-30" &&
+        `${line.detailComment} ${line.lineItemComment}`.toLowerCase().includes("fuel"),
+    );
+    expect(expected.length).toBeGreaterThan(0);
+    expect(answer.lines.map((line) => line.entryNumber)).toEqual(expected.map((line) => line.entryNumber));
+    expect(answer.totalPence).toBe(expected.reduce((sum, line) => sum + pence(line.amount), 0));
+  });
+
+  it("groups by month in date order and by account largest first, naming the account", async () => {
+    const { book, lines } = ltdBook;
+    const tools = toolLayer(book, lines);
+    const months = await tools.call("lines", { journal: "sales", groupBy: "month" });
+    const keys = months.groups.map((group) => group.key);
+    expect(keys).toEqual([...keys].sort());
+    expect(months.groups.reduce((sum, group) => sum + group.count, 0)).toBe(months.count);
+
+    const accounts = await tools.call("lines", { journal: "purchases", groupBy: "accountMainID", top: 3 });
+    expect(accounts.groups).toHaveLength(3);
+    const magnitudes = accounts.groups.map((group) => Math.abs(group.totalPence));
+    expect(magnitudes).toEqual([...magnitudes].sort((a, b) => b - a));
+    for (const group of accounts.groups) expect(group.name).toBe(book.accounts.purchases[group.key].accountMainDescription);
+  });
+
+  it("filters by account and documentReference, and gives the largest lines with top alone", async () => {
+    const { book, lines } = ltdBook;
+    const tools = toolLayer(book, lines);
+    const reference = lines.find((line) => line.documentReference && line.sourceJournalID === "sales").documentReference;
+    const byReference = await tools.call("lines", { documentReference: reference.toLowerCase() });
+    expect(byReference.count).toBeGreaterThan(0);
+    for (const line of byReference.lines) expect(line.documentReference.toLowerCase()).toContain(reference.toLowerCase());
+
+    const rent = await tools.call("lines", { accountMainID: ["5200"] });
+    expect(rent.count).toBe(lines.filter((line) => line.accountMainID === "5200").length);
+
+    const largest = await tools.call("lines", { journal: "purchases", top: 5 });
+    expect(largest.lines).toHaveLength(5);
+    const largestAmount = Math.max(...lines.filter((line) => line.sourceJournalID === "purchases").map((line) => line.amount));
+    expect(largest.lines[0].amount).toBe(largestAmount);
+  });
+
+  it("refuses a grouping it does not know by name", async () => {
+    const { book, lines } = bstBook;
+    await expect(toolLayer(book, lines).call("lines", { groupBy: "colour" })).rejects.toThrow(
+      /groupBy must be one of detailComment, accountMainID, month/,
+    );
+  });
+
+  it("lists the chart of accounts with each account's activity and the report row it feeds", async () => {
+    for (const [{ book, lines }, premisesRow] of [
+      [bstBook, "section/profit-loss-account/premises-costs"],
+      [ltdBook, "section/profit-loss-account/premises-code-r"],
+    ]) {
+      const { accounts } = await toolLayer(book, lines).call("chart", {});
+      const declared = Object.entries(book.accounts).flatMap(([group, table]) => Object.keys(table).map((id) => `${group}/${id}`));
+      expect(accounts.map((account) => `${account.group}/${account.id}`)).toEqual(declared);
+      const rent = accounts.find((account) => account.id === "5200");
+      expect(rent.name).toBe(book.accounts.purchases["5200"].accountMainDescription);
+      expect(rent.lineCount).toBe(lines.filter((line) => line.accountMainID === "5200").length);
+      expect(rent.feeds.map((row) => row.key)).toContain(premisesRow);
+    }
+  });
+
+  it("gives the book's profile: product, period, bank accounts, journals present and registers", async () => {
+    const { book, lines } = ltdBook;
+    const profile = await toolLayer(book, lines).call("book", {});
+    expect(profile.product).toBe("ltd");
+    expect(profile.period).toEqual({ start: "2025-04-01", end: "2026-03-31" });
+    expect(profile.entity.organizationIdentifier).toBe(book.entityInformation.organizationIdentifier);
+    expect(profile.bankAccounts.map((account) => account.id)).toEqual(Object.keys(book.accounts.bank));
+    expect(profile.journals.reduce((sum, journal) => sum + journal.count, 0)).toBe(lines.length);
+    expect(profile.journals.map((journal) => journal.journal)).toEqual([...new Set(lines.map((line) => line.sourceJournalID))].sort());
+    expect(profile.directors).toHaveLength(book.directors.length);
+    expect(profile.tax.vat).toBeDefined();
+  });
+
+  it("gives every book check its verdict and the entryNumbers of the lines that fail it", async () => {
+    const { book, lines } = bstBook;
+    const outside = { ...lines[0], postingDate: "2024-01-15" };
+    const { summary, checks } = await toolLayer(book, lines).call("checks", { lines: [outside, ...lines.slice(1)] });
+    const dates = checks.find((check) => check.id === "book-dates-in-period");
+    expect(dates.verdict).toBe("fail");
+    expect(dates.entryNumbers).toEqual([outside.entryNumber]);
+    expect(summary.fail).toBeGreaterThan(0);
+    const clean = await toolLayer(book, lines).call("checks", {});
+    expect(clean.checks.find((check) => check.id === "book-dates-in-period")).toMatchObject({ verdict: "pass", entryNumbers: [] });
   });
 });

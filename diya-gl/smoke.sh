@@ -40,8 +40,13 @@ echo "--- write-workbook ---"
 test -n "$(ls -A "$SCRATCH/write-out")"
 
 echo "--- mcp ---"
-RESPONSE=$(echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
-  | timeout 5 "$BIN/diya-gl-mcp")
+RESPONSE=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | timeout 5 "$BIN/diya-gl-mcp")
 echo "$RESPONSE" | grep -q '"serverInfo"'
+TOOLS=$(echo "$RESPONSE" | node -e '
+  const lines = require("fs").readFileSync(0, "utf8").split("\n").filter(Boolean).map(JSON.parse);
+  console.log(lines.find((m) => m.id === 2).result.tools.map((t) => t.name).sort().join(" "));')
+echo "tools: $TOOLS"
+test "$TOOLS" = "book chart checks edit_lines extract_book lines report save_workbook"
 
 echo "=== all four bins ran from the packed tarball ==="

@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // server.js — the MCP method table: initialize, tools/list and tools/call,
-// wired to the four diya-gl tools over one in-memory session per server
+// wired to the diya-gl tools over one in-memory session per server
 // instance. No engine code lives here or in diya-gl-tools.js -- every tool
 // call is one landed function from export.js, diya-gl-edits.js or
 // product-workbook.js.
@@ -40,6 +40,10 @@ const INSTRUCTIONS = [
   "Read, check, edit and write DIYA-GL books: a UK sole trader's or company's accounts as a book.toml",
   "and a lines.jsonl file. Load a workbook or a book with extract_book, then call report for the",
   "figures and checks, edit_lines to change transactions, and save_workbook to write the package.",
+  "Every detail of the accounts is readable: lines filters and groups every transaction (best",
+  "customer, biggest suppliers, spend on fuel in June), chart lists the accounts and the report rows",
+  "each feeds, book gives the business, period, tax settings and registers, and checks gives every",
+  "book check with the entryNumbers behind it.",
   "",
   `This server is licensed under Apache-2.0. Copyright (C) 2006-2026 DIY Accounting Limited. Source: ${SOURCE_URL}`,
   "The workbook templates save_workbook writes onto are fetched from spreadsheets.diyaccounting.co.uk",
