@@ -83,3 +83,7 @@ reports/judge-verdict-*.json
 diya-gl/dist/
 diya-gl/node_modules/
 diya-gl/*.tgz
+
+# Written into each package directory by app/bin/build-packages.js at zip time
+packages/*/LICENCE.txt
+packages/*/README.txt
