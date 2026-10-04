@@ -46,6 +46,7 @@ import {
   changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
+  setLineReference,
 } from "../diya-gl-edits.js";
 import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
@@ -67,6 +68,7 @@ const EDITS = {
   changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
+  setLineReference,
   ...LTD_LINE_EDITS,
   ...LTD_BOOK_EDITS,
 };
