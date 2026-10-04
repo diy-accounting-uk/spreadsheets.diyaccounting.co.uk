@@ -2452,6 +2452,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // else in this file reads that account.
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
+  // The published balance sheet balances on its own: net assets against
+  // shareholders' funds. EJ91 stays at 0 when the published sheet leaves a
+  // trial balance row out, so the two tests are separate.
+  if (results.PubBalSht) {
+    check("Published balance sheet: net assets (F33) = shareholders' funds (F39)", num(results.PubBalSht.F33), num(results.PubBalSht.F39));
+  }
+
   // Opening balances. A balance sheet that never posts is still balanced, so
   // EJ91 alone cannot tell an unposted opening from a posted one. The next
   // two checks tie the sheet's own opening balance sheet and trial balance
@@ -3507,16 +3514,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
       // PubBalSht!E12 "Cash at bank and in hand" reproduces the sheet's own
       // aggregation formula exactly (verified against the template: E12 =
-      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25)). The three
-      // statement-book accounts (Current, Savings, Credit Card) are summed
-      // first, then Cash and the Intra Cash & Bank Transfers row are added
-      // on top -- the credit card balance is summed straight in alongside
-      // the other three, not netted off as a creditor. EJ26 nets out any
-      // receipt or payment analysed under another account's transfer code,
-      // so a transfer between the company's own bank accounts never moves
-      // the combined total, whether or not both legs were entered.
+      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24), 0)+EJ25+EJ26). The three
+      // statement-book accounts (Current, Savings, Credit Card) count only
+      // when they are in credit together, and Cash and the Intra Cash & Bank
+      // Transfers row are added on top either way. EJ26 nets out any receipt
+      // or payment analysed under another account's transfer code, so a
+      // transfer between the company's own bank accounts never moves the
+      // combined total, whether or not both legs were entered.
       const sumFirstThree = num(tb.EJ22) + num(tb.EJ23) + num(tb.EJ24);
-      const expectedE12 = sumFirstThree > 0 ? sumFirstThree + num(tb.EJ25) + num(tb.EJ26) : num(tb.EJ25);
+      const expectedE12 = Math.max(sumFirstThree, 0) + num(tb.EJ25) + num(tb.EJ26);
       check("Published balance sheet: cash at bank = Trial Balance bank account aggregate", num(pubBalSht?.E12), expectedE12);
       // E19 "Bank Overdraft" carries the same three accounts when they are
       // overdrawn (E19 = IF(SUM(EJ22:EJ24)<0, -SUM(EJ22:EJ24), 0)), so an

@@ -2,7 +2,7 @@
 # Copyright (C) 2006-2026 DIY Accounting Limited
 [metadata]
 name = "BrickWork Pro Ltd non-VAT"
-description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil."
+description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5. On the year's last day the company sweeps £15,000 from the current account to the savings account, more than the current account holds, and the savings account's side of the transfer is not entered, so the current account closes overdrawn. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
 vat_registered = false
@@ -1317,6 +1317,16 @@ direction = "out"
 amount = 2421.3
 description = "Net wages"
 reference = "BNK-W-012"
+
+[[bank.mar]]
+date = 2026-03-31
+account = "1200"
+source = "Savings account"
+code = "BS"
+direction = "out"
+amount = 15000
+description = "Year-end sweep to the savings account"
+reference = "BNK-BS-001"
 
 [[payroll.apr]]
 date = 2025-04-28

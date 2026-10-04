@@ -142,6 +142,43 @@ describeCalc(
       expect(failures.map((c) => c.name)).toEqual([]);
     });
 
+    // The book sweeps more than the current account holds into the savings
+    // account on the year's last day and enters only the current account's
+    // side, so the current account closes overdrawn and the swept amount sits
+    // on the trial balance's intra transfers row.
+    const yearEndSweep = () => scenario.bank.mar.find((tx) => tx.reference === "BNK-BS-001");
+
+    it("PubBalSht: the one-legged sweep stays in cash at bank, the overdraft stands among the creditors, and the sheet balances", () => {
+      const tb = results.TrialBalance;
+      const statementAccounts = tb.EJ22 + tb.EJ23 + tb.EJ24;
+      expect(tb.EJ26).toBeCloseTo(yearEndSweep().amount, 2);
+      expect(statementAccounts).toBeLessThan(0);
+      expect(results.PubBalSht.E12).toBeCloseTo(tb.EJ25 + yearEndSweep().amount, 2);
+      expect(results.PubBalSht.E19).toBeCloseTo(-statementAccounts, 2);
+      expect(results.PubBalSht.F33).toBeCloseTo(results.PubBalSht.F39, 2);
+    });
+
+    it("fails the cash at bank check when E12 is corrupted to cash alone, dropping the intra transfers row, via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E12", results.TrialBalance.EJ25);
+      expect(value).toBe(results.TrialBalance.EJ25);
+      const corrupted = { ...results, PubBalSht: { ...results.PubBalSht, E12: value } };
+      const failures = ltdCheckCompliance(corrupted, expected, taxData, calculateExpectedTax).filter(
+        (c) => !c.pass && c.severity !== "warning",
+      );
+      expect(failures.map((c) => c.name)).toEqual(["Published balance sheet: cash at bank = Trial Balance bank account aggregate"]);
+    });
+
+    it("fails the balance check when net assets are corrupted to the figure that leaves the sweep out, via JSZip", async () => {
+      const short = results.PubBalSht.F33 - yearEndSweep().amount;
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "F33", short);
+      expect(value).toBeCloseTo(short, 2);
+      const corrupted = { ...results, PubBalSht: { ...results.PubBalSht, F33: value } };
+      const failures = ltdCheckCompliance(corrupted, expected, taxData, calculateExpectedTax).filter(
+        (c) => !c.pass && c.severity !== "warning",
+      );
+      expect(failures.map((c) => c.name)).toEqual(["Published balance sheet: net assets (F33) = shareholders' funds (F39)"]);
+    });
+
     it("fails the VAT rate read when a month's rate cell is corrupted back to 20 via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Sales.xlsx", "Jul", "G2", 20);
       expect(value).toBe(20);

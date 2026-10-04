@@ -74,7 +74,7 @@ subsets from this master data:
 | `bst-brickwork-pro-nonvat` | `bst-nonvat/` | Sole trader, no bank journal, the labourer's wage bought in as an employee cost |
 | `se-brickwork-pro-nonvat` | `se-nonvat/` | Sole trader with the bank and the payroll, the director's payslip replaced by monthly drawings |
 | `se-brickwork-pro-vat` | `se-vat/` | The same, registered and trading half as much again |
-| `ltd-brickwork-pro-nonvat` | `ltd-nonvat/` | The company as the master keeps it |
+| `ltd-brickwork-pro-nonvat` | `ltd-nonvat/` | The company as the master keeps it, plus a £15,000 year-end sweep to the savings account entered on the current account only, which closes the current account overdrawn |
 | `ltd-brickwork-pro-vat` | `ltd-vat/` | The company, registered and trading half as much again |
 
 Nothing in any of them is stated by hand.

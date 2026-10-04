@@ -401,8 +401,8 @@ describeCalc(
     // ── Trial Balance bank echoes and the published cash-at-bank aggregate.
     // TrialBalance!EJ22-EJ25 echo each workbook's closing balance across the
     // cross-file link, and PubBalSht!E12 reproduces the sheet's own formula:
-    // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25) -- the credit card
-    // balance (EJ24) summed straight in, not netted off as a creditor.
+    // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24), 0)+EJ25+EJ26 -- the credit card
+    // balance (EJ24) summed straight in with the other two statement accounts.
 
     it("reads a non-zero Trial Balance echo for every bank workbook, and a non-zero published cash-at-bank total", () => {
       const tb = results.TrialBalance;

@@ -5,7 +5,7 @@
   "yearEnd": "2027-10-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.40+57de8f55b",
+    "engineVersion": "1.2.45+3801b0c2",
     "taxDataHash": "89424bd36c0d",
     "templateHash": "5bb7be9b6d97",
     "templateScorecard": "101605 passed, 0 warnings, 0 failed",
@@ -13838,6 +13838,14 @@
       "value": "pass",
       "expected": "208990",
       "actual": "208990",
+      "tolerance": "1"
+    },
+    {
+      "key": "check/Published balance sheet: net assets (F33) = shareholders' funds (F39)",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "307949.645",
+      "actual": "307949.645",
       "tolerance": "1"
     },
     {

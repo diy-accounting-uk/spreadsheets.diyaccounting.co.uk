@@ -440,7 +440,8 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
 // opening imbalance is never corrected during the year. Directors loan
 // (account 2500) carries no account-specific echo check of its own the way
 // stock's opening figure does, so moving it by more than E37/D91's own
-// tolerance (1) flips exactly these three engine checks and no book check.
+// tolerance (1) flips exactly these three engine checks, the published
+// balance sheet's own balance check, and no book check.
 
 test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through the opening lines", () => {
   test("E37 and D91: the directors loan's OB-001 line moved off balance", async ({ page }) => {
@@ -460,6 +461,7 @@ test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through 
     const engineAfter = await engineFailingLabels(page);
     expect(engineAfter).toEqual([
       "Opening balance sheet: accuracy check (E37)",
+      "Published balance sheet: net assets (F33) = shareholders' funds (F39)",
       "Trial Balance: audit accuracy (EJ91)",
       "Trial Balance: opening balances audit check (D91)",
     ]);

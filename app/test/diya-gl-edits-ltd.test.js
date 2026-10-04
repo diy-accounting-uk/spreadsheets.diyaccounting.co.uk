@@ -163,8 +163,11 @@ describe("changePayrollLine", () => {
     expect(movedKeysMatching(moved, /Sales\.xlsx|Purchases\.xlsx|Companysecretary\.xlsx/)).toEqual([]);
   });
 
-  it("leaves the trial balance out of balance, because the bank payment behind the payslip is untouched", () => {
-    expect(failingCheckNames(after.checks)).toEqual(["Trial Balance: audit accuracy (EJ91)"]);
+  it("leaves the trial balance and the published balance sheet out of balance, because the bank payment behind the payslip is untouched", () => {
+    expect(failingCheckNames(after.checks)).toEqual([
+      "Trial Balance: audit accuracy (EJ91)",
+      "Published balance sheet: net assets (F33) = shareholders' funds (F39)",
+    ]);
   });
 
   it("rewrites the line in place and leaves the caller's lines array alone", () => {

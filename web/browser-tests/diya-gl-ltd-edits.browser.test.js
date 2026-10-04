@@ -469,9 +469,13 @@ test.describe("DIYA-GL Ltd page — E1: an edit moves the figure it should", () 
     // (income tax and employee NI unchanged) raises net pay by the same
     // £300, but the aggregate "W"-coded bank line that pays the month's
     // payroll out never moves with it, so the whole-book audit total
-    // (Trial Balance EJ91) is left exactly £300 short of zero -- the one
-    // check a single-line payroll edit is expected to leave behind.
-    await allChecksPassExcept(page, ["Trial Balance: audit accuracy (EJ91)"]);
+    // (Trial Balance EJ91) is left exactly £300 short of zero, and the
+    // published balance sheet is out by the same £300 -- the two checks a
+    // single-line payroll edit is expected to leave behind.
+    await allChecksPassExcept(page, [
+      "Trial Balance: audit accuracy (EJ91)",
+      "Published balance sheet: net assets (F33) = shareholders' funds (F39)",
+    ]);
 
     const browserReport = await downloadDiyaGlReport(page);
     const nodeReport = applyNamedEdit(
