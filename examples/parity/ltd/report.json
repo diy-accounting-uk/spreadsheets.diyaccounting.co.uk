@@ -2528,6 +2528,11 @@
       "value": "9077.45499999999"
     },
     {
+      "key": "cell/Financialaccounts.xlsx!PubBalSht!E19",
+      "unit": "money",
+      "value": "0"
+    },
+    {
       "key": "cell/Financialaccounts.xlsx!PubBalSht!E20",
       "unit": "money",
       "value": "49935.785"
@@ -13796,6 +13801,14 @@
       "tolerance": "0"
     },
     {
+      "key": "check/Published balance sheet: bank overdraft = overdrawn Trial Balance statement accounts",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
+    },
+    {
       "key": "check/Published balance sheet: cash at bank = Trial Balance bank account aggregate",
       "unit": "verdict",
       "value": "pass",
@@ -18005,6 +18018,13 @@
       "unit": "money",
       "value": "1550",
       "source": "cell/Financialaccounts.xlsx!MnthP&L!B29"
+    },
+    {
+      "key": "section/published-balance-sheet/bank-overdraft",
+      "label": "Bank Overdraft",
+      "unit": "money",
+      "value": "0",
+      "source": "cell/Financialaccounts.xlsx!PubBalSht!E19"
     },
     {
       "key": "section/published-balance-sheet/called-up-share-capital",

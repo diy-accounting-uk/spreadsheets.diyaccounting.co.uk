@@ -1240,6 +1240,7 @@ export const CELL_MAP = [
   ["PubBalSht", "E16", "Trade Creditors",          "accounts.liabilities.2100 (pubBS)",  "Published Balance Sheet", 1],
   ["PubBalSht", "E17", "Corporation Tax",          "accounts.liabilities.2300 (pubBS)",  "Published Balance Sheet", 1],
   ["PubBalSht", "E18", "Taxation and Social Security", "gl-cor:amount (pubBS.taxAndSocial)", "Published Balance Sheet", 1],
+  ["PubBalSht", "E19", "Bank Overdraft",           "gl-cor:amount (pubBS.bankOverdraft)", "Published Balance Sheet", 1],
   ["PubBalSht", "E20", "Current Liabilities",      "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
   ["PubBalSht", "F26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
@@ -3511,6 +3512,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const sumFirstThree = num(tb.EJ22) + num(tb.EJ23) + num(tb.EJ24);
       const expectedE12 = sumFirstThree > 0 ? sumFirstThree + num(tb.EJ25) + num(tb.EJ26) : num(tb.EJ25);
       check("Published balance sheet: cash at bank = Trial Balance bank account aggregate", num(pubBalSht?.E12), expectedE12);
+      // E19 "Bank Overdraft" carries the same three accounts when they are
+      // overdrawn (E19 = IF(SUM(EJ22:EJ24)<0, -SUM(EJ22:EJ24), 0)), so an
+      // overdraft leaves current assets and stands among the creditors.
+      check(
+        "Published balance sheet: bank overdraft = overdrawn Trial Balance statement accounts",
+        num(pubBalSht?.E19),
+        sumFirstThree < 0 ? -sumFirstThree : 0,
+      );
     }
   }
 

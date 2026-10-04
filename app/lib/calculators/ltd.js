@@ -1820,6 +1820,10 @@ function buildPublishedBalanceSheet(tb, admin) {
     E16: -(tb.EJ28 + tb.EJ29 + tb.EJ30 + tb.EJ31),
     E17: -tb.EJ35,
     E18: -(tb.EJ32 + tb.EJ33 + tb.EJ34),
+    // An overdrawn set of statement accounts leaves current assets and
+    // stands as a creditor instead (E19 = IF(SUM(EJ22:EJ24)<0,
+    // -SUM(EJ22:EJ24), 0)), mirroring E12's own test.
+    E19: statementAccounts < 0 ? -statementAccounts : 0,
     E29: -tb.EJ39,
     E30: -tb.EJ40,
     F36: -tb.EJ42,
@@ -1830,7 +1834,7 @@ function buildPublishedBalanceSheet(tb, admin) {
   const revenueReserve = -tb.EJ43;
   const capitalReserve = -tb.EJ44;
   sheet.E13 = sheet.E10 + sheet.E11 + sheet.E12;
-  sheet.E20 = sheet.E16 + sheet.E17 + sheet.E18;
+  sheet.E20 = sheet.E16 + sheet.E17 + sheet.E18 + sheet.E19;
   sheet.F22 = sheet.E13 - sheet.E20;
   sheet.F26 = sheet.F6 + sheet.F22;
   sheet.F31 = sheet.E29 + sheet.E30;
@@ -2523,11 +2527,12 @@ function attributeLtdResults(attribution, context) {
   a.set(BS, "E16", EJ(28), EJ(29), EJ(30), EJ(31));
   a.set(BS, "E17", EJ(35));
   a.set(BS, "E18", EJ(32), EJ(33), EJ(34));
+  a.set(BS, "E19", ...(statementAccounts < 0 ? [22, 23, 24] : []).map(EJ));
   a.set(BS, "E29", EJ(39));
   a.set(BS, "E30", EJ(40));
   a.set(BS, "F36", EJ(42));
   a.set(BS, "E13", a.cells(BS, "E10", "E11", "E12"));
-  a.set(BS, "E20", a.cells(BS, "E16", "E17", "E18"));
+  a.set(BS, "E20", a.cells(BS, "E16", "E17", "E18", "E19"));
   a.set(BS, "F22", a.cells(BS, "E13", "E20"));
   a.set(BS, "F26", a.cells(BS, "F6", "F22"));
   a.set(BS, "F31", a.cells(BS, "E29", "E30"));
