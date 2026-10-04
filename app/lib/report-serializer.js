@@ -206,7 +206,7 @@ function collectCellEntries(results, multiFile, attribution) {
   return entries;
 }
 
-function sectionRowEntries(sections, byLabel, consumed, labels) {
+function sectionRowEntries(sections, byLabel, consumed, labels, multiFile) {
   const entries = [];
   for (const section of sections) {
     const sectionSlug = slug(section.title);
@@ -234,6 +234,10 @@ function sectionRowEntries(sections, byLabel, consumed, labels) {
         value: source ? source.value : value,
       };
       if (source) entry.source = source.key;
+      // A row whose label names no one cell (a figure the report works out,
+      // or a label two statements share) lists the cells it reads instead;
+      // its lines are theirs. Never written out: only entryNumbers is.
+      else if (row.cells) entry.cellsFrom = row.cells.map((cell) => referenceKey(cell, multiFile));
       entries.push(entry);
     }
   }
@@ -295,7 +299,9 @@ const NETTING_RATE_LABEL = "VAT rate the journal amounts include";
 function nettingEntries(netting, multiFile) {
   if (!netting || netting.rows.length === 0) return [];
   const sectionSlug = slug(CATEGORY_NETTING_TITLE);
-  const entries = [{ key: `section/${sectionSlug}/rate`, label: NETTING_RATE_LABEL, unit: "rate", value: canonicalNumber(netting.rate) }];
+  const entries = [
+    { key: `section/${sectionSlug}/rate`, label: NETTING_RATE_LABEL, unit: "rate", value: canonicalNumber(netting.rate), lineEntries: [] },
+  ];
   for (const row of netting.rows) {
     const rowSlug = `${slug(row.label)}-${slug(row.code)}`;
     const category = `${plainLabel(row.label)} (${row.code})`;
@@ -304,7 +310,10 @@ function nettingEntries(netting, multiFile) {
     const net = `section/${sectionSlug}/${rowSlug}/net`;
     const downstream = `section/${sectionSlug}/${rowSlug}/downstream`;
     const downstreamSource = row.cell ? referenceKey(row.cell, multiFile) : null;
-    entries.push({ key: gross, label: label("gross"), unit: "money", value: canonicalNumber(row.gross) });
+    // A gross and a net figure are journal totals, so their lines are the
+    // category's own lines, which the product hands over beside them.
+    const lineEntries = row.entries ?? [];
+    entries.push({ key: gross, label: label("gross"), unit: "money", value: canonicalNumber(row.gross), lineEntries });
     entries.push({
       key: `section/${sectionSlug}/${rowSlug}/vat`,
       label: label("vat"),
@@ -312,7 +321,7 @@ function nettingEntries(netting, multiFile) {
       value: canonicalNumber(row.vat),
       derivedFrom: [gross, net],
     });
-    entries.push({ key: net, label: label("net"), unit: "money", value: canonicalNumber(row.net) });
+    entries.push({ key: net, label: label("net"), unit: "money", value: canonicalNumber(row.net), lineEntries });
     entries.push({
       key: downstream,
       label: label("downstream"),
@@ -340,18 +349,26 @@ function sourceCellKey(source) {
   return bang === -1 ? source : source.slice(0, bang + 1) + source.slice(bang + 1).replace(/\s.*$/, "");
 }
 
-// A section entry takes the entryNumbers of the cell it reprints, and a
-// derived total (or the bridge residue) the union of its operands' once every
+// A section entry takes the entryNumbers of the cell it reprints, or the
+// union of the cells it reads, or the journal lines it totals; a derived
+// total (or the bridge residue) the union of its operands' once every
 // operand has its own.
 function attributeEntries(values) {
   const byKey = new Map(values.map((entry) => [entry.key, entry]));
+  // A cell R carries no value for is one the calculator left blank, and a
+  // blank cell has no line behind it.
+  const cellEntries = (key) => (byKey.has(key) ? byKey.get(key).entryNumbers : []);
   for (const entry of values) {
-    if (entry.entryNumbers || !entry.source) continue;
-    // A source cell R carries no value for is one the calculator left blank,
-    // and a blank cell has no line behind it.
-    const sourceKey = sourceCellKey(entry.source);
-    const source = byKey.has(sourceKey) ? byKey.get(sourceKey).entryNumbers : [];
-    if (source) entry.entryNumbers = source;
+    if (entry.entryNumbers) continue;
+    if (entry.source) {
+      const source = cellEntries(sourceCellKey(entry.source));
+      if (source) entry.entryNumbers = source;
+    } else if (entry.cellsFrom) {
+      const cells = entry.cellsFrom.map(cellEntries);
+      if (cells.every(Boolean)) entry.entryNumbers = sortedEntries(cells.flat());
+    } else if (entry.lineEntries) {
+      entry.entryNumbers = sortedEntries(entry.lineEntries);
+    }
   }
   let settled = false;
   while (!settled) {
@@ -434,7 +451,7 @@ export function buildReportDocument({
   const consumed = new Set();
 
   if (typeof productMod.reportSections === "function") {
-    values.push(...sectionRowEntries(productMod.reportSections(results), byLabel, consumed, labels));
+    values.push(...sectionRowEntries(productMod.reportSections(results), byLabel, consumed, labels, multiFile));
   }
   if (typeof productMod.profitBridge === "function") {
     values.push(...bridgeEntries(productMod.profitBridge(results), multiFile));

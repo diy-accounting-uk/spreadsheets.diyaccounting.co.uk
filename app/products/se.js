@@ -42,6 +42,7 @@ import {
 import { calculateMileageAllowance, mileageClaimChangeFromFixture, FIXTURE_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
+import { entryOf, unionOf } from "../lib/entry-attribution.js";
 
 export const PRODUCT = {
   id: "se",
@@ -1726,7 +1727,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent, cells: [`${sheet}!${cell}`] });
   }
   for (const [section, captions] of Object.entries(SECTION_CAPTIONS)) {
     const rows = sectionMap.get(section);
@@ -1757,26 +1758,58 @@ function fixedAssetSection(results) {
   const disposalDepreciation = num(schedule.X1);
   const depreciationCarriedForward = depreciationBroughtForward + charge - disposalDepreciation;
   const disposalBookValue = disposalCost - disposalDepreciation;
+  const cells = (...refs) => refs.map((ref) => `Fixedassets.xlsx!Schedule!${ref}`);
 
   return {
     title: "Fixed Asset Schedule",
     rows: [
-      { label: "Cost brought forward (Schedule E57)", value: fmt(costBroughtForward), indent: 1 },
-      { label: "Additions in the year (Schedule E110)", value: fmt(additions), indent: 1 },
-      { label: "Cost of the assets sold in the year (Schedule W1)", value: fmt(disposalCost), indent: 1 },
-      { label: "**Cost carried forward, disposals removed**", value: fmt(costCarriedForward), indent: 0 },
-      { label: "Accumulated depreciation brought forward (Schedule F1)", value: fmt(depreciationBroughtForward), indent: 1 },
-      { label: "Depreciation charged for the year (Schedule I1)", value: fmt(charge), indent: 1 },
-      { label: "Accumulated depreciation on the assets sold (Schedule X1)", value: fmt(disposalDepreciation), indent: 1 },
-      { label: "**Accumulated depreciation carried forward, disposals removed**", value: fmt(depreciationCarriedForward), indent: 0 },
+      { label: "Cost brought forward (Schedule E57)", value: fmt(costBroughtForward), indent: 1, cells: cells("E57") },
+      { label: "Additions in the year (Schedule E110)", value: fmt(additions), indent: 1, cells: cells("E110") },
+      { label: "Cost of the assets sold in the year (Schedule W1)", value: fmt(disposalCost), indent: 1, cells: cells("W1") },
+      {
+        label: "**Cost carried forward, disposals removed**",
+        value: fmt(costCarriedForward),
+        indent: 0,
+        cells: cells("E57", "E110", "W1"),
+      },
+      {
+        label: "Accumulated depreciation brought forward (Schedule F1)",
+        value: fmt(depreciationBroughtForward),
+        indent: 1,
+        cells: cells("F1"),
+      },
+      { label: "Depreciation charged for the year (Schedule I1)", value: fmt(charge), indent: 1, cells: cells("I1") },
+      {
+        label: "Accumulated depreciation on the assets sold (Schedule X1)",
+        value: fmt(disposalDepreciation),
+        indent: 1,
+        cells: cells("X1"),
+      },
+      {
+        label: "**Accumulated depreciation carried forward, disposals removed**",
+        value: fmt(depreciationCarriedForward),
+        indent: 0,
+        cells: cells("F1", "I1", "X1"),
+      },
       {
         label: "**Net book value at the year end (Schedule K1)**",
         value: fmt(costCarriedForward - depreciationCarriedForward),
         indent: 0,
+        cells: cells("E57", "E110", "W1", "F1", "I1", "X1"),
       },
       { label: "", value: "" },
-      { label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)", value: fmt(num(schedule.V1)), indent: 1 },
-      { label: "Net book value of the assets sold at the date of sale", value: fmt(disposalBookValue), indent: 1 },
+      {
+        label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)",
+        value: fmt(num(schedule.V1)),
+        indent: 1,
+        cells: cells("V1"),
+      },
+      {
+        label: "Net book value of the assets sold at the date of sale",
+        value: fmt(disposalBookValue),
+        indent: 1,
+        cells: cells("W1", "X1"),
+      },
     ],
   };
 }
@@ -1786,10 +1819,10 @@ function fixedAssetSection(results) {
 // registered trader and an unregistered one carrying the same trade read
 // identically without it.
 function vatSection(results) {
-  const months = Object.values(MONTH_SHEETS)
-    .map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]])
-    .filter(([sales, purchases]) => sales || purchases);
+  const tabs = Object.values(MONTH_SHEETS).filter((tab) => results[`Sales.xlsx!${tab}`] || results[`Purchases.xlsx!${tab}`]);
+  const months = tabs.map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]]);
   if (months.length === 0) return null;
+  const monthCells = (file, ...refs) => tabs.flatMap((tab) => refs.map((ref) => `${file}!${tab}!${ref}`));
 
   const num = (v) => (typeof v === "number" ? v : 0);
   const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
@@ -1799,13 +1832,23 @@ function vatSection(results) {
   const purchasesNet = sum(1, "I1");
 
   const rows = [
-    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1 },
-    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1 },
-    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1 },
-    { label: "Purchases invoiced including VAT", value: fmt(purchasesNet + purchasesVat), indent: 1 },
-    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1 },
-    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
-    { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
+    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1, cells: monthCells("Sales.xlsx", "H1", "I1") },
+    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1, cells: monthCells("Sales.xlsx", "H1") },
+    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1, cells: monthCells("Sales.xlsx", "I1") },
+    {
+      label: "Purchases invoiced including VAT",
+      value: fmt(purchasesNet + purchasesVat),
+      indent: 1,
+      cells: monthCells("Purchases.xlsx", "H1", "I1"),
+    },
+    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1, cells: monthCells("Purchases.xlsx", "H1") },
+    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1, cells: monthCells("Purchases.xlsx", "I1") },
+    {
+      label: "**VAT due for the year**",
+      value: fmt(salesVat - purchasesVat),
+      indent: 0,
+      cells: [...monthCells("Sales.xlsx", "H1"), ...monthCells("Purchases.xlsx", "H1")],
+    },
   ];
   // The package ships five return forms: four quarters from the VAT start
   // month and one more, for a business whose quarter stagger does not line up
@@ -1820,9 +1863,15 @@ function vatSection(results) {
     const end = num(boxes.G5);
     forms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, end) });
     const period = periodEnding(end);
-    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
-    quarterRows.push({ label: `Q${q}${period} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
-    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+    const form = `Vat.xlsx!VATQtr${q}`;
+    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1, cells: [`${form}!G9`] });
+    quarterRows.push({
+      label: `Q${q}${period} box 4: VAT reclaimed on purchases`,
+      value: fmt(num(boxes.G15)),
+      indent: 1,
+      cells: [`${form}!G15`],
+    });
+    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1, cells: [`${form}!G17`] });
   }
   if (quarterRows.length > 0) {
     rows.push(...vatCycleRows(vatinterfacePeriods(results), forms));
@@ -2206,6 +2255,7 @@ function journalTotalsByCode(journal, rate, defaultCode) {
   const gross = {};
   const net = {};
   const scheduleNet = {};
+  const entries = {};
   for (const transactions of Object.values(journal || {})) {
     for (const tx of transactions) {
       // A mileage-log row's own figure never reaches a cell: the sheet prices
@@ -2216,9 +2266,15 @@ function journalTotalsByCode(journal, rate, defaultCode) {
       gross[code] = (gross[code] || 0) + tx.amount;
       net[code] = (net[code] || 0) + sheetNetOfVat(tx.amount, rate);
       scheduleNet[code] = (scheduleNet[code] || 0) + netOfVat(tx.amount, rate);
+      entries[code] = unionOf(entries[code], [entryOf(tx)]);
     }
   }
-  return { gross, net, scheduleNet };
+  return { gross, net, scheduleNet, entries };
+}
+
+// The lines a journal's mileage-log rows came from.
+function journalMileageEntries(journal) {
+  return unionOf(...Object.values(journal || {}).map((transactions) => transactions.filter((tx) => typeof tx.mileage === "number")));
 }
 
 // The business miles a journal's own rows carry, which is what the Purchases
@@ -2279,6 +2335,7 @@ export function categoryNetting(results, scenario, taxData) {
   if (businessMiles) {
     const claim = calculateMileageAllowance(businessMiles, taxData?.mileage || FIXTURE_CAR_MILEAGE_RATES);
     purchases.gross.v = (purchases.gross.v || 0) + claim;
+    purchases.entries.v = unionOf(purchases.entries.v, journalMileageEntries(scenario.sales), journalMileageEntries(scenario.purchases));
     purchases.net.v = (purchases.net.v || 0) + claim;
   }
   const rows = [];
@@ -2291,6 +2348,7 @@ export function categoryNetting(results, scenario, taxData) {
       gross: side.gross[code] || 0,
       net: side.net[code] || 0,
       cell: sign < 0 ? `Profit & Loss Account!B${row} negated` : `Profit & Loss Account!B${row}`,
+      entries: side.entries[code],
       downstream: sign * num(pl[`B${row}`]),
     });
   };
@@ -2302,6 +2360,7 @@ export function categoryNetting(results, scenario, taxData) {
   const purchasesRow27 = {
     gross: { a: (purchases.gross.a || 0) + (purchases.gross.e || 0) },
     net: { a: (purchases.net.a || 0) + (purchases.net.e || 0) },
+    entries: { a: unionOf(purchases.entries.a, purchases.entries.e) },
   };
   for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS))
     plRow("purchases", code === "a" ? purchasesRow27 : purchases, code, row);
@@ -2318,6 +2377,7 @@ export function categoryNetting(results, scenario, taxData) {
       label: "Purchases after stock adjustment, less the year's stock movement",
       gross: purchases.gross.s || 0,
       net: purchases.net.s || 0,
+      entries: purchases.entries.s,
       cell: "Profit & Loss Account!B14 less the stock movement",
       downstream: num(pl.B14) - (openingStock - closingStock),
     });
@@ -2329,6 +2389,7 @@ export function categoryNetting(results, scenario, taxData) {
       label: "Capitalised fixed asset spend",
       gross: purchases.gross.fa || 0,
       net: purchases.scheduleNet.fa || 0,
+      entries: purchases.entries.fa,
       cell: "Fixedassets.xlsx!FAreconciliation!E11",
       downstream: num(fr.E11),
     });
@@ -2337,6 +2398,7 @@ export function categoryNetting(results, scenario, taxData) {
       label: "Fixed asset disposal proceeds",
       gross: sales.gross.fs || 0,
       net: sales.scheduleNet.fs || 0,
+      entries: sales.entries.fs,
       cell: "Fixedassets.xlsx!FAreconciliation!K11",
       downstream: num(fr.K11),
     });
@@ -4366,6 +4428,7 @@ function vatinterfacePeriods(results) {
       outputVat: num(vatinterface[`F${row}`]),
       inputVat: num(vatinterface[`J${row}`]),
       inAccountingYear: row >= VATINTERFACE_ROWS.firstMonth && row < VATINTERFACE_ROWS.firstMonth + 12,
+      cells: { end: `Vat.xlsx!Vatinterface!B${row}`, output: `Vat.xlsx!Vatinterface!F${row}`, input: `Vat.xlsx!Vatinterface!J${row}` },
     });
   }
   return periods;

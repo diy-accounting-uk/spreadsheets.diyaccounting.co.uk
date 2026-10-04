@@ -45,6 +45,7 @@ import {
   vatReturnCoverage,
 } from "../lib/report-generator.js";
 import { canonicalForUnit } from "../lib/canonical-report-value.js";
+import { entryOf, unionOf } from "../lib/entry-attribution.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -1928,7 +1929,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent, cells: [`${sheet}!${cell}`] });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
   const vat = vatSection(results);
@@ -1941,10 +1942,12 @@ export function reportSections(results) {
 // registered company and an unregistered one carrying the same trade read
 // identically without it.
 function vatSection(results) {
-  const months = fiscalMonthTabs(results)
-    .map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]])
-    .filter(([sales, purchases]) => sales || purchases);
+  const tabs = fiscalMonthTabs(results).filter((tab) => results[`Sales.xlsx!${tab}`] || results[`Purchases.xlsx!${tab}`]);
+  const months = tabs.map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]]);
   if (months.length === 0) return null;
+  const monthCells = (file, ...refs) => tabs.flatMap((tab) => refs.map((ref) => `${file}!${tab}!${ref}`));
+  const salesNetCell = SALES_MONTH_TOTAL_CELLS.net;
+  const purchasesNetCell = PURCHASES_MONTH_TOTAL_CELLS.net;
 
   const num = (v) => (typeof v === "number" ? v : 0);
   const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
@@ -1954,13 +1957,28 @@ function vatSection(results) {
   const purchasesNet = sum(1, PURCHASES_MONTH_TOTAL_CELLS.net);
 
   const rows = [
-    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1 },
-    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1 },
-    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1 },
-    { label: "Purchases invoiced including VAT", value: fmt(purchasesNet + purchasesVat), indent: 1 },
-    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1 },
-    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
-    { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
+    {
+      label: "Sales invoiced including VAT",
+      value: fmt(salesNet + salesVat),
+      indent: 1,
+      cells: monthCells("Sales.xlsx", "G1", salesNetCell),
+    },
+    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1, cells: monthCells("Sales.xlsx", "G1") },
+    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1, cells: monthCells("Sales.xlsx", salesNetCell) },
+    {
+      label: "Purchases invoiced including VAT",
+      value: fmt(purchasesNet + purchasesVat),
+      indent: 1,
+      cells: monthCells("Purchases.xlsx", "G1", purchasesNetCell),
+    },
+    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1, cells: monthCells("Purchases.xlsx", "G1") },
+    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1, cells: monthCells("Purchases.xlsx", purchasesNetCell) },
+    {
+      label: "**VAT due for the year**",
+      value: fmt(salesVat - purchasesVat),
+      indent: 0,
+      cells: [...monthCells("Sales.xlsx", "G1"), ...monthCells("Purchases.xlsx", "G1")],
+    },
   ];
   // The package ships five return forms: five consecutive quarters from the
   // VAT start month, for a business whose quarter stagger does not line up
@@ -1975,9 +1993,15 @@ function vatSection(results) {
     const end = num(boxes.G5);
     forms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, end) });
     const period = periodEnding(end);
-    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
-    quarterRows.push({ label: `Q${q}${period} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
-    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+    const form = `Vatreturns.xlsx!VATQtr${q}`;
+    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1, cells: [`${form}!G9`] });
+    quarterRows.push({
+      label: `Q${q}${period} box 4: VAT reclaimed on purchases`,
+      value: fmt(num(boxes.G15)),
+      indent: 1,
+      cells: [`${form}!G15`],
+    });
+    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1, cells: [`${form}!G17`] });
   }
   if (quarterRows.length > 0) {
     rows.push(...vatCycleRows(vatinterfacePeriods(results), forms));
@@ -2003,6 +2027,11 @@ function vatinterfacePeriods(results) {
       outputVat: num(vatinterface[`F${row}`]),
       inputVat: num(vatinterface[`J${row}`]),
       inAccountingYear: row >= VATINTERFACE_ROWS.firstMonth && row < VATINTERFACE_ROWS.firstMonth + 12,
+      cells: {
+        end: `Vatreturns.xlsx!Vatinterface!B${row}`,
+        output: `Vatreturns.xlsx!Vatinterface!F${row}`,
+        input: `Vatreturns.xlsx!Vatinterface!J${row}`,
+      },
     });
   }
   return periods;
@@ -2254,15 +2283,17 @@ function journalTotalsByCode(journal, rate, defaultCode) {
   const gross = {};
   const net = {};
   const scheduleNet = {};
+  const entries = {};
   for (const transactions of Object.values(journal || {})) {
     for (const tx of transactions) {
       const code = tx.code || defaultCode;
       gross[code] = (gross[code] || 0) + tx.amount;
       net[code] = (net[code] || 0) + sheetNetOfVat(tx.amount, rate);
       scheduleNet[code] = (scheduleNet[code] || 0) + netOfVat(tx.amount, rate);
+      entries[code] = unionOf(entries[code], [entryOf(tx)]);
     }
   }
-  return { gross, net, scheduleNet };
+  return { gross, net, scheduleNet, entries };
 }
 
 // One row per journal category that crosses into another statement, so the
@@ -2292,6 +2323,7 @@ export function categoryNetting(results, scenario) {
       gross: side.gross[code] || 0,
       net: side.net[code] || 0,
       cell: sign < 0 ? `MnthP&L!B${row} negated` : `MnthP&L!B${row}`,
+      entries: side.entries[code],
       downstream: sign * num(pl[`B${row}`]),
     });
   };
@@ -2303,6 +2335,7 @@ export function categoryNetting(results, scenario) {
   const purchasesRow27 = {
     gross: { a: (purchases.gross.a || 0) + (purchases.gross[ENTERTAINMENT_CODE] || 0) },
     net: { a: (purchases.net.a || 0) + (purchases.net[ENTERTAINMENT_CODE] || 0) },
+    entries: { a: unionOf(purchases.entries.a, purchases.entries[ENTERTAINMENT_CODE]) },
   };
   for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
     plRow("purchases", code === "a" ? purchasesRow27 : purchases, code, row);
@@ -2329,6 +2362,7 @@ export function categoryNetting(results, scenario) {
       label: "Wages and Salaries, less the employees' own gross pay",
       gross: purchases.gross.w || 0,
       net: purchases.net.w || 0,
+      entries: purchases.entries.w,
       cell: `MnthP&L!B${PL_EMPLOYEE_WAGES_ROW} less the employees' gross pay`,
       downstream: num(pl[`B${PL_EMPLOYEE_WAGES_ROW}`]) - employeeGross,
     });
@@ -2337,6 +2371,7 @@ export function categoryNetting(results, scenario) {
       label: "Directors Wages, less the directors' own gross pay",
       gross: purchases.gross.d || 0,
       net: purchases.net.d || 0,
+      entries: purchases.entries.d,
       cell: `MnthP&L!B${PL_DIRECTOR_WAGES_ROW} less the directors' gross pay`,
       downstream: num(pl[`B${PL_DIRECTOR_WAGES_ROW}`]) - directorGross,
     });
@@ -2348,6 +2383,7 @@ export function categoryNetting(results, scenario) {
       label: "Capitalised fixed asset spend",
       gross: purchases.gross.fa || 0,
       net: purchases.scheduleNet.fa || 0,
+      entries: purchases.entries.fa,
       cell: "Fixedassets.xlsx!FAreconciliation!E11",
       downstream: num(fr.E11),
     });
@@ -2356,6 +2392,7 @@ export function categoryNetting(results, scenario) {
       label: "Fixed asset disposal proceeds",
       gross: sales.gross.fs || 0,
       net: sales.scheduleNet.fs || 0,
+      entries: sales.entries.fs,
       cell: "Fixedassets.xlsx!FAreconciliation!K11",
       downstream: num(fr.K11),
     });

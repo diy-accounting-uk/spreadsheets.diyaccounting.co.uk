@@ -349,7 +349,7 @@ export const TOOLS = {
         entryNumbers: {
           anyOf: [{ type: "boolean" }, { type: "array", items: { type: "string" } }],
           description:
-            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only. Attributed today: Basic Sole Trader and Taxi Driver books.",
+            "Optional: true gives every figure the calculator attributes its entryNumbers, the sorted entryNumbers of the ledger lines behind it; an array of R keys (e.g. section/profit-loss-account/sales-turnover) gives them to those figures only.",
         },
       },
     },
