@@ -15,8 +15,9 @@ import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 import { randomBytes, createHash } from "crypto";
-import { buildSheetMap, loadSharedStrings, readCellValue, escapeXml } from "./xlsx-parts.js";
+import { buildSheetMap, loadSharedStrings, readCellValue, escapeXml, decodeXmlEntities } from "./xlsx-parts.js";
 import { refreshLinkCaches } from "./link-caches.js";
+import { refreshZipCachedValues, shiftFormula } from "./cached-values.js";
 
 // ── Find LibreOffice binary ─────────────────────────────────────────────────
 
@@ -54,10 +55,28 @@ function toExcelSerial(year, month, day) {
 // </c> close. A greedier scan here swallows the self-closing siblings after
 // the target (they carry no </c> to stop at) and with them the row boundary.
 function cellElementPattern(cellRef) {
-  return new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/>|>(?:(?!</c>|<c[\\s>]).)*</c>)`, "s");
+  return new RegExp(`(<c\\s+r="${cellRef}"(?=[\\s/>])[^>]*?)(/>|>(?:(?!</c>|<c[\\s>]).)*</c>)`, "s");
+}
+
+// A value written over the cell that holds a shared formula's text would
+// leave every other cell of that formula with nothing to read, so each of
+// them first gets the formula spelled out for its own position.
+function releaseSharedFormula(xml, cellRef) {
+  const match = xml.match(cellElementPattern(cellRef));
+  const master = match && match[0].match(/<f((?=[^>]*\bt="shared")(?=[^>]*\bref=")[^>]*)>([^<]*)<\/f>/);
+  if (!master) return xml;
+  const si = master[1].match(/\bsi="(\d+)"/)[1];
+  const text = decodeXmlEntities(master[2]);
+  const [, masterCol, masterRow] = cellRef.match(/^([A-Z]+)(\d+)$/);
+  const follower = new RegExp(`(<c r="([A-Z]+)(\\d+)"[^>]*>)<f(?=[^>]*\\bt="shared")(?=[^>]*\\bsi="${si}")[^>]*/>`, "g");
+  return xml.replace(follower, (whole, open, col, row) => {
+    const formula = shiftFormula(text, parseInt(row, 10) - parseInt(masterRow, 10), colToNum(col) - colToNum(masterCol));
+    return `${open}<f>${formula.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</f>`;
+  });
 }
 
 function setCellValue(xml, cellRef, value) {
+  xml = releaseSharedFormula(xml, cellRef);
   const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCell(xml, cellRef, value);
 
@@ -67,6 +86,7 @@ function setCellValue(xml, cellRef, value) {
 }
 
 function setCellString(xml, cellRef, str) {
+  xml = releaseSharedFormula(xml, cellRef);
   const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCellString(xml, cellRef, str);
 
@@ -154,7 +174,7 @@ function insertCellString(xml, cellRef, str) {
  * @param {Object} [options] - { saveRecalculatedTo: "/path/to/save.xlsx" }
  * @returns {Object} - { "SheetName": { "A1": value, "C4": value, ... }, ... }
  */
-export async function applyCellWrites(xlsxBuffer, cellWrites) {
+export async function applyCellWrites(xlsxBuffer, cellWrites, { refreshFormulaResults = true } = {}) {
   const zip = await JSZip.loadAsync(xlsxBuffer);
   const sheetMap = await buildSheetMap(zip);
 
@@ -174,6 +194,11 @@ export async function applyCellWrites(xlsxBuffer, cellWrites) {
     zip.file(sheetPath, xml, { date: originalDate });
   }
 
+  // The formulas reading the written cells carry results computed from the
+  // values the cells held before; a workbook LibreOffice recalculates anyway
+  // can skip bringing them up to date.
+  if (refreshFormulaResults) await refreshZipCachedValues(zip, await JSZip.loadAsync(xlsxBuffer));
+
   return zip.generateAsync({
     type: "uint8array",
     compression: "DEFLATE",
@@ -190,7 +215,7 @@ async function recalculateWorkbook(xlsxBuffer, cellWrites, destination) {
 
   try {
     const inputPath = resolve(workDir, CACHE_WORKBOOK);
-    writeFileSync(inputPath, await applyCellWrites(xlsxBuffer, cellWrites));
+    writeFileSync(inputPath, await applyCellWrites(xlsxBuffer, cellWrites, { refreshFormulaResults: false }));
 
     // Direct xlsx→xlsx doesn't recalculate. Roundtrip through xls forces recalc.
     // Use a unique UserInstallation per invocation to avoid profile lock conflicts.

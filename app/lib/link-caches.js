@@ -19,6 +19,7 @@ import JSZip from "jszip";
 import { buildSheetMap, decodeXmlEntities, escapeXml } from "./xlsx-parts.js";
 import { colToNum, parseCellRef, parseCells, rangeCells, sortCellRefs } from "./template-formula-map.js";
 import { canonicalValue } from "./report-serializer.js";
+import { refreshZipCachedValues } from "./cached-values.js";
 
 export const HUB_FILE = "Financialaccounts.xlsx";
 
@@ -374,6 +375,9 @@ export async function refreshWorkbookLinkCaches(bytes, reader) {
   const zip = await JSZip.loadAsync(bytes);
   const { changed, cells } = await refreshLinkCaches(zip, reader);
   if (!changed) return { bytes, changed, cells };
+  // The formulas that read a moved cache entry carry results computed from
+  // the entry's old value until they are brought up to date with it.
+  await refreshZipCachedValues(zip, await JSZip.loadAsync(bytes));
   const refreshed = await zip.generateAsync({
     type: "uint8array",
     compression: "DEFLATE",

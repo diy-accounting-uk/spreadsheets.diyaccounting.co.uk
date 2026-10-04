@@ -59,23 +59,36 @@ function workbookNamed(files, name) {
 }
 
 const LINK_CACHE_PART = /^xl\/externalLinks\/externalLink\d+\.xml$/;
+const WORKSHEET_PART = /^xl\/worksheets\/sheet\d+\.xml$/;
+
+// A worksheet's formula cells without the results they cache.
+function withoutFormulaResults(xml) {
+  return xml.replace(/<c ([^>]*?)(?<!\/)>((?:(?!<\/c>).)*?<f[\s>/](?:(?!<\/c>).)*)<\/c>/gs, (whole, attrs, inner) => {
+    return `<c ${attrs.replace(/\st="[^"]*"/, "")}>${inner.replace(/<v(?:\s[^>]*)?>[^<]*<\/v>/, "")}</c>`;
+  });
+}
 
 async function partsExcludingLinkCaches(bytes) {
   const zip = await JSZip.loadAsync(bytes);
   const parts = new Map();
   for (const [name, entry] of Object.entries(zip.files)) {
     if (entry.dir || LINK_CACHE_PART.test(name)) continue;
-    parts.set(name, await entry.async("nodebuffer"));
+    const content = WORKSHEET_PART.test(name)
+      ? Buffer.from(withoutFormulaResults(await entry.async("string")))
+      : await entry.async("nodebuffer");
+    parts.set(name, content);
   }
   return parts;
 }
 
-// Two composed workbooks agree on everything but their external link caches.
-// A cache is refreshed from the calculator's own figures, which move
-// whenever anything upstream of the link moves, whether or not this file's
-// own cells changed -- so a file whose cellWrites are untouched can still
-// gain a different cache. Nothing else may move: the template, the
-// year-end sequence and every cell the writer itself filled stay put.
+// Two composed workbooks agree on everything but their external link caches
+// and the formula results computed from them. A cache is refreshed from the
+// calculator's own figures, which move whenever anything upstream of the
+// link moves, whether or not this file's own cells changed -- so a file
+// whose cellWrites are untouched can still gain a different cache, and the
+// formulas reading it different results. Nothing else may move: the
+// template, the year-end sequence and every cell the writer itself filled
+// stay put.
 async function sameExceptLinkCaches(bytesA, bytesB) {
   const partsA = await partsExcludingLinkCaches(bytesA);
   const partsB = await partsExcludingLinkCaches(bytesB);
