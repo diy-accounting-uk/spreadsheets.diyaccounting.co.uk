@@ -8,7 +8,7 @@
 // (book, lines) and the documents the engine already builds, so the MCP
 // server and any other caller read the same answers.
 
-import { signedAmount, isStraddlingLine } from "./scenario-extractor.js";
+import { isStraddlingLine } from "./scenario-extractor.js";
 
 function isoDate(value) {
   if (!value) return "";
@@ -37,15 +37,23 @@ function asSet(filter) {
 
 /**
  * A line's amount in pence with the sign a total wants: a credit note
- * reverses its sale or purchase (signedAmount), and a credit on the bank or
- * the journal (debitCreditCode "C", money out of a bank account) is negative.
+ * reverses its sale or purchase, and a credit on the bank or the journal
+ * (debitCreditCode "C", money out of a bank account) is negative.
+ *
+ * A credit note on the bad debts account (4005) or the fixed asset sale
+ * account (4006) is negative here too. Both templates book a written-off
+ * debt as a negative sale: the Basic Sole Trader sales tabs have one gross
+ * column feeding turnover, and the Limited Company sales tabs' "Bad Debts
+ * written off" column T reaches the P&L negated (TrialBalance row 81 =
+ * -Sales!T1, MnthP&L B34), so only a negative entry raises the expense. A
+ * customer's total therefore falls by the debt written off against them.
  * @param {Object} line
  * @returns {number}
  */
 export function signedPence(line) {
-  const amount = line.sourceJournalID === "sales" || line.sourceJournalID === "purchases" ? signedAmount(line) : line.amount;
-  const pence = Math.round((Number(amount) || 0) * 100);
-  return line.debitCreditCode === "C" ? -pence : pence;
+  const reverses = (line.sourceJournalID === "sales" || line.sourceJournalID === "purchases") && line.documentType === "credit-note";
+  const pence = Math.round((Number(line.amount) || 0) * 100);
+  return reverses || line.debitCreditCode === "C" ? -pence : pence;
 }
 
 const GROUP_KEYS = {

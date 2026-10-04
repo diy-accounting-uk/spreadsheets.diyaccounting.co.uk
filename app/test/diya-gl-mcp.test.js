@@ -1000,6 +1000,16 @@ describe("diya-gl MCP server: reading every detail of the book", () => {
     expect(after.totalPence).toBe(before.totalPence - 10000);
   });
 
+  it("takes a bad debt written off against a customer off that customer's sales total", async () => {
+    const { book, lines } = bstBook;
+    const writeOff = lines.find((line) => line.entryNumber === "TXN-0705");
+    expect(writeOff).toMatchObject({ accountMainID: "4005", documentType: "credit-note", amount: 360, detailComment: "Zeta Corp" });
+    const answer = await toolLayer(book, lines).call("lines", { journal: "sales", groupBy: "detailComment" });
+    const zeta = answer.groups.find((group) => group.key === "Zeta Corp");
+    expect(zeta.entryNumbers).toEqual(["TXN-0705"]);
+    expect(zeta.totalPence).toBe(-36000);
+  });
+
   it("answers what was spent on fuel in June: motor lines dated in June, text match, totalled", async () => {
     const { book, lines } = bstBook;
     const answer = await toolLayer(book, lines).call("lines", { journal: "purchases", text: "FUEL", from: "2025-06-01", to: "2025-06-30" });
