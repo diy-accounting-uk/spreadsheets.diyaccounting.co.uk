@@ -98,6 +98,21 @@ function filterBstChart(lines, purchaseCodeMap) {
   });
 }
 
+// Each scenario.opening_fixed_assets entry against the book.fixedAssets entry
+// it was read from, kept beside the scenario rather than on it so the
+// scenario's own shape stays what the writer and the fixtures expect.
+const BOOK_ASSET_OF = new WeakMap();
+
+/**
+ * The book.fixedAssets entry a scenario.opening_fixed_assets entry was read
+ * from, or undefined for one diyaGlToScenario did not build.
+ * @param {Object} opening - one of scenario.opening_fixed_assets
+ * @returns {Object|undefined}
+ */
+export function bookAssetOf(opening) {
+  return BOOK_ASSET_OF.get(opening);
+}
+
 // The Fixed Assets Schedule's asset-class blocks, keyed by the book's own
 // class enum. land and plant/fixtures only exist on the Ltd Schedule; SE's
 // Schedule carries motor and computer alone and throws on the other three,
@@ -617,6 +632,7 @@ export function diyaGlToScenario(book, lines, product) {
           opening.single_asset_pool = true;
           if (asset.privateUseProportion > 0) opening.private_use = asset.privateUseProportion;
         }
+        BOOK_ASSET_OF.set(opening, asset);
         return opening;
       });
     if (openingFixedAssets.length > 0) scenario.opening_fixed_assets = openingFixedAssets;

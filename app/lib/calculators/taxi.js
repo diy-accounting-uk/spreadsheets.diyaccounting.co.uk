@@ -107,6 +107,22 @@ function aggregateByCodeAndMonth(lines, codeMap, entriesByMonth) {
  * @param {Object} [attribution] - filled in place with the entryNumbers behind each cell (entry-attribution.js)
  * @returns {Object} { "SheetName": { "CellRef": value } }
  */
+/**
+ * Each fixed asset bought in the year beside the tax written-down value the
+ * Fixed Assets sheet carries forward for it: the pool a book rolled forward
+ * brings into its next year.
+ * @param {Object} scenario - diyaGlToScenario's output
+ * @param {Object} taxData
+ * @returns {Array<{entryNumber: string, cost: number, writtenDownValue: number}>}
+ */
+export function taxiAdditionsWrittenDown(scenario, taxData) {
+  return fixedAssetAdditions(scenario, "f").map((asset) => ({
+    entryNumber: entryOf(asset),
+    cost: asset.cost,
+    writtenDownValue: calculateFixedAssetSchedule([asset], taxData).K1,
+  }));
+}
+
 export function calculateTaxiResults(book, lines, taxData, scenario, attribution) {
   const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && String(l.accountMainID) === TAXI_SALES_ACCOUNT);
   // A 4001 line is other business income, never a fare: the P&L keeps it off

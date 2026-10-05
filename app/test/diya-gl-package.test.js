@@ -62,6 +62,7 @@ describe("diya-gl package", () => {
         "diya-gl-new-book",
         "diya-gl-read-workbook",
         "diya-gl-recalc",
+        "diya-gl-roll-forward",
         "diya-gl-view",
         "diya-gl-write-workbook",
       ].sort(),
@@ -75,6 +76,7 @@ describe("diya-gl package", () => {
       "app/bin/write-workbook.js",
       "app/bin/link.js",
       "app/bin/new-book.js",
+      "app/bin/roll-forward.js",
       "app/bin/view.js",
       "app/bin/diya-gl-mcp.js",
     ];
@@ -160,7 +162,16 @@ describe("the packed diya-gl tarball", () => {
   });
 
   it("ships the entry points and the two schemas", () => {
-    for (const name of ["export.js", "report.js", "write-workbook.js", "link.js", "new-book.js", "view.js", "diya-gl-mcp.js"]) {
+    for (const name of [
+      "export.js",
+      "report.js",
+      "write-workbook.js",
+      "link.js",
+      "new-book.js",
+      "roll-forward.js",
+      "view.js",
+      "diya-gl-mcp.js",
+    ]) {
       expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
     }
     expect(packedPaths).toContain("dist/app/lib/derivations/index.js");

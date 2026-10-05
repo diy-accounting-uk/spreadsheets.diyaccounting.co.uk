@@ -133,7 +133,18 @@ describe("diya-gl MCP server: stdio handshake", () => {
 
       const listResult = await client.request("tools/list");
       const names = listResult.tools.map((tool) => tool.name).sort();
-      expect(names).toEqual(["book", "chart", "checks", "edit_lines", "extract_book", "lines", "new_book", "report", "save_workbook"]);
+      expect(names).toEqual([
+        "book",
+        "chart",
+        "checks",
+        "edit_lines",
+        "extract_book",
+        "lines",
+        "new_book",
+        "report",
+        "roll_forward",
+        "save_workbook",
+      ]);
       for (const tool of listResult.tools) {
         expect(typeof tool.description).toBe("string");
         expect(tool.inputSchema.type).toBe("object");

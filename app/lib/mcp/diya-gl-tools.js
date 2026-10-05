@@ -7,8 +7,9 @@
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
 // and diya-gl-edits.js, save_workbook wraps product-workbook.js for a workbook
 // or package zip and diya-gl-interchange.js for the two diya-gl formats, and
-// lines, chart, book and checks wrap book-queries.js, and new_book wraps
-// diya-gl-new-book.js. No engine code lives here.
+// lines, chart, book and checks wrap book-queries.js, new_book wraps
+// diya-gl-new-book.js and roll_forward wraps diya-gl-roll-forward.js. No
+// engine code lives here.
 //
 // extract_book and report both carry a bookChecks field alongside report --
 // the same app/lib/book-checks.js results and summary export.js writes as
@@ -52,6 +53,7 @@ import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
 import { buildNewBook } from "../diya-gl-new-book.js";
+import { rollForward, rollForwardChecks, rolledYearEnd } from "../diya-gl-roll-forward.js";
 import { taxYearFileName } from "../tax-year.js";
 
 // Every edit fn takes (book, lines, params); a line edit returns a new
@@ -208,6 +210,33 @@ async function newBook(session, params = {}) {
     bookToml: canonicalBookToml(stampBook(book)),
     report: reportFor(book, lines),
     bookChecks: await bookChecksFor(book, lines),
+  };
+}
+
+/**
+ * roll_forward: the next year of a book (the session's loaded book, or an
+ * explicit {book, lines}) -- the year end moved on a year, that year's tax
+ * tables, the closing balances as opening ones and only the opening entries
+ * in its lines -- with its R, its book checks and rollChecks, each opening
+ * figure the next year prints against the closing figure the year printed.
+ * Replaces the session's loaded book with the next year's.
+ */
+async function rollForwardBook(session, params = {}) {
+  const priorBook = params.book ?? session.book;
+  const priorLines = params.lines ?? session.lines;
+  if (!priorBook || !priorLines) requireLoaded(session);
+  const nextYear = { ...priorBook, documentInfo: { ...priorBook.documentInfo, periodCoveredEnd: rolledYearEnd(priorBook) } };
+  const { book, lines } = rollForward(priorBook, priorLines, await rateDataForBook(nextYear));
+  loadIntoSession(session, book, lines);
+  const rolledReport = reportFor(book, lines);
+  return {
+    book,
+    lines,
+    bookToml: canonicalBookToml(stampBook(book)),
+    linesJsonl: canonicalLinesJsonl(lines),
+    report: rolledReport,
+    bookChecks: await bookChecksFor(book, lines),
+    rollChecks: rollForwardChecks({ priorBook, priorLines, priorReport: reportFor(priorBook, priorLines), rolledBook: book, rolledReport }),
   };
 }
 
@@ -390,6 +419,13 @@ export const TOOLS = {
       required: ["product", "businessName", "yearEnd"],
     },
     handler: newBook,
+  },
+  roll_forward: {
+    name: "roll_forward",
+    description:
+      "Start the next year of the loaded book: the year end moves on a year with that year's tax rates, the closing balances become the opening ones (bank accounts, debtors and creditors with their named ledgers, VAT, PAYE and CIS owed, stock, each fixed asset's cost, depreciation and tax written-down value, loans and the retained profit), dividends declared clear, and the lines hold only the opening entries. Returns the new book and lines, its report, its book checks, and rollChecks: each opening figure the new year prints against the closing figure the old year printed for it. Replaces the session's loaded book with the new year's. Answers: How do I start next year's books? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
+    inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
+    handler: rollForwardBook,
   },
   report: {
     name: "report",

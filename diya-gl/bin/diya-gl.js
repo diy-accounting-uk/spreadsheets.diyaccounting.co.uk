@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// diya-gl.js — the dispatcher: diya-gl <recalc|read-workbook|write-workbook|link|new-book|view|mcp> [args].
+// diya-gl.js — the dispatcher: diya-gl <recalc|read-workbook|write-workbook|link|new-book|roll-forward|view|mcp> [args].
 // Each subcommand is also its own bin (diya-gl-recalc, and so on), for a
 // caller that wants one command on its PATH without the others.
 
@@ -18,6 +18,7 @@ const SUBCOMMANDS = {
   "write-workbook": "app/bin/write-workbook.js",
   "link": "app/bin/link.js",
   "new-book": "app/bin/new-book.js",
+  "roll-forward": "app/bin/roll-forward.js",
   "view": "app/bin/view.js",
   "mcp": "app/bin/diya-gl-mcp.js",
 };

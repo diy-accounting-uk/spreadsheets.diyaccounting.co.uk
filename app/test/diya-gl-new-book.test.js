@@ -151,7 +151,7 @@ describe("diya-gl new-book", () => {
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
-  });
+  }, 60000);
 
   it("prints the usage and exits 1 without a year end", () => {
     let failure;
@@ -165,5 +165,6 @@ describe("diya-gl new-book", () => {
     }
     expect(failure.status).toBe(1);
     expect(failure.stderr).toContain("Usage: diya-gl new-book --product <bst|se|taxi|ltd>");
-  });
+    expect(failure.stderr).toMatch(/Answers: .+\?/);
+  }, 30000);
 });

@@ -660,6 +660,7 @@ function buildSchedule(scenario, taxData, rate, entries) {
   });
 
   const existingRows = [];
+  const existingAssets = [];
   const existingRowEntries = [];
   // The motor rows' own single asset pool cells, keyed by cell reference:
   // the private use share the writer puts in M, the marker in AD, and the
@@ -681,6 +682,7 @@ function buildSchedule(scenario, taxData, rate, entries) {
         disposal: disposalByAsset.get(asset),
       });
       existingRows.push(row);
+      existingAssets.push(asset);
       existingRowEntries.push({ asset: new Set(), disposal: disposalEntries.get(disposalByAsset.get(asset)) ?? new Set() });
       if (category === "motor") {
         const rowNumber = block.rows[index];
@@ -706,7 +708,24 @@ function buildSchedule(scenario, taxData, rate, entries) {
       SCHEDULE_TOTAL_COLUMNS.map((column) => [column, unionOf(entries.existing[column], entries.additions[column])]),
     );
   }
-  return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells };
+  const register = [
+    ...existingRows.map((row, index) => ({ openingAsset: existingAssets[index], row })),
+    ...newRows.map((row, index) => ({ entryNumber: entryOf(capitalPurchases[index]), row })),
+  ];
+  return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells, register };
+}
+
+/**
+ * Each Schedule row's own figures, beside the asset it holds: an asset
+ * brought forward (one of scenario.opening_fixed_assets) or the purchase line
+ * that bought it in the year. Rolling a book forward reads its carried
+ * forward cost, depreciation and tax written-down value from here.
+ * @param {Object} scenario - diyaGlToScenario's output
+ * @param {Object} taxData
+ * @returns {Array<{openingAsset?: Object, entryNumber?: string, row: Object}>}
+ */
+export function seScheduleRegister(scenario, taxData) {
+  return buildSchedule(scenario, taxData, vatRateFor(scenario)).register;
 }
 
 // ── Structures and Buildings Allowance (SA103F boxes 53 and 53.1) ──────────

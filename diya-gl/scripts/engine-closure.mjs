@@ -17,6 +17,7 @@ export const ENTRY_POINTS = [
   "app/bin/write-workbook.js",
   "app/bin/link.js",
   "app/bin/new-book.js",
+  "app/bin/roll-forward.js",
   "app/bin/view.js",
   "app/bin/diya-gl-mcp.js",
   "app/lib/derivations/index.js",

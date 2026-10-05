@@ -60,12 +60,13 @@ name.
 
 ### The engine boundary inside `app/`
 
-The engine layer is drawn by the code, not by directory. The diya-gl package has eight entry points:
+The engine layer is drawn by the code, not by directory. The diya-gl package has nine entry points:
 `app/bin/export.js`, `app/bin/report.js`, `app/bin/write-workbook.js`, `app/bin/link.js`,
-`app/bin/new-book.js`, `app/bin/view.js`, `app/bin/diya-gl-mcp.js` and `app/lib/derivations/index.js`
-(`ENTRY_POINTS` in `diya-gl/scripts/engine-closure.mjs`). Everything those eight import, directly or
-through another module, is Apache-2.0. That closure is 64 of the 71 modules in `app/lib`, all four modules in
-`app/products`, the runtime data in `app/data` and the two published schemas.
+`app/bin/new-book.js`, `app/bin/roll-forward.js`, `app/bin/view.js`, `app/bin/diya-gl-mcp.js` and
+`app/lib/derivations/index.js` (`ENTRY_POINTS` in `diya-gl/scripts/engine-closure.mjs`). Everything those
+nine import, directly or through another module, is Apache-2.0. That closure is 65 of the 72 modules in
+`app/lib`, all four modules in `app/products`, the runtime data in `app/data` and the two published
+schemas.
 
 The seven `app/lib` modules outside the closure are PolyForm:
 
