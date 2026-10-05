@@ -269,6 +269,7 @@ test.describe("DIYA-GL page — Self Employed downloads (E5)", () => {
     expect(items).toEqual([
       "Download books as diya-gl (.zip)",
       "Download books as JSON (.json)",
+      "File with DIY Accounting Submit",
       "Save to my account",
       "Save to my Google Drive",
     ]);

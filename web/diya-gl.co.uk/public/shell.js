@@ -81,6 +81,7 @@
     views: {},
   };
 
+  var loadedSourceName = null; // the file the book was last opened from, named to Submit in a handoff
   var els = {};
 
   document.addEventListener("DOMContentLoaded", init);
@@ -1291,6 +1292,7 @@
         });
       })
       .then(function (snapshot) {
+        loadedSourceName = null;
         applyLoadedSnapshot(snapshot, opts);
         return snapshot;
       })
@@ -1332,6 +1334,7 @@
     }).then(function (snapshot) {
       if (snapshot) {
         sendBookLoadedEvent(loadedProductId, loadedSourceKind);
+        loadedSourceName = file.name;
         showToast("Loaded " + file.name);
       }
       return snapshot;
@@ -3147,6 +3150,10 @@
       { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
       { label: "Download books as JSON (.json)", format: "json" },
     ];
+    var current = currentBookAndLines();
+    if (current && window.DiyaGlSubmitHandoff && window.DiyaGlSubmitHandoff.activitiesFor(active, current.book).length > 0) {
+      items.push({ label: "File with DIY Accounting Submit", format: "submit" });
+    }
     if (window.DiyaGlCloud && window.DiyaGlCloud.isEnabled()) {
       items.push({ label: "Save to my account", format: "cloud" });
     }
@@ -3183,6 +3190,8 @@
           window.DiyaGlCloud.saveCurrentBook();
         } else if (opt.format === "cloud-drive") {
           window.DiyaGlCloud.saveToDrive();
+        } else if (opt.format === "submit") {
+          openSubmitDialog(current);
         } else {
           runSave(current, opt.format);
         }
@@ -3196,6 +3205,161 @@
       document.addEventListener("click", onOutsideSaveMenuClick, true);
       document.addEventListener("keydown", onSaveMenuKeydown);
     }, 0);
+  }
+
+  // "File with DIY Accounting Submit": asks which filing and which period, derives the figures
+  // from the live book here in the browser, and opens Submit's filing page with them in the URL
+  // fragment. The book itself is never sent.
+  function openSubmitDialog(current) {
+    var handoff = window.DiyaGlSubmitHandoff;
+    var kinds = handoff.activitiesFor(active, current.book);
+    var config = window.DIYA_GL_CLOUD_CONFIG || {};
+    var overlay = document.createElement("div");
+    overlay.id = "submit-handoff";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "File with DIY Accounting Submit");
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);";
+    var box = document.createElement("div");
+    box.style.cssText =
+      "background:var(--paper-raised);color:var(--ink);border:1px solid var(--rule-faint);border-radius:var(--radius);" +
+      "box-shadow:var(--shadow);padding:1rem 1.25rem;width:min(26rem,92vw);display:flex;flex-direction:column;gap:0.6rem;";
+    overlay.appendChild(box);
+
+    function add(tag, text, attrs) {
+      var node = document.createElement(tag);
+      if (text) node.textContent = text;
+      Object.keys(attrs || {}).forEach(function (name) {
+        node.setAttribute(name, attrs[name]);
+      });
+      box.appendChild(node);
+      return node;
+    }
+    function close() {
+      overlay.remove();
+      document.removeEventListener("keydown", onKey);
+    }
+    function onKey(event) {
+      if (event.key === "Escape") close();
+    }
+
+    add("h2", "File with DIY Accounting Submit").style.cssText = "margin:0;font-size:1.1rem;";
+    add("p", "The figures are worked out in this browser and sent to Submit in the link. The book itself is not uploaded.").style.cssText =
+      "margin:0;font-size:0.9rem;";
+    var kindSelect = add("select", "", { "id": "submit-handoff-kind", "aria-label": "What to file" });
+    kinds.forEach(function (kind) {
+      var option = document.createElement("option");
+      option.value = kind;
+      option.textContent = handoff.ACTIVITIES[kind].label;
+      kindSelect.appendChild(option);
+    });
+    var periodLabel = add("label", "", { for: "submit-handoff-period" });
+    var periodSelect = add("select", "", { id: "submit-handoff-period" });
+    var periodDate = add("input", "", { id: "submit-handoff-period-date", type: "date" });
+    var message = add("p", "", { id: "submit-handoff-message", role: "status" });
+    message.style.cssText = "margin:0;font-size:0.9rem;min-height:1.2em;";
+    var row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:0.5rem;justify-content:flex-end;";
+    box.appendChild(row);
+    var cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "Cancel";
+    cancel.addEventListener("click", close);
+    var go = document.createElement("button");
+    go.type = "button";
+    go.id = "submit-handoff-go";
+    go.textContent = "Open Submit";
+    row.appendChild(cancel);
+    row.appendChild(go);
+
+    function say(text) {
+      message.textContent = text;
+    }
+
+    var resourcesPromise = null;
+    function loadEngine() {
+      if (!resourcesPromise) {
+        resourcesPromise = Promise.all([import("./engine/diya-gl-engine.js"), import("./bundle-resources.js")]).then(function (modules) {
+          return { engine: modules[0], resources: modules[1].browserResourceLoader() };
+        });
+      }
+      return resourcesPromise;
+    }
+
+    function refreshPeriod() {
+      var kind = kindSelect.value;
+      say("");
+      periodSelect.innerHTML = "";
+      periodSelect.style.display = "none";
+      periodDate.style.display = "none";
+      periodLabel.textContent = kind === "vat" ? "VAT period end date" : kind === "itsa-annual" ? "Tax year" : "Period";
+      periodLabel.setAttribute("for", kind === "vat" ? "submit-handoff-period-date" : "submit-handoff-period");
+      go.disabled = true;
+      return loadEngine()
+        .then(function (loaded) {
+          return handoff.periodChoices(loaded.engine, kind, current.book, current.lines, loaded.resources);
+        })
+        .then(function (choices) {
+          if (kindSelect.value !== kind) return;
+          if (choices === null) {
+            periodDate.style.display = "";
+          } else {
+            choices.forEach(function (choice) {
+              var option = document.createElement("option");
+              option.value = choice.value;
+              option.textContent = choice.label;
+              periodSelect.appendChild(option);
+            });
+            periodSelect.style.display = "";
+          }
+          go.disabled = false;
+        })
+        .catch(function (error) {
+          say(error && error.message ? error.message : String(error));
+        });
+    }
+
+    kindSelect.addEventListener("change", refreshPeriod);
+    go.addEventListener("click", function () {
+      var kind = kindSelect.value;
+      var choice = kind === "vat" ? periodDate.value : periodSelect.value;
+      if (!choice) {
+        say("Choose the period first.");
+        return;
+      }
+      go.disabled = true;
+      loadEngine()
+        .then(function (loaded) {
+          return handoff
+            .buildHandoff(
+              loaded.engine,
+              kind,
+              current.book,
+              current.lines,
+              choice,
+              {
+                sourceFileName: loadedSourceName || (active && active.title ? active.title + " book" : "DIYA-GL book"),
+                packageVersion: loaded.engine.PROVENANCE_DATA.engineVersion,
+              },
+              loaded.resources,
+            )
+            .then(function (built) {
+              var url = handoff.submitUrl(config.submitOrigin, kind, handoff.encodeFragment(built));
+              window.open(url, "_blank", "noopener");
+              close();
+            });
+        })
+        .catch(function (error) {
+          say(error && error.message ? error.message : String(error));
+          go.disabled = false;
+        });
+    });
+
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(overlay);
+    refreshPeriod();
+    kindSelect.focus();
   }
 
   function onOutsideSaveMenuClick(event) {

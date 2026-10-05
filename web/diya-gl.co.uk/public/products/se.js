@@ -1744,6 +1744,7 @@
     page: "se.html",
     stylesheet: "se.css",
     multiFile: true,
+    submitActivities: ["itsa-quarterly", "itsa-annual"],
     hub: HUB_FILE,
     emptyState: {
       intro: "Open a Self Employed package as editable books in your browser. Nothing is uploaded; the files never leave your machine.",

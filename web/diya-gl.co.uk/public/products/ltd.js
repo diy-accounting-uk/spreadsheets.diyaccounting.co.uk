@@ -715,6 +715,7 @@
     page: "ltd.html",
     stylesheet: "ltd.css",
     multiFile: true,
+    submitActivities: ["vat"],
     hub: HUB_FILE,
     emptyState: {
       intro: "Open a Limited Company package as editable books in your browser. Nothing is uploaded; the files never leave your machine.",
