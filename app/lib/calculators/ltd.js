@@ -2019,8 +2019,11 @@ function buildCt600(corporationTax, pl, admin) {
   if (corporationTax.K26 > 0) sheet.Z72 = corporationTax.K26;
   if (corporationTax.K24 > 0) sheet.AJ76 = corporationTax.K24;
   sheet.AJ74 = (sheet.Z70 || 0) - (sheet.Z72 || 0);
-  sheet.AJ92 = sheet.AJ74 > 0 ? sheet.AJ74 + (sheet.AJ76 || 0) : 0;
-  sheet.AJ110 = sheet.AJ92;
+  sheet.AJ92 = Math.max(sheet.AJ74, 0) + (sheet.AJ76 || 0);
+  // A trading loss of the year meets the interest it can reach, as the working
+  // sheet's chargeable profit nets them, so box 30 carries what was set off.
+  if (corporationTax.K22 < 0 && corporationTax.K24 > 0) sheet.Z98 = Math.min(-corporationTax.K22, corporationTax.K24);
+  sheet.AJ110 = sheet.AJ92 - (sheet.Z98 || 0);
   sheet.AJ131 = sheet.AJ126 + sheet.AJ128;
   sheet.Y133 = corporationTax.marginalRelief;
   sheet.Y135 = corporationTax.K35;
@@ -2534,7 +2537,8 @@ function attributeLtdResults(attribution, context) {
   a.set(CT600, "AJ76", a.get(CT, "K24"));
   a.set(CT600, "AJ74", a.cells(CT600, "Z70", "Z72"));
   a.set(CT600, "AJ92", a.cells(CT600, "AJ74", "AJ76"));
-  a.set(CT600, "AJ110", a.get(CT600, "AJ92"));
+  a.set(CT600, "Z98", unionOf(a.get(CT, "K22"), a.get(CT, "K24")));
+  a.set(CT600, "AJ110", a.cells(CT600, "AJ92", "Z98"));
   a.set(CT600, "AJ131", a.cells(CT600, "AJ126", "AJ128"));
   a.set(CT600, "Y133", charged);
   a.set(CT600, "Y135", a.get(CT, "K35"));

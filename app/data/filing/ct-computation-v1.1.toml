@@ -167,7 +167,7 @@ section = 1
 part = 2
 partName = "Section 1 Part 2: Accounting Non-Taxable Income Deducted"
 label = "Non-trading loan relationship credit"
-xbrl = "AdjustmentsNon-tradingLoanRelationshipsCreditsPerAccounts"
+xbrl = "AdjustmentsNon-tradingLoanRelationshipCreditsPerAccounts"
 sheetCell = "Financialaccounts.xlsx!CorporationTax!K24"
 note = "Bank interest: the plan's Ltd view moves this to CT600 box 170 rather than adding it back in the trading computation."
 
@@ -432,7 +432,7 @@ section = 1
 part = 3
 partName = "Section 1 Part 3: Accounting Disallowable Expenditure Addback"
 label = "Non-trading loan relationship debit"
-xbrl = "AdjustmentsNon-tradingLoanRelationshipsDebitsPerAccounts"
+xbrl = "AdjustmentsNon-tradingLoanRelationshipDebitsPerAccounts"
 
 [[line]]
 section = 1
