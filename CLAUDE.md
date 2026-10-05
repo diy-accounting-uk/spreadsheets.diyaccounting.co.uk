@@ -62,6 +62,7 @@ Skills live at `.claude/skills/<name>/SKILL.md`.
 - `.claude/skills/refine/SKILL.md` — refine every open board row in the main context before a wave: references checked against origin/main, briefs made complete with the lowest model that fits, facts shared across rows, the human step split out; then write back and render `/board`; invoke as `/refine`
 - `.claude/skills/session-report/SKILL.md` — write `../REPORT_SESSION_SPREADSHEETS_<id>_<date>.md` (workspace root) from measured figures: result, method in prose, mechanisms that worked, losses with a board row each; invoke as `/session-report`
 - `.claude/skills/clean/SKILL.md` — gather merged branches, worktrees of merged branches, logs and test artefacts, and build output; ask once; remove every agreed category in one go; then fetch, switch to main and pull when nothing is in progress; invoke as `/clean`
+- `.claude/skills/compact-ready/SKILL.md` — answer whether now is a good time for compaction and make it true: land reported agent work, write changed board rows back, then print the `/compact <summary>` line; `/board` runs it after every render; invoke as `/compact-ready`
 
 Note: Read the relevant skill when working on that product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
 

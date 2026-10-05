@@ -1,6 +1,6 @@
 ---
 name: board
-description: Render the work board — whether cool-down is on and whether a watch monitor is running, then a table of the board's (../submit.diyaccounting.co.uk/NEXT.md) open rows that change this repository, with source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Invoke when the operator asks for the board, the open items, or "what's in flight".
+description: Render the work board — whether cool-down is on and whether a watch monitor is running, then a table of the board's (../submit.diyaccounting.co.uk/NEXT.md) open rows that change this repository, with source plan, owner, precursors by id and state, plus anything finished in the current session; then the GitHub scan (open issues, PRs, Dependabot and code-scanning alerts with a recommended action each), the live ci and prod deployments, and a branch audit. Ends with /compact-ready. Invoke when the operator asks for the board, the open items, or "what's in flight".
 ---
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
@@ -21,7 +21,7 @@ itself.
 ## Output shape
 
 A one-line mode header, then exactly four parts in this order: the board table, the GitHub
-scan, the deployments, the branch audit.
+scan, the deployments, the branch audit. `/compact-ready` follows them (see the last section).
 
 Every part is drawn as a grid in the chat. The terminal draws a markdown table as a grid only
 while the sum of its minimum column widths fits the window; past that it degrades every row to a
@@ -293,3 +293,13 @@ its Rules on section order and write-back) for where a row goes, touch only this
 and never reformat the file. Pull that repository's `main` first, run `npx vitest run
 app/unit-tests/nextShape.test.js` there, commit the `NEXT.md`-only change to that
 repository's `main` (its docs exception allows a direct push) and push.
+
+## Then `/compact-ready`
+
+Every render ends with `/compact-ready`, after the write-back is pushed. A board render is a
+natural break: the file and the table agree, so the next thing to settle is whether the session's
+work in flight (agents, worktrees, monitors, chat decisions) is in a state a compaction keeps.
+Act on its answer as that skill says: `yes` prints the `/compact <summary>` line in full for the
+operator, `yes after <action>` does the action and prints it, `not yet` names what must land
+first. `not yet` is only for an agent mid-edit with no commit or a merge between its gates and its
+verification; PRs in CI, running deploys and pending asks are `yes`, named in the summary. Its output follows the board's four parts, and is the last thing in the reply.
