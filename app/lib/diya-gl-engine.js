@@ -139,6 +139,8 @@ export { calculateExpectedTax } from "./tax/income-tax.js";
 // export.js, generate.js and the MCP tools select one through.
 export { PRODUCTS, productModule } from "./products.js";
 
+export { NEW_BOOK_CHARTS, newBookChart, buildNewBook } from "./diya-gl-new-book.js";
+
 // Editing it.
 export {
   addSaleLine,

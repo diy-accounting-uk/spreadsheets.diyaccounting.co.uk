@@ -53,12 +53,13 @@ describe("diya-gl package", () => {
     }
   });
 
-  it("names the six documented commands plus the dispatcher", () => {
+  it("names every documented command plus the dispatcher", () => {
     expect(Object.keys(pkg.bin).sort()).toEqual(
       [
         "diya-gl",
         "diya-gl-link",
         "diya-gl-mcp",
+        "diya-gl-new-book",
         "diya-gl-read-workbook",
         "diya-gl-recalc",
         "diya-gl-view",
@@ -73,6 +74,7 @@ describe("diya-gl package", () => {
       "app/bin/export.js",
       "app/bin/write-workbook.js",
       "app/bin/link.js",
+      "app/bin/new-book.js",
       "app/bin/view.js",
       "app/bin/diya-gl-mcp.js",
     ];
@@ -103,7 +105,7 @@ describe("diya-gl package", () => {
     expect(existsSync(resolve(DIYA_GL_DIR, "dist", "web", "diya-gl.co.uk"))).toBe(false);
   });
 
-  it("carries every module the seven entry points import", () => {
+  it("carries every module the entry points import", () => {
     for (const file of engineClosure(ROOT)) {
       expect(existsSync(resolve(DIYA_GL_DIR, "dist", file)), file).toBe(true);
     }
@@ -157,8 +159,8 @@ describe("the packed diya-gl tarball", () => {
     expect(BUILD_SCRIPTS.filter((name) => packedPaths.includes(`dist/app/bin/${name}`))).toEqual([]);
   });
 
-  it("ships the seven entry points and the two schemas", () => {
-    for (const name of ["export.js", "report.js", "write-workbook.js", "link.js", "view.js", "diya-gl-mcp.js"]) {
+  it("ships the entry points and the two schemas", () => {
+    for (const name of ["export.js", "report.js", "write-workbook.js", "link.js", "new-book.js", "view.js", "diya-gl-mcp.js"]) {
       expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
     }
     expect(packedPaths).toContain("dist/app/lib/derivations/index.js");

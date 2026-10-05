@@ -38,8 +38,9 @@ export const SOURCE_URL = "https://github.com/diy-accounting-uk/spreadsheets.diy
 // instructions the client shows alongside the tools.
 const INSTRUCTIONS = [
   "Read, check, edit and write DIYA-GL books: a UK sole trader's or company's accounts as a book.toml",
-  "and a lines.jsonl file. Load a workbook or a book with extract_book, then call report for the",
-  "figures and checks, edit_lines to change transactions, and save_workbook to write the package.",
+  "and a lines.jsonl file. Load a workbook or a book with extract_book, or start an empty one with",
+  "new_book, then call report for the figures and checks, edit_lines to change transactions, and",
+  "save_workbook to write the package.",
   "Every detail of the accounts is readable: lines filters and groups every transaction (best",
   "customer, biggest suppliers, spend on fuel in June), chart lists the accounts and the report rows",
   "each feeds, book gives the business, period, tax settings and registers, and checks gives every",

@@ -17,6 +17,7 @@
     "diya-gl-read-workbook": "bin/diya-gl-read-workbook.js",
     "diya-gl-write-workbook": "bin/diya-gl-write-workbook.js",
     "diya-gl-link": "bin/diya-gl-link.js",
+    "diya-gl-new-book": "bin/diya-gl-new-book.js",
     "diya-gl-view": "bin/diya-gl-view.js",
     "diya-gl-mcp": "bin/diya-gl-mcp.js"
   },

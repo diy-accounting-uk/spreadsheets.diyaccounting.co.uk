@@ -251,40 +251,6 @@
 
   var ENTITY_PATH_PREFIX = "entityInformation.";
 
-  // The chart a new Limited Company book starts from: one account per P&L
-  // row the sales and purchase journals feed, plus the four bank books the
-  // package carries. The descriptions are the statement's own captions.
-  // Business entertainment names its Purchases column, AJ, because it is the
-  // one purchase account the profit and loss row it lands on (advertising)
-  // does not tell apart, and the corporation tax computation adds it back.
-  var STANDARD_NEW_BOOK_CHART = {
-    sales: {
-      4000: { accountMainDescription: "Sales Product A" },
-      4001: { accountMainDescription: "Sales Product B" },
-      4002: { accountMainDescription: "Sales Product C" },
-      4003: { accountMainDescription: "Other Direct Income" },
-      4004: { accountMainDescription: "Grants Received" },
-    },
-    purchases: {
-      5000: { accountMainDescription: "Materials / Stock" },
-      5100: { accountMainDescription: "Directors Wages" },
-      5200: { accountMainDescription: "Premises" },
-      5400: { accountMainDescription: "Repairs & Maintenance" },
-      5500: { accountMainDescription: "Advertising" },
-      5502: { "accountMainDescription": "Business entertainment", "diya-gl:column": "AJ" },
-      5600: { accountMainDescription: "Travel & Hotel" },
-      5700: { accountMainDescription: "Insurance" },
-      5800: { accountMainDescription: "Legal & Professional" },
-      5900: { accountMainDescription: "Fixed asset purchases" },
-    },
-    bank: {
-      1200: { accountMainDescription: "Current account", accountType: "bank" },
-      1210: { accountMainDescription: "Savings account", accountType: "bank" },
-      1220: { accountMainDescription: "Cash account", accountType: "bank" },
-      1230: { accountMainDescription: "Credit card account", accountType: "bank" },
-    },
-  };
-
   // ============================== product module readers ==============================
 
   function plainLabel(label) {
@@ -685,23 +651,12 @@
   }
 
   function buildNewBook(values, ctx) {
-    var name = values.businessName;
-    return {
-      documentInfo: {
-        entriesType: "journal",
-        language: "en",
-        periodCoveredStart: ctx.period.start,
-        periodCoveredEnd: ctx.period.end,
-        defaultCurrency: "GBP",
-        entriesComment: "New book for " + name,
-      },
-      entityInformation: {
-        "organizationIdentifier": name,
-        "diya-gl:product": SCHEMA_NAME,
-        "diya-gl:vatRegistered": !!values.vatRegistered,
-      },
-      accounts: JSON.parse(JSON.stringify(STANDARD_NEW_BOOK_CHART)),
-    };
+    return ctx.engine.buildNewBook({
+      product: PRODUCT_ID,
+      businessName: values.businessName,
+      yearEnd: values.yearEnd,
+      vatRegistered: !!values.vatRegistered,
+    });
   }
 
   // A package carries no anchor table of its own yet (Ltd:T2), so the only

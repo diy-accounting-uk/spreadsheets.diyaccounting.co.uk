@@ -937,3 +937,28 @@ This schema is versioned as `v2`. The version is embedded in the JSON Schema `$i
 An earlier `v1` existed but nothing outside this repository ever read it, so v2 replaced
 it in place rather than being published alongside it.
 The `diya-gl:product` value in `book.toml` determines which subset of the schema is active.
+
+---
+
+## 10. Starting a Book
+
+A new business starts from an empty book: `diya-gl new-book` on the command line, the
+MCP server's `new_book` tool, or the New book form on the DIYA-GL pages. The command and
+the tool build the same `book.toml`, and the form builds it without the `tax` tables:
+
+- `documentInfo`: the twelve months to the year end given, from the day after the same
+  date a year earlier.
+- `entityInformation`: the business name, the product, `diya-gl:vatRegistered` (Self
+  Employed and Company only; a Basic Sole Trader or Taxi Driver book is never VAT
+  registered) and, for the three sole trader products, the cash basis.
+- `accounts`: the product's starting chart. Every profit and loss row the sales and
+  purchase journals feed has an account, and Self Employed and Company also carry the
+  bank books their packages have.
+- `tax`: that year's rates from the tax data the year end falls in. A year whose rates
+  are not carried yet is refused by name.
+
+`lines.jsonl` is empty, and every book check passes.
+
+```
+diya-gl new-book --product se --name "Lark Lane" --year-end 2027-04-05 --output-dir lark-lane
+```

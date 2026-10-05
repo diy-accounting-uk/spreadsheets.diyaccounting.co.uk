@@ -126,35 +126,6 @@
     totalTaxAndNi: "E18",
   };
 
-  // The standard BST chart of accounts a new book starts from: one sales
-  // account (a blank business has no income streams yet to distinguish) and
-  // one purchase account per expense category the year table's own columns
-  // carry, so a brand-new book already has somewhere for every category of
-  // entry to post to. Codes and columns follow the same chart the
-  // reconciliation fixtures use (examples/precision-code-ltd and
-  // examples/sp-sixty-driving book.toml).
-  var STANDARD_NEW_BOOK_CHART = {
-    sales: {
-      4000: { accountMainDescription: "Sales" },
-    },
-    purchases: {
-      5000: { accountMainDescription: "Cost of sales" },
-      5001: { accountMainDescription: "Direct costs" },
-      5101: { accountMainDescription: "Employee costs" },
-      5200: { accountMainDescription: "Premises costs" },
-      5400: { accountMainDescription: "Repairs and maintenance" },
-      5501: { accountMainDescription: "General admin" },
-      5601: { accountMainDescription: "Motor expenses" },
-      5600: { accountMainDescription: "Travel and subsistence" },
-      5500: { accountMainDescription: "Advertising" },
-      5800: { accountMainDescription: "Legal and professional fees" },
-      5803: { accountMainDescription: "Interest and finance charges" },
-      5801: { accountMainDescription: "Bad debts written off" },
-      5002: { accountMainDescription: "Other expenses" },
-      5900: { accountMainDescription: "Fixed asset purchases" },
-    },
-  };
-
   // ============================== CELL_MAP readers ==============================
 
   function plainLabel(label) {
@@ -739,24 +710,7 @@
   // ============================== new book and upload ==============================
 
   function buildNewBook(values, ctx) {
-    var name = values.businessName;
-    return {
-      documentInfo: {
-        entriesType: "journal",
-        language: "en",
-        periodCoveredStart: ctx.period.start,
-        periodCoveredEnd: ctx.period.end,
-        defaultCurrency: "GBP",
-        entriesComment: "New book for " + name,
-      },
-      entityInformation: {
-        "organizationIdentifier": name,
-        "diya-gl:product": SCHEMA_NAME,
-        "diya-gl:vatRegistered": false,
-        "diya-gl:basisOfAccounting": "cash",
-      },
-      accounts: JSON.parse(JSON.stringify(STANDARD_NEW_BOOK_CHART)),
-    };
+    return ctx.engine.buildNewBook({ product: "bst", businessName: values.businessName, yearEnd: values.yearEnd });
   }
 
   // Basic Sole Trader is one workbook, so the set an upload opens holds one

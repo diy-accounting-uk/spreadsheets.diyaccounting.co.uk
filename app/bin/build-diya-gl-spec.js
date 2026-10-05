@@ -574,6 +574,11 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
 brew install diy-accounting-uk/diya-gl/diya-gl
 docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <p>
+        A new business starts from an empty book: the product's starting chart of accounts, the twelve months to the year end and
+        that tax year's rates. The MCP server's <code>new_book</code> tool builds the same book.
+      </p>
+      <pre><code>diya-gl new-book --product se --name "Lark Lane" --year-end 2027-04-05 --output-dir lark-lane</code></pre>
+      <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
         <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
       </p>

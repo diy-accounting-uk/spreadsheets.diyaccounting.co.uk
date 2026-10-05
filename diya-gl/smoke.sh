@@ -57,6 +57,6 @@ TOOLS=$(echo "$RESPONSE" | node -e '
   const lines = require("fs").readFileSync(0, "utf8").split("\n").filter(Boolean).map(JSON.parse);
   console.log(lines.find((m) => m.id === 2).result.tools.map((t) => t.name).sort().join(" "));')
 echo "tools: $TOOLS"
-test "$TOOLS" = "book chart checks edit_lines extract_book lines report save_workbook"
+test "$TOOLS" = "book chart checks edit_lines extract_book lines new_book report save_workbook"
 
 echo "=== all four bins ran from the packed tarball ==="

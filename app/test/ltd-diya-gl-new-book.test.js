@@ -1,28 +1,17 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// The chart a new Limited Company book starts from on the DIYA-GL page
-// (web/.../diya-gl/products/ltd.js), proved against the code map the engine
-// posts purchases through. The manifest is a classic script that assigns one
-// global, so it is imported for its side effect and read back off globalThis.
+// The chart a new Limited Company book starts from (app/lib/diya-gl-new-book.js,
+// which the DIYA-GL page's New book form and the MCP server's new_book tool
+// both build from), proved against the code map the engine posts purchases
+// through.
 
 import { describe, it, expect } from "vitest";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
 import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
 import { PURCHASE_ANALYSIS_COLUMNS } from "../lib/calculators/ltd.js";
+import { buildNewBook } from "../lib/diya-gl-new-book.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "..", "..");
-const MANIFEST_FILE = resolve(ROOT, "web", "diya-gl.co.uk", "public", "products", "ltd.js");
-
-await import(MANIFEST_FILE);
-const manifest = globalThis.DiyaGlProducts.ltd;
-
-const book = manifest.newBook.build(
-  { businessName: "Fresh Books Ltd", yearEnd: "2026-03-31", vatRegistered: true },
-  { period: { start: "2025-04-01", end: "2026-03-31" } },
-);
+const book = buildNewBook({ product: "ltd", businessName: "Fresh Books Ltd", yearEnd: "2026-03-31", vatRegistered: true });
 
 describe("a new Company book's standard chart", () => {
   it("posts every purchase account through a code letter the engine analyses", () => {
