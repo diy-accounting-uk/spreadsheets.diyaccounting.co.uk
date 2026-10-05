@@ -197,3 +197,7 @@ export {
   LINES_SCHEMA_RESOURCE,
   ResourceUnavailableError,
 } from "./app-resources.js";
+
+// The filing figures a book answers, and the engine build that derived them, for the page's handoff to Submit.
+export { deriveVatReturn, deriveItsaQuarterlyUpdate, deriveItsaAnnualSubmission } from "./derivations/index.js";
+export { PROVENANCE_DATA } from "./provenance-data.js";

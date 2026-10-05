@@ -27,6 +27,7 @@
 
   var config = {
     apiBase: "https://submit.diyaccounting.co.uk/api/v1",
+    submitOrigin: "https://submit.diyaccounting.co.uk",
     hostedUi: "https://prod-auth.diyaccounting.co.uk",
     clientId: "1c8hjrjp5g5ipm8o47t6qkks4r",
     googleClientId: "670010122633-56q89d0h9c4skb9cpj4h9j2gr3kq06vd.apps.googleusercontent.com",
@@ -38,6 +39,8 @@
   // changes for either.
   if ("DIYA_GL_CLOUD_TEST_CLIENT_ID" in window) config.clientId = window.DIYA_GL_CLOUD_TEST_CLIENT_ID;
   if ("DIYA_GL_DRIVE_TEST_CLIENT_ID" in window) config.googleClientId = window.DIYA_GL_DRIVE_TEST_CLIENT_ID;
+
+  if ("DIYA_GL_SUBMIT_TEST_ORIGIN" in window) config.submitOrigin = window.DIYA_GL_SUBMIT_TEST_ORIGIN;
 
   window.DIYA_GL_CLOUD_CONFIG = config;
 })();
