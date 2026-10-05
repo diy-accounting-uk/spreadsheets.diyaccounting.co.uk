@@ -219,13 +219,14 @@ describe("roll_forward on the sole trader products", () => {
     expect(rolled.bookChecks.summary.fail).toBe(0);
   });
 
-  it("refuses a year whose tax tables are not carried, naming the file", async () => {
+  it("Taxi Driver: a second roll reaches the year ending 2028-04-05 on the 2027-28 tax tables", async () => {
     const methods = createMethods();
     const first = await callTool("roll_forward", example("basic-taxi-driver/taxi"), methods);
     expect(first.book.documentInfo.periodCoveredEnd).toBe("2027-04-05");
-    await expect(callTool("roll_forward", {}, methods)).rejects.toThrow(
-      "No tax tables for a year ending 2028-04-05: app/data/se-2027-2028.toml is not carried yet",
-    );
+    const second = await callTool("roll_forward", {}, methods);
+    expect(second.book.documentInfo.periodCoveredEnd).toBe("2028-04-05");
+    expect(failing(second.rollChecks)).toEqual([]);
+    expect(second.bookChecks.summary.fail).toBe(0);
   });
 });
 

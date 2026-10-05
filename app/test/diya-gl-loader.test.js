@@ -338,3 +338,32 @@ describe("extractTaxDataFromBook", () => {
     expect(() => extractTaxDataFromBook(outOfRange, "se")).toThrow(/no tax-year file covers/);
   });
 });
+
+describe("tax year 2027-28 (year end 2028-04-05)", () => {
+  const { book } = loadDiyaGlData(BST_DATA);
+  const yearEnd2028 = { ...book, documentInfo: { ...book.documentInfo, periodCoveredEnd: new Date("2028-04-05") } };
+
+  it.each(["bst", "taxi", "se"])("derives a depreciation table for %s", (product) => {
+    const taxData = extractTaxDataFromBook(yearEnd2028, product);
+    expect(taxData.depreciation.plant_and_machinery).toBe(0.1);
+  });
+
+  it("states the frozen thresholds and the carried-forward Class 2 figures", () => {
+    const file = parseTOML(readFileSync(resolve(ROOT, "app", "data", "se-2027-2028.toml"), "utf8"));
+    expect(file.tax_year.label).toBe("2027-28");
+    expect(file.income_tax).toMatchObject({
+      personal_allowance: 12570,
+      basic_band_end: 37700,
+      higher_band_end: 125140,
+      personal_allowance_taper_threshold: 100000,
+    });
+    expect(file.national_insurance).toMatchObject({
+      class4_lower_limit: 12570,
+      class4_upper_limit: 50270,
+      class2_weekly_rate: 3.65,
+      class2_small_profits_threshold: 7105,
+    });
+    expect(file.mileage).toMatchObject({ higher_rate_pence: 0.55, lower_rate_pence: 0.25 });
+    expect(file.vat.registration_threshold).toBe(90000);
+  });
+});
