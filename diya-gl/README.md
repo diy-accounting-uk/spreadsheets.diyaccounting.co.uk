@@ -196,9 +196,10 @@ format text is CC BY 4.0, so you can implement the format in anything with attri
 The workbook templates are not part of this package. `write-workbook` and the MCP `save_workbook`
 tool fetch the template they need from
 [spreadsheets.diyaccounting.co.uk](https://spreadsheets.diyaccounting.co.uk) the first time they run,
-print the terms, and cache it for later runs. The templates are the company's own work, under the
-PolyForm Internal Use License 1.0.0 with an additional grant: use them for your own accounts, or for
-your clients' accounts if you are an accountant or a bookkeeper, and do not redistribute them.
+print the terms, and cache it for later runs of the same version. The templates are the company's
+own work, under the PolyForm Internal Use License 1.0.0 with an additional grant: use them for your
+own accounts, or for your clients' accounts if you are an accountant or a bookkeeper, and do not
+redistribute them.
 
 This repository does not accept contributions.
 
