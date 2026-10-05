@@ -34,7 +34,13 @@ import {
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../lib/ltd-layout.js";
+import {
+  BANK_ACCOUNT_FILES,
+  BANK_LAYOUTS,
+  OPENING_FIXED_ASSET_COLUMNS,
+  isLtdOpeningBankLine,
+  ltdBankPlacement,
+} from "../lib/ltd-layout.js";
 import { apportionCorporationTax, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -1009,12 +1015,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
           throw new Error(`Bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
         }
         const layout = BANK_LAYOUTS[fileName];
-        const isReceipt = tx.direction === "in";
-        const block = isReceipt ? layout.receipt : layout.payment;
-        const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
-        if (!analysedCodes.includes(tx.code)) {
-          throw new Error(`${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code ${tx.code}`);
+        const placement = ltdBankPlacement(fileName, tx.direction === "in", tx.code, tx.amount);
+        if (!placement.analysed) {
+          throw new Error(`${fileName} analyses no ${tx.direction === "in" ? "receipt" : "payment"} under code ${tx.code}`);
         }
+        const isReceipt = placement.receipt;
+        const block = isReceipt ? layout.receipt : layout.payment;
 
         const rowKey = `${fileName}:${tabName}`;
         const rows = isReceipt ? receiptRows : paymentRows;
@@ -1025,7 +1031,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
         if (tx.description) sheet[`${block.comment}${row}`] = tx.description;
         sheet[`${block.code}${row}`] = tx.code;
-        sheet[`${block.amount}${row}`] = tx.amount;
+        sheet[`${block.amount}${row}`] = placement.amount;
       }
     }
   }
@@ -2446,6 +2452,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // else in this file reads that account.
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
+  // The published balance sheet balances on its own: net assets against
+  // shareholders' funds. EJ91 stays at 0 when the published sheet leaves a
+  // trial balance row out, so the two tests are separate.
+  if (results.PubBalSht) {
+    check("Published balance sheet: net assets (F33) = shareholders' funds (F39)", num(results.PubBalSht.F33), num(results.PubBalSht.F39));
+  }
+
   // Opening balances. A balance sheet that never posts is still balanced, so
   // EJ91 alone cannot tell an unposted opening from a posted one. The next
   // two checks tie the sheet's own opening balance sheet and trial balance
@@ -2537,6 +2550,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
   if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
   if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
+  if (expected.total_bad_debts_net) check("Bad Debts written off", pl.B34 || 0, expected.total_bad_debts_net);
 
   // Stock and debtors on the published balance sheet. Both are derived: stock
   // comes from the physical count against the calculated value, debtors from
@@ -3501,16 +3515,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
       // PubBalSht!E12 "Cash at bank and in hand" reproduces the sheet's own
       // aggregation formula exactly (verified against the template: E12 =
-      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25)). The three
-      // statement-book accounts (Current, Savings, Credit Card) are summed
-      // first, then Cash and the Intra Cash & Bank Transfers row are added
-      // on top -- the credit card balance is summed straight in alongside
-      // the other three, not netted off as a creditor. EJ26 nets out any
-      // receipt or payment analysed under another account's transfer code,
-      // so a transfer between the company's own bank accounts never moves
-      // the combined total, whether or not both legs were entered.
+      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24), 0)+EJ25+EJ26). The three
+      // statement-book accounts (Current, Savings, Credit Card) count only
+      // when they are in credit together, and Cash and the Intra Cash & Bank
+      // Transfers row are added on top either way. EJ26 nets out any receipt
+      // or payment analysed under another account's transfer code, so a
+      // transfer between the company's own bank accounts never moves the
+      // combined total, whether or not both legs were entered.
       const sumFirstThree = num(tb.EJ22) + num(tb.EJ23) + num(tb.EJ24);
-      const expectedE12 = sumFirstThree > 0 ? sumFirstThree + num(tb.EJ25) + num(tb.EJ26) : num(tb.EJ25);
+      const expectedE12 = Math.max(sumFirstThree, 0) + num(tb.EJ25) + num(tb.EJ26);
       check("Published balance sheet: cash at bank = Trial Balance bank account aggregate", num(pubBalSht?.E12), expectedE12);
       // E19 "Bank Overdraft" carries the same three accounts when they are
       // overdrawn (E19 = IF(SUM(EJ22:EJ24)<0, -SUM(EJ22:EJ24), 0)), so an

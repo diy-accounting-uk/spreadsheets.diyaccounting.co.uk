@@ -212,7 +212,7 @@ test.describe("DIYA-GL page — loaded views", () => {
 
     const totals = page.locator("tfoot.year-totals td").first();
     await expect(totals).toBeVisible();
-    await expect(page.locator("tfoot.year-totals")).toContainText("£409,900.00");
+    await expect(page.locator("tfoot.year-totals")).toContainText("£409,180.00");
   });
 
   test("a month expands to its summary, then to its entries, one at a time", async ({ page }) => {
@@ -360,7 +360,7 @@ test.describe("DIYA-GL page — loaded views", () => {
     // -- no customer or supplier named, because the sheet names none.
     const debtors = page.locator(".panel-card", { hasText: "Debtors" }).first();
     await expect(debtors).toContainText("Owed by customers at start of year");
-    await expect(debtors).toContainText("£10,800.00");
+    await expect(debtors).toContainText("£11,160.00");
     await expect(debtors.locator("tr")).toHaveCount(14); // opening + twelve months + total
     await expect(debtors).toContainText("Amount owed by customers");
 
@@ -435,8 +435,8 @@ test.describe("DIYA-GL page — the rung: upload, drift, breakability", () => {
     const correction = page.locator(".form-row-margin .pencil-correction");
     await expect(correction).toHaveCount(1);
     await expect(correction.locator(".as-read")).toContainText("99,999");
-    await expect(correction.locator(".computed-value")).toContainText("88,069.95");
-    await expect(correction.locator(".drift-amount")).toContainText("11929.05");
+    await expect(correction.locator(".computed-value")).toContainText("87,745.95");
+    await expect(correction.locator(".drift-amount")).toContainText("12253.05");
 
     // Nothing else on the P&L or SA103S views picked up a correction: the
     // computed side never reads the workbook's cells at all, so corrupting

@@ -89,10 +89,14 @@ describe("the Ltd example books", () => {
     expect(summary).toEqual({ pass: 16, warn: 1, fail: 0 });
   });
 
-  it("BrickWork Pro (Company, non-VAT): all seventeen rules pass", () => {
+  it("BrickWork Pro (Company, non-VAT): the year-end sweep's missing savings leg warns, and the other sixteen rules pass", () => {
     const { results, summary } = runBookChecks(loadLtd("examples/brickwork-pro/ltd-nonvat"));
-    for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
+    const transfers = resultFor(results, "book-ltd-transfer-has-counter-leg");
+    expect(transfers.result).toBe("warn");
+    expect(transfers.offenders.map((offender) => offender.entryNumber)).toEqual(["TXN-0167"]);
+    for (const id of ALL_IDS.filter((id) => id !== "book-ltd-transfer-has-counter-leg"))
+      expect(resultFor(results, id).result, id).toBe("pass");
+    expect(summary).toEqual({ pass: 16, warn: 1, fail: 0 });
   });
 
   it("BrickWork Pro (Company, VAT): every rule but the shared VAT threshold passes", () => {
@@ -372,6 +376,7 @@ describe("the engine checks a book field can fail", () => {
     lines.find((l) => l.documentReference === "OB-001" && l.accountMainID === "1100").amount = 10010;
     expect(engineChecksFailing(lines)).toEqual([
       "Opening balance sheet: accuracy check (E37)",
+      "Published balance sheet: net assets (F33) = shareholders' funds (F39)",
       "Stock: opening carried in from the opening balance sheet",
       "Trial Balance: audit accuracy (EJ91)",
       "Trial Balance: opening balances audit check (D91)",

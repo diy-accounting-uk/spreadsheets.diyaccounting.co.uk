@@ -15,7 +15,7 @@
 
 import { changeLinePostingDate } from "../diya-gl-edits.js";
 import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../scenario-extractor.js";
-import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, bankLayout } from "../ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, ltdBankPlacement } from "../ltd-layout.js";
 
 // The bank account each transfer letter names: Currentaccount is BB, so a
 // BB-coded line on any other workbook is a transfer to or from the current
@@ -161,13 +161,11 @@ export const LTD_CHECK_SPECS = [
         const fileName = bankFileOf(line);
         if (!fileName) return true;
         if (line.debitCreditCode !== "D" && line.debitCreditCode !== "C") return false;
-        const layout = bankLayout(fileName);
-        const analysed = line.debitCreditCode === "D" ? layout.receiptCodes : layout.paymentCodes;
-        return !analysed.includes(line["diya-gl:bankCode"]);
+        return !ltdBankPlacement(fileName, line.debitCreditCode === "D", line["diya-gl:bankCode"], line.amount).analysed;
       });
     },
     consequence: function () {
-      return "Each bank workbook analyses its own list of codes, and the four workbooks do not share one list -- the cash book has no receipt column for RV, RC or X. An entry coded outside its workbook's list has no column to land in, and the package cannot be written at all.";
+      return "Each bank workbook analyses its own list of codes, and the four workbooks do not share one list -- the cash book has no receipt column for RV, RC or X. A refund coded DR on a payment or CR on a receipt lands in the opposite block as a negative entry under its own code. Any other entry coded outside its workbook's list has no column to land in, and the package cannot be written at all.";
     },
     buildHelper: null,
     apply: null,

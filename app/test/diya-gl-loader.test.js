@@ -95,8 +95,8 @@ describe("diyaGlToScenario — BST", () => {
   it("computes expected total_sales matching extract-scenarios output", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     scenario = diyaGlToScenario(book, lines, "bst");
-    // From extract-scenarios: BST total_sales = 409900
-    expect(scenario.expected.total_sales).toBe(409900);
+    // From extract-scenarios: BST total_sales = 409180
+    expect(scenario.expected.total_sales).toBe(409180);
   });
 
   it("computes expected gross_profit", () => {

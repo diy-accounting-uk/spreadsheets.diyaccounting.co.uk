@@ -329,14 +329,14 @@ isDirector = true
 
 [openingBalances]
 stock = 10000
-tradeDebtors = 10800
+tradeDebtors = 11160
 tradeCreditors = 2400
 longTermCreditors = 25000
 vatDue = 1500
 corporationTaxDue = 4500
 directorsLoan = 20000
 shareCapital = 100
-retainedEarnings = 20702
+retainedEarnings = 21062
 
 [openingBalances.fixedAssetCost]
 "motorVehicles" = 30000
@@ -375,6 +375,12 @@ amount = 2400
 timing = "opening"
 
 [[debtors]]
+counterparty = "Zeta Corp"
+invoice = "INV-0904"
+amount = 360
+timing = "opening"
+
+[[debtors]]
 counterparty = "Acme Corp"
 invoice = "INV-1012"
 amount = 6100
@@ -384,12 +390,6 @@ timing = "closing"
 counterparty = "WidgetWorks"
 invoice = "INV-2104"
 amount = 1440
-timing = "closing"
-
-[[debtors]]
-counterparty = "Zeta Corp"
-invoice = "CN-1801"
-amount = 360
 timing = "closing"
 
 [[creditors]]

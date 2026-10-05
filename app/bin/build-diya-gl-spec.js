@@ -216,7 +216,8 @@ const CHECK_DESCRIPTIONS = {
   "book-payslip-names-employee": "Every payslip names someone the book employs.",
   "book-fixed-asset-rows-fit": "Every asset, disposal and hire purchase agreement has a row on the fixed asset schedule.",
   "book-ltd-bank-line-has-side": "Every bank entry says whether it is a receipt or a payment.",
-  "book-ltd-bank-code-analysed": "Every bank entry is coded to a column its workbook analyses.",
+  "book-ltd-bank-code-analysed":
+    "Every bank entry is coded to a column its workbook analyses. A refund (DR paid out, CR received) lands in the opposite block as a negative entry under its own code.",
   "book-ltd-straddling-line-has-vat-period": "Every sale and purchase dated outside the period names the VAT return period it belongs to.",
   "book-ltd-payroll-line-names-employee": "Every payroll entry names someone on the payroll.",
   "book-ltd-fixed-asset-rows-fit-schedule": "Every asset, disposal and hire purchase agreement has a row on the fixed asset schedule.",

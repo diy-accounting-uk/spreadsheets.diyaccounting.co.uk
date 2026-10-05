@@ -62,6 +62,7 @@ import {
   bstExpectedFigures,
   computeNetSales,
   computeSpreadsheetNetSales,
+  writtenOffBadDebtsNet,
   splitStraddlingLines,
   deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
@@ -644,6 +645,7 @@ const advToml = formatScenarioToml(
     total_mileage: advBusinessMiles,
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, FIXTURE_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
+    total_bad_debts_net: writtenOffBadDebtsNet(advSalesLines, 1.2),
     disallowable: SE_ADVANCED_DISALLOWABLE,
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,
     annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
@@ -786,6 +788,7 @@ const fullToml = formatScenarioToml(
     total_sales: fullTotalSales,
     total_premises_net: Math.round((fullByCode.r || 0) / 1.2),
     total_legal_net: Math.round((fullByCode.l || 0) / 1.2),
+    total_bad_debts_net: writtenOffBadDebtsNet(fullSalesLines, 1.2),
     opening_balance: fullOpeningBalance,
     opening_stock: 10000,
     closing_stock: 6000,
@@ -1306,13 +1309,45 @@ const brickSeVatDiya = writeBrickworkSe(true);
 
 // --- Company, both sizes ----------------------------------------------------
 
+// The non-VAT company sweeps more than the current account holds into the
+// savings account on the year's last day, and only the current account's
+// statement is entered. The current account closes overdrawn, and the
+// savings account's missing leg leaves the swept amount on the trial
+// balance's intra transfers row. The published balance sheet has to carry
+// the overdraft among the creditors and the swept money in cash at bank.
+const BRICKWORK_LTD_SWEEP = { date: "2026-03-31", amount: 15000, code: "BS", account: "1200" };
+const BRICKWORK_LTD_SWEEP_NOTE =
+  "On the year's last day the company sweeps £15,000 from the current account to the savings account, more than the current account holds, " +
+  "and the savings account's side of the transfer is not entered, so the current account closes overdrawn.";
+
+function withYearEndSweep(lines) {
+  const [entryNumber] = nextEntryNumbers(lines, 1);
+  const sweep = {
+    entryNumber,
+    "sourceJournalID": "bank",
+    "postingDate": BRICKWORK_LTD_SWEEP.date,
+    "accountMainID": BRICKWORK_LTD_SWEEP.account,
+    "debitCreditCode": "C",
+    "amount": BRICKWORK_LTD_SWEEP.amount,
+    "documentType": "bank-statement",
+    "documentReference": "BNK-BS-001",
+    "detailComment": "Savings account",
+    "lineItemComment": "Year-end sweep to the savings account",
+    "taxCode": "OS",
+    "taxRate": 0,
+    "diya-gl:bankCode": BRICKWORK_LTD_SWEEP.code,
+    "diya-gl:bankAccountID": BRICKWORK_LTD_SWEEP.account,
+  };
+  return [...lines, sweep];
+}
+
 // The VAT twin carries two associated companies and the non-VAT twin none,
 // so the pair proves both the marginal relief divisor and its absence. The
 // subset book and the scenario fixture take the count from the same constant,
 // so the book path and the fixture path charge the same tax.
 function writeBrickworkLtd(vatRegistered) {
   const associatedCompanies = vatRegistered ? 2 : 0;
-  const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines, brickBook) : brickMasterLines);
+  const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines, brickBook) : withYearEndSweep(brickMasterLines));
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
   const byCode = totalsByCode(lines, LTD_PURCHASE_CODE_MAP);
@@ -1357,7 +1392,7 @@ function writeBrickworkLtd(vatRegistered) {
         "Construction company, CIS sub-contractors, a director and one labourer on the payroll. " +
         (vatRegistered
           ? `Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. ${BRICKWORK_TWIN_NOTE}`
-          : `Turnover is under the VAT registration threshold. Journal amounts carry no VAT. ${BRICKWORK_PLAIN_NOTE}`) +
+          : `Turnover is under the VAT registration threshold. Journal amounts carry no VAT. ${BRICKWORK_PLAIN_NOTE} ${BRICKWORK_LTD_SWEEP_NOTE}`) +
         ` ${BRICKWORK_ALLOWANCE_NOTE}`,
       product: "ltd",
       tax_regime: "ltd",

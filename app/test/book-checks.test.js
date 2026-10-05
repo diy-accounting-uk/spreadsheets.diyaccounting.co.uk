@@ -50,7 +50,7 @@ describe("the three example books", () => {
 
     const vat = resultFor(results, "book-vat-threshold");
     expect(vat.result).toBe("warn");
-    expect(vat.actual).toBeCloseTo(409900, 2);
+    expect(vat.actual).toBeCloseTo(409180, 2);
 
     for (const id of [
       "book-duplicate-entries",

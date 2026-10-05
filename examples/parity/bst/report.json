@@ -5,7 +5,7 @@
   "yearEnd": "2027-03-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.40+57de8f55b",
+    "engineVersion": "1.2.45+3801b0c2",
     "taxDataHash": "89424bd36c0d",
     "templateHash": "0d003e10e00c",
     "templateScorecard": "812 passed, 0 warnings, 0 failed",
@@ -185,17 +185,17 @@
     {
       "key": "cell/Debtors & Creditors!C27",
       "unit": "money",
-      "value": "31360"
+      "value": "30640"
     },
     {
       "key": "cell/Debtors & Creditors!C29",
       "unit": "money",
-      "value": "420700"
+      "value": "420340"
     },
     {
       "key": "cell/Debtors & Creditors!C3",
       "unit": "money",
-      "value": "10800"
+      "value": "11160"
     },
     {
       "key": "cell/Debtors & Creditors!C5",
@@ -345,12 +345,12 @@
     {
       "key": "cell/Income Tax!E10",
       "unit": "money",
-      "value": "45553.95"
+      "value": "45229.95"
     },
     {
       "key": "cell/Income Tax!E11",
       "unit": "money",
-      "value": "88069.95"
+      "value": "87745.95"
     },
     {
       "key": "cell/Income Tax!E12",
@@ -365,17 +365,17 @@
     {
       "key": "cell/Income Tax!E16",
       "unit": "money",
-      "value": "3522.02"
+      "value": "3507.62"
     },
     {
       "key": "cell/Income Tax!E18",
       "unit": "money",
-      "value": "93853.97"
+      "value": "93515.57"
     },
     {
       "key": "cell/Income Tax!E5",
       "unit": "money",
-      "value": "226371"
+      "value": "225651"
     },
     {
       "key": "cell/Income Tax!E6",
@@ -385,7 +385,7 @@
     {
       "key": "cell/Income Tax!E7",
       "unit": "money",
-      "value": "226371"
+      "value": "225651"
     },
     {
       "key": "cell/Income Tax!E8",
@@ -460,7 +460,7 @@
     {
       "key": "cell/Profit & Loss Acc!C24",
       "unit": "money",
-      "value": "265371"
+      "value": "264651"
     },
     {
       "key": "cell/Profit & Loss Acc!C26",
@@ -470,7 +470,7 @@
     {
       "key": "cell/Profit & Loss Acc!C28",
       "unit": "money",
-      "value": "226371"
+      "value": "225651"
     },
     {
       "key": "cell/Profit & Loss Acc!C30",
@@ -480,22 +480,22 @@
     {
       "key": "cell/Profit & Loss Acc!C32",
       "unit": "money",
-      "value": "88069.95"
+      "value": "87745.95"
     },
     {
       "key": "cell/Profit & Loss Acc!C33",
       "unit": "money",
-      "value": "5784.02"
+      "value": "5769.62"
     },
     {
       "key": "cell/Profit & Loss Acc!C35",
       "unit": "money",
-      "value": "132517.03"
+      "value": "132135.43"
     },
     {
       "key": "cell/Profit & Loss Acc!C4",
       "unit": "money",
-      "value": "409900"
+      "value": "409180"
     },
     {
       "key": "cell/Profit & Loss Acc!C6",
@@ -510,7 +510,7 @@
     {
       "key": "cell/Profit & Loss Acc!C9",
       "unit": "money",
-      "value": "391360"
+      "value": "390640"
     },
     {
       "key": "cell/Profit & Loss Acc!D4",
@@ -570,7 +570,7 @@
     {
       "key": "cell/Profit & Loss Acc!O4",
       "unit": "money",
-      "value": "31360"
+      "value": "30640"
     },
     {
       "key": "cell/PurchasesMar!A1",
@@ -605,12 +605,12 @@
     {
       "key": "cell/SE Short!D106",
       "unit": "money",
-      "value": "226371"
+      "value": "225651"
     },
     {
       "key": "cell/SE Short!D38",
       "unit": "money",
-      "value": "409900"
+      "value": "409180"
     },
     {
       "key": "cell/SE Short!D46",
@@ -640,7 +640,7 @@
     {
       "key": "cell/SE Short!D71",
       "unit": "money",
-      "value": "265371"
+      "value": "264651"
     },
     {
       "key": "cell/SE Short!D80",
@@ -660,7 +660,7 @@
     {
       "key": "cell/SE Short!D99",
       "unit": "money",
-      "value": "226371"
+      "value": "225651"
     },
     {
       "key": "cell/SE Short!O71",
@@ -995,8 +995,8 @@
       "key": "check/Debtors & Creditors: Mar sales not yet received = that month's sales with no receipt recorded",
       "unit": "verdict",
       "value": "pass",
-      "expected": "31360",
-      "actual": "31360",
+      "expected": "30640",
+      "actual": "30640",
       "tolerance": "1"
     },
     {
@@ -1067,8 +1067,8 @@
       "key": "check/Debtors & Creditors: amount owed by customers = the opening figure plus every month not yet received",
       "unit": "verdict",
       "value": "pass",
-      "expected": "420700",
-      "actual": "420700",
+      "expected": "420340",
+      "actual": "420340",
       "tolerance": "1"
     },
     {
@@ -1083,8 +1083,8 @@
       "key": "check/Debtors & Creditors: owed by customers at the start of the year = the opening balance declared",
       "unit": "verdict",
       "value": "pass",
-      "expected": "10800",
-      "actual": "10800",
+      "expected": "11160",
+      "actual": "11160",
       "tolerance": "1"
     },
     {
@@ -1139,16 +1139,16 @@
       "key": "check/Gross Profit",
       "unit": "verdict",
       "value": "pass",
-      "expected": "391360",
-      "actual": "391360",
+      "expected": "390640",
+      "actual": "390640",
       "tolerance": "1"
     },
     {
       "key": "check/Income Tax",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88069.95",
-      "actual": "88069.95",
+      "expected": "87745.95",
+      "actual": "87745.95",
       "tolerance": "0.01"
     },
     {
@@ -1171,8 +1171,8 @@
       "key": "check/Net Profit",
       "unit": "verdict",
       "value": "pass",
-      "expected": "265371.5",
-      "actual": "265371",
+      "expected": "264651.5",
+      "actual": "264651",
       "tolerance": "1"
     },
     {
@@ -1203,8 +1203,8 @@
       "key": "check/P&L: Gross = Sales - CoS - Direct",
       "unit": "verdict",
       "value": "pass",
-      "expected": "391360",
-      "actual": "391360",
+      "expected": "390640",
+      "actual": "390640",
       "tolerance": "1"
     },
     {
@@ -1219,32 +1219,32 @@
       "key": "check/P&L: Net = Gross - Expenses",
       "unit": "verdict",
       "value": "pass",
-      "expected": "265371",
-      "actual": "265371",
+      "expected": "264651",
+      "actual": "264651",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: Taxable Profit = Net Profit - Capital Allowances",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226371",
-      "actual": "226371",
+      "expected": "225651",
+      "actual": "225651",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: Total Sales = sum of monthly Sales sheets",
       "unit": "verdict",
       "value": "pass",
-      "expected": "409900",
-      "actual": "409900",
+      "expected": "409180",
+      "actual": "409180",
       "tolerance": "1"
     },
     {
       "key": "check/P&L: tax charged = Income Tax sheet total less CIS deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88069.95",
-      "actual": "88069.95",
+      "expected": "87745.95",
+      "actual": "87745.95",
       "tolerance": "1"
     },
     {
@@ -1283,24 +1283,24 @@
       "key": "check/SA103S: Net profit close to P&L Net",
       "unit": "verdict",
       "value": "pass",
-      "expected": "265371",
-      "actual": "265371",
+      "expected": "264651",
+      "actual": "264651",
       "tolerance": "0"
     },
     {
       "key": "check/SA103S: Profit for tax = Income Tax E5",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226371",
-      "actual": "226371",
+      "expected": "225651",
+      "actual": "225651",
       "tolerance": "1"
     },
     {
       "key": "check/SA103S: Turnover = P&L Sales",
       "unit": "verdict",
       "value": "pass",
-      "expected": "409900",
-      "actual": "409900",
+      "expected": "409180",
+      "actual": "409180",
       "tolerance": "1"
     },
     {
@@ -1315,8 +1315,8 @@
       "key": "check/Tax at additional rate",
       "unit": "verdict",
       "value": "pass",
-      "expected": "45553.95",
-      "actual": "45553.95",
+      "expected": "45229.95",
+      "actual": "45229.95",
       "tolerance": "1"
     },
     {
@@ -1339,8 +1339,8 @@
       "key": "check/Tax: IT = Basic + Higher + Additional",
       "unit": "verdict",
       "value": "pass",
-      "expected": "88069.95",
-      "actual": "88069.95",
+      "expected": "87745.95",
+      "actual": "87745.95",
       "tolerance": "1"
     },
     {
@@ -1355,16 +1355,16 @@
       "key": "check/Tax: Taxable = Profit - Allowance",
       "unit": "verdict",
       "value": "pass",
-      "expected": "226371",
-      "actual": "226371",
+      "expected": "225651",
+      "actual": "225651",
       "tolerance": "1"
     },
     {
       "key": "check/Tax: Total = IT + CIS deduction line + NI",
       "unit": "verdict",
       "value": "pass",
-      "expected": "93853.97",
-      "actual": "93853.97",
+      "expected": "93515.57",
+      "actual": "93515.57",
       "tolerance": "1"
     },
     {
@@ -1411,16 +1411,16 @@
       "key": "check/Total Sales",
       "unit": "verdict",
       "value": "pass",
-      "expected": "409900",
-      "actual": "409900",
+      "expected": "409180",
+      "actual": "409180",
       "tolerance": "1"
     },
     {
       "key": "check/Total Tax + NI, less the CIS already deducted",
       "unit": "verdict",
       "value": "pass",
-      "expected": "93853.97",
-      "actual": "93853.97",
+      "expected": "93515.57",
+      "actual": "93515.57",
       "tolerance": "0.01"
     },
     {
@@ -1490,7 +1490,7 @@
       "key": "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
       "label": "Net profit per the profit and loss account",
       "unit": "money",
-      "value": "265371",
+      "value": "264651",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
@@ -1503,7 +1503,7 @@
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes",
       "label": "Tax profit the bridge computes",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "derivedFrom": [
         "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account",
         "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-10",
@@ -1521,7 +1521,7 @@
       "key": "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries",
       "label": "Tax profit the sheet carries",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/Income Tax!E5"
     },
     {
@@ -1710,7 +1710,7 @@
       "key": "section/debtors-creditors/amount-owed-by-customers",
       "label": "Amount owed by customers",
       "unit": "money",
-      "value": "420700",
+      "value": "420340",
       "source": "cell/Debtors & Creditors!C29"
     },
     {
@@ -1829,7 +1829,7 @@
       "key": "section/debtors-creditors/mar-sales-not-yet-received",
       "label": "Mar sales not yet received",
       "unit": "money",
-      "value": "31360",
+      "value": "30640",
       "source": "cell/Debtors & Creditors!C27"
     },
     {
@@ -1878,7 +1878,7 @@
       "key": "section/debtors-creditors/owed-by-customers-at-start-of-year",
       "label": "Owed by customers at start of year",
       "unit": "money",
-      "value": "10800",
+      "value": "11160",
       "source": "cell/Debtors & Creditors!C3"
     },
     {
@@ -2011,21 +2011,21 @@
       "key": "section/income-tax-calculation/ni-class-4-upper-band",
       "label": "NI Class 4 (upper band)",
       "unit": "money",
-      "value": "3522.02",
+      "value": "3507.62",
       "source": "cell/Income Tax!E16"
     },
     {
       "key": "section/income-tax-calculation/profit-from-self-employment",
       "label": "Profit from Self Employment",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/Income Tax!E5"
     },
     {
       "key": "section/income-tax-calculation/tax-at-additional-rate",
       "label": "Tax at Additional Rate",
       "unit": "money",
-      "value": "45553.95",
+      "value": "45229.95",
       "source": "cell/Income Tax!E10"
     },
     {
@@ -2046,21 +2046,21 @@
       "key": "section/income-tax-calculation/taxable-income",
       "label": "Taxable Income",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/Income Tax!E7"
     },
     {
       "key": "section/income-tax-calculation/total-income-tax",
       "label": "Total Income Tax",
       "unit": "money",
-      "value": "88069.95",
+      "value": "87745.95",
       "source": "cell/Income Tax!E11"
     },
     {
       "key": "section/income-tax-calculation/total-tax-ni",
       "label": "Total Tax + NI",
       "unit": "money",
-      "value": "93853.97",
+      "value": "93515.57",
       "source": "cell/Income Tax!E18"
     },
     {
@@ -2116,7 +2116,7 @@
       "key": "section/monthly-sales/mar",
       "label": "Mar",
       "unit": "money",
-      "value": "31360",
+      "value": "30640",
       "source": "cell/Profit & Loss Acc!O4"
     },
     {
@@ -2200,14 +2200,14 @@
       "key": "section/profit-loss-account/gross-profit",
       "label": "Gross Profit",
       "unit": "money",
-      "value": "391360",
+      "value": "390640",
       "source": "cell/Profit & Loss Acc!C9"
     },
     {
       "key": "section/profit-loss-account/income-tax-less-cis-deducted",
       "label": "Income Tax less CIS deducted",
       "unit": "money",
-      "value": "88069.95",
+      "value": "87745.95",
       "source": "cell/Profit & Loss Acc!C32"
     },
     {
@@ -2235,21 +2235,21 @@
       "key": "section/profit-loss-account/net-income-after-tax",
       "label": "Net Income After Tax",
       "unit": "money",
-      "value": "132517.03",
+      "value": "132135.43",
       "source": "cell/Profit & Loss Acc!C35"
     },
     {
       "key": "section/profit-loss-account/net-profit",
       "label": "Net Profit",
       "unit": "money",
-      "value": "265371",
+      "value": "264651",
       "source": "cell/Profit & Loss Acc!C24"
     },
     {
       "key": "section/profit-loss-account/ni-class-4",
       "label": "NI Class 4",
       "unit": "money",
-      "value": "5784.02",
+      "value": "5769.62",
       "source": "cell/Profit & Loss Acc!C33"
     },
     {
@@ -2284,14 +2284,14 @@
       "key": "section/profit-loss-account/sales-turnover",
       "label": "Sales Turnover",
       "unit": "money",
-      "value": "409900",
+      "value": "409180",
       "source": "cell/Profit & Loss Acc!C4"
     },
     {
       "key": "section/profit-loss-account/taxable-profit",
       "label": "Taxable Profit",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/Profit & Loss Acc!C28"
     },
     {
@@ -2382,7 +2382,7 @@
       "key": "section/self-assessment-sa103s/net-business-profit-box-28",
       "label": "Net business profit (box 28)",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/SE Short!D99"
     },
     {
@@ -2396,14 +2396,14 @@
       "key": "section/self-assessment-sa103s/net-profit-for-tax-calc-box-31",
       "label": "Net profit for tax calc (box 31)",
       "unit": "money",
-      "value": "226371",
+      "value": "225651",
       "source": "cell/SE Short!D106"
     },
     {
       "key": "section/self-assessment-sa103s/net-profit-loss",
       "label": "Net profit/loss",
       "unit": "money",
-      "value": "265371",
+      "value": "264651",
       "source": "cell/SE Short!D71"
     },
     {
@@ -2438,7 +2438,7 @@
       "key": "section/self-assessment-sa103s/turnover",
       "label": "Turnover",
       "unit": "money",
-      "value": "409900",
+      "value": "409180",
       "source": "cell/SE Short!D38"
     },
     {

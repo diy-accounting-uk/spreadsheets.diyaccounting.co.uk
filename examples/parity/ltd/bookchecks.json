@@ -83,7 +83,7 @@
   {
     "id": "book-ltd-dividend-within-distributable-profits",
     "tier": "warning",
-    "label": "Dividends declared are £15,000.00, against £322,849.64 of retained profit brought forward plus profit after tax for the year.",
+    "label": "Dividends declared are £15,000.00, against £322,766.48 of retained profit brought forward plus profit after tax for the year.",
     "result": "pass",
     "actual": 15000,
     "consequence": null,
@@ -146,9 +146,9 @@
   {
     "id": "book-vat-threshold",
     "tier": "warning",
-    "label": "Turnover for the year is £424,900.00, against a £90,000.00 VAT registration threshold.",
+    "label": "Turnover for the year is £424,180.00, against a £90,000.00 VAT registration threshold.",
     "result": "warn",
-    "actual": 424900,
+    "actual": 424180,
     "consequence": "Once a business's turnover passes the VAT registration threshold, it must register for VAT with HMRC within 30 days.",
     "offenders": []
   }

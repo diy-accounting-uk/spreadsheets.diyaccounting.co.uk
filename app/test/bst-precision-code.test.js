@@ -111,25 +111,25 @@ describeCalc("BST end-to-end: Precision Code basic scenario", () => {
 
   // The statutory charge on this fixture's profit, worked out by hand from the
   // 2025-26 rates rather than from anything the sheet computes:
-  //   profit                    226,508
-  //   allowance                       0  (12,570 - (226,508 - 100,000) / 2, floored)
+  //   profit                    225,788
+  //   allowance                       0  (12,570 - (225,788 - 100,000) / 2, floored)
   //   basic      37,700 x 0.20 =  7,540.00
   //   higher     87,440 x 0.40 = 34,976.00   (125,140 - 37,700)
-  //   additional 101,368 x 0.45 = 45,615.60  (226,508 - 125,140)
-  //   income tax               = 88,131.60
-  //   NI         37,700 x 0.06 =  2,262.00, 176,238 x 0.02 = 3,524.76
-  //   tax and NI               = 93,918.36
+  //   additional 100,648 x 0.45 = 45,291.60  (225,788 - 125,140)
+  //   income tax               = 87,807.60
+  //   NI         37,700 x 0.06 =  2,262.00, 175,518 x 0.02 = 3,510.36
+  //   tax and NI               = 93,579.96
   it("charges the statutory 2025-26 tax on the basic fixture profit", () => {
     const tax = results["Income Tax"];
-    expect(tax.E5).toBe(226508);
+    expect(tax.E5).toBe(225788);
     expect(tax.E6).toBe(0);
     expect(tax.E8).toBeCloseTo(7540, 2);
     expect(tax.E9).toBeCloseTo(34976, 2);
-    expect(tax.E10).toBeCloseTo(45615.6, 2);
-    expect(tax.E11).toBeCloseTo(88131.6, 2);
+    expect(tax.E10).toBeCloseTo(45291.6, 2);
+    expect(tax.E11).toBeCloseTo(87807.6, 2);
     expect(tax.E15).toBeCloseTo(2262, 2);
-    expect(tax.E16).toBeCloseTo(3524.76, 2);
-    expect(tax.E18).toBeCloseTo(93918.36, 2);
+    expect(tax.E16).toBeCloseTo(3510.36, 2);
+    expect(tax.E18).toBeCloseTo(93579.96, 2);
   });
 
   // ── Compliance check assertions ────────────────────────────────────────

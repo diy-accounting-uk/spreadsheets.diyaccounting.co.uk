@@ -682,6 +682,13 @@ The Company workbooks give PAYE, VAT, CIS and corporation tax a column each. Bot
 Employed workbooks carry one HMRC Payments column between them, so a payment coded `RV`,
 `RC` or `RT` lands in the `RP` column there.
 
+The four Company bank workbooks analyse `DR` on receipts only and `CR` on payments only. A
+refund to a customer (a payment, `debitCreditCode` `C`, coded `DR`) lands in the receipts
+block under `DR` as a negative amount, which debits trade debtors and credits the bank. A
+refund from a supplier (a receipt, `debitCreditCode` `D`, coded `CR`) lands in the payments
+block under `CR` as a negative amount. Reading the workbook back gives the refund line again.
+Both Self Employed workbooks have a column for each code on both sides.
+
 **Bank transaction example:**
 
 ```json

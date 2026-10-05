@@ -1304,7 +1304,7 @@
       "tag": "diya-gl-v1.2.41",
       "date": "2026-10-01",
       "formatVersion": "diya-gl/1",
-      "engineVersion": "1.2.40+57de8f55b",
+      "engineVersion": "1.2.41+5b1fc93c5",
       "taxDataHash": "89424bd36c0d",
       "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0",
       "templates": {
@@ -1330,7 +1330,7 @@
       "tag": "diya-gl-v1.2.42",
       "date": "2026-10-03",
       "formatVersion": "diya-gl/1",
-      "engineVersion": "1.2.40+57de8f55b",
+      "engineVersion": "1.2.42+ed6c7809b",
       "taxDataHash": "89424bd36c0d",
       "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0",
       "templates": {
@@ -1356,7 +1356,7 @@
       "tag": "diya-gl-v1.2.43",
       "date": "2026-10-03",
       "formatVersion": "diya-gl/1",
-      "engineVersion": "1.2.40+57de8f55b",
+      "engineVersion": "1.2.43+971ca45ad",
       "taxDataHash": "89424bd36c0d",
       "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0",
       "templates": {
@@ -1382,7 +1382,7 @@
       "tag": "diya-gl-v1.2.44",
       "date": "2026-10-03",
       "formatVersion": "diya-gl/1",
-      "engineVersion": "1.2.40+57de8f55b",
+      "engineVersion": "1.2.44+4b8f90020",
       "taxDataHash": "89424bd36c0d",
       "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0",
       "templates": {

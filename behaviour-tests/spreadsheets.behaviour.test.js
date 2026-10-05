@@ -1016,7 +1016,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("=".repeat(60));
 
     const yearTotals = page.locator("tfoot.year-totals");
-    await expect(yearTotals).toContainText("£409,900.00", { timeout: 30000 });
+    await expect(yearTotals).toContainText("£409,180.00", { timeout: 30000 });
     console.log(" Year totals row carries the expected year total");
     await page.screenshot({ path: `${screenshotPath}/${timestamp()}-19-books-bst-loaded.png` });
 
@@ -1848,7 +1848,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       await hideAccountPanel(panel, accountBtn); // the example button sits under the panel
       await page.locator('[data-example="bst-scenario-basic"]').click();
       const yearTotals = page.locator("tfoot.year-totals");
-      await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,900.00", { timeout: 30000 });
+      await expect(yearTotals, "STEP 6 failed: the example never loaded").toContainText("£409,180.00", { timeout: 30000 });
       await shot("09-example-loaded");
 
       const bookTitle = await page.evaluate(() => window.DiyaGlPage.currentBook().book.entityInformation.organizationIdentifier);
@@ -1946,7 +1946,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
       // so a still-open panel there closes it instead of opening a fresh
       // list.
       await expect(panel, "STEP 9 failed: opening the book never closed the account panel").toBeHidden({ timeout: 20000 });
-      await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,900.00", {
+      await expect(yearTotals, "STEP 9 failed: the opened book never rendered its year totals").toContainText("£409,180.00", {
         timeout: 20000,
       });
       await shot("12-opened");
@@ -2176,7 +2176,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
 
       await accountBtn.click(); // close the panel so the example button underneath it can be clicked
       await page.locator('[data-example="bst-scenario-basic"]').click();
-      await expect(page.locator("tfoot.year-totals"), "STEP 3 failed: the example never loaded").toContainText("£409,900.00", {
+      await expect(page.locator("tfoot.year-totals"), "STEP 3 failed: the example never loaded").toContainText("£409,180.00", {
         timeout: 30000,
       });
 

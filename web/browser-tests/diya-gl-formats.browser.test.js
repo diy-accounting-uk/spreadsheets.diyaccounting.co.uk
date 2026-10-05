@@ -15,7 +15,7 @@
 // own path where a test needs a real download afterwards; every one of
 // them is expected to land on the same book -- bst-latest's workbook and
 // examples/precision-code-ltd/bst are the same underlying scenario, so the
-// year's turnover reads £409,900.00 whichever door it came through.
+// year's turnover reads £409,180.00 whichever door it came through.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -41,8 +41,8 @@ const PRECISION_DIR = path.join(ROOT, "examples/precision-code-ltd/bst");
 const SE_WORKBOOK_PATH = path.join(ROOT, "app/templates/se/Financialaccounts.xlsx");
 const SE_PACKAGE_DIR = path.join(ROOT, "examples/se-latest");
 
-const YEAR_TOTAL = 409900;
-const YEAR_TOTAL_TEXT = "£409,900.00";
+const YEAR_TOTAL = 409180;
+const YEAR_TOTAL_TEXT = "£409,180.00";
 
 fs.mkdirSync(TARGET_DIR, { recursive: true });
 

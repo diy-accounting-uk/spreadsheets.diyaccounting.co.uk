@@ -24,7 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
-import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine } from "../ltd-layout.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine, ltdBankPlacement } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
@@ -451,10 +451,11 @@ function bankMonthTotals(scenario, tabs, periodStart, entries) {
       const tab = SHORT_MONTHS[parseDate(transaction.date).getUTCMonth()];
       const month = file.months[tab];
       if (!month) continue;
-      const receipt = transaction.direction === "in";
-      month[receipt ? "receipts" : "payments"] += transaction.amount;
+      const placement = ltdBankPlacement(fileName, transaction.direction === "in", transaction.code, transaction.amount);
+      const receipt = placement.receipt;
+      month[receipt ? "receipts" : "payments"] += placement.amount;
       const codes = receipt ? month.receiptCodes : month.paymentCodes;
-      codes[transaction.code] = (codes[transaction.code] || 0) + transaction.amount;
+      codes[transaction.code] = (codes[transaction.code] || 0) + placement.amount;
       if (entries) {
         const monthEntries = entries[fileName].months[tab];
         addEntry(monthEntries, receipt ? "receipts" : "payments", transaction);
@@ -1816,13 +1817,16 @@ function buildPublishedBalanceSheet(tb, admin) {
     F6: fixedAssets,
     E10: tb.EJ19,
     E11: tb.EJ20,
-    E12: statementAccounts > 0 ? statementAccounts + tb.EJ25 + tb.EJ26 : tb.EJ25,
+    // Cash and the intra transfers row stand in cash at bank whatever the
+    // statement accounts do; only an overdrawn set of statement accounts
+    // leaves it, for E19.
+    E12: (statementAccounts > 0 ? statementAccounts : 0) + tb.EJ25 + tb.EJ26,
     E16: -(tb.EJ28 + tb.EJ29 + tb.EJ30 + tb.EJ31),
     E17: -tb.EJ35,
     E18: -(tb.EJ32 + tb.EJ33 + tb.EJ34),
-    // An overdrawn set of statement accounts leaves current assets and
-    // stands as a creditor instead (E19 = IF(SUM(EJ22:EJ24)<0,
-    // -SUM(EJ22:EJ24), 0)), mirroring E12's own test.
+    // An overdrawn set of statement accounts stands as a creditor instead
+    // (E19 = IF(SUM(EJ22:EJ24)<0, -SUM(EJ22:EJ24), 0)), mirroring E12's own
+    // test.
     E19: statementAccounts < 0 ? -statementAccounts : 0,
     E29: -tb.EJ39,
     E30: -tb.EJ40,
@@ -2523,7 +2527,7 @@ function attributeLtdResults(attribution, context) {
   a.set(BS, "E10", EJ(19));
   a.set(BS, "E11", EJ(20));
   const statementAccounts = trialBalance.EJ22 + trialBalance.EJ23 + trialBalance.EJ24;
-  a.set(BS, "E12", ...(statementAccounts > 0 ? [22, 23, 24, 25, 26] : [25]).map(EJ));
+  a.set(BS, "E12", ...(statementAccounts > 0 ? [22, 23, 24, 25, 26] : [25, 26]).map(EJ));
   a.set(BS, "E16", EJ(28), EJ(29), EJ(30), EJ(31));
   a.set(BS, "E17", EJ(35));
   a.set(BS, "E18", EJ(32), EJ(33), EJ(34));

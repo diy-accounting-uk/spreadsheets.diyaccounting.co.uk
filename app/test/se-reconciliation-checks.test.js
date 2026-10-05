@@ -172,11 +172,11 @@ describeCalc(
     // ── Debtors / creditors (real sheet reads, not a fixture compared to itself) ──
 
     it("Opening Debtors total reads the real OpeningDebtors!G1 invoice-value sum", () => {
-      expect(results["Sales.xlsx!OpeningDebtors"].G1).toBe(10800);
+      expect(results["Sales.xlsx!OpeningDebtors"].G1).toBe(11160);
     });
 
     it("Closing Debtors total reads the real ClosingDebtors!G1 invoice-value sum", () => {
-      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(7900);
+      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(7540);
     });
 
     it("Opening Creditors total reads the real OpeningCreditors!G1 invoice-value sum", () => {
@@ -501,6 +501,21 @@ describeCalc(
       expect(corruptedChecks.find((c) => c.name === "Payslips!Payment apr I4 total amount payable").pass).toBe(false);
     });
 
+    it("P&L Bad Debts (B29) books Zeta Corp's 360 write-off (TXN-0705) as a 300 expense, and fails when it carries it as income", async () => {
+      const pl = results["Profit & Loss Account"];
+      expect(mergedExpected.total_bad_debts_net).toBe(300);
+      expect(pl.B29).toBeCloseTo(300, 2);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === "Bad Debts written off").pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "B29", -300);
+      expect(corrupted).toBe(-300);
+      const corruptedResults = { ...results, "Profit & Loss Account": { ...pl, B29: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === "Bad Debts written off").pass).toBe(false);
+    });
+
     it("P&L Wages & Salaries (B21) routes payroll gross pay and employer NI, and fails when corrupted", async () => {
       const pl = results["Profit & Loss Account"];
       expect(pl.B21).toBeGreaterThan(0);
@@ -638,7 +653,7 @@ describeCalc(
       expect(netting.rate).toBeGreaterThan(0);
       expect(netting.rows.length).toBeGreaterThan(0);
       for (const row of netting.rows) {
-        expect(row.gross).toBeGreaterThan(0);
+        expect(row.gross).not.toBe(0);
         expect(row.vat).toBeCloseTo(row.gross - row.net, 6);
         expect(row.residue).toBeCloseTo(0, 6);
       }

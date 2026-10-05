@@ -1054,9 +1054,9 @@ account = "4000"
 date = 2026-03-31
 customer = "Zeta Corp"
 reference = "CN-1801"
-description = "Bad debt written off"
+description = "Bad debt written off (INV-0904)"
 code = "o"
-amount = 360
+amount = -360
 account = "4005"
 
 [[purchases.apr]]
@@ -6268,6 +6268,11 @@ customer = "Gamma Ltd"
 invoice = "INV-0903"
 amount = 2400
 
+[[opening_debtors]]
+customer = "Zeta Corp"
+invoice = "INV-0904"
+amount = 360
+
 [[closing_debtors]]
 customer = "Acme Corp"
 invoice = "INV-1012"
@@ -6277,11 +6282,6 @@ amount = 6100
 customer = "WidgetWorks"
 invoice = "INV-2104"
 amount = 1440
-
-[[closing_debtors]]
-customer = "Zeta Corp"
-invoice = "CN-1801"
-amount = 360
 
 [[opening_creditors]]
 supplier = "WorkSpace Ltd"
@@ -6438,3 +6438,4 @@ total_sales = 339200
 total_mileage = 1365
 total_motor_net = 6434.25
 total_legal_net = 6925
+total_bad_debts_net = 300

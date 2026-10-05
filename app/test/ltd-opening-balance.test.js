@@ -119,12 +119,12 @@ describeCalc(
     it("posts stock, debtors and reserves into the trial balance", () => {
       const tb = results.TrialBalance;
       expect(tb.D19).toBe(10000);
-      expect(tb.D20).toBe(10800);
+      expect(tb.D20).toBe(11160);
       expect(tb.D42).toBe(-100);
       // Retained earnings, the opening journal's balancing figure against the
-      // land & buildings asset (OB-001, lines.jsonl): 20,702 + 160,000 net
-      // asset value = 180,702.
-      expect(tb.D43).toBe(-180702);
+      // land & buildings asset (OB-001, lines.jsonl): 21,062 + 160,000 net
+      // asset value = 181,062.
+      expect(tb.D43).toBe(-181062);
     });
 
     it("posts the secured bank loan as a creditor falling due after more than one year", () => {

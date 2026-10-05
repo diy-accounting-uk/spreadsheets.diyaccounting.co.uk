@@ -1010,9 +1010,9 @@ account = "4000"
 date = 2026-03-31
 customer = "Zeta Corp"
 reference = "CN-1801"
-description = "Bad debt written off"
+description = "Bad debt written off (INV-0904)"
 code = "o"
-amount = 360
+amount = -360
 account = "4005"
 
 [[purchases.apr]]
@@ -4401,7 +4401,7 @@ opening = 10000
 closing = 6000
 
 [opening_balance]
-trade_debtors = 10800
+trade_debtors = 11160
 trade_creditors = 2220
 
 [[fixed_asset_additions]]
@@ -4423,9 +4423,9 @@ reference = "PUR-FA-002"
 cost = 36000
 
 [expected]
-total_sales = 409900
-gross_profit = 391360
-net_profit = 265508
+total_sales = 409180
+gross_profit = 390640
+net_profit = 264788
 total_premises = 15840
 total_gen_admin = 1962
 total_legal = 4560

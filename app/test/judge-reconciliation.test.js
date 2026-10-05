@@ -449,15 +449,15 @@ describe("buildIndicators for the Basic Sole Trader", () => {
 
   it("itemises this product's allowance boxes too", () => {
     expect(text).toContain(
-      "Self assessment: net profit 265,371.00, less 39,000.00 of capital allowances " +
+      "Self assessment: net profit 264,651.00, less 39,000.00 of capital allowances " +
         "(Capital allowances 39,000.00, AIA / WDA claimed 0.00, WDA + Capital Allowance claimed 0.00), " +
-        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a net business profit of 226,371.00.",
+        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a net business profit of 225,651.00.",
     );
   });
 
   it("states turnover, profit and the tax charged on it", () => {
-    expect(text).toContain("Turnover 409,900.00, gross profit 391,360.00, net profit 265,371.00.");
-    expect(text).toContain("income tax 88,069.95");
+    expect(text).toContain("Turnover 409,180.00, gross profit 390,640.00, net profit 264,651.00.");
+    expect(text).toContain("income tax 87,745.95");
   });
 
   it("says the product publishes no balance sheet and no VAT returns", () => {

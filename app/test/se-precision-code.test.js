@@ -111,10 +111,10 @@ describeCalc(
       expect(results["SE Short"].D106 - results["Income Tax"].E5).toBeCloseTo(2500 + 1800 + (20000 * 0.1 * 187) / 365 + 350 - 90, 6);
     });
 
-    it("Income Tax: the taper takes all but 539.92 of the allowance, half the excess over 100,000 being 12,030.08", () => {
-      // 124,060.15 is 24,060.15 over the 100,000 threshold. Half of that is
-      // 12,030.08, so 539.92 of the 12,570 allowance survives.
-      expect(results["Income Tax"].E6).toBeCloseTo(539.9245, 4);
+    it("Income Tax: the taper takes all but 806.92 of the allowance, half the excess over 100,000 being 11,763.08", () => {
+      // 123,526.15 is 23,526.15 over the 100,000 threshold. Half of that is
+      // 11,763.08, so 806.92 of the 12,570 allowance survives.
+      expect(results["Income Tax"].E6).toBeCloseTo(806.9245, 4);
     });
 
     it("Income Tax: taxable income = profit - allowance", () => {
@@ -162,33 +162,33 @@ describeCalc(
       // 72(3)); the income tax on it is a separate top-slice component
       // over taxable income plus the spread, run through the bands again
       // and taxed less what E11 already charges on taxable income alone.
-      //   profit                  124,060.150966
-      //   allowance                   539.924517   (12,570 - 12,030.075483)
-      //   taxable                 123,520.226449
+      //   profit                  123,526.150966
+      //   allowance                   806.924517   (12,570 - 11,763.075483)
+      //   taxable                 122,719.226449
       //   basic      37,700.000000 x 0.20 =  7,540.000000
-      //   higher     85,820.226449 x 0.40 = 34,328.090580
-      //   income tax                      = 41,868.090580
+      //   higher     85,019.226449 x 0.40 = 34,007.690580
+      //   income tax                      = 41,547.690580
       //   box 73.3 spread (2,000 + 1,000 election)        =  3,000.000000
-      //   taxable + spread                                = 126,520.226449
+      //   taxable + spread                                = 125,719.226449
       //   basic      37,700.000000 x 0.20 =   7,540.000000
       //   higher     87,440.000000 x 0.40 =  34,976.000000
-      //   additional  1,380.226449 x 0.45 =     621.101902
-      //   less income tax on taxable alone       -41,868.090580
-      //   income tax on transition profit                 =  1,269.011322
-      //   NI         37,700 x 0.06 = 2,262.00, 76,790.150966 x 0.02 = 1,535.803019
-      //   tax and NI (income tax + transition profit tax + NI) = 46,934.904921
-      expect(tax.E5).toBeCloseTo(124060.150966, 4);
-      expect(tax.E6).toBeCloseTo(539.924517, 4);
-      expect(tax.E7).toBeCloseTo(123520.226449, 4);
+      //   additional    579.226449 x 0.45 =     260.651902
+      //   less income tax on taxable alone       -41,547.690580
+      //   income tax on transition profit                 =  1,228.961322
+      //   NI         37,700 x 0.06 = 2,262.00, 76,256.150966 x 0.02 = 1,525.123019
+      //   tax and NI (income tax + transition profit tax + NI) = 46,563.774921
+      expect(tax.E5).toBeCloseTo(123526.150966, 4);
+      expect(tax.E6).toBeCloseTo(806.924517, 4);
+      expect(tax.E7).toBeCloseTo(122719.226449, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
-      expect(tax.E9).toBeCloseTo(34328.09058, 2);
+      expect(tax.E9).toBeCloseTo(34007.69058, 2);
       expect(tax.E10).toBe(0);
-      expect(tax.E11).toBeCloseTo(41868.09058, 2);
+      expect(tax.E11).toBeCloseTo(41547.69058, 2);
       expect(results["SE Full"].D201).toBeCloseTo(3000, 2);
-      expect(tax.E14).toBeCloseTo(1269.011322, 2);
+      expect(tax.E14).toBeCloseTo(1228.961322, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1535.803019, 2);
-      expect(tax.E18).toBeCloseTo(46934.904921, 2);
+      expect(tax.E16).toBeCloseTo(1525.123019, 2);
+      expect(tax.E18).toBeCloseTo(46563.774921, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees
