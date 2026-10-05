@@ -2258,6 +2258,27 @@ async function seAccountingPeriodFromSheet(set) {
   return { start, end };
 }
 
+// The Taxi package's own accounting period. Its end is the box "Date your
+// books or accounts are made up to" (Business Details!N25, a formula on
+// Admin!B17, the 5 April the writer sets for the package's tax year); the
+// period opens the day after the same date a year earlier. periodCovered()'s
+// guess would run the period 1 April to 31 March instead.
+const TAXI_PERIOD_END_CELL = { sheet: "Business Details", cell: "N25" };
+
+async function taxiAccountingPeriodFromSheet(set) {
+  const workbookName = singleWorkbookName(set);
+  const sheet = await openSheet(await openWorkbook(set, workbookName), TAXI_PERIOD_END_CELL.sheet);
+  const end = sheet ? dateAt(sheet.xml, TAXI_PERIOD_END_CELL.cell, sheet.sharedStrings) : undefined;
+  if (!end) {
+    throw new Error(
+      `${workbookName}: no date in ${TAXI_PERIOD_END_CELL.sheet}!${TAXI_PERIOD_END_CELL.cell}, the date the books are made up to`,
+    );
+  }
+  const [year, month, day] = end.split("-").map(Number);
+  const start = new Date(Date.UTC(year - 1, month - 1, day + 1)).toISOString().slice(0, 10);
+  return { start, end };
+}
+
 function assign(target, key, value) {
   if (value !== undefined && value !== "" && value !== 0) target[key] = value;
 }
@@ -2685,11 +2706,13 @@ export async function extractBook(set, product, lines, cellMap, options = {}) {
     }
   }
 
-  // SE reads its true accounting period off the printed boxes, since a book
-  // whose dates do not run April to March still has every posting written
-  // onto the package's own April-March tab grid.
+  // SE and Taxi read their true accounting period off the printed boxes,
+  // since a book whose dates do not run April to March still has every
+  // posting written onto the package's own April-March tab grid.
   const period =
-    (product === "se" && (await seAccountingPeriodFromSheet(set))) || periodCovered(await extractPeriodStartMonth(set, product), lines);
+    product === "taxi"
+      ? await taxiAccountingPeriodFromSheet(set)
+      : (product === "se" && (await seAccountingPeriodFromSheet(set))) || periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {
     documentInfo: {
       entriesType: "journal",

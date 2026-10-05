@@ -82,12 +82,37 @@ describe("a package savePackageZip writes, read back by the package reader", () 
       expect(comparison.moved).toEqual([]);
       expect(comparison.lost).toEqual(CHECKS_ON_UNREPRESENTED_FIELDS[product] ?? []);
       expect(comparison.gained).toEqual([]);
-      if (product !== "taxi") {
-        expect(asDay(source.book.documentInfo.periodCoveredStart)).toBe(asDay(book.documentInfo.periodCoveredStart));
-        expect(asDay(source.book.documentInfo.periodCoveredEnd)).toBe(asDay(book.documentInfo.periodCoveredEnd));
-      }
+      expect(asDay(source.book.documentInfo.periodCoveredStart)).toBe(asDay(book.documentInfo.periodCoveredStart));
+      expect(asDay(source.book.documentInfo.periodCoveredEnd)).toBe(asDay(book.documentInfo.periodCoveredEnd));
     }, 600000);
   }
+
+  // Business Details!N25, "Date your books or accounts are made up to", is a
+  // formula on Admin!B17; the reader takes the period end from its value.
+  it("takes a Taxi package's period from the date its books are made up to", async () => {
+    const N25 = /(<c r="N25"[^>]*><f>Admin!B17<\/f><v>)(\d+)(<\/v>)/;
+    const APRIL_5_2027 = 46482;
+    async function madeUpToApril2027(bytes) {
+      const pkg = await JSZip.loadAsync(bytes);
+      const [workbookName] = Object.keys(pkg.files).filter((name) => name.endsWith(".xlsx"));
+      const workbook = await JSZip.loadAsync(await pkg.file(workbookName).async("uint8array"));
+      for (const name of Object.keys(workbook.files).filter((entry) => /^xl\/worksheets\/sheet\d+\.xml$/.test(entry))) {
+        const xml = await workbook.file(name).async("string");
+        if (N25.test(xml))
+          workbook.file(
+            name,
+            xml.replace(N25, (_, open, value, close) => `${open}${APRIL_5_2027}${close}`),
+          );
+      }
+      pkg.file(workbookName, await workbook.generateAsync({ type: "uint8array" }));
+      return pkg.generateAsync({ type: "uint8array" });
+    }
+
+    const { source } = await roundTrip("taxi", madeUpToApril2027);
+
+    expect(source.book.documentInfo.periodCoveredStart).toBe("2026-04-06");
+    expect(source.book.documentInfo.periodCoveredEnd).toBe("2027-04-05");
+  }, 600000);
 
   it("names the figures that move when one amount in the package is changed", async () => {
     const SALES_ENTRY = /(<c r="G(\d+)"[^>]*>(?:<f>[^<]*<\/f>)?<v>)([0-9.]+)(<\/v>)/g;
