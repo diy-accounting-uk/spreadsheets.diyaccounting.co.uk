@@ -15,29 +15,15 @@
 // one directory per package version and origin host.
 
 import { spawn } from "child_process";
-import { existsSync, readFileSync } from "fs";
 import { tmpdir } from "os";
-import { dirname, join, resolve } from "path";
-import { fileURLToPath } from "url";
+import { join, resolve } from "path";
 import { readBookFragment } from "./link.js";
 import { FRAGMENT_KEY } from "../lib/diya-gl-link.js";
 import { DEFAULT_ORIGIN, startViewServer } from "../lib/diya-gl-view-server.js";
+import { packageVersion } from "../lib/package-version.js";
 
 const USAGE =
   "Usage: diya-gl view <book directory | diya-gl zip | diya-gl JSON file | workbook> [--port <number>] [--origin <url>] [--no-open]";
-
-// The nearest package.json above this file: the package's own in dist/, the
-// repository's in a checkout. Both carry the version the cache is keyed on.
-function packageVersion() {
-  let directory = dirname(fileURLToPath(import.meta.url));
-  for (;;) {
-    const candidate = join(directory, "package.json");
-    if (existsSync(candidate)) return JSON.parse(readFileSync(candidate, "utf8")).version;
-    const parent = dirname(directory);
-    if (parent === directory) throw new Error("No package.json found above " + import.meta.url);
-    directory = parent;
-  }
-}
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -86,7 +72,7 @@ function openInBrowser(url) {
 async function main() {
   const { source, port, origin, open } = parseArgs(process.argv);
   const { product, fragment, length, warning } = await readBookFragment(source);
-  const cacheDir = join(tmpdir(), "diya-gl-view", packageVersion(), new URL(origin).host.replace(/[^A-Za-z0-9.-]/g, "_"));
+  const cacheDir = join(tmpdir(), "diya-gl-view", await packageVersion(), new URL(origin).host.replace(/[^A-Za-z0-9.-]/g, "_"));
   const running = await startViewServer({ cacheDir, origin, port });
   const url = `http://${running.host}:${running.port}/${product}.html#${FRAGMENT_KEY}=${fragment}`;
   console.log(url);

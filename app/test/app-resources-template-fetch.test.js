@@ -3,15 +3,19 @@
 //
 // app-resources-template-fetch.test.js — a packaged install has no
 // app/templates, so the resource loader takes a template from the site once,
-// states the terms it comes under, and reads its own cache from then on.
+// states the terms it comes under, and reads its own cache from then on --
+// one cache per package version and source host, since a template an older
+// version cached writes a package the current reader's anchors refuse.
 
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { createServer } from "http";
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync } from "fs";
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from "fs";
 import { tmpdir } from "os";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const TEMPLATE_BODY = 'spreadsheet = "bst-excel.xlsx"\n';
+const VERSION = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "package.json"), "utf8")).version;
 
 describe("a template the installed engine has no local copy of", () => {
   let server;
@@ -19,6 +23,7 @@ describe("a template the installed engine has no local copy of", () => {
   let requested;
   let appDir;
   let cacheDir;
+  let sourceHost;
 
   beforeAll(async () => {
     requested = [];
@@ -36,6 +41,7 @@ describe("a template the installed engine has no local copy of", () => {
     mkdirSync(appDir, { recursive: true });
 
     process.env.DIYA_GL_TEMPLATE_SOURCE = `http://127.0.0.1:${server.address().port}/diya-gl/assets/`;
+    sourceHost = `127.0.0.1_${server.address().port}`;
     process.env.XDG_CACHE_HOME = cacheDir;
   });
 
@@ -55,7 +61,7 @@ describe("a template the installed engine has no local copy of", () => {
       expect(requested).toEqual(["/diya-gl/assets/templates/meta.toml"]);
       const announcements = terms.mock.calls.filter(([message]) => String(message).includes("PolyForm"));
       expect(announcements).toHaveLength(1);
-      expect(existsSync(resolve(cacheDir, "diya-gl", "templates", "meta.toml"))).toBe(true);
+      expect(existsSync(resolve(cacheDir, "diya-gl", VERSION, sourceHost, "templates", "meta.toml"))).toBe(true);
 
       terms.mockClear();
       expect(await resources.readText("templates/meta.toml")).toBe(TEMPLATE_BODY);
@@ -63,6 +69,25 @@ describe("a template the installed engine has no local copy of", () => {
       expect(terms.mock.calls).toHaveLength(0);
     } finally {
       terms.mockRestore();
+    }
+  });
+
+  it("fetches again rather than read a copy another version cached", async () => {
+    const { nodeResourceLoader } = await import("../lib/app-resources.js");
+    const stale = resolve(cacheDir, "diya-gl", "0.0.1", sourceHost, "templates", "se", "Purchases.xlsx");
+    mkdirSync(dirname(stale), { recursive: true });
+    writeFileSync(stale, "the template as an older version cached it");
+    const unversioned = resolve(cacheDir, "diya-gl", "templates", "se", "Purchases.xlsx");
+    mkdirSync(dirname(unversioned), { recursive: true });
+    writeFileSync(unversioned, "the template as the unversioned cache held it");
+
+    served = "the template the site serves today";
+    const before = requested.length;
+    try {
+      expect(await nodeResourceLoader(appDir).readText("templates/se/Purchases.xlsx")).toBe("the template the site serves today");
+      expect(requested.slice(before)).toEqual(["/diya-gl/assets/templates/se/Purchases.xlsx"]);
+    } finally {
+      served = TEMPLATE_BODY;
     }
   });
 

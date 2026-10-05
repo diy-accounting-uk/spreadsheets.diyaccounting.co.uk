@@ -595,6 +595,8 @@ describe.skipIf(!hasBstLatest)("extractBstTransactions — BST latest example", 
 // 2025-04-06, the first day of the tax year the Taxi Sales tabs are laid out
 // against, and the day the week below opens on.
 const TAXI_FIRST_DAY = 45753;
+// 2026-04-05, the date the Taxi books are made up to (Business Details!N25).
+const TAXI_LAST_DAY = 46117;
 
 // The approved mileage rates the generator injects into the Taxi Admin sheet:
 // the first ten thousand business miles at 45p, the rest at 25p.
@@ -611,8 +613,14 @@ const TAXI_PURCHASE_ANALYSIS = { G3: "Fuel & Oil Expenses", S2: "Fixed Assets Mo
 function taxiSheets({ salesRows = {}, purchaseRows = {} } = {}) {
   const carried = { formula: "SUM(E5:E8)", value: TAXI_FIRST_DAY };
   return {
-    "Business Details": { C5: "SP Sixty Driving", C8: "Private hire and taxi driving services", C17: "DE1 2GH", O5: "5566778899" },
-    "Admin": { ...TAXI_MILEAGE_RATES },
+    "Business Details": {
+      C5: "SP Sixty Driving",
+      C8: "Private hire and taxi driving services",
+      C17: "DE1 2GH",
+      O5: "5566778899",
+      N25: { formula: "Admin!B17", value: TAXI_LAST_DAY },
+    },
+    "Admin": { ...TAXI_MILEAGE_RATES, B17: TAXI_LAST_DAY },
     "SalesApr": {
       A5: TAXI_FIRST_DAY,
       B5: TAXI_FIRST_DAY,

@@ -19,6 +19,8 @@
 // Node's own modules load on the first read rather than with this file, so a
 // bundle whose caller supplies a loader never pulls them in.
 
+import { packageVersion } from "./package-version.js";
+
 // The resource space is app/ with one named exception. The two v2 schemas are
 // published by the site, not carried in app/, and the site serves them at
 // /schema/ — so "schema/" is a root of its own rather than a directory under
@@ -31,7 +33,10 @@ const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "
 // checkout has app/templates and reads it straight off disk. A packaged install
 // has not, so the loader takes the same file from the site, which already
 // serves the templates the DIYA-GL pages use, and keeps it in a user cache so
-// every later run works with no network.
+// every later run of the same version works with no network. The cache is keyed
+// on the package version and the source host, because the anchors the reader
+// checks a package against move with the version: a template cached by an
+// older version writes a package the newer reader refuses.
 //
 // Both the current /diya-gl/ and legacy /books/ paths resolve — the old one
 // through a redirect — so published versions built before the path moved keep
@@ -71,11 +76,12 @@ async function fetchTemplate(path) {
   const { dirname, resolve } = await import("path");
   const { homedir } = await import("os");
 
+  const source = templateSource();
   const cacheRoot = process.env.XDG_CACHE_HOME || resolve(homedir(), ".cache");
-  const cached = resolve(cacheRoot, "diya-gl", path);
+  const sourceHost = new URL(source).host.replace(/[^A-Za-z0-9.-]/g, "_");
+  const cached = resolve(cacheRoot, "diya-gl", await packageVersion(), sourceHost, path);
   if (existsSync(cached)) return readFileSync(cached);
 
-  const source = templateSource();
   announceTemplateTerms(source);
 
   const url = `${source}/${path}`;
