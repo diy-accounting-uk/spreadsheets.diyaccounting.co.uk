@@ -508,6 +508,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
       assetClass: asset.category,
       row,
       acquiredInYear: false,
+      openingAsset: asset,
       cost: asset.cost,
       depreciationBroughtForward: asset.acc_dep || 0,
       taxWrittenDownValue: asset.tax_wdv || 0,
@@ -525,6 +526,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
         assetClass: SCHEDULE_NEW_ASSET_CLASS,
         row,
         acquiredInYear: true,
+        entryNumber: entryOf(transaction),
         purchasedOn: serialOf(parseDate(transaction.date)),
         description: transaction.supplier,
         cost: writerNet(transaction.amount, rate),
@@ -767,13 +769,7 @@ function computeLtd(book, lines, taxData, scenario, attribution) {
     results[`${fileName}!${tabs[11]}`] = { A1: openingOfLastMonth, A2: balance };
   }
 
-  const depreciationRates = {
-    land: taxData.depreciation?.land_and_property ?? 0,
-    plant: taxData.depreciation?.plant_and_machinery ?? 0,
-    fixtures: taxData.depreciation?.fixtures_and_fittings ?? 0,
-    computer: taxData.depreciation?.computer_equipment ?? 0,
-    motor: taxData.depreciation?.motor_vehicles ?? 0,
-  };
+  const depreciationRates = depreciationRatesOf(taxData);
   const openingBalance = scenario.opening_balance || {};
   const scheduleRowEntries = attribution ? new Map() : null;
   const scheduleRows = buildSchedule(scenario, rate, depreciationRates, admin.G5, admin.G6, scheduleRowEntries);
@@ -961,6 +957,33 @@ function computeLtd(book, lines, taxData, scenario, attribution) {
  * @param {Object} [attribution] - filled in place with the entryNumbers behind each cell (entry-attribution.js)
  * @returns {Object} { "SheetName": { "CellRef": value } }
  */
+function depreciationRatesOf(taxData) {
+  return {
+    land: taxData.depreciation?.land_and_property ?? 0,
+    plant: taxData.depreciation?.plant_and_machinery ?? 0,
+    fixtures: taxData.depreciation?.fixtures_and_fittings ?? 0,
+    computer: taxData.depreciation?.computer_equipment ?? 0,
+    motor: taxData.depreciation?.motor_vehicles ?? 0,
+  };
+}
+
+/**
+ * Each Schedule row's own figures, beside the asset it holds: an asset
+ * brought forward (openingAsset, one of scenario.opening_fixed_assets) or the
+ * purchase line that bought it in the year (entryNumber). Rolling a book
+ * forward reads its carried forward cost, depreciation and tax written-down
+ * value from here.
+ * @param {Object} book
+ * @param {Object} taxData
+ * @param {Object} scenario - diyaGlToScenario's output
+ * @returns {Array<Object>} the rows buildSchedule computes
+ */
+export function ltdScheduleRows(book, taxData, scenario) {
+  const rate = scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+  const admin = buildAdmin(taxData, periodFrom(book), scenario.business?.associated_companies ?? 0);
+  return buildSchedule(scenario, rate, depreciationRatesOf(taxData), admin.G5, admin.G6);
+}
+
 export function calculateLtdResults(book, lines, taxData, scenario, attribution) {
   return computeLtd(book, lines, taxData, scenario, attribution).results;
 }
@@ -1996,8 +2019,11 @@ function buildCt600(corporationTax, pl, admin) {
   if (corporationTax.K26 > 0) sheet.Z72 = corporationTax.K26;
   if (corporationTax.K24 > 0) sheet.AJ76 = corporationTax.K24;
   sheet.AJ74 = (sheet.Z70 || 0) - (sheet.Z72 || 0);
-  sheet.AJ92 = sheet.AJ74 > 0 ? sheet.AJ74 + (sheet.AJ76 || 0) : 0;
-  sheet.AJ110 = sheet.AJ92;
+  sheet.AJ92 = Math.max(sheet.AJ74, 0) + (sheet.AJ76 || 0);
+  // A trading loss of the year meets the interest it can reach, as the working
+  // sheet's chargeable profit nets them, so box 30 carries what was set off.
+  if (corporationTax.K22 < 0 && corporationTax.K24 > 0) sheet.Z98 = Math.min(-corporationTax.K22, corporationTax.K24);
+  sheet.AJ110 = sheet.AJ92 - (sheet.Z98 || 0);
   sheet.AJ131 = sheet.AJ126 + sheet.AJ128;
   sheet.Y133 = corporationTax.marginalRelief;
   sheet.Y135 = corporationTax.K35;
@@ -2511,7 +2537,8 @@ function attributeLtdResults(attribution, context) {
   a.set(CT600, "AJ76", a.get(CT, "K24"));
   a.set(CT600, "AJ74", a.cells(CT600, "Z70", "Z72"));
   a.set(CT600, "AJ92", a.cells(CT600, "AJ74", "AJ76"));
-  a.set(CT600, "AJ110", a.get(CT600, "AJ92"));
+  a.set(CT600, "Z98", unionOf(a.get(CT, "K22"), a.get(CT, "K24")));
+  a.set(CT600, "AJ110", a.cells(CT600, "AJ92", "Z98"));
   a.set(CT600, "AJ131", a.cells(CT600, "AJ126", "AJ128"));
   a.set(CT600, "Y133", charged);
   a.set(CT600, "Y135", a.get(CT, "K35"));

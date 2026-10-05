@@ -38,12 +38,15 @@ diya-gl recalc --package bst --data my-book --years se-2025-2026 --output-dir ou
 diya-gl read-workbook --file my-workbook.xlsx --output-dir out
 diya-gl write-workbook --data my-book --output-dir out
 diya-gl link my-book
+diya-gl new-book --product se --name "Lark Lane" --year-end 2027-04-05 --output-dir lark-lane
+diya-gl roll-forward --data my-book --output-dir next-year
 diya-gl view my-book
 diya-gl mcp
 ```
 
 Each subcommand is also its own command, if you only want one on your `PATH`:
-`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-link`, `diya-gl-view`, `diya-gl-mcp`.
+`diya-gl-recalc`, `diya-gl-read-workbook`, `diya-gl-write-workbook`, `diya-gl-link`, `diya-gl-new-book`,
+`diya-gl-roll-forward`, `diya-gl-view`, `diya-gl-mcp`.
 
 - **recalc** takes a diya-gl book (`--data`) or a populated workbook (`--source-dir`,
   `--mode saved|recalculate`) and writes `report.json`: every figure, report section and
@@ -58,6 +61,22 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   opens it, the whole book carried in the fragment so nothing is uploaded. `--base <url>`
   replaces the origin. The fragment length goes to stderr, with a warning past 64 KB (about
   2,000 lines), where chat, email and QR codes start to cut links off.
+- **new-book** starts an empty book for a new business: `--product` (`bst`, `se`, `taxi` or
+  `ltd`), `--name` and `--year-end` (YYYY-MM-DD), plus `--vat` for a VAT-registered Self
+  Employed or Company book. It writes `book.toml` (the product's starting chart of accounts,
+  the twelve months to the year end and that tax year's rates), an empty `lines.jsonl`,
+  `report.json` and `bookchecks.json` into `--output-dir`, the current directory by default.
+  It answers: how do I start books for a new business, what accounts does a new sole trader
+  or company book start with, and which tax rates apply to the first year?
+- **roll-forward** takes a book (`--data`, the same sources as **link**) and writes the next
+  year's into `--output-dir`: the year end a year on with that year's tax rates, the closing
+  balances as opening ones, and lines holding only the opening entries (a Company's opening
+  journal and one brought-forward line per bank account; a Self Employed book's bank lines).
+  Beside `book.toml`, `lines.jsonl`, `report.json` and `bookchecks.json` it writes
+  `rollchecks.json`, each opening figure the new year prints against the closing figure the old
+  year printed, and exits 1 when one disagrees. It answers: how do I start next year's books,
+  what do I bring forward from last year, and does my opening balance sheet agree with last
+  year's closing one?
 - **view** takes the same book sources as **link**, serves the full diya-gl pages on
   `127.0.0.1` (`--port <number>`, default a free port) and opens the book in your default
   browser (`--no-open` prints the address only). The pages are not in this package: the local
@@ -67,8 +86,9 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   another site. The book stays in the browser (the part of the address after `#` is never sent
   anywhere). The server stays up until Ctrl-C. The workbook templates come from
   spreadsheets.diyaccounting.co.uk the first time a page action needs one.
-- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with eight tools:
-  `extract_book`, `report`, `edit_lines`, `save_workbook`, and four that read every detail of
+- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with ten tools:
+  `extract_book`, `new_book` (the empty book **new-book** writes), `roll_forward` (the next
+  year **roll-forward** writes), `report`, `edit_lines`, `save_workbook`, and four that read every detail of
   the loaded book: `lines` (filter and group every transaction, e.g. best customer or spend on
   fuel in June), `chart` (the accounts and the report rows each feeds), `book` (the business,
   period, tax settings and registers) and `checks` (every book check with the entryNumbers

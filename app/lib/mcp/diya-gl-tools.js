@@ -7,8 +7,9 @@
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
 // and diya-gl-edits.js, save_workbook wraps product-workbook.js for a workbook
 // or package zip and diya-gl-interchange.js for the two diya-gl formats, and
-// lines, chart, book and checks wrap book-queries.js. No engine code lives
-// here.
+// lines, chart, book and checks wrap book-queries.js, new_book wraps
+// diya-gl-new-book.js and roll_forward wraps diya-gl-roll-forward.js. No
+// engine code lives here.
 //
 // extract_book and report both carry a bookChecks field alongside report --
 // the same app/lib/book-checks.js results and summary export.js writes as
@@ -51,6 +52,9 @@ import {
 import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
+import { buildNewBook } from "../diya-gl-new-book.js";
+import { rollForward, rollForwardChecks, rolledYearEnd } from "../diya-gl-roll-forward.js";
+import { taxYearFileName } from "../tax-year.js";
 
 // Every edit fn takes (book, lines, params); a line edit returns a new
 // lines array and a book edit (Ltd's own dividend, members and charges
@@ -174,6 +178,65 @@ async function extractBook(session, { path, product }) {
     report: document,
     overtyped,
     bookChecks: await bookChecksFor(book, lines),
+  };
+}
+
+// The rate data for the tax year a book's own period end falls in, refused by
+// name where app/data carries no file for that year.
+async function rateDataForBook(book) {
+  try {
+    return await loadTaxDataForBook(book);
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    const { taxRegime } = productModule(productOf(book)).PRODUCT;
+    const fileName = taxYearFileName(new Date(book.documentInfo.periodCoveredEnd), taxRegime);
+    throw new Error(`No tax tables for a year ending ${book.documentInfo.periodCoveredEnd}: app/data/${fileName}.toml is not carried yet`);
+  }
+}
+
+/**
+ * new_book: an empty book for a new business -- the product's starting chart
+ * of accounts, the twelve months to the year end and that year's tax tables
+ * -- with no lines, its R and its book checks. Replaces the session's loaded
+ * book, so edit_lines can add the first transactions straight away.
+ */
+async function newBook(session, params = {}) {
+  const book = buildNewBook(params, await rateDataForBook(buildNewBook(params)));
+  const lines = [];
+  loadIntoSession(session, book, lines);
+  return {
+    book,
+    lines,
+    bookToml: canonicalBookToml(stampBook(book)),
+    report: reportFor(book, lines),
+    bookChecks: await bookChecksFor(book, lines),
+  };
+}
+
+/**
+ * roll_forward: the next year of a book (the session's loaded book, or an
+ * explicit {book, lines}) -- the year end moved on a year, that year's tax
+ * tables, the closing balances as opening ones and only the opening entries
+ * in its lines -- with its R, its book checks and rollChecks, each opening
+ * figure the next year prints against the closing figure the year printed.
+ * Replaces the session's loaded book with the next year's.
+ */
+async function rollForwardBook(session, params = {}) {
+  const priorBook = params.book ?? session.book;
+  const priorLines = params.lines ?? session.lines;
+  if (!priorBook || !priorLines) requireLoaded(session);
+  const nextYear = { ...priorBook, documentInfo: { ...priorBook.documentInfo, periodCoveredEnd: rolledYearEnd(priorBook) } };
+  const { book, lines } = rollForward(priorBook, priorLines, await rateDataForBook(nextYear));
+  loadIntoSession(session, book, lines);
+  const rolledReport = reportFor(book, lines);
+  return {
+    book,
+    lines,
+    bookToml: canonicalBookToml(stampBook(book)),
+    linesJsonl: canonicalLinesJsonl(lines),
+    report: rolledReport,
+    bookChecks: await bookChecksFor(book, lines),
+    rollChecks: rollForwardChecks({ priorBook, priorLines, priorReport: reportFor(priorBook, priorLines), rolledBook: book, rolledReport }),
   };
 }
 
@@ -336,6 +399,33 @@ export const TOOLS = {
       required: ["path"],
     },
     handler: extractBook,
+  },
+  new_book: {
+    name: "new_book",
+    description:
+      "Start an empty book for a new business: the product's starting chart of accounts (sales, purchases and bank accounts), the twelve months to the year end, and that tax year's rates, with no lines yet, its report and its book checks. Replaces the session's loaded book, so edit_lines can add the first sales and purchases straight away. Answers: How do I start books for a new business? What accounts does a new sole trader or company book start with? Which tax rates apply to my first year?",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product: {
+          type: "string",
+          enum: ["bst", "taxi", "se", "ltd"],
+          description: "bst (Basic Sole Trader), taxi (Taxi Driver), se (Self Employed) or ltd (Limited Company)",
+        },
+        businessName: { type: "string", description: "The business or company name" },
+        yearEnd: { type: "string", description: "The last day of the first accounting year, YYYY-MM-DD (e.g. 2027-04-05)" },
+        vatRegistered: { type: "boolean", description: "Optional, se and ltd only: the business is VAT registered" },
+      },
+      required: ["product", "businessName", "yearEnd"],
+    },
+    handler: newBook,
+  },
+  roll_forward: {
+    name: "roll_forward",
+    description:
+      "Start the next year of the loaded book: the year end moves on a year with that year's tax rates, the closing balances become the opening ones (bank accounts, debtors and creditors with their named ledgers, VAT, PAYE and CIS owed, stock, each fixed asset's cost, depreciation and tax written-down value, loans and the retained profit), dividends declared clear, and the lines hold only the opening entries. Returns the new book and lines, its report, its book checks, and rollChecks: each opening figure the new year prints against the closing figure the old year printed for it. Replaces the session's loaded book with the new year's. Answers: How do I start next year's books? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
+    inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
+    handler: rollForwardBook,
   },
   report: {
     name: "report",

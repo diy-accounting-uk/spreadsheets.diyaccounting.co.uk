@@ -1283,6 +1283,8 @@ label = "Tax already paid (and not already repaid)"
 section = "Tax reconciliation"
 format = "pounds-and-pence"
 element = "TaxAlreadyPaid"
+status = "entry-on-this-template"
+statusNote = "CT600!AJ163 is an entry cell with no formula: the company types what it has paid, and no book figure feeds it"
 xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/TaxAlreadyPaid"
 sheetCell = "Financialaccounts.xlsx!CT600!AJ163"
 

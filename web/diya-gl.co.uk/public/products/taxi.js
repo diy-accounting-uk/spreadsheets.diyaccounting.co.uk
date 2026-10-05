@@ -166,32 +166,6 @@
   var ADMIN_FORMATS = { F21: "number", F22: "number", G21: "pence", G22: "pence" };
   var UNIT_FORMATS = { money: "currency", rate: "rate", count: "number" };
 
-  // The chart a new Taxi book starts from: the two sales accounts the sheet
-  // separates (fares on B5, anything else on B24) and one purchase account
-  // per code the Taxi purchase map carries, worded as the example books
-  // word them (examples/basic-taxi-driver/taxi/book.toml).
-  var TAXI_NEW_BOOK_CHART = {
-    sales: {
-      4000: { accountMainDescription: "Fares income" },
-      4001: { accountMainDescription: "Other business income" },
-    },
-    purchases: {
-      5100: { accountMainDescription: "Fuel" },
-      5200: { accountMainDescription: "Car hire" },
-      5300: { accountMainDescription: "Repairs and maintenance" },
-      5400: { accountMainDescription: "Road tax and insurance" },
-      5500: { accountMainDescription: "Employee costs" },
-      5600: { accountMainDescription: "Premises costs" },
-      5700: { accountMainDescription: "General admin" },
-      5800: { accountMainDescription: "Advertising" },
-      5900: { accountMainDescription: "Legal and professional" },
-      6000: { accountMainDescription: "Interest" },
-      6100: { accountMainDescription: "Bank charges" },
-      6200: { accountMainDescription: "Other expenses" },
-      7000: { accountMainDescription: "Fixed assets" },
-    },
-  };
-
   // The view modules this manifest renders through, as products/<file>.js
   // each defining DiyaGlTaxi<Name>.
   var SIBLING_MODULES = { Takings: "taxi-takings", Views: "taxi-views", Forms: "taxi-forms" };
@@ -892,25 +866,9 @@
   // ============================== new book and upload ==============================
 
   function buildNewBook(values, ctx) {
-    var name = values.businessName;
-    return {
-      documentInfo: {
-        entriesType: "journal",
-        language: "en",
-        periodCoveredStart: ctx.period.start,
-        periodCoveredEnd: ctx.period.end,
-        defaultCurrency: "GBP",
-        entriesComment: "New book for " + name,
-      },
-      entityInformation: {
-        "organizationIdentifier": name,
-        "diya-gl:product": SCHEMA_NAME,
-        "diya-gl:vatRegistered": false,
-        "diya-gl:basisOfAccounting": "cash",
-      },
-      accounts: JSON.parse(JSON.stringify(TAXI_NEW_BOOK_CHART)),
-      fixedAssets: [],
-    };
+    var book = ctx.engine.buildNewBook({ product: "taxi", businessName: values.businessName, yearEnd: values.yearEnd });
+    book.fixedAssets = [];
+    return book;
   }
 
   // The Admin sheet's own period start: the 6 April the workbook was

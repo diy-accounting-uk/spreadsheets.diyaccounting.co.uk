@@ -2214,7 +2214,18 @@ export async function taxTablesForPackage(adminXml, adminSharedStrings, product,
   if (!fileName) return {};
   const text = await readRateData(fileName);
   if (text === null) return {};
-  return taxTablesFromRateData(parseTOML(text), {
+  return taxTablesForProduct(parseTOML(text), product);
+}
+
+/**
+ * A book's tax.* tables for one product, from one parsed app/data/<year>.toml:
+ * the same tables an extracted package of that product and year carries.
+ * @param {Object} rateData - a parsed app/data/<year>.toml
+ * @param {string} product - bst, taxi, se or ltd
+ * @returns {Object}
+ */
+export function taxTablesForProduct(rateData, product) {
+  return taxTablesFromRateData(rateData, {
     includeVat: Boolean(VAT_RATE_CELLS[product]),
     includeSpecialRate: SPECIAL_RATE_POOL_PRODUCTS.has(product),
   });

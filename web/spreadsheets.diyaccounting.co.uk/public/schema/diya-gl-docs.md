@@ -937,3 +937,74 @@ This schema is versioned as `v2`. The version is embedded in the JSON Schema `$i
 An earlier `v1` existed but nothing outside this repository ever read it, so v2 replaced
 it in place rather than being published alongside it.
 The `diya-gl:product` value in `book.toml` determines which subset of the schema is active.
+
+---
+
+## 10. Starting a Book
+
+A new business starts from an empty book: `diya-gl new-book` on the command line, the
+MCP server's `new_book` tool, or the New book form on the DIYA-GL pages. The command and
+the tool build the same `book.toml`, and the form builds it without the `tax` tables:
+
+- `documentInfo`: the twelve months to the year end given, from the day after the same
+  date a year earlier.
+- `entityInformation`: the business name, the product, `diya-gl:vatRegistered` (Self
+  Employed and Company only; a Basic Sole Trader or Taxi Driver book is never VAT
+  registered) and, for the three sole trader products, the cash basis.
+- `accounts`: the product's starting chart. Every profit and loss row the sales and
+  purchase journals feed has an account, and Self Employed and Company also carry the
+  bank books their packages have.
+- `tax`: that year's rates from the tax data the year end falls in. A year whose rates
+  are not carried yet is refused by name.
+
+`lines.jsonl` is empty, and every book check passes.
+
+```
+diya-gl new-book --product se --name "Lark Lane" --year-end 2027-04-05 --output-dir lark-lane
+```
+
+---
+
+## 11. Rolling a Book Forward
+
+`diya-gl roll-forward` and the MCP server's `roll_forward` tool start the next year of a
+book. They read the closing position from the lines through the engine, because the
+report alone nets figures the next year needs apart: tax and social security across VAT,
+PAYE and CIS, cost and depreciation across the assets of a class, and the bank accounts
+with their transfers.
+
+- `documentInfo`: the year end moves on a year (28 February where the year ended on
+  29 February), and the period starts the day after the old year end.
+- `tax`: the new year's rates. Associated companies, the disallowable shares, Structures
+  and Buildings Allowance claims and the basis period record carry over, the transition
+  profit brought forward taking what the old year carried forward. Allowances and
+  adjustments stated by hand for the old year do not.
+- `debtors` and `creditors`: the closing listings become the opening ones.
+- `dividends`: cleared. A dividend declared and not paid opens as a creditor.
+- `stock`: `openingValue` takes the closing value.
+- `fixedAssets`: each asset still held carries its cost, accumulated depreciation and tax
+  written-down value. An asset bought in the year joins the register; one disposed of
+  leaves it.
+- `hpAgreements`: a Company's balance owed opens on long term creditors (account 2600), so
+  the agreements leave the register; a Self Employed book keeps those still running.
+- `openingBalances`: restated from the new opening entries.
+
+`lines.jsonl` holds only the opening entries, dated the first day of the new year:
+
+| Product | Opening lines |
+|---------|---------------|
+| CompanyAccounts | The opening journal (`documentReference` `OB-001`): fixed asset cost and depreciation per class, stock, debtors, each bank account, every creditor and tax owed, share capital and reserves, with retained earnings as the balancing figure. Plus a `BC` bank line per bank account. An unmatched transfer between two bank accounts opens on the account that missed its leg. |
+| SelfEmployed | A `BC` bank line per bank account. |
+| BasicSoleTrader | None: the opening debtors, creditors and stock are on `openingBalances` and `stock`. |
+| TaxiDriver | None. |
+
+The result carries `rollChecks`, each opening figure the new year prints against the closing
+figure the old year printed for the same balance: for a Company every
+`section/opening-balance-sheet/*` figure against the published balance sheet, for Self
+Employed the bank sheets, stock and fixed asset schedule, for Basic Sole Trader the
+debtors, creditors and stock, and for Basic Sole Trader and Taxi Driver the register's tax
+written-down value against the pool the year carried forward.
+
+```
+diya-gl roll-forward --data my-book --output-dir next-year
+```

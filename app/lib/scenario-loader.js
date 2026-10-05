@@ -23,9 +23,15 @@ export const MONTH_SHEETS = {
   mar: "Mar",
 };
 
+// A date is a Date, or YYYY-MM-DD with an optional time suffix: a book
+// carried through JSON states its dates as "2021-02-01T00:00:00.000Z".
+const DATE_TEXT = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+
 export function parseDate(d) {
   if (d instanceof Date) return d;
-  const [y, m, day] = String(d).split("-").map(Number);
+  const match = DATE_TEXT.exec(String(d));
+  if (!match) throw new Error(`not a date (expected YYYY-MM-DD): ${JSON.stringify(d)}`);
+  const [, y, m, day] = match.map(Number);
   return new Date(Date.UTC(y, m - 1, day));
 }
 

@@ -71,6 +71,11 @@ describe("filing data", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("no xbrl tag spells the loan relationship concept in the plural", () => {
+    const offenders = computation.line.filter((line) => /LoanRelationships/.test(line.xbrl ?? "")).map((line) => line.xbrl);
+    expect(offenders).toEqual([]);
+  });
+
   it("every computation line with a sheetCell has an xbrl tag or an explicit empty string", () => {
     for (const line of computation.line) {
       if (line.sheetCell) {

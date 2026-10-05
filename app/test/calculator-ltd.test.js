@@ -208,6 +208,40 @@ describe.each(FIXTURES)("Trial balance on $name", (fixture) => {
 });
 
 // ── The payroll year a book with no tax data derives itself ────────────────
+// A year with no sales and no trading profit still receives bank interest.
+describe("a year whose only profit is bank interest", () => {
+  const { book, lines } = loadDiyaGlData(resolve(ROOT, FIXTURES[0].dataDir), FIXTURES[0].offset);
+  const taxData = taxDataFor(FIXTURES[0].years);
+  const noSales = lines.filter((line) => line.sourceJournalID !== "sales");
+  const scenario = diyaGlToScenario(book, noSales, "ltd");
+  const results = calculateFromDiyaGl(book, noSales, "ltd", taxData, scenario);
+  const ct = results.CorporationTax;
+  const ct600 = results.CT600;
+
+  it("makes a trading loss and receives interest", () => {
+    expect(ct.K22).toBeLessThan(0);
+    expect(ct.K24).toBeCloseTo(339.51, 2);
+  });
+
+  it("states box 235 as box 165 plus box 170, the interest alone", () => {
+    expect(ct600.AJ74).toBe(0);
+    expect(ct600.AJ76).toBeCloseTo(339.51, 2);
+    expect(ct600.AJ92).toBeCloseTo(ct600.AJ74 + ct600.AJ76, 6);
+  });
+
+  it("sets the loss against the interest in box 30, leaving no chargeable profit", () => {
+    expect(ct600.Z98).toBeCloseTo(339.51, 2);
+    expect(ct600.AJ110).toBe(0);
+  });
+
+  it("passes every CT600 verdict", () => {
+    const merged = { ...scenario, ...scenario.expected };
+    const yearEnd = new Date(book.documentInfo.periodCoveredEnd).toISOString().slice(0, 10);
+    const checks = ltd.checkCompliance({ ...results }, merged, taxData, calculateExpectedTax, yearEnd);
+    expect(checks.filter((check) => check.name.startsWith("CT600:") && !check.pass).map((check) => check.name)).toEqual([]);
+  });
+});
+
 describe("the payroll year a book with no financial year data falls back on", () => {
   function payrollAnchorFor(periodCoveredEnd, taxData = {}) {
     const results = calculateLtdResults({ documentInfo: { periodCoveredEnd } }, [], taxData, {});

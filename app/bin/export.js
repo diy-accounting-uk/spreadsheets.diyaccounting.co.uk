@@ -253,6 +253,21 @@ function writeDiyaGlData(outputDir, book, lines) {
   console.log(`  book.toml: ${Object.keys(stamped).length} tables`);
 }
 
+/**
+ * A whole book directory from a (book, lines) pair already in hand: book.toml,
+ * lines.jsonl, report.json and bookchecks.json, written the way --file writes
+ * them. The new-book and roll-forward commands write their output through it.
+ * @param {string} outputDir
+ * @param {Object} book
+ * @param {Array} lines
+ */
+export async function writeBookDirectory(outputDir, book, lines) {
+  const product = productOf(book);
+  writeDiyaGlData(outputDir, book, lines);
+  writeReportJson(outputDir, buildFileReportDocument(book, lines, product, PRODUCTS[product]));
+  await writeBookChecksJson(outputDir, book, lines);
+}
+
 async function runFileMode(filePath, outputDirArg, packageName) {
   const resolvedFile = resolve(filePath);
   const resolvedOutput = resolve(outputDirArg || dirname(resolvedFile));

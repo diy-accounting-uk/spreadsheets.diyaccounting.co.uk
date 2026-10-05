@@ -1581,6 +1581,7 @@ const CT600_CELLS = [
   "AJ74",
   "AJ76",
   "AJ92",
+  "Z98",
   "AJ110",
   "AJ126",
   "AJ128",
@@ -4230,7 +4231,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT600: losses brought forward = CT losses brought forward", num(ct600.Z72), num(corporationTax.K26));
     check("CT600: net trading profits = trading profits - losses brought forward", num(ct600.AJ74), num(ct600.Z70) - num(ct600.Z72));
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
-    check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
+    // Box 235 is box 165 plus box 170 whatever box 165 is (HMRC rule 9332),
+    // so a year with no trading profit and interest still states the interest.
+    check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), onTheForm(num(ct600.AJ74)) + num(ct600.AJ76));
     check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), onTheForm(num(corporationTax.K28)));
     // The form sets out two financial year rows, boxes 43 to 46 and boxes 53
     // to 56, one for each financial year the accounting period falls in.

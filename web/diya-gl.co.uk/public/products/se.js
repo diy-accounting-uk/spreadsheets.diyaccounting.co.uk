@@ -211,41 +211,6 @@
 
   var ENTITY_PATH_PREFIX = "entityInformation.";
 
-  // The chart a new Self Employed book starts from: one account per profit
-  // and loss row the sales and purchase journals feed, so a blank book
-  // already has somewhere for every kind of entry to post to, plus the two
-  // bank books the package carries. The descriptions are the statement's own
-  // captions.
-  var STANDARD_NEW_BOOK_CHART = {
-    sales: {
-      4000: { accountMainDescription: "Sales Product A" },
-      4001: { accountMainDescription: "Sales Product B" },
-      4002: { accountMainDescription: "Sales Product C" },
-      4003: { accountMainDescription: "Other Income" },
-      4004: { accountMainDescription: "Investment Grants received" },
-      4005: { accountMainDescription: "Bad Debts written off" },
-    },
-    purchases: {
-      5000: { accountMainDescription: "Purchases after stock adjustment" },
-      5001: { accountMainDescription: "Sub contractors" },
-      5002: { accountMainDescription: "Other Direct Cost of Sales" },
-      5101: { accountMainDescription: "Wages and Salaries" },
-      5201: { accountMainDescription: "Premises Rent Rates Power" },
-      5400: { accountMainDescription: "Repairs & Maintenance" },
-      5501: { accountMainDescription: "General Administrative Expenses" },
-      5601: { accountMainDescription: "Motor Expenses" },
-      5600: { accountMainDescription: "Travel Hotel & Subsistence" },
-      5500: { accountMainDescription: "Advertising & Promotion" },
-      5800: { accountMainDescription: "Legal & Professional Fees" },
-      5801: { accountMainDescription: "Other Expenses" },
-      5900: { accountMainDescription: "Fixed asset purchases" },
-    },
-    bank: {
-      1200: { accountMainDescription: "Current account", accountType: "bank" },
-      1220: { accountMainDescription: "Cash account", accountType: "bank" },
-    },
-  };
-
   // ============================== product module readers ==============================
 
   function plainLabel(label) {
@@ -1764,24 +1729,12 @@
   }
 
   function buildNewBook(values, ctx) {
-    var name = values.businessName;
-    return {
-      documentInfo: {
-        entriesType: "journal",
-        language: "en",
-        periodCoveredStart: ctx.period.start,
-        periodCoveredEnd: ctx.period.end,
-        defaultCurrency: "GBP",
-        entriesComment: "New book for " + name,
-      },
-      entityInformation: {
-        "organizationIdentifier": name,
-        "diya-gl:product": SCHEMA_NAME,
-        "diya-gl:vatRegistered": !!values.vatRegistered,
-        "diya-gl:basisOfAccounting": "cash",
-      },
-      accounts: JSON.parse(JSON.stringify(STANDARD_NEW_BOOK_CHART)),
-    };
+    return ctx.engine.buildNewBook({
+      product: PRODUCT_ID,
+      businessName: values.businessName,
+      yearEnd: values.yearEnd,
+      vatRegistered: !!values.vatRegistered,
+    });
   }
 
   global.DiyaGlProducts.se = {
