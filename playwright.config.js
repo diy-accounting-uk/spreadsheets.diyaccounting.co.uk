@@ -41,6 +41,7 @@ export default defineConfig({
         "**/diya-gl-headlines.browser.test.js",
         "**/diya-gl-formats.browser.test.js",
         "**/diya-gl-shell.browser.test.js",
+        "**/diya-gl-submit-handoff.browser.test.js",
         "**/diya-gl-se.browser.test.js",
         "**/diya-gl-se-equivalence.browser.test.js",
         "**/diya-gl-se-formats.browser.test.js",

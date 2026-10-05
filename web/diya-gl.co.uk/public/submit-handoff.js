@@ -66,24 +66,25 @@
 
   // The period ends the book can answer, for the period choice. VAT has no list to offer (any
   // quarter end in the accounting year), so it returns null and the page asks for a date.
-  async function periodChoices(engine, kind, book, lines) {
+  async function periodChoices(engine, kind, book, lines, resources) {
     if (kind === "vat") return null;
     if (kind === "itsa-quarterly") {
-      var quarterly = await engine.deriveItsaQuarterlyUpdate(book, lines, {});
+      var quarterly = await engine.deriveItsaQuarterlyUpdate(book, lines, { resources: resources });
       return quarterly.periods.map(function (period) {
         return { value: period.periodDates.periodEndDate, label: "Period ending " + period.periodDates.periodEndDate };
       });
     }
-    var annual = await engine.deriveItsaAnnualSubmission(book, lines, {});
+    var annual = await engine.deriveItsaAnnualSubmission(book, lines, { resources: resources });
     return [{ value: annual.taxYear, label: "Tax year " + annual.taxYear }];
   }
 
+  // resources is the loader the engine reads tax data through; omitted under Node.
   // The handoff object for one kind and one period choice (VAT: the period end date; quarterly:
   // the period end date; annual: the tax year).
-  async function buildHandoff(engine, kind, book, lines, choice, source) {
+  async function buildHandoff(engine, kind, book, lines, choice, source, resources) {
     var head = { kind: kind, sourceFileName: source.sourceFileName, packageVersion: source.packageVersion };
     if (kind === "vat") {
-      var vat = await engine.deriveVatReturn(book, lines, { periodEnd: choice });
+      var vat = await engine.deriveVatReturn(book, lines, { periodEnd: choice, resources: resources });
       var boxes = {};
       VAT_BOX_IDS.forEach(function (id) {
         boxes[id] = vat.hmrc[id];
@@ -94,7 +95,7 @@
       });
     }
     if (kind === "itsa-quarterly") {
-      var derived = await engine.deriveItsaQuarterlyUpdate(book, lines, { periodEndDate: choice });
+      var derived = await engine.deriveItsaQuarterlyUpdate(book, lines, { periodEndDate: choice, resources: resources });
       var period = derived.periods[0];
       return Object.assign(head, {
         period: {
@@ -110,7 +111,7 @@
       });
     }
     if (kind === "itsa-annual") {
-      var annual = await engine.deriveItsaAnnualSubmission(book, lines, { taxYear: choice });
+      var annual = await engine.deriveItsaAnnualSubmission(book, lines, { taxYear: choice, resources: resources });
       var allowances = numbersOnly(annual.allowances, "the allowance");
       var adjustments = numbersOnly(annual.adjustments, "the adjustment");
       if (Object.keys(allowances).length === 0 && Object.keys(adjustments).length === 0) {

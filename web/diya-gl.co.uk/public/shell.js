@@ -3277,6 +3277,16 @@
       message.textContent = text;
     }
 
+    var resourcesPromise = null;
+    function loadEngine() {
+      if (!resourcesPromise) {
+        resourcesPromise = Promise.all([import("./engine/diya-gl-engine.js"), import("./bundle-resources.js")]).then(function (modules) {
+          return { engine: modules[0], resources: modules[1].browserResourceLoader() };
+        });
+      }
+      return resourcesPromise;
+    }
+
     function refreshPeriod() {
       var kind = kindSelect.value;
       say("");
@@ -3286,9 +3296,9 @@
       periodLabel.textContent = kind === "vat" ? "VAT period end date" : kind === "itsa-annual" ? "Tax year" : "Period";
       periodLabel.setAttribute("for", kind === "vat" ? "submit-handoff-period-date" : "submit-handoff-period");
       go.disabled = true;
-      return import("./engine/diya-gl-engine.js")
-        .then(function (engine) {
-          return handoff.periodChoices(engine, kind, current.book, current.lines);
+      return loadEngine()
+        .then(function (loaded) {
+          return handoff.periodChoices(loaded.engine, kind, current.book, current.lines, loaded.resources);
         })
         .then(function (choices) {
           if (kindSelect.value !== kind) return;
@@ -3319,13 +3329,21 @@
         return;
       }
       go.disabled = true;
-      import("./engine/diya-gl-engine.js")
-        .then(function (engine) {
+      loadEngine()
+        .then(function (loaded) {
           return handoff
-            .buildHandoff(engine, kind, current.book, current.lines, choice, {
-              sourceFileName: loadedSourceName || (active && active.title ? active.title + " book" : "DIYA-GL book"),
-              packageVersion: engine.PROVENANCE_DATA.engineVersion,
-            })
+            .buildHandoff(
+              loaded.engine,
+              kind,
+              current.book,
+              current.lines,
+              choice,
+              {
+                sourceFileName: loadedSourceName || (active && active.title ? active.title + " book" : "DIYA-GL book"),
+                packageVersion: loaded.engine.PROVENANCE_DATA.engineVersion,
+              },
+              loaded.resources,
+            )
             .then(function (built) {
               var url = handoff.submitUrl(config.submitOrigin, kind, handoff.encodeFragment(built));
               window.open(url, "_blank", "noopener");

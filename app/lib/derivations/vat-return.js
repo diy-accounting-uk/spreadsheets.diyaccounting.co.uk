@@ -141,12 +141,12 @@ function reconcile(label, attributed, engine) {
  * @param {Object} book - parsed book.toml
  * @param {Array} lines - parsed lines.jsonl entries
  * @param {{periodEnd: string, periodStart?: string, periodKey?: string}} params - periodEnd is the
- *   obligation's period end (YYYY-MM-DD); periodStart, when given, must open that quarter; periodKey is
+ *   obligation's period end (YYYY-MM-DD); resources is the loader the tax data reads through (defaults to reading app/); periodStart, when given, must open that quarter; periodKey is
  *   echoed back untouched
  * @returns {Promise<Object>} { vatRegistrationNumber, periodKey, periodStart, periodEnd, dueDate, scheme,
  *   months, boxes, hmrc, lines, notes }
  */
-export async function deriveVatReturn(book, lines, { periodEnd, periodStart, periodKey } = {}) {
+export async function deriveVatReturn(book, lines, { periodEnd, periodStart, periodKey, resources } = {}) {
   if (!book || !lines) throw new Error("deriveVatReturn requires a book and its lines");
   if (!periodEnd) throw new Error("deriveVatReturn requires periodEnd (the obligation's period end, YYYY-MM-DD)");
   const entity = book.entityInformation ?? {};
@@ -157,7 +157,7 @@ export async function deriveVatReturn(book, lines, { periodEnd, periodStart, per
   }
 
   const product = productOf(book);
-  const taxData = await loadTaxDataForBook(book);
+  const taxData = await loadTaxDataForBook(book, { resources });
   const results = calculateFromDiyaGl(book, lines, product, taxData, diyaGlToScenario(book, lines, product));
   const rows = interfaceRows(results);
   const wantedEnd = isoDate(periodEnd);

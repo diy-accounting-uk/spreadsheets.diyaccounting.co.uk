@@ -49,8 +49,8 @@ function taxYearFileNameFor(label) {
   return `se-${start}-${end}`;
 }
 
-async function taxDataFor(book, taxYear) {
-  const options = taxYear ? { taxYearName: taxYearFileNameFor(taxYear) } : {};
+async function taxDataFor(book, taxYear, resources) {
+  const options = taxYear ? { taxYearName: taxYearFileNameFor(taxYear), resources } : { resources };
   const taxData = await loadTaxDataForBook(book, options);
   const label = taxData?.tax_year?.label;
   if (!label) throw new Error("the tax year file declares no tax_year.label");
@@ -153,13 +153,13 @@ function periodLabel(period) {
  * @param {Object} book - parsed book.toml
  * @param {Array} lines - parsed lines.jsonl entries
  * @param {{periodEndDate?: string, quarterlyPeriodType?: "standard"|"calendar", taxYear?: string}} [params] -
- *   quarterlyPeriodType defaults to standard (6 April quarters); taxYear (as 2025-26) overrides the year the
+ *   resources is the loader the tax data reads through (defaults to reading app/); quarterlyPeriodType defaults to standard (6 April quarters); taxYear (as 2025-26) overrides the year the
  *   book's dates imply
  * @returns {Promise<Object>} { taxYear, shape, quarterlyPeriodType, fieldSlots, periods, warnings }
  */
-export async function deriveItsaQuarterlyUpdate(book, lines, { periodEndDate, quarterlyPeriodType, taxYear } = {}) {
+export async function deriveItsaQuarterlyUpdate(book, lines, { periodEndDate, quarterlyPeriodType, taxYear, resources } = {}) {
   requireSelfEmployedBook(book, lines, "deriveItsaQuarterlyUpdate");
-  const taxData = await taxDataFor(book, taxYear);
+  const taxData = await taxDataFor(book, taxYear, resources);
   const label = taxData.tax_year.label;
   const shape = loadMapping().api.years[label].quarterly;
   const periodType = quarterlyPeriodType || "standard";
@@ -217,9 +217,9 @@ export async function deriveItsaQuarterlyUpdate(book, lines, { periodEndDate, qu
  * @param {{taxYear?: string}} [params] - taxYear (as 2025-26) overrides the year the book's dates imply
  * @returns {Promise<Object>} { taxYear, fieldSlots, allowances, adjustments, omitted, warnings }
  */
-export async function deriveItsaAnnualSubmission(book, lines, { taxYear } = {}) {
+export async function deriveItsaAnnualSubmission(book, lines, { taxYear, resources } = {}) {
   requireSelfEmployedBook(book, lines, "deriveItsaAnnualSubmission");
-  const taxData = await taxDataFor(book, taxYear);
+  const taxData = await taxDataFor(book, taxYear, resources);
   const label = taxData.tax_year.label;
   const slots = annualFieldSlotsForTaxYear(label);
 

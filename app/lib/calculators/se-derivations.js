@@ -12,9 +12,7 @@
 // this module never restates a box's API field name in code, so a mapping
 // correction there reaches both derivations with no code change.
 
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import mapping from "../../data/hmrc/sa103-mtd-mapping.json" with { type: "json" };
 import { diyaGlToScenario } from "../diya-gl-loader.js";
 import { calculateSeCells } from "./se.js";
 import { SE_YEAR_END_MONTH, SBA_CLAIM_ROWS } from "../../products/se.js";
@@ -22,17 +20,8 @@ import { extractTaxYearStart, parseDate } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
 import { splitVat } from "../tax/vat.js";
 
-let cachedMapping = null;
-
-// Resolved on first use, not at import: the engine bundle loads in the browser,
-// where import.meta.url is an http URL and fileURLToPath throws.
 export function loadMapping() {
-  if (!cachedMapping) {
-    const here = dirname(fileURLToPath(import.meta.url));
-    const mappingPath = resolve(here, "..", "..", "data", "hmrc", "sa103-mtd-mapping.json");
-    cachedMapping = JSON.parse(readFileSync(mappingPath, "utf8"));
-  }
-  return cachedMapping;
+  return mapping;
 }
 
 function sa103fBoxes() {
