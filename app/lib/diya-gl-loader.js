@@ -32,6 +32,7 @@ import {
   splitStraddlingLines,
   deriveStraddlingEntries,
   signedAmount,
+  writtenOffBadDebtsNet,
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
@@ -421,6 +422,7 @@ export function diyaGlToScenario(book, lines, product) {
     const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, FIXTURE_CAR_MILEAGE_RATES) : 0;
     expected.total_motor_net = Math.round(cashMotor / vatDivisor + mileageClaim);
     expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
+    expected.total_bad_debts_net = writtenOffBadDebtsNet(salesLines, vatDivisor);
     if (product === "ltd") {
       expected.total_premises_net = Math.round((byCode.r || 0) / vatDivisor);
     }

@@ -95,12 +95,12 @@ describe("signedAmount", () => {
     );
   });
 
-  it("leaves a bad-debt write-off (4005) unnegated -- its P&L row already carries the sign", () => {
-    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4005", amount: 360, documentType: "credit-note" })).toBe(360);
+  it("negates a bad debt written off (4005), which the templates book as a negative sale", () => {
+    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4005", amount: 360, documentType: "credit-note" })).toBe(-360);
   });
 
-  it("leaves a fixed-asset disposal (4006) unnegated -- its own schedule carries the sign", () => {
-    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4006", amount: 500, documentType: "credit-note" })).toBe(500);
+  it("negates a credit note against a fixed-asset disposal (4006)", () => {
+    expect(signedAmount({ sourceJournalID: "sales", accountMainID: "4006", amount: 500, documentType: "credit-note" })).toBe(-500);
   });
 });
 
@@ -318,7 +318,7 @@ describe("buildGrouped", () => {
     expect(sales.may[0].amount).toBe(-1000);
   });
 
-  it("leaves a bad-debt write-off's amount unnegated -- the sales code 'o' formula already subtracts it", () => {
+  it("writes a bad debt written off as a negative sale under code 'o'", () => {
     const lines = [
       {
         sourceJournalID: "sales",
@@ -330,7 +330,7 @@ describe("buildGrouped", () => {
       },
     ];
     const { sales } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
-    expect(sales.apr[0].amount).toBe(360);
+    expect(sales.apr[0].amount).toBe(-360);
     expect(sales.apr[0].code).toBe("o");
   });
 

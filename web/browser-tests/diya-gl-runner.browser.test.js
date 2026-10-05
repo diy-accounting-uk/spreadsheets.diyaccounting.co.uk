@@ -62,7 +62,7 @@ test.describe("the DIYA-GL runner — opened from disk, no server", () => {
     // The headline strip carries the example's own turnover figure, read
     // from the calculated report rather than a hand-typed cell -- a real
     // number, not a placeholder or a blank field.
-    await expect(page.locator(".headlines-strip")).toContainText("£409,900.00");
+    await expect(page.locator(".headlines-strip")).toContainText("£409,180.00");
 
     await page.click("#save-btn");
     await page.click("#save-menu >> text=Download books as diya-gl (.zip)");

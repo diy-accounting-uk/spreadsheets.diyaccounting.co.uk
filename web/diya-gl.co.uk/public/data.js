@@ -185,8 +185,10 @@
       // the workbook -- the money simply goes nowhere. It still belongs in
       // the month's entries so the reader can see it and fix it, marked for
       // what it is, and left out of the month's own figures.
+      // A credit note reverses its sale or purchase, a bad debt written off
+      // among them, so it comes off the month's figure.
       var posted = placed.key !== null;
-      if (posted) monthly[monthKey][placed.key] += line.amount;
+      if (posted) monthly[monthKey][placed.key] += line.documentType === "credit-note" ? -line.amount : line.amount;
       entries[monthKey][placed.journal].push(entryOf(line, posted, addressable));
     }
 

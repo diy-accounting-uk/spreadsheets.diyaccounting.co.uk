@@ -11,7 +11,7 @@
 import { calculateFromDiyaGl } from "../diya-gl-calculator.js";
 import { diyaGlToScenario } from "../diya-gl-loader.js";
 import { loadTaxDataForBook, productOf } from "../product-workbook.js";
-import { isStraddlingLine, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../scenario-extractor.js";
+import { isStraddlingLine, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, signedAmount } from "../scenario-extractor.js";
 import { dateFromExcelSerial } from "../calculators/shared.js";
 import { VAT_RATE } from "../calculators/ltd.js";
 import { splitVat, VATINTERFACE_FIRST_MONTH_ROW, VATINTERFACE_FIRST_ROW, VATINTERFACE_LAST_ROW } from "../tax/vat.js";
@@ -92,7 +92,8 @@ export function interfaceRows(results) {
 }
 
 function lineContribution(line, box) {
-  const { vat, net } = splitGross(line.amount);
+  const gross = signedAmount(line);
+  const { vat, net } = splitGross(gross);
   return {
     entryNumber: line.entryNumber,
     lineNumber: line.lineNumber ?? null,
@@ -100,7 +101,7 @@ function lineContribution(line, box) {
     account: line.accountMainID,
     reference: line.documentReference ?? null,
     counterparty: line.detailComment ?? null,
-    gross: pence(line.amount),
+    gross: pence(gross),
     contributes: pence(box === "vat" ? vat : net),
   };
 }
@@ -122,7 +123,7 @@ function linesForQuarter(lines, quarterRows) {
 }
 
 function sumContributions(lines, part) {
-  return lines.reduce((total, line) => total + splitGross(line.amount)[part], 0);
+  return lines.reduce((total, line) => total + splitGross(signedAmount(line))[part], 0);
 }
 
 function reconcile(label, attributed, engine) {

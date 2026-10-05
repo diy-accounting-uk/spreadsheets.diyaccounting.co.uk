@@ -57,10 +57,10 @@ describe("calculateFromDiyaGl — BST", () => {
 
   // ── P&L checks (compare against committed reconciliation report values) ──
 
-  it("C4: Sales Turnover = 409900", () => {
+  it("C4: Sales Turnover = 409180", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].C4).toBe(409900);
+    expect(results["Profit & Loss Acc"].C4).toBe(409180);
   });
 
   it("C6: Cost of Sales = 10540", () => {
@@ -75,10 +75,10 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Profit & Loss Acc"].C7).toBe(8000);
   });
 
-  it("C9: Gross Profit = 391360", () => {
+  it("C9: Gross Profit = 390640", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].C9).toBe(391360);
+    expect(results["Profit & Loss Acc"].C9).toBe(390640);
   });
 
   it("C12: Premises = 15840", () => {
@@ -105,18 +105,18 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Profit & Loss Acc"].C22).toBe(125852);
   });
 
-  it("C24: Net Profit = 265508", () => {
+  it("C24: Net Profit = 264788", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].C24).toBe(265508);
+    expect(results["Profit & Loss Acc"].C24).toBe(264788);
   });
 
   // Net profit less the 39,000 of Annual Investment Allowance the fixture's
   // three fixed asset additions claim in full.
-  it("C28: Taxable Profit = 226508 (net profit less capital allowances)", () => {
+  it("C28: Taxable Profit = 225788 (net profit less capital allowances)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].C28).toBe(226508);
+    expect(results["Profit & Loss Acc"].C28).toBe(225788);
   });
 
   // ── Monthly sales ──
@@ -127,10 +127,10 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Profit & Loss Acc"].D4).toBe(33400);
   });
 
-  it("O4: Mar sales = 31360", () => {
+  it("O4: Mar sales = 30640", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Profit & Loss Acc"].O4).toBe(31360);
+    expect(results["Profit & Loss Acc"].O4).toBe(30640);
   });
 
   // ── Income Tax checks ──
@@ -139,24 +139,24 @@ describe("calculateFromDiyaGl — BST", () => {
   // not the P&L's own C28 directly, though the two agree once the boxes
   // only the SA103S carries (other business income, loss brought forward)
   // are nil.
-  it("E5: Profit from SE = 226508 (SE Short D106)", () => {
+  it("E5: Profit from SE = 225788 (SE Short D106)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Income Tax"].E5).toBe(226508);
+    expect(results["Income Tax"].E5).toBe(225788);
   });
 
-  // 226,508 of profit loses the whole allowance to the taper, so the charge is
-  // 37,700 at 20%, 87,440 at 40% and 101,368 at 45%.
-  it("E11: Total Income Tax = 88131.60", () => {
+  // 225,788 of profit loses the whole allowance to the taper, so the charge is
+  // 37,700 at 20%, 87,440 at 40% and 100,648 at 45%.
+  it("E11: Total Income Tax = 87807.60", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Income Tax"].E11).toBeCloseTo(88131.6, 1);
+    expect(results["Income Tax"].E11).toBeCloseTo(87807.6, 1);
   });
 
-  it("E10: Tax at the additional rate = 45615.60", () => {
+  it("E10: Tax at the additional rate = 45291.60", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Income Tax"].E10).toBeCloseTo(45615.6, 1);
+    expect(results["Income Tax"].E10).toBeCloseTo(45291.6, 1);
   });
 
   it("E15: NI Class 4 lower = 2262", () => {
@@ -165,11 +165,11 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Income Tax"].E15).toBeCloseTo(2262, 0);
   });
 
-  it("E18: Total Tax + NI = 93918.36", () => {
+  it("E18: Total Tax + NI = 93579.96", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    // 88,131.60 of income tax plus 2,262.00 and 3,524.76 of Class 4 NI.
-    expect(results["Income Tax"].E18).toBeCloseTo(93918.36, 1);
+    // 87,807.60 of income tax plus 2,262.00 and 3,510.36 of Class 4 NI.
+    expect(results["Income Tax"].E18).toBeCloseTo(93579.96, 1);
   });
 
   // ── Business Details ──
@@ -280,13 +280,13 @@ describe("calculateFromDiyaGl — SE", () => {
     const pl = seResults()["Profit & Loss Account"];
     // 4,000 of the administrative expenses is the estate car's depreciation
     // and 3,125 the hatchback's.
-    expect(pl.B35).toBeCloseTo(156790.317, 3);
-    expect(pl.B39).toBeCloseTo(164356.35, 2);
+    expect(pl.B35).toBeCloseTo(157390.317, 3);
+    expect(pl.B39).toBeCloseTo(163756.35, 2);
   });
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
-    // 130,552.81 before the book's own SA103F statements: plus 640 own use,
+    // 130,018.81 before the book's own SA103F statements: plus 640 own use,
     // less the 2,500 stated zero-emission car allowance, the Schedule's own
     // Structures and Buildings Allowance (1,800 standard, box 53, plus
     // 1,024.66 Freeport, box 53.1), 350 non-taxable income, the 540 special
@@ -294,16 +294,16 @@ describe("calculateFromDiyaGl — SE", () => {
     // allowance (8,000 at 18% on its 70% business share), plus the 90
     // adjustment for change of accounting practice (box 71) that box 73
     // adds to box 64.
-    expect(results["Income Tax"].E5).toBeCloseTo(124060.15, 2);
+    expect(results["Income Tax"].E5).toBeCloseTo(123526.15, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the bands with the allowance all but tapered away", () => {
     const tax = seResults()["Income Tax"];
-    // Half the 24,060.15 over the taper threshold is 12,030.08, so 539.92
+    // Half the 23,526.15 over the taper threshold is 11,763.08, so 806.92
     // of the 12,570 allowance survives.
-    expect(tax.E6).toBeCloseTo(539.92, 2);
-    expect(tax.E11).toBeCloseTo(41868.09, 2);
+    expect(tax.E6).toBeCloseTo(806.92, 2);
+    expect(tax.E11).toBeCloseTo(41547.69, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 

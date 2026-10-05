@@ -338,7 +338,7 @@ describeCalc(
 
     it("publishes the year-end stock and only the debtors left uncollected", () => {
       expect(results.PubBalSht.E10).toBe(6000);
-      expect(results.PubBalSht.E11).toBe(7900);
+      expect(results.PubBalSht.E11).toBe(7540);
       expect(results.Stock.D6).toBe(10000);
       expect(results.Stock.AB30).toBe(6000);
       // 10,000 opening plus 5,450 of materials bought, less 3% of the 311,600
@@ -387,6 +387,25 @@ describeCalc(
       // Depreciation is one of the admin expense lines and the figure the
       // tax computation adds back, so both of those move with it.
       expect(failureNames(corrupted)).toEqual(["P&L: Admin lines sum = Total", name, "CT: depreciation add-back = P&L depreciation"]);
+    });
+
+    it("books Zeta Corp's 360 bad debt written off (TXN-0705) as a 300 expense on MnthP&L B34", () => {
+      expect(expected.total_bad_debts_net).toBe(300);
+      expect(results["MnthP&L"].B34).toBeCloseTo(300, 2);
+      expect(checks.find((c) => c.name === "Bad Debts written off").pass).toBe(true);
+    });
+
+    it("fails the bad debts check when MnthP&L B34 carries the write-off as income via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B34", -300);
+      expect(value).toBe(-300);
+      const corrupted = checksWithCorruptedCell("MnthP&L", "B34", value);
+      // Bad debts is one of the admin expense lines, so their sum moves with
+      // it, and the sales journal's "o" category nets to the same cell.
+      expect(failureNames(corrupted)).toEqual([
+        "P&L: Admin lines sum = Total",
+        "Bad Debts written off",
+        "Category netting: Bad Debts written off (sales o) net reaches MnthP&L!B34 negated with no residue",
+      ]);
     });
 
     it("fails the bank tie when the current account closing balance is corrupted via JSZip", async () => {
@@ -833,7 +852,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
       expect(ct.K35).toBe(Math.round(statutory * 100) / 100);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - augmented) * (ct.K28 / augmented) * 0.015, 6);
-      expect(ct.K35).toBe(29740.59);
+      expect(ct.K35).toBe(29583.76);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -842,8 +861,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(31104.975416667, 4);
-      expect(ct600.Y133).toBeCloseTo(1364.382511123, 4);
+      expect(ct600.AJ131).toBeCloseTo(30954.975416667, 4);
+      expect(ct600.Y133).toBeCloseTo(1371.215928627, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank
@@ -1055,7 +1074,7 @@ describeCalc(
       expect(netting.rate).toBeGreaterThan(0);
       expect(netting.rows.length).toBeGreaterThan(0);
       for (const row of netting.rows) {
-        expect(row.gross).toBeGreaterThan(0);
+        expect(row.gross).not.toBe(0);
         expect(row.vat).toBeCloseTo(row.gross - row.net, 6);
         expect(row.residue).toBeCloseTo(0, 6);
       }
@@ -1371,16 +1390,16 @@ describeCalc(
       // CIS: 1,600 withheld on the two sub-contractor invoices and all of it
       // remitted under RC by the year end.
       expect(tb.EJ32).toBeCloseTo(0, 2);
-      // VAT: 1,500 brought forward, 70,816.67 of output VAT less 22,557.05 of
+      // VAT: 1,500 brought forward, 70,696.67 of output VAT less 22,557.05 of
       // input, against 40,682.17 paid under RV. What is left is the fourth
       // quarter, still to pay.
-      expect(tb.EJ33).toBeCloseTo(-9077.455, 2);
+      expect(tb.EJ33).toBeCloseTo(-8957.455, 2);
       // PAYE: 20,078.40 deducted by the payroll and the same paid over under
       // RP, month by month.
       expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
-      expect(tb.EJ35).toBeCloseTo(-29676.08, 2);
+      expect(tb.EJ35).toBeCloseTo(-29519.25, 2);
     });
 
     it("writes each CIS certificate into the purchase journal's own column", () => {

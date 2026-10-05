@@ -47,6 +47,18 @@ const VAT_RATE_CELLS = { se: "H2", ltd: "G2" };
  * Build reverse code map: { code → accountMainID }.
  * For codes that map from multiple accounts, uses the first (primary) account.
  */
+// A sales or purchases row entered as a negative amount is a credit note: a
+// refund, a supplier's credit, or a bad debt written off, which the writer
+// puts on the sheet as a negative sale. The schema keeps a line's amount at
+// zero or more and says which way it points through documentType.
+function asCreditNoteWhenNegative(line) {
+  if (line.amount < 0) {
+    line.amount = -line.amount;
+    line.documentType = "credit-note";
+  }
+  return line;
+}
+
 export function buildReverseCodeMap(forwardMap) {
   const reverse = {};
   for (const [acctId, code] of Object.entries(forwardMap)) {
@@ -283,7 +295,7 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
 
   const regionsFor = (journal) => BST_TRANSACTION_REGIONS.filter((region) => region.sourceJournalID === journal);
   const push = (line, region, row) => {
-    lines.push(line);
+    lines.push(asCreditNoteWhenNegative(line));
     if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1);
   };
 
@@ -757,7 +769,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
       }
       const cisSuffered = numberAt(xml, `${salesCisColumn}${row}`, salesStrings);
       if (cisSuffered) line["diya-gl:cisDeduction"] = cisSuffered;
-      lines.push(line);
+      lines.push(asCreditNoteWhenNegative(line));
       if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Sales.xlsx");
     }
   }
@@ -830,7 +842,7 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
       if (description) line.lineItemComment = description;
       const cisWithheld = numberAt(xml, `${purchasesCisColumn}${row}`, purchasesStrings);
       if (cisWithheld) line["diya-gl:cisDeduction"] = cisWithheld;
-      lines.push(line);
+      lines.push(asCreditNoteWhenNegative(line));
       if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1, "Purchases.xlsx");
     }
   }

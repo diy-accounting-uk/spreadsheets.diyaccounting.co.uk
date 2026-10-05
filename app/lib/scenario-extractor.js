@@ -364,9 +364,12 @@ function byPostingDate(a, b) {
  * Receipts settle the oldest invoice first. One that names a customer with an
  * invoice open settles that customer's own oldest invoice; the aggregate
  * banking runs, which name no single customer, settle the oldest invoice on
- * the book. Whatever survives every receipt is the closing debtors listing,
- * so the listing cannot drift away from the ledger the balance sheet
- * publishes.
+ * the book. A credit note (a refund given or a bad debt written off) names
+ * its customer and never reaches the bank, so it clears that customer's
+ * oldest open invoice before any receipt is applied; an aggregate banking run
+ * cannot take the invoice a write-off was raised against. Whatever survives
+ * is the closing debtors listing, so the listing cannot drift away from the
+ * ledger the balance sheet publishes.
  *
  * @param {Array} lines - parsed lines.jsonl entries (any journal)
  * @param {Array} openingDebtors - invoices brought forward, oldest first
@@ -374,18 +377,21 @@ function byPostingDate(a, b) {
  */
 export function buildClosingDebtors(lines, openingDebtors) {
   const invoices = openingDebtors.map((d) => ({ customer: d.customer, invoice: d.invoice, outstanding: d.amount }));
-  for (const line of lines.filter((l) => l.sourceJournalID === "sales").sort(byPostingDate)) {
+  const salesLines = lines.filter((l) => l.sourceJournalID === "sales").sort(byPostingDate);
+  for (const line of salesLines.filter((l) => l.documentType !== "credit-note")) {
     invoices.push({ customer: line.detailComment, invoice: line.documentReference, outstanding: line.amount });
   }
 
   const customersInvoiced = new Set(invoices.map((invoice) => invoice.customer));
+  const creditNotes = salesLines.filter((l) => l.documentType === "credit-note");
   const receipts = lines
     .filter((l) => l.sourceJournalID === "bank" && l["diya-gl:bankCode"] === DEBTOR_RECEIPT_CODE && l.debitCreditCode === "D")
     .sort(byPostingDate);
 
-  for (const receipt of receipts) {
-    const payer = customersInvoiced.has(receipt.detailComment) ? receipt.detailComment : null;
-    let unapplied = receipt.amount;
+  for (const settlement of [...creditNotes, ...receipts]) {
+    const creditNote = settlement.sourceJournalID === "sales";
+    const payer = creditNote || customersInvoiced.has(settlement.detailComment) ? settlement.detailComment : null;
+    let unapplied = settlement.amount;
     for (const invoice of invoices) {
       if (unapplied <= 0) break;
       if (invoice.outstanding <= 0) continue;
@@ -395,8 +401,10 @@ export function buildClosingDebtors(lines, openingDebtors) {
       unapplied -= settled;
     }
     if (unapplied > 0.005) {
+      const what = creditNote ? "Credit note" : "Bank receipt";
+      const verb = creditNote ? "credits" : "banks";
       throw new Error(
-        `Bank receipt ${receipt.entryNumber} banks ${receipt.amount} from ${receipt.detailComment}, ${unapplied} of it against no open invoice`,
+        `${what} ${settlement.entryNumber} ${verb} ${settlement.amount} from ${settlement.detailComment}, ${unapplied} of it against no open invoice`,
       );
     }
   }
@@ -526,23 +534,31 @@ export function tomlLocalDate(value) {
   return value instanceof Date ? value.toISOString().slice(0, 10) : value;
 }
 
-// Bad debts written off (4005, sales code "o") and fixed-asset disposals
-// (4006, code "fs") already carry their own sign in the sales code's own
-// P&L formula (see LTD_SALES_CODE_MAP and the "o"/"fs" rows CONTEXT_SELF_
-// EMPLOYED.md and CONTEXT_LIMITED_COMPANY.md describe), so negating a
-// credit note against either account here would flip an already-correct
-// figure a second time.
-const SALES_ACCOUNTS_WITH_OWN_SIGN = new Set(["4005", "4006"]);
-
 // A credit note reverses part of the sale or purchase it names. The schema
 // fixes a line's amount at zero or more -- only documentType says which way
 // it points -- so every total that sums a sales or purchases line's amount
 // reads this instead of the raw field, or a refund inflates turnover (and a
-// supplier's credit inflates spend) instead of reducing it.
+// supplier's credit inflates spend) instead of reducing it. A bad debt
+// written off (4005) is a credit note too, and every template books it as a
+// negative sale: the Limited Company and Self Employed P&L rows read the
+// sales tabs' "Bad Debts written off" column negated (Ltd TrialBalance row
+// 81 = -Sales!T1, SE Profit & Loss row 29 = -Sales!U1), and the Basic Sole
+// Trader's one gross sales column feeds turnover. Only a negative entry
+// raises the expense, lowers trade debtors and lowers turnover.
 export function signedAmount(line) {
-  if (line.documentType !== "credit-note") return line.amount;
-  if (line.sourceJournalID === "sales" && SALES_ACCOUNTS_WITH_OWN_SIGN.has(String(line.accountMainID))) return line.amount;
-  return -line.amount;
+  return line.documentType === "credit-note" ? -line.amount : line.amount;
+}
+
+// The bad debts written off expense a book's sales journal implies, net of
+// the sheet's VAT divisor: every credit note on 4005 is a debt written off,
+// so its stated amount is the expense. It reads the line's own amount, not
+// signedAmount(), so a check holding the P&L's bad debts row to it is
+// anchored to the book and fails whichever way the sign goes wrong.
+export function writtenOffBadDebtsNet(salesLines, vatDivisor) {
+  const writtenOff = salesLines
+    .filter((line) => String(line.accountMainID) === "4005" && line.documentType === "credit-note")
+    .reduce((sum, line) => sum + line.amount, 0);
+  return Math.round(writtenOff / vatDivisor);
 }
 
 export function computeNetSales(salesLines) {
@@ -1407,6 +1423,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
+  if (expected.total_bad_debts_net !== undefined) parts.push(`total_bad_debts_net = ${expected.total_bad_debts_net}`);
   if (expected.vat_output_total !== undefined) parts.push(`vat_output_total = ${expected.vat_output_total}`);
   if (expected.vat_input_total !== undefined) parts.push(`vat_input_total = ${expected.vat_input_total}`);
   if (expected.fixed_asset_additions?.length) {

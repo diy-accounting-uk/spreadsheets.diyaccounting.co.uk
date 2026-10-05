@@ -222,6 +222,12 @@ amount = 2400.00
 timing = "opening"
 
 [[debtors]]
+counterparty = "Zeta Corp"
+invoice = "INV-0904"
+amount = 360.00
+timing = "opening"
+
+[[debtors]]
 counterparty = "Acme Corp"
 invoice = "INV-1012"
 amount = 6100.00
@@ -231,12 +237,6 @@ timing = "closing"
 counterparty = "WidgetWorks"
 invoice = "INV-2104"
 amount = 1440.00
-timing = "closing"
-
-[[debtors]]
-counterparty = "Zeta Corp"
-invoice = "CN-1801"
-amount = 360.00
 timing = "closing"
 
 [[creditors]]

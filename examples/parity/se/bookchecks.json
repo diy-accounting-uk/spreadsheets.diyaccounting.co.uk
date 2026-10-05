@@ -146,9 +146,9 @@
   {
     "id": "book-vat-threshold",
     "tier": "warning",
-    "label": "Turnover for the year is £354,083.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
+    "label": "Turnover for the year is £353,483.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
     "result": "pass",
-    "actual": 354083.3333333333,
+    "actual": 353483.3333333333,
     "consequence": null,
     "offenders": []
   }

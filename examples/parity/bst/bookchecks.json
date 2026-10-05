@@ -74,9 +74,9 @@
   {
     "id": "book-vat-threshold",
     "tier": "warning",
-    "label": "Turnover for the year is £409,900.00, against a £90,000.00 VAT registration threshold.",
+    "label": "Turnover for the year is £409,180.00, against a £90,000.00 VAT registration threshold.",
     "result": "warn",
-    "actual": 409900,
+    "actual": 409180,
     "consequence": "Once a business's turnover passes the VAT registration threshold, it must register for VAT with HMRC within 30 days.",
     "offenders": []
   }

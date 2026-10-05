@@ -85,7 +85,7 @@ describe("the three Self Employed example books", () => {
 
     expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
     expect(resultFor(results, "book-vat-threshold").label).toBe(
-      "Turnover for the year is £354,083.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
+      "Turnover for the year is £353,483.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
     );
   });
 });

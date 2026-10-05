@@ -2550,6 +2550,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
   if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
   if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
+  if (expected.total_bad_debts_net) check("Bad Debts written off", pl.B34 || 0, expected.total_bad_debts_net);
 
   // Stock and debtors on the published balance sheet. Both are derived: stock
   // comes from the physical count against the calculated value, debtors from

@@ -2522,6 +2522,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
   if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
+  if (expected.total_bad_debts_net) check("Bad Debts written off", pl.B29 || 0, expected.total_bad_debts_net);
 
   // The mileage route. A mileage-log entry buys nothing: it states the miles
   // and the sheet prices them. Each Purchases month tab pools its own column

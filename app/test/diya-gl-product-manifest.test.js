@@ -13,7 +13,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { loadDiyaGlData, diyaGlToScenario, resolveBstPurchaseCodeMap } from "../lib/diya-gl-loader.js";
-import { BST_SALES_ACCOUNTS } from "../lib/scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, signedAmount } from "../lib/scenario-extractor.js";
 import { calculateBstResults } from "../lib/calculators/bst.js";
 import * as bst from "../products/bst.js";
 
@@ -104,7 +104,7 @@ describe.each(BOOKS)("classify() sums to the engine's own annual cells — $name
   row.capex = 0;
   for (const line of fixture.lines) {
     const placed = manifest.months.classify(line, fixture.book, ctx);
-    if (placed.key !== null) row[placed.key] += line.amount;
+    if (placed.key !== null) row[placed.key] += signedAmount(line);
   }
   manifest.months.closeYear(row, fixture.book);
   manifest.months.derive(row, null, ctx);

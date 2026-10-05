@@ -62,6 +62,7 @@ import {
   bstExpectedFigures,
   computeNetSales,
   computeSpreadsheetNetSales,
+  writtenOffBadDebtsNet,
   splitStraddlingLines,
   deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
@@ -644,6 +645,7 @@ const advToml = formatScenarioToml(
     total_mileage: advBusinessMiles,
     total_motor_net: Math.round((advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, FIXTURE_CAR_MILEAGE_RATES)) * 100) / 100,
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
+    total_bad_debts_net: writtenOffBadDebtsNet(advSalesLines, 1.2),
     disallowable: SE_ADVANCED_DISALLOWABLE,
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,
     annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
@@ -786,6 +788,7 @@ const fullToml = formatScenarioToml(
     total_sales: fullTotalSales,
     total_premises_net: Math.round((fullByCode.r || 0) / 1.2),
     total_legal_net: Math.round((fullByCode.l || 0) / 1.2),
+    total_bad_debts_net: writtenOffBadDebtsNet(fullSalesLines, 1.2),
     opening_balance: fullOpeningBalance,
     opening_stock: 10000,
     closing_stock: 6000,
