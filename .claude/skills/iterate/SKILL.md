@@ -37,7 +37,7 @@ active` line carrying a `https://claude.ai/code/session_…` URL means the sessi
    session is connected, print `/rc` once for the operator; it is their command, not the session's.
    The `/config` toggle "Enable Remote Control for all sessions" (user settings; a `true` in a
    project's `.claude/settings.local.json` is ignored) connects every new session on its own.
-2. **SSO.** `aws --profile spreadsheets sts get-caller-identity`. If it fails, print
+2. **SSO.** `aws --profile diya-spreadsheets sts get-caller-identity`. If it fails, print
    `aws sso login --sso-session diyaccounting` and wait; the window it opens (8 to 12 hours) is the
    budget every wave is sized to. Note the login time; read every AWS fact a cycle needs while the
    token is fresh, and when a render finds it expired, say so on the prod line and print the login

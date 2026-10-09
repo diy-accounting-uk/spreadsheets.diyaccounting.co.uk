@@ -98,7 +98,7 @@
     "update-to-greatest": "npx npm-check-updates --upgrade --enginesNode --target greatest --verbose --install always --reject 'alpha'",
     "update:java": "./scripts/update-java.sh",
     "update:node": "npm run update-to-latest",
-    "resources:spreadsheets": "node scripts/generate-aws-resources.js --profile spreadsheets"
+    "resources:spreadsheets": "node scripts/generate-aws-resources.js --profile diya-spreadsheets"
   },
   "devDependencies": {
     "@axe-core/cli": "^4.13.0",

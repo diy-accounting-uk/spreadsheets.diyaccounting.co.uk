@@ -6,7 +6,7 @@
  * Generate AWS Resources Report
  *
  * Catalogues AWS resources in the spreadsheets account from live AWS data.
- * Requires AWS SSO authentication with the spreadsheets profile.
+ * Requires AWS SSO authentication with the diya-spreadsheets profile.
  *
  * Usage:
  *   node scripts/generate-aws-resources.js [--profile PROFILE] [--output FILE]
@@ -31,7 +31,7 @@ const getArg = (name, defaultValue) => {
   return defaultValue;
 };
 
-const profile = getArg("--profile", "spreadsheets");
+const profile = getArg("--profile", "diya-spreadsheets");
 const outputFile = getArg("--output", "AWS_RESOURCES.md");
 
 function aws(command) {
@@ -164,7 +164,9 @@ function generateReport(accountId, data) {
 
   const stackLogGroups = data.logGroups.filter((g) => g.includes("spreadsheets") || g.includes("distribution"));
 
-  let md = `# AWS Resources — Spreadsheets Account (${accountId})
+  let md = `<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
+# AWS Resources — Spreadsheets Account (${accountId})
 
 ## Managed by This Repo (per environment)
 

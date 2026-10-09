@@ -228,9 +228,9 @@ per-deployment sets. `deploy.yml` deploys `prod` on every push to `main` and dai
 07:17 UTC, and `ci` on every push to another branch; `deploy-holding.yml` swaps the
 domains between the site and the holding page. Run:
 
-- `aws --profile spreadsheets --region us-east-1 cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE ROLLBACK_COMPLETE CREATE_FAILED UPDATE_FAILED --query "StackSummaries[].[StackName,StackStatus,LastUpdatedTime]" --output text`
-- `aws --profile spreadsheets --region us-east-1 ssm get-parameter --name /spreadsheets/<env>/last-known-good-deployment --query Parameter.Value --output text` for `ci` and `prod`: the commit the last green deploy wrote.
-- `aws --profile spreadsheets cloudfront list-distributions --query "DistributionList.Items[].[Id,Aliases.Items|join(',',@)]" --output text`: which distribution carries the apex says whether the site or the holding page is live.
+- `aws --profile diya-spreadsheets --region us-east-1 cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE ROLLBACK_COMPLETE CREATE_FAILED UPDATE_FAILED --query "StackSummaries[].[StackName,StackStatus,LastUpdatedTime]" --output text`
+- `aws --profile diya-spreadsheets --region us-east-1 ssm get-parameter --name /spreadsheets/<env>/last-known-good-deployment --query Parameter.Value --output text` for `ci` and `prod`: the commit the last green deploy wrote.
+- `aws --profile diya-spreadsheets cloudfront list-distributions --query "DistributionList.Items[].[Id,Aliases.Items|join(',',@)]" --output text`: which distribution carries the apex says whether the site or the holding page is live.
 - `gh run list --workflow deploy.yml --limit 5 --json status,conclusion,headBranch,createdAt`: the last deploy runs.
 
 | Env | Stack | Status | Updated (UTC) | Live commit | Serving | Follow-up |

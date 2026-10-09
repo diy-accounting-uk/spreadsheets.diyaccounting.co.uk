@@ -267,8 +267,8 @@ Use SSO profiles:
 
 ```bash
 aws sso login --sso-session diyaccounting
-aws --profile spreadsheets cloudformation describe-stacks --region us-east-1
-aws --profile spreadsheets cloudfront list-distributions
+aws --profile diya-spreadsheets cloudformation describe-stacks --region us-east-1
+aws --profile diya-spreadsheets cloudfront list-distributions
 ```
 
 **Read-only AWS operations are always permitted.** Ask before any write operations.
@@ -433,9 +433,9 @@ Use SSO profiles to access any account. Login once, then use `--profile` on each
 
 ```bash
 aws sso login --sso-session diyaccounting
-aws --profile submit-ci cloudformation describe-stacks --stack-name ci-env-IdentityStack
-aws --profile management route53 list-hosted-zones
-aws --profile gateway cloudfront list-distributions
+aws --profile diya-submit-ci cloudformation describe-stacks --stack-name ci-env-IdentityStack
+aws --profile diya-management route53 list-hosted-zones
+aws --profile diya-gateway cloudfront list-distributions
 ```
 
 SSO credentials last ~8-12 hours. When an AWS command fails with `UnauthorizedSSOTokenError`, ask the user to run `aws sso login --sso-session diyaccounting`.
