@@ -236,10 +236,20 @@ async function diyaGlZipBytes() {
 // against it, and read back what was called. Every route this page never
 // calls (oauth2.googleapis.com, anything under /drive/v3 this file does not
 // implement) simply 404s, the same as a real misrouted call would.
-function createDriveBackend(seedFiles) {
+function createDriveBackend(seedFiles, seedFolderId) {
   const files = (seedFiles || []).map((f) => Object.assign({ revisions: [], trashed: false }, f));
-  const calls = { folderSearches: 0, folderCreates: 0, list: 0, get: [], uploads: [], keepRevision: [], revisionsList: 0, trash: [] };
-  let folderId = null;
+  const calls = {
+    folderSearches: 0,
+    folderCreates: 0,
+    nameSearches: 0,
+    list: 0,
+    get: [],
+    uploads: [],
+    keepRevision: [],
+    revisionsList: 0,
+    trash: [],
+  };
+  let folderId = seedFolderId || null;
   let nextFileId = 1;
   let nextRevisionId = 100;
 
@@ -259,6 +269,16 @@ function createDriveBackend(seedFiles) {
       if (q.indexOf("mimeType='application/vnd.google-apps.folder'") !== -1) {
         calls.folderSearches += 1;
         return json(200, { files: folderId ? [{ id: folderId, name: "DIYA-GL" }] : [] });
+      }
+      const nameMatch = q.match(/^name='((?:[^'\\]|\\.)*)' and '([^']+)' in parents/);
+      if (nameMatch) {
+        const wanted = nameMatch[1].replace(/\\(.)/g, "$1");
+        calls.nameSearches += 1;
+        return json(200, {
+          files: files
+            .filter((f) => !f.trashed && f.name === wanted)
+            .map((f) => ({ id: f.id, name: f.name, headRevisionId: f.headRevisionId })),
+        });
       }
       calls.list += 1;
       return json(200, {
@@ -469,6 +489,37 @@ test.describe("DIYA-GL page — save to Google Drive", () => {
       { product: "bst", outcome: "created" },
       { product: "bst", outcome: "updated" },
     ]);
+  });
+
+  test("a save from a tab with no remembered file id updates the same-named file in the folder", async ({ page }) => {
+    await withTestClientIds(page);
+    await withFakeGoogleIdentity(page);
+    await withDriveToken(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const backend = createDriveBackend(
+      [
+        {
+          id: "file-7",
+          name: "Precision Code Trading 2026-03-31.diya-gl.zip",
+          size: 100,
+          modifiedTime: "2026-03-01T09:00:00.000Z",
+          headRevisionId: "rev-7",
+          appProperties: {},
+        },
+      ],
+      "folder-1",
+    );
+    await page.route(`${GOOGLE_API}/**`, backend.handle);
+
+    await loadExample(page);
+    await clickSaveToDrive(page);
+
+    await expect.poll(() => backend.calls.uploads.length, { timeout: 10_000 }).toBe(1);
+    expect(backend.calls.uploads[0].existingFileId).toBe("file-7");
+    expect(backend.calls.uploads[0].method).toBe("PATCH");
+    expect(backend.calls.folderCreates).toBe(0);
+    expect(backend.files).toHaveLength(1);
   });
 
   test("a moved headRevisionId shows the conflict card and sends no upload", async ({ page }) => {

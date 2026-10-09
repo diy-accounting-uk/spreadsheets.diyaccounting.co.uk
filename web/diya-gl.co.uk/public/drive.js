@@ -352,6 +352,21 @@
       });
   }
 
+  function findFileByName(token, fid, name) {
+    var query = new URLSearchParams({
+      q: "name='" + name.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "' and '" + fid + "' in parents and trashed=false",
+      fields: "files(id,name,headRevisionId)",
+      spaces: "drive",
+    });
+    return driveRequest(token, DRIVE_API + "/files?" + query.toString(), { method: "GET" })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (body) {
+        return (body.files && body.files[0] && body.files[0].id) || null;
+      });
+  }
+
   function createFolder(token) {
     return driveRequest(token, DRIVE_API + "/files", {
       method: "POST",
@@ -463,7 +478,9 @@
         token = tok;
         if (!params.fileId) {
           return ensureFolder(token).then(function (fid) {
-            return uploadFile(token, fid, buildMetadata(params), params.bytes, null);
+            return findFileByName(token, fid, driveFileName(params.title, params.periodEnd)).then(function (sameNameId) {
+              return uploadFile(token, fid, buildMetadata(params), params.bytes, sameNameId);
+            });
           });
         }
         return driveRequest(token, DRIVE_API + "/files/" + params.fileId + "?fields=headRevisionId", { method: "GET" })
