@@ -8,7 +8,7 @@ description: Render the work board — whether cool-down is on and whether a wat
 # board
 
 The board is `../submit.diyaccounting.co.uk/NEXT.md`. This repository's rows are the ones its
-intro line names — CQ-*, LP-*, F-BS2, MK-2 — each a bullet under that file's `## Open items`
+intro line names — the DG* rows — each a bullet under that file's `## Open items`
 (grouped into `## In flight`, `## Machine-only`, `## Machine-ask`, `## Human-driven`,
 `## Blocked`), tagged `**Source**`, `**Owner**`, `**Model**`, `**Size**`. Rendering never
 assembles rows from a plan: read the board fresh every time, refresh each row's state from

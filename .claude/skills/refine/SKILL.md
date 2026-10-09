@@ -8,7 +8,7 @@ description: Refine every open board row that changes this repository, in the ma
 # refine
 
 Four passes over the board's (`../submit.diyaccounting.co.uk/NEXT.md`) rows that change this
-repository — CQ-*, LP-*, F-BS2, MK-2, as its intro line names them — in the main context and with
+repository — the DG* rows, as its intro line names them — in the main context and with
 no sub-agents, then the write-back and `/board`. A sub-agent reads only its brief; every fact it
 would otherwise have to rediscover costs tokens, and every fact it gets wrong costs a redeploy.
 The passes move that discovery into one place, once.

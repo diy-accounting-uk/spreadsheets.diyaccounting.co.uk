@@ -13,7 +13,7 @@ write the code. **Keep the main chat free for chat**: anything long-running goes
 or a background task.
 
 Work the board (`../submit.diyaccounting.co.uk/NEXT.md`) top to bottom, taking the rows that
-change this repository — CQ-*, LP-*, F-BS2, MK-2, as its intro line names them — and are
+change this repository — the DG* rows, as its intro line names them — and are
 unblocked. As an item's blocker clears, promote it to ready and resequence the board. Then keep
 going, top to bottom, until no such row remains or the operator stops you. An approved plan is the
 authorisation: a green suite, a landed wave and a tidy summary are the middle of the work, not the
