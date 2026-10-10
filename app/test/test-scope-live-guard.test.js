@@ -74,4 +74,40 @@ describe("findLiveConflictingProcesses", () => {
         .sort(),
     ).toEqual([501, 502]);
   });
+
+  describe("with repoRoots", () => {
+    const scoped = { ownPid: 900, repoRoots: ["/repo"] };
+
+    it("ignores another project's playwright run and its browser", () => {
+      const ps = [
+        "  PID  PPID COMMAND",
+        "  510     1 node /other/node_modules/.bin/playwright test",
+        "  511   510 /Users/x/Library/Caches/ms-playwright/chromium-1200/chrome-mac/Chromium.app/Contents/MacOS/Chromium --headless",
+      ];
+      expect(findLiveConflictingProcesses(ps, scoped)).toEqual([]);
+    });
+
+    it("finds this repository's playwright run through a worktree path and its browser", () => {
+      const ps = [
+        "  PID  PPID COMMAND",
+        "  512     1 node /repo/.worktrees/x/node_modules/.bin/playwright test",
+        "  513   512 /Users/x/Library/Caches/ms-playwright/chromium-1200/chrome-mac/Chromium.app/Contents/MacOS/Chromium --headless",
+      ];
+      expect(findLiveConflictingProcesses(ps, scoped).map((h) => h.pid)).toEqual([512, 513]);
+    });
+
+    it("finds a vitest run under the repository and ignores one under a sibling path", () => {
+      const ps = [
+        "  PID  PPID COMMAND",
+        "  514     1 node /repo/node_modules/vitest/vitest.mjs run",
+        "  515     1 node /repo-other/node_modules/vitest/vitest.mjs run",
+      ];
+      expect(findLiveConflictingProcesses(ps, scoped).map((h) => h.pid)).toEqual([514]);
+    });
+
+    it("finds a soffice process that names no repository path", () => {
+      const ps = ["  PID  PPID COMMAND", "  516     1 soffice.bin --headless -env:UserInstallation=file:///tmp/profile-1"];
+      expect(findLiveConflictingProcesses(ps, scoped).map((h) => h.pid)).toEqual([516]);
+    });
+  });
 });

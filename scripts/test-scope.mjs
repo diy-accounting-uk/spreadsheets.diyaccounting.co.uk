@@ -16,10 +16,14 @@
 //   npm test -- --code-tree-hash --rev X  print the same key for commit X's own tree, not the working tree
 //
 // Before any tier runs (but not for --plan), the router refuses to start
-// while a soffice, playwright or vitest process is already live on this
-// machine, naming the pid and command and exiting non-zero: a second
-// LibreOffice/Playwright/Vitest run on the same machine shares profile
-// locks, browser contexts and worker ports with the one already running.
+// while a conflicting process is live, naming the pid and command and
+// exiting non-zero. A soffice process anywhere on the machine conflicts,
+// because every LibreOffice run shares the machine's one install. A vitest
+// or playwright process, or a Playwright browser, conflicts only when its
+// command line names a path under one of this repository's checkouts (the
+// main checkout and every worktree) or it descends from such a process,
+// because profile locks, browser contexts and worker ports are shared only
+// within one repository. Other projects' test runs are ignored.
 // TEST_SCOPE_IGNORE_LIVE=1 skips this check for the operator who wants to
 // race anyway; the router prints that it did.
 //
@@ -747,19 +751,35 @@ function chooseBrowserSpecs(sel, specs) {
 const LIVE_CONFLICT_EXECUTABLE = /(^|\/)soffice(\.bin)?$/;
 const LIVE_CONFLICT_PACKAGE = /node_modules\/(\.bin\/)?(vitest|playwright)(\/|$|\s)|\/ms-playwright\//;
 
-function isLiveConflictingCommand(command) {
-  const executable = command.split(/\s+/)[0] || "";
-  return LIVE_CONFLICT_EXECUTABLE.test(executable) || LIVE_CONFLICT_PACKAGE.test(command);
+function isSofficeCommand(command) {
+  return LIVE_CONFLICT_EXECUTABLE.test(command.split(/\s+/)[0] || "");
+}
+
+function isPackageCommand(command) {
+  return LIVE_CONFLICT_PACKAGE.test(command);
+}
+
+// True when the command holds root as a whole path prefix: "/repo" matches
+// "/repo/x" and "/repo " but not "/repo-other".
+function commandNamesRoot(command, root) {
+  const trimmed = root.replace(/\/+$/, "");
+  for (let at = command.indexOf(trimmed); at !== -1; at = command.indexOf(trimmed, at + 1)) {
+    const next = command[at + trimmed.length];
+    if (next === undefined || next === "/" || /\s/.test(next)) return true;
+  }
+  return false;
 }
 
 // Pure: given ps's own output lines ("pid ppid command", the shape
-// `ps -axo pid,ppid,command` prints) and this process's own pid, returns
-// the conflicting processes -- everything isLiveConflictingCommand accepts
-// except the router's own process and every ancestor of it (npm, the shell
-// that ran npm, the terminal), walked by ppid from the listing itself.
-// Exported for the unit test, which passes a fake listing rather than
-// shelling out to ps.
-function findLiveConflictingProcesses(psLines, { ownPid }) {
+// `ps -axo pid,ppid,command` prints), this process's own pid and the
+// absolute paths of this repository's checkouts, returns the conflicting
+// processes: every soffice, plus every vitest, playwright or Playwright
+// browser that names a repository root or has an ancestor that does. The
+// router's own process and every ancestor of it (npm, the shell that ran
+// npm, the terminal) are excluded, walked by ppid from the listing itself.
+// With no repoRoots every vitest and playwright process counts. Exported for
+// the unit test, which passes a fake listing rather than shelling out to ps.
+function findLiveConflictingProcesses(psLines, { ownPid, repoRoots }) {
   const rows = [];
   for (const line of psLines) {
     const m = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
@@ -767,9 +787,34 @@ function findLiveConflictingProcesses(psLines, { ownPid }) {
     rows.push({ pid: Number(m[1]), ppid: Number(m[2]), command: m[3].trim() });
   }
   const parentOf = new Map(rows.map((r) => [r.pid, r.ppid]));
+  const commandOf = new Map(rows.map((r) => [r.pid, r.command]));
   const ancestry = new Set();
   for (let pid = ownPid; pid !== undefined && !ancestry.has(pid); pid = parentOf.get(pid)) ancestry.add(pid);
-  return rows.filter((r) => !ancestry.has(r.pid) && isLiveConflictingCommand(r.command)).map(({ pid, command }) => ({ pid, command }));
+  const roots = repoRoots || [];
+  const namesRepository = (command) => roots.length === 0 || roots.some((root) => commandNamesRoot(command, root));
+  const countedDirectly = (command) => isSofficeCommand(command) || (isPackageCommand(command) && namesRepository(command));
+  const hasCountedAncestor = (pid) => {
+    const seen = new Set([pid]);
+    for (let up = parentOf.get(pid); up !== undefined && !seen.has(up); up = parentOf.get(up)) {
+      seen.add(up);
+      if (countedDirectly(commandOf.get(up) || "")) return true;
+    }
+    return false;
+  };
+  return rows
+    .filter((r) => !ancestry.has(r.pid))
+    .filter((r) => countedDirectly(r.command) || (isPackageCommand(r.command) && hasCountedAncestor(r.pid)))
+    .map(({ pid, command }) => ({ pid, command }));
+}
+
+// Every worktree path of the repository the router runs in, main checkout
+// first; empty when git cannot list them, which makes the guard machine-wide.
+function repositoryRoots() {
+  const wt = spawnSync("git", ["worktree", "list", "--porcelain"], { cwd: process.cwd(), encoding: "utf8" });
+  if (wt.status !== 0) return [];
+  return lines(wt.stdout)
+    .filter((l) => l.startsWith("worktree "))
+    .map((l) => l.slice("worktree ".length).trim());
 }
 
 // Refuses (process.exit(1)) when a conflicting process is live, naming its
@@ -783,7 +828,7 @@ function checkNoLiveConflictingProcesses() {
   }
   const ps = spawnSync("ps", ["-axo", "pid,ppid,command"], { encoding: "utf8" });
   if (ps.status !== 0) return; // ps itself failing is not this router's call to make
-  const hits = findLiveConflictingProcesses(lines(ps.stdout), { ownPid: process.pid });
+  const hits = findLiveConflictingProcesses(lines(ps.stdout), { ownPid: process.pid, repoRoots: repositoryRoots() });
   if (hits.length === 0) return;
   console.error("test-scope: refusing to start -- already live on this machine:");
   for (const h of hits) console.error(`  pid ${h.pid}  ${h.command}`);
