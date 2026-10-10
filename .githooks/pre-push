@@ -49,6 +49,17 @@ if [ -z "$base" ]; then
   base="origin/main"
 fi
 
+# A push whose tip is already on origin/main adds nothing CI has not run:
+# every commit it carries went through test.yml and deploy.yml on main. The
+# replica sync (gitlab-sync pushes origin/main to the GitLab mirror) is the
+# push that looks like this, and routing the tests over its whole diff is
+# thousands of paths against a stale tip, refused whenever another suite is
+# live on the machine.
+if git rev-parse --verify --quiet origin/main >/dev/null && git merge-base --is-ancestor "$local_sha" origin/main 2>/dev/null; then
+  echo "pre-push: ${local_sha:0:9} is already on origin/main, so CI has run everything this push adds; nothing to test."
+  exit 0
+fi
+
 # NEXT.md is maintained on main alone (the docs exception in ../CLAUDE.md
 # lands board edits there directly), so a branch that carries a NEXT.md
 # change against main is always a stale or reverted board, never a real
