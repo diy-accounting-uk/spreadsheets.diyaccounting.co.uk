@@ -87,3 +87,6 @@ diya-gl/*.tgz
 # Written into each package directory by app/bin/build-packages.js at zip time
 packages/*/LICENCE.txt
 packages/*/README.txt
+
+# Hand-made worktrees (named, with a node_modules symlink)
+.worktrees/

@@ -37,9 +37,9 @@ Repo-level (referenced by all workflows):
 
 | Variable | Value source |
 |---|---|
-| `SPREADSHEETS_ACTIONS_ROLE_ARN` | `aws --profile spreadsheets iam get-role --role-name spreadsheets-github-actions-role --query Role.Arn --output text` |
-| `SPREADSHEETS_DEPLOY_ROLE_ARN` | `aws --profile spreadsheets iam get-role --role-name spreadsheets-deployment-role --query Role.Arn --output text` |
-| `SPREADSHEETS_CERTIFICATE_ARN` | `aws --profile spreadsheets acm list-certificates --region us-east-1 --query "CertificateSummaryList[].CertificateArn | [0]" --output text` (single wildcard cert covering ci+prod aliases) |
+| `SPREADSHEETS_ACTIONS_ROLE_ARN` | `aws --profile diya-spreadsheets iam get-role --role-name spreadsheets-github-actions-role --query Role.Arn --output text` |
+| `SPREADSHEETS_DEPLOY_ROLE_ARN` | `aws --profile diya-spreadsheets iam get-role --role-name spreadsheets-deployment-role --query Role.Arn --output text` |
+| `SPREADSHEETS_CERTIFICATE_ARN` | `aws --profile diya-spreadsheets acm list-certificates --region us-east-1 --query "CertificateSummaryList[].CertificateArn | [0]" --output text` (single wildcard cert covering ci+prod aliases) |
 
 The `deploy.yml` job declares `environment: ci`, so these vars resolve from the env scope first if set there, falling back to repo-level.
 
@@ -79,15 +79,15 @@ None required. All authentication is via OIDC; no third-party tokens are used du
 
 ```bash
 # Role ARNs
-aws --profile spreadsheets iam list-roles \
+aws --profile diya-spreadsheets iam list-roles \
   --query "Roles[?contains(RoleName, 'github-actions') || contains(RoleName, 'deployment')].[RoleName,Arn]" \
   --output table
 
 # Cert ARN (us-east-1, required for CloudFront)
-aws --profile spreadsheets acm list-certificates --region us-east-1 \
+aws --profile diya-spreadsheets acm list-certificates --region us-east-1 \
   --query "CertificateSummaryList[].[DomainName,CertificateArn]" --output table
 
 # Verify OIDC trust on the role
-aws --profile spreadsheets iam get-role --role-name spreadsheets-github-actions-role \
+aws --profile diya-spreadsheets iam get-role --role-name spreadsheets-github-actions-role \
   --query 'Role.AssumeRolePolicyDocument'
 ```
