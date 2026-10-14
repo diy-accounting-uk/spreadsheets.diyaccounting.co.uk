@@ -125,7 +125,7 @@
     "wait-on": "^9.5.1"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1150.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1151.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "stripe": "^23.0.0"
