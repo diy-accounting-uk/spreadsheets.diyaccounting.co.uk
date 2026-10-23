@@ -88,7 +88,7 @@ function allDeclaredKeys(declaration) {
   collect(declaration.assets.writtenDown);
   collect(declaration.assets.stock);
   collect(declaration.assets.debtors);
-  for (const line of declaration.assets.extra ?? []) keys.push(line.key);
+  collect(declaration.assets.cash);
   for (const [key] of declaration.expenseLines) keys.push(key);
   return keys;
 }

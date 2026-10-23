@@ -477,13 +477,13 @@
         formatMoney(t.assets.total.value),
         "written-down " +
           esc(formatMoney(t.assets.writtenDown.value)) +
-          " &middot; stock " +
-          esc(formatMoney(t.assets.stock.value)) +
+          (t.assets.stock.missing ? "" : " &middot; stock " + esc(formatMoney(t.assets.stock.value))) +
+          (t.assets.cash.missing ? "" : " &middot; cash " + esc(formatMoney(t.assets.cash.value))) +
           '<span class="headline-tile-aside">owed to you ' +
           esc(formatMoney(t.assets.debtors.value)) +
           ", counted separately</span>",
       ) +
-      tile("Tax", "headline/tax", formatMoney(t.tax.value), "income tax and Class 4 NI, less CIS") +
+      tile("Tax", "headline/tax", formatMoney(t.tax.value), t.tax.subtitle ? esc(t.tax.subtitle) : "") +
       "</div>"
     );
   }
@@ -884,6 +884,7 @@
 
   global.DiyaGlHeadlines = {
     mountHeadlines: mountHeadlines,
+    renderTiles: renderTiles,
     reportFromSnapshot: reportFromSnapshot,
   };
 })(window);

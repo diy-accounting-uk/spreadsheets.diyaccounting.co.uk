@@ -1284,14 +1284,11 @@ export const HEADLINES = {
   },
   costOfSales: { key: `${HUB}!Profit & Loss Account!B17` },
   runningCosts: { key: `${HUB}!Profit & Loss Account!B35`, label: "Admin expenses" },
-  tax: { key: `${HUB}!Income Tax!E18` },
+  tax: { key: `${HUB}!Income Tax!E18`, subtitle: "income tax and Class 4 NI, less CIS" },
   assets: {
     writtenDown: { key: "cell/Fixedassets.xlsx!Schedule!K1", optional: true },
     stock: { key: `${HUB}!StockControl!AB30`, optional: true },
-    extra: [
-      { label: "Cash at bank", key: "cell/Bank.xlsx!Mar!A2" },
-      { label: "Cash in hand", key: "cell/Cash.xlsx!Mar!A2" },
-    ],
+    cash: { keys: ["cell/Bank.xlsx!Mar!A2", "cell/Cash.xlsx!Mar!A2"] },
     debtors: { key: "cell/Sales.xlsx!ClosingDebtors!G1", optional: true },
   },
   // The pie's own fourteen lines: B21 to B34, the P&L rows Total Admin
