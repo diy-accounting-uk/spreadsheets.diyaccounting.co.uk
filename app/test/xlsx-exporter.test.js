@@ -400,6 +400,47 @@ describe("extractBankTransactions — the opening balance in A1", () => {
     ]);
   });
 
+  it("reads receipts and payments listed side by side in statement order, past the gaps on each side", async () => {
+    const dir = await writePackage({
+      "Currentaccount.xlsx": {
+        Apr: {
+          A1: 1000,
+          S6: APRIL_TWENTY_SECOND,
+          T6: "Dividend",
+          W6: "DV",
+          X6: 165,
+          A7: APRIL_TWENTY_SECOND,
+          B7: "STRIPE PAYMENTS UK",
+          E7: "BD",
+          F7: 147.11,
+          S8: APRIL_TWENTY_SECOND,
+          T8: "HISCOX",
+          W8: "CR",
+          X8: 9.17,
+          A9: APRIL_TWENTY_SECOND,
+          B9: "PAYPAL",
+          E9: "BC",
+          F9: 39.51,
+          F10: { formula: "SUM(F11:F12)", value: 0 },
+          X10: { formula: "SUM(X11:X12)", value: 0 },
+        },
+        May: { A1: { formula: "Apr!A2", value: 1000 } },
+      },
+    });
+    const lines = await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
+
+    expect(
+      lines
+        .filter((line) => line["diya-gl:bankCode"] !== "BC" || line.detailComment === "PAYPAL")
+        .map((line) => [line["diya-gl:bankCode"], line.amount]),
+    ).toEqual([
+      ["BD", 147.11],
+      ["BC", 39.51],
+      ["DV", 165],
+      ["CR", 9.17],
+    ]);
+  });
+
   it("takes no balance from a tab that only carries the one before it forward", async () => {
     const dir = await writePackage({
       "Creditcardaccount.xlsx": { Apr: {}, May: { A1: { formula: "Apr!A1", value: 500 } } },

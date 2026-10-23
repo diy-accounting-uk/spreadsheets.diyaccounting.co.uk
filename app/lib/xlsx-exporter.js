@@ -73,6 +73,20 @@ const REVERSE_SALES = buildReverseCodeMap(LTD_SALES_CODE_MAP);
 /**
  * Check if a cell contains a formula (has <f> tag).
  */
+// The rows between first and last, inclusive, on which the column holds a cell with content:
+// a typed value or a formula. A bank book's receipt and payment lists sit side by side and each
+// has gaps where the other side has a row, so a reader walks the rows its own column fills
+// rather than stopping at the first gap or testing every row of the sheet.
+function rowsWithContent(xml, column, first, last) {
+  const rows = new Set();
+  const cellPattern = new RegExp(`<c\\s+r="${column}(\\d+)"[^>]*>`, "g");
+  for (const match of xml.matchAll(cellPattern)) {
+    const row = Number(match[1]);
+    if (row >= first && row <= last && !match[0].endsWith("/>")) rows.add(row);
+  }
+  return [...rows].sort((a, b) => a - b);
+}
+
 function hasCellFormula(xml, cellRef) {
   const cellPattern = new RegExp(`<c\\s+r="${cellRef}"[^>]*(?:/>|>([\\s\\S]*?)</c>)`, "s");
   const match = xml.match(cellPattern);
@@ -952,12 +966,14 @@ export async function extractBankTransactions(set, product, period, extractionMa
         obEmitted = true;
       }
 
-      // Receipts: rows 6+, A=date, B=source, E=code, F=amount
-      for (let row = 6; row <= 200; row++) {
+      // Receipts: rows 6+, A=date, B=source, E=code, F=amount. A bank book lists receipts and
+      // payments side by side in statement order, so a row with a payment and no receipt is a
+      // gap on this side, not the end of the list; only the totals formula ends it.
+      for (const row of rowsWithContent(xml, "F", 6, 200)) {
+        if (hasCellFormula(xml, `F${row}`)) break;
         const dateVal = readCellValue(xml, `A${row}`, sharedStrings);
         const amount = readCellValue(xml, `F${row}`, sharedStrings);
-        if (dateVal === null || amount === null || typeof amount !== "number") break;
-        if (hasCellFormula(xml, `F${row}`)) break;
+        if (dateVal === null || amount === null || typeof amount !== "number") continue;
 
         const source = readCellValue(xml, `B${row}`, sharedStrings) || "";
         const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
@@ -984,11 +1000,11 @@ export async function extractBankTransactions(set, product, period, extractionMa
       }
 
       // Payments: rows 6+, columns per the file's payment layout
-      for (let row = 6; row <= 200; row++) {
+      for (const row of rowsWithContent(xml, payment.amount, 6, 200)) {
+        if (hasCellFormula(xml, `${payment.amount}${row}`)) break;
         const dateVal = readCellValue(xml, `${payment.date}${row}`, sharedStrings);
         const amount = readCellValue(xml, `${payment.amount}${row}`, sharedStrings);
-        if (dateVal === null || amount === null || typeof amount !== "number") break;
-        if (hasCellFormula(xml, `${payment.amount}${row}`)) break;
+        if (dateVal === null || amount === null || typeof amount !== "number") continue;
 
         const supplier = readCellValue(xml, `${payment.supplier}${row}`, sharedStrings) || "";
         const code = readCellValue(xml, `${payment.code}${row}`, sharedStrings) || "";
