@@ -30,6 +30,7 @@ import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { workbookSetFromDirectory } from "../lib/workbook-set.js";
 import { saveWorkbookFiles } from "../lib/product-workbook.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
+import { BANK_ACCOUNT_FILES, BANK_LAYOUTS } from "../lib/ltd-layout.js";
 import { parse as parseTOML } from "smol-toml";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
@@ -447,6 +448,74 @@ describe("extractBankTransactions — the opening balance in A1", () => {
     });
     expect(await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).toEqual([]);
   });
+});
+
+describe("extractBankTransactions — every analysed bank code, side by side", () => {
+  const SPREAD = Object.entries(BANK_ACCOUNT_FILES).map(([accountID, file]) => ({ accountID, file, layout: BANK_LAYOUTS[file] }));
+  const OPENING = 1000;
+
+  // One row per analysed code on each side, receipts on even rows and
+  // payments on odd rows so each side has a gap wherever the other has a row.
+  function sideBySideSheet(layout) {
+    const tab = { A1: OPENING };
+    const cell = (column, row) => `${column}${row}`;
+    layout.receiptCodes.forEach((code, index) => {
+      const row = 6 + index * 2;
+      tab[cell(layout.receipt.date, row)] = APRIL_TWENTY_SECOND;
+      tab[cell(layout.receipt.source, row)] = `in ${code}`;
+      tab[cell(layout.receipt.code, row)] = code;
+      tab[cell(layout.receipt.amount, row)] = 10 + index;
+    });
+    layout.paymentCodes.forEach((code, index) => {
+      const row = 7 + index * 2;
+      tab[cell(layout.payment.date, row)] = APRIL_TWENTY_SECOND;
+      tab[cell(layout.payment.source, row)] = `out ${code}`;
+      tab[cell(layout.payment.code, row)] = code;
+      tab[cell(layout.payment.amount, row)] = 3 + index;
+    });
+    const totalsRow = 6 + Math.max(layout.receiptCodes.length, layout.paymentCodes.length) * 2 + 2;
+    tab[cell(layout.receipt.amount, totalsRow)] = { formula: `SUM(F6:F${totalsRow - 1})`, value: 0 };
+    tab[cell(layout.payment.amount, totalsRow)] = {
+      formula: `SUM(${layout.payment.amount}6:${layout.payment.amount}${totalsRow - 1})`,
+      value: 0,
+    };
+    return tab;
+  }
+
+  const signed = (line) => (line.debitCreditCode === "D" ? line.amount : -line.amount);
+
+  for (const { accountID, file, layout } of SPREAD) {
+    it(`${file}: every receipt code and every payment code comes back, and the account closes where the sheet's own rows put it`, async () => {
+      const dir = await writePackage({ [file]: { Apr: sideBySideSheet(layout), May: { A1: { formula: "Apr!A2", value: 0 } } } });
+      const lines = await extractBankTransactions(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD);
+      const statementRows = lines.filter((line) => line.detailComment !== "Opening balance");
+
+      for (const [index, code] of layout.receiptCodes.entries()) {
+        const row = statementRows.find((line) => line.detailComment === `in ${code}`);
+        expect(row, `receipt ${code}`).toMatchObject({
+          "accountMainID": accountID,
+          "diya-gl:bankCode": code,
+          "debitCreditCode": "D",
+          "amount": 10 + index,
+        });
+      }
+      for (const [index, code] of layout.paymentCodes.entries()) {
+        const row = statementRows.find((line) => line.detailComment === `out ${code}`);
+        expect(row, `payment ${code}`).toMatchObject({
+          "accountMainID": accountID,
+          "diya-gl:bankCode": code,
+          "debitCreditCode": "C",
+          "amount": 3 + index,
+        });
+      }
+      expect(statementRows).toHaveLength(layout.receiptCodes.length + layout.paymentCodes.length);
+
+      const receipts = layout.receiptCodes.reduce((total, _code, index) => total + 10 + index, 0);
+      const payments = layout.paymentCodes.reduce((total, _code, index) => total + 3 + index, 0);
+      const closing = lines.reduce((total, line) => total + signed(line), 0);
+      expect(closing).toBeCloseTo(OPENING + receipts - payments, 9);
+    });
+  }
 });
 
 describe("extractJournalEntries — the Ltd stock movement", () => {
