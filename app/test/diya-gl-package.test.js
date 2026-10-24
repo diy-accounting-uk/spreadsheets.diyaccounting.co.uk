@@ -114,7 +114,7 @@ describe("diya-gl package", () => {
   });
 
   it("declares only the npm packages the copied runtime code actually imports", () => {
-    expect(Object.keys(pkg.dependencies).sort()).toEqual(["ajv", "ajv-formats", "jszip", "smol-toml"]);
+    expect(Object.keys(pkg.dependencies).sort()).toEqual(["@xmldom/xmldom", "ajv", "ajv-formats", "jszip", "smol-toml"]);
   });
 });
 
