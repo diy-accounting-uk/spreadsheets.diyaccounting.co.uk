@@ -1336,10 +1336,9 @@ export const CELL_MAP = [
 // The declaration wraps every single-cell reference as `{ key }` (or
 // `{ key, optional }`) and every summed group as `{ keys: [...] }`, the
 // shape the shared headline reducer (app/lib/headlines.js) reads across
-// products. Ltd's current-assets cell (`PubBalSht!E13`) already sums stock,
-// trade debtors and cash, so it fills the reducer's `assets.stock` part --
-// the total's other summed-in figure -- and there is no separate `debtors`
-// part the way BST has one. `tax.secondLine` and `assets.secondLine` each
+// products. Ltd reads stock at cost, cash at bank and in hand, and trade
+// debtors from their own published balance sheet lines (E10, E12, E11), so
+// each lands in its own part of the assets tile. `tax.secondLine` and `assets.secondLine` each
 // add one labelled figure beside that tile's own value, excluded from every
 // sum: the tax charge still outstanding and the balance sheet's net-assets
 // total. `turnover.pieExtra` adds the dividends the board declared as a
@@ -1365,11 +1364,14 @@ export const HEADLINES = {
   tax: {
     key: "cell/Financialaccounts.xlsx!CorporationTax!K35", // SUM(I33:I34)
     label: "Corporation tax",
+    subtitle: "corporation tax",
     secondLine: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
   },
   assets: {
     writtenDown: { key: "cell/Financialaccounts.xlsx!PubBalSht!F6" }, // fixed assets NBV
-    stock: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+    stock: { key: "cell/Financialaccounts.xlsx!PubBalSht!E10" }, // stock at cost
+    cash: { key: "cell/Financialaccounts.xlsx!PubBalSht!E12" }, // cash at bank and in hand
+    debtors: { key: "cell/Financialaccounts.xlsx!PubBalSht!E11" }, // trade debtors
     secondLine: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
   },
   // B11 to B13, cost of sales' own three lines, are not repeated here: the

@@ -350,7 +350,7 @@ export const HEADLINES = {
   turnover: { key: "cell/Profit & Loss Acc!C4" },
   costOfSales: { keys: ["cell/Profit & Loss Acc!C6", "cell/Profit & Loss Acc!C7"] },
   runningCosts: { key: "cell/Profit & Loss Acc!C22" },
-  tax: { key: "cell/Income Tax!E18" },
+  tax: { key: "cell/Income Tax!E18", subtitle: "income tax and Class 4 NI, less CIS" },
   assets: {
     writtenDown: { key: "cell/Fixed Assets!M1", optional: true },
     stock: { key: "cell/PurchasesStock!D30", optional: true },

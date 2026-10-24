@@ -446,7 +446,7 @@ export const HEADLINES = {
   costOfSales: { key: "cell/Profit & Loss Acc!B12", label: "vehicle costs" },
   runningCosts: { key: "cell/Profit & Loss Acc!B22", label: "running the business" },
   assets: { writtenDown: { key: "cell/Fixed Assets!K1", optional: true } },
-  tax: { key: `cell/${TAX_SHEET}!E17`, label: "income tax and Class 4 NI" },
+  tax: { key: `cell/${TAX_SHEET}!E17`, label: "income tax and Class 4 NI", subtitle: "income tax and Class 4 NI, less CIS" },
   pieLines: [
     ["cell/Profit & Loss Acc!B6", "Fuel"],
     ["cell/Profit & Loss Acc!B7", "Car hire"],

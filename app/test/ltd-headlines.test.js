@@ -71,6 +71,8 @@ function allDeclaredKeys(declaration) {
   collect(declaration.tax.secondLine);
   collect(declaration.assets.writtenDown);
   collect(declaration.assets.stock);
+  collect(declaration.assets.cash);
+  collect(declaration.assets.debtors);
   collect(declaration.assets.secondLine);
   for (const [key] of declaration.expenseLines) keys.push(key);
   return keys;
@@ -149,7 +151,7 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
     const netAssetsCell = report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!PubBalSht!F33").value;
     expect(headlines.tiles.assets.total.secondLine.value).toBeCloseTo(netAssetsCell, 6);
     expect(headlines.tiles.assets.total.value).toBeCloseTo(
-      headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value,
+      headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value + headlines.tiles.assets.cash.value,
       6,
     );
     // Net assets is a different figure from the assets total (it nets off
@@ -158,9 +160,17 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
     expect(headlines.tiles.assets.total.from).not.toContain("cell/Financialaccounts.xlsx!PubBalSht!F33");
   });
 
-  it("Ltd declares no separate debtors part, since the current-assets cell already includes it", () => {
+  it("stock, cash and trade debtors each read their own published balance sheet line", () => {
     const headlines = headlinesFromReport(report, ltd.HEADLINES);
-    expect(headlines.tiles.assets.debtors).toEqual({ value: 0, from: [], missing: true });
+    const cell = (ref) => Number(report.values.find((v) => v.key === `cell/Financialaccounts.xlsx!PubBalSht!${ref}`).value);
+    expect(headlines.tiles.assets.stock.value).toBeCloseTo(cell("E10"), 6);
+    expect(headlines.tiles.assets.cash.value).toBeCloseTo(cell("E12"), 6);
+    expect(headlines.tiles.assets.debtors.value).toBeCloseTo(cell("E11"), 6);
+    expect(headlines.tiles.assets.total.from).not.toContain("cell/Financialaccounts.xlsx!PubBalSht!E11");
+  });
+
+  it("the tax tile is described as corporation tax", () => {
+    expect(headlinesFromReport(report, ltd.HEADLINES).tiles.tax.subtitle).toBe("corporation tax");
   });
 });
 

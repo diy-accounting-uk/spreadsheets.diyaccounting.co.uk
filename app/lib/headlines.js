@@ -196,7 +196,8 @@ function resolveVehicle(report, spec) {
  * @param {Object} declaration - the product's HEADLINES export: turnover,
  *   costOfSales, runningCosts, tax (each a `{key}` or `{keys}` spec),
  *   expenseLines (`[key, label]` pairs) and assets (writtenDown, stock,
- *   debtors, each optional). turnover may add `secondLine` (an array of
+ *   cash, debtors, each optional; cash is summed into the total and shown
+ *   on its own). tax may add `subtitle`, the tax tile's own description. turnover may add `secondLine` (an array of
  *   `{label, key}`, shown beside the tile, outside the pie) and `pieExtra`
  *   (an array of `{label, key, optional}`, extra bridge slices folded into
  *   the turnover pie before "Kept" -- Ltd's dividends). assets may add
@@ -244,14 +245,16 @@ export function headlinesFromReport(report, declaration) {
   // settlements it approaches turnover and a sum that includes it reads as
   // nonsense.
   const debtors = readDeclaredPart(report, assetsDecl.debtors);
+  const cash = readDeclaredPart(report, assetsDecl.cash);
   const extra = resolveLines(report, assetsDecl.extra);
-  const assetsTotalFigure = addFigures(writtenDown, stock, ...extra);
+  const assetsTotalFigure = addFigures(writtenDown, stock, cash, ...extra);
   const assetsSecondLine = resolveSecondLine(report, assetsDecl.secondLine);
   const assetsTotal = assetsSecondLine ? { ...assetsTotalFigure, secondLine: assetsSecondLine } : assetsTotalFigure;
 
   const taxFigure = readKey(report, declaration.tax);
   const taxSecondLine = resolveSecondLine(report, declaration.tax.secondLine);
-  const tax = taxSecondLine ? { ...taxFigure, secondLine: taxSecondLine } : taxFigure;
+  const taxWithLine = taxSecondLine ? { ...taxFigure, secondLine: taxSecondLine } : taxFigure;
+  const tax = declaration.tax.subtitle ? { ...taxWithLine, subtitle: declaration.tax.subtitle } : taxWithLine;
   const taxLabel = declaration.tax.label ?? "Tax and NI";
 
   const expenseLines = resolveKeyLabelPairs(report, declaration.expenseLines);
@@ -262,7 +265,7 @@ export function headlinesFromReport(report, declaration) {
   const tiles = {
     turnover,
     outgoings: { total: outgoingsTotal, costOfSales, runningCosts },
-    assets: { total: assetsTotal, writtenDown, stock, debtors },
+    assets: { total: assetsTotal, writtenDown, stock, cash, debtors },
     tax,
   };
   if (vehicle) tiles.vehicle = vehicle;
