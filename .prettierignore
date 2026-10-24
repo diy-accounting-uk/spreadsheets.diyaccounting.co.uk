@@ -23,3 +23,6 @@ web/diya-gl.co.uk/public/spec.html
 # Books engine bundle and the app/ files it reads (built by scripts/build-diya-gl-bundle.mjs)
 web/diya-gl.co.uk/public/engine/
 web/diya-gl.co.uk/public/assets/
+
+# Accounts documents kept byte for byte as filed or as the builders wrote them
+app/test/fixtures/ixbrl/
