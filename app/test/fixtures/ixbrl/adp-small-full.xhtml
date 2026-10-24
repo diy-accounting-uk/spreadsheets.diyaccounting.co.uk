@@ -1,0 +1,2884 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns:ixt2="http://www.xbrl.org/inlineXBRL/transformation/2011-07-31" xmlns="http://www.w3.org/1999/xhtml" xmlns:core="http://xbrl.frc.org.uk/fr/2023-01-01/core" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:curr="http://xbrl.frc.org.uk/cd/2023-01-01/currencies" xmlns:countries="http://xbrl.frc.org.uk/cd/2023-01-01/countries" xmlns:uk-bus="http://xbrl.frc.org.uk/cd/2023-01-01/business" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:direp="http://xbrl.frc.org.uk/reports/2023-01-01/direp" xmlns:xlink="http://www.w3.org/1999/xlink" xml:lang="en" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:iso4217="http://www.xbrl.org/2003/iso4217">
+
+
+
+<head>
+  <meta content="application/xhtml+xml; charset=UTF-8" http-equiv="content-type" />
+  <title>
+    NOMAD MAISON LTD
+  </title>
+  <style type="text/css">
+	   body {
+	       font-size: 12px;
+	   }
+	    
+	   h1 {
+	       font-size: 2em;
+	   }
+	    
+	   b,
+	   strong {
+	       font-weight: bold;
+	   }
+	    
+	    
+	   table {
+	       border-spacing: 10px;
+	   }
+	    
+	   .text--left {
+	       text-align: left !important;
+	   }
+	   .text--center {
+	       text-align: center!important;
+	   }
+	   .text--right {
+	       text-align: right !important;
+	   }
+	    
+	   .strong {
+	       font-weight: bold;
+	   }
+	    
+	   .center {
+	       text-align: center;
+	   }
+	    
+	   .body {
+	       font-size: 100%;
+	   }
+	    
+	   h1 {
+	       font-weight: bold;
+	       font-size: 16px;
+	   }
+	   h2 {
+	       font-weight: bold;
+	       font-size: 14px;
+	   }
+	   h3 {
+	       font-weight: bold;
+	       font-size: 12px;
+	   }
+	   p {
+	       margin-top: 0.3125em;
+	       margin-bottom: 1.25em;
+	   }
+	   p.accounts-upload {
+	       font-size: 1.3em;
+	   }
+	   .accounts-body {
+	       font-family: 'SourceSansPro-Regular';
+	   }
+	   .margin-large {
+	       margin-top: 4em;
+	   }
+	   .margin-xx-large {
+	       margin-top: 10em;
+	   }
+	   .header {
+	       padding: 5px;
+	   }
+	   .text-area-display {
+	       white-space: pre-line;
+	   }
+	    
+	   table {
+	       font-family: 'SourceSansPro-Regular';
+	       font-size: 12px;
+	       width: 100%;
+	       padding-bottom: 15px;
+	   }
+	   th {
+	       font-weight: bold;
+	       vertical-align: top;
+	       text-align: left;
+	   }
+	   td {
+	       vertical-align: top;
+	       text-align: left;
+	   }
+	   .table-heading {
+	       text-align: right;
+	       font-style: italic
+	   }
+	   td.figure,
+	   td.total,
+	   td.total-no-top-border,
+	   td.grandtotal,
+	   td.total-no-top-border,
+	   td.grandtotal-no-top-border,
+	   th.figure {
+	       vertical-align: middle;
+	       text-align: right;
+	       white-space: nowrap;
+	       width: 14%;
+	   }
+	   td.description {
+	       width: 50%;
+	   }
+	   td.total {
+	       border-top: black solid 1px;
+	       border-bottom: black solid 1px;
+	   }
+	   td.total-no-top-border {
+	       border-bottom: black solid 1px;
+	   }
+	   td.grandtotal-no-top-border {
+	       border-bottom: black double 3px;
+	   }
+	   td.grandtotal {
+	       border-top: black solid 1px;
+	       border-bottom: black double 3px;
+	   }
+	   td.align-right {
+	       text-align: right;
+	   }
+	   @media print {
+	       td.figure,
+	       td.total,
+	       td.total-no-top-border,
+	       td.grandtotal,
+	       td.total-no-top-border,
+	       td.grandtotal-no-top-border,
+	       th.figure {
+	           width: 15%;
+	       }
+	   }
+	   ol,
+	   ul {
+	       margin-top: 5px;
+	       margin-bottom: 20px;
+	       padding: 0;
+	   }
+	   ul,
+	   ol {
+	       list-style-type: none;
+	   }
+	   ul li {
+	       margin-bottom: 5px;
+	   }
+	   .page-break {
+	       min-height: 400px;
+	       page-break-before:always;
+	   }
+	   .page {
+	       min-height: 25cm;
+	       border-style: solid;
+	       border-width: 0px;
+	       page-break-after: always;
+	       margin: 0 auto;
+	       width: 170mm;
+	       position: relative;
+	   }
+	   @page {
+	       size: A4;
+	   }
+	   @media print {
+	       html, body {
+	           height: 257mm;
+	           margin: 0 auto;
+	           width: 170mm;
+	           font-size: 12px;
+	       }
+	   }
+	   @media screen {
+	       .page {
+	           margin-bottom: 5em
+	       }
+	   }
+	   .section-marker {
+	       left: 0;
+	       position: absolute;
+	       top: 0;
+	   }
+
+	   .draft .page-break,
+	   .draft #AccountsHeader {
+	       zoom: expression(this.runtimeStyle.zoom="1", this.insertBefore(document.createElement("i"), this.firstChild).className="ie-after");
+	   }
+	   .draft .page:after,
+	   .draft .page-break:after,
+	   .draft #AccountsHeader:after {
+	       content: "Draft";
+	       color: #888;
+	       display: block;
+	       font-size: 128px;
+	       left: 50%;
+	       line-height: 1em;
+	       margin: -64px 0 0 -210px;
+	       opacity: 0.5;
+	       position: absolute;
+	       text-transform: uppercase;
+	       top: 50%;
+	       -moz-transform: rotate(-30deg);
+	       -webkit-transform: rotate(-30deg);
+	       -o-transform: rotate(-30deg);
+	       -ms-transform: rotate(-30deg);
+	       transform: rotate(-30deg);
+	       z-index: 5;
+	   }
+	   .draft .page .ie-after,
+	   .draft .page-break .ie-after,
+	   .draft #AccountsHeader .ie-after {
+	       color: #888;
+	       display: block;
+	       filter: alpha(opacity=50);
+	       font-size: 128px;
+	       left: 50%;
+	       line-height: 1em;
+	       margin: -64px 0 0 -210px;
+	       position: absolute;
+	       text-transform: uppercase;
+	       top: 50%;
+	       z-index: 5;
+	       zoom: expression(this.runtimeStyle.zoom="1", this.innerHTML = "DRAFT");
+	   }
+	   .table-margin-bottom-spacing {
+	       margin-bottom: 12px;
+	   }
+       .negative, .debit {
+           white-space: nowrap;
+       }
+          * {
+	  	   position: relative;
+	   }
+    </style>
+</head>
+<body xml:lang="en">
+
+
+<div class="accounts-body ">
+  <div id="abridgedAccounts" class="wholedoc">
+    
+    
+    
+    
+    <div style="display:none" id="accountsHeaderIxbrl">
+
+      
+
+      
+
+      
+      
+
+      
+
+      <ix:header>
+        <ix:hidden>
+
+          <ix:nonNumeric contextRef="CY" name="uk-bus:NameProductionSoftware">Companies House</ix:nonNumeric>
+          <ix:nonNumeric contextRef="CY" name="uk-bus:UKCompaniesHouseRegisteredNumber">15582405</ix:nonNumeric>
+          <ix:nonNumeric contextRef="LegalFormEntity_CY" name="uk-bus:LegalFormEntity" format="ixt2:nocontent"></ix:nonNumeric>
+          <ix:nonNumeric contextRef="AccountingStandards_CY" name="uk-bus:AccountingStandardsApplied" format="ixt2:nocontent"></ix:nonNumeric>
+          <ix:nonNumeric contextRef="AccountsStatus_CY" name="uk-bus:AccountsStatusAuditedOrUnaudited" format="ixt2:nocontent"></ix:nonNumeric>
+          <ix:nonNumeric contextRef="AccountsType_CY" name="uk-bus:AccountsType" format="ixt2:nocontent"></ix:nonNumeric>
+          <ix:nonNumeric contextRef="Director1_CY" name="core:DirectorSigningFinancialStatements" format="ixt2:nocontent"></ix:nonNumeric>
+          <ix:nonNumeric name="uk-bus:EndDateForPeriodCoveredByReport" contextRef="CY_END">2026-03-31</ix:nonNumeric>
+            <ix:nonNumeric name="uk-bus:BalanceSheetDate" contextRef="CY_END">2026-03-31</ix:nonNumeric>
+
+
+            <ix:nonNumeric contextRef="CY_END" name="uk-bus:StartDateForPeriodCoveredByReport">2025-04-01</ix:nonNumeric>
+
+        
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityDormantTruefalse" format="ixt2:booleanfalse">false</ix:nonNumeric>
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityTradingStatus" format="ixt2:nocontent"></ix:nonNumeric>
+
+        </ix:hidden>
+        <ix:references>
+          <link:schemaRef xlink:href="https://xbrl.frc.org.uk/FRS-102/2023-01-01/FRS-102-2023-01-01.xsd" xlink:type="simple" />
+        </ix:references>
+        <ix:resources>
+          <xbrli:unit id="GBP">
+            <xbrli:measure>iso4217:GBP</xbrli:measure>
+          </xbrli:unit>
+          <xbrli:unit id="pure">
+            <xbrli:measure>xbrli:pure</xbrli:measure>
+          </xbrli:unit>
+          
+          <xbrli:context id="PY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CY_Currency_GBP">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="curr:CurrenciesDimension">curr:PoundSterling</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="LegalFormEntity_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:LegalFormEntityDimension">uk-bus:PrivateLimitedCompanyLtd</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="AccountingStandards_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountingStandardsDimension">uk-bus:FRS102</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="AccountsStatus_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountsStatusDimension">uk-bus:AuditExempt-NoAccountantsReport</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="AccountsType_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountsTypeDimension">uk-bus:FullAccounts</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="EntityContactInfo_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:EntityContactTypeDimension">uk-bus:RegisteredOffice</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="Director1_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director1</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+            <xbrli:context id="Director2_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director2</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director3_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director3</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director4_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director4</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director5_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director5</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director6_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director6</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director7_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director7</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director8_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director8</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director9_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director9</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director10_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director10</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director11_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director11</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context>
+            <xbrli:context id="Director12_CY">
+                <xbrli:entity>
+                    <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                    <xbrli:segment>
+                        <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director12</xbrldi:explicitMember>
+                    </xbrli:segment>
+                </xbrli:entity>
+                <xbrli:period>
+                    <xbrli:startDate>2025-04-01</xbrli:startDate>
+                    <xbrli:endDate>2026-03-31</xbrli:endDate>
+                </xbrli:period>
+            </xbrli:context><xbrli:context id="Director13_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director13</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director14_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director14</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director15_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director15</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director16_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director16</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director17_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director17</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director18_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director18</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director19_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director19</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context><xbrli:context id="Director20_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director20</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context>
+        <xbrli:context id="Director21_CY">
+            <xbrli:entity>
+                <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+                <xbrli:segment>
+                    <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director21</xbrldi:explicitMember>
+                </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+                <xbrli:startDate>2025-04-01</xbrli:startDate>
+                <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+        </xbrli:context>
+          <xbrli:context id="CompanySecretary1_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:CompanySecretary1</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="Debtors_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="Debtors_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsWithinOneYear_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:WithinOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsWithinOneYear_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:WithinOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsWithinOneYear_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:WithinOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsAfterOneYear_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsAfterOneYear_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="CreditorsAfterOneYear_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">core:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="ShareCapital_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:ShareCapital</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="ShareCapital_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:ShareCapital</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="SharePremiumAccount_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:SharePremium</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="SharePremiumAccount_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:SharePremium</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="OtherReserves_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:OtherReservesSubtotal</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="OtherReserves_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:OtherReservesSubtotal</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="RevaluationReserve_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:RevaluationReserve</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="RevaluationReserve_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:RevaluationReserve</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="RetainedEarningsAccumulatedLosses_CY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:RetainedEarningsAccumulatedLosses</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+          <xbrli:context id="RetainedEarningsAccumulatedLosses_PY_END">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:RetainedEarningsAccumulatedLosses</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id="POST_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:typedMember dimension="core:X-EventAfterReportingDateGroupingDimension">
+                  <core:XEventAfterReportingDateGroupingDimension.domain>1</core:XEventAfterReportingDateGroupingDimension.domain>
+                </xbrldi:typedMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="POST2_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:typedMember dimension="core:X-EventAfterReportingDateGroupingDimension">
+                  <core:XEventAfterReportingDateGroupingDimension.domain>2</core:XEventAfterReportingDateGroupingDimension.domain>
+                </xbrldi:typedMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="POST3_CY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:typedMember dimension="core:X-EventAfterReportingDateGroupingDimension">
+                  <core:XEventAfterReportingDateGroupingDimension.domain>3</core:XEventAfterReportingDateGroupingDimension.domain>
+                </xbrldi:typedMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='LandAndBuildings_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:LandBuildings</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id='LandAndBuildings_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:LandBuildings</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='LandAndBuildings_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:LandBuildings</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='LandAndBuildings_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:LandBuildings</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='PlantMachinery_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:PlantMachinery</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='PlantMachinery_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:PlantMachinery</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='PlantMachinery_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:PlantMachinery</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='PlantMachinery_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:PlantMachinery</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+
+          <xbrli:context id='FurnitureFittingsToolsEquipment_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:FurnitureFittingsToolsEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='FurnitureFittingsToolsEquipment_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:FurnitureFittingsToolsEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='FurnitureFittingsToolsEquipment_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:FurnitureFittingsToolsEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='FurnitureFittingsToolsEquipment_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:FurnitureFittingsToolsEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='OfficeEquipment_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:OfficeEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='OfficeEquipment_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:OfficeEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='OfficeEquipment_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:OfficeEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='OfficeEquipment_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:OfficeEquipment</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='Vehicles_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='Vehicles_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='Vehicles_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='Vehicles_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='NetGoodwill_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:NetGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='NetGoodwill_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:NetGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='NetGoodwill_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:NetGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='NetGoodwill_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:NetGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='IntangibleAssetsOtherThanGoodwill_CY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:IntangibleAssetsOtherThanGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-04-01</xbrli:startDate>
+              <xbrli:endDate>2026-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+
+          <xbrli:context id='IntangibleAssetsOtherThanGoodwill_CY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:IntangibleAssetsOtherThanGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+
+          
+          
+          <xbrli:context id='IntangibleAssetsOtherThanGoodwill_PY'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:IntangibleAssetsOtherThanGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-03-21</xbrli:startDate>
+              <xbrli:endDate>2025-03-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          <xbrli:context id='IntangibleAssetsOtherThanGoodwill_PY_END'>
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">15582405</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="core:IntangibleAssetClassesDimension">core:IntangibleAssetsOtherThanGoodwill</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-03-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          
+
+          
+           
+           
+        </ix:resources>
+      </ix:header>
+    </div>
+
+
+    
+    
+    <div id="AccountsHeader" class="page margin-xx-large">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+
+        
+      </div>
+      <h2 class="center margin-large">Company Registration Number:
+        <br />
+        <ix:nonNumeric name="uk-bus:UKCompaniesHouseRegisteredNumber" contextRef="CY">15582405</ix:nonNumeric>
+        (England and Wales)
+      </h2>
+      
+      <h2 class="text--center margin-large" >
+        <ix:nonNumeric contextRef="CY" name="uk-bus:ReportTitle">Unaudited statutory accounts for the year ended 31 March 2026</ix:nonNumeric>
+      </h2>
+
+      <h2 class="text--center margin-large">Period of accounts</h2>
+      <h2 class="text--center margin-large">Start date: 1 April 2025</h2>
+      <h2 class="text--center">End date: 31 March 2026</h2>
+    </div>
+
+    <div class="page" id="Contents">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric name="uk-bus:EntityCurrentLegalOrRegisteredName" contextRef="CY">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+      <h2 class="text--center">Contents of the Financial Statements</h2>
+      <p class="text--center">
+        <strong>for the Period Ended 31 March 2026</strong>
+      </p>
+      <table cellspacing="10">
+        <thead>
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        
+        <tr>
+          <td class="strong">
+            <a href="#DirectorsReportSection">Directors report</a>
+          </td>
+          <td></td>
+        </tr>
+        
+        
+        <tr>
+          <td class="strong">
+            <a href="#ProfitAndLossSection">Profit and loss</a>
+          </td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td class="strong">
+            <a href="#BalanceSheetSection">Balance sheet</a>
+          </td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td class="strong">
+            <a href="#AdditionalNotesSection">Additional notes</a>
+          </td>
+          <td></td>
+        </tr>
+        
+        
+        <tr>
+            <td class="strong">
+                <a href="#BalanceSheetNotesSection">Balance sheet notes</a>
+            </td>
+            <td></td>
+        </tr>
+        
+
+        
+        </tbody>
+      </table>
+    </div>
+
+    
+
+
+      
+            <div class="page">
+                <div class="header">
+                    <h1 class="text--center">
+                        <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+                    </h1>
+            </div>
+                <p class="text--center">
+                    <strong>Directors' report period ended
+                        <ix:nonNumeric format="ixt2:datedaymonthyearen" contextRef="CY_END" name="uk-bus:BalanceSheetDate">31 March 2026</ix:nonNumeric>
+                    </strong>
+                </p>
+                <p>
+                    The directors present their report with the financial statements of the company for the period ended 31 March 2026
+                </p>
+
+
+
+            
+
+                  <div>
+                      
+                    <p class="strong">Principal activities of the company</p>
+                    <p>
+                      <ix:nonNumeric contextRef="CY" name="uk-bus:DescriptionPrincipalActivities">Sale of Rugs, Homeware</ix:nonNumeric>
+                    </p>
+                      
+
+                      
+
+                      
+
+                      
+
+                      <br/>
+                      <br/>
+                  </div>
+                         
+
+              <p>
+            <strong>Directors</strong>
+              </p>
+
+              
+
+                  
+
+                  <p>
+                      The  director shown below  has held office during the whole of the period from <br/>
+
+                      <strong>
+                        1 April 2025
+                        to
+                        31 March 2026
+                      </strong>
+                  </p>
+
+                  
+
+
+                      
+
+                      <ix:nonNumeric contextRef="Director1_CY" name="uk-bus:NameEntityOfficer">Jake Henry<br/></ix:nonNumeric>
+
+                  
+                    <br/>
+                    <br/>
+              
+
+              
+
+                      <div class="text-area-display">
+                    <p>
+                      <strong>Secretary</strong>
+
+                      <ix:nonNumeric contextRef="CompanySecretary1_CY" name="uk-bus:NameEntityOfficer">Jake Henry</ix:nonNumeric>
+                    </p>
+                  </div>
+              
+
+              <p>
+                 The above report has been prepared in accordance with the special provisions in part 15 of the Companies Act 2006
+              </p>
+
+              <p>
+                  This report was approved by the board of directors on
+                  
+                  <br/>
+                  <strong>
+                    <ix:nonNumeric contextRef="CY_END" format="ixt2:datedaymonthyearen" name="direp:DateSigningDirectorsReport">22 April 2026</ix:nonNumeric>
+                  </strong>
+                  <br/>
+              </p>
+
+            <p>
+              And signed on behalf of the board by:
+
+                <br/>
+
+              
+                <strong>
+                    Name: <ix:nonNumeric contextRef="CompanySecretary1_CY" name="uk-bus:NameEntityOfficer">Jake Henry</ix:nonNumeric>
+
+                    <br/>
+                    Status: Secretary
+                </strong>
+              
+            </p>
+
+              <div id="DirectorsReportSection" class="section-marker"></div>
+
+          </div>
+      
+
+    
+
+    
+    
+    <div class="page">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+      <h2 class="text--center">Profit And Loss Account</h2>
+      <p class="text--center">
+        <strong>for the Period Ended
+          <ix:nonNumeric format="ixt2:datedaymonthyearen" contextRef="CY_END" name="uk-bus:BalanceSheetDate">31 March 2026</ix:nonNumeric>
+        </strong>
+      </p>
+      <table cellspacing="10">
+        <thead>
+        <tr>
+          <th class="table-heading"></th>
+          
+          <th class="table-heading">
+            2026
+          </th>
+          
+          
+          <th class="table-heading">
+            2025
+          </th>
+          
+        </tr>
+
+        <tr>
+          <th class="table-heading">
+            <br />
+          </th>
+          
+          <th class="table-heading">
+            <br />&#163;
+          </th>
+          
+          
+          <th class="table-heading">
+            <br />&#163;
+          </th>
+          
+        </tr>
+        </thead>
+        <tbody>
+        
+        
+
+        
+        <tr class = "figures">
+          <td id = "turnover-label">Turnover:</td>
+          <td id="turnover-curr" class="strong figure">
+            
+            <ix:nonFraction   contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:TurnoverRevenue" unitRef="GBP">46,099</ix:nonFraction>
+            
+          </td>
+
+          <td id="turnover-prev" class="text--right">
+            
+            <ix:nonFraction  contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:TurnoverRevenue" unitRef="GBP">28,985</ix:nonFraction>
+            
+          </td>
+        </tr>
+        
+
+        
+        <tr class = "figures">
+          <td id = "cost-of-sales-label">Cost of sales:</td>
+          <td id="cost-of-sales-curr" class="strong figure">
+            
+            (
+            <ix:nonFraction contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:CostSales" unitRef="GBP">12,000</ix:nonFraction>
+            )
+            
+          </td>
+
+          <td id="cost-of-sales-prev" class="text--right">
+            
+            (
+            <ix:nonFraction contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:CostSales" unitRef="GBP">91,635</ix:nonFraction>
+            )
+            
+          </td>
+        </tr>
+        
+
+        
+        <tr class = "figures">
+          <td id = "gross-total-label" class="strong">Gross profit(or loss):</td>
+          <td id="gross-total-curr" class="strong total">
+            
+            <ix:nonFraction  contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:GrossProfitLoss" unitRef="GBP">34,099</ix:nonFraction>
+            
+          </td>
+
+          
+            <td id="gross-total-prev" class="total">
+            (<ix:nonFraction  sign="-"  contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:GrossProfitLoss" unitRef="GBP">62,650</ix:nonFraction>)
+            </td>
+          
+        </tr>
+        
+        
+        
+        
+
+        
+
+        
+        <tr class = "figures">
+          <td id = "administrative-expenses-label">Administrative expenses:</td>
+          <td id="administrative-expenses-curr" class="strong figure">
+            
+            (
+            <ix:nonFraction contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:AdministrativeExpenses" unitRef="GBP">25,035</ix:nonFraction>
+            )
+            
+          </td>
+
+          <td id="administrative-expenses-prev" class="text--right">
+            
+          </td>
+        </tr>
+        
+
+        
+
+        
+        <tr class = "figures">
+          <td id = "operating-total-label" class="strong">Operating profit(or loss):</td>
+          <td id="operating-total-curr" class="strong total">
+            
+            <ix:nonFraction   contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:OperatingProfitLoss" unitRef="GBP">9,064</ix:nonFraction>
+            
+          </td>
+
+          
+            <td id="operating-total-prev" class="total">
+              (<ix:nonFraction  sign="-" contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:OperatingProfitLoss" unitRef="GBP">62,650</ix:nonFraction>)
+            </td>
+          
+        </tr>
+        
+        
+
+        
+        
+
+        
+
+        
+
+        
+        <tr class = "figures">
+          <td id = "total-profit-or-loss-before-tax-label" class="strong">Profit(or loss) before tax:</td>
+          <td id="total-profit-or-loss-before-tax-curr" class="strong total">
+            
+            <ix:nonFraction  contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:ProfitLossOnOrdinaryActivitiesBeforeTax" unitRef="GBP">9,064</ix:nonFraction>
+            
+          </td>
+
+          
+            <td id="total-profit-or-loss-before-tax-prev" class="total">
+              (<ix:nonFraction  sign="-"  contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:ProfitLossOnOrdinaryActivitiesBeforeTax" unitRef="GBP">62,650</ix:nonFraction>)
+            </td>
+          
+        </tr>
+        
+        
+
+        
+        
+
+        
+
+        
+        <tr class = "figures">
+          <td id = "total-profit-or-loss-for-financial-year-label" class="strong">Profit(or loss) for the financial year:</td>
+          <td id="total-profit-or-loss-for-financial-year-curr" class="strong total">
+            
+            <ix:nonFraction   contextRef="CY" decimals="0" format="ixt2:numdotdecimal" name="core:ProfitLossOnOrdinaryActivitiesAfterTax" unitRef="GBP">9,064</ix:nonFraction>
+            
+          </td>
+
+          
+            <td id="total-profit-or-loss-for-financial-year-prev" class="total">
+              (<ix:nonFraction  sign="-" contextRef="PY" decimals="0" format="ixt2:numdotdecimal" name="core:ProfitLossOnOrdinaryActivitiesAfterTax" unitRef="GBP">62,650</ix:nonFraction>)
+            </td>
+          
+        </tr>
+        
+        
+        </tbody>
+      </table>
+      <div id="ProfitAndLossSection" class="section-marker"></div>
+    </div>
+    
+
+    
+
+    <div class="page">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+      <h2 class="text--center">Balance sheet</h2>
+      <p class="text--center">
+        <strong>As at
+          <ix:nonNumeric format="ixt2:datedaymonthyearen" contextRef="CY_END" name="uk-bus:BalanceSheetDate">31 March 2026</ix:nonNumeric>
+        </strong>
+      </p>
+      <table cellspacing="10">
+        <thead>
+        <tr>
+          <th class="table-heading"></th>
+          <th class="table-heading">Notes</th>
+
+          
+          <th class="table-heading">
+            2026
+          </th>
+          
+          
+          <th class="table-heading">
+            2025
+          </th>
+          
+        </tr>
+
+        <tr>
+          <th class="table-heading"></th>
+          <th class="table-heading">
+            <br />
+          </th>
+          
+          <th class="table-heading">
+            <br />&#163;
+          </th>
+          
+          
+          <th class="table-heading">
+            <br />&#163;
+          </th>
+          
+        </tr>
+        </thead>
+        <tbody>
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="called-up-share-capital-not-paid-label">Called up share capital not paid:</td>
+          <td class="figure noteIndex" id="CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset"></td>
+
+          <td class="strong text--right" id="called-up-share-capital-not-paid-curr" >
+            
+            <ix:nonFraction format="ixt2:numdotdecimal" decimals="0" name="core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset" contextRef="CY_END" unitRef="GBP">1</ix:nonFraction>
+            
+          </td>
+
+          <td id="called-up-share-capital-not-paid-prev" class="text--right">
+            
+            <ix:nonFraction format="ixt2:numdotdecimal" decimals="0" name="core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset" contextRef="PY_END" unitRef="GBP">1</ix:nonFraction>
+            
+          </td>
+        </tr>
+        
+
+        
+
+        
+
+        <tr>
+          <th class = "strong" id="fixed-assets-heading">Fixed assets</th>
+        </tr>
+
+        
+
+        
+        <tr class = "figures">
+          <td id = "tangible-assets-label">Tangible assets:</td>
+          
+          <td class="figure noteIndex" id="uk-busPropertyPlantEquipmentCY_ENDNoteIndexes">3</td>
+          
+
+          <td id="tangible-curr" class="strong figure">
+            
+            <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">14,568</ix:nonFraction>
+            
+          </td>
+
+          <td id="tangible-prev" class="text--right">
+            
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">13,004</ix:nonFraction>
+            
+          </td>
+        </tr>
+
+        
+
+        
+
+        <tr class = "figures">
+          <td id = "total-fixed-assets-label" class="strong">Total fixed assets:</td>
+
+          <td class="figure noteIndex" id="uk-busFixedAssetsCY_ENDNoteIndexes"></td>
+          
+          <td id="fixed-assets-curr-total" class="strong total">
+            <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:FixedAssets" format="ixt2:numdotdecimal">14,568</ix:nonFraction>
+          </td>
+          
+
+
+          
+          <td id="fixed-assets-prev-total" class="total">
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:FixedAssets" format="ixt2:numdotdecimal">13,004</ix:nonFraction>
+          </td>
+          
+        </tr>
+        
+
+        
+
+        
+
+        <tr>
+          <th class = "strong" id="current-assets-heading">Current assets</th>
+        </tr>
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="stocks-label">Stocks:</td>
+
+          
+          <td class="figure noteIndex" id="uk-busTotalInventoriesCY_ENDNoteIndexes">4</td>
+          
+
+          <td id="stocks-curr-val" class="strong figure">
+            
+            <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:TotalInventories" format="ixt2:numdotdecimal">51,000</ix:nonFraction>
+            
+          </td>
+
+          <td id="stocks-prev-val" class="figure">
+            
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:TotalInventories" format="ixt2:numdotdecimal">45,000</ix:nonFraction>
+            
+          </td>
+        </tr>
+        
+
+        
+
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="cash-at-bank-and-in-hand-label">Cash at bank and in hand:</td>
+
+          <td class="figure noteIndex" id="uk-busCashBankOnHandCY_ENDNoteIndexes"></td>
+
+          <td id="cash-at-bank-curr-val" class="strong figure">
+            
+            <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:CashBankOnHand" format="ixt2:numdotdecimal">21,500</ix:nonFraction>
+            
+          </td>
+
+          <td id="cash-at-bank-prev-val" class="figure">
+            
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:CashBankOnHand" format="ixt2:numdotdecimal">20,000</ix:nonFraction>
+            
+          </td>
+
+        </tr>
+        
+
+        
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="current-assets-label" class="strong">Total current assets:</td>
+
+          <td class="figure noteIndex" id="uk-busCurrentAssetsCY_ENDNoteIndexes"></td>
+
+          
+          <td id="current-assets-curr-val" class="strong total">
+            <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:CurrentAssets" format="ixt2:numdotdecimal">72,500</ix:nonFraction>
+          </td>
+          
+
+
+          
+          <td id="current-assets-prev-val" class="total">
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:CurrentAssets" format="ixt2:numdotdecimal">65,000</ix:nonFraction>
+          </td>
+          
+        </tr>
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="net-current-assets-label" class="strong">Net current assets (liabilities):</td>
+
+          <td class="figure noteIndex" id="uk-busNetCurrentAssetsLiabilitiesCY_ENDNoteIndexes"></td>
+
+          
+          <td id="net-current-assets-curr-val" class="strong total">
+            <ix:nonFraction  contextRef="CY_END" decimals="0" unitRef="GBP" name="core:NetCurrentAssetsLiabilities" format="ixt2:numdotdecimal">72,500</ix:nonFraction>
+          </td>
+            
+
+          
+          <td id="net-current-assets-prev-val" class="total">
+            <ix:nonFraction  contextRef="PY_END" decimals="0" unitRef="GBP" name="core:NetCurrentAssetsLiabilities" format="ixt2:numdotdecimal">65,000</ix:nonFraction>
+          </td>
+          
+        </tr>
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="total-assets-label" class="strong">Total assets less current liabilities:</td>
+
+          <td class="figure noteIndex" id="uk-busTotalAssetsLessCurrentLiabilitiesCY_ENDNoteIndexes"></td>
+
+          
+          <td id="total-assets-less-current-liabilities-curr-val" class="strong total">
+            <ix:nonFraction  contextRef="CY_END" decimals="0" unitRef="GBP" name="core:TotalAssetsLessCurrentLiabilities" format="ixt2:numdotdecimal">87,069</ix:nonFraction>
+          </td>
+          
+
+          
+          <td id="total-assets-less-current-liabilities-prev-val" class="total">
+
+             <ix:nonFraction  contextRef="PY_END" decimals="0" unitRef="GBP" name="core:TotalAssetsLessCurrentLiabilities" format="ixt2:numdotdecimal">78,005</ix:nonFraction>
+          </td>
+          
+        </tr>
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="total-net-assets-label" class="strong">Total net assets (liabilities):</td>
+
+          <td class="figure noteIndex" id="uk-busNetAssetsLiabilitiesCY_ENDNoteIndexes"></td>
+
+          
+          <td id="total-net-assets-curr-val" class="strong total">
+            <ix:nonFraction   contextRef="CY_END" decimals="0" unitRef="GBP" name="core:NetAssetsLiabilities" format="ixt2:numdotdecimal">87,069</ix:nonFraction>
+          </td>
+          
+
+          
+          <td id="total-net-assets-prev-val" class="total">
+            <ix:nonFraction  contextRef="PY_END" decimals="0" unitRef="GBP" name="core:NetAssetsLiabilities" format="ixt2:numdotdecimal">78,005</ix:nonFraction>
+          </td>
+          
+        </tr>
+        
+
+        
+
+        
+
+        
+
+        <tr>
+          <th class="strong" id="capital-and-reserve-heading">Capital and reserves</th>
+        </tr>
+
+        
+
+        <tr class="figures">
+          <td id="called-up-share-capital-label">Called up share capital:</td>
+
+          <td class="figure noteIndex" id="uk-busEquityShareCapital_CY_ENDNoteIndexes"></td>
+
+          <td id="called-up-share-capital-curr-val" class="strong figure">
+            
+            <ix:nonFraction contextRef="ShareCapital_CY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">1</ix:nonFraction>
+            
+          </td>
+
+          <td id="called-up-share-capital-prev-val" class="figure">
+            
+            <ix:nonFraction contextRef="ShareCapital_PY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">1</ix:nonFraction>
+            
+          </td>
+        </tr>
+
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="other-reserves-label">Other reserves:</td>
+
+          <td class="figure noteIndex" id="uk-busEquityOtherReserves_CY_ENDNoteIndexes"></td>
+
+          <td id="other-reserves-curr-val" class="strong figure">
+            
+            <ix:nonFraction contextRef="OtherReserves_CY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">87,068</ix:nonFraction>
+            
+          </td>
+
+          <td id="other-reserves-prev-val" class="figure">
+            
+            <ix:nonFraction contextRef="OtherReserves_PY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">78,004</ix:nonFraction> 
+            
+          </td>
+        </tr>
+
+        
+
+        
+
+        
+
+        <tr class="figures">
+          <td id="shareholders-fund-label" class="strong">Total Shareholders' funds:</td>
+
+          <td class="figure noteIndex" id="uk-busEquityCY_ENDNoteIndexes"></td>
+
+          
+          <td id="shareholders-fund-curr-val" class="strong total">
+             <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">87,069</ix:nonFraction> 
+          </td>
+          
+
+          
+          <td id="shareholders-fund-prev-val" class="total">
+            <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:Equity" format="ixt2:numdotdecimal">78,005</ix:nonFraction>
+          </td>
+          
+        </tr>
+
+        
+
+        
+
+        
+
+        
+
+        </tbody>
+      </table>
+
+      <p class="text--center">The notes form part of these financial statements</p>
+      <div id="BalanceSheetSection" class="section-marker"></div>
+    </div>
+
+    <div class="page">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+      <h2 class="text--left">Balance sheet statements</h2>
+      
+      <p>
+        <ix:nonNumeric name="direp:StatementThatCompanyEntitledToExemptionFromAuditUnderSection477CompaniesAct2006RelatingToSmallCompanies" contextRef="CY">For the year ending 31 March 2026 the company was entitled to exemption under section 477 of the Companies Act 2006 relating to small companies.</ix:nonNumeric>
+      </p>
+      <p>
+        <ix:nonNumeric contextRef="CY" name="direp:StatementThatMembersHaveNotRequiredCompanyToObtainAnAudit">The members have not required the company to obtain an audit in accordance with section 476 of the Companies Act 2006.</ix:nonNumeric>
+      </p>
+      <p>
+        <ix:nonNumeric contextRef="CY" name="direp:StatementThatDirectorsAcknowledgeTheirResponsibilitiesUnderCompaniesAct">The directors acknowledge their responsibilities for complying with the requirements of the Act with respect to accounting records and the preparation of accounts.</ix:nonNumeric>
+      </p>
+      <p>
+        <ix:nonNumeric contextRef="CY" name="direp:StatementThatAccountsHaveBeenPreparedInAccordanceWithProvisionsSmallCompaniesRegime">These accounts have been prepared and delivered in accordance with the provisions applicable to companies subject to the small companies regime.</ix:nonNumeric>
+      </p>
+
+      
+
+      <div>
+        <p class="strong">
+          This report was approved by the board of directors on
+
+          <ix:nonNumeric contextRef="CY_END" name="core:DateAuthorisationFinancialStatementsForIssue" format="ixt2:datedaymonthyearen">22 April 2026</ix:nonNumeric>
+
+          <br />
+          and signed on behalf of the board by:
+        </p>
+          
+        <p>
+          Name:
+
+          <ix:nonNumeric contextRef="Director1_CY" name="uk-bus:NameEntityOfficer">Jake Henry</ix:nonNumeric>
+
+          <br />
+          Status: Director
+        </p>
+      </div>
+      
+      <p class="text--center">The notes form part of these financial statements</p>
+    </div>
+
+    
+    
+    
+
+    
+    
+    
+
+    <div class="page">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+
+      <h2 class="text--center">Notes to the Financial Statements</h2>
+      <p class="text--center">
+        <strong>for the Period Ended 31 March 2026</strong>
+      </p>
+
+      <ul>
+        <li>
+          <h2>1. Accounting policies </h2>
+
+          
+          <p class="strong">Basis of measurement and preparation</p>
+          <div class="text-area-display" id="basis-of-measurement-and-preparation-text-note">
+            <p class="text-area-display">
+              <ix:nonNumeric contextRef="CY" name="core:GeneralDescriptionBasisMeasurementUsedInPreparingFinancialStatements">These financial statements have been prepared in accordance with the provisions of Section 1A (Small Entities) of Financial Reporting Standard 102</ix:nonNumeric>
+            </p>
+          </div>
+          
+
+          
+          <p class="strong">Turnover policy</p>
+          <div class="text-area-display" id="turnover-policy-free-text-note">
+            <p class="text-area-display">
+              <ix:nonNumeric contextRef="CY" name="core:RevenueRecognitionPolicy">Turnover represents amounts receivable from the sale of rugs and homeware and from events associated with the company&#39;s retail activities, stated net of VAT, discounts and returns.
+
+Revenue from the sale of goods is recognised when the significant risks and rewards of ownership have transferred to the customer, normally when the goods are delivered or collected.
+
+Revenue from events is recognised when the event takes place and the associated services have been provided.
+
+Amounts received in advance of the supply of goods or services are recognised as deferred income until the relevant performance obligations have been fulfilled.</ix:nonNumeric>
+            </p>
+          </div>
+          
+
+          
+          <p class="strong">Tangible fixed assets depreciation policy</p>
+          <div class="text-area-display" id="tangible-fixed-assets-depreciation-policy-free-text-note">
+            <p class="text-area-display">
+              <ix:nonNumeric contextRef="CY" name="core:PropertyPlantEquipmentPolicy">Tangible fixed assets are stated at cost less accumulated depreciation and any impairment losses.
+
+Depreciation is charged to write off the cost of tangible fixed assets, less their estimated residual values, over their expected useful economic lives.
+
+Leasehold improvements, including shop fit-out works, are depreciated on a straight-line basis over five years, or the remaining lease term if shorter.
+
+Depreciation commences when the assets are available for use.</ix:nonNumeric>
+            </p>
+          </div>
+          
+
+          
+
+          
+          <p class="strong">Valuation information and policy</p>
+          <div class="text-area-display" id="valuation-information-and-policy-free-text-note">
+            <p class="text-area-display">
+              <ix:nonNumeric contextRef="CY" name="core:ValuationFinancialInstrumentsPolicy">Stocks, comprising rugs and homeware held for resale, are valued at the lower of cost and estimated selling price less costs to complete and sell.
+
+Cost includes the purchase price and any directly attributable costs of bringing the goods to their present location and condition.
+
+Tangible fixed assets are stated at historical cost less accumulated depreciation and any impairment losses.</ix:nonNumeric>
+            </p>
+          </div>
+          
+
+          
+
+        </li>
+      </ul>
+
+      <div id="AdditionalNotesSection" class="section-marker"></div>
+
+    </div>
+
+    
+    
+
+    
+
+    
+    
+    
+
+    <div class="page">
+      <div class="header">
+        <h1 class="text--center">
+          <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+        </h1>
+      </div>
+
+      <h2 class="text--center">Notes to the Financial Statements</h2>
+      <p class="text--center">
+        <strong>for the Period Ended 31 March 2026</strong>
+      </p>
+
+      <ul>
+        <li>
+          <h2>2. Employees </h2>
+
+          <table>
+            <tbody>
+
+            <tr>
+              <th class="table-heading"></th>
+              
+              <th class="table-heading" id="employees-note-current-heading">2026</th>
+              
+
+              
+              <th class="table-heading" id="employees-note-previous-heading">2025</th>
+              
+            </tr>
+
+            
+            <tr class="figures">
+              <td id="employeesNote-label">Average number of employees during the period</td>
+              <td id="employeesNote-curr-val" class="strong figure">
+
+                
+                <ix:nonFraction contextRef="CY" decimals="0" unitRef="pure" name="core:AverageNumberEmployeesDuringPeriod" format="ixt2:numdotdecimal">1</ix:nonFraction>
+                
+
+              </td>
+
+              <td id="employeesNote-prev-val" class="figure">
+
+                
+                <ix:nonFraction contextRef="PY" decimals="0" unitRef="pure" name="core:AverageNumberEmployeesDuringPeriod" format="ixt2:numdotdecimal">1</ix:nonFraction>
+                
+
+              </td>
+            </tr>
+            
+
+            </tbody>
+          </table>
+
+          
+        </li>
+      </ul>
+    </div>
+
+    
+
+    
+
+    
+    
+
+    
+    <div id="balance-sheet-notes-section">
+
+      <div id="BalanceSheetNotesSection" class="section-marker"></div>
+
+      
+
+      
+
+      
+
+      
+
+      
+      
+      
+      <div class="page">
+        <div class="header">
+          <h1 class="text--center">
+            <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+          </h1>
+        </div>
+
+        <h2 class="text--center">Notes to the Financial Statements</h2>
+        <p class="text--center">
+          <strong>for the Period Ended 31 March 2026</strong>
+        </p>
+
+        <h2>3. Tangible assets</h2>
+
+        <table class="wrap">
+          <thead>
+          <tr>
+            <th class="text--right figure"></th>
+            <th class="text--right figure">Land &amp; buildings</th>
+            <th class="text--right figure">Plant &amp; machinery</th>
+            <th class="text--right figure">Fixtures &amp; fittings</th>
+            <th class="text--right figure">Office equipment</th>
+            <th class="text--right figure">Motor vehicles</th>
+            <th class="text--right figure">Total</th>
+          </tr>
+          </thead>
+
+          
+          
+          
+          <tbody>
+          <tr>
+            <th>Cost</th>
+            <td class="table-heading">&#163;</td>
+            <td class="table-heading">&#163;</td>
+            <td class="table-heading">&#163;</td>
+            <td class="table-heading">&#163;</td>
+            <td class="table-heading">&#163;</td>
+            <td class="table-heading">&#163;</td>
+          </tr>
+
+          
+          <tr class="figures">
+            <td id="tangible-cost-at-period-start">At 1 April 2025</td>
+            <td id="tangible-cost-at-period-start-land-and-building" class="strong figure">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_PY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipmentGrossCost" format="ixt2:numdotdecimal">16,255</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-cost-at-period-start-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-at-period-start-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-at-period-start-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-at-period-start-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-at-period-start-total" class="strong figure">
+              
+              <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipmentGrossCost" format="ixt2:numdotdecimal">16,255</ix:nonFraction>
+              
+            </td>
+          </tr>
+          
+
+          <tr class="figures">
+            <td id="tangible-cost-additions">Additions</td>
+            <td id="tangible-cost-additions-land-and-building" class="strong figure">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_CY" decimals="0" unitRef="GBP" name="core:TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment" format="ixt2:numdotdecimal">
+                4,815
+              </ix:nonFraction>
+              
+            </td>
+            <td id="tangible-cost-additions-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-additions-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-additions-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-additions-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-additions-total" class="strong figure">
+              
+              <ix:nonFraction contextRef="CY" decimals="0" unitRef="GBP" name="core:TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment" format="ixt2:numdotdecimal">
+                4,815
+              </ix:nonFraction>
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-cost-disposals">Disposals</td>
+            <td id="tangible-cost-disposals-land-and-building" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-disposals-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-disposals-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-disposals-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-disposals-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-disposals-total" class="strong figure">
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-cost-revaluations">Revaluations</td>
+            <td id="tangible-cost-revaluations-land-and-building" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-revaluations-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-revaluations-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-revaluations-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-revaluations-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-revaluations-total" class="strong figure">
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-cost-transfers" >Transfers</td>
+            <td id="tangible-cost-transfers-land-and-building" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-transfers-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-transfers-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-transfers-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-transfers-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-cost-transfers-total" class="strong figure">
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-cost-at-period-end">At 31 March 2026</td>
+            <td id="tangible-cost-at-period-end-land-and-building" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_CY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipmentGrossCost" format="ixt2:numdotdecimal">21,070</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-cost-at-period-end-plant-and-machinery" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-cost-at-period-end-fixtures-and-fitting" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-cost-at-period-end-office-equipment" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-cost-at-period-end-motor-vehicles" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-cost-at-period-end-total" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipmentGrossCost" format="ixt2:numdotdecimal">21,070</ix:nonFraction>
+              
+            </td>
+          </tr>
+
+          <tr>
+            <th>Depreciation</th>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+          </tr>
+
+          
+          <tr class="figures">
+            <td id="tangible-depreciation-at-period-start">At 1 April 2025</td>
+            <td id="tangible-depreciation-at-period-start-land-and-building" class="strong figure">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_PY_END" decimals="0" unitRef="GBP" name="core:AccumulatedDepreciationImpairmentPropertyPlantEquipment" format="ixt2:numdotdecimal">3,251</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-depreciation-at-period-start-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-start-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-start-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-start-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-start-total" class="strong figure">
+              
+              <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:AccumulatedDepreciationImpairmentPropertyPlantEquipment" format="ixt2:numdotdecimal">3,251</ix:nonFraction>
+              
+            </td>
+          </tr>
+          
+
+          <tr class="figures">
+            <td id="tangible-depreciation-charge">Charge for year</td>
+            <td id="tangible-depreciation-charge-land-and-building" class="strong figure">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_CY" decimals="0" unitRef="GBP" name="core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment" format="ixt2:numdotdecimal">
+                3,251
+              </ix:nonFraction>
+              
+            </td>
+            <td id="tangible-depreciation-charge-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-charge-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-charge-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-charge-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-charge-total" class="strong figure">
+              
+              <ix:nonFraction contextRef="CY" decimals="0" unitRef="GBP" name="core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment" format="ixt2:numdotdecimal">
+                3,251
+              </ix:nonFraction>
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-depreciation-on-disposals">On disposals</td>
+            <td id="tangible-depreciation-on-disposals-land-and-building" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-on-disposals-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-on-disposals-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-on-disposals-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-on-disposals-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-on-disposals-total" class="strong figure">
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-depreciation-other-adjustments">Other adjustments</td>
+            <td id="tangible-depreciation-other-adjustments-land-and-building" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-other-adjustments-plant-and-machinery" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-other-adjustments-fixtures-and-fitting" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-other-adjustments-office-equipment" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-other-adjustments-motor-vehicles" class="strong figure">
+              
+            </td>
+            <td id="tangible-depreciation-other-adjustments-total" class="strong figure">
+              
+            </td>
+          </tr>
+
+          <tr class="figures">
+            <td id="tangible-depreciation-at-period-end">At 31 March 2026</td>
+            <td id="tangible-depreciation-at-period-end-land-and-building" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_CY_END" decimals="0" unitRef="GBP" name="core:AccumulatedDepreciationImpairmentPropertyPlantEquipment" format="ixt2:numdotdecimal">6,502</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-depreciation-at-period-end-plant-and-machinery" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-end-fixtures-and-fitting" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-end-office-equipment" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-end-motor-vehicles" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-depreciation-at-period-end-total" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:AccumulatedDepreciationImpairmentPropertyPlantEquipment" format="ixt2:numdotdecimal">6,502</ix:nonFraction>
+              
+            </td>
+          </tr>
+
+          <tr>
+            <th>Net book value</th>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+            <td class="text--center"></td>
+          </tr>
+
+          <tr class="figures">
+            <td id ="tangible-net-book-value-current-period">At 31 March 2026</td>
+            <td  id="tangible-net-book-value-current-period-land-and-building" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_CY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">14,568</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-net-book-value-current-period-plant-and-machinery" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-current-period-fixtures-and-fitting" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-current-period-office-equipment" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-current-period-motor-vehicles" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-current-period-total" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">14,568</ix:nonFraction>
+              
+            </td>
+          </tr>
+
+          
+          <tr class="figures">
+            <td id="tangible-net-book-value-previous_period">At 31 March 2025</td>
+            <td id="tangible-net-book-value-previous_period-land-and-building" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="LandAndBuildings_PY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">13,004</ix:nonFraction>
+              
+            </td>
+            <td id="tangible-net-book-value-previous_period-plant-and-machinery" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-previous_period-fixtures-and-fitting" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-previous_period-office-equipment" class="strong grandtotal">
+              
+            </td>
+            <td  id="tangible-net-book-value-previous_period-motor-vehicles" class="strong grandtotal">
+              
+            </td>
+            <td id="tangible-net-book-value-previous_period-total" class="strong grandtotal">
+              
+              <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:PropertyPlantEquipment" format="ixt2:numdotdecimal">13,004</ix:nonFraction>
+              
+            </td>
+          </tr>
+          
+          </tbody>
+        </table>
+
+        <div class="text-area-display">
+          <p class="text-area-display">
+            <ix:nonNumeric contextRef="CY" name="core:PropertyPlantEquipmentFree-textComment"></ix:nonNumeric>
+          </p>
+        </div>
+      </div>
+
+      
+
+      
+
+      
+      
+      
+
+      
+
+      
+      
+      
+
+      <div class="page">
+        <div class="header">
+          <h1 class="text--center">
+            <ix:nonNumeric contextRef="CY" name="uk-bus:EntityCurrentLegalOrRegisteredName">NOMAD MAISON LTD</ix:nonNumeric>
+          </h1>
+        </div>
+
+        <h2 class="text--center">Notes to the Financial Statements</h2>
+        <p class="text--center">
+          <strong>for the Period Ended 31 March 2026</strong>
+        </p>
+
+        <h2>4. Stocks</h2>
+
+        <table cellspacing="10" id="stocks-note-table">
+          <tbody>
+
+          <tr>
+            <th class="table-heading"></th>
+            <th class="table-heading" id="stocks-note-current-heading">2026</th>
+
+              
+            <th class="table-heading" id="stocks-note-previous-heading">2025</th>
+            
+          </tr>
+
+          <tr>
+            <th class="table-heading"></th>
+            <th class="table-heading" id="stocks-note-current-currency">£</th>
+
+              
+            <th class="table-heading" id="stocks-note-previous-currency">£</th>
+                
+          </tr>
+
+          
+          <tr class="figures">
+            <td id="stocks">Stocks</td>
+            <td id="stocks-note-curr-val" class="strong figure">
+              
+              <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:OtherInventories" format="ixt2:numdotdecimal">51,000</ix:nonFraction>
+              
+            </td>
+            <td id="stocks-note-prev-val" class="figure">
+              
+              <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:OtherInventories" format="ixt2:numdotdecimal">45,000</ix:nonFraction>
+              
+            </td>
+          </tr>
+          
+
+          
+
+          
+          <tr class="figures">
+            <td id="stocks-total-label">Total</td>
+            
+            <td id="stocks-total-curr-val" class="strong total">
+              <ix:nonFraction contextRef="CY_END" decimals="0" unitRef="GBP" name="core:TotalInventories" format="ixt2:numdotdecimal">51,000</ix:nonFraction>
+            </td>
+            
+
+            
+            <td id="stocks-total-prev-val" class="total">
+              <ix:nonFraction contextRef="PY_END" decimals="0" unitRef="GBP" name="core:TotalInventories" format="ixt2:numdotdecimal">45,000</ix:nonFraction>
+            </td>
+            
+          </tr>
+          
+
+          </tbody>
+        </table>
+
+      </div>
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      
+      
+
+      
+      
+      
+
+      
+      
+      
+
+        
+
+        
+        
+
+      
+      
+      
+
+      
+      
+      
+
+    </div>
+
+    
+
+    
+    
+  </div>
+
+  
+
+</div>
+</body>
+</html>

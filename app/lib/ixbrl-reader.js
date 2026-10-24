@@ -31,6 +31,7 @@ const NS_ISO4217 = "http://www.xbrl.org/2003/iso4217";
 // The five transformation registries, by namespace. A format in none of them
 // refuses the file.
 const TRANSFORMATION_REGISTRIES = [
+  "http://www.xbrl.org/2008/inlineXBRL/transformation",
   "http://www.xbrl.org/inlineXBRL/transformation/2010-04-20",
   "http://www.xbrl.org/inlineXBRL/transformation/2011-07-31",
   "http://www.xbrl.org/inlineXBRL/transformation/2015-02-26",
@@ -171,7 +172,7 @@ const NUMBER_FORMATS = {
   "numspacecomma": { group: /[\s]/g, decimal: "," },
 };
 
-const ZERO_FORMATS = new Set(["nocontent", "zerodash", "fixed-zero", "zerodash-hyphen"]);
+const ZERO_FORMATS = new Set(["nocontent", "zerodash", "numdash", "fixed-zero"]);
 
 // date format -> the order of its parts
 const DATE_ORDERS = {
@@ -180,6 +181,7 @@ const DATE_ORDERS = {
   "date-day-monthname-year-en": "dmy",
   "date-day-month-year": "dmy",
   "dateslasheu": "dmy",
+  "datelonguk": "dmy",
   "datedoteu": "dmy",
   "datedaymonthyearin": "dmy",
   "datemonthdayyear": "mdy",
@@ -187,6 +189,7 @@ const DATE_ORDERS = {
   "date-monthname-day-year-en": "mdy",
   "date-month-day-year": "mdy",
   "dateslashus": "mdy",
+  "datelongus": "mdy",
   "datedotus": "mdy",
   "dateyearmonthday": "ymd",
   "date-year-month-day": "ymd",
@@ -216,6 +219,7 @@ function twoDigitYear(year) {
 function isoDate(text, order, format) {
   const parts = text
     .trim()
+    .replace(/(\d)(st|nd|rd|th)\b/gi, "$1")
     .split(/[\s./,-]+/)
     .filter(Boolean);
   if (parts.length !== 3) throw new IxbrlError(`The date "${text.trim()}" does not fit the format "${format}".`);
@@ -249,6 +253,7 @@ function numberOf(text, localName, format) {
 // ============================================================================
 
 function readMember(element, what) {
+  if (is(element, NS_XBRLDI, "explicitMember") && textOf(element).trim() === "") return null;
   const dimension = resolveQName(element, element.getAttribute("dimension"), what);
   const key = `${dimension.namespace}#${dimension.localName}`;
   if (is(element, NS_XBRLDI, "explicitMember")) {
@@ -283,8 +288,8 @@ function readContext(element) {
   for (const holder of holders) {
     for (const member of elementChildren(holder)) {
       if (is(member, NS_XBRLDI, "explicitMember") || is(member, NS_XBRLDI, "typedMember")) {
-        const [dimension, value] = readMember(member, "a dimension member");
-        dimensions[dimension] = value;
+        const entry = readMember(member, "a dimension member");
+        if (entry) dimensions[entry[0]] = entry[1];
       }
     }
   }
@@ -298,7 +303,9 @@ function readContext(element) {
 
 function readUnit(element) {
   const measures = descendants(element, (child) => is(child, NS_XBRLI, "measure")).map((measure) => {
-    const { namespace, localName } = resolveQName(measure, textOf(measure), "a measure");
+    const text = textOf(measure).trim();
+    if (!text.includes(":")) return text;
+    const { namespace, localName } = resolveQName(measure, text, "a measure");
     if (namespace === NS_ISO4217) return localName;
     if (namespace === NS_XBRLI) return localName;
     return `${namespace}#${localName}`;
@@ -427,7 +434,6 @@ function nonNumericValue(element, continuations) {
   if (BOOLEAN_FORMATS[localName] !== undefined) return BOOLEAN_FORMATS[localName] === "true" ? "true" : "false";
   if (localName === "fixed-empty") return "";
   if (DATE_ORDERS[localName]) return isoDate(raw, DATE_ORDERS[localName], format);
-  if (localName === "numwordsen" || localName === "zerodash") return raw.trim();
   throw unknownFormat(format);
 }
 
@@ -527,7 +533,7 @@ export function readIxbrl(input) {
       unit = units[unitRef];
       if (unit === undefined)
         throw new IxbrlError(`The fact ${localName} refers to the unit "${unitRef}", which the file does not define.`);
-      if (unit !== "GBP" && unit !== "pure" && unit !== "shares") {
+      if (unit !== "GBP" && unit !== "pure" && unit !== "shares" && !unit.startsWith("divide:")) {
         throw new IxbrlError(`The fact ${localName} is stated in ${unit}; diya-gl reads pounds sterling (GBP), shares and pure numbers.`);
       }
       const decimalsText = element.getAttribute("decimals");

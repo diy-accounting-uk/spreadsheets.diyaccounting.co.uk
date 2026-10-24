@@ -118,17 +118,24 @@ function fixedAssetPlan({ openingNetBookValue, closingNetBookValue, note, totalC
   const openingValue = sum(classes.map((entry) => entry.cost - entry.depreciation));
 
   // The gross cost of the additions: the closing net book value less the
-  // opening one, with the tagged charge put back.
-  const additions = Math.max(closingNetBookValue - openingValue + totalCharge, 0);
-  if (closingNetBookValue - openingValue + totalCharge < -0.5) {
+  // opening one, with the tagged charge put back. The additions take their own
+  // charge at the class rate, and the assets already held take the rest of
+  // the tagged charge. When the additions' own charge is more than the tagged
+  // one, the additions are sized to the closing net book value and the charge
+  // is theirs alone.
+  const netChange = closingNetBookValue - openingValue;
+  if (netChange + totalCharge < -0.5) {
     differences.push(
       `${label}: fixed assets fall by ${money(openingValue - totalCharge - closingNetBookValue)} more than the charge; disposals are not posted.`,
     );
   }
-
-  // The charge on the assets already held is what is left of the tagged charge
-  // once the additions have taken their own at the class rate.
-  const heldCharge = Math.max(totalCharge - additions * additionsRate, 0);
+  let additions = Math.max(netChange + totalCharge, 0);
+  let heldCharge = totalCharge - additions * additionsRate;
+  if (heldCharge < 0) {
+    additions = netChange > 0 && additionsRate < 1 ? netChange / (1 - additionsRate) : 0;
+    heldCharge = Math.max(totalCharge - additions * additionsRate, 0);
+  }
+  const engineCharge = heldCharge + additions * additionsRate;
   const taggedHeld = sum(classes.map((entry) => entry.charge));
   const totalCost = sum(classes.map((entry) => entry.cost));
   for (const entry of classes) {
@@ -139,7 +146,7 @@ function fixedAssetPlan({ openingNetBookValue, closingNetBookValue, note, totalC
   if (totalCharge > 0 && totalCost === 0 && additions * additionsRate < totalCharge - 0.5) {
     differences.push(`${label}: a depreciation charge of ${money(totalCharge)} falls on no asset held at the start of the year.`);
   }
-  return { classes, additions: money(additions) };
+  return { classes, additions: money(additions), engineCharge: money(engineCharge) };
 }
 
 // ============================================================================
@@ -160,8 +167,11 @@ class LineWriter {
     this.lines.push({ entryNumber: this.next(), ...line });
   }
 
-  journal(date, reference, account, side, amount, comment) {
-    if (!(amount > 0)) return;
+  journal(date, reference, account, side, signedAmount, comment) {
+    if (!(Math.abs(signedAmount) > 0)) return;
+    // A balance on the other side of its usual one posts to the other side.
+    const amount = Math.abs(signedAmount);
+    if (signedAmount < 0) side = side === "D" ? "C" : "D";
     this.add({
       sourceJournalID: "journal",
       postingDate: date,
@@ -247,7 +257,7 @@ function openingJournal(writer, date, opening, assetClasses) {
 
 // The profit and loss lines a year posts: [{ concept, journal, account, amount, label }] and
 // the interest received.
-function profitAndLossLines(profitAndLoss, { stockMovement, depreciation }) {
+function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, taggedDepreciation }) {
   const posts = [];
   const add = (concept, journal, account, amount, label) => {
     if (amount !== undefined && amount !== 0) posts.push({ concept, journal, account, amount, label });
@@ -262,7 +272,17 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation }) {
   if (profitAndLoss.administrativeExpenses !== undefined) {
     add("AdministrativeExpenses", "purchases", "5501", profitAndLoss.administrativeExpenses - depreciation, "Administrative expenses");
   }
-  add("OtherOperatingExpensesFormat2", "purchases", "5501", profitAndLoss.otherOperatingExpenses, "Other operating expenses");
+  if (profitAndLoss.otherOperatingExpenses !== undefined) {
+    // The micro-entity charge is its own line; the engine's charge replaces it, so any charge beyond it comes off the other expenses.
+    const extraCharge = Math.max(depreciation - taggedDepreciation, 0);
+    add(
+      "OtherOperatingExpensesFormat2",
+      "purchases",
+      "5501",
+      profitAndLoss.otherOperatingExpenses - extraCharge,
+      "Other operating expenses",
+    );
+  }
   return posts;
 }
 
@@ -289,7 +309,15 @@ function bookShell(accounts, period, taxData, extras) {
   book.accounts.purchases["5101"] = { "accountMainDescription": "Employee wages (non-PAYE)", "diya-gl:column": "S" };
   book.accounts.purchases["5501"] = { "accountMainDescription": "General admin", "diya-gl:column": "AA" };
   book.accounts.capital = { 3000: { accountMainDescription: "Share capital" }, 3100: { accountMainDescription: "Retained earnings" } };
-  book.accounts.assets = { 1100: { accountMainDescription: "Stock" }, 1300: { accountMainDescription: "Trade debtors" } };
+  book.accounts.assets = {
+    "0000": { accountMainDescription: "Land and buildings" },
+    "0010": { accountMainDescription: "Plant and machinery" },
+    "0020": { accountMainDescription: "Fixtures and fittings" },
+    "0030": { accountMainDescription: "Computer equipment" },
+    "0040": { accountMainDescription: "Motor vehicles" },
+    "1100": { accountMainDescription: "Stock" },
+    "1300": { accountMainDescription: "Trade debtors" },
+  };
   book.accounts.liabilities = {
     2100: { accountMainDescription: "Trade creditors" },
     2300: { accountMainDescription: "Corporation Tax liability" },
@@ -360,25 +388,45 @@ async function buildYear(accounts, which, deps) {
     if (disposals > 0) differences.push(`${label}: disposals of ${disposals} in the fixed asset note are not posted.`);
   }
 
-  // The profit and loss lines.
+  // The profit and loss lines. A file with no profit and loss account has its year's profit after tax as the
+  // movement in net assets, so the profit before tax is that movement with the tax the engine works put back.
   const stockMovement = current ? closingSheet.stock - opening.stock : 0;
-  const posts = profitAndLoss ? profitAndLossLines(profitAndLoss, { stockMovement, depreciation: totalCharge }) : [];
-  if (derivesProfit && derivedProfit !== 0) {
-    posts.push({
-      concept: "NetAssetsLiabilities",
-      journal: "sales",
-      account: "4000",
-      amount: derivedProfit,
-      label: "Profit for the year, from the movement in net assets",
-    });
-  }
-  const interest = profitAndLoss ? n(profitAndLoss.interestReceivable) : 0;
   const additionsAmount = assets.additions;
-  const refused = posts.filter((post) => post.amount < 0);
-  for (const post of refused) differences.push(`${label}: ${post.label} is negative (${post.amount}) and is not posted.`);
-  const usable = posts.filter((post) => post.amount > 0);
-  const usableSales = sum(usable.filter((post) => post.journal === "sales").map((post) => post.amount));
-  const usablePurchases = sum(usable.filter((post) => post.journal === "purchases").map((post) => post.amount)) + additionsAmount;
+  // The ledger takes interest as received net of the tax deducted at source; the engine grosses it up to the figure the accounts state.
+  const interest = profitAndLoss ? money(n(profitAndLoss.interestReceivable) * (1 - n(taxData.corporation_tax?.small_profits_rate))) : 0;
+  const postsFor = (derivedTax) => {
+    const stated = profitAndLoss
+      ? profitAndLossLines(profitAndLoss, {
+          stockMovement,
+          depreciation: assets.engineCharge,
+          taggedDepreciation: n(profitAndLoss.depreciation),
+        })
+      : [];
+    const derivedBeforeTax = derivedProfit + (derivedProfit > 0 ? derivedTax : 0) + assets.engineCharge;
+    if (derivesProfit && derivedBeforeTax !== 0) {
+      stated.push({
+        concept: "NetAssetsLiabilities",
+        journal: "sales",
+        account: "4000",
+        amount: derivedBeforeTax,
+        label: "Profit for the year, from the movement in net assets",
+      });
+    }
+    // A line stated against its usual side (a loss on a sales line, a credit on a cost line) posts in the other journal.
+    const usable = stated.map((post) =>
+      post.amount >= 0
+        ? post
+        : post.journal === "sales"
+          ? { ...post, journal: "purchases", account: "5501", amount: -post.amount }
+          : { ...post, journal: "sales", account: "4003", amount: -post.amount },
+    );
+    return {
+      usable,
+      usableSales: sum(usable.filter((post) => post.journal === "sales").map((post) => post.amount)),
+      usablePurchases: sum(usable.filter((post) => post.journal === "purchases").map((post) => post.amount)) + additionsAmount,
+    };
+  };
+  let posted = postsFor(0);
 
   const build = (flow) => {
     // The prior year's opening balance sheet: the closing one worked back.
@@ -390,7 +438,8 @@ async function buildYear(accounts, which, deps) {
     });
     const writer = new LineWriter(current ? "IXC" : "IXP");
     openingJournal(writer, period.start, openingSheet, assets.classes);
-    for (const post of usable) writer.invoice(post.journal, period.end, referenceFor(post.concept), post.account, post.amount, post.label);
+    for (const post of posted.usable)
+      writer.invoice(post.journal, period.end, referenceFor(post.concept), post.account, post.amount, post.label);
     if (additionsAmount > 0)
       writer.invoice(
         "purchases",
@@ -401,7 +450,7 @@ async function buildYear(accounts, which, deps) {
         "Fixed asset additions",
       );
 
-    const receiptsFromCustomers = usableSales - (closingSheet.debtors - openingSheet.debtors);
+    const receiptsFromCustomers = posted.usableSales - (closingSheet.debtors - openingSheet.debtors);
     if (receiptsFromCustomers >= 0)
       writer.bank(period.end, referenceFor("Debtors"), "DR", true, receiptsFromCustomers, "Receipts from customers");
     else writer.bank(period.end, referenceFor("Debtors"), "DR", false, -receiptsFromCustomers, "Refunds to customers");
@@ -414,7 +463,7 @@ async function buildYear(accounts, which, deps) {
         interest,
         "Bank interest received",
       );
-    const paymentsToSuppliers = openingSheet.creditors + usablePurchases - closingSheet.creditors;
+    const paymentsToSuppliers = openingSheet.creditors + posted.usablePurchases - closingSheet.creditors;
     if (paymentsToSuppliers >= 0)
       writer.bank(period.end, referenceFor("Creditors"), "CR", false, paymentsToSuppliers, "Payments to suppliers");
     else writer.bank(period.end, referenceFor("Creditors"), "CR", true, -paymentsToSuppliers, "Refunds from suppliers");
@@ -446,8 +495,17 @@ async function buildYear(accounts, which, deps) {
   // First pass: no dividend and no tax paid. The engine's tax and profit give the amounts that
   // bring the closing balance sheet to the file's.
   const flows = { opening: {}, dividend: 0, taxPaid: 0 };
-  const first = build(flows);
-  const results = await runEngine(first.book, first.lines, taxData);
+  let first;
+  let results;
+  let derivedTax = 0;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    posted = postsFor(derivedTax);
+    first = build(flows);
+    results = await runEngine(first.book, first.lines, taxData);
+    const worked = results["PubP&L"].F50;
+    if (!derivesProfit || Math.abs(worked - derivedTax) < 0.005) break;
+    derivedTax = worked;
+  }
   const closingTax = results.PubBalSht.E17;
   const closingRetained = results.PubBalSht.F39 - results.PubBalSht.F36;
   if (current) {
@@ -466,8 +524,8 @@ async function buildYear(accounts, which, deps) {
     const retained = closingSheet.retained - profitAfterTax;
     const taxOpening = Math.max(closingSheet.corporationTax - (closingTax - first.openingSheet.corporationTax), 0);
     flows.taxPaid = taxOpening + (closingTax - first.openingSheet.corporationTax) - closingSheet.corporationTax;
-    const receipts = usableSales - (closingSheet.debtors - opening.debtors) + interest;
-    const payments = opening.creditors + usablePurchases - closingSheet.creditors + flows.taxPaid;
+    const receipts = posted.usableSales - (closingSheet.debtors - opening.debtors) + interest;
+    const payments = opening.creditors + posted.usablePurchases - closingSheet.creditors + flows.taxPaid;
     const longTerm = closingSheet.afterOneYear - opening.afterOneYear;
     flows.opening = { retained, corporationTax: taxOpening, cash: closingSheet.cash - (receipts - payments + longTerm) };
   }
@@ -475,9 +533,9 @@ async function buildYear(accounts, which, deps) {
   const finalResults = await runEngine(final.book, final.lines, taxData);
 
   const { "PubBalSht": balanceSheet, "PubP&L": publishedPl } = finalResults;
-  const stated = profitAndLoss ? plProfitBeforeTax(profitAndLoss) : undefined;
-  if (stated !== undefined && Math.abs(publishedPl.F49 - stated) > 1) {
-    differences.push(`${label}: the book's profit before tax is ${money(publishedPl.F49)} and the file's ${stated}.`);
+  const statedProfit = profitAndLoss ? plProfitBeforeTax(profitAndLoss) : undefined;
+  if (statedProfit !== undefined && Math.abs(publishedPl.F49 - statedProfit) > 1) {
+    differences.push(`${label}: the book's profit before tax is ${money(publishedPl.F49)} and the file's ${statedProfit}.`);
   }
   if (profitAndLoss?.tax !== undefined && Math.abs(publishedPl.F50 - profitAndLoss.tax) > 1) {
     differences.push(
