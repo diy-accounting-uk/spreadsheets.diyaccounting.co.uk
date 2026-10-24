@@ -17,7 +17,7 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadTaxDataForBook } from "../lib/product-workbook.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { IxbrlError } from "../lib/ixbrl-reader.js";
-import { xbrlInstance } from "./helpers/ixbrl-document.js";
+import { context, ixbrlDocument, money, words, xbrlInstance } from "./helpers/ixbrl-document.js";
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "fixtures", "ixbrl");
 const fixture = (name) => readFileSync(resolve(FIXTURES, name));
@@ -404,6 +404,23 @@ describe("the other kinds are unchanged", () => {
     await expect(readBookSource(fixture("doctored-unknown-format.xhtml"), "x")).rejects.toThrow(/ixt2:numfoo/);
     await expect(readBookSource(fixture("doctored-unbalanced.xhtml"), "x", { expect: { companyNumber: "06846849" } })).rejects.toThrow(
       /does not balance|net current assets/,
+    );
+  });
+});
+
+describe("a year diya-gl has no tax tables for", () => {
+  it("refuses with a message that names the year", async () => {
+    const contexts = [context("CY_END", { instant: "2041-03-31" }), context("PY_END", { instant: "2040-03-31" })].join("");
+    const body = [
+      words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2040-04-01"),
+      words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2041-03-31"),
+      money("core:FixedAssets", "CY_END", "100"),
+      money("core:FixedAssets", "PY_END", "100"),
+      money("core:Equity", "CY_END", "100"),
+      money("core:Equity", "PY_END", "100"),
+    ].join("");
+    await expect(readBookSource(new TextEncoder().encode(ixbrlDocument({ contexts, body })), "x")).rejects.toThrow(
+      /no tax tables for the year ending 2041-03-31/,
     );
   });
 });

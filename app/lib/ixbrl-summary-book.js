@@ -18,7 +18,7 @@ import { buildNewBook } from "./diya-gl-new-book.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { calculateFromDiyaGl } from "./diya-gl-calculator.js";
 import { buildOpeningBalance, toV2OpeningBalances } from "./scenario-extractor.js";
-import { FIXED_ASSET_ACCOUNTS, FIXED_ASSET_CLASSES, microProfitBeforeTax } from "./ixbrl-accounts.js";
+import { FIXED_ASSET_ACCOUNTS, FIXED_ASSET_CLASSES, IxbrlError, microProfitBeforeTax } from "./ixbrl-accounts.js";
 
 // The register's class name for each class the accounts note uses.
 const REGISTER_CLASS = {
@@ -341,7 +341,11 @@ async function loadTaxData(period, deps) {
     documentInfo: { periodCoveredEnd: period.end, periodCoveredStart: period.start },
     entityInformation: { "diya-gl:product": "Company" },
   };
-  return loadTaxDataForBook(probe, { resources: deps.resources ?? nodeResourceLoader() });
+  try {
+    return await loadTaxDataForBook(probe, { resources: deps.resources ?? nodeResourceLoader() });
+  } catch (cause) {
+    throw new IxbrlError(`diya-gl has no tax tables for the year ending ${period.end} (${cause.message}).`);
+  }
 }
 
 /**
