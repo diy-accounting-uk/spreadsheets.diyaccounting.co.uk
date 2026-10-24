@@ -32,6 +32,7 @@
     "prepack": "node scripts/prepack.mjs"
   },
   "dependencies": {
+    "@xmldom/xmldom": "^0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "jszip": "^3.10.1",
