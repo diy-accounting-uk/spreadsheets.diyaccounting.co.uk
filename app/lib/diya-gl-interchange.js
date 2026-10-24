@@ -9,13 +9,14 @@
 // writeDiyaGlZip/writeBookJson, so a download from one matches an export
 // from another byte-for-byte.
 //
-// Seven byte kinds, told apart by content, never by file extension: a
+// Nine byte kinds, told apart by content, never by file extension: a
 // workbook, the zip a single-workbook package ships as, the zip a
 // multi-file package ships as, this module's own zip (book.toml +
-// lines.jsonl), that pair as one JSON file, the same JSON zipped, and the
-// legacy .xls this pipeline cannot read directly. A customer's upload can
-// be any of the first six under any name at all -- a renamed .xlsx is still
-// a workbook -- so the kind is decided by what the bytes actually contain.
+// lines.jsonl), that pair as one JSON file, the same JSON zipped, an Inline
+// XBRL accounts document, a plain XBRL instance, and the legacy .xls this
+// pipeline cannot read directly. A customer's upload can be any of the first
+// six under any name at all -- a renamed .xlsx is still a workbook -- so the
+// kind is decided by what the bytes actually contain.
 //
 // Reading a workbook or its package zip runs the pipeline export.js has
 // always run: the anchor guard, then the extractors and book builder
@@ -45,6 +46,9 @@ import { canonicalBookToml, canonicalLinesJsonl, compareLines, orderedBookTopLev
 import { serializeReportDocument } from "./report-serializer.js";
 import { parseDiyaGlData } from "./diya-gl-loader.js";
 import { stampBook } from "./provenance.js";
+import { sniffIxbrl } from "./ixbrl-reader.js";
+import { mapIxbrlAccounts } from "./ixbrl-accounts.js";
+import { buildIxbrlSummaryBooks } from "./ixbrl-summary-book.js";
 import * as bst from "../products/bst.js";
 
 export { AnchorError };
@@ -70,7 +74,7 @@ export class UnknownBookSourceError extends Error {
   constructor(name) {
     super(
       `${name ? `"${name}"` : "This file"} is not one of the kinds diya-gl reads: a Basic Sole Trader workbook (.xlsx), ` +
-        `its package zip, a diya-gl zip, a diya-gl JSON file, or that JSON zipped.`,
+        `its package zip, a diya-gl zip, a diya-gl JSON file, that JSON zipped, or an iXBRL accounts file.`,
     );
     this.name = "UnknownBookSourceError";
   }
@@ -196,14 +200,14 @@ async function zipKind(bytes) {
  * error messages only.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for messages, not for detection
- * @returns {Promise<"workbook"|"package-zip"|"package-set"|"diya-gl-zip"|"json-zip"|"json"|"xls"|"unknown">}
+ * @returns {Promise<"workbook"|"package-zip"|"package-set"|"diya-gl-zip"|"json-zip"|"json"|"ixbrl"|"xbrl"|"xls"|"unknown">}
  */
 export async function detectBookSource(bytes, name) {
   void name; // content decides the kind; the name is a hint for a caller's own error messages, never for detection
   if (isZipContainer(bytes)) return zipKind(bytes);
   if (startsWithBytes(bytes, OLE_MAGIC)) return "xls";
   if (looksLikeJsonObject(bytes)) return "json";
-  return "unknown";
+  return sniffIxbrl(bytes) ?? "unknown";
 }
 
 // ============================================================================
@@ -456,17 +460,37 @@ async function readJsonZipSource(bytes) {
   return { ...validated("json-zip", document.book, document.lines), product: document.product };
 }
 
+// An accounts file stands for two Company books, the file's own year and the
+// year before, each a summary with one line per tagged line. The comparative
+// pair, the accounts figures and the facts no figure uses ride beside them.
+async function readIxbrlSource(kind, bytes, deps) {
+  const accounts = mapIxbrlAccounts(bytes, deps.expect);
+  const summary = await buildIxbrlSummaryBooks(accounts, { resources: deps.resources });
+  const current = validated(kind, summary.book, summary.lines);
+  const prior = validated(kind, summary.comparative.book, summary.comparative.lines);
+  return {
+    ...current,
+    product: "ltd",
+    comparative: { book: prior.book, lines: prior.lines },
+    accounts,
+    unmapped: accounts.unmapped,
+    differences: summary.differences,
+  };
+}
+
 /**
- * Turn a byte array into D: the book and its lines, whichever of the six
- * kinds it sniffs as. The CLI's --file mode, the MCP server's extract_book
+ * Turn a byte array into D: the book and its lines, whichever of the kinds
+ * it sniffs as. The CLI's --file mode, the MCP server's extract_book
  * tool and the books page all call this, so a file that loads in one loads
  * in all.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for error messages
  * @param {Object} [deps] - {products}: product id to product module
  *   (CELL_MAP, cellLabels()) for the products this caller can read;
- *   defaults to app/products/bst.js alone
- * @returns {Promise<{kind: string, product?: string, book: Object, lines: Array, overtyped?: Object, workbookSet?: Object}>}
+ *   defaults to app/products/bst.js alone. {expect, resources} serve an
+ *   iXBRL accounts file: what the page expects of the file (company number,
+ *   period, regime), and the loader of the tax year's data.
+ * @returns {Promise<{kind: string, product?: string, book: Object, lines: Array, overtyped?: Object, workbookSet?: Object, comparative?: {book: Object, lines: Array}, accounts?: Object, unmapped?: Array, differences?: string[]}>}
  */
 export async function readBookSource(bytes, name, deps = {}) {
   const kind = await detectBookSource(bytes, name);
@@ -481,6 +505,9 @@ export async function readBookSource(bytes, name, deps = {}) {
       return readJsonSource(bytes);
     case "json-zip":
       return readJsonZipSource(bytes);
+    case "ixbrl":
+    case "xbrl":
+      return readIxbrlSource(kind, bytes, deps);
     case "xls":
       throw new XlsBookSourceError(name);
     default:

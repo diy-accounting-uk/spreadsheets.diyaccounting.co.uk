@@ -554,7 +554,8 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
   }
 
   for (const row of rows) {
-    const ratePercent = depreciationRates[row.assetClass];
+    // An asset that states its own rate depreciates at it; any other takes its class's rate.
+    const ratePercent = row.openingAsset?.depreciation_rate ?? depreciationRates[row.assetClass];
     const netBookValue = row.cost - row.depreciationBroughtForward;
     row.depreciationCharge = row.cost > 0 ? Math.min(row.cost * ratePercent, netBookValue) : 0;
     row.depreciationCarriedForward = row.cost > 0 ? row.depreciationBroughtForward + row.depreciationCharge : 0;
