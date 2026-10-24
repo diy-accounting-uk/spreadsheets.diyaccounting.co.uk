@@ -79,10 +79,17 @@ export function sniffIxbrl(bytes) {
     start += 1;
   if (bytes[start] !== 0x3c) return null; // "<"
   const head = decodeUtf8(bytes.subarray(start, start + SNIFF_BYTES));
-  if (head.includes(NS_IX_11) || head.includes(NS_IX_10)) return "ixbrl";
+  const declared = declaredNamespaces(head);
+  if (declared.has(NS_IX_11) || declared.has(NS_IX_10)) return "ixbrl";
   const root = head.match(/<(?!\?|!)([A-Za-z_][\w.-]*:)?xbrl\b[^>]*>/);
-  if (root && root[0].includes(NS_XBRLI)) return "xbrl";
+  if (root && declaredNamespaces(root[0]).has(NS_XBRLI)) return "xbrl";
   return null;
+}
+
+function declaredNamespaces(text) {
+  const out = new Set();
+  for (const match of text.matchAll(/\bxmlns(?::[A-Za-z_][\w.-]*)?\s*=\s*(["'])(.*?)\1/g)) out.add(match[2]);
+  return out;
 }
 
 // ============================================================================
