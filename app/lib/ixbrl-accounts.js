@@ -147,6 +147,15 @@ export const MAPPING_TABLE = [
     note: "micro-entity profit and loss",
   },
   { concept: "OtherOperatingExpensesFormat2", figure: "otherOperatingExpenses", account: "5501", note: "micro-entity profit and loss" },
+  { concept: "ProfitLossOnOrdinaryActivitiesAfterTax", figure: "profit", account: "-", note: "a check; read when ProfitLoss is absent" },
+  {
+    concept: "TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment",
+    dimension: PPE_CLASS,
+    figure: "fixedAssetNote.additions",
+    account: "5900",
+    note: "read when the other additions concept is absent",
+  },
+  { concept: "StartDateForPriorPeriod", figure: "priorPeriod.start", account: "-" },
   { concept: "AverageNumberEmployeesDuringPeriod", figure: "averageEmployees", account: "-" },
   { concept: "DescriptionPrincipalActivities", figure: "principalActivity", account: "-" },
   { concept: "NameEntityOfficer", dimension: "EntityOfficersDimension", figure: "directors", account: "-" },
@@ -182,6 +191,12 @@ const dayBefore = (isoDay) => {
 const addYears = (isoDay, years) => {
   const date = new Date(`${isoDay}T00:00:00Z`);
   date.setUTCFullYear(date.getUTCFullYear() + years);
+  return date.toISOString().slice(0, 10);
+};
+
+const addDays = (isoDay, days) => {
+  const date = new Date(`${isoDay}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
 };
 
@@ -296,7 +311,7 @@ function profitAndLossAt(set, endDay) {
     interestReceivable: set.duration("OtherInterestReceivableSimilarIncomeFinanceIncome", endDay),
     profitBeforeTax: set.duration("ProfitLossOnOrdinaryActivitiesBeforeTax", endDay),
     tax: set.duration("TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", endDay),
-    profit: set.duration("ProfitLoss", endDay),
+    profit: set.duration("ProfitLoss", endDay) ?? set.duration("ProfitLossOnOrdinaryActivitiesAfterTax", endDay),
     otherOperatingIncome: set.duration("OtherOperatingIncomeFormat2", endDay),
     rawMaterialsConsumables: set.duration("RawMaterialsConsumablesUsed", endDay),
     staffCosts: set.duration("StaffCostsEmployeeBenefitsExpense", endDay),
@@ -305,13 +320,26 @@ function profitAndLossAt(set, endDay) {
   });
 }
 
+const FIXED_ASSET_NOTE_CONCEPTS = new Set([
+  "PropertyPlantEquipment",
+  "PropertyPlantEquipmentGrossCost",
+  "AccumulatedDepreciationImpairmentPropertyPlantEquipment",
+  "AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment",
+  "TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment",
+  "DisposalsPropertyPlantEquipment",
+  "IncreaseFromDepreciationChargeForYearPropertyPlantEquipment",
+  "DisposalsDecreaseInDepreciationImpairmentPropertyPlantEquipment",
+]);
+
 function fixedAssetNoteAt(set, endDay, startBalanceDay) {
   const note = {};
   for (const [member, className] of Object.entries(PPE_MEMBER)) {
     const want = { [PPE_CLASS]: member };
     const closingCost = set.instant("PropertyPlantEquipmentGrossCost", endDay, want);
     const costAtStart = set.instant("PropertyPlantEquipmentGrossCost", startBalanceDay, want);
-    const additions = set.duration("AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment", endDay, want);
+    const additions =
+      set.duration("AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment", endDay, want) ??
+      set.duration("TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment", endDay, want);
     const disposals = set.duration("DisposalsPropertyPlantEquipment", endDay, want);
     const closingDepreciation = set.instant("AccumulatedDepreciationImpairmentPropertyPlantEquipment", endDay, want);
     const depreciationAtStart = set.instant("AccumulatedDepreciationImpairmentPropertyPlantEquipment", startBalanceDay, want);
@@ -359,17 +387,20 @@ function periodOf(set) {
   let end = endFact?.value ?? balanceSheetDate?.value;
   let start = startFact?.value;
   if (!end) {
-    // No stated period: the latest duration ending in the file.
-    const durations = set.facts.filter((fact) => fact.period.endDate).sort((a, b) => (a.period.endDate < b.period.endDate ? 1 : -1));
-    end = durations[0]?.period.endDate;
-    start = durations[0]?.period.startDate;
+    // No stated period: the latest date any fact ends on.
+    end = set.facts
+      .map((fact) => fact.period.endDate ?? fact.period.instant)
+      .filter(Boolean)
+      .sort()
+      .pop();
+    start = set.facts.find((fact) => fact.period.endDate === end && fact.period.startDate)?.period.startDate;
   }
   if (!end) throw new IxbrlError("This file states no accounting period.");
   if (!start) {
     const duration = set.facts.find((fact) => fact.period.endDate === end && fact.period.startDate);
-    start = duration?.period.startDate;
+    start = duration?.period.startDate ?? addDays(addYears(end, -1), 1);
   }
-  return { start: start ?? null, end };
+  return { start, end };
 }
 
 function regimeOf(set) {
@@ -573,11 +604,21 @@ export function mapIxbrlAccounts(source, expect = {}) {
   const currentPl = profitAndLossAt(set, period.end);
   const priorPl = priorEnd ? profitAndLossAt(set, priorEnd) : {};
   const fixedAssetNote = priorEnd ? fixedAssetNoteAt(set, period.end, priorEnd) : null;
+  // The note's totals and net book values restate what its classes and the balance sheet already say.
+  for (const fact of set.facts) {
+    if (FIXED_ASSET_NOTE_CONCEPTS.has(fact.localName) && [period.end, priorEnd].includes(fact.period.instant ?? fact.period.endDate))
+      set.consumed.add(fact);
+  }
 
   const priorDuration = priorEnd ? set.facts.find((fact) => fact.period.endDate === priorEnd && fact.period.startDate) : null;
-  const priorPeriod = priorEnd ? { start: priorDuration?.period.startDate ?? addYears(period.start, -1), end: priorEnd } : null;
+  const statedPriorStart = textFact(set, "StartDateForPriorPeriod");
+  textFact(set, "EndDateForPriorPeriod");
+  const priorPeriod = priorEnd
+    ? { start: priorDuration?.period.startDate ?? statedPriorStart ?? addYears(period.start, -1), end: priorEnd }
+    : null;
 
-  const hasProfitAndLoss = Object.keys(currentPl).length > 0;
+  const currentHasProfitAndLoss = Object.keys(currentPl).length > 0;
+  const hasProfitAndLoss = currentHasProfitAndLoss || Object.keys(priorPl).length > 0;
   const [notDelivered] = set.find("StatementThatDirectorsHaveElectedNotToDeliverProfitLossAccountUnderSection4445ACompaniesAct2006");
   const filleted = regime === "small" && (Boolean(notDelivered) || !hasProfitAndLoss);
   if (notDelivered) set.consumed.add(notDelivered);
@@ -587,7 +628,7 @@ export function mapIxbrlAccounts(source, expect = {}) {
     if (!hasBalanceSheet(currentYear)) throw problem("This file has no balance sheet for its own year.");
     if (!hasBalanceSheet(priorYear))
       throw problem("This file has no prior-year balance sheet; both years are needed unless the company is new.");
-    if (hasProfitAndLoss !== Object.keys(priorPl).length > 0) {
+    if (currentHasProfitAndLoss !== Object.keys(priorPl).length > 0) {
       throw problem(
         "This file has a profit and loss account for one year but not the other; both years are needed unless the company is new.",
       );
@@ -603,7 +644,7 @@ export function mapIxbrlAccounts(source, expect = {}) {
     checkBalance(priorYear, "prior-year");
     checkTotals(priorYear, "prior-year", regime);
   }
-  if (hasProfitAndLoss) checkProfitAndLoss(currentPl, "current-year");
+  if (currentHasProfitAndLoss) checkProfitAndLoss(currentPl, "current-year");
   if (Object.keys(priorPl).length > 0) checkProfitAndLoss(priorPl, "prior-year");
 
   // The company's other statements.
@@ -622,7 +663,17 @@ export function mapIxbrlAccounts(source, expect = {}) {
   const signerMember = signerFact && Object.keys(signerFact.dimensions).length === 1 ? local(Object.values(signerFact.dimensions)[0]) : "";
   const signer = officerByMember.get(signerMember) ?? null;
 
-  const averageEmployees = set.duration("AverageNumberEmployeesDuringPeriod", period.end);
+  const [employeesFact] = set.find(
+    "AverageNumberEmployeesDuringPeriod",
+    null,
+    (fact) => Object.keys(fact.dimensions).length === 0 && (fact.period.endDate ?? fact.period.instant) === period.end,
+  );
+  for (const fact of set.find("AverageNumberEmployeesDuringPeriod", null, (f) =>
+    [period.end, priorEnd].includes(f.period.endDate ?? f.period.instant),
+  )) {
+    set.consumed.add(fact);
+  }
+  const averageEmployees = employeesFact?.value;
   const shares = set.find("NumberSharesIssuedFullyPaid", null, (f) => f.period.instant === period.end)[0];
   const nominal = set.find("NominalValueAllottedShareCapital", null)[0];
   for (const fact of [shares, nominal]) if (fact) set.consumed.add(fact);
@@ -672,6 +723,7 @@ export function mapIxbrlAccounts(source, expect = {}) {
 
 // Facts about the document itself and the address, which no figure uses.
 const BOILERPLATE = new Set([
+  "VersionProductionSoftware",
   "NameProductionSoftware",
   "CountryFormationOrIncorporation",
   "PrincipalCurrencyUsedInBusinessReport",
