@@ -607,6 +607,7 @@ export function diyaGlToScenario(book, lines, product) {
         }
         const opening = { category, description: asset.description, cost: asset.cost, acc_dep: asset.accumulatedDepreciation };
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+        if (asset.depreciationRate !== undefined) opening.depreciation_rate = asset.depreciationRate;
         if (asset.capitalAllowancePool === "special") opening.pool = "special";
         // A single asset pool is a fact the book states, never one the loader
         // infers: private use puts an asset in its own pool (CAA 2001 s.206),
