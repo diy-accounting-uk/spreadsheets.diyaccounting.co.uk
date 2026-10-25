@@ -200,9 +200,15 @@ describe("the packed diya-gl package imported by name", () => {
     execFileSync("tar", ["-xzf", tarball, "-C", installed, "--strip-components=1"]);
   }, 180000);
 
-  it("exports the three filing derivations from the package root", () => {
+  it("exports the five filing derivations from the package root", () => {
     const names = importByName('const m = await import("@diy-accounting-uk/diya-gl"); console.log(JSON.stringify(Object.keys(m).sort()));');
-    expect(names).toEqual(["deriveItsaAnnualSubmission", "deriveItsaQuarterlyUpdate", "deriveVatReturn"]);
+    expect(names).toEqual([
+      "deriveItsaAnnualSubmission",
+      "deriveItsaQuarterlyUpdate",
+      "deriveUkPropertyAnnual",
+      "deriveUkPropertyPeriod",
+      "deriveVatReturn",
+    ]);
   });
 
   it("derives a VAT return and both ITSA answers from an example book", () => {

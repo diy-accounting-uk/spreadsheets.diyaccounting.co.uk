@@ -1112,6 +1112,34 @@
           "minimum": 1,
           "maximum": 9,
           "description": "diya-gl: extension \u2014 VAT return box number (1-9) this account contributes to"
+        },
+        "diya-gl:ukPropertyField": {
+          "type": "string",
+          "enum": [
+            "income.periodAmount",
+            "income.premiumsOfLeaseGrant",
+            "income.reversePremiums",
+            "income.otherIncome",
+            "income.taxDeducted",
+            "expenses.premisesRunningCosts",
+            "expenses.repairsAndMaintenance",
+            "expenses.financialCosts",
+            "expenses.professionalFees",
+            "expenses.costOfServices",
+            "expenses.other",
+            "expenses.residentialFinancialCost",
+            "expenses.travelCosts",
+            "expenses.consolidatedExpenses",
+            "adjustments.balancingCharge",
+            "adjustments.privateUseAdjustment",
+            "adjustments.businessPremisesRenovationAllowanceBalancingCharges",
+            "allowances.annualInvestmentAllowance",
+            "allowances.businessPremisesRenovationAllowance",
+            "allowances.otherCapitalAllowance",
+            "allowances.costOfReplacingDomesticItems",
+            "allowances.zeroEmissionsCarAllowance"
+          ],
+          "description": "diya-gl: extension \u2014 the HMRC UK property field (Property Business API names) this sales or purchases account feeds, so deriveUkPropertyPeriod and deriveUkPropertyAnnual can sum its postings"
         }
       }
     },

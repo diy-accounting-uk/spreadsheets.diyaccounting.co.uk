@@ -572,6 +572,7 @@ metadata needed for the spreadsheet mapping:
 | `diya-gl:sa103sBox`          | SA103S box reference (e.g. 'box10')          | book.toml |
 | `diya-gl:ct600Box`           | CT600 box reference                          | book.toml |
 | `diya-gl:vatBox`             | VAT return box number (1-9)                  | book.toml |
+| `diya-gl:ukPropertyField`   | HMRC UK property field this account feeds    | book.toml |
 | `diya-gl:bankCode`           | Bank receipt/payment code (DR/CR/W/RP/RV...) | .jsonl    |
 | `diya-gl:bankAccountID`      | Bank account code from chart of accounts     | .jsonl    |
 | `diya-gl:employeeID`         | Employee identifier (matches employees[])    | .jsonl    |
