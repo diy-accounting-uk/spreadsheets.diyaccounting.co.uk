@@ -11,11 +11,29 @@
 // date, so a file on the 2022 suite and one on the 2026 suite read the same.
 // MAPPING_TABLE is the one list of what is mapped and where it lands in the
 // summary book (ixbrl-summary-book.js); a fact the table does not name goes
-// to the unmapped list.
+// to the unmapped list, marked with whether the suite the file declares
+// defines its name (scripts/generate-frc-taxonomy-concepts.mjs writes the lists).
 
 import { readIxbrl, IxbrlError } from "./ixbrl-reader.js";
+import frc2014 from "../data/frc-taxonomy/2014.json" with { type: "json" };
+import frc2018 from "../data/frc-taxonomy/2018.json" with { type: "json" };
+import frc2019 from "../data/frc-taxonomy/2019.json" with { type: "json" };
+import frc2021 from "../data/frc-taxonomy/2021.json" with { type: "json" };
 
 export { IxbrlError };
+
+// The concept names each FRC suite defines, by the year of the suite's date.
+const SUITE_CONCEPTS = new Map([frc2014, frc2018, frc2019, frc2021].map((list) => [list.suite.slice(0, 4), new Set(list.concepts)]));
+
+/**
+ * The concept names the file's suite defines, or null when the file names no
+ * suite or the suite has no list.
+ * @param {{date: string|null}} suite - the suite the reader found
+ * @returns {Set<string>|null}
+ */
+export function suiteConcepts(suite) {
+  return (suite?.date && SUITE_CONCEPTS.get(suite.date.slice(0, 4))) || null;
+}
 
 const MATURITY = "MaturitiesOrExpirationPeriodsDimension";
 const EQUITY_CLASS = "EquityClassesDimension";
@@ -692,9 +710,16 @@ export function mapIxbrlAccounts(source, expect = {}) {
 
   const principalActivity = textFact(set, "DescriptionPrincipalActivities") ?? null;
   const approvalDate = textFact(set, "DateAuthorisationFinancialStatementsForIssue") ?? null;
+  const definedBySuite = suiteConcepts(read.suite);
   const unmapped = set.facts
     .filter((fact) => !set.consumed.has(fact) && fact.value !== "" && !isBoilerplate(fact))
-    .map((fact) => ({ concept: fact.localName, dimensions: dimensionMap(fact), period: fact.period, value: fact.value }));
+    .map((fact) => ({
+      concept: fact.localName,
+      dimensions: dimensionMap(fact),
+      period: fact.period,
+      value: fact.value,
+      inSuite: definedBySuite ? definedBySuite.has(fact.localName) : null,
+    }));
 
   return {
     suite: read.suite,
