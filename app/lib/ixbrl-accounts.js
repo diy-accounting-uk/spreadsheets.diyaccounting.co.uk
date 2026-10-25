@@ -147,6 +147,12 @@ export const MAPPING_TABLE = [
     note: "micro-entity profit and loss",
   },
   { concept: "OtherOperatingExpensesFormat2", figure: "otherOperatingExpenses", account: "5501", note: "micro-entity profit and loss" },
+  {
+    concept: "GainLossOnDisposalsPropertyPlantEquipment",
+    figure: "gainOnDisposal",
+    account: "4006",
+    note: "the gain (loss when negative) on the disposals in the fixed asset note",
+  },
   { concept: "ProfitLossOnOrdinaryActivitiesAfterTax", figure: "profit", account: "-", note: "a check; read when ProfitLoss is absent" },
   {
     concept: "TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment",
@@ -317,6 +323,7 @@ function profitAndLossAt(set, endDay) {
     staffCosts: set.duration("StaffCostsEmployeeBenefitsExpense", endDay),
     depreciation: set.duration("DepreciationAmortisationImpairmentExpense", endDay),
     otherOperatingExpenses: set.duration("OtherOperatingExpensesFormat2", endDay),
+    gainOnDisposal: set.duration("GainLossOnDisposalsPropertyPlantEquipment", endDay),
   });
 }
 

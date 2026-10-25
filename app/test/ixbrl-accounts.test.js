@@ -208,6 +208,12 @@ const ROWS = [
     2482,
   ],
   [
+    "GainLossOnDisposalsPropertyPlantEquipment",
+    money("core:GainLossOnDisposalsPropertyPlantEquipment", "CY", "40", 'sign="-"'),
+    "profitAndLoss.currentYear.gainOnDisposal",
+    -40,
+  ],
+  [
     "AverageNumberEmployeesDuringPeriod",
     `<ix:nonFraction name="core:AverageNumberEmployeesDuringPeriod" contextRef="CY" unitRef="pure" decimals="0">4</ix:nonFraction>`,
     "averageEmployees",
@@ -263,7 +269,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(51);
+    expect(MAPPING_TABLE).toHaveLength(52);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
