@@ -464,7 +464,7 @@ async function readJsonZipSource(bytes) {
 // year before, each a summary with one line per tagged line. The comparative
 // pair, the accounts figures and the facts no figure uses ride beside them.
 async function readIxbrlSource(kind, bytes, deps) {
-  const accounts = mapIxbrlAccounts(bytes, deps.expect);
+  const accounts = mapIxbrlAccounts(bytes, deps.expect, { suiteConcepts: deps.suiteConcepts });
   const summary = await buildIxbrlSummaryBooks(accounts, { resources: deps.resources });
   const current = validated(kind, summary.book, summary.lines);
   const prior = validated(kind, summary.comparative.book, summary.comparative.lines);
@@ -485,7 +485,7 @@ async function readIxbrlSource(kind, bytes, deps) {
  * in all.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for error messages
- * @param {Object} [deps] - {products}: product id to product module
+ * @param {Object} [deps] - {products}: product id to product module; {suiteConcepts}: the FRC suite concept resolver of ixbrl-accounts.js
  *   (CELL_MAP, cellLabels()) for the products this caller can read;
  *   defaults to app/products/bst.js alone. {expect, resources} serve an
  *   iXBRL accounts file: what the page expects of the file (company number,

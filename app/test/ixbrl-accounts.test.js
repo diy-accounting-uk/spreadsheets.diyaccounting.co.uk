@@ -10,6 +10,7 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { mapIxbrlAccounts, MAPPING_TABLE, IxbrlError } from "../lib/ixbrl-accounts.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { context, ixbrlDocument, money, words, STANDARD_CONTEXTS } from "./helpers/ixbrl-document.js";
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "fixtures", "ixbrl");
@@ -208,6 +209,12 @@ const ROWS = [
     2482,
   ],
   [
+    "GainLossOnDisposalsPropertyPlantEquipment",
+    money("core:GainLossOnDisposalsPropertyPlantEquipment", "CY", "40", 'sign="-"'),
+    "profitAndLoss.currentYear.gainOnDisposal",
+    -40,
+  ],
+  [
     "AverageNumberEmployeesDuringPeriod",
     `<ix:nonFraction name="core:AverageNumberEmployeesDuringPeriod" contextRef="CY" unitRef="pure" decimals="0">4</ix:nonFraction>`,
     "averageEmployees",
@@ -263,7 +270,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(51);
+    expect(MAPPING_TABLE).toHaveLength(52);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
@@ -342,7 +349,44 @@ describe("the mapping table", () => {
 
   it("lists a fact the table does not name as unmapped", () => {
     const accounts = accountsOf(money("core:GoodwillAndSuch", "CY_END", "77") + money("core:FixedAssets", "CY_END", "10"));
-    expect(accounts.unmapped).toEqual([{ concept: "GoodwillAndSuch", dimensions: {}, period: { instant: "2025-03-31" }, value: 77 }]);
+    expect(accounts.unmapped).toEqual([
+      { concept: "GoodwillAndSuch", dimensions: {}, period: { instant: "2025-03-31" }, value: 77, inSuite: null },
+    ]);
+  });
+
+  // [suite date, a name the suite defines, a name only a later suite defines]
+  it.each([
+    ["2014-09-01", "Goodwill", "Agent10"],
+    ["2018-01-01", "Goodwill", "AcquiredThroughBusinessCombinationsContractAssets"],
+    ["2019-01-01", "Goodwill", "EntityHasClaimedExemptionFromReportingCertainItemsRelatingToImpairmentAssetsInLineWithFRS1018lTruefalse"],
+    ["2021-01-01", "Goodwill", "GoodwillAndSuch"],
+  ])("marks which unmapped names the %s suite defines", (date, defined, undefinedInSuite) => {
+    const schemaRef = `https://xbrl.frc.org.uk/FRS-102/${date}/FRS-102-${date}.xsd`;
+    const body = money(`core:${defined}`, "CY_END", "5") + money(`core:${undefinedInSuite}`, "CY_END", "6");
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST, {
+      suiteConcepts: frcSuiteConcepts,
+    });
+    expect(accounts.suite.date).toBe(date);
+    expect(accounts.unmapped.map((fact) => [fact.concept, fact.inSuite])).toEqual([
+      [defined, true],
+      [undefinedInSuite, false],
+    ]);
+  });
+
+  it("leaves the mark null when no resolver is passed", () => {
+    const schemaRef = "https://xbrl.frc.org.uk/FRS-102/2021-01-01/FRS-102-2021-01-01.xsd";
+    const body = money("core:Goodwill", "CY_END", "5");
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST);
+    expect(accounts.unmapped.map((fact) => fact.inSuite)).toEqual([null]);
+  });
+
+  it("leaves the mark null for a suite with no list", () => {
+    const schemaRef = "https://xbrl.frc.org.uk/FRS-102/2024-01-01/FRS-102-2024-01-01.xsd";
+    const body = money("core:Goodwill", "CY_END", "5");
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST, {
+      suiteConcepts: frcSuiteConcepts,
+    });
+    expect(accounts.unmapped.map((fact) => fact.inSuite)).toEqual([null]);
   });
 
   it("reads the stated start of the prior period", () => {

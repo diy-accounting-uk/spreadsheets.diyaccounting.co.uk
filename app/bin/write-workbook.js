@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { readBookSource } from "../lib/diya-gl-interchange.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { saveWorkbook, saveWorkbookFiles, savePackageZip, productOf } from "../lib/product-workbook.js";
 import { productModule, PRODUCTS } from "../lib/products.js";
 
@@ -59,7 +60,7 @@ async function loadBookAndLines(dataDir, file, offset) {
     return loadDiyaGlData(resolve(dataDir), offset);
   }
   const bytes = readFileSync(resolve(file));
-  const { book, lines } = await readBookSource(bytes, file, { products: PRODUCTS });
+  const { book, lines } = await readBookSource(bytes, file, { products: PRODUCTS, suiteConcepts: frcSuiteConcepts });
   return { book, lines };
 }
 

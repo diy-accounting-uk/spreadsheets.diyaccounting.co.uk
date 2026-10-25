@@ -60,6 +60,7 @@ import {
   PackagePartError,
   ProductNotAvailableError,
 } from "../lib/diya-gl-interchange.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { PRODUCTS } from "../lib/products.js";
 
 // A book read through --file whose sniffed product disagrees with the
@@ -216,7 +217,12 @@ async function writeBookChecksJson(outputDir, book, lines) {
 export async function extractBookFromFile(filePath, { product } = {}) {
   const resolvedFile = resolve(filePath);
   const bytes = readFileSync(resolvedFile);
-  const { product: sniffedProduct, book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { products: PRODUCTS });
+  const {
+    product: sniffedProduct,
+    book,
+    lines,
+    overtyped,
+  } = await readBookSource(bytes, basename(resolvedFile), { products: PRODUCTS, suiteConcepts: frcSuiteConcepts });
   if (product && product !== sniffedProduct) {
     throw new PackageMismatchError(product, PRODUCTS[sniffedProduct].PRODUCT.name);
   }

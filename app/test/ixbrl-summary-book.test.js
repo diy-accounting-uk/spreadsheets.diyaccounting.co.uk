@@ -365,6 +365,115 @@ describe("another vendor's files", () => {
   });
 });
 
+describe("fixed asset disposals", () => {
+  const PPE = "core:PropertyPlantEquipmentClassesDimension";
+  const EQUITY = "core:EquityClassesDimension";
+  const contexts =
+    [
+      context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+      context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+      context("CY_END", { instant: "2025-03-31" }),
+      context("PY_END", { instant: "2024-03-31" }),
+      context("PLANT_PY_END", { instant: "2024-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+      context("PLANT_CY", { start: "2024-04-01", end: "2025-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+      context("SHARE_PY_END", { instant: "2024-03-31", members: [[EQUITY, "core:ShareCapital"]] }),
+      context("SHARE_CY_END", { instant: "2025-03-31", members: [[EQUITY, "core:ShareCapital"]] }),
+      context("RETAINED_PY_END", { instant: "2024-03-31", members: [[EQUITY, "core:RetainedEarningsAccumulatedLosses"]] }),
+      context("RETAINED_CY_END", { instant: "2025-03-31", members: [[EQUITY, "core:RetainedEarningsAccumulatedLosses"]] }),
+    ].join("") + "";
+
+  // A small company that sells all its plant (10,000 cost, 4,000 depreciation) in the year and says the
+  // gain on the sale (a loss when negative) is netted into its administrative expenses.
+  async function sourceWithGain(gain) {
+    const administrativeExpenses = 5000 - gain;
+    const profitBeforeTax = 12000 - administrativeExpenses;
+    const cash = 4000 + 20000 - 13000 + (6000 + gain);
+    const at = (name, context, value, attributes) => money(`core:${name}`, context, String(value), attributes);
+    const sign = (value) => (value < 0 ? 'sign="-"' : "");
+    const body = [
+      words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+      words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+      at("PropertyPlantEquipmentGrossCost", "PLANT_PY_END", 10000),
+      at("AccumulatedDepreciationImpairmentPropertyPlantEquipment", "PLANT_PY_END", 4000),
+      at("DisposalsPropertyPlantEquipment", "PLANT_CY", 10000),
+      at("DisposalsDecreaseInDepreciationImpairmentPropertyPlantEquipment", "PLANT_CY", 4000),
+      at("FixedAssets", "PY_END", 6000),
+      at("FixedAssets", "CY_END", 0),
+      at("CashBankOnHand", "PY_END", 4000),
+      at("CashBankOnHand", "CY_END", cash),
+      at("CurrentAssets", "PY_END", 4000),
+      at("CurrentAssets", "CY_END", cash),
+      at("TradeCreditorsTradePayables", "PY_END", 1000),
+      at("TradeCreditorsTradePayables", "CY_END", 1000),
+      at("NetCurrentAssetsLiabilities", "PY_END", 3000),
+      at("NetCurrentAssetsLiabilities", "CY_END", cash - 1000),
+      at("TotalAssetsLessCurrentLiabilities", "PY_END", 9000),
+      at("TotalAssetsLessCurrentLiabilities", "CY_END", cash - 1000),
+      at("NetAssetsLiabilities", "PY_END", 9000),
+      at("NetAssetsLiabilities", "CY_END", cash - 1000),
+      at("Equity", "SHARE_PY_END", 100),
+      at("Equity", "SHARE_CY_END", 100),
+      at("Equity", "RETAINED_PY_END", 8900),
+      at("Equity", "RETAINED_CY_END", 8900 + profitBeforeTax),
+      at("Equity", "PY_END", 9000),
+      at("Equity", "CY_END", cash - 1000),
+      at("TurnoverRevenue", "PY", 10000),
+      at("TurnoverRevenue", "CY", 20000),
+      at("CostSales", "PY", 4000),
+      at("CostSales", "CY", 8000),
+      at("GrossProfitLoss", "PY", 6000),
+      at("GrossProfitLoss", "CY", 12000),
+      at("AdministrativeExpenses", "PY", 2000),
+      at("AdministrativeExpenses", "CY", administrativeExpenses),
+      at("OperatingProfitLoss", "PY", 4000),
+      at("OperatingProfitLoss", "CY", profitBeforeTax),
+      at("ProfitLossOnOrdinaryActivitiesBeforeTax", "PY", 4000),
+      at("ProfitLossOnOrdinaryActivitiesBeforeTax", "CY", profitBeforeTax),
+      at("TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", "PY", 0),
+      at("TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", "CY", 0),
+      at("ProfitLoss", "PY", 4000),
+      at("ProfitLoss", "CY", profitBeforeTax),
+      at("GainLossOnDisposalsPropertyPlantEquipment", "CY", Math.abs(gain), sign(gain)),
+    ].join("");
+    const bytes = ixbrlDocument({ contexts, body });
+    return { source: await readBookSource(new TextEncoder().encode(bytes), "x"), profitBeforeTax };
+  }
+
+  const saleLines = (source) => source.lines.filter((line) => line.documentReference === "IXBRL-DisposalsPropertyPlantEquipment");
+  const expenseLine = (source) => source.lines.find((line) => line.documentReference === "IXBRL-AdministrativeExpenses");
+
+  it("posts a disposal with a gain as a sale at the net book value plus the gain, and takes the gain out of the expenses", async () => {
+    const { source, profitBeforeTax } = await sourceWithGain(500);
+    expect(saleLines(source)).toHaveLength(1);
+    expect(saleLines(source)[0]).toMatchObject({ sourceJournalID: "sales", accountMainID: "4006", amount: 6500 });
+    expect(expenseLine(source)).toMatchObject({ sourceJournalID: "purchases", accountMainID: "5501", amount: 5000 });
+    expect(source.book.fixedAssets).toEqual([
+      expect.objectContaining({
+        class: "plantMachinery",
+        cost: 10000,
+        accumulatedDepreciation: 4000,
+        depreciationRate: 0,
+        taxWrittenDownValue: 6000,
+      }),
+    ]);
+    const results = await resultsOf(source.book, source.lines);
+    closeTo(results.PubBalSht.F6, 0);
+    closeTo(results["PubP&L"].F49, profitBeforeTax);
+    expect(source.differences.filter((text) => /dispos|fall by/.test(text))).toEqual([]);
+  });
+
+  it("posts a disposal with a loss as a sale at the net book value less the loss, and puts the loss back in the expenses", async () => {
+    const { source, profitBeforeTax } = await sourceWithGain(-1000);
+    expect(saleLines(source)).toHaveLength(1);
+    expect(saleLines(source)[0]).toMatchObject({ sourceJournalID: "sales", accountMainID: "4006", amount: 5000 });
+    expect(expenseLine(source)).toMatchObject({ sourceJournalID: "purchases", accountMainID: "5501", amount: 5000 });
+    const results = await resultsOf(source.book, source.lines);
+    closeTo(results.PubBalSht.F6, 0);
+    closeTo(results["PubP&L"].F49, profitBeforeTax);
+    expect(source.differences.filter((text) => /dispos|fall by/.test(text))).toEqual([]);
+  });
+});
+
 describe("a plain XBRL instance", () => {
   const instance = xbrlInstance(
     `<uk-bus:UKCompaniesHouseRegisteredNumber contextRef="CY">12345678</uk-bus:UKCompaniesHouseRegisteredNumber>

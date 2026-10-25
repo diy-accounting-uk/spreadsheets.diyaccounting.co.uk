@@ -22,6 +22,7 @@ import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseDiyaGlData } from "../lib/diya-gl-loader.js";
 import { readBookSource } from "../lib/diya-gl-interchange.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { PRODUCTS } from "../lib/products.js";
 import { TOOLS, createSession } from "../lib/mcp/diya-gl-tools.js";
 import { writeBookDirectory } from "./export.js";
@@ -52,7 +53,7 @@ async function readBook(source) {
   if (statSync(path).isDirectory()) {
     return parseDiyaGlData(readFileSync(join(path, "book.toml"), "utf8"), readFileSync(join(path, "lines.jsonl"), "utf8"));
   }
-  const { book, lines } = await readBookSource(readFileSync(path), source, { products: PRODUCTS });
+  const { book, lines } = await readBookSource(readFileSync(path), source, { products: PRODUCTS, suiteConcepts: frcSuiteConcepts });
   return { book, lines };
 }
 

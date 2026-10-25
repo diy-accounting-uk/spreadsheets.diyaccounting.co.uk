@@ -11,7 +11,8 @@
 // date, so a file on the 2022 suite and one on the 2026 suite read the same.
 // MAPPING_TABLE is the one list of what is mapped and where it lands in the
 // summary book (ixbrl-summary-book.js); a fact the table does not name goes
-// to the unmapped list.
+// to the unmapped list, marked with whether the suite the file declares
+// defines its name, when the caller passes the lists (frc-suite-concepts-node.js).
 
 import { readIxbrl, IxbrlError } from "./ixbrl-reader.js";
 
@@ -147,6 +148,12 @@ export const MAPPING_TABLE = [
     note: "micro-entity profit and loss",
   },
   { concept: "OtherOperatingExpensesFormat2", figure: "otherOperatingExpenses", account: "5501", note: "micro-entity profit and loss" },
+  {
+    concept: "GainLossOnDisposalsPropertyPlantEquipment",
+    figure: "gainOnDisposal",
+    account: "4006",
+    note: "the gain (loss when negative) on the disposals in the fixed asset note",
+  },
   { concept: "ProfitLossOnOrdinaryActivitiesAfterTax", figure: "profit", account: "-", note: "a check; read when ProfitLoss is absent" },
   {
     concept: "TotalAdditionsIncludingFromBusinessCombinationsPropertyPlantEquipment",
@@ -317,6 +324,7 @@ function profitAndLossAt(set, endDay) {
     staffCosts: set.duration("StaffCostsEmployeeBenefitsExpense", endDay),
     depreciation: set.duration("DepreciationAmortisationImpairmentExpense", endDay),
     otherOperatingExpenses: set.duration("OtherOperatingExpensesFormat2", endDay),
+    gainOnDisposal: set.duration("GainLossOnDisposalsPropertyPlantEquipment", endDay),
   });
 }
 
@@ -550,10 +558,12 @@ const hasBalanceSheet = (year) =>
  * @param {"micro"|"small"|"any"} [expect.regime]
  * @param {boolean} [expect.dormant] - whether the page is the dormant case
  * @param {boolean} [expect.firstAccounts] - the company was incorporated inside the period
+ * @param {Object} [options]
+ * @param {(suiteDate: string) => Set<string>|undefined} [options.suiteConcepts] - the concept names the FRC suite of that date defines
  * @returns {Object} the accounts
  * @throws {IxbrlError}
  */
-export function mapIxbrlAccounts(source, expect = {}) {
+export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
   const read = source && typeof source === "object" && Array.isArray(source.facts) ? source : readIxbrl(source);
   const numberFact = read.facts.find((fact) => fact.localName === "UKCompaniesHouseRegisteredNumber");
   const entityIdentifier = numberFact?.entity.identifier ?? read.facts[0]?.entity.identifier ?? null;
@@ -685,9 +695,16 @@ export function mapIxbrlAccounts(source, expect = {}) {
 
   const principalActivity = textFact(set, "DescriptionPrincipalActivities") ?? null;
   const approvalDate = textFact(set, "DateAuthorisationFinancialStatementsForIssue") ?? null;
+  const definedBySuite = read.suite.date ? suiteConcepts?.(read.suite.date) : undefined;
   const unmapped = set.facts
     .filter((fact) => !set.consumed.has(fact) && fact.value !== "" && !isBoilerplate(fact))
-    .map((fact) => ({ concept: fact.localName, dimensions: dimensionMap(fact), period: fact.period, value: fact.value }));
+    .map((fact) => ({
+      concept: fact.localName,
+      dimensions: dimensionMap(fact),
+      period: fact.period,
+      value: fact.value,
+      inSuite: definedBySuite ? definedBySuite.has(fact.localName) : null,
+    }));
 
   return {
     suite: read.suite,
