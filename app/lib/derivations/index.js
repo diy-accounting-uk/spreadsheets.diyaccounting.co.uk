@@ -6,3 +6,4 @@
 
 export { deriveVatReturn } from "./vat-return.js";
 export { deriveItsaQuarterlyUpdate, deriveItsaAnnualSubmission } from "./itsa.js";
+export { deriveUkPropertyPeriod, deriveUkPropertyAnnual } from "./uk-property.js";

@@ -96,8 +96,9 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
 
 ## API
 
-The package root exports three functions that turn a book into the figures HMRC's MTD APIs
-take. Each takes the parsed book, its lines and a parameters object, and returns a promise.
+The package root exports five functions that turn a book into the figures HMRC's MTD APIs
+take. Each takes the parsed book, its lines and a parameters object. The VAT and self-employment
+functions return a promise; the two UK property functions return their answer directly.
 Nothing is sent anywhere: the answer is the request body to send, plus what fed it.
 
 Load a book first:
@@ -165,6 +166,36 @@ const { book, lines } = loadBook("my-self-employed-book");
 const answer = await deriveItsaAnnualSubmission(book, lines, { taxYear: "2025-26" });
 console.log(answer.allowances.annualInvestmentAllowance);
 ```
+
+### `deriveUkPropertyPeriod(book, lines, { periodStartDate, periodEndDate })`
+
+One period of HMRC's Property Business API (UK property) from a sole trader book. The book's
+chart names the HMRC field each account feeds with `diya-gl:ukPropertyField` on the account
+(for example `"income.periodAmount"` on the rent account, `"expenses.repairsAndMaintenance"` on
+the repairs account). The function sums the sales and purchases postings on those accounts
+between the two dates inclusive, net of VAT, with a credit note taking from its field. The
+answer carries `income`, `expenses`, `omitted` (the fields no posting fed; they are left out of
+the body, never sent as zero), `lines` and `warnings`. A book that names
+`expenses.consolidatedExpenses` and an itemised expense in the same period is refused, because
+HMRC takes one or the other.
+
+```js
+import { deriveUkPropertyPeriod } from "@diy-accounting-uk/diya-gl";
+
+const { book, lines } = loadBook("my-landlord-book");
+const answer = deriveUkPropertyPeriod(book, lines, { periodStartDate: "2025-04-06", periodEndDate: "2025-07-05" });
+console.log(answer.income.periodAmount, answer.expenses.repairsAndMaintenance);
+```
+
+### `deriveUkPropertyAnnual(book, lines, { taxYear? })`
+
+The year's adjustments (`balancingCharge`, `privateUseAdjustment`,
+`businessPremisesRenovationAllowanceBalancingCharges`) and allowances (`annualInvestmentAllowance`,
+`businessPremisesRenovationAllowance`, `otherCapitalAllowance`, `costOfReplacingDomesticItems`,
+`zeroEmissionsCarAllowance`) from the postings on the accounts the chart names, for the tax year
+`taxYear` (as `2025-26`; the default is the year the book's period end falls in). The property
+income allowance, `nonResidentLandlord` and `rentARoom.jointlyLet` are choices and facts about the
+landlord, not ledger figures; the answer lists them under `leftToPage`.
 
 ## The format
 
