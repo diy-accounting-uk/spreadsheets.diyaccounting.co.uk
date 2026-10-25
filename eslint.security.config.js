@@ -11,7 +11,7 @@ export default [
       security,
     },
     languageOptions: {
-      ecmaVersion: 2025,
+      ecmaVersion: 2022,
       sourceType: "module",
       globals: {
         ...globals.node,

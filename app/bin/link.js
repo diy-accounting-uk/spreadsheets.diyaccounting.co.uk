@@ -19,6 +19,7 @@ import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { parseDiyaGlData } from "../lib/diya-gl-loader.js";
 import { readBookSource } from "../lib/diya-gl-interchange.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { productIdOf } from "../lib/xlsx-exporter.js";
 import { PRODUCTS } from "../lib/products.js";
@@ -51,7 +52,7 @@ async function readBookText(source) {
     const lines = readFileSync(join(path, "lines.jsonl"), "utf8");
     return { toml, lines, book: parseDiyaGlData(toml, lines).book };
   }
-  const { book, lines } = await readBookSource(readFileSync(path), source, { products: PRODUCTS });
+  const { book, lines } = await readBookSource(readFileSync(path), source, { products: PRODUCTS, suiteConcepts: frcSuiteConcepts });
   return { toml: canonicalBookToml(book), lines: canonicalLinesJsonl(lines), book };
 }
 

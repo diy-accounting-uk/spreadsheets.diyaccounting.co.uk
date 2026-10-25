@@ -10,6 +10,7 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { mapIxbrlAccounts, MAPPING_TABLE, IxbrlError } from "../lib/ixbrl-accounts.js";
+import { frcSuiteConcepts } from "../lib/frc-suite-concepts-node.js";
 import { context, ixbrlDocument, money, words, STANDARD_CONTEXTS } from "./helpers/ixbrl-document.js";
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "fixtures", "ixbrl");
@@ -362,7 +363,9 @@ describe("the mapping table", () => {
   ])("marks which unmapped names the %s suite defines", (date, defined, undefinedInSuite) => {
     const schemaRef = `https://xbrl.frc.org.uk/FRS-102/${date}/FRS-102-${date}.xsd`;
     const body = money(`core:${defined}`, "CY_END", "5") + money(`core:${undefinedInSuite}`, "CY_END", "6");
-    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST);
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST, {
+      suiteConcepts: frcSuiteConcepts,
+    });
     expect(accounts.suite.date).toBe(date);
     expect(accounts.unmapped.map((fact) => [fact.concept, fact.inSuite])).toEqual([
       [defined, true],
@@ -370,10 +373,19 @@ describe("the mapping table", () => {
     ]);
   });
 
+  it("leaves the mark null when no resolver is passed", () => {
+    const schemaRef = "https://xbrl.frc.org.uk/FRS-102/2021-01-01/FRS-102-2021-01-01.xsd";
+    const body = money("core:Goodwill", "CY_END", "5");
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST);
+    expect(accounts.unmapped.map((fact) => fact.inSuite)).toEqual([null]);
+  });
+
   it("leaves the mark null for a suite with no list", () => {
     const schemaRef = "https://xbrl.frc.org.uk/FRS-102/2024-01-01/FRS-102-2024-01-01.xsd";
     const body = money("core:Goodwill", "CY_END", "5");
-    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST);
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST, {
+      suiteConcepts: frcSuiteConcepts,
+    });
     expect(accounts.unmapped.map((fact) => fact.inSuite)).toEqual([null]);
   });
 
