@@ -18,3 +18,15 @@ Each file is an Inline XBRL accounts document. The tests read them by content, n
 | `builder-small-filleted.xhtml` | The same input with `filleted: true`. | 2026-10-24 |
 | `builder-small-consistent.xhtml` | `buildSmallCompanyAccounts` on that input with current-year figures changed so the year's profit after tax explains the movement in equity: cash 10,600, corporation tax 969, other figures as `SMALL_COMPANY_CASE_INPUT`, interest receivable 100, profit before tax 5,100, tax 969, profit 4,131, prior-year profit and loss added. | 2026-10-24 |
 | `doctored-*.xhtml` | Copies of `diya-2025-accounts.xhtml` with one change each, written by a script that is not kept: `unbalanced` current assets 3,353 to 3,400; `other-company` company number 06846849 to 01234567; `no-prior-year` every `PY` and `PY_END` fact removed; `scale` turnover written as `7.639` with `scale="3"`; `sign` other operating expenses given `sign="-"`; `duplicate` a second turnover fact of 7,640; `unknown-format` turnover given `ixt2:numfoo`. | 2026-10-24 |
+
+## Document sets
+
+Each is cut from `builder-small.xhtml` by a script that is not kept.
+
+| Fixture | Cut |
+|---|---|
+| `ixds-two-file/` | `accounts-1.xhtml` holds the header, contexts, units and balance sheet; `accounts-2.xhtml` holds the nine profit and loss facts and defines no context. |
+| `ixds-two-file-disagree/` | The same split; `accounts-2.xhtml` also states `TurnoverRevenue` for the current year as 50,001. |
+| `ch-welsh-package.zip` | `META-INF/reports.json`, `reports/english/accounts.xhtml` (the whole file) and `reports/welsh/accounts.xhtml` (the whole file plus `ReportPrincipalLanguage` on the `Welsh` member). |
+| `ch-welsh-package-disagree.zip` | The same package with the Welsh turnover changed to 50,001. |
+| `ch-two-instances.zip` | `reports/english/` holds two copies of the whole file. |
