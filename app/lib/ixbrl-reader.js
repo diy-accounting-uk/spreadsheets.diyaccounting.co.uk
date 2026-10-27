@@ -43,6 +43,8 @@ const FRC_NAMESPACE = /^http:\/\/xbrl\.frc\.org\.uk\/(fr|cd|reports)\/(\d{4}-\d{
 const FRC_ENTRY_POINT = /xbrl\.frc\.org\.uk\/([^/]+)\/(\d{4}-\d{2}-\d{2})\//;
 const OLD_UK_GAAP_NAMESPACE = /^http:\/\/www\.xbrl\.org\/uk\/(gaap|cd|fr)\b/;
 
+const DROP_THE_SET = "Drop all the files of the set together, or the zip.";
+
 // What a customer sees when a file reads as something other than FRS 102 or
 // FRS 105 accounts.
 const READ_SUITES = ["FRS-102", "FRS-105"];
@@ -361,7 +363,9 @@ function inlineParts(document) {
   const root = document.documentElement;
   const headers = descendants(root, (element) => isIx(element, "header"));
   const resources = headers.flatMap((header) => descendants(header, (element) => isIx(element, "resources")));
-  const schemaRefs = headers.flatMap((header) => descendants(header, (element) => is(element, NS_LINK, "schemaRef")));
+  const schemaRefs = headers.flatMap((header) =>
+    descendants(header, (element) => is(element, NS_LINK, "schemaRef") && !element.parentNode.getAttribute?.("target")),
+  );
   const hiddenElements = new Set(headers.flatMap((header) => descendants(header, (element) => isIx(element, "hidden"))));
   const factElements = descendants(root, (element) => isIx(element, "nonFraction") || isIx(element, "nonNumeric"));
   const continuations = new Map(
@@ -398,9 +402,7 @@ function nonNumericText(element, continuations) {
     seen.add(next);
     const continuation = continuations.get(next);
     if (!continuation) {
-      throw new IxbrlError(
-        "This file is one part of a document set: a fact continues in another file. diya-gl reads single-file documents.",
-      );
+      throw new IxbrlError(`This file is one part of a document set: a fact continues in another file. ${DROP_THE_SET}`);
     }
     text += textOf(continuation);
     next = continuation.getAttribute("continuedAt");
@@ -483,101 +485,248 @@ function checkSuite(suite) {
   }
 }
 
-/**
- * Read an Inline XBRL document or an XBRL instance into facts.
- * @param {Uint8Array|string} input - the document
- * @returns {{kind: "ixbrl"|"xbrl", suite: {family: string|null, date: string|null, modules: string[]}, facts: Array<Object>, contexts: Object, units: Object}}
- * @throws {IxbrlError} when the document cannot be read, with a message a customer reads
- */
-export function readIxbrl(input) {
-  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
-  const kind = sniffIxbrl(bytes);
-  if (!kind) throw new IxbrlError("This file is not an Inline XBRL document or an XBRL instance.");
+const nameOf = (name) => (name ? `"${name}"` : "This file");
 
-  const document = parseDocument(decodeUtf8(bytes));
-  const parts = kind === "ixbrl" ? inlineParts(document) : instanceParts(document);
+function describeSuite(suite) {
+  return [suite.family, suite.date].filter(Boolean).join(" ");
+}
 
+function sameJson(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function mergeResources(parsed) {
   const contexts = {};
   const units = {};
-  for (const resource of parts.resources) {
-    for (const child of elementChildren(resource)) {
-      if (is(child, NS_XBRLI, "context")) {
-        const context = readContext(child);
-        contexts[context.id] = context;
-      } else if (is(child, NS_XBRLI, "unit")) {
-        units[child.getAttribute("id")] = readUnit(child);
+  const identifiers = new Set();
+  for (const part of parsed) {
+    for (const resource of part.parts.resources) {
+      for (const child of elementChildren(resource)) {
+        if (is(child, NS_XBRLI, "context")) {
+          const context = readContext(child);
+          if (contexts[context.id] && !sameJson(contexts[context.id], context)) {
+            throw new IxbrlError(`The files define the context "${context.id}" differently.`);
+          }
+          contexts[context.id] = context;
+          identifiers.add(`${context.entity.scheme}|${context.entity.identifier}`);
+        } else if (is(child, NS_XBRLI, "unit")) {
+          const id = child.getAttribute("id");
+          const unit = readUnit(child);
+          if (units[id] !== undefined && units[id] !== unit) throw new IxbrlError(`The files define the unit "${id}" differently.`);
+          units[id] = unit;
+        }
       }
     }
   }
-  if (Object.keys(contexts).length === 0 && parts.factElements.length > 0) {
-    throw new IxbrlError("This file is one part of a document set: its contexts are in another file. diya-gl reads single-file documents.");
+  return { contexts, units, identifiers };
+}
+
+function checkSetAgrees(parsed, identifiers) {
+  if (identifiers.size > 1) {
+    const names = [...identifiers].map((id) => id.split("|")[1]);
+    throw new IxbrlError(`The files are for different companies (${names.join(" and ")}).`);
+  }
+  const suites = parsed
+    .map((part) => suiteOf(new Set(), part.parts.schemaRefs))
+    .filter((suite) => suite.family || suite.date)
+    .map(describeSuite);
+  if (new Set(suites).size > 1) {
+    throw new IxbrlError(`The files name different taxonomy suites (${[...new Set(suites)].join(" and ")}).`);
+  }
+}
+
+function readFactElement(element, part, shared) {
+  const { kind, parts } = part;
+  const { contexts, units, continuations } = shared;
+  const nameAttribute = kind === "ixbrl" ? element.getAttribute("name") : null;
+  if (kind === "ixbrl" && !nameAttribute) return null;
+  if (element.getAttributeNS(NS_XSI, "nil") === "true" || element.getAttribute("xsi:nil") === "true") return null;
+
+  const { namespace, localName } =
+    kind === "ixbrl"
+      ? resolveQName(element, nameAttribute, "a concept name")
+      : { namespace: element.namespaceURI, localName: element.localName };
+
+  const contextRef = element.getAttribute("contextRef");
+  const context = contexts[contextRef];
+  if (!context) throw new IxbrlError(`The fact ${localName} refers to the context "${contextRef}", which the file does not define.`);
+
+  const numeric = kind === "ixbrl" ? isIx(element, "nonFraction") : element.hasAttribute("unitRef");
+  let value;
+  let unit = null;
+  let decimals;
+  if (numeric) {
+    const unitRef = element.getAttribute("unitRef");
+    unit = units[unitRef];
+    if (unit === undefined) throw new IxbrlError(`The fact ${localName} refers to the unit "${unitRef}", which the file does not define.`);
+    if (unit !== "GBP" && unit !== "pure" && unit !== "shares" && !unit.startsWith("divide:")) {
+      throw new IxbrlError(`The fact ${localName} is stated in ${unit}; diya-gl reads pounds sterling (GBP), shares and pure numbers.`);
+    }
+    const decimalsText = element.getAttribute("decimals");
+    decimals = decimalsText === null ? undefined : decimalsText === "INF" ? Infinity : Number(decimalsText);
+    value = kind === "ixbrl" ? nonFractionValue(element) : Number(textOf(element).trim());
+  } else {
+    value = kind === "ixbrl" ? nonNumericValue(element, continuations) : textOf(element).trim();
+  }
+
+  return {
+    namespace,
+    localName,
+    contextRef,
+    entity: context.entity,
+    period: context.period,
+    dimensions: context.dimensions,
+    unit,
+    decimals,
+    value,
+    hidden: insideHidden(element, parts.hiddenElements),
+  };
+}
+
+/**
+ * Read one or more Inline XBRL documents, or one XBRL instance, into facts.
+ * Several documents are one Inline XBRL Document Set: their contexts, units
+ * and continuations merge, facts with no target attribute are read, and the
+ * duplicate rule runs across the whole set.
+ * @param {Array<{name: string, bytes: Uint8Array|string}>} documents
+ * @returns {{kind: "ixbrl"|"xbrl", suite: {family: string|null, date: string|null, modules: string[]}, facts: Array<Object>, contexts: Object, units: Object, leftOutTargets: string[]}}
+ * @throws {IxbrlError} when the set cannot be read, with a message a customer reads
+ */
+export function readIxbrlSet(documents) {
+  if (!Array.isArray(documents) || documents.length === 0) throw new IxbrlError("There is no file to read.");
+  const many = documents.length > 1;
+
+  const parsed = documents.map(({ name, bytes: input }) => {
+    const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
+    const kind = sniffIxbrl(bytes);
+    if (!kind) throw new IxbrlError(`${nameOf(name)} is not an Inline XBRL document or an XBRL instance.`);
+    if (many && kind === "xbrl") throw new IxbrlError(`${nameOf(name)} is an XBRL instance; an instance is one file.`);
+    const document = parseDocument(decodeUtf8(bytes));
+    return { name, kind, parts: kind === "ixbrl" ? inlineParts(document) : instanceParts(document) };
+  });
+  const kind = parsed[0].kind;
+
+  const { contexts, units, identifiers } = mergeResources(parsed);
+  if (many) checkSetAgrees(parsed, identifiers);
+
+  const continuations = new Map();
+  for (const part of parsed) for (const [id, element] of part.parts.continuations) continuations.set(id, element);
+
+  if (Object.keys(contexts).length === 0 && parsed.some((part) => part.parts.factElements.length > 0)) {
+    throw new IxbrlError(`This file is one part of a document set: its contexts are in another file. ${DROP_THE_SET}`);
   }
 
   const facts = [];
   const seen = new Map();
   const factNamespaces = new Set();
-  for (const element of parts.factElements) {
-    const nameAttribute = kind === "ixbrl" ? element.getAttribute("name") : null;
-    if (kind === "ixbrl" && !nameAttribute) continue;
-    if (element.getAttributeNS(NS_XSI, "nil") === "true" || element.getAttribute("xsi:nil") === "true") continue;
-
-    const { namespace, localName } =
-      kind === "ixbrl"
-        ? resolveQName(element, nameAttribute, "a concept name")
-        : { namespace: element.namespaceURI, localName: element.localName };
-    factNamespaces.add(namespace);
-
-    const contextRef = element.getAttribute("contextRef");
-    const context = contexts[contextRef];
-    if (!context) throw new IxbrlError(`The fact ${localName} refers to the context "${contextRef}", which the file does not define.`);
-
-    const numeric = kind === "ixbrl" ? isIx(element, "nonFraction") : element.hasAttribute("unitRef");
-    let value;
-    let unit = null;
-    let decimals;
-    if (numeric) {
-      const unitRef = element.getAttribute("unitRef");
-      unit = units[unitRef];
-      if (unit === undefined)
-        throw new IxbrlError(`The fact ${localName} refers to the unit "${unitRef}", which the file does not define.`);
-      if (unit !== "GBP" && unit !== "pure" && unit !== "shares" && !unit.startsWith("divide:")) {
-        throw new IxbrlError(`The fact ${localName} is stated in ${unit}; diya-gl reads pounds sterling (GBP), shares and pure numbers.`);
+  const leftOut = new Set();
+  let defaultTargetElements = 0;
+  const shared = { contexts, units, continuations };
+  for (const part of parsed) {
+    for (const element of part.parts.factElements) {
+      const target = kind === "ixbrl" ? element.getAttribute("target") : null;
+      if (target) {
+        leftOut.add(target);
+        continue;
       }
-      const decimalsText = element.getAttribute("decimals");
-      decimals = decimalsText === null ? undefined : decimalsText === "INF" ? Infinity : Number(decimalsText);
-      value = kind === "ixbrl" ? nonFractionValue(element) : Number(textOf(element).trim());
-    } else {
-      value = kind === "ixbrl" ? nonNumericValue(element, parts.continuations) : textOf(element).trim();
-    }
+      const fact = readFactElement(element, part, shared);
+      if (!fact) continue;
+      defaultTargetElements += 1;
+      factNamespaces.add(fact.namespace);
 
-    const fact = {
-      namespace,
-      localName,
-      contextRef,
-      entity: context.entity,
-      period: context.period,
-      dimensions: context.dimensions,
-      unit,
-      decimals,
-      value,
-      hidden: insideHidden(element, parts.hiddenElements),
-    };
-
-    const key = `${namespace}#${localName}|${contextKey(context)}|${unit ?? ""}`;
-    if (seen.has(key)) {
-      const first = seen.get(key);
-      if (first.value !== value) {
-        throw new IxbrlError(`The file states ${localName} twice for the same period with different values (${first.value} and ${value}).`);
+      const context = contexts[fact.contextRef];
+      const key = `${fact.namespace}#${fact.localName}|${contextKey(context)}|${fact.unit ?? ""}`;
+      if (seen.has(key)) {
+        const first = seen.get(key);
+        if (first.value !== fact.value) {
+          throw new IxbrlError(
+            `${many ? "The files state" : "The file states"} ${fact.localName} twice for the same period with different values (${first.value} and ${fact.value}).`,
+          );
+        }
+        first.hidden = first.hidden && fact.hidden;
+        continue;
       }
-      first.hidden = first.hidden && fact.hidden;
-      continue;
+      seen.set(key, fact);
+      facts.push(fact);
     }
-    seen.set(key, fact);
-    facts.push(fact);
+  }
+  if (defaultTargetElements === 0 && leftOut.size > 0) {
+    throw new IxbrlError(`The set has no facts for the default target; its facts are for the targets ${[...leftOut].join(", ")}.`);
   }
 
-  const suite = suiteOf(factNamespaces, parts.schemaRefs);
+  const suite = suiteOf(
+    factNamespaces,
+    parsed.flatMap((part) => part.parts.schemaRefs),
+  );
   checkSuite(suite);
 
-  return { kind, suite: { family: suite.family, date: suite.date, modules: [...suite.modules] }, facts, contexts, units };
+  return {
+    kind,
+    suite: { family: suite.family, date: suite.date, modules: [...suite.modules] },
+    facts,
+    contexts,
+    units,
+    leftOutTargets: [...leftOut],
+  };
+}
+
+/**
+ * Read an Inline XBRL document or an XBRL instance into facts.
+ * @param {Uint8Array|string} input - the document
+ * @returns {{kind: "ixbrl"|"xbrl", suite: {family: string|null, date: string|null, modules: string[]}, facts: Array<Object>, contexts: Object, units: Object, leftOutTargets: string[]}}
+ * @throws {IxbrlError} when the document cannot be read, with a message a customer reads
+ */
+export function readIxbrl(input) {
+  return readIxbrlSet([{ name: "", bytes: input }]);
+}
+
+const DATE_TEXT = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Whether two reads of one report state the same entity, periods, numbers and
+ * dates. A Welsh package holds the report in two languages and Companies House
+ * rejects it when they differ.
+ * @param {Object} first - a read from readIxbrlSet
+ * @param {Object} second - a read from readIxbrlSet
+ * @param {string} firstLabel - what to call the first in the refusal
+ * @param {string} secondLabel
+ * @throws {IxbrlError} naming the first concept that differs
+ */
+export function checkSameReport(first, second, firstLabel, secondLabel) {
+  const entities = (read) => [...new Set(Object.values(read.contexts).map((context) => context.entity.identifier))].sort().join(",");
+  if (entities(first) !== entities(second)) {
+    throw new IxbrlError(`The ${firstLabel} and ${secondLabel} accounts are for different companies.`);
+  }
+  const periods = (read) =>
+    [
+      ...new Set(
+        Object.values(read.contexts)
+          .filter((context) => !Object.keys(context.dimensions).length)
+          .map((context) => periodKey(context.period)),
+      ),
+    ]
+      .sort()
+      .join(",");
+  if (periods(first) !== periods(second)) {
+    throw new IxbrlError(`The ${firstLabel} and ${secondLabel} accounts are for different periods.`);
+  }
+  const figures = (read) =>
+    new Map(
+      read.facts
+        .filter((fact) => fact.unit !== null || (typeof fact.value === "string" && DATE_TEXT.test(fact.value)))
+        .map((fact) => [
+          `${fact.namespace}#${fact.localName}|${contextKey({ entity: fact.entity, period: fact.period, dimensions: fact.dimensions })}|${fact.unit ?? ""}`,
+          fact,
+        ]),
+    );
+  const a = figures(first);
+  const b = figures(second);
+  for (const [key, fact] of a) {
+    if (!b.has(key) || b.get(key).value !== fact.value) {
+      throw new IxbrlError(`The ${firstLabel} and ${secondLabel} accounts differ at ${fact.localName}.`);
+    }
+  }
+  for (const [key, fact] of b) {
+    if (!a.has(key)) throw new IxbrlError(`The ${firstLabel} and ${secondLabel} accounts differ at ${fact.localName}.`);
+  }
 }

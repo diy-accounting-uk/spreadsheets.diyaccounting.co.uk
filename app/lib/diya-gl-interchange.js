@@ -46,7 +46,7 @@ import { canonicalBookToml, canonicalLinesJsonl, compareLines, orderedBookTopLev
 import { serializeReportDocument } from "./report-serializer.js";
 import { parseDiyaGlData } from "./diya-gl-loader.js";
 import { stampBook } from "./provenance.js";
-import { sniffIxbrl } from "./ixbrl-reader.js";
+import { sniffIxbrl, readIxbrlSet, checkSameReport, IxbrlError } from "./ixbrl-reader.js";
 import { mapIxbrlAccounts } from "./ixbrl-accounts.js";
 import { buildIxbrlSummaryBooks } from "./ixbrl-summary-book.js";
 import * as bst from "../products/bst.js";
@@ -190,6 +190,12 @@ async function zipKind(bytes) {
   const jsonEntries = entries.filter((name) => name.toLowerCase().endsWith(".json"));
   if (jsonEntries.length === 1 && entries.length === 1) return "json-zip";
 
+  const documents = entries.filter((name) => !name.toUpperCase().startsWith("META-INF/"));
+  if (documents.length > 0) {
+    const sniffed = await Promise.all(documents.map(async (name) => sniffIxbrl(await zip.file(name).async("uint8array"))));
+    if (sniffed.every(Boolean)) return "ixbrl-zip";
+  }
+
   return "unknown";
 }
 
@@ -200,7 +206,7 @@ async function zipKind(bytes) {
  * error messages only.
  * @param {Uint8Array} bytes
  * @param {string} [name] - a hint for messages, not for detection
- * @returns {Promise<"workbook"|"package-zip"|"package-set"|"diya-gl-zip"|"json-zip"|"json"|"ixbrl"|"xbrl"|"xls"|"unknown">}
+ * @returns {Promise<"workbook"|"package-zip"|"package-set"|"diya-gl-zip"|"json-zip"|"json"|"ixbrl"|"xbrl"|"ixbrl-zip"|"xls"|"unknown">}
  */
 export async function detectBookSource(bytes, name) {
   void name; // content decides the kind; the name is a hint for a caller's own error messages, never for detection
@@ -463,8 +469,8 @@ async function readJsonZipSource(bytes) {
 // An accounts file stands for two Company books, the file's own year and the
 // year before, each a summary with one line per tagged line. The comparative
 // pair, the accounts figures and the facts no figure uses ride beside them.
-async function readIxbrlSource(kind, bytes, deps) {
-  const accounts = mapIxbrlAccounts(bytes, deps.expect, { suiteConcepts: deps.suiteConcepts });
+async function readIxbrlSource(kind, source, deps) {
+  const accounts = mapIxbrlAccounts(source, deps.expect, { suiteConcepts: deps.suiteConcepts });
   const summary = await buildIxbrlSummaryBooks(accounts, { resources: deps.resources });
   const current = validated(kind, summary.book, summary.lines);
   const prior = validated(kind, summary.comparative.book, summary.comparative.lines);
@@ -476,6 +482,67 @@ async function readIxbrlSource(kind, bytes, deps) {
     unmapped: accounts.unmapped,
     differences: summary.differences,
   };
+}
+
+// The directories of a Companies House package that hold the company's own
+// accounts, in the order they are looked for.
+const PACKAGE_ENTRY_DIRECTORIES = ["reports/english", "accounts", "subsidiary-accounts"];
+const PACKAGE_WELSH_DIRECTORY = "reports/welsh";
+
+const directoryOf = (entry) => entry.slice(0, Math.max(0, entry.lastIndexOf("/")));
+
+// A zip of iXBRL documents is one document set when its files sit together,
+// or a Companies House package when they sit in directories. A package is
+// read through its entry directory; a Welsh package is also compared with its
+// Welsh directory, as Companies House compares the two.
+async function readIxbrlZipSource(bytes) {
+  const zip = await JSZip.loadAsync(bytes);
+  const entries = Object.keys(zip.files)
+    .filter((name) => !zip.files[name].dir && !name.toUpperCase().startsWith("META-INF/"))
+    .sort();
+  const documentOf = async (entry) => ({ name: entry, bytes: await zip.file(entry).async("uint8array") });
+
+  const directories = new Map();
+  for (const entry of entries) {
+    const directory = directoryOf(entry);
+    directories.set(directory, [...(directories.get(directory) ?? []), entry]);
+  }
+  if (directories.size === 1 && directories.has("")) return readIxbrlSet(await Promise.all(entries.map(documentOf)));
+
+  for (const [directory, members] of directories) {
+    if (members.length > 1)
+      throw new IxbrlError(`The zip holds more than one accounts file in "${directory}/"; a package folder holds one.`);
+  }
+  const entryDirectory = PACKAGE_ENTRY_DIRECTORIES.find((directory) => directories.has(directory));
+  if (!entryDirectory) {
+    throw new IxbrlError(
+      directories.size === 1
+        ? "The zip holds accounts in a folder diya-gl does not recognise; drop the accounts file on its own."
+        : "The zip holds several folders and none is the company's own accounts; drop the accounts file on its own.",
+    );
+  }
+  const read = readIxbrlSet([await documentOf(directories.get(entryDirectory)[0])]);
+  if (entryDirectory === "reports/english" && directories.has(PACKAGE_WELSH_DIRECTORY)) {
+    const welsh = readIxbrlSet([await documentOf(directories.get(PACKAGE_WELSH_DIRECTORY)[0])]);
+    checkSameReport(read, welsh, "English", "Welsh");
+  }
+  return read;
+}
+
+/**
+ * Turn several files dropped together into D. Files that are all iXBRL
+ * documents are one document set. One file is read as readBookSource reads it.
+ * @param {Array<{name: string, bytes: Uint8Array}>} files
+ * @param {Object} [deps] - as readBookSource
+ * @returns {Promise<Object>} as readBookSource
+ */
+export async function readBookSources(files, deps = {}) {
+  if (files.length === 1) return readBookSource(files[0].bytes, files[0].name, deps);
+  const kinds = await Promise.all(files.map((file) => detectBookSource(file.bytes, file.name)));
+  if (kinds.every((kind) => kind === "ixbrl" || kind === "xbrl")) {
+    return readIxbrlSource("ixbrl", readIxbrlSet(files), deps);
+  }
+  throw new IxbrlError("Drop the accounts files on their own.");
 }
 
 /**
@@ -508,6 +575,8 @@ export async function readBookSource(bytes, name, deps = {}) {
     case "ixbrl":
     case "xbrl":
       return readIxbrlSource(kind, bytes, deps);
+    case "ixbrl-zip":
+      return readIxbrlSource(kind, await readIxbrlZipSource(bytes), deps);
     case "xls":
       throw new XlsBookSourceError(name);
     default:
