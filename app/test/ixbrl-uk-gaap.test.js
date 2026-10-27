@@ -51,7 +51,7 @@ describe("the translation table", () => {
   it("holds one row for each UK GAAP name", () => {
     const names = UK_GAAP_TO_FRS_102.map((entry) => `${entry.module}:${entry.concept}`);
     expect(new Set(names).size).toBe(names.length);
-    expect(UK_GAAP_TO_FRS_102).toHaveLength(66);
+    expect(UK_GAAP_TO_FRS_102).toHaveLength(72);
   });
 
   it.each(UK_GAAP_TO_FRS_102.map((entry) => [`${entry.module}:${entry.concept} -> ${entry.to}`, entry]))("%s", (_name, entry) => {
@@ -173,11 +173,20 @@ describe("DIY Accounting Limited's accounts for the year to 31 March 2015", () =
     });
   });
 
-  it("lists the names the table does not hold under their UK GAAP names", () => {
+  it("lists the share, debtor and intangible note lines under their FRS 102 names, which no accounts figure takes", () => {
     const unmapped = accounts().unmapped.map((entry) => entry.concept);
-    expect(unmapped).toEqual(expect.arrayContaining(["TradeDebtors", "OtherDebtors", "IntangibleFixedAssets", "ParValueShare"]));
-    expect(unmapped).not.toContain("StocksInventory");
-    expect(unmapped).not.toContain("TotalInventories");
+    expect(unmapped).toEqual(
+      expect.arrayContaining(["TradeDebtorsTradeReceivables", "OtherDebtors", "IntangibleAssets", "ParValueShare", "ShareCapital"]),
+    );
+    for (const ukGaapName of [
+      "TradeDebtors",
+      "IntangibleFixedAssets",
+      "ShareCapitalAllottedCalledUpPaid",
+      "StocksInventory",
+      "TotalInventories",
+    ]) {
+      expect(unmapped).not.toContain(ukGaapName);
+    }
   });
 
   it("refuses a company number that is not the file's", () => {
@@ -230,6 +239,12 @@ describe("DIY Accounting Limited's abbreviated accounts for the year to 31 March
       netAssets: 18538,
       profitAndLossAccount: 18038,
     });
+  });
+
+  it("lists bank borrowings under the FRS 102 name, which no accounts figure takes", () => {
+    const unmapped = accounts().unmapped.map((entry) => entry.concept);
+    expect(unmapped).toContain("BankBorrowingsOverdrafts");
+    expect(unmapped).not.toContain("BankBorrowingsOverdraftsWithinOneYear");
   });
 
   it("keeps the UK GAAP name of each fixed asset line", () => {
