@@ -221,6 +221,41 @@ const ROWS = [
     2482,
   ],
   [
+    "OtherOperatingIncome",
+    money("core:RawMaterialsConsumablesUsed", "CY", "300") + money("core:OtherOperatingIncome", "CY", "22"),
+    "profitAndLoss.currentYear.otherOperatingIncome",
+    22,
+  ],
+  [
+    "IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress",
+    money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "CY", "30", 'sign="-"'),
+    "profitAndLoss.currentYear.changeInStocks",
+    -30,
+  ],
+  ["OwnWorkCapitalised", money("core:OwnWorkCapitalised", "CY", "45"), "profitAndLoss.currentYear.ownWorkCapitalised", 45],
+  ["OtherExternalCharges", money("core:OtherExternalCharges", "CY", "60"), "profitAndLoss.currentYear.otherExternalCharges", 60],
+  ["WagesSalaries", money("core:WagesSalaries", "CY", "500"), "profitAndLoss.currentYear.wagesSalaries", 500],
+  ["SocialSecurityCosts", money("core:SocialSecurityCosts", "CY", "50"), "profitAndLoss.currentYear.socialSecurityCosts", 50],
+  [
+    "PensionOtherPost-employmentBenefitCostsOtherPensionCosts",
+    money("core:PensionOtherPost-employmentBenefitCostsOtherPensionCosts", "CY", "20"),
+    "profitAndLoss.currentYear.pensionCosts",
+    20,
+  ],
+  [
+    "DepreciationAmortisationExpense",
+    money("core:DepreciationAmortisationExpense", "CY", "90"),
+    "profitAndLoss.currentYear.depreciation",
+    90,
+  ],
+  [
+    "OtherOperatingExpensesByNature",
+    money("core:OtherOperatingExpensesByNature", "CY", "2,482"),
+    "profitAndLoss.currentYear.otherOperatingExpenses",
+    2482,
+  ],
+  ["ProfitLossBeforeTax", money("core:ProfitLossBeforeTax", "CY", "5,100"), "profitAndLoss.currentYear.profitBeforeTax", 5100],
+  [
     "GainLossOnDisposalsPropertyPlantEquipment",
     money("core:GainLossOnDisposalsPropertyPlantEquipment", "CY", "40", 'sign="-"'),
     "profitAndLoss.currentYear.gainOnDisposal",
@@ -282,7 +317,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(54);
+    expect(MAPPING_TABLE).toHaveLength(64);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
@@ -784,5 +819,129 @@ describe("the files from the register and the builders, read as accounts", () =>
     const dormant = mapIxbrlAccounts(fixture("adp-dormant.xhtml"), { dormant: true });
     expect(dormant.dormant).toBe(true);
     expect(dormant.balanceSheet.currentYear.capitalAndReserves).toBe(100);
+  });
+});
+
+describe("the profit and loss format", () => {
+  const formatOf = (body) => accountsOf(body).profitAndLoss.format;
+  const pl = (body) => accountsOf(body).profitAndLoss;
+  const turnover = money("core:TurnoverRevenue", "CY", "1,000") + money("core:TurnoverRevenue", "PY", "900");
+
+  it("is 1 when the file states cost of sales or gross profit", () => {
+    expect(formatOf(turnover + money("core:CostSales", "CY", "400") + money("core:CostSales", "PY", "300"))).toBe(1);
+    expect(
+      formatOf(
+        turnover +
+          money("core:CostSales", "CY", "300") +
+          money("core:CostSales", "PY", "300") +
+          money("core:GrossProfitLoss", "CY", "700") +
+          money("core:GrossProfitLoss", "PY", "600"),
+      ),
+    ).toBe(1);
+    expect(formatOf(turnover + money("core:DistributionCosts", "CY", "10") + money("core:DistributionCosts", "PY", "10"))).toBe(1);
+  });
+
+  it("is 2 when the file states a line by nature and none by function", () => {
+    expect(
+      formatOf(turnover + money("core:RawMaterialsConsumablesUsed", "CY", "300") + money("core:RawMaterialsConsumablesUsed", "PY", "200")),
+    ).toBe(2);
+    expect(formatOf(turnover + money("core:OtherExternalCharges", "CY", "300") + money("core:OtherExternalCharges", "PY", "200"))).toBe(2);
+  });
+
+  it("is 1 when the file states neither, which reads turnover and profit only", () => {
+    const accounts = pl(turnover + money("core:ProfitLoss", "CY", "100") + money("core:ProfitLoss", "PY", "90"));
+    expect(accounts.format).toBe(1);
+    expect(accounts.currentYear).toEqual({ turnover: 1000, profit: 100 });
+  });
+
+  it("leaves a Format 2 concept of a Format 1 file in the unmapped list as a note figure", () => {
+    const body =
+      turnover +
+      money("core:CostSales", "CY", "400") +
+      money("core:CostSales", "PY", "300") +
+      money("core:StaffCostsEmployeeBenefitsExpense", "CY", "200") +
+      money("core:StaffCostsEmployeeBenefitsExpense", "PY", "180");
+    const accounts = accountsOf(body);
+    expect(accounts.profitAndLoss.format).toBe(1);
+    expect(accounts.profitAndLoss.currentYear.staffCosts).toBeUndefined();
+    expect(accounts.unmapped.map((entry) => entry.concept)).toContain("StaffCostsEmployeeBenefitsExpense");
+  });
+
+  it("reads the Format 2 lines of both years, and the staff costs as the sum of their parts when the total is absent", () => {
+    const body =
+      turnover +
+      money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "CY", "30") +
+      money("core:OwnWorkCapitalised", "CY", "20") +
+      money("core:RawMaterialsConsumablesUsed", "CY", "300") +
+      money("core:OtherExternalCharges", "CY", "60") +
+      money("core:WagesSalaries", "CY", "200") +
+      money("core:SocialSecurityCosts", "CY", "20") +
+      money("core:PensionOtherPost-employmentBenefitCostsOtherPensionCosts", "CY", "10") +
+      money("core:OtherOperatingExpensesFormat2", "CY", "100") +
+      money("core:OperatingProfitLoss", "CY", "360") +
+      money("core:RawMaterialsConsumablesUsed", "PY", "200");
+    const accounts = accountsOf(body);
+    expect(accounts.profitAndLoss.format).toBe(2);
+    expect(accounts.profitAndLoss.currentYear).toMatchObject({
+      changeInStocks: 30,
+      ownWorkCapitalised: 20,
+      rawMaterialsConsumables: 300,
+      otherExternalCharges: 60,
+      staffCosts: 230,
+      wagesSalaries: 200,
+      socialSecurityCosts: 20,
+      pensionCosts: 10,
+      otherOperatingExpenses: 100,
+    });
+    expect(accounts.profitAndLoss.priorYear).toMatchObject({ turnover: 900, rawMaterialsConsumables: 200 });
+    expect(accounts.unmapped).toEqual([]);
+  });
+
+  it("refuses an operating profit that does not follow from the Format 2 lines", () => {
+    const body =
+      turnover +
+      money("core:RawMaterialsConsumablesUsed", "CY", "300") +
+      money("core:OtherExternalCharges", "CY", "60") +
+      money("core:OperatingProfitLoss", "CY", "700");
+    expect(() => accountsOf(body)).toThrow(/operating profit of 700 differs from the lines that make it, which give 640/);
+  });
+
+  it("takes interest into the Format 2 profit for the year", () => {
+    const lines =
+      turnover +
+      money("core:RawMaterialsConsumablesUsed", "CY", "300") +
+      money("core:OtherInterestReceivableSimilarIncomeFinanceIncome", "CY", "10") +
+      money("core:TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", "CY", "100");
+    expect(() => accountsOf(lines + money("core:ProfitLoss", "CY", "610"))).not.toThrow();
+    expect(() => accountsOf(lines + money("core:ProfitLoss", "CY", "600"))).toThrow(/profit for the year of 600 differs/);
+  });
+
+  it("reads a small company's Format 2 file from the Accounts Data Product", () => {
+    const accounts = mapIxbrlAccounts(fixture("adp-small-format2.xhtml"), { regime: "small", companyNumber: "11134922" });
+    expect(accounts.regime).toBe("small");
+    expect(accounts.notes).toEqual([]);
+    expect(accounts.profitAndLoss.format).toBe(2);
+    expect(accounts.profitAndLoss.currentYear).toMatchObject({
+      turnover: 32400,
+      rawMaterialsConsumables: 1810,
+      staffCosts: 16200,
+      depreciation: 112,
+      otherOperatingExpenses: 5310,
+      otherOperatingIncome: 0,
+      profitBeforeTax: 8968,
+      tax: 1697,
+      profit: 7271,
+    });
+    expect(accounts.profitAndLoss.priorYear).toMatchObject({ turnover: 29800, profitBeforeTax: 7962, profit: 6438 });
+  });
+
+  it("gives the Format 1 file of another vendor format 1", () => {
+    expect(mapIxbrlAccounts(fixture("adp-small-full.xhtml"), { regime: "small" }).profitAndLoss.format).toBe(1);
+  });
+
+  it("keeps the micro-entity lines of a micro-entity file", () => {
+    const accounts = mapIxbrlAccounts(fixture("diya-2025-accounts.xhtml"), { companyNumber: "06846849" });
+    expect(accounts.profitAndLoss.format).toBe(2);
+    expect(accounts.profitAndLoss.currentYear).toMatchObject({ turnover: 7639, otherOperatingIncome: 22, otherOperatingExpenses: 2482 });
   });
 });

@@ -18,7 +18,7 @@ import { buildNewBook } from "./diya-gl-new-book.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { calculateFromDiyaGl } from "./diya-gl-calculator.js";
 import { buildOpeningBalance, toV2OpeningBalances } from "./scenario-extractor.js";
-import { FIXED_ASSET_ACCOUNTS, FIXED_ASSET_CLASSES, IxbrlError, microProfitBeforeTax } from "./ixbrl-accounts.js";
+import { FIXED_ASSET_ACCOUNTS, FIXED_ASSET_CLASSES, IxbrlError, natureProfitBeforeTax } from "./ixbrl-accounts.js";
 
 // The register's class name for each class the accounts note uses.
 const REGISTER_CLASS = {
@@ -321,10 +321,12 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
   };
   add("TurnoverRevenue", "sales", "4000", profitAndLoss.turnover, "Turnover");
   add("OtherOperatingIncomeFormat2", "sales", "4003", profitAndLoss.otherOperatingIncome, "Other operating income");
+  add("OwnWorkCapitalised", "sales", "4003", profitAndLoss.ownWorkCapitalised, "Own work capitalised");
   const costOfSales = profitAndLoss.costOfSales !== undefined ? profitAndLoss.costOfSales : profitAndLoss.rawMaterialsConsumables;
   const costConcept = profitAndLoss.costOfSales !== undefined ? "CostSales" : "RawMaterialsConsumablesUsed";
   if (costOfSales !== undefined || stockMovement !== 0)
     add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement, "Cost of sales");
+  add("OtherExternalCharges", "purchases", "5001", profitAndLoss.otherExternalCharges, "Other external charges");
   add("StaffCostsEmployeeBenefitsExpense", "purchases", "5101", profitAndLoss.staffCosts, "Staff costs");
   add("InterestPayableSimilarChargesFinanceCosts", "purchases", "5803", profitAndLoss.interestPayable, "Interest payable");
   if (profitAndLoss.administrativeExpenses !== undefined) {
@@ -353,7 +355,7 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
 
 function plProfitBeforeTax(profitAndLoss) {
   if (profitAndLoss.profitBeforeTax !== undefined) return profitAndLoss.profitBeforeTax;
-  const micro = microProfitBeforeTax(profitAndLoss);
+  const micro = natureProfitBeforeTax(profitAndLoss);
   const netInterest = n(profitAndLoss.interestReceivable) - n(profitAndLoss.interestPayable);
   if (micro !== undefined) return micro + netInterest;
   if (profitAndLoss.operatingProfit !== undefined) return profitAndLoss.operatingProfit + netInterest;
@@ -372,6 +374,7 @@ function bookShell(accounts, period, taxData, extras) {
   book.documentInfo.entriesComment = extras.comment;
   if (accounts.principalActivity) book.entityInformation.organizationDescription = accounts.principalActivity;
   if (number) book.entityInformation["diya-gl:companyNumber"] = number;
+  book.accounts.purchases["5001"] = { "accountMainDescription": "Sub contractors", "diya-gl:column": "P" };
   book.accounts.purchases["5101"] = { "accountMainDescription": "Employee wages (non-PAYE)", "diya-gl:column": "S" };
   book.accounts.purchases["5501"] = { "accountMainDescription": "General admin", "diya-gl:column": "AA" };
   book.accounts.sales["4006"] = { accountMainDescription: "Fixed asset sales" };
@@ -497,6 +500,11 @@ async function buildYear(accounts, which, deps) {
     };
   };
   let posted = postsFor(0);
+  if (current && profitAndLoss?.changeInStocks !== undefined && Math.abs(profitAndLoss.changeInStocks - stockMovement) > 1) {
+    differences.push(
+      `${label}: the file states a change in stocks of ${profitAndLoss.changeInStocks} and its balance sheets a stock movement of ${stockMovement}.`,
+    );
+  }
 
   const build = (flow) => {
     // The prior year's opening balance sheet: the closing one worked back.
