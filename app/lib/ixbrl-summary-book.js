@@ -284,8 +284,6 @@ class LineWriter {
   }
 }
 
-const referenceFor = (concept) => `IXBRL-${concept}`;
-
 // The opening journal: the balance sheet at the start of the year.
 function openingJournal(writer, date, opening, assetClasses) {
   const reference = "OB-001";
@@ -328,6 +326,7 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
   if (costOfSales !== undefined || stockMovement !== 0)
     add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement, "Cost of sales");
   add("StaffCostsEmployeeBenefitsExpense", "purchases", "5101", profitAndLoss.staffCosts, "Staff costs");
+  add("InterestPayableSimilarChargesFinanceCosts", "purchases", "5803", profitAndLoss.interestPayable, "Interest payable");
   if (profitAndLoss.administrativeExpenses !== undefined) {
     // The engine works the gain or loss on disposal from the sale, so it comes out of the expenses the file nets it into.
     add(
@@ -355,8 +354,9 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
 function plProfitBeforeTax(profitAndLoss) {
   if (profitAndLoss.profitBeforeTax !== undefined) return profitAndLoss.profitBeforeTax;
   const micro = microProfitBeforeTax(profitAndLoss);
-  if (micro !== undefined) return micro + n(profitAndLoss.interestReceivable);
-  if (profitAndLoss.operatingProfit !== undefined) return profitAndLoss.operatingProfit + n(profitAndLoss.interestReceivable);
+  const netInterest = n(profitAndLoss.interestReceivable) - n(profitAndLoss.interestPayable);
+  if (micro !== undefined) return micro + netInterest;
+  if (profitAndLoss.operatingProfit !== undefined) return profitAndLoss.operatingProfit + netInterest;
   if (profitAndLoss.profit !== undefined) return profitAndLoss.profit + n(profitAndLoss.tax);
   return undefined;
 }
@@ -428,6 +428,7 @@ async function buildYear(accounts, which, deps) {
   const period = current ? accounts.period : accounts.priorPeriod;
   const closingSheet = sheetOf(accounts.balanceSheet[current ? "currentYear" : "priorYear"]);
   const profitAndLoss = accounts.profitAndLoss?.[current ? "currentYear" : "priorYear"] ?? null;
+  const referenceFor = (concept, statedConcept = concept) => `IXBRL-${accounts.sourceConcepts?.[statedConcept] ?? concept}`;
   const taxData = await loadTaxData(period, deps);
   const additionsRate = taxData.depreciation?.[ADDITIONS_RATE_KEY] ?? 0;
 
@@ -513,7 +514,7 @@ async function buildYear(accounts, which, deps) {
       writer.invoice(
         "purchases",
         period.end,
-        referenceFor("PropertyPlantEquipmentAdditions"),
+        referenceFor("PropertyPlantEquipmentAdditions", "AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment"),
         "5900",
         additionsAmount,
         "Fixed asset additions",

@@ -18,6 +18,7 @@
 // server run.
 
 import { DOMParser } from "@xmldom/xmldom";
+import { UK_GAAP_SUITE_DATE, translateUkGaapFacts } from "./ixbrl-uk-gaap.js";
 
 const NS_IX_11 = "http://www.xbrl.org/2013/inlineXBRL";
 const NS_IX_10 = "http://www.xbrl.org/2008/inlineXBRL";
@@ -41,7 +42,8 @@ const TRANSFORMATION_REGISTRIES = [
 
 const FRC_NAMESPACE = /^http:\/\/xbrl\.frc\.org\.uk\/(fr|cd|reports)\/(\d{4}-\d{2}-\d{2})\/(.+)$/;
 const FRC_ENTRY_POINT = /xbrl\.frc\.org\.uk\/([^/]+)\/(\d{4}-\d{2}-\d{2})\//;
-const OLD_UK_GAAP_NAMESPACE = /^http:\/\/www\.xbrl\.org\/uk\/(gaap|cd|fr)\b/;
+const OLD_UK_GAAP_NAMESPACE = /^http:\/\/www\.xbrl\.org\/uk\/(?:gaap|cd|fr|reports)\/[^/]+\/(\d{4}-\d{2}-\d{2})\b/;
+const OLD_UK_GAAP_ENTRY_POINT = /xbrl\.org\/uk\/(?:gaap|cd|fr|reports)\/[^/]+\/(\d{4}-\d{2}-\d{2})\//;
 
 const DROP_THE_SET = "Drop all the files of the set together, or the zip.";
 
@@ -456,6 +458,7 @@ function suiteOf(namespaces, schemaRefs) {
       suite.date = match[2];
     } else if (/xbrl\.org\/uk\//.test(href)) {
       suite.family = "UK-GAAP";
+      suite.date ??= href.match(OLD_UK_GAAP_ENTRY_POINT)?.[1] ?? null;
     }
   }
   for (const namespace of namespaces) {
@@ -465,6 +468,7 @@ function suiteOf(namespaces, schemaRefs) {
       suite.modules.add(match[3]);
     } else if (OLD_UK_GAAP_NAMESPACE.test(namespace)) {
       suite.family = "UK-GAAP";
+      suite.date ??= namespace.match(OLD_UK_GAAP_NAMESPACE)[1];
     }
   }
   return suite;
@@ -475,10 +479,17 @@ const SUITE_LABELS = {
   "IFRS": "IFRS",
   "Charities": "Charities SORP",
   "UKSEF": "UK Single Electronic Format",
-  "UK-GAAP": "old UK GAAP",
 };
 
 function checkSuite(suite) {
+  if (suite.family === "UK-GAAP") {
+    if (suite.date !== UK_GAAP_SUITE_DATE) {
+      throw new IxbrlError(
+        `This file uses the UK GAAP taxonomy of ${suite.date ?? "an unstated date"}; the form reads the ${UK_GAAP_SUITE_DATE} suite.`,
+      );
+    }
+    return;
+  }
   if (suite.family && !READ_SUITES.includes(suite.family)) {
     const label = SUITE_LABELS[suite.family] ?? suite.family;
     throw new IxbrlError(`This file uses the ${label} taxonomy; the form takes FRS 102 and FRS 105 accounts.`);
@@ -663,7 +674,7 @@ export function readIxbrlSet(documents) {
   return {
     kind,
     suite: { family: suite.family, date: suite.date, modules: [...suite.modules] },
-    facts,
+    facts: suite.family === "UK-GAAP" ? translateUkGaapFacts(facts) : facts,
     contexts,
     units,
     leftOutTargets: [...leftOut],

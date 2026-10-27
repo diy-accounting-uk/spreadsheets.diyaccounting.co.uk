@@ -89,6 +89,7 @@ export const MAPPING_TABLE = [
     note: "WithinOneYear; posts as a trade creditor, which the balance sheet shows within one year",
   },
   { concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
+  { concept: "TaxationSocialSecurityPayable", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
   {
     concept: "Creditors",
     dimension: MATURITY,
@@ -132,6 +133,12 @@ export const MAPPING_TABLE = [
     figure: "interestReceivable",
     account: "1200",
     note: "a receipt coded K",
+  },
+  {
+    concept: "InterestPayableSimilarChargesFinanceCosts",
+    figure: "interestPayable",
+    account: "5803",
+    note: "the ltd book's loan interest account",
   },
   { concept: "TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", figure: "tax", account: "-", note: "not posted; diya-gl works the tax" },
   { concept: "GrossProfitLoss", figure: "grossProfit", account: "-", note: "a check" },
@@ -295,6 +302,7 @@ function balanceSheetAt(set, endDay, notes, label) {
     otherCreditors: sumDefined([
       set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
       set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
+      set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
     ]),
     creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
     creditorsAfterOneYear: sumDefined([afterOneYear, provisions]),
@@ -316,6 +324,7 @@ function profitAndLossAt(set, endDay) {
     administrativeExpenses: set.duration("AdministrativeExpenses", endDay),
     operatingProfit: set.duration("OperatingProfitLoss", endDay),
     interestReceivable: set.duration("OtherInterestReceivableSimilarIncomeFinanceIncome", endDay),
+    interestPayable: set.duration("InterestPayableSimilarChargesFinanceCosts", endDay),
     profitBeforeTax: set.duration("ProfitLossOnOrdinaryActivitiesBeforeTax", endDay),
     tax: set.duration("TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", endDay),
     profit: set.duration("ProfitLoss", endDay) ?? set.duration("ProfitLossOnOrdinaryActivitiesAfterTax", endDay),
@@ -511,9 +520,9 @@ function checkProfitAndLoss(pl, label) {
   if (
     pl.profitBeforeTax !== undefined &&
     pl.operatingProfit !== undefined &&
-    !close(pl.operatingProfit + n(pl.interestReceivable), pl.profitBeforeTax)
+    !close(pl.operatingProfit + n(pl.interestReceivable) - n(pl.interestPayable), pl.profitBeforeTax)
   ) {
-    mismatch("profit before tax", pl.operatingProfit + n(pl.interestReceivable), pl.profitBeforeTax);
+    mismatch("profit before tax", pl.operatingProfit + n(pl.interestReceivable) - n(pl.interestPayable), pl.profitBeforeTax);
   }
   if (pl.profit !== undefined && pl.profitBeforeTax !== undefined && !close(pl.profitBeforeTax - n(pl.tax), pl.profit)) {
     mismatch("profit for the year", pl.profitBeforeTax - n(pl.tax), pl.profit);
@@ -695,7 +704,13 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
 
   const principalActivity = textFact(set, "DescriptionPrincipalActivities") ?? null;
   const approvalDate = textFact(set, "DateAuthorisationFinancialStatementsForIssue") ?? null;
-  const definedBySuite = read.suite.date ? suiteConcepts?.(read.suite.date) : undefined;
+  const definedBySuite = read.suite.date && read.suite.family !== "UK-GAAP" ? suiteConcepts?.(read.suite.date) : undefined;
+  const sourceConcepts = {};
+  // A name stated both on its own and on a dimension (Equity) takes the UK GAAP name of the fact on its own.
+  const translated = set.facts.filter((fact) => fact.sourceConcept);
+  for (const fact of [...translated.filter((f) => Object.keys(f.dimensions).length === 0), ...translated]) {
+    sourceConcepts[fact.localName] ??= fact.sourceConcept;
+  }
   const unmapped = set.facts
     .filter((fact) => !set.consumed.has(fact) && fact.value !== "" && !isBoilerplate(fact))
     .map((fact) => ({
@@ -734,6 +749,7 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
         : null,
     firstAccounts: Boolean(expect.firstAccounts),
     notes,
+    sourceConcepts,
     unmapped,
   };
 }

@@ -102,6 +102,12 @@ const ROWS = [
     "balanceSheet.currentYear.otherCreditors",
     570,
   ],
+  [
+    "TaxationSocialSecurityPayable",
+    money("core:OtherCreditors", "WITHIN_CY", "500") + money("core:TaxationSocialSecurityPayable", "WITHIN_CY", "4,451"),
+    "balanceSheet.currentYear.otherCreditors",
+    4951,
+  ],
   ["Creditors", money("core:Creditors", "WITHIN_CY", "3,000"), "balanceSheet.currentYear.creditorsWithinOneYear", 3000],
   ["Creditors", money("core:Creditors", "AFTER_CY", "2,000"), "balanceSheet.currentYear.creditorsAfterOneYear", 2000],
   [
@@ -162,6 +168,12 @@ const ROWS = [
     money("core:TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", "CY", "1,000"),
     "profitAndLoss.currentYear.tax",
     1000,
+  ],
+  [
+    "InterestPayableSimilarChargesFinanceCosts",
+    money("core:InterestPayableSimilarChargesFinanceCosts", "CY", "60"),
+    "profitAndLoss.currentYear.interestPayable",
+    60,
   ],
   ["GrossProfitLoss", money("core:GrossProfitLoss", "CY", "30,000"), "profitAndLoss.currentYear.grossProfit", 30000],
   ["OperatingProfitLoss", money("core:OperatingProfitLoss", "CY", "5,000"), "profitAndLoss.currentYear.operatingProfit", 5000],
@@ -270,7 +282,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(52);
+    expect(MAPPING_TABLE).toHaveLength(54);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
@@ -542,6 +554,17 @@ describe("the checks on import", () => {
     const body =
       money("core:TurnoverRevenue", "CY", "1,000") + money("core:CostSales", "CY", "400") + money("core:GrossProfitLoss", "CY", "700");
     expect(() => accountsOf(body)).toThrow(/gross profit of 700 differs from the lines that make it, which give 600/);
+  });
+
+  it("takes interest payable off the operating profit to reach the profit before tax", () => {
+    const lines =
+      money("core:OperatingProfitLoss", "CY", "5,000") +
+      money("core:OtherInterestReceivableSimilarIncomeFinanceIncome", "CY", "100") +
+      money("core:InterestPayableSimilarChargesFinanceCosts", "CY", "60");
+    expect(() => accountsOf(lines + money("core:ProfitLossOnOrdinaryActivitiesBeforeTax", "CY", "5,040"))).not.toThrow();
+    expect(() => accountsOf(lines + money("core:ProfitLossOnOrdinaryActivitiesBeforeTax", "CY", "5,100"))).toThrow(
+      /profit before tax of 5100 differs from the lines that make it, which give 5040/,
+    );
   });
 
   it("refuses a micro profit that does not follow from its lines", () => {
