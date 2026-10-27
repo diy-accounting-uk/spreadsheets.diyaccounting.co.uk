@@ -374,15 +374,15 @@ describe("the taxonomy a file uses", () => {
     );
   });
 
-  it("refuses the old UK GAAP taxonomy with the same message", () => {
+  it("refuses an old UK GAAP taxonomy of another date, naming the date", () => {
     expect(() =>
       readIxbrl(
         withNamespace(
-          "http://www.xbrl.org/uk/gaap/core/2009-09-01",
-          "http://www.xbrl.org/uk/gaap/core/2009-09-01/uk-gaap-full-2009-09-01.xsd",
+          "http://www.xbrl.org/uk/gaap/core/2012-01-01",
+          "http://www.xbrl.org/uk/gaap/core/2012-01-01/uk-gaap-full-2012-01-01.xsd",
         ),
       ),
-    ).toThrow("This file uses the old UK GAAP taxonomy; the form takes FRS 102 and FRS 105 accounts.");
+    ).toThrow("This file uses the UK GAAP taxonomy of 2012-01-01; the form reads the 2009-09-01 suite.");
   });
 });
 
@@ -400,7 +400,9 @@ describe("a document set", () => {
 });
 
 describe("the fixtures", () => {
-  const readable = readdirSync(FIXTURES).filter((name) => /\.(xhtml|html)$/.test(name) && !name.startsWith("doctored-"));
+  const readable = readdirSync(FIXTURES).filter(
+    (name) => /\.(xhtml|html)$/.test(name) && !name.startsWith("doctored-") && !name.startsWith("uk-gaap-"),
+  );
 
   it("holds a fixture of every kind", () => {
     expect(readable).toEqual(

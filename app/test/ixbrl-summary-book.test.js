@@ -365,6 +365,81 @@ describe("another vendor's files", () => {
   });
 });
 
+describe("a Format 2 small company file", () => {
+  it("reproduces each year's profit before tax and net assets", async () => {
+    const source = await readBookSource(fixture("adp-small-format2.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      turnover: 32400,
+      profitBeforeTax: 8968,
+      fixedAssets: 900,
+      currentAssets: 4200,
+      netAssets: 5100,
+    });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      turnover: 29800,
+      profitBeforeTax: 7962,
+      fixedAssets: 750,
+      currentAssets: 850,
+      netAssets: 1600,
+    });
+  });
+
+  it("posts each tagged line to the account the mapping names", async () => {
+    const source = await readBookSource(fixture("adp-small-format2.xhtml"), "x");
+    const posted = Object.fromEntries(
+      source.lines
+        .filter((line) => line.documentReference.startsWith("IXBRL-"))
+        .map((line) => [line.documentReference, line.accountMainID]),
+    );
+    expect(posted).toMatchObject({
+      "IXBRL-TurnoverRevenue": "4000",
+      "IXBRL-RawMaterialsConsumablesUsed": "5000",
+      "IXBRL-StaffCostsEmployeeBenefitsExpense": "5101",
+    });
+  });
+
+  const nature = (extra) =>
+    new TextEncoder().encode(
+      ixbrlDocument({
+        contexts: [
+          context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+          context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+          context("CY_END", { instant: "2025-03-31" }),
+          context("PY_END", { instant: "2024-03-31" }),
+        ].join(""),
+        hidden: "",
+        body: [
+          words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+          words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+          money("core:FixedAssets", "CY_END", "100"),
+          money("core:FixedAssets", "PY_END", "100"),
+          money("core:Equity", "CY_END", "150"),
+          money("core:Equity", "PY_END", "120"),
+          money("core:TurnoverRevenue", "CY", "1,000"),
+          money("core:TurnoverRevenue", "PY", "900"),
+          ...extra,
+        ].join(""),
+      }),
+    );
+
+  it("names the difference when the file's change in stocks is not the movement of its stock", async () => {
+    const source = await readBookSource(
+      nature([
+        money("core:TotalInventories", "CY_END", "50"),
+        money("core:TotalInventories", "PY_END", "20"),
+        money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "CY", "10"),
+        money("core:RawMaterialsConsumablesUsed", "CY", "300"),
+      ]),
+      "x",
+    ).catch((error) => error);
+    expect(source.differences ?? [source.message]).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("the file states a change in stocks of 10 and its balance sheets a stock movement of 30"),
+      ]),
+    );
+  });
+});
+
 describe("fixed asset disposals", () => {
   const PPE = "core:PropertyPlantEquipmentClassesDimension";
   const EQUITY = "core:EquityClassesDimension";

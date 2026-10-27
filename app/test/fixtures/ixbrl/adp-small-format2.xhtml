@@ -1,0 +1,846 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:ix="http://www.xbrl.org/2013/inlineXBRL"
+  xmlns:ixt2="http://www.xbrl.org/inlineXBRL/transformation/2011-07-31"
+  xmlns:xbrli="http://www.xbrl.org/2003/instance"
+  xmlns:link="http://www.xbrl.org/2003/linkbase"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:iso4217="http://www.xbrl.org/2003/iso4217"
+  xmlns:uk-gaap="http://xbrl.frc.org.uk/fr/2025-01-01/core"
+  xmlns:uk-bus="http://xbrl.frc.org.uk/cd/2025-01-01/business"
+  xmlns:uk-direp="http://xbrl.frc.org.uk/reports/2025-01-01/direp"
+  xmlns:core="http://xbrl.frc.org.uk/fr/2025-01-01/core"
+  xmlns:xbrldi="http://xbrl.org/2006/xbrldi">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>J-ACCOUNTANCY &amp; CONSULTANCY LIMITED - Company Accounts</title>
+    <style type="text/css">
+    body {
+      font-family: "Roboto", Arial, Helvetica, sans-serif;
+      font-size: 10.5pt;
+      color: #333333;
+      line-height: 1.5;
+    }
+    tr, td, th, tbody {
+      padding: 0px;
+      margin: 0px;
+    }
+    .page {
+      page-break-after: always;
+      min-height: calc(297mm - 60mm);
+      position: relative;
+      padding: 30mm 25mm 30mm 25mm;
+      box-sizing: border-box;
+    }
+    /* ---- Cover Page ---- */
+    div.titlepage {
+      padding-top: 5em;
+      text-align: center;
+    }
+    div.covertitle {
+      font-size: 22pt;
+      font-weight: bold;
+      color: #333333;
+      text-align: center;
+      margin: 0;
+    }
+    div.coversubtitle {
+      font-size: 14pt;
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
+    }
+    div.covermeta {
+      text-align: center;
+      margin: 0.3em 0;
+    }
+    div.coverfooter {
+      text-align: center;
+      color: #666666;
+      font-size: 10pt;
+    }
+    /* ---- Page Header (company name bar) ---- */
+    div.accountsheader {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #333333;
+      text-transform: uppercase;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 0;
+    }
+    /* ---- Horizontal rule ---- */
+    hr.achr {
+      border: none;
+      border-top: 1px solid #000000;
+      margin: 1.25em 0;
+    }
+    /* ---- Page section headings ---- */
+    h2.pagetitle {
+      font-size: 14pt;
+      font-weight: normal;
+      color: #333333;
+      text-align: center;
+      margin: 0 0 0.25em 0;
+    }
+    h2.pagesubtitle {
+      font-size: 10.5pt;
+      font-weight: bold;
+      text-align: center;
+      margin: 0 0 1.5em 0;
+    }
+    /* ---- Contents table ---- */
+    table.contents {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table.contents td {
+      padding: 10px 0;
+      border-bottom: 1px dashed #cccccc;
+      color: #333333;
+    }
+    table.contents td.pgnum {
+      text-align: right;
+    }
+    /* ---- Financial tables ---- */
+    table.fintable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5em;
+    }
+    table.fintable th {
+      text-align: left;
+      font-weight: normal;
+      padding: 6px 0;
+    }
+    table.fintable td {
+      text-align: right;
+      padding: 6px 0;
+    }
+    table.fintable th.colhdr {
+      text-align: right;
+      font-weight: bold;
+    }
+    table.fintable th.bold {
+      font-weight: bold;
+    }
+    table.fintable td.bold {
+      font-weight: bold;
+    }
+    table.fintable td.expense {
+      color: #c0392b;
+    }
+    table.fintable td.expense-bold {
+      color: #c0392b;
+      font-weight: bold;
+    }
+    table.fintable tr.total-above td,
+    table.fintable tr.total-above th {
+      border-top: 2px solid #000000;
+    }
+    table.fintable tr.total-below td,
+    table.fintable tr.total-below th {
+      border-bottom: 2px solid #000000;
+    }
+    table.fintable tr.spacer td,
+    table.fintable tr.spacer th {
+      padding: 0;
+      height: 0.5em;
+    }
+    /* ---- Notes page ---- */
+    h3.sectiontitle {
+      font-size: 12pt;
+      font-weight: bold;
+      margin: 1em 0 0.5em 0;
+    }
+    p.notespolicy {
+      margin: 0.25em 0 0 0;
+    }
+    p.noteslabel {
+      font-weight: bold;
+      margin: 0.75em 0 0.25em 0;
+    }
+    /* ---- Compliance page ---- */
+    ul.compliancelist {
+      margin: 0.5em 0 0.75em 1.5em;
+    }
+    ul.compliancelist li {
+      margin-bottom: 0.4em;
+    }
+    /* ---- Footer ---- */
+    div.pagefooter {
+      position: absolute;
+      bottom: 15mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10pt;
+      color: #999999;
+    }
+    /* ---- Director signature ---- */
+    div.director {
+      margin-top: 2em;
+    }
+    div.directorname {
+      font-weight: normal;
+      margin-bottom: 0.25em;
+    }
+    div.directortitle {
+      color: #666666;
+    }
+    @media print {
+      @page {
+        margin: 0;
+        size: A4;
+      }
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        page-break-after: always;
+        border-bottom: none !important;
+        margin: 0;
+        padding: 25mm 20mm;
+        min-height: calc(297mm - 50mm);
+        box-sizing: border-box;
+      }
+      .page:last-of-type {
+        page-break-after: avoid;
+      }
+    }
+    @media screen, projection, tv {
+      body {
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px 0;
+      }
+      .page {
+        background-color: white;
+        margin: 20px auto;
+        max-width: 210mm;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+      .page:not(:last-child) {
+        border-bottom: 2px solid #e0e0e0;
+      }
+    }
+  </style>
+  </head>
+  <body>
+    <div style="display:none">
+      <ix:header>
+        <ix:hidden>
+         <ix:nonNumeric name="uk-bus:EntityCurrentLegalOrRegisteredName" contextRef="FY">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:UKCompaniesHouseRegisteredNumber" contextRef="FY">11134922</ix:nonNumeric>
+         <ix:nonNumeric name="uk-bus:StartDateForPeriodCoveredByReport" contextRef="FYS">2025-02-01</ix:nonNumeric>
+         <ix:nonNumeric name="uk-bus:EndDateForPeriodCoveredByReport" contextRef="FYE">2026-01-31</ix:nonNumeric>
+         <ix:nonNumeric name="uk-bus:BalanceSheetDate" contextRef="FYE">2026-01-31</ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:NameProductionSoftware" contextRef="FY">WeFile</ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:VersionProductionSoftware" contextRef="FY">1.0</ix:nonNumeric>
+        <ix:nonNumeric name="core:DirectorSigningFinancialStatements" contextRef="FY_D1"></ix:nonNumeric>
+        <ix:nonNumeric name="core:DateAuthorisationFinancialStatementsForIssue" contextRef="FYE">2026-10-11</ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:AccountingStandardsApplied" contextRef="FY_ACSTD"></ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:LegalFormEntity" contextRef="FY_LEGAL"></ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:AccountsType" contextRef="FY_ACTYPE"></ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:AccountsStatusAuditedOrUnaudited" contextRef="FY_AUDIT"></ix:nonNumeric>
+        
+        <ix:nonNumeric name="uk-bus:EntityTradingStatus" contextRef="FY"></ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:EntityDormantTruefalse" contextRef="FY">false</ix:nonNumeric>
+        <ix:nonNumeric name="uk-bus:ReportAnAmendedRevisedVersionPreviouslyFiledReportTruefalse" contextRef="FY">true</ix:nonNumeric>
+         <ix:nonFraction name="core:AverageNumberEmployeesDuringPeriod" contextRef="FY" unitRef="pure" decimals="0">1</ix:nonFraction>
+         <ix:nonFraction name="core:AverageNumberEmployeesDuringPeriod" contextRef="PY" unitRef="pure" decimals="0">1</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:Investments" contextRef="FYE" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:Debtors" contextRef="FYE" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:CashBankOnHand" contextRef="FYE" unitRef="GBP" decimals="0">4200</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:Investments" contextRef="PYE" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:Debtors" contextRef="PYE" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:CashBankOnHand" contextRef="PYE" unitRef="GBP" decimals="0">850</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:InterestPayableSimilarChargesFinanceCosts" contextRef="FY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="uk-gaap:InterestPayableSimilarChargesFinanceCosts" contextRef="PY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="core:GainLossOnInvestmentsFairValueThroughProfitOrLoss" contextRef="FY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="core:GainLossOnInvestmentsFairValueThroughProfitOrLoss" contextRef="PY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="core:DividendIncome" contextRef="FY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        <ix:nonFraction name="core:DividendIncome" contextRef="PY" unitRef="GBP" decimals="0">0</ix:nonFraction>
+        </ix:hidden>
+        <ix:references>
+          <link:schemaRef xlink:type="simple" xlink:href="https://xbrl.frc.org.uk/FRS-102/2025-01-01/FRS-102-2025-01-01.xsd"/>
+        </ix:references>
+        <ix:resources>
+          <xbrli:context id="FY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FYE">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FYE_NONCURRENT">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:MaturitiesOrExpirationPeriodsDimension">uk-gaap:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <!-- FYE_EQ_RE context is used here for retained earnings and in ixbrlVisibleBodyBalanceSheet. The IDs must stay in sync. -->
+          <xbrli:context id="FYE_EQ_SP">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:SharePremium</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FYE_EQ_CRR">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:CapitalRedemptionReserve</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FYE_EQ_RE">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:RetainedEarningsAccumulatedLosses</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2026-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FYS">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-02-01</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <!-- FY_D1 context is used here for DirectorSigningFinancialStatements and in ixbrlVisibleBodyPages for uk-bus:NameEntityOfficer. The IDs must stay in sync. -->
+          <xbrli:context id="FY_D1">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:EntityOfficersDimension">uk-bus:Director1</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FY_ACSTD">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountingStandardsDimension">uk-bus:SmallEntities</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FY_LEGAL">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:LegalFormEntityDimension">uk-bus:PrivateLimitedCompanyLtd</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FY_ACTYPE">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountsTypeDimension">uk-bus:FullAccounts</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="FY_AUDIT">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-bus:AccountsStatusDimension">uk-bus:AuditExempt-NoAccountantsReport</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2025-02-01</xbrli:startDate>
+              <xbrli:endDate>2026-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PY">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:startDate>2024-02-01</xbrli:startDate>
+              <xbrli:endDate>2025-01-31</xbrli:endDate>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PYE">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PYE_NONCURRENT">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:MaturitiesOrExpirationPeriodsDimension">uk-gaap:AfterOneYear</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PYE_EQ_SP">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:SharePremium</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PYE_EQ_CRR">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:CapitalRedemptionReserve</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:context id="PYE_EQ_RE">
+            <xbrli:entity>
+              <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">11134922</xbrli:identifier>
+              <xbrli:segment>
+                <xbrldi:explicitMember dimension="uk-gaap:EquityClassesDimension">uk-gaap:RetainedEarningsAccumulatedLosses</xbrldi:explicitMember>
+              </xbrli:segment>
+            </xbrli:entity>
+            <xbrli:period>
+              <xbrli:instant>2025-01-31</xbrli:instant>
+            </xbrli:period>
+          </xbrli:context>
+          <xbrli:unit id="GBP">
+            <xbrli:measure>iso4217:GBP</xbrli:measure>
+          </xbrli:unit>
+          <xbrli:unit id="pure">
+            <xbrli:measure>xbrli:pure</xbrli:measure>
+          </xbrli:unit>
+        </ix:resources>
+      </ix:header>
+    </div>
+
+    
+    <div class="page titlepage">
+      <div class="pagefooter">1</div>
+       <div style="padding-top:4em;"></div>
+       <div class="covertitle">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+       <div style="padding-top:1em;"></div>
+      <div class="covermeta">Company Registration Number</div>
+      <div class="covermeta"><strong>11134922</strong></div>
+      <div class="covermeta">(England and Wales)</div>
+       <div style="padding-top:3em;"></div>
+      <hr class="achr"/>
+      <div style="padding-top:3em;"></div>
+      <div class="covertitle">Total Exemption Full Accounts AMENDED</div>
+      <div style="padding-top:1em;"></div>
+      <div class="coversubtitle">For the period 1 February 2025 to 31 January 2026</div>
+      
+      <div style="padding-top:4em;"></div>
+      <hr class="achr"/>
+      <div style="padding-top:4em;"></div>
+      <div class="coverfooter">Prepared in accordance with the small companies provisions<br/>of the Companies Act 2006 and FRS 102</div>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">2</div>
+      <h2 class="pagetitle">Contents</h2>
+      <div style="margin-top:1.5em;"></div>
+      <table class="contents" width="100%" style="width: 100%; border-collapse: collapse;">
+        <tbody>
+          <tr><td style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333;">Profit and Loss Account</td><td class="pgnum" style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333; text-align: right;">3</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333;">Balance Sheet</td><td class="pgnum" style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333; text-align: right;">4</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333;">Statement of Compliance</td><td class="pgnum" style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333; text-align: right;">5</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333;">Notes to the Financial Statements</td><td class="pgnum" style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333; text-align: right;">6–10</td></tr>
+        <tr><td style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333;">Amended Accounts Statement</td><td class="pgnum" style="padding: 10px 0; border-bottom: 1px dashed #cccccc; color: #333333; text-align: right;">11</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">3</div>
+      <h2 class="pagetitle">Profit and Loss Account</h2>
+      <h2 class="pagesubtitle">For the period 1 February 2025 to 31 January 2026</h2>
+      <table class="fintable" width="100%" style="width:100%; border-collapse:collapse; margin-top:0.5em;">
+        <thead>
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0;"></th>
+            <th class="colhdr" style="text-align:right; font-weight:bold; padding:6px 0;">2026<br/>£</th>
+            <th class="colhdr" style="text-align:right; font-weight:bold; padding:6px 0;">2025<br/>£</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Turnover</th><td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:TurnoverRevenue" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">32,400</ix:nonFraction></td><td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:TurnoverRevenue" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">29,800</ix:nonFraction></td></tr>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Cost of raw materials and consumables</th><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:RawMaterialsConsumablesUsed" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,810</ix:nonFraction>)</td><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:RawMaterialsConsumablesUsed" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,550</ix:nonFraction>)</td></tr>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Staff costs</th><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:StaffCostsEmployeeBenefitsExpense" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">16,200</ix:nonFraction>)</td><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:StaffCostsEmployeeBenefitsExpense" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">15,600</ix:nonFraction>)</td></tr>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Depreciation and amounts written off</th><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:DepreciationAmortisationExpense" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">112</ix:nonFraction>)</td><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:DepreciationAmortisationExpense" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">188</ix:nonFraction>)</td></tr>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Other charges</th><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:OtherOperatingExpensesByNature" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">5,310</ix:nonFraction>)</td><td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:OtherOperatingExpensesByNature" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">4,500</ix:nonFraction>)</td></tr>
+          <tr><th style="text-align:left; font-weight:normal; padding:6px 0;">Other operating income</th><td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:OtherOperatingIncome" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td><td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:OtherOperatingIncome" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td></tr>
+          
+          
+          
+          
+          
+          <tr class="total-above total-below" style="border-top:2px solid #000; border-bottom:2px solid #000;">
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Profit before taxation</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:ProfitLossBeforeTax" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">8,968</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:ProfitLossBeforeTax" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">7,962</ix:nonFraction></td>
+          </tr>
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0;">Tax on profit</th>
+            <td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:TaxTaxCreditOnProfitOrLossOnOrdinaryActivities" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,697</ix:nonFraction>)</td>
+            <td class="expense" style="text-align:right; padding:6px 0; color:#c0392b;">(<ix:nonFraction name="uk-gaap:TaxTaxCreditOnProfitOrLossOnOrdinaryActivities" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,524</ix:nonFraction>)</td>
+          </tr>
+          <tr class="total-above total-below" style="border-top:2px solid #000; border-bottom:2px solid #000;">
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Profit for the financial year</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:ProfitLoss" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">7,271</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:ProfitLoss" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">6,438</ix:nonFraction></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">4</div>
+      <h2 class="pagetitle">Balance Sheet</h2>
+      <h2 class="pagesubtitle">As at 31 January 2026</h2>
+      <table class="fintable" width="100%" style="width:100%; border-collapse:collapse; margin-top:0.5em;">
+        <thead>
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0;"></th>
+            <th class="colhdr" style="text-align:right; font-weight:bold; padding:6px 0;">2026<br/>£</th>
+            <th class="colhdr" style="text-align:right; font-weight:bold; padding:6px 0;">2025<br/>£</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Fixed assets</th>
+            <td style="text-align:right; padding:6px 0;"></td>
+            <td style="text-align:right; padding:6px 0;"></td>
+          </tr><tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0; padding-left:1.5em;">Tangible assets</th>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:PropertyPlantEquipment" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">900</ix:nonFraction></td>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:PropertyPlantEquipment" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">750</ix:nonFraction></td>
+          </tr><tr class="total-above total-below" style="border-top:1px solid #000; border-bottom:2px solid #000;">
+            <th style="text-align:left; padding:6px 0;"></th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:FixedAssets" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">900</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:FixedAssets" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">750</ix:nonFraction></td>
+          </tr>
+          <tr>
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Current assets</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:CurrentAssets" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">4,200</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:CurrentAssets" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">850</ix:nonFraction></td>
+          </tr>
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0;">Creditors: amounts falling due within one year</th>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:Creditors" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:Creditors" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td>
+          </tr>
+          <tr class="total-above total-below" style="border-top:2px solid #000; border-bottom:2px solid #000;">
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Net current assets (liabilities)</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:NetCurrentAssetsLiabilities" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">4,200</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:NetCurrentAssetsLiabilities" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">850</ix:nonFraction></td>
+          </tr>
+          <tr class="total-above total-below" style="border-top:1px solid #000; border-bottom:2px solid #000;">
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Total assets less current liabilities</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:TotalAssetsLessCurrentLiabilities" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">5,100</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:TotalAssetsLessCurrentLiabilities" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,600</ix:nonFraction></td>
+          </tr>
+          
+          
+          <tr class="total-above" style="border-top:1px solid #000;">
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Total net assets (liabilities)</th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:NetAssetsLiabilities" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">5,100</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:NetAssetsLiabilities" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,600</ix:nonFraction></td>
+          </tr>
+          <tr class="spacer"><th style="text-align:left; font-weight:normal; padding:0; height:0.5em;"></th><td style="text-align:right; padding:0; height:0.5em;"></td><td style="text-align:right; padding:0; height:0.5em;"></td></tr>
+          <tr>
+            <th class="bold" style="text-align:left; font-weight:bold; padding:6px 0;">Capital and reserves</th>
+            <td style="text-align:right; padding:6px 0;"></td>
+            <td style="text-align:right; padding:6px 0;"></td>
+          </tr>
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0; padding-left:1.5em;">Called up share capital</th>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:NominalValueAllottedShareCapital" contextRef="FY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:NominalValueAllottedShareCapital" contextRef="PY" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">0</ix:nonFraction></td>
+          </tr>
+          
+          
+          <tr>
+            <th style="text-align:left; font-weight:normal; padding:6px 0; padding-left:1.5em;">Profit and loss account</th>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:Equity" contextRef="FYE_EQ_RE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">5,100</ix:nonFraction></td>
+            <td style="text-align:right; padding:6px 0;"><ix:nonFraction name="uk-gaap:Equity" contextRef="PYE_EQ_RE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,600</ix:nonFraction></td>
+          </tr>
+          <tr class="total-above total-below" style="border-top:1px solid #000; border-bottom:2px solid #000;">
+            <th style="text-align:left; padding:6px 0;"></th>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:Equity" contextRef="FYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">5,100</ix:nonFraction></td>
+            <td class="bold" style="text-align:right; font-weight:bold; padding:6px 0;"><ix:nonFraction name="uk-gaap:Equity" contextRef="PYE" unitRef="GBP" decimals="0" format="ixt2:numdotdecimal">1,600</ix:nonFraction></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">5</div>
+      <h2 class="pagetitle">Balance Sheet Continued</h2>
+      <div style="margin-bottom:1.25em;"></div>
+      <p>
+        <ix:nonNumeric name="uk-direp:StatementThatCompanyEntitledToExemptionFromAuditUnderSection477CompaniesAct2006RelatingToSmallCompanies" contextRef="FY">For the period ended 31 January 2026 the company was entitled to exemption under section 477 of the Companies Act 2006 relating to small companies.</ix:nonNumeric>
+      </p>
+      
+      
+      <p><strong>Directors' responsibilities:</strong></p>
+      <ul class="compliancelist">
+        <li>
+          <ix:nonNumeric name="uk-direp:StatementThatMembersHaveNotRequiredCompanyToObtainAnAudit" contextRef="FY">The members have not required the company to obtain an audit of its accounts for the year in question in accordance with section 476 of the Companies Act 2006.</ix:nonNumeric>
+        </li>
+        <li>
+          <ix:nonNumeric name="uk-direp:StatementThatDirectorsAcknowledgeTheirResponsibilitiesUnderCompaniesAct" contextRef="FY">The directors acknowledge their responsibilities for complying with the requirements of the Companies Act 2006 with respect to accounting records and the preparation of accounts.</ix:nonNumeric>
+        </li>
+        
+      </ul>
+      <p>
+        <ix:nonNumeric name="uk-direp:StatementThatAccountsHaveBeenPreparedInAccordanceWithProvisionsSmallCompaniesRegime" contextRef="FY">These amended accounts have been prepared and delivered in accordance with the provisions applicable to companies subject to the small companies regime.</ix:nonNumeric>
+      </p>
+      <p>The accounts were approved by the Board of Directors and authorised for issue on 19 October 2026.</p>
+      <div class="director">
+        <div class="directorname"><ix:nonNumeric name="uk-bus:NameEntityOfficer" contextRef="FY_D1">Beugre Jacques Ndouba</ix:nonNumeric></div>
+        <div class="directortitle">Director</div>
+      </div>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">6</div>
+      <h2 class="pagetitle">Notes to the Financial Statements</h2>
+      <h2 class="pagesubtitle">For the period 1 February 2025 to 31 January 2026</h2>
+      <h3 class="sectiontitle">1. Accounting Policies</h3>
+      <p class="noteslabel">Turnover</p>
+      <p class="notespolicy">Turnover is recognised when goods are delivered or services are provided.</p>
+      <p class="noteslabel">Taxation</p>
+      <p class="notespolicy">Corporation tax is provided at amounts expected to be paid (or recovered) using the tax rates and laws that have been enacted or substantively enacted by the balance sheet date.</p>
+      <p class="noteslabel">Debtors</p>
+      <p class="notespolicy">Debtors are recognised at the settlement amount due.</p>
+      <p class="noteslabel">Cash at bank and in hand</p>
+      <p class="notespolicy">Cash at bank and in hand includes cash and short term highly liquid investments.</p>
+      <p class="noteslabel">Creditors</p>
+      <p class="notespolicy">Creditors are recognised when there is an obligation at the balance sheet date as a result of a past event.</p>
+      <p class="noteslabel">Principal activity</p><p class="notespolicy">The principal activity of the company during the period was <ix:nonNumeric name="uk-bus:DescriptionPrincipalActivities" contextRef="FY">Accounting and auditing activities</ix:nonNumeric>.</p>
+      <p class="noteslabel">Tangible fixed assets</p>
+      <p class="notespolicy">Tangible fixed assets are stated at cost less accumulated depreciation. Depreciation is provided on a straight-line basis over the estimated useful lives of the assets as follows: Fixtures &amp; Fittings — 5 years.</p>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">7</div>
+      <h2 class="pagetitle">Notes to the Financial Statements (continued)</h2>
+      <div style="margin-bottom:2.5em;"></div>
+      <h3 class="sectiontitle">2. Basis of Preparation</h3>
+      <p class="notespolicy">These financial statements have been prepared in accordance with Financial Reporting Standard 102 'The Financial Reporting Standard applicable in the UK and Republic of Ireland' and the Companies Act 2006.</p>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">8</div>
+      <h2 class="pagetitle">Notes to the Financial Statements (continued)</h2>
+      <div style="margin-bottom:2.5em;"></div>
+      <h3 class="sectiontitle">3. Employee Information</h3>
+      <p class="notespolicy">The average number of employees during the period was: <strong>1</strong> (previous period: <strong>1</strong>)</p>
+    </div>
+    
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">9</div>
+      <h2 class="pagetitle">Notes to the Financial Statements (continued)</h2>
+      <div style="margin-bottom:2.5em;"></div>
+      <h3 class="sectiontitle">4. Tangible Fixed Assets</h3>
+      <table class="fintable" style="width:100%; border-collapse:collapse; margin-top:0.5em; font-size:9pt;">
+        <thead>
+          <tr style="border-top:1px solid #000; border-bottom:1px solid #000;">
+            <th style="text-align:left; font-weight:bold; padding:4px 0;">Category</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Cost b/f<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Additions<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Disposals<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Cost c/f<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Dep b/f<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Charge<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">On disp.<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">Dep c/f<br/>£</th>
+            <th style="text-align:right; font-weight:bold; padding:4px 0;">NBV<br/>£</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+      <tr>
+        <td style="text-align:left; padding:4px 0;">Fixtures &amp; Fittings</td>
+        <td style="text-align:right; padding:4px 0;">750</td>
+        <td style="text-align:right; padding:4px 0;">450</td>
+        <td style="text-align:right; padding:4px 0;">0</td>
+        <td style="text-align:right; padding:4px 0;">1,200</td>
+        <td style="text-align:right; padding:4px 0;">188</td>
+        <td style="text-align:right; padding:4px 0;">112</td>
+        <td style="text-align:right; padding:4px 0;">0</td>
+        <td style="text-align:right; padding:4px 0;">300</td>
+        <td style="text-align:right; padding:4px 0;">900</td>
+      </tr>
+      <tr class="total-above total-below" style="border-top:1px solid #000; border-bottom:2px solid #000; font-weight:bold;">
+        <td style="text-align:left; padding:4px 0;">Total</td>
+        <td style="text-align:right; padding:4px 0;">750</td>
+        <td style="text-align:right; padding:4px 0;">450</td>
+        <td style="text-align:right; padding:4px 0;">0</td>
+        <td style="text-align:right; padding:4px 0;">1,200</td>
+        <td style="text-align:right; padding:4px 0;">188</td>
+        <td style="text-align:right; padding:4px 0;">112</td>
+        <td style="text-align:right; padding:4px 0;">0</td>
+        <td style="text-align:right; padding:4px 0;">300</td>
+        <td style="text-align:right; padding:4px 0;">900</td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">10</div>
+      <h2 class="pagetitle">Notes to the Financial Statements (continued)</h2>
+      <div style="margin-bottom:2.5em;"></div>
+      <h3 class="sectiontitle">5. At the end of the financial year, we can say that the organisation will continue being in business in years to come.</h3>
+      <p class="notespolicy">1. Salary includes only the owner of the company who works as self-employed</p>
+      <p class="notespolicy">2. The organisation has no credit liabilities at the end of the financial year.</p>
+      <p class="notespolicy">3. Consumable includes office stationaries</p>
+      <p class="notespolicy">4. Other costs include, shared office, utilities, telephone and publicity costs</p>
+      <p class="notespolicy">5. Management cost includes, administration cost.</p>
+      <table class="fintable" style="width:100%; border-collapse:collapse; margin-top:0.5em; font-size:9pt; max-width: 80%;">
+  <thead>
+    <tr style="border-bottom:1px solid #000;">
+      <th style="text-align:left; font-weight:bold; padding:4px 0;">Total expenses<br/>7270</th>
+      <th style="text-align:right; font-weight:bold; padding:4px 0;">2026<br/>£</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:left; padding:4px 0;">Consumables</td>
+      <td style="text-align:right; padding:4px 0;">1,810</td>
+    </tr>
+    <tr>
+      <td style="text-align:left; padding:4px 0;">Shared Office</td>
+      <td style="text-align:right; padding:4px 0;">4,260</td>
+    </tr>
+    <tr>
+      <td style="text-align:left; padding:4px 0;">Utilities</td>
+      <td style="text-align:right; padding:4px 0;">490</td>
+    </tr>
+    <tr>
+      <td style="text-align:left; padding:4px 0;">Management expenses</td>
+      <td style="text-align:right; padding:4px 0;">150</td>
+    </tr>
+    <tr>
+      <td style="text-align:left; padding:4px 0;">Telephone &amp; Publicity</td>
+      <td style="text-align:right; padding:4px 0;">560</td>
+    </tr>
+    <tr class="total-above total-below" style="border-top:1px solid #000; border-bottom:2px solid #000; font-weight:bold;">
+      <td style="text-align:left; padding:4px 0;">Total</td>
+      <td style="text-align:right; padding:4px 0;">7,270</td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+    
+    <div class="page">
+      
+    <div class="accountsheader">J-ACCOUNTANCY &amp; CONSULTANCY LIMITED</div>
+    <hr class="achr"/>
+      <div class="pagefooter">11</div>
+      <h2 class="pagetitle">Notes to the Financial Statements (continued)</h2>
+      <div style="margin-bottom:2.5em;"></div>
+      <h3 class="sectiontitle">Amended Accounts Statement</h3>
+      <p class="notespolicy"><ix:nonNumeric name="uk-bus:StatementThatRevisedReportReplacesPreviouslyFiledReportForPeriod" contextRef="FY">These revised accounts replace the accounts previously filed for the period ended 31 January 2026.</ix:nonNumeric></p>
+      
+      <p class="notespolicy"><ix:nonNumeric name="uk-bus:StatementThatThisReportNowStatutoryAccountsForPeriod" contextRef="FY">These accounts are now the statutory accounts for the period.</ix:nonNumeric></p>
+      
+      <p class="notespolicy"><ix:nonNumeric name="uk-bus:StatementThatThisReportHasBeenPreparedAsDatePreviouslyFiledReport" contextRef="FY">These revised accounts have been prepared as at 12 October 2026, the date of approval of the original accounts, and not as at the date of revision. Accordingly, they do not deal with events between those dates.</ix:nonNumeric></p>
+      
+      <p class="noteslabel">Respects in which the previously filed accounts did not comply with the Companies Act 2006:</p>
+      <p class="notespolicy"><ix:nonNumeric name="uk-bus:StatementRespectsInWhichPreviouslyFiledReportDidNotComplyWithCompaniesAct2006" contextRef="FY">Disclosure  notes to the financial statements were not enough.</ix:nonNumeric></p>
+      
+      <p class="noteslabel">Significant amendments made:</p>
+      <p class="notespolicy"><ix:nonNumeric name="uk-bus:StatementSignificantAmendmentsToPreviouslyFiledReport" contextRef="FY">Expenses Breakdown</ix:nonNumeric></p>
+      
+      <p class="notespolicy"><strong>Date of approval of revision:</strong> <ix:nonNumeric name="uk-bus:DateApprovalRevisionReport" contextRef="FY" format="ixt2:datedaymonthyearen">19 October 2026</ix:nonNumeric></p>
+    </div>
+  </body>
+</html>

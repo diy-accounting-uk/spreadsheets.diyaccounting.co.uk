@@ -41,6 +41,8 @@ export const FIXED_ASSET_ACCOUNTS = {
   motorVehicles: "0040",
 };
 
+const NATURE_NOTE = "micro-entity and Format 2 profit and loss";
+
 /**
  * The mapping, one row per concept and member the reader maps. `figure` is
  * the name the forms and builders use; `account` is where the summary book
@@ -89,6 +91,7 @@ export const MAPPING_TABLE = [
     note: "WithinOneYear; posts as a trade creditor, which the balance sheet shows within one year",
   },
   { concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
+  { concept: "TaxationSocialSecurityPayable", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
   {
     concept: "Creditors",
     dimension: MATURITY,
@@ -133,21 +136,77 @@ export const MAPPING_TABLE = [
     account: "1200",
     note: "a receipt coded K",
   },
+  {
+    concept: "InterestPayableSimilarChargesFinanceCosts",
+    figure: "interestPayable",
+    account: "5803",
+    note: "the ltd book's loan interest account",
+  },
   { concept: "TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", figure: "tax", account: "-", note: "not posted; diya-gl works the tax" },
   { concept: "GrossProfitLoss", figure: "grossProfit", account: "-", note: "a check" },
   { concept: "OperatingProfitLoss", figure: "operatingProfit", account: "-", note: "a check" },
   { concept: "ProfitLossOnOrdinaryActivitiesBeforeTax", figure: "profitBeforeTax", account: "-", note: "a check" },
   { concept: "ProfitLoss", figure: "profit", account: "-", note: "a check" },
-  { concept: "OtherOperatingIncomeFormat2", figure: "otherOperatingIncome", account: "4003", note: "micro-entity profit and loss" },
-  { concept: "RawMaterialsConsumablesUsed", figure: "rawMaterialsConsumables", account: "5000", note: "micro-entity profit and loss" },
-  { concept: "StaffCostsEmployeeBenefitsExpense", figure: "staffCosts", account: "5101", note: "micro-entity profit and loss" },
+  { concept: "OtherOperatingIncomeFormat2", figure: "otherOperatingIncome", account: "4003", note: NATURE_NOTE },
+  {
+    concept: "OtherOperatingIncome",
+    figure: "otherOperatingIncome",
+    account: "4003",
+    note: `${NATURE_NOTE}; read when the Format 2 name is absent`,
+  },
+  {
+    concept: "IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress",
+    figure: "changeInStocks",
+    account: "-",
+    note: "Format 2 profit and loss; not posted, the stock movement of the balance sheets already moves 1100 and 5000, and a difference is listed",
+  },
+  { concept: "OwnWorkCapitalised", figure: "ownWorkCapitalised", account: "4003", note: "Format 2 profit and loss" },
+  { concept: "RawMaterialsConsumablesUsed", figure: "rawMaterialsConsumables", account: "5000", note: NATURE_NOTE },
+  {
+    concept: "OtherExternalCharges",
+    figure: "otherExternalCharges",
+    account: "5001",
+    note: "Format 2 profit and loss; the sub-contractors account",
+  },
+  {
+    concept: "StaffCostsEmployeeBenefitsExpense",
+    figure: "staffCosts",
+    account: "5101",
+    note: `${NATURE_NOTE}; the sum of the three lines below when absent`,
+  },
+  { concept: "WagesSalaries", figure: "wagesSalaries", account: "5101", note: "part of staffCosts" },
+  { concept: "SocialSecurityCosts", figure: "socialSecurityCosts", account: "5101", note: "part of staffCosts" },
+  {
+    concept: "PensionOtherPost-employmentBenefitCostsOtherPensionCosts",
+    figure: "pensionCosts",
+    account: "5101",
+    note: "part of staffCosts",
+  },
   {
     concept: "DepreciationAmortisationImpairmentExpense",
     figure: "depreciation",
     account: "depreciationRate",
-    note: "micro-entity profit and loss",
+    note: NATURE_NOTE,
   },
-  { concept: "OtherOperatingExpensesFormat2", figure: "otherOperatingExpenses", account: "5501", note: "micro-entity profit and loss" },
+  {
+    concept: "DepreciationAmortisationExpense",
+    figure: "depreciation",
+    account: "depreciationRate",
+    note: `${NATURE_NOTE}; read when the impairment name is absent`,
+  },
+  { concept: "OtherOperatingExpensesFormat2", figure: "otherOperatingExpenses", account: "5501", note: NATURE_NOTE },
+  {
+    concept: "OtherOperatingExpensesByNature",
+    figure: "otherOperatingExpenses",
+    account: "5501",
+    note: `${NATURE_NOTE}; read when the Format 2 name is absent`,
+  },
+  {
+    concept: "ProfitLossBeforeTax",
+    figure: "profitBeforeTax",
+    account: "-",
+    note: "a check; read when ProfitLossOnOrdinaryActivitiesBeforeTax is absent",
+  },
   {
     concept: "GainLossOnDisposalsPropertyPlantEquipment",
     figure: "gainOnDisposal",
@@ -295,6 +354,7 @@ function balanceSheetAt(set, endDay, notes, label) {
     otherCreditors: sumDefined([
       set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
       set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
+      set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
     ]),
     creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
     creditorsAfterOneYear: sumDefined([afterOneYear, provisions]),
@@ -308,22 +368,76 @@ function balanceSheetAt(set, endDay, notes, label) {
   });
 }
 
-function profitAndLossAt(set, endDay) {
+// The concepts that say which format the profit and loss account takes. Format 1 analyses costs by
+// function; Format 2 by nature. A Format 2 concept in a Format 1 file belongs to a note.
+const FORMAT_1_CONCEPTS = new Set([
+  "CostSales",
+  "GrossProfitLoss",
+  "DistributionCosts",
+  "AdministrativeExpenses",
+  "OtherOperatingIncomeFormat1",
+  "OtherOperatingExpensesFormat1",
+]);
+const FORMAT_2_CONCEPTS = new Set([
+  "IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress",
+  "OwnWorkCapitalised",
+  "OtherOperatingIncomeFormat2",
+  "RawMaterialsConsumablesUsed",
+  "OtherExternalCharges",
+  "StaffCostsEmployeeBenefitsExpense",
+  "WagesSalaries",
+  "SocialSecurityCosts",
+  "PensionOtherPost-employmentBenefitCostsOtherPensionCosts",
+  "DepreciationAmortisationImpairmentExpense",
+  "DepreciationAmortisationExpense",
+  "OtherOperatingExpensesFormat2",
+  "OtherOperatingExpensesByNature",
+]);
+
+// 1 or 2: the format of the profit and loss account the facts ending on one of the days state.
+function profitAndLossFormat(set, endDays) {
+  for (const endDay of endDays) {
+    const names = set.facts.filter((fact) => fact.period.endDate === endDay).map((fact) => fact.localName);
+    if (names.some((name) => FORMAT_1_CONCEPTS.has(name))) return 1;
+    if (names.some((name) => FORMAT_2_CONCEPTS.has(name))) return 2;
+  }
+  return 1;
+}
+
+function profitAndLossAt(set, endDay, byNature) {
+  const staffCosts = byNature ? (set.duration("StaffCostsEmployeeBenefitsExpense", endDay) ?? undefined) : undefined;
+  const wagesSalaries = byNature ? set.duration("WagesSalaries", endDay) : undefined;
+  const socialSecurityCosts = byNature ? set.duration("SocialSecurityCosts", endDay) : undefined;
+  const pensionCosts = byNature ? set.duration("PensionOtherPost-employmentBenefitCostsOtherPensionCosts", endDay) : undefined;
+  const nature = byNature
+    ? {
+        changeInStocks: set.duration("IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", endDay),
+        ownWorkCapitalised: set.duration("OwnWorkCapitalised", endDay),
+        otherOperatingIncome: set.duration("OtherOperatingIncomeFormat2", endDay) ?? set.duration("OtherOperatingIncome", endDay),
+        rawMaterialsConsumables: set.duration("RawMaterialsConsumablesUsed", endDay),
+        otherExternalCharges: set.duration("OtherExternalCharges", endDay),
+        staffCosts: staffCosts ?? sumDefined([wagesSalaries, socialSecurityCosts, pensionCosts]),
+        wagesSalaries,
+        socialSecurityCosts,
+        pensionCosts,
+        depreciation:
+          set.duration("DepreciationAmortisationImpairmentExpense", endDay) ?? set.duration("DepreciationAmortisationExpense", endDay),
+        otherOperatingExpenses:
+          set.duration("OtherOperatingExpensesFormat2", endDay) ?? set.duration("OtherOperatingExpensesByNature", endDay),
+      }
+    : {};
   return pick({
+    ...nature,
     turnover: set.duration("TurnoverRevenue", endDay),
     costOfSales: set.duration("CostSales", endDay),
     grossProfit: set.duration("GrossProfitLoss", endDay),
     administrativeExpenses: set.duration("AdministrativeExpenses", endDay),
     operatingProfit: set.duration("OperatingProfitLoss", endDay),
     interestReceivable: set.duration("OtherInterestReceivableSimilarIncomeFinanceIncome", endDay),
-    profitBeforeTax: set.duration("ProfitLossOnOrdinaryActivitiesBeforeTax", endDay),
+    interestPayable: set.duration("InterestPayableSimilarChargesFinanceCosts", endDay),
+    profitBeforeTax: set.duration("ProfitLossOnOrdinaryActivitiesBeforeTax", endDay) ?? set.duration("ProfitLossBeforeTax", endDay),
     tax: set.duration("TaxTaxCreditOnProfitOrLossOnOrdinaryActivities", endDay),
     profit: set.duration("ProfitLoss", endDay) ?? set.duration("ProfitLossOnOrdinaryActivitiesAfterTax", endDay),
-    otherOperatingIncome: set.duration("OtherOperatingIncomeFormat2", endDay),
-    rawMaterialsConsumables: set.duration("RawMaterialsConsumablesUsed", endDay),
-    staffCosts: set.duration("StaffCostsEmployeeBenefitsExpense", endDay),
-    depreciation: set.duration("DepreciationAmortisationImpairmentExpense", endDay),
-    otherOperatingExpenses: set.duration("OtherOperatingExpensesFormat2", endDay),
     gainOnDisposal: set.duration("GainLossOnDisposalsPropertyPlantEquipment", endDay),
   });
 }
@@ -511,30 +625,49 @@ function checkProfitAndLoss(pl, label) {
   if (
     pl.profitBeforeTax !== undefined &&
     pl.operatingProfit !== undefined &&
-    !close(pl.operatingProfit + n(pl.interestReceivable), pl.profitBeforeTax)
+    !close(pl.operatingProfit + n(pl.interestReceivable) - n(pl.interestPayable), pl.profitBeforeTax)
   ) {
-    mismatch("profit before tax", pl.operatingProfit + n(pl.interestReceivable), pl.profitBeforeTax);
+    mismatch("profit before tax", pl.operatingProfit + n(pl.interestReceivable) - n(pl.interestPayable), pl.profitBeforeTax);
   }
   if (pl.profit !== undefined && pl.profitBeforeTax !== undefined && !close(pl.profitBeforeTax - n(pl.tax), pl.profit)) {
     mismatch("profit for the year", pl.profitBeforeTax - n(pl.tax), pl.profit);
   }
-  const micro = microProfitBeforeTax(pl);
-  if (micro !== undefined && pl.profit !== undefined && !close(micro - n(pl.tax), pl.profit)) {
-    mismatch("profit for the year", micro - n(pl.tax), pl.profit);
+  const byNature = natureProfitBeforeTax(pl);
+  if (byNature !== undefined && pl.operatingProfit !== undefined && !close(byNature, pl.operatingProfit)) {
+    mismatch("operating profit", byNature, pl.operatingProfit);
+  }
+  if (
+    byNature !== undefined &&
+    pl.profit !== undefined &&
+    !close(byNature + n(pl.interestReceivable) - n(pl.interestPayable) - n(pl.tax), pl.profit)
+  ) {
+    mismatch("profit for the year", byNature + n(pl.interestReceivable) - n(pl.interestPayable) - n(pl.tax), pl.profit);
   }
 }
 
-// The micro-entity P&L: turnover plus other income less the four expense lines.
-export function microProfitBeforeTax(pl) {
-  const hasMicroLine = ["otherOperatingIncome", "rawMaterialsConsumables", "staffCosts", "depreciation", "otherOperatingExpenses"].some(
-    (key) => pl[key] !== undefined,
-  );
-  if (!hasMicroLine || pl.turnover === undefined) return undefined;
+// The profit and loss account by nature (micro-entity lines and Format 2): turnover, the change in
+// stocks, own work capitalised and other income, less raw materials, external charges, staff costs,
+// depreciation and other expenses. Before interest, so a micro-entity's figure is its profit before tax.
+export function natureProfitBeforeTax(pl) {
+  const hasNatureLine = [
+    "changeInStocks",
+    "ownWorkCapitalised",
+    "otherOperatingIncome",
+    "rawMaterialsConsumables",
+    "otherExternalCharges",
+    "staffCosts",
+    "depreciation",
+    "otherOperatingExpenses",
+  ].some((key) => pl[key] !== undefined);
+  if (!hasNatureLine || pl.turnover === undefined) return undefined;
   const n = (value) => value ?? 0;
   return (
     pl.turnover +
+    n(pl.changeInStocks) +
+    n(pl.ownWorkCapitalised) +
     n(pl.otherOperatingIncome) -
     n(pl.rawMaterialsConsumables) -
+    n(pl.otherExternalCharges) -
     n(pl.staffCosts) -
     n(pl.depreciation) -
     n(pl.otherOperatingExpenses)
@@ -611,8 +744,11 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
   const notes = [];
   const currentYear = balanceSheetAt(set, period.end, notes, "Current year");
   const priorYear = priorEnd ? balanceSheetAt(set, priorEnd, notes, "Prior year") : {};
-  const currentPl = profitAndLossAt(set, period.end);
-  const priorPl = priorEnd ? profitAndLossAt(set, priorEnd) : {};
+  const profitAndLossFormatNumber = profitAndLossFormat(set, priorEnd ? [period.end, priorEnd] : [period.end]);
+  // A micro-entity file's lines read as the micro lines; a Format 2 small company file reads the same lines and more.
+  const byNature = regime === "micro" || profitAndLossFormatNumber === 2;
+  const currentPl = profitAndLossAt(set, period.end, byNature);
+  const priorPl = priorEnd ? profitAndLossAt(set, priorEnd, byNature) : {};
   const fixedAssetNote = priorEnd ? fixedAssetNoteAt(set, period.end, priorEnd) : null;
   // The note's totals and net book values restate what its classes and the balance sheet already say.
   for (const fact of set.facts) {
@@ -689,13 +825,15 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
   for (const fact of [shares, nominal]) if (fact) set.consumed.add(fact);
   const shareClassMember = (fact) => (fact && Object.keys(fact.dimensions).length === 1 ? local(Object.values(fact.dimensions)[0]) : null);
 
-  if (regime === "small" && hasProfitAndLoss && currentPl.costOfSales === undefined && currentPl.turnover === undefined) {
-    notes.push("This file's profit and loss account is Format 2, which the small company form does not take.");
-  }
-
   const principalActivity = textFact(set, "DescriptionPrincipalActivities") ?? null;
   const approvalDate = textFact(set, "DateAuthorisationFinancialStatementsForIssue") ?? null;
-  const definedBySuite = read.suite.date ? suiteConcepts?.(read.suite.date) : undefined;
+  const definedBySuite = read.suite.date && read.suite.family !== "UK-GAAP" ? suiteConcepts?.(read.suite.date) : undefined;
+  const sourceConcepts = {};
+  // A name stated both on its own and on a dimension (Equity) takes the UK GAAP name of the fact on its own.
+  const translated = set.facts.filter((fact) => fact.sourceConcept);
+  for (const fact of [...translated.filter((f) => Object.keys(f.dimensions).length === 0), ...translated]) {
+    sourceConcepts[fact.localName] ??= fact.sourceConcept;
+  }
   const unmapped = set.facts
     .filter((fact) => !set.consumed.has(fact) && fact.value !== "" && !isBoilerplate(fact))
     .map((fact) => ({
@@ -717,7 +855,7 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
     filleted,
     hasProfitAndLoss,
     balanceSheet: { currentYear, priorYear },
-    profitAndLoss: hasProfitAndLoss ? { currentYear: currentPl, priorYear: priorPl } : null,
+    profitAndLoss: hasProfitAndLoss ? { format: profitAndLossFormatNumber, currentYear: currentPl, priorYear: priorPl } : null,
     fixedAssetNote,
     averageEmployees: averageEmployees ?? null,
     principalActivity,
@@ -734,6 +872,7 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
         : null,
     firstAccounts: Boolean(expect.firstAccounts),
     notes,
+    sourceConcepts,
     unmapped,
   };
 }
