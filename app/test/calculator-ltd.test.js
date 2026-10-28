@@ -223,6 +223,12 @@ describe("a year whose only profit is bank interest", () => {
     expect(ct.K24).toBeCloseTo(339.51, 2);
   });
 
+  it("states the trading loss arising in box 780 and nothing in box 155", () => {
+    expect(ct600.Q206).toBeCloseTo(-ct.K22, 2);
+    expect(ct600.Q206).toBeGreaterThan(0);
+    expect(ct600.Z70 ?? 0).toBe(0);
+  });
+
   it("states box 235 as box 165 plus box 170, the interest alone", () => {
     expect(ct600.AJ74).toBe(0);
     expect(ct600.AJ76).toBeCloseTo(339.51, 2);
