@@ -1011,6 +1011,133 @@ test.describe("DIYA-GL page — save to my account", () => {
     expect(await gaEvents(page, "cloud_save")).toEqual([{ product: "bst", outcome: "updated" }]);
   });
 
+  async function stubAccountWithOneBook(page, putBody) {
+    const book = {
+      bookId: "existing-book",
+      title: "Precision Code Trading",
+      product: "bst",
+      latestVersion: 2,
+      latestETag: "etag-2",
+      latestSize: 15000,
+      updatedAt: "2026-10-28T20:00:00.000Z",
+      expiresAt: "2026-12-02T20:00:00.000Z",
+      retention: "sandbox",
+      periodCoveredStart: "2025-04-01",
+      periodCoveredEnd: "2026-03-31",
+      versions: [{ version: 1, size: 14000, createdAt: "2026-10-27T20:00:00.000Z" }],
+      provenance: {},
+    };
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ entitlement: { reason: "no-subscription", expiry: null, residentTier: true }, books: [book] }),
+      }),
+    );
+    await page.route(`${PROD_API_BASE}/books/*`, (route) => {
+      if (route.request().method() !== "PUT") return route.continue();
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(putBody) });
+    });
+  }
+
+  async function chooseSaveToAccount(page) {
+    await page.click("#save-btn");
+    await page.getByRole("menuitem", { name: "Save to my account", exact: true }).click();
+  }
+
+  test("a save made with the account panel open shows the success toast and no error panel", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await stubAccountWithOneBook(page, { metadata: { latestETag: "etag-3", latestVersion: 3 } });
+
+    await openAccountPanel(page);
+    await expect(page.locator("#account-panel")).toContainText("Precision Code Trading");
+    await chooseSaveToAccount(page);
+
+    await expect(page.locator("#toast")).toContainText("Saved to your account as version 3.", { timeout: 10_000 });
+    await expect(page.locator(".account-error")).toHaveCount(0);
+    await expect(page.locator("#toast")).not.toContainText("could not be reached");
+  });
+
+  test("a stored save still reports success when the page fails after the PUT answers", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await stubAccountWithOneBook(page, { metadata: { latestETag: "etag-3", latestVersion: 3 } });
+    await page.evaluate(() => {
+      window.gtag = function () {
+        throw new Error("analytics failed");
+      };
+    });
+
+    await chooseSaveToAccount(page);
+
+    await expect(page.locator("#toast")).toContainText("Saved to your account as version 3.", { timeout: 10_000 });
+    await expect(page.locator("#toast")).not.toContainText("could not be reached");
+    await expect(page.locator(".account-error")).toHaveCount(0);
+  });
+
+  test("a 200 answer with no metadata still reports the save, not an unreachable account", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await stubAccountWithOneBook(page, {});
+
+    await chooseSaveToAccount(page);
+
+    await expect(page.locator("#toast")).toContainText("Saved to your account.", { timeout: 10_000 });
+    await expect(page.locator("#toast")).not.toContainText("could not be reached");
+  });
+
+  test("a list that fails to render after a 200 shows a plain list message, not an unreachable account", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ entitlement: { reason: "expired", expiry: null, residentTier: true }, books: [null] }),
+      }),
+    );
+
+    await openAccountPanel(page);
+
+    await expect(page.locator(".account-error")).toContainText("The book list could not be shown (TypeError).");
+    await expect(page.locator("#account-panel")).not.toContainText("could not be reached");
+  });
+
+  test("a list request that fails on the network still shows the reach message", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await page.route(`${PROD_API_BASE}/books`, (route) => route.abort("failed"));
+
+    await openAccountPanel(page);
+
+    await expect(page.locator(".account-error")).toContainText("Your account could not be reached");
+  });
+
+  test("a failed PUT still shows the reach message", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await stubAccountWithOneBook(page, {});
+    await page.unroute(`${PROD_API_BASE}/books/*`);
+    await page.route(`${PROD_API_BASE}/books/*`, (route) => route.abort("failed"));
+
+    await chooseSaveToAccount(page);
+
+    await expect(page.locator("#toast")).toContainText("Your account could not be reached", { timeout: 10_000 });
+  });
+
   test("a 412 shows the conflict card; saving as a new book carries a fresh id and no If-Match", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);

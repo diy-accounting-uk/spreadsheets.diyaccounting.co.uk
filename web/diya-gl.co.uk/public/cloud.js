@@ -417,7 +417,10 @@
   function fetchWithToken(path, options, idToken) {
     var config = window.DIYA_GL_CLOUD_CONFIG;
     var headers = Object.assign({}, options.headers, { Authorization: "Bearer " + idToken });
-    return fetch(config.apiBase + path, Object.assign({}, options, { headers: headers }));
+    return fetch(config.apiBase + path, Object.assign({}, options, { headers: headers })).catch(function (error) {
+      error.reachFailure = true;
+      throw error;
+    });
   }
 
   // Every books-API call goes through this: a proactive refresh when the
@@ -1074,7 +1077,12 @@
       renderPanel();
       return;
     }
-    panelState = { status: "error", message: messageForApiError(error) };
+    if (error && (error.status || error.reachFailure)) {
+      panelState = { status: "error", message: messageForApiError(error) };
+    } else {
+      console.error("diya-gl: the account panel failed locally", error);
+      panelState = { status: "error", message: "The book list could not be shown (" + ((error && error.name) || "Error") + ")." };
+    }
     renderPanel();
   }
 
@@ -1498,10 +1506,21 @@
           showToastMessage(messageForApiError(apiError(response.status, body)));
           return;
         }
-        setLink({ bookId: bookId, latestETag: body.metadata.latestETag, latestVersion: body.metadata.latestVersion });
-        sendSaveEvent(product, isNew ? "created" : "updated");
-        showToastMessage("Saved to your account as version " + body.metadata.latestVersion + ".");
-        if (isPanelOpen()) fetchBooksList();
+        // The account holds the book from here on: whatever the page does
+        // next must never turn a stored save into the reach-failure message.
+        var metadata = body && body.metadata;
+        showToastMessage(
+          metadata && metadata.latestVersion
+            ? "Saved to your account as version " + metadata.latestVersion + "."
+            : "Saved to your account.",
+        );
+        try {
+          if (metadata) setLink({ bookId: bookId, latestETag: metadata.latestETag, latestVersion: metadata.latestVersion });
+          sendSaveEvent(product, isNew ? "created" : "updated");
+          if (isPanelOpen()) fetchBooksList();
+        } catch (afterSaveError) {
+          console.error("diya-gl: the save landed; a step after it failed", afterSaveError);
+        }
       });
     });
   }
