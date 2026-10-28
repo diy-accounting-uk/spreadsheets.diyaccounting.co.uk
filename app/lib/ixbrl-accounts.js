@@ -19,6 +19,7 @@ import { readIxbrl, IxbrlError } from "./ixbrl-reader.js";
 export { IxbrlError };
 
 const MATURITY = "MaturitiesOrExpirationPeriodsDimension";
+const CURRENT_INSTRUMENT = "FinancialInstrumentCurrentNon-currentDimension";
 const EQUITY_CLASS = "EquityClassesDimension";
 const PPE_CLASS = "PropertyPlantEquipmentClassesDimension";
 
@@ -91,7 +92,31 @@ export const MAPPING_TABLE = [
     note: "WithinOneYear; posts as a trade creditor, which the balance sheet shows within one year",
   },
   { concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
-  { concept: "TaxationSocialSecurityPayable", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
+  { concept: "TaxationSocialSecurityPayable", figure: "taxationSocialSecurity", account: "2100", note: "WithinOneYear" },
+  {
+    concept: "AccruedLiabilities",
+    dimension: CURRENT_INSTRUMENT,
+    member: "CurrentFinancialInstruments",
+    figure: "accruals",
+    account: "2100",
+    note: "on a context that also carries WithinOneYear",
+  },
+  {
+    concept: "BankBorrowingsOverdrafts",
+    dimension: MATURITY,
+    member: "WithinOneYear",
+    figure: "bankLoansOverdrafts",
+    account: "2100",
+    note: "with or without the WithinOneYear member",
+  },
+  {
+    concept: "BankBorrowingsOverdrafts",
+    dimension: MATURITY,
+    member: "AfterOneYear",
+    figure: "bankLoansAfterOneYear",
+    account: "2600",
+    note: "a part of creditorsAfterOneYear, which states it",
+  },
   {
     concept: "Creditors",
     dimension: MATURITY,
@@ -321,7 +346,8 @@ function balanceSheetAt(set, endDay, notes, label) {
     set.instant("CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", endDay),
   ]);
   const provisions = set.instant("ProvisionsForLiabilitiesBalanceSheetSubtotal", endDay);
-  const afterOneYear = set.instant("Creditors", endDay, { [MATURITY]: "AfterOneYear" });
+  const bankLoansAfterOneYear = set.instant("BankBorrowingsOverdrafts", endDay, { [MATURITY]: "AfterOneYear" });
+  const afterOneYear = set.instant("Creditors", endDay, { [MATURITY]: "AfterOneYear" }) ?? bankLoansAfterOneYear;
   if (provisions) notes.push(`${label}: provisions for liabilities of ${provisions} are added to creditors after more than one year.`);
 
   const equityClasses = set.find("Equity", null, (fact) => fact.period.instant === endDay && Object.keys(fact.dimensions).length === 1);
@@ -354,8 +380,14 @@ function balanceSheetAt(set, endDay, notes, label) {
     otherCreditors: sumDefined([
       set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
       set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
-      set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
     ]),
+    taxationSocialSecurity: set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
+    accruals: set.instant("AccruedLiabilities", endDay, {
+      [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments",
+      [MATURITY]: "WithinOneYear",
+    }),
+    bankLoansOverdrafts: set.maturity("BankBorrowingsOverdrafts", endDay, ["WithinOneYear", null]),
+    bankLoansAfterOneYear,
     creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
     creditorsAfterOneYear: sumDefined([afterOneYear, provisions]),
     provisions,
@@ -544,10 +576,13 @@ function problem(message) {
   return new IxbrlError(message);
 }
 
+// The lines that add up to the creditors falling due within one year.
+const WITHIN_LINES = ["bankLoansOverdrafts", "tradeCreditors", "corporationTax", "taxationSocialSecurity", "otherCreditors", "accruals"];
+
 function checkBalance(year, label) {
   const s = year;
   const current = s.currentAssets ?? sumOf([s.stocks, s.debtors, s.cashAtBank].map((v) => v ?? 0));
-  const within = s.creditorsWithinOneYear ?? sumOf([s.tradeCreditors, s.corporationTax, s.otherCreditors].map((v) => v ?? 0));
+  const within = s.creditorsWithinOneYear ?? sumOf(WITHIN_LINES.map((line) => s[line] ?? 0));
   const net = (s.fixedAssets ?? 0) + current - within - (s.creditorsAfterOneYear ?? 0);
   const equity = s.capitalAndReserves ?? s.netAssets;
   if (s.netCurrentAssets !== undefined && !close(current - within, s.netCurrentAssets)) {
@@ -587,7 +622,7 @@ function checkTotals(year, label, regime) {
     if (over || under)
       throw problem(`The ${label} current assets of ${s.currentAssets} differ from the lines under it, which add up to ${lines}.`);
   }
-  const creditors = sumDefined([s.tradeCreditors, s.corporationTax, s.otherCreditors]);
+  const creditors = sumDefined(WITHIN_LINES.map((line) => s[line]));
   if (s.creditorsWithinOneYear !== undefined && creditors !== undefined) {
     const over = creditors - s.creditorsWithinOneYear > WITHIN;
     const under = s.creditorsWithinOneYear - creditors > WITHIN && regime === "small";

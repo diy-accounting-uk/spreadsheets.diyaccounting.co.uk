@@ -151,7 +151,7 @@ describe("DIY Accounting Limited's accounts for the year to 31 March 2015", () =
       cashAtBank: 21541,
       currentAssets: 22041,
       tradeCreditors: 8661,
-      otherCreditors: 3508,
+      taxationSocialSecurity: 3508,
       creditorsWithinOneYear: 12169,
       netCurrentAssets: 9872,
       netAssets: 10032,
@@ -165,7 +165,7 @@ describe("DIY Accounting Limited's accounts for the year to 31 March 2015", () =
       cashAtBank: 11137,
       currentAssets: 17360,
       tradeCreditors: 1622,
-      otherCreditors: 6063,
+      taxationSocialSecurity: 6063,
       creditorsWithinOneYear: 7685,
       netAssets: 10000,
       calledUpShareCapital: 500,
@@ -219,7 +219,7 @@ describe("DIY Accounting Limited's abbreviated accounts for the year to 31 March
       cashAtBank: 20102,
       currentAssets: 20102,
       tradeCreditors: 104,
-      otherCreditors: 4451,
+      taxationSocialSecurity: 4451,
       creditorsWithinOneYear: 4555,
       netCurrentAssets: 15547,
       totalAssetsLessCurrentLiabilities: 15863,
@@ -234,17 +234,19 @@ describe("DIY Accounting Limited's abbreviated accounts for the year to 31 March
       cashAtBank: 21541,
       currentAssets: 22041,
       tradeCreditors: 155,
-      otherCreditors: 3508,
+      taxationSocialSecurity: 3508,
       creditorsWithinOneYear: 3663,
       netAssets: 18538,
       profitAndLossAccount: 18038,
     });
   });
 
-  it("lists bank borrowings under the FRS 102 name, which no accounts figure takes", () => {
+  it("reads bank borrowings under the FRS 102 name into the bank loans and overdrafts figure", () => {
+    const { currentYear, priorYear } = accounts().balanceSheet;
+    expect(currentYear.bankLoansOverdrafts).toBe(0);
+    expect(priorYear.bankLoansOverdrafts).toBe(0);
     const unmapped = accounts().unmapped.map((entry) => entry.concept);
-    expect(unmapped).toContain("BankBorrowingsOverdrafts");
-    expect(unmapped).not.toContain("BankBorrowingsOverdraftsWithinOneYear");
+    expect(unmapped).not.toContain("BankBorrowingsOverdrafts");
   });
 
   it("keeps the UK GAAP name of each fixed asset line", () => {
