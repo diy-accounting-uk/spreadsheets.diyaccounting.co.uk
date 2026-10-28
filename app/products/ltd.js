@@ -1875,14 +1875,18 @@ export function multiFileOptions(yearEndMonth) {
         ...payslipsMonthTabReads(tabNames),
       },
       "Companysecretary.xlsx": {
-        // One member a row: A the name, G the holding. F1 is the sheet's own
+        // One member a row: A the name, F the nominal value of a share, G the holding. F1 is the sheet's own
         // nominal-value formula (=F3) and G1 its shares-issued total
         // (=SUM(G3:G19)). The directors' report prints the first two members
         // a line each.
         "RegisterofMembers": [
           "F1",
           "G1",
-          ...REGISTER_MEMBER_ROWS.flatMap((row) => [`${REGISTER_MEMBER_COLUMNS.name}${row}`, `${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+          ...REGISTER_MEMBER_ROWS.flatMap((row) => [
+            `${REGISTER_MEMBER_COLUMNS.name}${row}`,
+            `${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`,
+            `${REGISTER_MEMBER_COLUMNS.shares}${row}`,
+          ]),
         ],
         // F2 is the date the board met and E4 the dividend it declared. The
         // directors' report and the trial balance both read E4 across the
