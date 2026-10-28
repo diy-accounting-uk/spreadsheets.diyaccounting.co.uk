@@ -44,6 +44,7 @@ isDirector = false
 [[members]]
 name = "Mike Brown"
 shares = 100
+nominal_value = 1
 acquired = 2019-06-01
 
 [[sales.apr]]

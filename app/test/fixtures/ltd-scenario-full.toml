@@ -55,16 +55,19 @@ isDirector = true
 [[members]]
 name = "Carol Smith"
 shares = 60
+nominal_value = 1
 acquired = 2020-01-01
 
 [[members]]
 name = "David Brown"
 shares = 25
+nominal_value = 1
 acquired = 2021-06-15
 
 [[members]]
 name = "Emma Wilson"
 shares = 15
+nominal_value = 1
 acquired = 2022-03-01
 
 [[sales.apr]]
