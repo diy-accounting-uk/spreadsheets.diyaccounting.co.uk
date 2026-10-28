@@ -1223,6 +1223,7 @@ export const CELL_MAP = [
   ["CT600", "Y135",  "**Box 440: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box440)", "CT600 as filed", 0],
   ["CT600", "Y118",  "Box 327: associated companies, first financial year",  "gl-cor:count (ct600.box327)", "CT600 as filed", 1],
   ["CT600", "Y120",  "Box 328: associated companies, second financial year", "gl-cor:count (ct600.box328)", "CT600 as filed", 1],
+  ["CT600", "Q206",  "Box 780: trading loss arising",                       "gl-cor:amount (ct600.box780)", "CT600 as filed", 1],
   ["CT600", "Z114",  "Box 620: franked investment income",                  "gl-cor:amount (ct600.box620)", "CT600 as filed", 1],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
@@ -1580,6 +1581,7 @@ const CT600_CELLS = [
   "AK66",
   "Z70",
   "Z72",
+  "Q206",
   "AJ74",
   "AJ76",
   "AJ92",
@@ -4231,6 +4233,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT600: turnover = published P&L turnover", num(ct600.AK66), num(pubPL.F9));
     check("CT600: trading profits = CT profit after capital allowances", num(ct600.Z70), onTheForm(num(corporationTax.K22)));
     check("CT600: losses brought forward = CT losses brought forward", num(ct600.Z72), num(corporationTax.K26));
+    check("CT600: trading loss arising = the loss on the working sheet", num(ct600.Q206), Math.max(-num(corporationTax.K22), 0));
     check("CT600: net trading profits = trading profits - losses brought forward", num(ct600.AJ74), num(ct600.Z70) - num(ct600.Z72));
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
     // Box 235 is box 165 plus box 170 whatever box 165 is (HMRC rule 9332),

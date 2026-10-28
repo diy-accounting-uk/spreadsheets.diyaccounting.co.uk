@@ -1950,6 +1950,7 @@ section = "Losses, deficits and excess amounts"
 format = "money-composite"
 element = "LossesOfTradesUK"
 xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/LossesOfTradesUK"
+sheetCell = "Financialaccounts.xlsx!CT600!Q206"
 
 [[box]]
 number = 785

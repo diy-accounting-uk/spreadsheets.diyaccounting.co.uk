@@ -2018,6 +2018,7 @@ function buildCt600(corporationTax, pl, admin) {
   }
   if (corporationTax.K22 > 0) sheet.Z70 = corporationTax.K22;
   if (corporationTax.K26 > 0) sheet.Z72 = corporationTax.K26;
+  if (corporationTax.K22 < 0) sheet.Q206 = -corporationTax.K22;
   if (corporationTax.K24 > 0) sheet.AJ76 = corporationTax.K24;
   sheet.AJ74 = (sheet.Z70 || 0) - (sheet.Z72 || 0);
   sheet.AJ92 = Math.max(sheet.AJ74, 0) + (sheet.AJ76 || 0);
@@ -2535,6 +2536,7 @@ function attributeLtdResults(attribution, context) {
   a.set(CT600, "N128", a.get(CT, "F34"));
   a.set(CT600, "Z70", a.get(CT, "K22"));
   a.set(CT600, "Z72", a.get(CT, "K26"));
+  a.set(CT600, "Q206", a.get(CT, "K22"));
   a.set(CT600, "AJ76", a.get(CT, "K24"));
   a.set(CT600, "AJ74", a.cells(CT600, "Z70", "Z72"));
   a.set(CT600, "AJ92", a.cells(CT600, "AJ74", "AJ76"));

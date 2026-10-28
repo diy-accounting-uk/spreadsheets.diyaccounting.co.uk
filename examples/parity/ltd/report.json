@@ -5,7 +5,7 @@
   "yearEnd": "2027-10-31",
   "provenance": {
     "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.47+26b9e6ec",
+    "engineVersion": "1.2.61+f657819b",
     "taxDataHash": "51bdff60e993",
     "templateHash": "a65ab09cf35c",
     "templateScorecard": "101608 passed, 0 warnings, 0 failed",
@@ -7973,6 +7973,14 @@
       "expected": "25",
       "actual": "25",
       "tolerance": "0"
+    },
+    {
+      "key": "check/CT600: trading loss arising = the loss on the working sheet",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "0",
+      "actual": "0",
+      "tolerance": "1"
     },
     {
       "key": "check/CT600: trading profits = CT profit after capital allowances",
