@@ -2410,11 +2410,9 @@ async function registersFrom(companySecretaryZip) {
       const name = textAt(xml, `${MEMBER_COLUMNS.name}${row}`, sharedStrings);
       const shares = numberAt(xml, `${MEMBER_COLUMNS.shares}${row}`, sharedStrings);
       if (!name || !shares) continue;
-      const member = { memberID: `M${members.length + 1}`, name, shares };
-      // The register prices every holding at the same £1 nominal value
-      // (SHARE_NOMINAL_VALUE in ltd.js), a company-wide figure rather than a
-      // per-member one, so column F is not read back onto the member -- the
-      // schema's own note on this field says the same.
+      const nominalValue = numberAt(xml, `${MEMBER_COLUMNS.nominalValue}${row}`, sharedStrings);
+      if (nominalValue === undefined) throw new Error(`RegisterofMembers ${MEMBER_COLUMNS.nominalValue}${row}: member "${name}" holds shares with no nominal value`);
+      const member = { memberID: `M${members.length + 1}`, name, shares, nominalValue };
       assign(member, "acquiredDate", dateAt(xml, `${MEMBER_COLUMNS.acquired}${row}`, sharedStrings));
       members.push(member);
     }

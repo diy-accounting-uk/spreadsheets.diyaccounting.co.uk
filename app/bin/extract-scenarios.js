@@ -28,6 +28,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
+import { memberNominalValue, registerNominalValue } from "../lib/share-nominal.js";
 import {
   buildClosingDebtors,
   HP_AGREEMENT_FIELD,
@@ -720,13 +721,18 @@ fullPurchLines.forEach((l) => {
 // declared for the year. Each is tied back to the ledger it has to agree
 // with, so master data that moves without the other moving stops the extract
 // rather than publishing a book that does not add up.
-const NOMINAL_SHARE_VALUE = 1;
-const fullMembers = book.members.map((member) => ({ name: member.name, shares: member.shares, acquired: dateOnly(member.acquiredDate) }));
+const fullMembers = book.members.map((member) => ({
+  name: member.name,
+  shares: member.shares,
+  nominal_value: memberNominalValue(member, book),
+  acquired: dateOnly(member.acquiredDate),
+}));
+const fullNominalValue = registerNominalValue(fullMembers.map((member) => member.nominal_value));
 const fullOpeningBalance = buildOpeningBalance(fullLines);
 const fullSharesIssued = fullMembers.reduce((total, m) => total + m.shares, 0);
-if (fullSharesIssued * NOMINAL_SHARE_VALUE !== fullOpeningBalance.share_capital) {
+if (Math.round(fullSharesIssued * fullNominalValue * 100) / 100 !== fullOpeningBalance.share_capital) {
   throw new Error(
-    `Register of members holds ${fullSharesIssued} shares at ${NOMINAL_SHARE_VALUE} each, ` +
+    `Register of members holds ${fullSharesIssued} shares at ${fullNominalValue} each, ` +
       `against share capital of ${fullOpeningBalance.share_capital} on the opening balance sheet`,
   );
 }
@@ -1361,13 +1367,15 @@ function writeBrickworkLtd(vatRegistered) {
   const members = brickBook.members.map((member) => ({
     name: member.name,
     shares: member.shares,
+    nominal_value: memberNominalValue(member, brickBook),
     acquired: dateOnly(member.acquiredDate),
   }));
 
   const sharesIssued = members.reduce((total, member) => total + member.shares, 0);
-  if (sharesIssued !== openingBalance.share_capital) {
+  const brickNominalValue = registerNominalValue(members.map((member) => member.nominal_value));
+  if (Math.round(sharesIssued * brickNominalValue * 100) / 100 !== openingBalance.share_capital) {
     throw new Error(
-      `Register of members holds ${sharesIssued} shares at 1 each, against share capital of ${openingBalance.share_capital} on the opening balance sheet`,
+      `Register of members holds ${sharesIssued} shares at ${brickNominalValue} each, against share capital of ${openingBalance.share_capital} on the opening balance sheet`,
     );
   }
 

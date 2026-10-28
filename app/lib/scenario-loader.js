@@ -86,6 +86,14 @@ export function registerOfficers(scenario) {
     .map((employee) => ({ name: employee.name, role: "Director" }));
 }
 
+// A scenario file written before members carried a nominal value priced every
+// share at £1.
+const PRE_NOMINAL_VALUE_SHARE_PRICE = 1;
+
 export function loadScenario(path) {
-  return parseTOML(readFileSync(path, "utf8"));
+  const scenario = parseTOML(readFileSync(path, "utf8"));
+  for (const member of scenario.members || []) {
+    if (member.nominal_value === undefined) member.nominal_value = PRE_NOMINAL_VALUE_SHARE_PRICE;
+  }
+  return scenario;
 }
