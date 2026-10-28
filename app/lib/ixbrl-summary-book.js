@@ -70,7 +70,13 @@ function sheetOf(balanceSheet) {
   const stocks = n(balanceSheet.stocks);
   const debtors = n(balanceSheet.debtors);
   const currentAssets = balanceSheet.currentAssets ?? stocks + debtors + n(balanceSheet.cashAtBank);
-  const lineCreditors = n(balanceSheet.tradeCreditors) + n(balanceSheet.corporationTax) + n(balanceSheet.otherCreditors);
+  const lineCreditors =
+    n(balanceSheet.bankLoansOverdrafts) +
+    n(balanceSheet.tradeCreditors) +
+    n(balanceSheet.corporationTax) +
+    n(balanceSheet.taxationSocialSecurity) +
+    n(balanceSheet.otherCreditors) +
+    n(balanceSheet.accruals);
   const within = balanceSheet.creditorsWithinOneYear ?? lineCreditors;
   const corporationTax = n(balanceSheet.corporationTax);
   const calledUp = n(balanceSheet.calledUpShareCapital);

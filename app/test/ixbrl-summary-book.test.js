@@ -219,6 +219,17 @@ describe("the builders' small company accounts, read back", () => {
     });
   });
 
+  it("reproduces the creditor totals of a year with bank loans, taxation and social security and accruals", async () => {
+    const source = await readBookSource(fixture("builder-small-bank-lines.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      currentAssets: 5000,
+      creditorsWithinOneYear: 3700,
+      creditorsAfterOneYear: 2000,
+      netAssets: 9300,
+      capitalAndReserves: 9300,
+    });
+  });
+
   it("names the Corporation Tax the book works against the file's, and keeps the file's figure for the accounts", async () => {
     const source = await readBookSource(fixture("builder-small-consistent.xhtml"), "x");
     // Full expensing of the 1,000 addition lowers the engine's charge on 5,100 to 874; the file states 969.

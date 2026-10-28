@@ -54,7 +54,15 @@ const OFFICER_CONTEXTS = [
   context("SHARES_CY", { instant: "2025-03-31", members: [["uk-bus:EntityShareClassesDimension", "uk-bus:OrdinaryShareClass1"]] }),
 ].join("");
 
-const CONTEXTS = STANDARD_CONTEXTS + MEMBER_CONTEXTS.join("") + DURATION_MEMBER_CONTEXTS.join("") + OFFICER_CONTEXTS;
+const ACCRUALS_CONTEXT = context("ACCRUALS_CY", {
+  instant: "2025-03-31",
+  members: [
+    ["core:FinancialInstrumentCurrentNon-currentDimension", "core:CurrentFinancialInstruments"],
+    [MATURITY, "core:WithinOneYear"],
+  ],
+});
+
+const CONTEXTS = STANDARD_CONTEXTS + ACCRUALS_CONTEXT + MEMBER_CONTEXTS.join("") + DURATION_MEMBER_CONTEXTS.join("") + OFFICER_CONTEXTS;
 
 const FIRST = { firstAccounts: true };
 const COVER =
@@ -105,8 +113,27 @@ const ROWS = [
   [
     "TaxationSocialSecurityPayable",
     money("core:OtherCreditors", "WITHIN_CY", "500") + money("core:TaxationSocialSecurityPayable", "WITHIN_CY", "4,451"),
-    "balanceSheet.currentYear.otherCreditors",
-    4951,
+    "balanceSheet.currentYear.taxationSocialSecurity",
+    4451,
+  ],
+  ["AccruedLiabilities", money("core:AccruedLiabilities", "ACCRUALS_CY", "400"), "balanceSheet.currentYear.accruals", 400],
+  [
+    "BankBorrowingsOverdrafts",
+    money("core:BankBorrowingsOverdrafts", "WITHIN_CY", "900"),
+    "balanceSheet.currentYear.bankLoansOverdrafts",
+    900,
+  ],
+  [
+    "BankBorrowingsOverdrafts",
+    money("core:BankBorrowingsOverdrafts", "AFTER_CY", "1,200"),
+    "balanceSheet.currentYear.bankLoansAfterOneYear",
+    1200,
+  ],
+  [
+    "BankBorrowingsOverdrafts",
+    money("core:BankBorrowingsOverdrafts", "AFTER_CY", "1,200"),
+    "balanceSheet.currentYear.creditorsAfterOneYear",
+    1200,
   ],
   ["Creditors", money("core:Creditors", "WITHIN_CY", "3,000"), "balanceSheet.currentYear.creditorsWithinOneYear", 3000],
   ["Creditors", money("core:Creditors", "AFTER_CY", "2,000"), "balanceSheet.currentYear.creditorsAfterOneYear", 2000],
@@ -317,7 +344,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(64);
+    expect(MAPPING_TABLE).toHaveLength(67);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
@@ -579,6 +606,27 @@ describe("the checks on import", () => {
     expect(small("200").balanceSheet.currentYear.currentAssets).toBe(300);
   });
 
+  it("counts bank loans, taxation and social security and accruals in the creditors within one year", () => {
+    const small = (accruals) =>
+      accountsOf(
+        words("uk-bus:EntityDormantTruefalse", "CY", "false") +
+          money("core:FixedAssets", "CY_END", "1,000") +
+          money("core:BankBorrowingsOverdrafts", "WITHIN_CY", "60") +
+          money("core:TaxationSocialSecurityPayable", "WITHIN_CY", "30") +
+          money("core:AccruedLiabilities", "ACCRUALS_CY", accruals) +
+          money("core:Creditors", "WITHIN_CY", "150"),
+        FIRST,
+        "",
+      );
+    expect(() => small("40")).toThrow(/creditors within one year of 150 differ from the lines under it, which add up to 130/);
+    expect(small("60").balanceSheet.currentYear).toMatchObject({
+      bankLoansOverdrafts: 60,
+      taxationSocialSecurity: 30,
+      accruals: 60,
+      creditorsWithinOneYear: 150,
+    });
+  });
+
   it("allows a pound of rounding in a total", () => {
     const body =
       money("core:Debtors", "CY_END", "100") + money("core:CashBankOnHand", "CY_END", "199") + money("core:CurrentAssets", "CY_END", "300");
@@ -703,6 +751,26 @@ describe("the files from the register and the builders, read as accounts", () =>
     expect(accounts.unmapped.map((fact) => fact.concept)).toEqual([
       "GeneralDescriptionAnyOff-balanceSheetArrangementsIncludingNaturePurposeFinancialImpactOnEntity",
     ]);
+  });
+
+  it("reads the builder's bank loans, taxation and social security and accruals back to the figures they were built from", () => {
+    const { currentYear } = mapIxbrlAccounts(fixture("builder-small-bank-lines.xhtml"), {
+      companyNumber: "02706061",
+      regime: "small",
+      dormant: false,
+    }).balanceSheet;
+    expect(currentYear).toMatchObject({
+      bankLoansOverdrafts: 300,
+      tradeCreditors: 1000,
+      corporationTax: 1500,
+      taxationSocialSecurity: 200,
+      otherCreditors: 300,
+      accruals: 400,
+      creditorsWithinOneYear: 3700,
+      bankLoansAfterOneYear: 1200,
+      creditorsAfterOneYear: 2000,
+      capitalAndReserves: 9300,
+    });
   });
 
   it("reads the builders' small company accounts back to the figures they were built from", () => {
