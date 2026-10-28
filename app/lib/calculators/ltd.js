@@ -1343,6 +1343,7 @@ function buildCompanySecretary(scenario) {
     const row = REGISTER_MEMBER_ROWS[index];
     if (row === undefined) return;
     register[`A${row}`] = member.name;
+    register[`F${row}`] = member.nominal_value;
     register[`G${row}`] = member.shares;
   });
   // The directors' report prints the first two members a line each, so those

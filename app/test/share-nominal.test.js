@@ -96,6 +96,7 @@ describe("a company with shares of £0.20", () => {
     const { results } = runBook(twentyPenceBook(book), lines);
     const register = results["Companysecretary.xlsx!RegisterofMembers"];
     expect(register.F1).toBe(0.2);
+    expect([register.F3, register.F4, register.F5]).toEqual([0.2, 0.2, 0.2]);
     expect(register.G1).toBe(500);
   });
 
