@@ -218,6 +218,7 @@ describeCalc(
         "CT: profit after capital allowances",
         "CT: chargeable profit = profit after allowances + interest - losses brought forward",
         "CT600: trading profits = CT profit after capital allowances",
+        "CT600: trading loss arising = the loss on the working sheet",
       ]);
     });
   },
