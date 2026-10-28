@@ -112,7 +112,7 @@
     "http-server": "^14.1.1",
     "js-yaml": "^5.5.0",
     "jszip": "^3.10.2",
-    "lighthouse": "^13.5.0",
+    "lighthouse": "^13.6.0",
     "npm-check-updates": "^23.1.0",
     "otpauth": "^9.5.2",
     "pa11y": "^10.0.0",
@@ -125,7 +125,7 @@
     "wait-on": "^9.5.1"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1157.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1158.0",
     "@xmldom/xmldom": "^0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
