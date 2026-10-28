@@ -1093,6 +1093,37 @@ test.describe("DIYA-GL page — save to my account", () => {
     await expect(page.locator("#toast")).not.toContainText("could not be reached");
   });
 
+  test("a list that fails to render after a 200 shows a plain list message, not an unreachable account", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await page.route(`${PROD_API_BASE}/books`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ entitlement: { reason: "expired", expiry: null, residentTier: true }, books: [null] }),
+      }),
+    );
+
+    await openAccountPanel(page);
+
+    await expect(page.locator(".account-error")).toContainText("The book list could not be shown (TypeError).");
+    await expect(page.locator("#account-panel")).not.toContainText("could not be reached");
+  });
+
+  test("a list request that fails on the network still shows the reach message", async ({ page }) => {
+    await withTestClientId(page);
+    await withSignedInSession(page);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await loadExample(page);
+    await page.route(`${PROD_API_BASE}/books`, (route) => route.abort("failed"));
+
+    await openAccountPanel(page);
+
+    await expect(page.locator(".account-error")).toContainText("Your account could not be reached");
+  });
+
   test("a failed PUT still shows the reach message", async ({ page }) => {
     await withTestClientId(page);
     await withSignedInSession(page);

@@ -417,7 +417,10 @@
   function fetchWithToken(path, options, idToken) {
     var config = window.DIYA_GL_CLOUD_CONFIG;
     var headers = Object.assign({}, options.headers, { Authorization: "Bearer " + idToken });
-    return fetch(config.apiBase + path, Object.assign({}, options, { headers: headers }));
+    return fetch(config.apiBase + path, Object.assign({}, options, { headers: headers })).catch(function (error) {
+      error.reachFailure = true;
+      throw error;
+    });
   }
 
   // Every books-API call goes through this: a proactive refresh when the
@@ -1074,7 +1077,12 @@
       renderPanel();
       return;
     }
-    panelState = { status: "error", message: messageForApiError(error) };
+    if (error && (error.status || error.reachFailure)) {
+      panelState = { status: "error", message: messageForApiError(error) };
+    } else {
+      console.error("diya-gl: the account panel failed locally", error);
+      panelState = { status: "error", message: "The book list could not be shown (" + ((error && error.name) || "Error") + ")." };
+    }
     renderPanel();
   }
 
