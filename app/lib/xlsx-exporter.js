@@ -2411,7 +2411,8 @@ async function registersFrom(companySecretaryZip) {
       const shares = numberAt(xml, `${MEMBER_COLUMNS.shares}${row}`, sharedStrings);
       if (!name || !shares) continue;
       const nominalValue = numberAt(xml, `${MEMBER_COLUMNS.nominalValue}${row}`, sharedStrings);
-      if (nominalValue === undefined) throw new Error(`RegisterofMembers ${MEMBER_COLUMNS.nominalValue}${row}: member "${name}" holds shares with no nominal value`);
+      if (nominalValue === undefined)
+        throw new Error(`RegisterofMembers ${MEMBER_COLUMNS.nominalValue}${row}: member "${name}" holds shares with no nominal value`);
       const member = { memberID: `M${members.length + 1}`, name, shares, nominalValue };
       assign(member, "acquiredDate", dateAt(xml, `${MEMBER_COLUMNS.acquired}${row}`, sharedStrings));
       members.push(member);

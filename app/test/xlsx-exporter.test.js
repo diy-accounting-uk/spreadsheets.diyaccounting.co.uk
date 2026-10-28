@@ -1178,7 +1178,9 @@ describe("extractBook — the Ltd registers of members and directors", () => {
   it("refuses a member who holds shares on a row with no nominal value", async () => {
     const { F4, ...withoutNominal } = registerofMembers;
     const dir = await ltdRegistersPackage({ registerofMembers: withoutNominal, directorsAndSecretary, employee: {} });
-    await expect(extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP)).rejects.toThrow(/David Brown.*no nominal value/);
+    await expect(extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP)).rejects.toThrow(
+      /David Brown.*no nominal value/,
+    );
   });
 
   it("names a director from Directors&Secretary and dates and counts their holding off the register of members", async () => {

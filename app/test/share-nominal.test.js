@@ -57,7 +57,9 @@ describe("memberNominalValue", () => {
   });
 
   it("refuses a member with no value in a book stamped diya-gl/2", () => {
-    expect(() => memberNominalValue(member, { documentInfo: { "diya-gl:formatVersion": "diya-gl/2" } })).toThrow(/Carol Smith.*no nominalValue/);
+    expect(() => memberNominalValue(member, { documentInfo: { "diya-gl:formatVersion": "diya-gl/2" } })).toThrow(
+      /Carol Smith.*no nominalValue/,
+    );
   });
 
   it("reads the number off any format marker", () => {
