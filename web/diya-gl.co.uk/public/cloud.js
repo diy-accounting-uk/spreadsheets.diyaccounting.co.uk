@@ -1498,10 +1498,21 @@
           showToastMessage(messageForApiError(apiError(response.status, body)));
           return;
         }
-        setLink({ bookId: bookId, latestETag: body.metadata.latestETag, latestVersion: body.metadata.latestVersion });
-        sendSaveEvent(product, isNew ? "created" : "updated");
-        showToastMessage("Saved to your account as version " + body.metadata.latestVersion + ".");
-        if (isPanelOpen()) fetchBooksList();
+        // The account holds the book from here on: whatever the page does
+        // next must never turn a stored save into the reach-failure message.
+        var metadata = body && body.metadata;
+        showToastMessage(
+          metadata && metadata.latestVersion
+            ? "Saved to your account as version " + metadata.latestVersion + "."
+            : "Saved to your account.",
+        );
+        try {
+          if (metadata) setLink({ bookId: bookId, latestETag: metadata.latestETag, latestVersion: metadata.latestVersion });
+          sendSaveEvent(product, isNew ? "created" : "updated");
+          if (isPanelOpen()) fetchBooksList();
+        } catch (afterSaveError) {
+          console.error("diya-gl: the save landed; a step after it failed", afterSaveError);
+        }
       });
     });
   }
