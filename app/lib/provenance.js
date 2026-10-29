@@ -15,6 +15,7 @@
 // reads the exact same generated values.
 
 import { PROVENANCE_DATA } from "./provenance-data.js";
+import { memberNominalValue } from "./share-nominal.js";
 
 // The same schema-name-to-product-id mapping xlsx-exporter.js's
 // productIdOf() carries, kept as a small map of its own rather than an
@@ -68,7 +69,11 @@ export function provenanceStamps(product) {
 export function stampBook(book) {
   const product = productOf(book);
   if (!product) return book;
-  return { ...book, documentInfo: { ...book.documentInfo, ...provenanceStamps(product) } };
+  const stamped = { ...book, documentInfo: { ...book.documentInfo, ...provenanceStamps(product) } };
+  // A book that predates the format states no nominal value, and the format it
+  // is stamped with requires one on every member: state the £1 it was read as.
+  if (book.members) stamped.members = book.members.map((member) => ({ ...member, nominalValue: memberNominalValue(member, book) }));
+  return stamped;
 }
 
 /**

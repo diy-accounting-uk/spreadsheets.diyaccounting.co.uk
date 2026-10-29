@@ -69,6 +69,17 @@ describe("stampBook: documentInfo carries this build's provenance", () => {
     };
   }
 
+  it("states £1 on a member of a book that predates the nominal value, and keeps a stated value", () => {
+    const book = {
+      ...minimalBook("Company"),
+      members: [
+        { memberID: "M1", name: "Carol", shares: 60 },
+        { memberID: "M2", name: "David", shares: 5, nominalValue: 1 },
+      ],
+    };
+    expect(stampBook(book).members.map((member) => member.nominalValue)).toEqual([1, 1]);
+  });
+
   it("adds the five stamps without disturbing the book's own documentInfo fields", () => {
     const book = minimalBook("BasicSoleTrader");
     const stamped = stampBook(book);
