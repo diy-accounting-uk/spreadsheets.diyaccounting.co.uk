@@ -183,7 +183,6 @@ export const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", 
 // creditor the bank's DV payments settle.
 export const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 export const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
-const SHARE_NOMINAL_VALUE = 1;
 export const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
 // ── Register of directors and directors' interests (Companysecretary.xlsx) ─
@@ -603,8 +602,8 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
   // Companysecretary.xlsx: the charges register, the share register and the
-  // board minute. Ordinary shares are issued at their £1 nominal value,
-  // matching the template's own "Fully paid Ordinary Shares" placeholder row.
+  // board minute. Each member row carries the nominal value
+  // of a share the scenario states for it.
   const companysecretaryWrites = {};
   if (scenario.charges) {
     companysecretaryWrites["Charges&Debentures"] = {};
@@ -633,7 +632,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       const row = REGISTER_MEMBER_ROWS[index];
       if (row === undefined) return;
       register[`${REGISTER_MEMBER_COLUMNS.name}${row}`] = member.name;
-      register[`${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`] = SHARE_NOMINAL_VALUE;
+      register[`${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`] = member.nominal_value;
       register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`] = member.shares;
       if (member.acquired) {
         const acquired = parseDate(member.acquired);
@@ -1876,14 +1875,18 @@ export function multiFileOptions(yearEndMonth) {
         ...payslipsMonthTabReads(tabNames),
       },
       "Companysecretary.xlsx": {
-        // One member a row: A the name, G the holding. F1 is the sheet's own
+        // One member a row: A the name, F the nominal value of a share, G the holding. F1 is the sheet's own
         // nominal-value formula (=F3) and G1 its shares-issued total
         // (=SUM(G3:G19)). The directors' report prints the first two members
         // a line each.
         "RegisterofMembers": [
           "F1",
           "G1",
-          ...REGISTER_MEMBER_ROWS.flatMap((row) => [`${REGISTER_MEMBER_COLUMNS.name}${row}`, `${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+          ...REGISTER_MEMBER_ROWS.flatMap((row) => [
+            `${REGISTER_MEMBER_COLUMNS.name}${row}`,
+            `${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`,
+            `${REGISTER_MEMBER_COLUMNS.shares}${row}`,
+          ]),
         ],
         // F2 is the date the board met and E4 the dividend it declared. The
         // directors' report and the trial balance both read E4 across the
@@ -3057,6 +3060,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         `Register of members: row ${row} holds ${member.name}'s shares`,
         num(register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
         member.shares,
+        0,
+      );
+      check(
+        `Register of members: row ${row} prices ${member.name}'s shares`,
+        num(register[`${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`]),
+        member.nominal_value,
         0,
       );
     });

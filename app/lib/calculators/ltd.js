@@ -56,6 +56,7 @@ import {
 } from "../payslips-layout.js";
 import { addMonths, endOfMonth, SHEET_BLANK } from "./shared.js";
 import { registerOfficers } from "../scenario-loader.js";
+import { registerNominalValue } from "../share-nominal.js";
 import { attributionWriter, entriesOf, entryOf, fieldEntriesOf, unionOf } from "../entry-attribution.js";
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -237,7 +238,8 @@ const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1
 // and the register of directors' interests one a row from row 2 as well.
 const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
-const SHARE_NOMINAL_VALUE = 1;
+// The template's own fully-paid ordinary share placeholder row.
+const PLACEHOLDER_SHARE_NOMINAL_VALUE = 1;
 const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
 const HP_AGREEMENT_ROWS = [8, 10];
 const EXPENSES_FORM_MONTHS = Array.from({ length: 12 }, (_, index) => `Month ${String(index + 1).padStart(2, "0")}`);
@@ -1335,12 +1337,13 @@ function buildPayslipsCalendar(taxData, period, tabs) {
 // placeholder, which is where F1 takes the nominal value from whether or not
 // a scenario names any members.
 function buildCompanySecretary(scenario) {
-  const register = { F1: SHARE_NOMINAL_VALUE };
   const members = scenario.members || [];
+  const register = { F1: registerNominalValue(members.map((member) => member.nominal_value)) ?? PLACEHOLDER_SHARE_NOMINAL_VALUE };
   members.forEach((member, index) => {
     const row = REGISTER_MEMBER_ROWS[index];
     if (row === undefined) return;
     register[`A${row}`] = member.name;
+    register[`F${row}`] = member.nominal_value;
     register[`G${row}`] = member.shares;
   });
   // The directors' report prints the first two members a line each, so those

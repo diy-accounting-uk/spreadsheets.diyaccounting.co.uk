@@ -619,7 +619,7 @@
           "nominalValue": {
             "type": "number",
             "minimum": 0,
-            "description": "Nominal value per share. The shipped register currently prices every holding at a single nominal value set for the whole company, so a per-member figure here is not yet read."
+            "description": "diya-gl: extension \u2014 Nominal value per share, in pounds. Required on every member of a book whose diya-gl:formatVersion is diya-gl/2 or later; a book that predates it, or carries no format marker, reads as 1. The members sheet carries one nominal value, so every member of a book states the same figure."
           },
           "acquiredDate": {
             "type": "string",

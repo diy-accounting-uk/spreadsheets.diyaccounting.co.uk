@@ -1094,6 +1094,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push("[[members]]");
       parts.push(`name = "${escapeTomlString(member.name)}"`);
       parts.push(`shares = ${member.shares}`);
+      if (member.nominal_value !== undefined) parts.push(`nominal_value = ${member.nominal_value}`);
       if (member.acquired) parts.push(`acquired = ${member.acquired}`);
       parts.push("");
     }

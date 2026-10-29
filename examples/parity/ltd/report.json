@@ -4,10 +4,10 @@
   "scenario": "Exported from ltd package",
   "yearEnd": "2027-10-31",
   "provenance": {
-    "formatVersion": "diya-gl/1",
-    "engineVersion": "1.2.61+f657819b",
+    "formatVersion": "diya-gl/2",
+    "engineVersion": "1.2.63+2c4a0a8c",
     "taxDataHash": "51bdff60e993",
-    "templateHash": "a65ab09cf35c",
+    "templateHash": "b90d8b0f54a0",
     "templateScorecard": "101608 passed, 0 warnings, 0 failed",
     "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
   },
@@ -89,6 +89,21 @@
     },
     {
       "key": "cell/Companysecretary.xlsx!RegisterofMembers!F1",
+      "unit": "money",
+      "value": "1"
+    },
+    {
+      "key": "cell/Companysecretary.xlsx!RegisterofMembers!F3",
+      "unit": "money",
+      "value": "1"
+    },
+    {
+      "key": "cell/Companysecretary.xlsx!RegisterofMembers!F4",
+      "unit": "money",
+      "value": "1"
+    },
+    {
+      "key": "cell/Companysecretary.xlsx!RegisterofMembers!F5",
       "unit": "money",
       "value": "1"
     },
@@ -14000,6 +14015,14 @@
       "actual": "Carol Smith"
     },
     {
+      "key": "check/Register of members: row 3 prices Carol Smith's shares",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1",
+      "actual": "1",
+      "tolerance": "0"
+    },
+    {
       "key": "check/Register of members: row 4 holds David Brown's shares",
       "unit": "verdict",
       "value": "pass",
@@ -14015,6 +14038,14 @@
       "actual": "David Brown"
     },
     {
+      "key": "check/Register of members: row 4 prices David Brown's shares",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1",
+      "actual": "1",
+      "tolerance": "0"
+    },
+    {
       "key": "check/Register of members: row 5 holds Emma Wilson's shares",
       "unit": "verdict",
       "value": "pass",
@@ -14028,6 +14059,14 @@
       "value": "pass",
       "expected": "Emma Wilson",
       "actual": "Emma Wilson"
+    },
+    {
+      "key": "check/Register of members: row 5 prices Emma Wilson's shares",
+      "unit": "verdict",
+      "value": "pass",
+      "expected": "1",
+      "actual": "1",
+      "tolerance": "0"
     },
     {
       "key": "check/RegisterofMembers: nominal value x shares issued = PubBalSht share capital",

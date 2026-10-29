@@ -37,6 +37,7 @@ import {
 import { totalBusinessMiles, calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 import { compareLines } from "./diya-gl-canonical.js";
 import { tagEntry, entryOf } from "./entry-attribution.js";
+import { memberNominalValue, registerNominalValue } from "./share-nominal.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -699,10 +700,11 @@ export function diyaGlToScenario(book, lines, product) {
   }
   if (product === "ltd" && book.members?.length > 0) {
     scenario.members = book.members.map((member) => {
-      const entry = { name: member.name, shares: member.shares };
+      const entry = { name: member.name, shares: member.shares, nominal_value: memberNominalValue(member, book) };
       if (member.acquiredDate !== undefined) entry.acquired = member.acquiredDate;
       return entry;
     });
+    registerNominalValue(scenario.members.map((member) => member.nominal_value));
   }
   // The Board Minute sheet has one meeting date and one declared figure, so
   // a book with more than one dividend voucher still reaches the sheet as

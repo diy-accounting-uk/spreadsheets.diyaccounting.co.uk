@@ -1160,18 +1160,27 @@ describe("extractBook — the Ltd registers of members and directors", () => {
   it("reads the register of members back with the shares and the date each holding was acquired", async () => {
     const book = await exportedRegisters();
     expect(book.members).toEqual([
-      { memberID: "M1", name: "Carol Smith", shares: 60, acquiredDate: "2020-01-01" },
-      { memberID: "M2", name: "David Brown", shares: 25, acquiredDate: "2021-06-15" },
+      { memberID: "M1", name: "Carol Smith", shares: 60, nominalValue: 1, acquiredDate: "2020-01-01" },
+      { memberID: "M2", name: "David Brown", shares: 25, nominalValue: 1, acquiredDate: "2021-06-15" },
     ]);
   });
 
-  it("does not carry the register's single company-wide nominal value back onto a member", async () => {
-    // The register prices every holding at the same £1 nominal value; the
-    // book schema keeps a per-member field for it but the loader never fills
-    // one, so reading it back would only ever be an extra field no fixture
-    // declares.
-    const book = await exportedRegisters();
-    expect(book.members.some((member) => "nominalValue" in member)).toBe(false);
+  it("reads a nominal value of 20p off column F onto every member", async () => {
+    const dir = await ltdRegistersPackage({
+      registerofMembers: { ...registerofMembers, F3: 0.2, F4: 0.2 },
+      directorsAndSecretary,
+      employee: {},
+    });
+    const book = await extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.members.map((member) => member.nominalValue)).toEqual([0.2, 0.2]);
+  });
+
+  it("refuses a member who holds shares on a row with no nominal value", async () => {
+    const { F4, ...withoutNominal } = registerofMembers;
+    const dir = await ltdRegistersPackage({ registerofMembers: withoutNominal, directorsAndSecretary, employee: {} });
+    await expect(extractBook(await workbookSetFromDirectory(dir), "ltd", [DUMMY_POSTING], LTD_CELL_MAP)).rejects.toThrow(
+      /David Brown.*no nominal value/,
+    );
   });
 
   it("names a director from Directors&Secretary and dates and counts their holding off the register of members", async () => {
