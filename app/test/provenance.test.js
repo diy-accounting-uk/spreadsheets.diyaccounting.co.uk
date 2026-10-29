@@ -80,6 +80,18 @@ describe("stampBook: documentInfo carries this build's provenance", () => {
     expect(stampBook(book).members.map((member) => member.nominalValue)).toEqual([1, 1]);
   });
 
+  it("keeps a nominal value that is not one pound on every member of a book in the current format", () => {
+    const book = {
+      ...minimalBook("Company"),
+      members: [
+        { memberID: "M1", name: "Carol", shares: 100, nominalValue: 0.2 },
+        { memberID: "M2", name: "David", shares: 100, nominalValue: 0.2 },
+      ],
+    };
+    book.documentInfo["diya-gl:formatVersion"] = "diya-gl/2";
+    expect(stampBook(book).members.map((member) => member.nominalValue)).toEqual([0.2, 0.2]);
+  });
+
   it("adds the five stamps without disturbing the book's own documentInfo fields", () => {
     const book = minimalBook("BasicSoleTrader");
     const stamped = stampBook(book);
