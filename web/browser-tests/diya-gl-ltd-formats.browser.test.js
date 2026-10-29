@@ -192,6 +192,27 @@ test.describe("DIYA-GL Company books page — every way in", () => {
   });
 });
 
+// ── a stated nominal value survives open and save ──────────────────────────
+
+test.describe("DIYA-GL Company books page — nominal value", () => {
+  test("a diya-gl zip that states 0.20 per share saves with 0.20 on every member", async ({ page }) => {
+    const toml = fullBookToml
+      .replace("[documentInfo]\n", '[documentInfo]\n"diya-gl:formatVersion" = "diya-gl/2"\n')
+      .replace(
+        /(\[\[members\]\]\nmemberID = "MEM-\d"\nname = "[^"]+"\nshares = )(\d+)/g,
+        (_, head, shares) => `${head}${Number(shares) * 5}\nnominalValue = 0.20`,
+      );
+    expect(toml.match(/nominalValue = 0.20/g)).toHaveLength(3);
+    const bytes = await zipOf({ "book.toml": toml, "lines.jsonl": fullLinesJsonl, "report.json": "{}\n" });
+    await uploadPackage(page, bytes, "nominal-diya-gl.zip");
+    await waitForLoaded(page);
+
+    const saved = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const savedBook = parseTOML(await (await JSZip.loadAsync(saved.bytes)).file("book.toml").async("string"));
+    expect(savedBook.members.map((member) => member.nominalValue)).toEqual([0.2, 0.2, 0.2]);
+  });
+});
+
 // ── E3: round trips ──────────────────────────────────────────────────────
 
 // Each writer stamps its own entriesComment label -- the page's own upload
