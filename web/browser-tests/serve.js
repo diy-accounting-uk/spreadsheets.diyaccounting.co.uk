@@ -69,7 +69,13 @@ export function startStaticServer(rootDir, headersPath = SECURITY_HEADERS_PATH) 
       const baseUrl = `http://127.0.0.1:${server.address().port}`;
       resolve({
         baseUrl,
-        close: () => new Promise((resolveClose) => server.close(resolveClose)),
+        close: () =>
+          new Promise((resolveClose) => {
+            server.close(resolveClose);
+            // server.close() waits for every open connection; a browser's kept-alive
+            // connection would hold the test open until Playwright's timeout.
+            server.closeAllConnections();
+          }),
       });
     });
   });
