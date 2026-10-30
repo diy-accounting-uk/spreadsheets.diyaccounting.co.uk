@@ -107,8 +107,8 @@ jobs:
     needs: [params]
     if: ${{ needs.params.outputs.skip-tests != 'true' }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -127,8 +127,8 @@ jobs:
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -153,7 +153,7 @@ jobs:
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
           LATEST=$(echo "$YEAR_ENDS" | jq -r '.[0]')
           echo "latest=$LATEST" | tee -a "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: bst-packages
           retention-days: 1
@@ -172,8 +172,8 @@ jobs:
       matrix:
         year-end: ${{ fromJson(needs.generate.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -184,7 +184,7 @@ jobs:
       - name: Install LibreOffice
         timeout-minutes: 5
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc poppler-utils
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: bst-packages
           path: packages/
@@ -251,7 +251,7 @@ jobs:
         run: node app/bin/verify-stability.js --package bst --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/bst-scorecard-stability
       - name: Configure AWS role via GitHub OIDC
         if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
         with:
           role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -299,7 +299,7 @@ jobs:
           cp -f reports/*.md /tmp/page-reports/
           cp -f reports/judge-verdict-*.json /tmp/page-reports/ 2>/dev/null || true
           npm run build:reconciliation-pages -- --product bst --reports /tmp/page-reports
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         with:
           name: bst-reconciliation-page
@@ -318,12 +318,12 @@ jobs:
             grep -qxF "$f" /tmp/own-reports.txt || rm -f "$f"
           done
       - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: bst-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         with:
           name: bst-examples
@@ -336,8 +336,8 @@ jobs:
     if: ${{ !cancelled() && needs.reconcile.result == 'success' }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -348,7 +348,7 @@ jobs:
       - name: Install LibreOffice
         timeout-minutes: 5
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: bst-packages
           path: packages/
@@ -358,7 +358,7 @@ jobs:
           npm run reconciliation -- --package bst --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
           npm run reconciliation -- --package bst --scenario sp-sixty --year-end ${{ needs.generate.outputs.latest }}
       - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           # The commit job collects reports by the bst-reports-* pattern, so this
           # name has to start with it or the extra scenarios never reach the tree.
@@ -387,30 +387,30 @@ jobs:
     needs: [params, generate, reconcile, reconcile-extra]
     if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: bst-packages
           path: packages/
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: bst-reports-*
           path: reports/
           merge-multiple: true
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         continue-on-error: true
         with:
           name: bst-examples
           path: examples/bst-latest/
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         continue-on-error: true
         with:
           name: bst-reconciliation-page
           path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
