@@ -18,7 +18,7 @@ const DATA_DIR = resolve(REPO_ROOT, "app", "data", "hmrc");
 
 const mapping = JSON.parse(readFileSync(resolve(DATA_DIR, "sa103-mtd-mapping.json"), "utf8"));
 const csvText = readFileSync(resolve(DATA_DIR, "sa103f_mapping_v3.csv"), "utf8");
-const seSource = readFileSync(resolve(REPO_ROOT, "app", "products", "se.js"), "utf8");
+const seSource = readFileSync(resolve(REPO_ROOT, "app", "products", "se", "cell-map.js"), "utf8");
 
 // A tiny CSV parser good enough for HMRC's file: every field is
 // double-quoted, commas inside a field are quoted, and quotes inside a
