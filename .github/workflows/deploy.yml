@@ -398,6 +398,7 @@ jobs:
       - params
       - deploy-spreadsheets
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     environment: ${{ needs.params.outputs.github-environment }}
     steps:
       - name: Checkout
