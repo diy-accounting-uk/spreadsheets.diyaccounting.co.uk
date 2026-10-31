@@ -50,8 +50,12 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
-import { canonicalForUnit } from "../lib/canonical-report-value.js";
+import { fmt } from "../lib/product-sheets/format.js";
+import { excelSerialToUtcDate, formatSerialDate, periodEnding } from "../lib/product-sheets/serial-dates.js";
+import { VAT_RATE, vatRateFor, netOfVat, sheetNetOfVat } from "../lib/product-sheets/vat-rate.js";
 import { entryOf, unionOf } from "../lib/entry-attribution.js";
+
+export { fmt, vatRateFor };
 
 export const PRODUCT = {
   id: "ltd",
@@ -346,27 +350,12 @@ const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allo
 export const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
-// The Sales, Purchases and Fixedassets analysis columns all hold figures net
-// of VAT. Matches [vat].standard_rate in app/data/ltd-*.toml (Admin M19).
-const VAT_RATE = 0.2;
-
 // Cell G2 of a Sales.xlsx month tab holds the rate the whole book charges.
 // The first month reads Admin!M19, each later month reads the month before
 // it, and every Purchases month reads its own Sales month. Entering 0 there
 // is what the Company guide tells a business that is not registered for VAT
 // to do, and it is the only lever that turns VAT off end to end.
 const VAT_RATE_CELL = "G2";
-
-// A scenario says whether the business is registered in its own metadata.
-// Anything that does not say is registered, which is what every fixture
-// written before the flag existed means.
-export function vatRateFor(scenario) {
-  return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
-}
-
-function netOfVat(gross, rate = VAT_RATE) {
-  return Math.round((gross / (1 + rate)) * 100) / 100;
-}
 
 // ── Vatreturns.xlsx Vatinterface layout ────────────────────────────────────
 // One row per VAT period, in date order. Rows 6-17 are the twelve accounting
@@ -1559,13 +1548,8 @@ function fiscalMonthTabs(results) {
 // date the Admin sheet carries, so a leaf workbook's month totals line up
 // with the P&L's month columns whatever the year end.
 function monthTabsFromPeriodStart(startSerial) {
-  const firstMonth = dateFromSerial(startSerial).getUTCMonth();
+  const firstMonth = excelSerialToUtcDate(startSerial).getUTCMonth();
   return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
-}
-
-// The date an Excel serial stands for.
-function dateFromSerial(serial) {
-  return new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
 }
 
 // The expenses claim form's twelve month tabs, in the order the workbook
@@ -2063,16 +2047,6 @@ function vatinterfaceRowEnding(results, end) {
   return null;
 }
 
-function formatSerialDate(serial) {
-  return dateFromSerial(serial).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
-}
-
-// The " (period ending d Month yyyy)" a VAT return line carries, or nothing
-// at all when the form has no date on it.
-function periodEnding(serial) {
-  return serial ? ` (period ending ${formatSerialDate(serial)})` : "";
-}
-
 // The asset workbook's totals rows carry no caption of their own, so the
 // appendix printed them as bare letters and a reader had to guess which
 // column was cost, which was depreciation and which was the disposals.
@@ -2239,17 +2213,6 @@ export function cellLabels() {
   return labels;
 }
 
-export function fmt(v, unit = "money") {
-  if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") {
-    const canonical = Number(canonicalForUnit(v, unit));
-    // A nil that arrived by negation carries a sign bit and prints as "-0",
-    // which reads as a defect in a statement.
-    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  }
-  return String(v);
-}
-
 // ── Accounting profit to tax profit bridge ─────────────────────────────────
 
 // The working sheet starts at operating profit, so the management accounts'
@@ -2280,15 +2243,6 @@ export function profitBridge(results) {
 }
 
 // ── Journal category VAT netting ───────────────────────────────────────────
-
-// A journal row takes its own VAT off its own gross and rounds nothing
-// (template: H = G * rate / (100 + rate), I = G - H), and the analysis
-// columns the statements read sum those row figures. Netting an annual
-// total instead leaves pennies behind, so the netting table sums per entry
-// the same way the sheet does.
-function sheetNetOfVat(gross, rate) {
-  return gross - (gross * rate) / (1 + rate);
-}
 
 // Journal totals by code letter: gross as entered, net the way the journal
 // rows net it, and net the way the asset schedule holds it -- the writer
@@ -3161,7 +3115,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // scenario's dates shift by the gap between its own accounting period
     // and the package's, so the year end on the Admin sheet is what says how
     // far this book moved the meeting.
-    const packageYearEnd = dateFromSerial(num(results.Admin.F21));
+    const packageYearEnd = excelSerialToUtcDate(num(results.Admin.F21));
     const monthOffset = periodShiftMonths(expected, packageYearEnd.getUTCFullYear() - 1, packageYearEnd.getUTCMonth() + 1);
     const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
     check(
@@ -3746,8 +3700,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // from the wrong calendar cannot agree with it by construction.
   const periodStartSerial = num(results.Admin?.B9);
   if (periodStartSerial && payslipsAdmin) {
-    const periodStart = dateFromSerial(periodStartSerial);
-    const yearStart = dateFromSerial(num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]));
+    const periodStart = excelSerialToUtcDate(periodStartSerial);
+    const yearStart = excelSerialToUtcDate(num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]));
     fiscalTabs.forEach((tab, monthIndex) => {
       const month = results[`Payslips.xlsx!${tab}`];
       if (!month) return;
@@ -3775,7 +3729,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // packageYearEnd: that argument names the year end the check should
     // measure the seed against, which is not always the year end the book
     // in hand was actually built for.
-    const bookYearEnd = results.Admin?.F21 ? dateFromSerial(num(results.Admin.F21)) : null;
+    const bookYearEnd = results.Admin?.F21 ? excelSerialToUtcDate(num(results.Admin.F21)) : null;
     const monthOffset = bookYearEnd ? periodShiftMonths(expected, bookYearEnd.getUTCFullYear() - 1, bookYearEnd.getUTCMonth() + 1) : 0;
     const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {

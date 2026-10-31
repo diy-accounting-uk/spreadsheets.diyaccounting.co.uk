@@ -41,8 +41,12 @@ import {
 } from "../lib/report-generator.js";
 import { calculateMileageAllowance, mileageClaimChangeFromFixture, FIXTURE_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 import { checkForecastTaxAndNi } from "../lib/tax/income-tax.js";
-import { canonicalForUnit } from "../lib/canonical-report-value.js";
+import { fmt } from "../lib/product-sheets/format.js";
+import { excelSerialToUtcDate, periodEnding } from "../lib/product-sheets/serial-dates.js";
+import { VAT_RATE, vatRateFor, netOfVat, sheetNetOfVat } from "../lib/product-sheets/vat-rate.js";
 import { entryOf, unionOf } from "../lib/entry-attribution.js";
+
+export { fmt, vatRateFor };
 
 export const PRODUCT = {
   id: "se",
@@ -119,26 +123,12 @@ function paymentCodeFor(code) {
   return COMPANY_TAX_PAYMENT_CODES.has(code) ? SE_HMRC_PAYMENT_CODE : code;
 }
 
-// Matches [vat].standard_rate in app/data/se-*.toml (Admin!F27). Used to
-// convert a scenario's gross transaction amount to the net-of-VAT figure
-// the Sales.xlsx/Purchases.xlsx/Fixedassets.xlsx analysis columns hold --
-// all read the I column ("Sales/Purchases Net of Vat"), never the gross G
-// column.
-const VAT_RATE = 0.2;
-
 // Cell H2 of a Sales.xlsx month tab holds the rate the whole book charges.
 // April carries the figure, each later month reads the month before it, and
 // every Purchases month reads its own Sales month. Entering 0 there is what
 // the Self Employed guide tells a business that is not registered for VAT to
 // do, and it is the only lever that turns VAT off end to end.
 const VAT_RATE_CELL = "H2";
-
-// A scenario says whether the business is registered in its own metadata.
-// Anything that does not say is registered, which is what every fixture
-// written before the flag existed means.
-export function vatRateFor(scenario) {
-  return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
-}
 
 // ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
 // The customer-facing invoice template has no external link into the rest of
@@ -174,10 +164,6 @@ export const SALESINVOICE_INVOICE_DATABASE_COLUMNS = {
 };
 const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
-
-function netOfVat(gross, rate = VAT_RATE) {
-  return Math.round((gross / (1 + rate)) * 100) / 100;
-}
 
 // ── Vat.xlsx Vatinterface layout ───────────────────────────────────────────
 // One row per VAT period, in date order. Rows 6-17 are the twelve accounting
@@ -2066,17 +2052,6 @@ export function cellLabels() {
   return labels;
 }
 
-export function fmt(v, unit = "money") {
-  if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") {
-    const canonical = Number(canonicalForUnit(v, unit));
-    // A nil that arrived by negation carries a sign bit and prints as "-0",
-    // which reads as a defect in a statement.
-    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  }
-  return String(v);
-}
-
 // ── Accounting profit to tax profit bridge ─────────────────────────────────
 
 // Depreciation is not allowable for income tax, so the return's total
@@ -2234,15 +2209,6 @@ function fixtureStructuresAndBuildings(expected, taxData, periodStartSerial, per
 }
 
 // ── Journal category VAT netting ───────────────────────────────────────────
-
-// A journal row takes its own VAT off its own gross and rounds nothing
-// (template: H = G * rate / (100 + rate), I = G - H), and the analysis
-// columns the statements read sum those row figures. Netting an annual
-// total instead leaves pennies behind, so the netting table sums per entry
-// the same way the sheet does.
-function sheetNetOfVat(gross, rate) {
-  return gross - (gross * rate) / (1 + rate);
-}
 
 // Journal totals by code letter: gross as entered, net the way the journal
 // rows net it, and net the way the asset schedule holds it -- the writer
@@ -4399,11 +4365,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   return checks;
 }
 
-function excelSerialToUtcDate(serial) {
-  const epoch = Date.UTC(1899, 11, 30);
-  return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
-}
-
 // Whole months from one date's month to another's, ignoring the day of the
 // month. Negative when the second date comes first.
 function monthsBetween(from, to) {
@@ -4443,10 +4404,3 @@ function vatinterfaceRowEnding(results, end) {
   return null;
 }
 
-// The " (period ending d Month yyyy)" a VAT return line carries, or nothing
-// at all when the form has no date on it.
-function periodEnding(serial) {
-  if (!serial) return "";
-  const date = excelSerialToUtcDate(serial);
-  return ` (period ending ${date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })})`;
-}
