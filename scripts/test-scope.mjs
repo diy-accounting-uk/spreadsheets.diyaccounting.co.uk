@@ -111,7 +111,7 @@ function productsIn(path) {
 // ---------------------------------------------------------------- routing
 
 // Each row names the changed paths it claims and what they add. `calc` and
-// `browser` take "all" or "product"; "product" narrows to the product tokens
+// `browser` take "all", "product" or a list of product tokens; "product" narrows to the product tokens
 // in the path and falls back to all four when the path names none.
 const ROUTES = [
   {
@@ -125,6 +125,11 @@ const ROUTES = [
     id: "product module",
     match: (p) => /^app\/(products|lib\/anchors|lib\/calculators|lib\/tax)\/(bst|se|ltd|taxi)\b/.test(p),
     adds: { calc: "product", browser: "product" },
+  },
+  {
+    id: "product sheets",
+    match: (p) => /^app\/lib\/product-sheets\//.test(p),
+    adds: { calc: ["se", "ltd"], browser: ["se", "ltd"] },
   },
   {
     id: "sole-trader tax data",
@@ -679,7 +684,8 @@ function select(changed) {
         note("unit", path, route.id);
       }
       if (adds.browser) {
-        if (adds.browser === "all") sel.browserAll = true;
+        if (Array.isArray(adds.browser)) for (const p of adds.browser) sel.browserProducts.add(p);
+        else if (adds.browser === "all") sel.browserAll = true;
         else if (adds.browser === "diya-gl") sel.browserDiyaGl = true;
         else if (adds.browser === "content") sel.browserContent = true;
         else if (adds.browser === "page") {

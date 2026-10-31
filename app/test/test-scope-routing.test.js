@@ -85,6 +85,14 @@ describe("routing table: docs, skills, lockfile, dependency and router-script pa
   });
 });
 
+describe("product sheets routing", () => {
+  it("routes a shared product-sheets file to the se and ltd calc and browser tiers", () => {
+    const sel = select(["app/lib/product-sheets/format.js"]);
+    expect([...sel.calcProducts].sort()).toEqual(["ltd", "se"]);
+    expect([...sel.browserProducts].sort()).toEqual(["ltd", "se"]);
+  });
+});
+
 describe("browser spec routing: un-tokened specs that cover multiple products", () => {
   it("chooseBrowserSpecs selects diya-gl-render-coverage for se.js changes", () => {
     const sel = select(["app/products/se.js"]);
