@@ -62,7 +62,7 @@ jobs:
     needs: [params]
     if: ${{ inputs.delete-packages || inputs.delete-tax-data }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
@@ -149,7 +149,7 @@ jobs:
     needs: [generate-ltd]
     if: ${{ !cancelled() && (needs.generate-ltd.result == 'success' || needs.generate-ltd.result == 'skipped') }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
