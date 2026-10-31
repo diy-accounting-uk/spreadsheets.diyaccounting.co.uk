@@ -109,7 +109,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -147,7 +147,7 @@ jobs:
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
           LATEST=$(echo "$YEAR_ENDS" | jq -r '.[0]')
           echo "latest=$LATEST" | tee -a "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: se-packages
           retention-days: 1
@@ -162,7 +162,7 @@ jobs:
     if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-tests != 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -172,7 +172,7 @@ jobs:
           NPM_CONFIG_FETCH_RETRIES: "3"
       - name: Overlay the freshly generated packages
         if: ${{ needs.generate.result == 'success' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
           path: packages/
@@ -192,7 +192,7 @@ jobs:
         year-end: ${{ fromJson(needs.generate.outputs.matrix) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -203,7 +203,7 @@ jobs:
       - name: Install LibreOffice
         timeout-minutes: 5
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc poppler-utils
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
           path: packages/
@@ -322,7 +322,7 @@ jobs:
           cp -f reports/*.md /tmp/page-reports/
           cp -f reports/judge-verdict-*.json /tmp/page-reports/ 2>/dev/null || true
           npm run build:reconciliation-pages -- --product se --reports /tmp/page-reports
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         with:
           name: se-reconciliation-page
@@ -341,12 +341,12 @@ jobs:
             grep -qxF "$f" /tmp/own-reports.txt || rm -f "$f"
           done
       - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: se-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         with:
           name: se-examples
@@ -360,7 +360,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -371,7 +371,7 @@ jobs:
       - name: Install LibreOffice
         timeout-minutes: 5
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
           path: packages/
@@ -381,7 +381,7 @@ jobs:
           npm run reconciliation -- --package se --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
           npm run reconciliation -- --package se --scenario brickwork-pro-vat --year-end ${{ needs.generate.outputs.latest }}
       - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           # The commit job collects reports by the se-reports-* pattern, so this
           # name has to start with it or the extra scenarios never reach the tree.
@@ -414,26 +414,26 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
           path: packages/
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           pattern: se-reports-*
           path: reports/
           merge-multiple: true
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         continue-on-error: true
         with:
           name: se-examples
           path: examples/se-latest/
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         continue-on-error: true
         with:
           name: se-reconciliation-page
           path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
