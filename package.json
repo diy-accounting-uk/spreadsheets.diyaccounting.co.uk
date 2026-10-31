@@ -113,7 +113,7 @@
     "js-yaml": "^5.5.0",
     "jszip": "^3.10.2",
     "lighthouse": "^13.6.0",
-    "npm-check-updates": "^23.1.0",
+    "npm-check-updates": "^23.1.1",
     "otpauth": "^9.5.2",
     "pa11y": "^10.0.0",
     "pa11y-ci": "^5.0.0",
