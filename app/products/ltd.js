@@ -35,16 +35,9 @@ import {
   ltdBankPlacement,
 } from "../lib/ltd-layout.js";
 import { apportionCorporationTax, financialYearRatesFor } from "../lib/tax/corporation-tax.js";
-import {
-  buildCategoryNetting,
-  buildProfitBridge,
-  categoryNettingCheckName,
-  PROFIT_BRIDGE_CHECK,
-  vatCycleRows,
-  vatReturnCoverage,
-} from "../lib/report-generator.js";
+import { buildCategoryNetting, buildProfitBridge, categoryNettingCheckName, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { fmt } from "../lib/product-sheets/format.js";
-import { excelSerialToUtcDate, formatSerialDate, periodEnding } from "../lib/product-sheets/serial-dates.js";
+import { excelSerialToUtcDate, formatSerialDate } from "../lib/product-sheets/serial-dates.js";
 import { VAT_RATE, vatRateFor, netOfVat, sheetNetOfVat } from "../lib/product-sheets/vat-rate.js";
 import { entryOf, unionOf } from "../lib/entry-attribution.js";
 
@@ -67,7 +60,9 @@ import {
   payslipsMonthEntryCells,
   writePayslipsEmployee,
 } from "../lib/product-sheets/payslips.js";
+import { VATINTERFACE_ROWS, checkVatChain, vatSection, writeStraddlingPeriod, writeVatRateCell } from "../lib/product-sheets/vat-chain.js";
 
+export { STRADDLING_PERIOD_ROWS } from "../lib/product-sheets/vat-chain.js";
 export {
   fmt,
   vatRateFor,
@@ -313,22 +308,6 @@ const SCHEDULE_NEW_ASSET_CLASS = "plant";
 // to do, and it is the only lever that turns VAT off end to end.
 const VAT_RATE_CELL = "G2";
 
-// ── Vatreturns.xlsx Vatinterface layout ────────────────────────────────────
-// One row per VAT period, in date order. Rows 6-17 are the twelve accounting
-// months in period order (row 6 is always the period's first month, whatever
-// the year end -- the generator rewrites the month-tab references to match).
-// Rows 4 and 5 are the two VAT periods before the accounting year, rows 18 to
-// 20 the three after it; each is fed by its own S/P entry sheet rather than
-// by a month tab. Column B is the period end date every VATQtr sheet looks up
-// on, C the payment due date, D/F the period's sales net and output VAT, H/J
-// its purchases net and input VAT, and E/G/I/K the rolling three-row sums the
-// VAT boxes read. M carries the flat-rate flag box 6 switches on.
-const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
-
-// Straddling VAT period name to the Vatinterface row it feeds, and to the
-// pair of entry sheets it is entered on (S<period> and P<period>).
-export const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
-
 // Column each straddling entry sheet takes its data in. The sheets compute
 // VAT and net from the gross figure in the amount column.
 export const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
@@ -500,8 +479,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // month's Sales tab, and the rest of the book follows that cell.
   if (rate !== VAT_RATE) {
     const firstTab = getMonthTabNames(yem)[0];
-    if (!salesWrites[firstTab]) salesWrites[firstTab] = {};
-    salesWrites[firstTab][VAT_RATE_CELL] = rate * 100;
+    writeVatRateCell(salesWrites, firstTab, VAT_RATE_CELL, rate);
   }
 
   // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet).
@@ -955,31 +933,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // the twelve month tabs but not on these sheets, so the warning fires for
   // any entry at all. Nothing reads it, so it is left unasserted.
   const vatReturnWrites = {};
-  function writeStraddlingPeriod(entries, sheetPrefix, nameField) {
-    for (const entry of entries) {
-      const row = STRADDLING_PERIOD_ROWS[entry.period];
-      if (!row) {
-        throw new Error(`Straddling VAT entry names period "${entry.period}", which Vatreturns.xlsx has no sheet for`);
-      }
-      const sheetName = `${sheetPrefix}${entry.period}`;
-      if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
-      const sheet = vatReturnWrites[sheetName];
-      const col = STRADDLING_COLUMNS;
-      // Matching the whole reference rather than its first letter keeps a
-      // write further right out of the count, the same way the journal
-      // writer counts its own rows.
-      const isAmountColumnKey = (key) => new RegExp(`^${col.amount}\\d+$`).test(key);
-      const entryRow = Object.keys(sheet).filter(isAmountColumnKey).length + 5;
-      const d = shiftDate(parseDate(entry.date));
-      sheet[`${col.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-      if (entry[nameField]) sheet[`${col.name}${entryRow}`] = entry[nameField];
-      if (entry.invoice) sheet[`${col.invoice}${entryRow}`] = entry.invoice;
-      if (entry.description) sheet[`${col.description}${entryRow}`] = entry.description;
-      sheet[`${col.amount}${entryRow}`] = entry.amount;
-    }
-  }
-  if (scenario.vat_straddling_sales) writeStraddlingPeriod(scenario.vat_straddling_sales, "S", "customer");
-  if (scenario.vat_straddling_purchases) writeStraddlingPeriod(scenario.vat_straddling_purchases, "P", "supplier");
+  const straddlingOptions = { workbook: "Vatreturns.xlsx", shiftDate };
+  if (scenario.vat_straddling_sales)
+    writeStraddlingPeriod(vatReturnWrites, scenario.vat_straddling_sales, "S", "customer", STRADDLING_COLUMNS, straddlingOptions);
+  if (scenario.vat_straddling_purchases)
+    writeStraddlingPeriod(vatReturnWrites, scenario.vat_straddling_purchases, "P", "supplier", STRADDLING_COLUMNS, straddlingOptions);
 
   const salesinvoiceWrites = writeSalesinvoice(scenario, rate);
 
@@ -1433,6 +1391,15 @@ const SALES_MONTH_TOTAL_CELLS = { net: "H1", badDebts: "T1", assetSales: "U1" };
 // purchases (AI1, which reaches the balance sheet rather than the P&L).
 const PURCHASES_MONTH_TOTAL_CELLS = { net: "H1", materials: "O1", directorsWages: "R1", employeeWages: "S1", assetPurchases: "AI1" };
 
+const LTD_VAT_LAYOUT = {
+  workbook: "Vatreturns.xlsx",
+  monthTabs: fiscalMonthTabs,
+  salesNetCell: SALES_MONTH_TOTAL_CELLS.net,
+  salesVatCell: "G1",
+  purchasesNetCell: PURCHASES_MONTH_TOTAL_CELLS.net,
+  purchasesVatCell: "G1",
+};
+
 // The twelve month tabs a recalculated book actually carries, in accounting
 // period order, taken from the period start date on its own Admin sheet.
 function fiscalMonthTabs(results) {
@@ -1826,120 +1793,9 @@ export function reportSections(results) {
     sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent, cells: [`${sheet}!${cell}`] });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
-  const vat = vatSection(results);
+  const vat = vatSection(results, LTD_VAT_LAYOUT);
   if (vat) sections.push(vat);
   return sections;
-}
-
-// The VAT the books actually charged, taken from the month tabs and from the
-// return itself. Every other statement in this report is stated net, so a
-// registered company and an unregistered one carrying the same trade read
-// identically without it.
-function vatSection(results) {
-  const tabs = fiscalMonthTabs(results).filter((tab) => results[`Sales.xlsx!${tab}`] || results[`Purchases.xlsx!${tab}`]);
-  const months = tabs.map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]]);
-  if (months.length === 0) return null;
-  const monthCells = (file, ...refs) => tabs.flatMap((tab) => refs.map((ref) => `${file}!${tab}!${ref}`));
-  const salesNetCell = SALES_MONTH_TOTAL_CELLS.net;
-  const purchasesNetCell = PURCHASES_MONTH_TOTAL_CELLS.net;
-
-  const num = (v) => (typeof v === "number" ? v : 0);
-  const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
-  const salesVat = sum(0, "G1");
-  const salesNet = sum(0, SALES_MONTH_TOTAL_CELLS.net);
-  const purchasesVat = sum(1, "G1");
-  const purchasesNet = sum(1, PURCHASES_MONTH_TOTAL_CELLS.net);
-
-  const rows = [
-    {
-      label: "Sales invoiced including VAT",
-      value: fmt(salesNet + salesVat),
-      indent: 1,
-      cells: monthCells("Sales.xlsx", "G1", salesNetCell),
-    },
-    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1, cells: monthCells("Sales.xlsx", "G1") },
-    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1, cells: monthCells("Sales.xlsx", salesNetCell) },
-    {
-      label: "Purchases invoiced including VAT",
-      value: fmt(purchasesNet + purchasesVat),
-      indent: 1,
-      cells: monthCells("Purchases.xlsx", "G1", purchasesNetCell),
-    },
-    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1, cells: monthCells("Purchases.xlsx", "G1") },
-    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1, cells: monthCells("Purchases.xlsx", purchasesNetCell) },
-    {
-      label: "**VAT due for the year**",
-      value: fmt(salesVat - purchasesVat),
-      indent: 0,
-      cells: [...monthCells("Sales.xlsx", "G1"), ...monthCells("Purchases.xlsx", "G1")],
-    },
-  ];
-  // The package ships five return forms: five consecutive quarters from the
-  // VAT start month, for a business whose quarter stagger does not line up
-  // with its accounting year. Printing four left the fifth out of the report
-  // altogether. Each form carries the period it was filled in for, and the
-  // cycle rows above the boxes say which months each one reaches.
-  const forms = [];
-  const quarterRows = [];
-  for (let q = 1; q <= 5; q++) {
-    const boxes = results[`Vatreturns.xlsx!VATQtr${q}`];
-    if (!boxes) continue;
-    const end = num(boxes.G5);
-    forms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, end) });
-    const period = periodEnding(end);
-    const form = `Vatreturns.xlsx!VATQtr${q}`;
-    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1, cells: [`${form}!G9`] });
-    quarterRows.push({
-      label: `Q${q}${period} box 4: VAT reclaimed on purchases`,
-      value: fmt(num(boxes.G15)),
-      indent: 1,
-      cells: [`${form}!G15`],
-    });
-    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1, cells: [`${form}!G17`] });
-  }
-  if (quarterRows.length > 0) {
-    rows.push(...vatCycleRows(vatinterfacePeriods(results), forms));
-    rows.push({ label: "**The return forms as the package fills them in**", value: "" });
-    rows.push(...quarterRows);
-  }
-  return { title: "VAT Returns", rows };
-}
-
-// The VAT periods the interface carries, one per row, with the VAT on each
-// side and whether the period is one of the twelve accounting months.
-function vatinterfacePeriods(results) {
-  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
-  if (!vatinterface) return [];
-  const num = (v) => (typeof v === "number" ? v : 0);
-  const periods = [];
-  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
-    const end = num(vatinterface[`B${row}`]);
-    if (!end) continue;
-    periods.push({
-      row,
-      endLabel: formatSerialDate(end),
-      outputVat: num(vatinterface[`F${row}`]),
-      inputVat: num(vatinterface[`J${row}`]),
-      inAccountingYear: row >= VATINTERFACE_ROWS.firstMonth && row < VATINTERFACE_ROWS.firstMonth + 12,
-      cells: {
-        end: `Vatreturns.xlsx!Vatinterface!B${row}`,
-        output: `Vatreturns.xlsx!Vatinterface!F${row}`,
-        input: `Vatreturns.xlsx!Vatinterface!J${row}`,
-      },
-    });
-  }
-  return periods;
-}
-
-// The interface row a return form's own period end date lands on, or null
-// when the form names a date the interface does not carry.
-function vatinterfaceRowEnding(results, end) {
-  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
-  if (!vatinterface || !end) return null;
-  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
-    if (Math.round(typeof vatinterface[`B${row}`] === "number" ? vatinterface[`B${row}`] : 0) === Math.round(end)) return row;
-  }
-  return null;
 }
 
 // The asset workbook's totals rows carry no caption of their own, so the
@@ -2541,168 +2397,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
   });
 
-  // ── Vatinterface: where in the VAT chain a break happened ────────────────
-  //
-  // The quarter totals above catch a break; these say where it is. Each
-  // interface row is compared against the leaf workbook or the straddling
-  // entry sheet that feeds it, each quarter column against the three period
-  // rows it sums, and each VAT box against the interface row its LOOKUP lands
-  // on. A month link that stops carrying fails on that month and side alone.
-  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
-  if (vatinterface) {
-    fiscalMonthTabs(results).forEach((tab, i) => {
-      const row = VATINTERFACE_ROWS.firstMonth + i;
-      const salesMonth = results[`Sales.xlsx!${tab}`];
-      const purchasesMonth = results[`Purchases.xlsx!${tab}`];
-      if (salesMonth) {
-        check(
-          `Vatinterface D${row}: ${tab} sales net = Sales.xlsx ${tab}`,
-          num(vatinterface[`D${row}`]),
-          num(salesMonth[SALES_MONTH_TOTAL_CELLS.net]),
-        );
-        check(`Vatinterface F${row}: ${tab} output VAT = Sales.xlsx ${tab}`, num(vatinterface[`F${row}`]), num(salesMonth.G1));
-      }
-      if (purchasesMonth) {
-        check(
-          `Vatinterface H${row}: ${tab} purchases net = Purchases.xlsx ${tab}`,
-          num(vatinterface[`H${row}`]),
-          num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.net]),
-        );
-        check(`Vatinterface J${row}: ${tab} input VAT = Purchases.xlsx ${tab}`, num(vatinterface[`J${row}`]), num(purchasesMonth.G1));
-      }
-    });
-
-    // The straddling periods, anchored in the entries the scenario put on
-    // their own sheets. The sheets compute VAT from the gross figure at the
-    // standard rate, so the expectation splits the same gross the same way.
-    const straddlingGross = (entries) => {
-      const byPeriod = {};
-      for (const entry of entries || []) byPeriod[entry.period] = (byPeriod[entry.period] || 0) + entry.amount;
-      return byPeriod;
-    };
-    const straddlingSales = straddlingGross(expected.vat_straddling_sales);
-    const straddlingPurchases = straddlingGross(expected.vat_straddling_purchases);
-    if (expected.vat_straddling_sales || expected.vat_straddling_purchases) {
-      for (const [period, row] of Object.entries(STRADDLING_PERIOD_ROWS)) {
-        const salesGross = straddlingSales[period] || 0;
-        const purchasesGross = straddlingPurchases[period] || 0;
-        check(
-          `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
-          num(vatinterface[`D${row}`]),
-          netOfVat(salesGross, rate),
-        );
-        check(
-          `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
-          num(vatinterface[`F${row}`]),
-          salesGross - netOfVat(salesGross, rate),
-        );
-        check(
-          `Vatinterface H${row}: ${period} purchases net = the straddling purchases entered for that period`,
-          num(vatinterface[`H${row}`]),
-          netOfVat(purchasesGross, rate),
-        );
-        check(
-          `Vatinterface J${row}: ${period} input VAT = the straddling purchases entered for that period`,
-          num(vatinterface[`J${row}`]),
-          purchasesGross - netOfVat(purchasesGross, rate),
-        );
-      }
-    }
-
-    // Each VAT box against the interface row its own quarter-end date selects,
-    // and that row's quarter columns against the three period rows they sum.
-    const quarterColumns = [
-      ["E", "D", "sales net"],
-      ["G", "F", "output VAT"],
-      ["I", "H", "purchases net"],
-      ["K", "J", "input VAT"],
-    ];
-    for (let q = 1; q <= 5; q++) {
-      const qtr = vatQtr(q);
-      if (!qtr || typeof qtr.G5 !== "number") continue;
-      let row = null;
-      for (let r = VATINTERFACE_ROWS.first; r <= VATINTERFACE_ROWS.last; r++) {
-        if (Math.round(num(vatinterface[`B${r}`])) === Math.round(qtr.G5)) row = r;
-      }
-      check(`VAT Q${q}: quarter end date is one of the Vatinterface periods`, row === null ? 0 : 1, 1, 0);
-      if (row === null) continue;
-
-      if (row - 2 >= VATINTERFACE_ROWS.first) {
-        for (const [total, period, label] of quarterColumns) {
-          check(
-            `Vatinterface ${total}${row}: quarter ${label} = its three period rows`,
-            num(vatinterface[`${total}${row}`]),
-            num(vatinterface[`${period}${row - 2}`]) + num(vatinterface[`${period}${row - 1}`]) + num(vatinterface[`${period}${row}`]),
-          );
-        }
-      }
-
-      check(`VAT Q${q}: box 1 (G9) = Vatinterface quarter VAT due (G${row})`, num(qtr.G9), num(vatinterface[`G${row}`]));
-      check(`VAT Q${q}: box 4 (G15) = Vatinterface quarter VAT reclaimed (K${row})`, num(qtr.G15), num(vatinterface[`K${row}`]));
-      check(`VAT Q${q}: box 7 (G23) = Vatinterface quarter purchases net (I${row})`, num(qtr.G23), num(vatinterface[`I${row}`]));
-      // Box 6 is sales net of VAT, or sales including VAT when the flat rate
-      // scheme flag in column M is set.
-      const flatRate = num(vatinterface[`M${row}`]) > 0;
-      check(
-        `VAT Q${q}: box 6 (G21) = Vatinterface quarter sales ${flatRate ? "including" : "net of"} VAT`,
-        num(qtr.G21),
-        num(vatinterface[`E${row}`]) + (flatRate ? num(vatinterface[`G${row}`]) : 0),
-      );
-      check(
-        `VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`,
-        num(qtr.G7),
-        num(vatinterface[`C${row}`]),
-        0,
-      );
-    }
-
-    // ── The five return forms as one cycle ────────────────────────────────
-    //
-    // Each form's own date decides which three interface rows it declares, so
-    // the five together are checked as a cycle: distinct periods, each a
-    // quarter after the one before it, Q1 to Q4 covering the twelve accounting
-    // months once each, and the fifth on the last period the interface
-    // carries.
-    const periods = vatinterfacePeriods(results);
-    const returnForms = [];
-    for (let q = 1; q <= 5; q++) {
-      const qtr = vatQtr(q);
-      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
-    }
-    const coverage = vatReturnCoverage(periods, returnForms);
-    if (coverage.placed.length === 5) {
-      const [q1, q2, q3, q4, q5] = coverage.placed;
-      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
-      for (const [earlier, later] of [
-        [q1, q2],
-        [q2, q3],
-        [q3, q4],
-        [q4, q5],
-      ]) {
-        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
-      }
-      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
-      check(
-        "VAT: Q1-Q4 cover every month of the accounting year",
-        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
-        periods.filter((period) => period.inAccountingYear).length,
-        0,
-      );
-      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
-
-      // Five consecutive quarters need fifteen periods and the interface
-      // carries seventeen, so no two returns reach the same one. A period
-      // declared twice would be filed twice, so it fails rather than warns,
-      // and the output VAT on it says what the second filing would repeat.
-      check("VAT: periods more than one of the five returns declares", coverage.shared.length, 0, 0);
-      check(
-        "VAT: output VAT declared on more than one of the five returns",
-        coverage.shared.reduce((total, period) => total + period.outputVat, 0),
-        0,
-        0,
-      );
-    }
-  }
+  checkVatChain({ check, num, rate }, results, expected, LTD_VAT_LAYOUT);
 
   // ── Fixed assets: the published note against the asset schedule ──────────
   //
