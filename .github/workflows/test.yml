@@ -236,6 +236,7 @@ jobs:
     needs: [green-check]
     if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
 
       - name: Checkout
@@ -491,6 +492,7 @@ jobs:
     needs: [green-check]
     if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
 
       - name: Checkout
@@ -527,6 +529,7 @@ jobs:
     needs: [green-check]
     if: needs.green-check.outputs.green != 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
 
       - name: Checkout
