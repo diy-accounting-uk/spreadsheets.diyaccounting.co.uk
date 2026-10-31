@@ -19,7 +19,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..", "..");
 
 const layout = JSON.parse(readFileSync(resolve(REPO_ROOT, "app", "data", "hmrc", "form-layouts", "se.json"), "utf8"));
-const seSource = readFileSync(resolve(REPO_ROOT, "app", "products", "se.js"), "utf8");
+const seSource = readFileSync(resolve(REPO_ROOT, "app", "products", "se", "cell-map.js"), "utf8");
 
 // The CELL_MAP array literal, read as source text rather than importing and
 // executing the module -- the same approach app/test/sa103-mtd-mapping.test.js
