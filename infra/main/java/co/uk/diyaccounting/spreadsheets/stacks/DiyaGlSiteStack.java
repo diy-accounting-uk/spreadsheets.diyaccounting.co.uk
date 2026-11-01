@@ -129,6 +129,25 @@ public class DiyaGlSiteStack extends Stack {
         }
     }
 
+    /**
+     * The CSP for one environment. Outside prod, connect-src also admits the ci Submit hosts
+     * (nonProdConnectSrc), so the ci site can reach the ci Submit sets' books API.
+     */
+    static String contentSecurityPolicyFor(String envName, JsonNode securityHeaders) {
+        String csp = securityHeaders.get("contentSecurityPolicy").asText();
+        if ("prod".equals(envName)) {
+            return csp;
+        }
+        List<String> extraHosts = new ArrayList<>();
+        securityHeaders.get("nonProdConnectSrc").forEach(host -> extraHosts.add(host.asText()));
+        int directiveStart = csp.indexOf("connect-src ");
+        int directiveEnd = csp.indexOf(';', directiveStart);
+        if (directiveStart < 0 || directiveEnd < 0) {
+            throw new IllegalStateException("diya-gl-security-headers.json has no connect-src directive");
+        }
+        return csp.substring(0, directiveEnd) + " " + String.join(" ", extraHosts) + csp.substring(directiveEnd);
+    }
+
     public DiyaGlSiteStack(final Construct scope, final String id, final DiyaGlSiteStackProps props) {
         super(scope, id, StackProps.builder().env(props.getEnv()).build());
 
@@ -212,9 +231,7 @@ public class DiyaGlSiteStack extends Stack {
                         .build())
                 .securityHeadersBehavior(ResponseSecurityHeadersBehavior.builder()
                         .contentSecurityPolicy(ResponseHeadersContentSecurityPolicy.builder()
-                                .contentSecurityPolicy(securityHeaders
-                                        .get("contentSecurityPolicy")
-                                        .asText())
+                                .contentSecurityPolicy(contentSecurityPolicyFor(props.envName(), securityHeaders))
                                 .override(true)
                                 .build())
                         .strictTransportSecurity(ResponseHeadersStrictTransportSecurity.builder()
