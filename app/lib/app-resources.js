@@ -38,11 +38,12 @@ const SCHEMA_ROOT_FROM_APP = ["..", "web", "spreadsheets.diyaccounting.co.uk", "
 // checks a package against move with the version: a template cached by an
 // older version writes a package the newer reader refuses.
 //
-// Both the current /diya-gl/ and legacy /books/ paths resolve — the old one
-// through a redirect — so published versions built before the path moved keep
-// working.
+// The source is the canonical host, https://diya-gl.co.uk/assets/. A network
+// failure is retried once, because a fresh runner has an empty cache and a
+// single dropped connection would otherwise fail the whole run.
 const TEMPLATE_PREFIX = "templates/";
-const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets/";
+const NETWORK_RETRY_DELAY_MS = 1000;
+const DEFAULT_TEMPLATE_SOURCE = "https://diya-gl.co.uk/assets/";
 
 let templateTermsAnnounced = false;
 
@@ -88,8 +89,13 @@ async function fetchTemplate(path) {
   let response;
   try {
     response = await fetch(url);
-  } catch (cause) {
-    throw new ResourceUnavailableError(path, `${url} could not be reached: ${cause.message}`);
+  } catch {
+    await new Promise((wait) => setTimeout(wait, NETWORK_RETRY_DELAY_MS));
+    try {
+      response = await fetch(url);
+    } catch (cause) {
+      throw new ResourceUnavailableError(path, `${url} could not be reached: ${cause.message}`);
+    }
   }
   if (!response.ok) {
     throw new ResourceUnavailableError(path, `${url} returned ${response.status} ${response.statusText}`);

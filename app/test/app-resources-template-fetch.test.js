@@ -91,6 +91,32 @@ describe("a template the installed engine has no local copy of", () => {
     }
   });
 
+  it("tries once more when the first request fails at the network level", async () => {
+    const { nodeResourceLoader } = await import("../lib/app-resources.js");
+    const flaky = createServer((request, response) => {
+      attempts.push(request.url);
+      if (attempts.length === 1) {
+        request.socket.destroy();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/plain" });
+      response.end("the template after a retry");
+    });
+    const attempts = [];
+    await new Promise((ready) => flaky.listen(0, "127.0.0.1", ready));
+    const previous = process.env.DIYA_GL_TEMPLATE_SOURCE;
+    process.env.DIYA_GL_TEMPLATE_SOURCE = `http://127.0.0.1:${flaky.address().port}/diya-gl/assets/`;
+    const terms = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await nodeResourceLoader(appDir).readText("templates/se/Bank.xlsx")).toBe("the template after a retry");
+      expect(attempts).toEqual(["/diya-gl/assets/templates/se/Bank.xlsx", "/diya-gl/assets/templates/se/Bank.xlsx"]);
+    } finally {
+      terms.mockRestore();
+      process.env.DIYA_GL_TEMPLATE_SOURCE = previous;
+      await new Promise((closed) => flaky.close(closed));
+    }
+  });
+
   it("names the address it could not read when the fetch fails", async () => {
     const { nodeResourceLoader, ResourceUnavailableError } = await import("../lib/app-resources.js");
     const resources = nodeResourceLoader(appDir);
