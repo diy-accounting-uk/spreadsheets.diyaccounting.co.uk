@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/spreadsheets-diyaccounting-co-uk",
-  "version": "1.2.74",
+  "version": "1.2.75",
   "type": "module",
   "description": "Spreadsheets download site for spreadsheets.diyaccounting.co.uk",
   "license": "SEE LICENSE IN LICENSE",
@@ -135,9 +135,15 @@
     "js-yaml": "$js-yaml",
     "ws": ">=8.21.3",
     "brace-expansion": ">=5.0.9",
-    "eslint": { "minimatch": "^11.0.1" },
-    "@eslint/config-array": { "minimatch": "^11.0.1" },
-    "@sentry/bundler-plugins": { "minimatch": "^11.0.1" },
+    "eslint": {
+      "minimatch": "^11.0.1"
+    },
+    "@eslint/config-array": {
+      "minimatch": "^11.0.1"
+    },
+    "@sentry/bundler-plugins": {
+      "minimatch": "^11.0.1"
+    },
     "form-data": ">=4.0.6",
     "tmp": ">=0.2.7",
     "ip-address": ">=10.5.0",
