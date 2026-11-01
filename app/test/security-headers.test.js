@@ -69,4 +69,9 @@ describe.each(["security-headers.json", "diya-gl-security-headers.json"])("%s", 
   it("the CSP stays inside CloudFront's header value quota", () => {
     expect(csp.length).toBeLessThanOrEqual(CLOUDFRONT_HEADER_VALUE_QUOTA);
   });
+
+  it("the CSP with the non-prod connect-src hosts stays inside the quota", () => {
+    const extraHosts = JSON.parse(fs.readFileSync(path.join(resourcesDir, fileName), "utf8")).nonProdConnectSrc ?? [];
+    expect(csp.length + extraHosts.join(" ").length + 1).toBeLessThanOrEqual(CLOUDFRONT_HEADER_VALUE_QUOTA);
+  });
 });

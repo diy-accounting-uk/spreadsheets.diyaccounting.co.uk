@@ -89,6 +89,32 @@ class DiyaGlSiteStackTest {
     }
 
     @Test
+    void ciConnectSrcAdmitsTheCiSubmitHostsAndProdDoesNot(@TempDir Path tempDir) throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+        List<String> ciSubmitHosts = List.of(
+                "https://ci.submit.diyaccounting.co.uk",
+                "https://ci-set1.submit.diyaccounting.co.uk",
+                "https://ci-set2.submit.diyaccounting.co.uk");
+
+        String ciConnectSrc = connectSrcOf(contentSecurityPolicyFrom(synth("ci", publicDir, CI_DOMAIN_NAMES)));
+        for (String host : ciSubmitHosts) {
+            assertTrue(ciConnectSrc.contains(host), "ci connect-src admits " + host);
+        }
+        assertTrue(ciConnectSrc.contains("https://submit.diyaccounting.co.uk"));
+
+        String prodConnectSrc = connectSrcOf(contentSecurityPolicyFrom(synth("prod", publicDir, PROD_DOMAIN_NAMES)));
+        for (String host : ciSubmitHosts) {
+            assertFalse(prodConnectSrc.contains(host), "prod connect-src refuses " + host);
+        }
+        assertTrue(prodConnectSrc.contains("https://submit.diyaccounting.co.uk"));
+    }
+
+    private static String connectSrcOf(String contentSecurityPolicy) {
+        int start = contentSecurityPolicy.indexOf("connect-src ");
+        return contentSecurityPolicy.substring(start, contentSecurityPolicy.indexOf(';', start));
+    }
+
+    @Test
     void redirectFunctionAttachedExactlyOnce(@TempDir Path tempDir) throws IOException {
         Path publicDir = writeDocRoot(tempDir);
         Template template = synth("ci", publicDir, CI_DOMAIN_NAMES);
