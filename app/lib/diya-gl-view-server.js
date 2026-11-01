@@ -19,7 +19,7 @@ import { mkdir, readFile, realpath, rename, writeFile } from "fs/promises";
 import { extname, resolve, sep } from "path";
 
 export const DEFAULT_ORIGIN = "https://diya-gl.co.uk";
-export const DEFAULT_TEMPLATE_SOURCE = "https://spreadsheets.diyaccounting.co.uk/diya-gl/assets";
+export const DEFAULT_TEMPLATE_SOURCE = "https://diya-gl.co.uk/assets";
 const TEMPLATE_URL_PREFIX = "/assets/templates/";
 // A template is "meta.toml" or "<product>/<file>" with a workbook or TOML extension; nothing else
 // is proxied, so the upstream URL is always the template source plus one of these names.
