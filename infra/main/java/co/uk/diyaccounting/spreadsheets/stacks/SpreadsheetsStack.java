@@ -94,6 +94,7 @@ import software.constructs.Construct;
 public class SpreadsheetsStack extends Stack {
 
     private static final String CONSOLE_CAPTURE_ROLE_NAME = "spreadsheets-console-capture-read";
+    private static final String CONSOLE_CAPTURE_CALLER_ACCOUNT_ROOT_ARN = "arn:aws:iam::972912397388:root";
     private static final String CONSOLE_CAPTURE_CALLER_ROLE_ARN =
             "arn:aws:iam::972912397388:role/prod-env-console-capture";
     private static final String CONSOLE_CAPTURE_EXTERNAL_ID = "submit-console-capture";
@@ -470,7 +471,9 @@ public class SpreadsheetsStack extends Stack {
         if ("prod".equals(props.envName())) {
             Role consoleCaptureRole = Role.Builder.create(this, resourcePrefix + "-ConsoleCaptureReadRole")
                     .roleName(CONSOLE_CAPTURE_ROLE_NAME)
-                    .assumedBy(new ArnPrincipal(CONSOLE_CAPTURE_CALLER_ROLE_ARN))
+                    .assumedBy(new ArnPrincipal(CONSOLE_CAPTURE_CALLER_ACCOUNT_ROOT_ARN)
+                            .withConditions(
+                                    Map.of("ArnEquals", Map.of("aws:PrincipalArn", CONSOLE_CAPTURE_CALLER_ROLE_ARN))))
                     .externalIds(List.of(CONSOLE_CAPTURE_EXTERNAL_ID))
                     .maxSessionDuration(Duration.hours(1))
                     .build();
