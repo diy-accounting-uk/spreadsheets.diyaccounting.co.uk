@@ -164,4 +164,49 @@ class SpreadsheetsStackTest {
 
         template.resourceCountIs("AWS::Oam::Link", 0);
     }
+
+    @Test
+    void consoleCaptureReadRoleTrustsSubmitCaptureRoleWithExternalIdAndOneAction(@TempDir Path tempDir)
+            throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+
+        Template prodTemplate = synth("prod", publicDir, PROD_DOMAIN_NAMES);
+        prodTemplate.hasResourceProperties(
+                "AWS::IAM::Role",
+                Match.objectLike(Map.of(
+                        "RoleName",
+                        "spreadsheets-console-capture-read",
+                        "MaxSessionDuration",
+                        3600,
+                        "AssumeRolePolicyDocument",
+                        Match.objectLike(Map.of(
+                                "Statement",
+                                List.of(Match.objectLike(Map.of(
+                                        "Action",
+                                        "sts:AssumeRole",
+                                        "Principal",
+                                        Map.of("AWS", "arn:aws:iam::972912397388:root"),
+                                        "Condition",
+                                        Map.of(
+                                                "ArnEquals",
+                                                Map.of(
+                                                        "aws:PrincipalArn",
+                                                        "arn:aws:iam::972912397388:role/prod-env-console-capture"),
+                                                "StringEquals",
+                                                Map.of("sts:ExternalId", "submit-console-capture"))))))))));
+        prodTemplate.hasResourceProperties(
+                "AWS::IAM::Policy",
+                Match.objectLike(Map.of(
+                        "PolicyDocument",
+                        Match.objectLike(Map.of(
+                                "Statement",
+                                List.of(Map.of(
+                                        "Action", "cloudwatch:GetMetricWidgetImage",
+                                        "Effect", "Allow",
+                                        "Resource", "*")))))));
+
+        Template ciTemplate = synth("ci", publicDir, CI_DOMAIN_NAMES);
+        ciTemplate.resourcePropertiesCountIs(
+                "AWS::IAM::Role", Match.objectLike(Map.of("RoleName", "spreadsheets-console-capture-read")), 0);
+    }
 }
