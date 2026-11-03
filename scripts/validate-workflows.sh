@@ -116,10 +116,22 @@ echo ""
 echo "=== Duplicate Key Check ==="
 echo ""
 
-if command -v python3 &> /dev/null; then
-    for workflow in "${WORKFLOW_DIR}"/*.yml; do
-        filename=$(basename "$workflow")
-        if python3 -c "
+# The check runs with PyYAML when python3 has it (the CI runner does), otherwise with js-yaml,
+# the dev dependency, which rejects a duplicated mapping key on load.
+if python3 -c "import yaml" 2> /dev/null; then
+    DUP_CHECK=python
+elif node -e "require('js-yaml')" 2> /dev/null; then
+    DUP_CHECK=node
+else
+    echo "Neither PyYAML nor js-yaml is available for the duplicate key check, which is the check that matters most here"
+    DUP_CHECK=none
+    ERRORS=1
+fi
+
+if [ "$DUP_CHECK" != none ]; then
+    no_duplicate_keys() {
+        if [ "$DUP_CHECK" = python ]; then
+            python3 -c "
 import sys, yaml
 class Strict(yaml.SafeLoader): pass
 def no_dup(loader, node, deep=False):
@@ -131,18 +143,23 @@ def no_dup(loader, node, deep=False):
         seen[key] = loader.construct_object(v, deep=deep)
     return seen
 Strict.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, no_dup)
-with open('$workflow') as f:
+with open(sys.argv[1]) as f:
     yaml.load(f, Strict)
-" 2>&1; then
+" "$1" 2>&1
+        else
+            node -e "require('js-yaml').load(require('fs').readFileSync(process.argv[1], 'utf8'))" "$1" 2>&1
+        fi
+    }
+
+    for workflow in "${WORKFLOW_DIR}"/*.yml; do
+        filename=$(basename "$workflow")
+        if no_duplicate_keys "$workflow"; then
             echo "  ✓ ${filename}"
         else
             echo "  ✗ ${filename}"
             ERRORS=1
         fi
     done
-else
-    echo "python3 not available for the duplicate key check, which is the check that matters most here"
-    ERRORS=1
 fi
 
 echo ""
