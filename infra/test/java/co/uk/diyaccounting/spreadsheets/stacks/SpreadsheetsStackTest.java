@@ -3,6 +3,7 @@
 
 package co.uk.diyaccounting.spreadsheets.stacks;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -56,7 +57,17 @@ class SpreadsheetsStackTest {
     @SuppressWarnings("unchecked")
     private static String contentSecurityPolicyFrom(Template template) {
         Map<String, Map<String, Object>> policies = template.findResources("AWS::CloudFront::ResponseHeadersPolicy");
-        Map<String, Object> policy = policies.values().iterator().next();
+        Map<String, Object> policy = policies.values().stream()
+                .filter(p -> ((String) ((Map<String, Object>) ((Map<String, Object>) p.get("Properties"))
+                                                .get("ResponseHeadersPolicyConfig"))
+                                        .get("Name"))
+                                .endsWith("-headers")
+                        && !((String) ((Map<String, Object>) ((Map<String, Object>) p.get("Properties"))
+                                                .get("ResponseHeadersPolicyConfig"))
+                                        .get("Name"))
+                                .endsWith("-markdown-headers"))
+                .findFirst()
+                .orElseThrow();
         Map<String, Object> properties = (Map<String, Object>) policy.get("Properties");
         Map<String, Object> config = (Map<String, Object>) properties.get("ResponseHeadersPolicyConfig");
         Map<String, Object> securityHeadersConfig = (Map<String, Object>) config.get("SecurityHeadersConfig");
@@ -115,6 +126,36 @@ class SpreadsheetsStackTest {
                                         Match.arrayWith(
                                                 List.of(Match.objectLike(Map.of("Action", "rum:PutRumEvents")))))))))));
         assertTrue(!policies.isEmpty(), "expected an IAM policy carrying rum:PutRumEvents");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void markdownCopiesOfArticlesAreServedWithNoindex(@TempDir Path tempDir) throws IOException {
+        Template template = synth("ci", writeDocRoot(tempDir), CI_DOMAIN_NAMES);
+
+        Map<String, Map<String, Object>> distributions = template.findResources("AWS::CloudFront::Distribution");
+        Map<String, Object> config = (Map<String, Object>)
+                ((Map<String, Object>) distributions.values().iterator().next().get("Properties"))
+                        .get("DistributionConfig");
+        List<Map<String, Object>> behaviors = (List<Map<String, Object>>) config.get("CacheBehaviors");
+        assertEquals(1, behaviors.size());
+        assertEquals("/articles/*.md", behaviors.get(0).get("PathPattern"));
+
+        Map<String, Map<String, Object>> policies = template.findResources("AWS::CloudFront::ResponseHeadersPolicy");
+        boolean noindexOnMarkdownPolicy = policies.values().stream().anyMatch(p -> {
+            Map<String, Object> policyConfig = (Map<String, Object>)
+                    ((Map<String, Object>) p.get("Properties")).get("ResponseHeadersPolicyConfig");
+            Map<String, Object> custom = (Map<String, Object>) policyConfig.get("CustomHeadersConfig");
+            if (custom == null) return false;
+            return ((List<Map<String, Object>>) custom.get("Items"))
+                    .stream().anyMatch(h -> "X-Robots-Tag".equals(h.get("Header")) && "noindex".equals(h.get("Value")));
+        });
+        assertTrue(noindexOnMarkdownPolicy);
+        assertEquals(
+                1,
+                policies.values().stream()
+                        .filter(p -> String.valueOf(p).contains("X-Robots-Tag"))
+                        .count());
     }
 
     @Test

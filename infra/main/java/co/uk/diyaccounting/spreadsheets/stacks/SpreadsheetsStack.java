@@ -99,7 +99,6 @@ public class SpreadsheetsStack extends Stack {
             "arn:aws:iam::972912397388:role/prod-env-console-capture";
     private static final String CONSOLE_CAPTURE_EXTERNAL_ID = "submit-console-capture";
 
-
     public final Bucket originBucket;
     public final Distribution distribution;
     public final BucketDeployment webDeployment;
@@ -140,6 +139,70 @@ public class SpreadsheetsStack extends Stack {
      * web/browser-tests/serve.js, so the CloudFront response headers policy and the
      * browser test server always send the same headers.
      */
+    private ResponseHeadersPolicy headersPolicy(
+            String id,
+            String name,
+            String comment,
+            JsonNode securityHeaders,
+            List<ResponseCustomHeader> customHeaders) {
+        return ResponseHeadersPolicy.Builder.create(this, id)
+                .responseHeadersPolicyName(name)
+                .comment(comment)
+                .corsBehavior(ResponseHeadersCorsBehavior.builder()
+                        .accessControlAllowCredentials(false)
+                        .accessControlAllowHeaders(List.of("*"))
+                        .accessControlAllowMethods(List.of("GET", "HEAD", "OPTIONS"))
+                        .accessControlAllowOrigins(List.of("*"))
+                        .accessControlExposeHeaders(List.of())
+                        .accessControlMaxAge(Duration.seconds(600))
+                        .originOverride(true)
+                        .build())
+                .securityHeadersBehavior(ResponseSecurityHeadersBehavior.builder()
+                        .contentSecurityPolicy(ResponseHeadersContentSecurityPolicy.builder()
+                                .contentSecurityPolicy(securityHeaders
+                                        .get("contentSecurityPolicy")
+                                        .asText())
+                                .override(true)
+                                .build())
+                        .strictTransportSecurity(ResponseHeadersStrictTransportSecurity.builder()
+                                .accessControlMaxAge(Duration.seconds(securityHeaders
+                                        .get("strictTransportSecurityMaxAgeSeconds")
+                                        .asLong()))
+                                .includeSubdomains(securityHeaders
+                                        .get("strictTransportSecurityIncludeSubdomains")
+                                        .asBoolean())
+                                .override(true)
+                                .build())
+                        .contentTypeOptions(ResponseHeadersContentTypeOptions.builder()
+                                .override(true)
+                                .build())
+                        .frameOptions(ResponseHeadersFrameOptions.builder()
+                                .frameOption(HeadersFrameOption.valueOf(
+                                        securityHeaders.get("frameOption").asText()))
+                                .override(true)
+                                .build())
+                        .referrerPolicy(ResponseHeadersReferrerPolicy.builder()
+                                .referrerPolicy(HeadersReferrerPolicy.valueOf(securityHeaders
+                                        .get("referrerPolicy")
+                                        .asText()
+                                        .toUpperCase(java.util.Locale.ROOT)
+                                        .replace('-', '_')))
+                                .override(true)
+                                .build())
+                        .xssProtection(ResponseHeadersXSSProtection.builder()
+                                .protection(securityHeaders.get("xssProtection").asBoolean())
+                                .modeBlock(securityHeaders
+                                        .get("xssProtectionModeBlock")
+                                        .asBoolean())
+                                .override(true)
+                                .build())
+                        .build())
+                .customHeadersBehavior(ResponseCustomHeadersBehavior.builder()
+                        .customHeaders(customHeaders)
+                        .build())
+                .build();
+    }
+
     private static JsonNode loadSecurityHeaders() {
         try (InputStream stream = SpreadsheetsStack.class.getResourceAsStream("/security-headers.json")) {
             if (stream == null) {
@@ -218,63 +281,27 @@ public class SpreadsheetsStack extends Stack {
                     .build());
         }
 
-        ResponseHeadersPolicy responseHeadersPolicy = ResponseHeadersPolicy.Builder.create(
-                        this, resourcePrefix + "-HeadersPolicy")
-                .responseHeadersPolicyName(resourcePrefix + "-headers")
-                .comment("Security headers for spreadsheets static site")
-                .corsBehavior(ResponseHeadersCorsBehavior.builder()
-                        .accessControlAllowCredentials(false)
-                        .accessControlAllowHeaders(List.of("*"))
-                        .accessControlAllowMethods(List.of("GET", "HEAD", "OPTIONS"))
-                        .accessControlAllowOrigins(List.of("*"))
-                        .accessControlExposeHeaders(List.of())
-                        .accessControlMaxAge(Duration.seconds(600))
-                        .originOverride(true)
-                        .build())
-                .securityHeadersBehavior(ResponseSecurityHeadersBehavior.builder()
-                        .contentSecurityPolicy(ResponseHeadersContentSecurityPolicy.builder()
-                                .contentSecurityPolicy(securityHeaders
-                                        .get("contentSecurityPolicy")
-                                        .asText())
-                                .override(true)
-                                .build())
-                        .strictTransportSecurity(ResponseHeadersStrictTransportSecurity.builder()
-                                .accessControlMaxAge(Duration.seconds(securityHeaders
-                                        .get("strictTransportSecurityMaxAgeSeconds")
-                                        .asLong()))
-                                .includeSubdomains(securityHeaders
-                                        .get("strictTransportSecurityIncludeSubdomains")
-                                        .asBoolean())
-                                .override(true)
-                                .build())
-                        .contentTypeOptions(ResponseHeadersContentTypeOptions.builder()
-                                .override(true)
-                                .build())
-                        .frameOptions(ResponseHeadersFrameOptions.builder()
-                                .frameOption(HeadersFrameOption.valueOf(
-                                        securityHeaders.get("frameOption").asText()))
-                                .override(true)
-                                .build())
-                        .referrerPolicy(ResponseHeadersReferrerPolicy.builder()
-                                .referrerPolicy(HeadersReferrerPolicy.valueOf(securityHeaders
-                                        .get("referrerPolicy")
-                                        .asText()
-                                        .toUpperCase(java.util.Locale.ROOT)
-                                        .replace('-', '_')))
-                                .override(true)
-                                .build())
-                        .xssProtection(ResponseHeadersXSSProtection.builder()
-                                .protection(securityHeaders.get("xssProtection").asBoolean())
-                                .modeBlock(securityHeaders
-                                        .get("xssProtectionModeBlock")
-                                        .asBoolean())
-                                .override(true)
-                                .build())
-                        .build())
-                .customHeadersBehavior(ResponseCustomHeadersBehavior.builder()
-                        .customHeaders(customHeaders)
-                        .build())
-                .build();
+        ResponseHeadersPolicy responseHeadersPolicy = headersPolicy(
+                resourcePrefix + "-HeadersPolicy",
+                resourcePrefix + "-headers",
+                "Security headers for spreadsheets static site",
+                securityHeaders,
+                customHeaders);
+
+        // The .md copy of each article repeats the text of its .html page. The same headers plus
+        // X-Robots-Tag: noindex keep the copy served and out of the search index.
+        List<ResponseCustomHeader> markdownHeaders = new ArrayList<>(customHeaders);
+        markdownHeaders.add(ResponseCustomHeader.builder()
+                .header("X-Robots-Tag")
+                .value("noindex")
+                .override(true)
+                .build());
+        ResponseHeadersPolicy markdownHeadersPolicy = headersPolicy(
+                resourcePrefix + "-MarkdownHeadersPolicy",
+                resourcePrefix + "-markdown-headers",
+                "Security headers and noindex for the markdown copies of the articles",
+                securityHeaders,
+                markdownHeaders);
 
         // CloudFront Function for URL redirects (old www URLs → new sites)
         // Generated by scripts/build-spreadsheets-redirects.cjs from redirects.toml
@@ -312,6 +339,16 @@ public class SpreadsheetsStack extends Stack {
                 .compress(true)
                 .build();
 
+        BehaviorOptions markdownBehavior = BehaviorOptions.builder()
+                .origin(origin)
+                .allowedMethods(AllowedMethods.ALLOW_GET_HEAD_OPTIONS)
+                .originRequestPolicy(OriginRequestPolicy.CORS_S3_ORIGIN)
+                .viewerProtocolPolicy(ViewerProtocolPolicy.REDIRECT_TO_HTTPS)
+                .responseHeadersPolicy(markdownHeadersPolicy)
+                .functionAssociations(functionAssociations)
+                .compress(true)
+                .build();
+
         // CloudWatch log group for access logs
         String logGroupName = "distribution-" + resourcePrefix + "-logs";
         ILogGroup accessLogGroup = ensureLogGroupWithDependency(this, resourcePrefix + "-AccessLogGroup", logGroupName)
@@ -320,6 +357,7 @@ public class SpreadsheetsStack extends Stack {
         // CloudFront distribution
         this.distribution = Distribution.Builder.create(this, resourcePrefix + "-Distribution")
                 .defaultBehavior(defaultBehavior)
+                .additionalBehaviors(Map.of("/articles/*.md", markdownBehavior))
                 .domainNames(props.domainNames())
                 .certificate(cert)
                 .defaultRootObject("index.html")
