@@ -71,6 +71,6 @@ const { xml, urlCount } = buildSitemapXml(products, articles, reconciliationPage
 writeFileSync(SITEMAP_PATH, xml, "utf8");
 console.log(`Spreadsheets sitemap: ${SITEMAP_PATH} (${urlCount} URLs)`);
 
-const diyaGl = buildDiyaGlSitemapXml(DIYA_GL_PAGES);
+const diyaGl = buildDiyaGlSitemapXml(DIYA_GL_PAGES, (page) => lastCommitDate(resolve(ROOT, "web", "diya-gl.co.uk", "public", page)));
 writeFileSync(DIYA_GL_SITEMAP_PATH, diyaGl.xml, "utf8");
 console.log(`diya-gl sitemap: ${DIYA_GL_SITEMAP_PATH} (${diyaGl.urlCount} URLs)`);

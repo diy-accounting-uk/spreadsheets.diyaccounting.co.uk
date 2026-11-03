@@ -29,9 +29,11 @@ function wrapUrlset(urls) {
 // The diya-gl.co.uk site's own sitemap: one entry per page it serves at its
 // root, read off the same list the callers of PAGES-style constants use
 // elsewhere rather than restated by hand.
-export function buildDiyaGlSitemapXml(pages) {
+// The home page is listed as "/", the URL that serves it, not as /index.html.
+export function buildDiyaGlSitemapXml(pages, lastmodFor = () => new Date().toISOString().slice(0, 10)) {
   const urls = pages.map((page) => ({
-    loc: `https://diya-gl.co.uk/${page}`,
+    loc: page === "index.html" ? "https://diya-gl.co.uk/" : `https://diya-gl.co.uk/${page}`,
+    lastmod: lastmodFor(page),
     changefreq: "monthly",
     priority: page === "index.html" ? "1.0" : "0.9",
   }));

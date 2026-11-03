@@ -176,6 +176,13 @@ select:focus-visible,
   display: none !important;
 }
 
+/* The home page loads an example book at once, which shows the tab strip. The strip keeps its
+   height while hidden so the page body does not move down when the book arrives. */
+body[data-default-example] .sheet-tabs.hidden {
+  display: flex !important;
+  visibility: hidden;
+}
+
 /* ============================== Topbar ============================== */
 
 .app-topbar {
@@ -205,6 +212,7 @@ select:focus-visible,
 }
 
 .app-title {
+  margin: 0;
   flex: 1;
   min-width: 0;
   display: flex;
@@ -2587,6 +2595,12 @@ table.kv-table tr.total td {
   font-weight: 400;
   border-color: var(--rule-faint);
   color: var(--ink);
+}
+/* Reserve the width of the size and version text that the runner manifest fills in, so the row
+   does not wrap onto another line when it arrives. */
+.runner-row .runner-meta:empty::after {
+  content: " (0.0 MB, v0.0.00)";
+  visibility: hidden;
 }
 .runner-row .runner-meta {
   opacity: 0.65;

@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 import { describe, it, expect } from "vitest";
-import { escapeXml, buildSitemapXml } from "../lib/sitemap-builder.js";
+import { escapeXml, buildSitemapXml, buildDiyaGlSitemapXml } from "../lib/sitemap-builder.js";
 
 describe("escapeXml", () => {
   it("escapes ampersands", () => {
@@ -86,5 +86,23 @@ describe("buildSitemapXml", () => {
   it("defaults lastmod to the build date", () => {
     const { xml } = buildSitemapXml([], []);
     expect(xml.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g)).toHaveLength(4);
+  });
+});
+
+describe("buildDiyaGlSitemapXml", () => {
+  const pages = ["index.html", "bst.html", "spec.html"];
+
+  it("lists the home page as / and not as /index.html", () => {
+    const { xml, urlCount } = buildDiyaGlSitemapXml(pages, () => "2026-05-06");
+    expect(urlCount).toBe(3);
+    expect(xml).toContain("<loc>https://diya-gl.co.uk/</loc>");
+    expect(xml).not.toContain("index.html");
+    expect(xml).toContain("<loc>https://diya-gl.co.uk/bst.html</loc>");
+  });
+
+  it("gives every URL a lastmod", () => {
+    const { xml } = buildDiyaGlSitemapXml(pages, (page) => (page === "spec.html" ? "2026-01-01" : "2026-05-06"));
+    expect(xml.match(/<lastmod>/g)).toHaveLength(3);
+    expect(xml).toMatch(/spec\.html<\/loc><lastmod>2026-01-01<\/lastmod>/);
   });
 });

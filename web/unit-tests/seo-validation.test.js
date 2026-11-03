@@ -219,3 +219,35 @@ describe("Markdown copies of the articles (spreadsheets)", () => {
     expect(stack).toContain('.header("X-Robots-Tag")');
   });
 });
+
+describe("Canonical links and headings (diya-gl)", () => {
+  const dir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
+  const pages = {
+    "index.html": "https://diya-gl.co.uk/",
+    "bst.html": "https://diya-gl.co.uk/bst.html",
+    "se.html": "https://diya-gl.co.uk/se.html",
+    "taxi.html": "https://diya-gl.co.uk/taxi.html",
+    "ltd.html": "https://diya-gl.co.uk/ltd.html",
+    "spec.html": "https://diya-gl.co.uk/spec.html",
+  };
+
+  for (const [file, expected] of Object.entries(pages)) {
+    it(`${file} has the canonical ${expected} and exactly one h1`, () => {
+      const html = readFile(path.join(dir, file));
+      expect(canonicalHref(html)).toBe(expected);
+      expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    });
+  }
+
+  it("the sitemap lists / and never /index.html", () => {
+    const urls = extractSitemapUrls(readFile(path.join(dir, "sitemap.xml")));
+    expect(urls).toContain("https://diya-gl.co.uk/");
+    expect(urls.some((u) => u.endsWith("index.html"))).toBe(false);
+  });
+
+  it("the stylesheet keeps the tab strip's height before the book loads", () => {
+    const css = readFile(path.join(dir, "diya-gl.css"));
+    expect(css).toMatch(/body\[data-default-example\] \.sheet-tabs\.hidden\s*{[^}]*visibility:\s*hidden/);
+    expect(css).toMatch(/\.runner-meta:empty::after/);
+  });
+});
