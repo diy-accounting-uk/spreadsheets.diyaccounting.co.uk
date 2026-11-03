@@ -8,11 +8,12 @@
 // Usage:
 //   node app/bin/build-sitemaps.js
 //
-// Reads:  web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
-//         web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
+// Reads:  web/spreadsheets.diyaccounting.co.uk/public/articles/*.html
+//         web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml (written by build:packages, which runs first)
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 //         web/diya-gl.co.uk/public/sitemap.xml
 
+import { execFileSync } from "child_process";
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
@@ -22,18 +23,21 @@ import { buildSitemapXml, buildDiyaGlSitemapXml } from "../lib/sitemap-builder.j
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
-const KB_TOML = resolve(PUBLIC_DIR, "knowledge-base.toml");
+const ARTICLES_DIR = resolve(PUBLIC_DIR, "articles");
 const CATALOGUE_TOML = resolve(PUBLIC_DIR, "catalogue.toml");
 const SITEMAP_PATH = resolve(PUBLIC_DIR, "sitemap.xml");
 const DIYA_GL_SITEMAP_PATH = resolve(ROOT, "web", "diya-gl.co.uk", "public", "sitemap.xml");
 
 const DIYA_GL_PAGES = ["index.html", "bst.html", "se.html", "taxi.html", "ltd.html", "spec.html"];
 
-let articles = [];
-if (existsSync(KB_TOML)) {
-  const kb = parseTOML(readFileSync(KB_TOML, "utf8"));
-  articles = kb.article || [];
-}
+// The articles are the tracked .html pages, not knowledge-base.toml, which only exists
+// where the external content checkout does.
+const articles = existsSync(ARTICLES_DIR)
+  ? readdirSync(ARTICLES_DIR)
+      .filter((f) => f.endsWith(".html"))
+      .map((f) => ({ id: f.replace(/\.html$/, "") }))
+      .sort((x, y) => x.id.localeCompare(y.id))
+  : [];
 
 let products = [];
 if (existsSync(CATALOGUE_TOML)) {
@@ -51,7 +55,19 @@ if (existsSync(RECONCILIATION_DIR)) {
     .sort();
 }
 
-const { xml, urlCount } = buildSitemapXml(products, articles, reconciliationPages);
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
+// Date of the last commit that touched the page; the build date for a generated page or a file git does not know.
+function lastCommitDate(path) {
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", path], { cwd: ROOT, encoding: "utf8" }).trim();
+    return out || BUILD_DATE;
+  } catch {
+    return BUILD_DATE;
+  }
+}
+const lastmodFor = (pagePath) => lastCommitDate(resolve(PUBLIC_DIR, pagePath));
+
+const { xml, urlCount } = buildSitemapXml(products, articles, reconciliationPages, lastmodFor);
 writeFileSync(SITEMAP_PATH, xml, "utf8");
 console.log(`Spreadsheets sitemap: ${SITEMAP_PATH} (${urlCount} URLs)`);
 
