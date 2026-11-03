@@ -177,3 +177,77 @@ for (const site of sites) {
     });
   });
 }
+
+// A page is indexed once, at its own URL. The canonical link says which URL that is.
+function canonicalHref(html) {
+  const match = html.match(/<link\s+rel\s*=\s*"canonical"\s+href\s*=\s*"([^"]+)"/);
+  return match ? match[1] : undefined;
+}
+
+describe("Canonical links (spreadsheets)", () => {
+  const siteDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk");
+  const publicDir = path.join(siteDir, "public");
+  const domain = "https://spreadsheets.diyaccounting.co.uk";
+  const pages = [
+    ...fs
+      .readdirSync(publicDir)
+      .filter((f) => f.endsWith(".html"))
+      .map((f) => ({ file: path.join(publicDir, f), urlPath: f })),
+    ...fs
+      .readdirSync(path.join(publicDir, "articles"))
+      .filter((f) => f.endsWith(".html"))
+      .map((f) => ({ file: path.join(publicDir, "articles", f), urlPath: `articles/${f}` })),
+    { file: path.join(siteDir, "donate.template.html"), urlPath: "donate.html" },
+  ];
+
+  it("covers the main pages, the donate template and every article", () => {
+    expect(pages.length).toBeGreaterThanOrEqual(124 + 9 + 1);
+  });
+
+  it("every page has a self-referencing absolute https canonical", () => {
+    for (const { file, urlPath } of pages) {
+      const expected = urlPath === "index.html" ? `${domain}/` : `${domain}/${urlPath}`;
+      expect(canonicalHref(readFile(file)), `${urlPath} canonical`).toBe(expected);
+    }
+  });
+});
+
+describe("Markdown copies of the articles (spreadsheets)", () => {
+  it("the CDK stack sends noindex for /articles/*.md", () => {
+    const stack = readFile(path.join(process.cwd(), "infra/main/java/co/uk/diyaccounting/spreadsheets/stacks/SpreadsheetsStack.java"));
+    expect(stack).toContain('"/articles/*.md"');
+    expect(stack).toContain('.header("X-Robots-Tag")');
+  });
+});
+
+describe("Canonical links and headings (diya-gl)", () => {
+  const dir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
+  const pages = {
+    "index.html": "https://diya-gl.co.uk/",
+    "bst.html": "https://diya-gl.co.uk/bst.html",
+    "se.html": "https://diya-gl.co.uk/se.html",
+    "taxi.html": "https://diya-gl.co.uk/taxi.html",
+    "ltd.html": "https://diya-gl.co.uk/ltd.html",
+    "spec.html": "https://diya-gl.co.uk/spec.html",
+  };
+
+  for (const [file, expected] of Object.entries(pages)) {
+    it(`${file} has the canonical ${expected} and exactly one h1`, () => {
+      const html = readFile(path.join(dir, file));
+      expect(canonicalHref(html)).toBe(expected);
+      expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    });
+  }
+
+  it("the sitemap lists / and never /index.html", () => {
+    const urls = extractSitemapUrls(readFile(path.join(dir, "sitemap.xml")));
+    expect(urls).toContain("https://diya-gl.co.uk/");
+    expect(urls.some((u) => u.endsWith("index.html"))).toBe(false);
+  });
+
+  it("the stylesheet keeps the tab strip's height before the book loads", () => {
+    const css = readFile(path.join(dir, "diya-gl.css"));
+    expect(css).toMatch(/body\[data-default-example\] \.sheet-tabs\.hidden\s*{[^}]*visibility:\s*hidden/);
+    expect(css).toMatch(/\.runner-meta:empty::after/);
+  });
+});

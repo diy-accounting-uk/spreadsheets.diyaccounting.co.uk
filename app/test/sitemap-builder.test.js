@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 import { describe, it, expect } from "vitest";
-import { escapeXml, buildSitemapXml } from "../lib/sitemap-builder.js";
+import { escapeXml, buildSitemapXml, buildDiyaGlSitemapXml } from "../lib/sitemap-builder.js";
 
 describe("escapeXml", () => {
   it("escapes ampersands", () => {
@@ -43,8 +43,9 @@ describe("buildSitemapXml", () => {
     const articles = [{ id: "tax-guide" }, { id: "vat-explained" }];
     const { xml, urlCount } = buildSitemapXml([], articles);
     expect(urlCount).toBe(6);
-    expect(xml).toContain("articles/tax-guide.md");
-    expect(xml).toContain("articles/vat-explained.md");
+    expect(xml).toContain("articles/tax-guide.html</loc>");
+    expect(xml).toContain("articles/vat-explained.html</loc>");
+    expect(xml).not.toContain(".md<");
   });
 
   it("escapes special characters in product IDs", () => {
@@ -65,5 +66,43 @@ describe("buildSitemapXml", () => {
     expect(lines[0]).toBe('<?xml version="1.0" encoding="UTF-8"?>');
     expect(lines[1]).toBe("<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->");
     expect(lines[2]).toBe("<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->");
+  });
+
+  it("lists every article and product, as .html, each with a lastmod", () => {
+    const products = Array.from({ length: 5 }, (_, i) => ({ id: `P${i}` }));
+    const articles = Array.from({ length: 124 }, (_, i) => ({ id: `a-${i}` }));
+    const { xml, urlCount } = buildSitemapXml(products, articles, ["bst", "se"], (p) =>
+      p.startsWith("articles/") ? "2026-01-02" : "2026-03-04",
+    );
+    expect(urlCount).toBe(4 + 5 + 124 + 1 + 2);
+    expect(xml.match(/<loc>[^<]*\/articles\/[^<]*\.html<\/loc>/g)).toHaveLength(124);
+    expect(xml.match(/download\.html\?product=/g)).toHaveLength(5);
+    expect(xml.match(/<lastmod>/g)).toHaveLength(urlCount);
+    expect(xml).toContain("<loc>https://spreadsheets.diyaccounting.co.uk/articles/a-0.html</loc>");
+    expect(xml).toMatch(/articles\/a-0\.html<\/loc><lastmod>2026-01-02<\/lastmod>/);
+    expect(xml).toMatch(/donate\.html<\/loc><lastmod>2026-03-04<\/lastmod>/);
+  });
+
+  it("defaults lastmod to the build date", () => {
+    const { xml } = buildSitemapXml([], []);
+    expect(xml.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g)).toHaveLength(4);
+  });
+});
+
+describe("buildDiyaGlSitemapXml", () => {
+  const pages = ["index.html", "bst.html", "spec.html"];
+
+  it("lists the home page as / and not as /index.html", () => {
+    const { xml, urlCount } = buildDiyaGlSitemapXml(pages, () => "2026-05-06");
+    expect(urlCount).toBe(3);
+    expect(xml).toContain("<loc>https://diya-gl.co.uk/</loc>");
+    expect(xml).not.toContain("index.html");
+    expect(xml).toContain("<loc>https://diya-gl.co.uk/bst.html</loc>");
+  });
+
+  it("gives every URL a lastmod", () => {
+    const { xml } = buildDiyaGlSitemapXml(pages, (page) => (page === "spec.html" ? "2026-01-01" : "2026-05-06"));
+    expect(xml.match(/<lastmod>/g)).toHaveLength(3);
+    expect(xml).toMatch(/spec\.html<\/loc><lastmod>2026-01-01<\/lastmod>/);
   });
 });

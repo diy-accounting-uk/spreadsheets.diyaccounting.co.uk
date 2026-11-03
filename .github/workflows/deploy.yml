@@ -245,6 +245,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -263,9 +265,6 @@ jobs:
 
       - name: Build the diya-gl spec page
         run: npm run build:diya-gl-spec
-
-      - name: Build sitemaps
-        run: npm run build:sitemaps
 
       - name: Build the donate page
         run: npm run build:donate-page
@@ -294,6 +293,9 @@ jobs:
 
       - name: Build packages (zips + catalogue)
         run: npm run build:packages
+
+      - name: Build sitemaps
+        run: npm run build:sitemaps
 
       - name: Build offline runners
         run: npm run build:runners
