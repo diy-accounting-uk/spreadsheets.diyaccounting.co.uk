@@ -114,14 +114,14 @@
     "jszip": "^3.10.2",
     "lighthouse": "^13.6.0",
     "npm-check-updates": "^23.1.1",
-    "otpauth": "^9.5.2",
+    "otpauth": "^9.6.0",
     "pa11y": "^10.0.0",
     "pa11y-ci": "^5.0.0",
     "prettier": "^3.9.10",
     "retire": "^6.1.0",
     "smol-toml": "^1.9.1",
     "structured-data-testing-tool": "^4.5.0",
-    "vitest": "^5.0.5",
+    "vitest": "^5.1.0",
     "wait-on": "^9.5.1"
   },
   "dependencies": {
