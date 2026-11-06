@@ -242,7 +242,7 @@ class SpreadsheetsStackTest {
                         Match.objectLike(Map.of(
                                 "Statement",
                                 List.of(Map.of(
-                                        "Action", "cloudwatch:GetMetricWidgetImage",
+                                        "Action", List.of("cloudwatch:GetMetricData", "cloudwatch:GetMetricWidgetImage"),
                                         "Effect", "Allow",
                                         "Resource", "*")))))));
 

@@ -516,7 +516,7 @@ public class SpreadsheetsStack extends Stack {
                     .maxSessionDuration(Duration.hours(1))
                     .build();
             consoleCaptureRole.addToPolicy(PolicyStatement.Builder.create()
-                    .actions(List.of("cloudwatch:GetMetricWidgetImage"))
+                    .actions(List.of("cloudwatch:GetMetricData", "cloudwatch:GetMetricWidgetImage"))
                     .resources(List.of("*"))
                     .build());
             cfnOutput(this, "ConsoleCaptureReadRoleArn", consoleCaptureRole.getRoleArn());
