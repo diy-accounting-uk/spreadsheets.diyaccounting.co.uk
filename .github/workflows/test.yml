@@ -235,6 +235,9 @@ jobs:
       - name: Maven verify
         run: ./mvnw --errors clean verify -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
 
+      - name: Spotless check
+        run: ./mvnw -B spotless:check
+
   app-test:
     needs: [green-check]
     if: needs.green-check.outputs.green != 'true'
