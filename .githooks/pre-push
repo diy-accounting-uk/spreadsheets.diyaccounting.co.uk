@@ -27,6 +27,16 @@
 
 set -uo pipefail
 
+# The secret scan reads the pushed refs from stdin like the test gate below,
+# so stdin is read once here and fed to each.
+ref_lines="$(cat)"
+secret_scan="$(dirname "$0")/secret-scan.sh"
+if [ -f "$secret_scan" ]; then
+  printf '%s\n' "$ref_lines" | bash "$secret_scan" push || exit 1
+else
+  echo "pre-push: $secret_scan not found, secret scan skipped" >&2
+fi
+
 ZERO="0000000000000000000000000000000000000000"
 base=""
 pushing_commits=0
@@ -38,7 +48,7 @@ while read -r _local_ref local_sha remote_ref remote_sha; do
     base="$remote_sha"
   fi
   break
-done
+done <<< "$ref_lines"
 
 if [ "$pushing_commits" = "0" ]; then
   echo "pre-push: this push only deletes refs, so there is nothing to test."
