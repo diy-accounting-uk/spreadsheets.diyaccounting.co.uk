@@ -21,6 +21,7 @@
     <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html" />
     <meta property="og:site_name" content="DIY Accounting" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta
       property="og:image"
       content="https://spreadsheets.diyaccounting.co.uk/images/spreadsheets/diyaccounting-spreadsheets-product-grid.png"
@@ -108,5 +109,25 @@
     <script src="lib/toml-parser.js"></script>
     <script src="lib/kb-search.js"></script>
     <script src="lib/knowledge-base-page.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "DIY Accounting Spreadsheets",
+            "item": "https://spreadsheets.diyaccounting.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Knowledge Base",
+            "item": "https://spreadsheets.diyaccounting.co.uk/knowledge-base.html"
+          }
+        ]
+      }
+    </script>
   </body>
 </html>

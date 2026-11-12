@@ -23,6 +23,7 @@
     <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/donate.html" />
     <meta property="og:site_name" content="DIY Accounting" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta
       property="og:image"
       content="https://spreadsheets.diyaccounting.co.uk/images/spreadsheets/diyaccounting-spreadsheets-product-grid.png"
@@ -119,5 +120,25 @@
     </footer>
 
     <script src="lib/donate-page.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "DIY Accounting Spreadsheets",
+            "item": "https://spreadsheets.diyaccounting.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Donate",
+            "item": "https://spreadsheets.diyaccounting.co.uk/donate.html"
+          }
+        ]
+      }
+    </script>
   </body>
 </html>

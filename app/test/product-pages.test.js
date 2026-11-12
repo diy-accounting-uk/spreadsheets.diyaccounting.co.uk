@@ -2,7 +2,11 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 import { describe, it, expect } from "vitest";
-import { PRODUCT_CONTENT, buildProductPageHtml, productSlug } from "../lib/product-pages.js";
+import { ORGANIZATION, PRODUCT_CONTENT, buildProductPageHtml, productSlug } from "../lib/product-pages.js";
+
+function jsonLdBlocks(html) {
+  return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+}
 
 const NAMES = {
   BasicSoleTrader: "Basic Sole Trader",
@@ -45,13 +49,37 @@ describe("buildProductPageHtml", () => {
       });
 
       it("carries SoftwareApplication JSON-LD with a zero-price offer", () => {
-        const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1];
-        const data = JSON.parse(block);
-        expect(data["@type"]).toBe("SoftwareApplication");
+        const data = jsonLdBlocks(html).find((b) => b["@type"] === "SoftwareApplication");
         expect(data.offers.price).toBe("0");
+      });
+
+      it("carries Open Graph tags and a card type for the page image", () => {
+        const url = `https://spreadsheets.diyaccounting.co.uk/products/${productSlug(name)}.html`;
+        expect(html).toContain(`<meta property="og:title" content="${PRODUCT_CONTENT[id].title} - DIY Accounting Spreadsheets" />`);
+        expect(html).toContain(`<meta property="og:description" content="${PRODUCT_CONTENT[id].description}" />`);
+        expect(html).toContain(`<meta property="og:url" content="${url}" />`);
+        expect(html).toContain('<meta property="og:site_name" content="DIY Accounting" />');
+        expect(html).toContain('<meta property="og:type" content="website" />');
+        expect(html).toMatch(/<meta property="og:image" content="https:\/\/spreadsheets\.diyaccounting\.co\.uk\/images\/[^"]+\.png" \/>/);
+        expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
+      });
+
+      it("carries the Organization record and a breadcrumb that ends at the page", () => {
+        const blocks = jsonLdBlocks(html);
+        expect(blocks.find((b) => b["@type"] === "Organization")).toEqual(ORGANIZATION);
+        const crumbs = blocks.find((b) => b["@type"] === "BreadcrumbList").itemListElement;
+        expect(crumbs.map((c) => c.position)).toEqual([1, 2]);
+        expect(crumbs[0].item).toBe("https://spreadsheets.diyaccounting.co.uk/");
+        expect(crumbs[1].item).toBe(`https://spreadsheets.diyaccounting.co.uk/products/${productSlug(name)}.html`);
       });
     });
   }
+
+  it("keeps the Organization record in the agreed order", () => {
+    expect(Object.keys(ORGANIZATION)).toEqual(["@context", "@type", "name", "legalName", "url", "address", "identifier", "sameAs"]);
+    expect(ORGANIZATION.identifier.value).toBe("06846849");
+    expect(ORGANIZATION.sameAs).toHaveLength(5);
+  });
 
   it("throws for a product with no page content", () => {
     expect(() => buildProductPageHtml({ id: "Unknown", name: "Unknown" })).toThrow(/Unknown/);

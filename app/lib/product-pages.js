@@ -116,6 +116,40 @@ export const PRODUCT_CONTENT = {
   },
 };
 
+// The company record, the same on every site the company publishes.
+export const ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "DIY Accounting Limited",
+  "legalName": "DIY Accounting Limited",
+  "url": "https://diyaccounting.co.uk",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "37 Sutherland Avenue",
+    "addressLocality": "Leeds",
+    "postalCode": "LS8 1BY",
+    "addressCountry": "GB",
+  },
+  "identifier": { "@type": "PropertyValue", "propertyID": "Companies House company number", "value": "06846849" },
+  "sameAs": [
+    "https://find-and-update.company-information.service.gov.uk/company/06846849",
+    "https://www.youtube.com/@DIYAccountingSubmit",
+    "https://github.com/diy-accounting-uk",
+    "https://www.npmjs.com/package/@diy-accounting-uk/diya-submit",
+    "https://www.npmjs.com/package/@diy-accounting-uk/diya-gl",
+  ],
+};
+
+const SOCIAL_IMAGE = `${SITE}/images/spreadsheets/diyaccounting-spreadsheets-product-grid.png`;
+
+function jsonLdScript(data) {
+  const body = JSON.stringify(data, null, 2)
+    .split("\n")
+    .map((l) => `      ${l}`)
+    .join("\n");
+  return `    <script type="application/ld+json">\n${body}\n    </script>`;
+}
+
 function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
@@ -153,6 +187,14 @@ export function buildProductPageHtml(product) {
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP", "url": `${SITE}/download.html?product=${product.id}` },
     "publisher": { "@type": "Organization", "name": "DIY Accounting Limited", "url": "https://diyaccounting.co.uk" },
   };
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "DIY Accounting Spreadsheets", "item": `${SITE}/` },
+      { "@type": "ListItem", "position": 2, "name": content.h1, "item": url },
+    ],
+  };
   const holds = content.holds.map((item) => `            <li>${e(item)}</li>`).join("\n");
   return `<!doctype html>
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
@@ -166,6 +208,13 @@ export function buildProductPageHtml(product) {
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="icon" type="image/x-icon" href="../favicon.ico" />
     <link rel="canonical" href="${url}" />
+    <meta property="og:title" content="${e(title)}" />
+    <meta property="og:description" content="${e(content.description)}" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:site_name" content="DIY Accounting" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="${SOCIAL_IMAGE}" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="../spreadsheets.css" />
     <script src="../lib/analytics.js"></script>
     <script src="../lib/consent-banner.js"></script>
@@ -223,12 +272,9 @@ ${holds}
         </div>
       </div>
     </footer>
-    <script type="application/ld+json">
-${JSON.stringify(jsonLd, null, 2)
-  .split("\n")
-  .map((l) => `      ${l}`)
-  .join("\n")}
-    </script>
+${jsonLdScript(jsonLd)}
+${jsonLdScript(ORGANIZATION)}
+${jsonLdScript(breadcrumbs)}
   </body>
 </html>
 `;
