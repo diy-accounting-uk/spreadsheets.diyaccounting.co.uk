@@ -32,7 +32,8 @@ const CC_BY_PATH = "web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-d
 const EXCLUDED_PATH_PREFIXES = ["packages/", "node_modules/", "reports/", "web/spreadsheets.diyaccounting.co.uk/public/reconciliation/"];
 
 // Individual files: licence texts themselves, third-party wrapper scripts,
-// lock files, and files a build script writes its own header into.
+// lock files, files a build script writes its own header into, and the file
+// Bing issues to prove ownership of a site, which is served as issued.
 const EXCLUDED_FILES = new Set([
   "mvnw",
   "mvnw.cmd",
@@ -44,6 +45,7 @@ const EXCLUDED_FILES = new Set([
   "package-lock.json",
   "diya-gl/package-lock.json",
   "web/diya-gl.co.uk/public/spec.html",
+  "web/diya-gl.co.uk/public/BingSiteAuth.xml",
   "web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml",
   "web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml",
 ]);
