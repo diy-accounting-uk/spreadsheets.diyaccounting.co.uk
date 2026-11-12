@@ -62,6 +62,35 @@ function parseRobotsTxt(content) {
   return directives;
 }
 
+// Helper: split robots.txt into groups. Consecutive User-agent lines share one rule set.
+function parseRobotsGroups(content) {
+  const groups = [];
+  let current;
+  let collectingAgents = false;
+  for (const raw of content.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("#") || line === "") continue;
+    const [key, ...valueParts] = line.split(":");
+    const keyLower = key.toLowerCase().trim();
+    const value = valueParts.join(":").trim();
+    if (keyLower === "user-agent") {
+      if (!collectingAgents) {
+        current = { agents: [], allows: [], disallows: [], signals: [] };
+        groups.push(current);
+      }
+      current.agents.push(value);
+      collectingAgents = true;
+      continue;
+    }
+    collectingAgents = false;
+    if (!current) continue;
+    if (keyLower === "allow") current.allows.push(value);
+    else if (keyLower === "disallow") current.disallows.push(value);
+    else if (keyLower === "content-signal") current.signals.push(value);
+  }
+  return groups;
+}
+
 // Helper: check if a path is disallowed by robots.txt rules
 function isDisallowed(urlPath, disallows) {
   return disallows.some((rule) => urlPath.startsWith(rule));
@@ -164,6 +193,43 @@ for (const site of sites) {
 
   describe(`robots.txt validation (${site.name})`, () => {
     const robotsPath = path.join(site.dir, "robots.txt");
+
+    it("names the search and user-fetch agents and the training agents, each allowed", () => {
+      const named = parseRobotsGroups(readFile(robotsPath)).filter((g) => !g.agents.includes("*"));
+      const searchGroup = named.find((g) => g.agents.includes("OAI-SearchBot"));
+      const trainingGroup = named.find((g) => g.agents.includes("GPTBot"));
+      expect(searchGroup?.agents).toEqual([
+        "OAI-SearchBot",
+        "ChatGPT-User",
+        "Claude-SearchBot",
+        "Claude-User",
+        "PerplexityBot",
+        "Perplexity-User",
+        "Bingbot",
+        "Googlebot",
+        "Applebot",
+      ]);
+      expect(trainingGroup?.agents).toEqual(["GPTBot", "ClaudeBot", "Google-Extended", "CCBot", "Applebot-Extended"]);
+      for (const group of [searchGroup, trainingGroup]) {
+        expect(group.allows).toEqual(["/"]);
+      }
+    });
+
+    it("states one Content-Signal line", () => {
+      const signals = parseRobotsGroups(readFile(robotsPath)).flatMap((g) => g.signals);
+      expect(signals).toEqual(["search=yes, ai-input=yes, ai-train=yes"]);
+    });
+
+    it("disallows no named agent from any sitemap URL", () => {
+      const named = parseRobotsGroups(readFile(robotsPath)).filter((g) => !g.agents.includes("*"));
+      const urls = extractSitemapUrls(readFile(path.join(site.dir, "sitemap.xml")));
+      expect(named.length).toBeGreaterThan(0);
+      for (const group of named) {
+        for (const url of urls) {
+          expect(isDisallowed(new URL(url).pathname, group.disallows), `${group.agents.join(", ")} is blocked from ${url}`).toBe(false);
+        }
+      }
+    });
 
     it("robots.txt exists", () => {
       expect(fs.existsSync(robotsPath), `${robotsPath} should exist`).toBe(true);
