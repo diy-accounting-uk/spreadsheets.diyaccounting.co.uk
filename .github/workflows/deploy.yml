@@ -381,6 +381,10 @@ jobs:
           echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
           aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
 
+      - name: Tell IndexNow about the changed pages
+        if: ${{ needs.params.outputs.environment-name == 'prod' }}
+        run: node scripts/indexnow-submit.mjs
+
       - name: Show stack outputs
         run: |
           echo "=== Spreadsheets Stack Outputs ==="
