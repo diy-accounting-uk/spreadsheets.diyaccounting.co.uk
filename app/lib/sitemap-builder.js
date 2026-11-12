@@ -3,6 +3,8 @@
 //
 // sitemap-builder.js — Pure functions for generating sitemap.xml content.
 
+import { productPagePath } from "./product-pages.js";
+
 export function escapeXml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -54,9 +56,10 @@ export function buildSitemapXml(products, articles, reconciliationPages = [], la
   add("donate.html", `${site}/donate.html`, { changefreq: "yearly", priority: "0.5" });
   add("knowledge-base.html", `${site}/knowledge-base.html`, { changefreq: "monthly", priority: "0.9" });
 
-  // Product download pages
+  // Product pages; the download form's ?product= URLs are not listed
   for (const prod of products) {
-    add("download.html", `${site}/download.html?product=${escapeXml(prod.id)}`, { priority: "0.9" });
+    const pagePath = productPagePath(prod);
+    add(pagePath, `${site}/${pagePath}`, { priority: "0.9" });
   }
 
   // Knowledge base articles, as the .html pages (the .md copies are not indexed)

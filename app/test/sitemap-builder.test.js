@@ -31,12 +31,16 @@ describe("buildSitemapXml", () => {
     expect(xml).toContain("</urlset>");
   });
 
-  it("adds product download URLs", () => {
-    const products = [{ id: "BasicSoleTrader" }, { id: "SelfEmployed" }];
+  it("lists product pages and not the download form's product URLs", () => {
+    const products = [
+      { id: "BasicSoleTrader", name: "Basic Sole Trader" },
+      { id: "Payslip05", name: "Payslip 05" },
+    ];
     const { xml, urlCount } = buildSitemapXml(products, []);
     expect(urlCount).toBe(6);
-    expect(xml).toContain("download.html?product=BasicSoleTrader");
-    expect(xml).toContain("download.html?product=SelfEmployed");
+    expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/products/basic-sole-trader.html</loc>");
+    expect(xml).toContain("https://spreadsheets.diyaccounting.co.uk/products/payslip-05.html</loc>");
+    expect(xml).not.toContain("?product=");
   });
 
   it("adds article URLs", () => {
@@ -48,14 +52,8 @@ describe("buildSitemapXml", () => {
     expect(xml).not.toContain(".md<");
   });
 
-  it("escapes special characters in product IDs", () => {
-    const products = [{ id: "Test&Product" }];
-    const { xml } = buildSitemapXml(products, []);
-    expect(xml).toContain("product=Test&amp;Product");
-  });
-
   it("produces valid XML structure", () => {
-    const { xml } = buildSitemapXml([{ id: "P1" }], [{ id: "A1" }]);
+    const { xml } = buildSitemapXml([{ id: "P1", name: "P1" }], [{ id: "A1" }]);
     expect(xml).toMatch(/^<\?xml version="1\.0" encoding="UTF-8"\?>/);
     expect(xml).toMatch(/<urlset[^>]*>[\s\S]*<\/urlset>\n$/);
   });
@@ -69,14 +67,15 @@ describe("buildSitemapXml", () => {
   });
 
   it("lists every article and product, as .html, each with a lastmod", () => {
-    const products = Array.from({ length: 5 }, (_, i) => ({ id: `P${i}` }));
+    const products = Array.from({ length: 5 }, (_, i) => ({ id: `P${i}`, name: `P${i}` }));
     const articles = Array.from({ length: 124 }, (_, i) => ({ id: `a-${i}` }));
     const { xml, urlCount } = buildSitemapXml(products, articles, ["bst", "se"], (p) =>
       p.startsWith("articles/") ? "2026-01-02" : "2026-03-04",
     );
     expect(urlCount).toBe(4 + 5 + 124 + 1 + 2);
     expect(xml.match(/<loc>[^<]*\/articles\/[^<]*\.html<\/loc>/g)).toHaveLength(124);
-    expect(xml.match(/download\.html\?product=/g)).toHaveLength(5);
+    expect(xml.match(/\/products\/[a-z0-9-]+\.html<\/loc>/g)).toHaveLength(5);
+    expect(xml).not.toContain("?product=");
     expect(xml.match(/<lastmod>/g)).toHaveLength(urlCount);
     expect(xml).toContain("<loc>https://spreadsheets.diyaccounting.co.uk/articles/a-0.html</loc>");
     expect(xml).toMatch(/articles\/a-0\.html<\/loc><lastmod>2026-01-02<\/lastmod>/);

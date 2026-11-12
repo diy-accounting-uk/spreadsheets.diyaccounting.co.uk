@@ -434,6 +434,7 @@ public class SpreadsheetsStack extends Stack {
                         "/spreadsheets.css",
                         "/lib/*",
                         "/articles/*",
+                        "/products/*",
                         "/robots.txt",
                         "/sitemap.xml",
                         "/favicon.svg",
