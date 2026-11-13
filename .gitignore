@@ -36,6 +36,12 @@ web/spreadsheets.diyaccounting.co.uk/redirect-function.js
 # Generated data files (built by scripts)
 web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
+# llms.txt, llms-full.txt and the Atom feed built by app/bin/build-llms-txt.js and app/bin/build-feed.js
+web/spreadsheets.diyaccounting.co.uk/public/llms.txt
+web/spreadsheets.diyaccounting.co.uk/public/llms-full.txt
+web/spreadsheets.diyaccounting.co.uk/public/feed.xml
+web/diya-gl.co.uk/public/llms.txt
+web/diya-gl.co.uk/public/llms-full.txt
 # Product pages built from catalogue.toml by app/bin/build-product-pages.js
 web/spreadsheets.diyaccounting.co.uk/public/products/
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml

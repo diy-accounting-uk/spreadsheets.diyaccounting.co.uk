@@ -571,6 +571,11 @@ jobs:
       - name: Build the donate page
         run: npm run build:donate-page
 
+      - name: Build llms.txt and the Atom feed
+        run: |
+          npm run build:llms-txt
+          npm run build:feed
+
       - name: Build provenance data
         run: npm run build:provenance-data
 

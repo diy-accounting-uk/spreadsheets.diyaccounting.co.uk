@@ -300,6 +300,11 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build llms.txt and the Atom feed
+        run: |
+          npm run build:llms-txt
+          npm run build:feed
+
       - name: Build offline runners
         run: npm run build:runners
 

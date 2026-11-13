@@ -181,6 +181,17 @@ class SpreadsheetsStackTest {
     }
 
     @Test
+    void docRootSyncInvalidatesTheLlmsFilesAndTheFeed(@TempDir Path tempDir) throws IOException {
+        Path publicDir = writeDocRoot(tempDir);
+        Template template = synth("ci", publicDir, CI_DOMAIN_NAMES);
+
+        template.hasResourceProperties(
+                "Custom::CDKBucketDeployment",
+                Match.objectLike(Map.of(
+                        "DistributionPaths", Match.arrayWith(List.of("/llms.txt", "/llms-full.txt", "/feed.xml")))));
+    }
+
+    @Test
     void metricsLinkIsCreatedWhenSinkArnIsConfigured(@TempDir Path tempDir) throws IOException {
         Path publicDir = writeDocRoot(tempDir);
         String sinkArn = "arn:aws:oam:us-east-1:972912397388:sink/00000000-0000-0000-0000-000000000000";
