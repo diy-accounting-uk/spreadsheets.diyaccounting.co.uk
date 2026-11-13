@@ -48,6 +48,8 @@ motor_vehicles = 0.25
 [mileage]
 higher_rate_limit = 10000
 higher_rate_pence = 0.55
+higher_rate_from = 2026-04-06
+previous_higher_rate_pence = 0.45
 lower_rate_start = 10001
 lower_rate_pence = 0.25
 
