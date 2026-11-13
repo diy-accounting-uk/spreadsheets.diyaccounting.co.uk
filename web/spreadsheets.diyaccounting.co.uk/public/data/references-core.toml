@@ -142,7 +142,7 @@ authority = "primary"
 
 [[reference]]
 id = "REF010"
-claim = "Writing down allowance: 18% main rate, 6% special rate"
+claim = "Writing down allowance: 14% main rate (18% before April 2026), 6% special rate"
 category = "capital-allowances"
 articles = ["capital-allowances", "written-down-book-value-and-tax-value", "annual-investment-allowance"]
 
@@ -151,8 +151,8 @@ id = "SRC-GOVUK-CAPITAL-ALLOW"
 url = "https://www.gov.uk/capital-allowances"
 title = "Claim capital allowances"
 publisher = "GOV.UK / HM Revenue & Customs"
-extract = "18% of the car's value (main rate allowances) or 6% of the car's value (special rate allowances)"
-accessed = "2026-02-05"
+extract = "14% (or 18% before April 2026) of the car’s value each year (main rate allowances)"
+accessed = "2026-11-13"
 authority = "primary"
 
 [[reference]]
