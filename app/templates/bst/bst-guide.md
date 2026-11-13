@@ -200,7 +200,7 @@ No entries required in these columns:
 
 ### Mileage Allowances
 
-Purchase and sales mileage, if recorded, are calculated and included as a business expense on row 4. No entry is required on this row which has been automated. The formulae in respect of mileage allowances automatically calculate the amount in accordance with current HMRC rates of 45p for the first 10,000 miles and 25p per mile thereafter.
+Purchase and sales mileage, if recorded, are calculated and included as a business expense on row 4. No entry is required on this row which has been automated. The formulae in respect of mileage allowances automatically calculate the amount in accordance with the HMRC rates: 45p a mile for the first 10,000 business miles up to tax year 2025 to 2026, and 55p from tax year 2026 to 2027; 25p a mile after that. The workbook uses the rate of its own tax year.
 
 Claiming mileage allowance rather than the costs of the vehicles often works out more unless the vehicle is only lightly used and also avoids the vehicle becoming a tax liability to the self employed since owning a vehicle and using it for both personal and business use generates a tax benefit which increases your personal tax liability.
 
@@ -358,7 +358,7 @@ The HMRC rules for employees/directors claiming expenses are quite strict since 
 
 ### Mileage Allowances
 
-Everyone can claim as an alternative to vehicle running costs mileage allowances of 45p for the first 10,000 miles and 25p per mile thereafter. The formulae in the spreadsheets automatically calculate these rates. You may not claim mileage allowance and vehicle running costs.
+Everyone can claim as an alternative to vehicle running costs mileage allowances: 45p a mile for the first 10,000 business miles up to tax year 2025 to 2026, and 55p from tax year 2026 to 2027; 25p a mile after that. The formulae in the spreadsheets automatically calculate these rates, and the workbook uses the rate of its own tax year. You may not claim mileage allowance and vehicle running costs.
 
 Should you choose to claim the mileage allowance then keep good records of mileage covered, purpose of journey. You might consider entering the mileage against sales or purchase invoices which naturally provides the date and purpose of the journey.
 

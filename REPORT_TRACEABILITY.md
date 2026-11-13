@@ -65,7 +65,7 @@ Notes:
 
 ## Mileage Allowances
 
-Source: https://www.gov.uk/expenses-and-benefits-business-travel-mileage/rules-for-tax
+Source: https://www.gov.uk/government/publications/rates-and-allowances-travel-mileage-and-fuel-allowances/travel-mileage-and-fuel-rates-and-allowances
 
 | Tax Year | First 10,000 miles | Over 10,000 miles | TOML File |
 |----------|-------------------|------------------|-----------|
@@ -75,10 +75,11 @@ Source: https://www.gov.uk/expenses-and-benefits-business-travel-mileage/rules-f
 | 2023-24 | 45p | 25p | `se-2023-2024.toml` |
 | 2024-25 | 45p | 25p | `se-2024-2025.toml` |
 | 2025-26 | 45p | 25p | `se-2025-2026.toml` |
-| 2026-27 | 45p | 25p | `se-2026-2027.toml` |
+| 2026-27 | 55p | 25p | `se-2026-2027.toml` |
+| 2027-28 | 55p | 25p | `se-2027-2028.toml` |
 
 Notes:
-- HMRC approved mileage rates have not changed since 2011-12.
+- The first-10,000-miles rate for cars and vans was 45p from 2011-12 to 2025-26 and is 55p from 2026-27.
 
 ## VAT
 

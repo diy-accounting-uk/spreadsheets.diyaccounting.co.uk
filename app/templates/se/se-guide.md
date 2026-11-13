@@ -211,7 +211,7 @@ Enter in Column F:
 - Mileage records have to be maintained showing date of journey, reason for journey and mileage covered
 - Only the business element of phone bills may be reclaimed
 - Only the business element of household bills may be claimed
-- Mileage allowances of 45p for the first 10,000 miles and 25p per mile thereafter may be claimed as an alternative to vehicle running costs
+- Mileage allowances may be claimed as an alternative to vehicle running costs: 45p a mile for the first 10,000 business miles up to tax year 2025 to 2026, and 55p from tax year 2026 to 2027; 25p a mile after that. The workbook uses the rate of its own tax year
 
 ## Cash and Bank Spreadsheets
 
