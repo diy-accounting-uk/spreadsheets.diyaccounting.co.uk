@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 # Copyright (C) 2006-2026 DIY Accounting Limited
 # Citation additions for accounting-for-v-a-t-with-making-tax-digital.html
-# New references REF269-REF270, checked 2026-02-06
+# New reference REF269, checked 2026-02-06
 #
 # Reused references (already list this article in references.toml):
 #   REF001 — VAT registration threshold £90,000
@@ -22,20 +22,5 @@ url = "https://www.gov.uk/vat-record-keeping"
 title = "VAT record keeping"
 publisher = "GOV.UK / HM Revenue & Customs"
 extract = "You cannot reclaim the VAT on your purchases - except for certain capital assets over £2,000."
-accessed = "2026-02-06"
-authority = "primary"
-
-[[reference]]
-id = "REF270"
-claim = "VAT returns must be submitted using accounting software compatible with Making Tax Digital"
-category = "mtd-vat"
-articles = ["accounting-for-v-a-t-with-making-tax-digital"]
-
-[[reference.source]]
-id = "SRC-GOVUK-VAT-SEND"
-url = "https://www.gov.uk/vat-returns/send-your-return"
-title = "Send your VAT Return"
-publisher = "GOV.UK / HM Revenue & Customs"
-extract = "You must submit your VAT Return using accounting software that's compatible with Making Tax Digital."
 accessed = "2026-02-06"
 authority = "primary"

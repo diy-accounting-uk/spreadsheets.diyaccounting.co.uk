@@ -437,6 +437,9 @@ public class SpreadsheetsStack extends Stack {
                         "/products/*",
                         "/robots.txt",
                         "/sitemap.xml",
+                        "/llms.txt",
+                        "/llms-full.txt",
+                        "/feed.xml",
                         "/favicon.svg",
                         "/favicon.ico"))
                 .retainOnDelete(true)

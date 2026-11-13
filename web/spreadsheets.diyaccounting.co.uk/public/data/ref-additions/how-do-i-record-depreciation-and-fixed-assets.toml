@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+# New references for how-do-i-record-depreciation-and-fixed-assets.html
+# Generated: 2026-11-13
+# Merge into references.toml when reviewed
+
+[[reference]]
+id = "REF617"
+claim = "Capital allowances are a type of tax relief for businesses"
+category = "capital-allowances"
+articles = ["how-do-i-record-depreciation-and-fixed-assets"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CAPITAL-ALLOWANCES"
+url = "https://www.gov.uk/capital-allowances"
+title = "Claim capital allowances"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Capital allowances are a type of tax relief for businesses."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF618"
+claim = "The annual investment allowance is 1 million pounds"
+category = "capital-allowances"
+articles = ["how-do-i-record-depreciation-and-fixed-assets"]
+
+[[reference.source]]
+id = "SRC-GOVUK-AIA"
+url = "https://www.gov.uk/capital-allowances/annual-investment-allowance"
+title = "Annual investment allowance"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "The AIA amount is £1 million."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF619"
+claim = "The main rate of writing down allowance changed from 18% to 14% on 1 April 2026 for Corporation Tax and 6 April 2026 for Income Tax"
+category = "capital-allowances"
+articles = ["how-do-i-record-depreciation-and-fixed-assets"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-RATES"
+url = "https://www.gov.uk/work-out-capital-allowances/rates-and-pools"
+title = "Work out your capital allowances: rates and pools"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "The main rate of writing down allowance changed from 18% to 14% on: 1 April 2026 for Corporation Tax 6 April 2026 for Income Tax"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF620"
+claim = "The special rate pool has a rate of 6%"
+category = "capital-allowances"
+articles = ["how-do-i-record-depreciation-and-fixed-assets"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-RATES"
+url = "https://www.gov.uk/work-out-capital-allowances/rates-and-pools"
+title = "Work out your capital allowances: rates and pools"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "special rate pool with a rate of 6%"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF621"
+claim = "Cars with CO2 emissions over a threshold go in the special rate pool, and the threshold depends on the car and when it was bought"
+category = "capital-allowances"
+articles = ["how-do-i-record-depreciation-and-fixed-assets"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-RATES"
+url = "https://www.gov.uk/work-out-capital-allowances/rates-and-pools"
+title = "Work out your capital allowances: rates and pools"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "cars with CO2 emissions over a certain threshold ... which depends on the car and when you bought it"
+accessed = "2026-11-13"
+authority = "primary"

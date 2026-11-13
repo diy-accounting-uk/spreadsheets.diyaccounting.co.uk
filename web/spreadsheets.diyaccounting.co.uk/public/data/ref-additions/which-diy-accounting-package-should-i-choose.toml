@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+# New references for which-diy-accounting-package-should-i-choose.html
+# Generated: 2026-11-13
+# Merge into references.toml when reviewed
+
+[[reference]]
+id = "REF608"
+claim = "A business must register for VAT when taxable turnover for the last 12 months goes over 90,000 pounds"
+category = "vat-registration"
+articles = ["which-diy-accounting-package-should-i-choose"]
+
+[[reference.source]]
+id = "SRC-GOVUK-VAT-WHEN"
+url = "https://www.gov.uk/vat-registration/when-to-register"
+title = "Register for VAT: When to register"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You must register if your total taxable turnover for the last 12 months goes over £90,000."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF609"
+claim = "A business can register for VAT voluntarily below the threshold"
+category = "vat-registration"
+articles = ["which-diy-accounting-package-should-i-choose"]
+
+[[reference.source]]
+id = "SRC-GOVUK-VAT-WHEN"
+url = "https://www.gov.uk/vat-registration/when-to-register"
+title = "Register for VAT: When to register"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You can choose to register for VAT if your turnover is less than £90,000."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF611"
+claim = "HMRC's online service for company accounts and the Company Tax Return closed on 31 March 2026"
+category = "company"
+articles = ["which-diy-accounting-package-should-i-choose"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-CLOSURE"
+url = "https://www.gov.uk/guidance/closure-of-the-service-to-file-your-company-accounts-and-tax-return"
+title = "Closure of the service to file your company accounts and tax return"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "The 'File your accounts and Company Tax Return' online service closed on 31 March 2026."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF610"
+claim = "Making Tax Digital for Income Tax applies over 50,000 pounds from 6 April 2026, over 30,000 pounds from 6 April 2027 and over 20,000 pounds from 6 April 2028"
+category = "mtd-itsa"
+articles = ["which-diy-accounting-package-should-i-choose"]
+
+[[reference.source]]
+id = "SRC-GOVUK-ITSA-WHEN"
+url = "https://www.gov.uk/guidance/find-out-if-and-when-you-need-to-use-making-tax-digital-for-income-tax"
+title = "Find out if and when you need to use Making Tax Digital for Income Tax"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "£50,000 for the 2024 to 2025 tax year, you should've started using Making Tax Digital for Income Tax from 6 April 2026; £30,000 for the 2025 to 2026 tax year, you will need to use it from 6 April 2027; £20,000 for the 2026 to 2027 tax year, you will need to use it from 6 April 2028"
+accessed = "2026-11-13"
+authority = "primary"

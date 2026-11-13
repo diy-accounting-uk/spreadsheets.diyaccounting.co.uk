@@ -42,6 +42,7 @@ on:
       - 'examples/**'
       - 'scripts/example-books.json'
       - 'scripts/build-diya-gl-bundle.mjs'
+      - 'scripts/build-spreadsheets-redirects.cjs'
       - 'scripts/build-picker-api-key.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -299,6 +300,11 @@ jobs:
 
       - name: Build sitemaps
         run: npm run build:sitemaps
+
+      - name: Build llms.txt and the Atom feed
+        run: |
+          npm run build:llms-txt
+          npm run build:feed
 
       - name: Build offline runners
         run: npm run build:runners

@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
 <!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
+A limited company files its Company Tax Return (CT600) for each accounting period, no later than 12 months after the period ends. HMRC's online service for company accounts and Company Tax Returns closed on 31 March 2026. A company now files with commercial software. The Company Accounts spreadsheet prepares the profit, the capital allowances and the corporation tax figures that go into the return.
+
 Tax accounting software for a private limited company in the UK includes the prime elements of using accounting software to produce the required quarterly vat returns and annual net profit with the tax software automating the calculation of the tax liability and producing an automated corporation tax return.
 
 **Company Accounting Software**
@@ -10,13 +12,15 @@ Tax accounting software for a private limited company in the UK includes the pri
     Manually entering the tax liability is a function frequently best dealt with by an accountant since the transaction also involves the final completion of the company accounts and potentially journal entries to account for distributions from the after tax profit and retained profits.
     **Vat Tax Return Software**
     It would be unusual to find a company accounts package that did not automatically generate the quarterly figures for the vat return since almost all companies are vat registered.
-    Vat registration is not a legal requirement for a limited company however as the vat threshold is based upon a fairly low sales turnover which for 2008 was 67,000 pounds; most companies sales turnover exceeds this threshold at which point vat registration is mandatory.
+    Vat registration is not a legal requirement for a limited company. A company must register for VAT when its taxable turnover for the last 12 months goes over £90,000.
     One important aspect a tax accounting software program should provide is an audit trail of transactions that make up the figures reported in the vat return.
     **Tax Software and CT600 Corporation Tax Return**
-    In the UK a private limited company has to complete a corporation tax return each financial year. Known as the CT600 companies with a sales turnover which qualifies as a small company can complete the CT600 short return.
-    Completing the CT600 short corporation tax return is a specialist accountancy area which few non accountants are familiar with. It is not necessarily a difficult task for an accountant but with over 100 paragraphs of notes and explanations a daunting task for many non accountants.
-    Few accounting software packages have the necessary tax software encrypted within the packages to produce the corporation tax return although in recent years the major companies have tended towards producing online feeds.
+    In the UK a private limited company has to complete a Company Tax Return, known as the CT600, for each accounting period. The deadline is 12 months after the end of the accounting period it covers. The Corporation Tax itself is due 9 months and 1 day after the end of the accounting period. CT600 Corporation Tax Return Software explains how a company files the return.
+    Corporation Tax is charged at 19% on profits under £50,000 and at 25% on profits over £250,000. Profits between the two figures pay the main rate reduced by Marginal Relief.
+    HMRC's own online service for filing company accounts and the Company Tax Return closed on 31 March 2026. From 1 April 2026 a company uses commercial software to file its annual accounts and Company Tax Return with HMRC.
     Using the right tax software the CT600 corporation tax return can be completed automatically.
     To do so the company accounts package has to include all the relevant tax rules and rates applicable for fixed assets and the calculation of the tax liability. Those tax rules have a strong tendency to be changed every year. Suitable tax software is essential to perform this annual process.
     The tax accounting takes the tax rates and rules automating the work of a tax accountant to produce the tax liability. The term tax software indicates automation based upon data input which the computer package then processes to produce the desired output. Company tax software produces the tax requirements of the company including both the corporation tax liability and completion of the tax return
     DIY Accounting specialise in producing Tax Software for self employed and small limited companies at Company Accounts Written on accounting spreadsheets to automate the self employed tax return and produce vat returns as required.
+
+    The [Limited Company Accounts Spreadsheet](../products/company.html) prepares the figures. [DIY Accounting Submit](https://submit.diyaccounting.co.uk) sends VAT returns to HMRC under Making Tax Digital ([how to file a VAT return from a spreadsheet](https://submit.diyaccounting.co.uk/vat-return-from-a-spreadsheet.html)) and files [micro-entity](https://submit.diyaccounting.co.uk/micro-entity-accounts.html) and [small company accounts](https://submit.diyaccounting.co.uk/small-company-accounts.html) with Companies House.

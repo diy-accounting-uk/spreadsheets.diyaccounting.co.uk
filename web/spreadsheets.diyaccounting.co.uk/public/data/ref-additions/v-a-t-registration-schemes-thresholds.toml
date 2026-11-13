@@ -70,3 +70,48 @@ publisher = "GOV.UK / HM Revenue & Customs"
 extract = "You must leave the scheme if your VAT taxable turnover is more than £1.6 million"
 accessed = "2026-02-05"
 authority = "primary"
+
+[[reference]]
+id = "REF622"
+claim = "A business must register for VAT within 30 days of the end of the month when it went over the threshold"
+category = "vat-registration"
+articles = ["v-a-t-registration-schemes-thresholds"]
+
+[[reference.source]]
+id = "SRC-GOVUK-VAT-WHEN"
+url = "https://www.gov.uk/vat-registration/when-to-register"
+title = "Register for VAT: When to register"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You have to register within 30 days of the end of the month when you went over the threshold."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF623"
+claim = "A business must also register if it expects taxable turnover to go over the threshold in the next 30 days"
+category = "vat-registration"
+articles = ["v-a-t-registration-schemes-thresholds"]
+
+[[reference.source]]
+id = "SRC-GOVUK-VAT-WHEN"
+url = "https://www.gov.uk/vat-registration/when-to-register"
+title = "Register for VAT: When to register"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You must register if you realise that your total taxable turnover is going to go over the £90,000 threshold in the next 30 days."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF624"
+claim = "A business can register for VAT voluntarily below the threshold"
+category = "vat-registration"
+articles = ["v-a-t-registration-schemes-thresholds"]
+
+[[reference.source]]
+id = "SRC-GOVUK-VAT-WHEN"
+url = "https://www.gov.uk/vat-registration/when-to-register"
+title = "Register for VAT: When to register"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You can choose to register for VAT if your turnover is less than £90,000."
+accessed = "2026-11-13"
+authority = "primary"

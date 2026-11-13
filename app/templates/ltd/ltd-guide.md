@@ -195,7 +195,7 @@ Record expenses from all sources, except bank interest and charges, in the Purch
 
 ## Expenses Claim Form
 
-Twelve monthly expense claim forms are included in expensesform.xlsx. Enter mileage, expense type, total claimed, and VAT. The form calculates mileage allowance at 45p per mile.
+Twelve monthly expense claim forms are included in expensesform.xlsx. Enter mileage, expense type, total claimed, and VAT. The form calculates mileage allowance at the HMRC rate for cars and vans: 45p a mile for the first 10,000 business miles for an accounting period that ends before 1 April 2026, and 55p for one that ends from 1 April 2026; 25p a mile after that. The workbook uses one rate for the whole period, set by the financial year in which the period ends.
 
 ## Cash and Bank Spreadsheets
 

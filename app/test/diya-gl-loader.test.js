@@ -367,3 +367,37 @@ describe("tax year 2027-28 (year end 2028-04-05)", () => {
     expect(file.vat.registration_threshold).toBe(90000);
   });
 });
+
+describe("extractTaxDataFromBook with rates the book does not state", () => {
+  const { book } = loadDiyaGlData(BST_DATA);
+  const bookWithoutRates = (periodCoveredEnd) => ({
+    ...book,
+    documentInfo: { ...book.documentInfo, periodCoveredEnd: new Date(periodCoveredEnd) },
+    tax: { ...book.tax, mileage: undefined, nationalInsurance: { class2WeeklyRate: 3.5 } },
+  });
+
+  it.each([
+    ["2026-03-31", 0.45],
+    ["2027-03-31", 0.55],
+  ])("takes the mileage rate of the tax year ending %s", (periodCoveredEnd, expectedFirst10000) => {
+    const taxData = extractTaxDataFromBook(bookWithoutRates(periodCoveredEnd), "se");
+    expect(taxData.mileage.higher_rate_pence).toBe(expectedFirst10000);
+    expect(taxData.mileage.lower_rate_pence).toBe(0.25);
+  });
+
+  it("takes the Class 4 rates and limits of the book's tax year", () => {
+    const taxData = extractTaxDataFromBook(bookWithoutRates("2027-03-31"), "se");
+    expect(taxData.national_insurance).toMatchObject({
+      class4_lower_rate: 0.06,
+      class4_lower_limit: 12570,
+      class4_upper_rate: 0.02,
+      class4_upper_limit: 50270,
+    });
+  });
+
+  it("prefers a rate the book states", () => {
+    const stated = { ...bookWithoutRates("2027-03-31"), tax: { ...book.tax, mileage: { carFirst10000: 0.5, carOver10000: 0.3 } } };
+    const taxData = extractTaxDataFromBook(stated, "se");
+    expect(taxData.mileage).toMatchObject({ higher_rate_pence: 0.5, lower_rate_pence: 0.3 });
+  });
+});

@@ -2,17 +2,17 @@
 # Copyright (C) 2006-2026 DIY Accounting Limited
 [[reference]]
 id = "REF199"
-claim = "Approved mileage allowance payment for cars and vans is 45 pence per mile for the first 10,000 miles"
+claim = "Approved mileage allowance payment for cars and vans is 55 pence per mile for the first 10,000 miles from 6 April 2026 (45 pence before)"
 category = "mileage-allowances"
-articles = ["subsistence-travel-expenses-tax-allowances-car-mileage-rates", "claiming-mileage-allowance-expenses"]
+articles = ["subsistence-travel-expenses-tax-allowances-car-mileage-rates", "claiming-mileage-allowance-expenses", "easy-taxi-driver-accounting", "self-employed-tax-tips", "self-employed-and-small-business-tax-question-and-answers", "taxrelief-work-vehicle"]
 
 [[reference.source]]
 id = "SRC-GOVUK-MILEAGE-RATES"
 url = "https://www.gov.uk/government/publications/rates-and-allowances-travel-mileage-and-fuel-allowances/travel-mileage-and-fuel-rates-and-allowances"
 title = "Travel -- mileage and fuel rates and allowances"
 publisher = "GOV.UK / HM Revenue & Customs"
-extract = "Cars and vans: first 10,000 miles 45p per mile"
-accessed = "2026-02-06"
+extract = "Approved mileage rates from tax year 2026 to 2027: cars and vans 55p for the first 10,000 business miles, 25p over 10,000. Approved mileage rates from tax year 2011 to 2026: cars and vans 45p, 25p."
+accessed = "2026-11-13"
 authority = "primary"
 
 [[reference]]
@@ -62,7 +62,7 @@ authority = "primary"
 
 [[reference]]
 id = "REF201"
-claim = "Passenger supplement of 5p per mile for carrying fellow employees, making the total 50p per mile"
+claim = "Passenger payments of up to 5p per mile for each fellow employee carried in the same vehicle"
 category = "mileage-allowances"
 articles = ["subsistence-travel-expenses-tax-allowances-car-mileage-rates", "claiming-mileage-allowance-expenses"]
 

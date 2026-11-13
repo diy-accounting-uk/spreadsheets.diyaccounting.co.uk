@@ -1174,6 +1174,17 @@ footer {
   margin: 0.3rem 0;
 }
 
+/* Lists inside a knowledge base article */
+.kb-article ul,
+.kb-article ol {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.5rem;
+}
+
+.kb-article li {
+  margin-bottom: 0.3rem;
+}
+
 /* Article attribution for AI-generated content */
 .article-attribution {
   font-size: 0.85em;

@@ -8,6 +8,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
 
 import { pandocArguments } from "../lib/guide.js";
 import { PACKAGE_AUTHOR, PACKAGE_RIGHTS } from "../lib/generator.js";
@@ -71,6 +72,29 @@ describe("what a guide says about the terms", () => {
       expect(text).toContain("PolyForm Internal Use License 1.0.0 with an additional grant for accountants");
       expect(text).toContain("https://spreadsheets.diyaccounting.co.uk/");
       expect(text).toContain("https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk");
+    });
+  }
+});
+
+describe("the mileage rate the guides state", () => {
+  const DATA_DIR = join(APP_DIR, "data");
+  const rateOf = (file) => parseTOML(readFileSync(join(DATA_DIR, file), "utf8")).mileage.higher_rate_pence;
+
+  it("matches the rate the data files carry before and from tax year 2026 to 2027", () => {
+    expect(rateOf("se-2025-2026.toml")).toBe(0.45);
+    expect(rateOf("se-2026-2027.toml")).toBe(0.55);
+    expect(rateOf("ltd-2025.toml")).toBe(0.45);
+    expect(rateOf("ltd-2026.toml")).toBe(0.55);
+  });
+
+  for (const path of guideMarkdownFiles().filter((file) => readFileSync(file, "utf8").includes("45p"))) {
+    const text = readFileSync(path, "utf8");
+    const name = path.slice(TEMPLATES_DIR.length + 1);
+
+    it(`${name} gives the 55p rate wherever it gives the 45p rate`, () => {
+      const lines = text.split("\n").filter((line) => line.includes("45p"));
+      expect(lines.length).toBeGreaterThan(0);
+      for (const line of lines) expect(line).toContain("55p");
     });
   }
 });
