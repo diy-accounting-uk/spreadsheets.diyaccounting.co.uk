@@ -818,18 +818,41 @@ export function extractTaxDataFromBook(book, product) {
   const mi = tax.mileage || {};
   const ct = tax.corporationTax || {};
 
+  // A figure the book does not state is the figure of the book's own tax
+  // year; a year file that lacks it too refuses the book.
+  const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
+  const selfEmploymentYearFile = product === "ltd" ? taxYearFileForBook(book, "se") : taxYearFile;
+  const taxYearLabel = (taxYearFile.tax_year ?? taxYearFile.financial_year)?.label;
+  const stated = (bookValue, yearFile, section, key, bookField) => {
+    if (bookValue !== undefined && bookValue !== null) return bookValue;
+    const yearValue = yearFile[section]?.[key];
+    if (yearValue === undefined) {
+      throw new Error(`book.toml states no ${bookField} and the tax-year file for ${taxYearLabel} has no [${section}] ${key}`);
+    }
+    return yearValue;
+  };
+  const income = (bookValue, key, bookField) => stated(bookValue, selfEmploymentYearFile, "income_tax", key, `tax.incomeTax.${bookField}`);
+  const class4 = (bookValue, key, bookField) =>
+    stated(bookValue, selfEmploymentYearFile, "national_insurance", key, `tax.nationalInsurance.${bookField}`);
+  const regimeStated = (bookValue, section, key, bookField) => stated(bookValue, taxYearFile, section, key, bookField);
+  const basicRateLimit = income(it.basicRateLimit, "basic_band_end", "basicRateLimit");
+
   const baseTaxData = {
     income_tax: {
-      personal_allowance: it.personalAllowance || 12570,
+      personal_allowance: income(it.personalAllowance, "personal_allowance", "personalAllowance"),
       starting_rate: 0,
-      basic_rate: it.basicRate || 0.2,
-      higher_rate: it.higherRate || 0.4,
+      basic_rate: income(it.basicRate, "basic_rate", "basicRate"),
+      higher_rate: income(it.higherRate, "higher_rate", "higherRate"),
       starter_band_end: 0,
-      basic_band_end: it.basicRateLimit || 37700,
-      higher_band_start: (it.basicRateLimit || 37700) + 1,
-      higher_band_end: it.higherRateLimit || 125140,
-      additional_rate: it.additionalRate || 0.45,
-      personal_allowance_taper_threshold: it.personalAllowanceTaperThreshold || 100000,
+      basic_band_end: basicRateLimit,
+      higher_band_start: basicRateLimit + 1,
+      higher_band_end: income(it.higherRateLimit, "higher_band_end", "higherRateLimit"),
+      additional_rate: income(it.additionalRate, "additional_rate", "additionalRate"),
+      personal_allowance_taper_threshold: income(
+        it.personalAllowanceTaperThreshold,
+        "personal_allowance_taper_threshold",
+        "personalAllowanceTaperThreshold",
+      ),
     },
     national_insurance: {
       // Class 2 and Class 4 are the self-employed rates; a book with no
@@ -839,53 +862,78 @@ export function extractTaxDataFromBook(book, product) {
       class2_rate: ni.class2WeeklyRate,
       class2_weekly_rate: ni.class2WeeklyRate,
       class2_small_profits_threshold: ni.class2SmallProfitsThreshold,
-      class4_lower_rate: ni.class4MainRate ?? 0.06,
-      class4_lower_limit: ni.class4LowerProfits ?? 12570,
-      class4_upper_rate: ni.class4UpperRate ?? 0.02,
-      class4_upper_limit: ni.class4UpperProfits ?? 50270,
+      class4_lower_rate: class4(ni.class4MainRate, "class4_lower_rate", "class4MainRate"),
+      class4_lower_limit: class4(ni.class4LowerProfits, "class4_lower_limit", "class4LowerProfits"),
+      class4_upper_rate: class4(ni.class4UpperRate, "class4_upper_rate", "class4UpperRate"),
+      class4_upper_limit: class4(ni.class4UpperProfits, "class4_upper_limit", "class4UpperProfits"),
     },
     mileage: {
-      higher_rate_limit: 10000,
-      higher_rate_pence: mi.carFirst10000 || 0.45,
-      lower_rate_start: 10001,
-      lower_rate_pence: mi.carOver10000 || 0.25,
+      higher_rate_limit: regimeStated(undefined, "mileage", "higher_rate_limit", "mileage.higher_rate_limit"),
+      higher_rate_pence: regimeStated(mi.carFirst10000, "mileage", "higher_rate_pence", "tax.mileage.carFirst10000"),
+      lower_rate_start: regimeStated(undefined, "mileage", "lower_rate_start", "mileage.lower_rate_start"),
+      lower_rate_pence: regimeStated(mi.carOver10000, "mileage", "lower_rate_pence", "tax.mileage.carOver10000"),
     },
     vat: {
-      registration_threshold: 90000,
-      standard_rate: 0.2,
+      registration_threshold: regimeStated(undefined, "vat", "registration_threshold", "vat.registration_threshold"),
+      standard_rate: regimeStated(undefined, "vat", "standard_rate", "vat.standard_rate"),
     },
   };
+
+  const annualInvestmentAllowance = regimeStated(
+    ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : undefined,
+    "capital_allowances",
+    "annual_investment_allowance",
+    "tax.capitalAllowances.annualInvestmentAllowance",
+  );
+  const capitalAllowance = (bookValue, key, bookField) =>
+    regimeStated(bookValue, "capital_allowances", key, `tax.capitalAllowances.${bookField}`);
 
   // Capital allowances differ by regime: Ltd has main/special rates and full expensing;
   // SE (and other regimes) use a single writing_down_allowance rate.
   if (product === "ltd") {
     baseTaxData.capital_allowances = {
-      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
-      writing_down_allowance_main: ca.mainRateWDA || 0.18,
-      writing_down_allowance_special: ca.specialRateWDA || 0.06,
+      annual_investment_allowance: annualInvestmentAllowance,
+      writing_down_allowance_main: capitalAllowance(ca.mainRateWDA, "writing_down_allowance_main", "mainRateWDA"),
+      writing_down_allowance_special: capitalAllowance(ca.specialRateWDA, "writing_down_allowance_special", "specialRateWDA"),
       full_expensing_rate: 0, // Defaults to 0; varies by tax year but not available from book.toml
     };
     baseTaxData.corporation_tax = {
-      main_rate: ct.mainRate || 0.25,
-      small_profits_rate: ct.smallProfitsRate || 0.19,
-      small_profits_limit: ct.smallProfitsLimit || 50000,
-      main_rate_limit: ct.mainRateThreshold || 250000,
+      main_rate: regimeStated(ct.mainRate, "corporation_tax", "main_rate", "tax.corporationTax.mainRate"),
+      small_profits_rate: regimeStated(ct.smallProfitsRate, "corporation_tax", "small_profits_rate", "tax.corporationTax.smallProfitsRate"),
+      small_profits_limit: regimeStated(
+        ct.smallProfitsLimit,
+        "corporation_tax",
+        "small_profits_limit",
+        "tax.corporationTax.smallProfitsLimit",
+      ),
+      main_rate_limit: regimeStated(ct.mainRateThreshold, "corporation_tax", "main_rate_limit", "tax.corporationTax.mainRateThreshold"),
       marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
     };
   } else {
     // SE/BST/Taxi use a single writing_down_allowance key; the Self Employed
     // schedule also keeps a special rate pool.
     baseTaxData.capital_allowances = {
-      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
-      writing_down_allowance: ca.mainRateWDA || 0.18,
+      annual_investment_allowance: annualInvestmentAllowance,
+      writing_down_allowance: capitalAllowance(ca.mainRateWDA, "writing_down_allowance", "mainRateWDA"),
     };
     if (product === "se") {
-      baseTaxData.capital_allowances.writing_down_allowance_special = ca.specialRateWDA || 0.06;
-      baseTaxData.capital_allowances.structures_and_buildings_allowance = ca.structuresAndBuildingsAllowance || 0.03;
-      baseTaxData.capital_allowances.structures_and_buildings_allowance_enhanced = ca.structuresAndBuildingsAllowanceEnhanced || 0.1;
+      baseTaxData.capital_allowances.writing_down_allowance_special = capitalAllowance(
+        ca.specialRateWDA,
+        "writing_down_allowance_special",
+        "specialRateWDA",
+      );
+      baseTaxData.capital_allowances.structures_and_buildings_allowance = capitalAllowance(
+        ca.structuresAndBuildingsAllowance,
+        "structures_and_buildings_allowance",
+        "structuresAndBuildingsAllowance",
+      );
+      baseTaxData.capital_allowances.structures_and_buildings_allowance_enhanced = capitalAllowance(
+        ca.structuresAndBuildingsAllowanceEnhanced,
+        "structures_and_buildings_allowance_enhanced",
+        "structuresAndBuildingsAllowanceEnhanced",
+      );
     }
   }
-  const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
   baseTaxData.depreciation = taxYearFile.depreciation;
   if (product === "ltd") {
     baseTaxData.corporation_tax_previous_financial_year = taxYearFile.corporation_tax_previous_financial_year;
