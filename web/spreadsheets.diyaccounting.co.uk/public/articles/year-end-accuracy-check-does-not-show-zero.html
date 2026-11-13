@@ -1,0 +1,177 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Why does my year-end accuracy check not show zero? - DIY Accounting Spreadsheets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="If the accuracy check in your DIY Accounting year-end accounts is not zero, look for a missing opening balance, a one-sided transfer or an overwritten formula."
+    />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <meta property="og:title" content="Why does my year-end accuracy check not show zero? - DIY Accounting Spreadsheets" />
+    <meta
+      property="og:description"
+      content="If the accuracy check in your DIY Accounting year-end accounts is not zero, look for a missing opening balance, a one-sided transfer or an overwritten formula."
+    />
+    <link rel="canonical" href="https://spreadsheets.diyaccounting.co.uk/articles/year-end-accuracy-check-does-not-show-zero.html" />
+    <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/articles/year-end-accuracy-check-does-not-show-zero.html" />
+    <meta property="og:site_name" content="DIY Accounting" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="../spreadsheets.css" />
+    <script src="../lib/analytics.js"></script>
+    <script src="../lib/consent-banner.js"></script>
+  </head>
+  <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="../index.html">Products</a>
+      <a href="../download.html">Download</a>
+      <a href="../knowledge-base.html" class="nav-current">Knowledge Base</a>
+      <a href="../community.html">Community</a>
+      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="../donate.html">Donate</a>
+    </nav>
+    <header>
+      <h1>DIY Accounting Spreadsheets</h1>
+      <p class="subtitle">Excel bookkeeping and accounting software for UK small businesses</p>
+    </header>
+    <main id="mainContent">
+      <nav class="nav-back" aria-label="Breadcrumb">
+        <a href="../all-articles.html">&larr; All articles</a> &middot;
+        <a href="../knowledge-base.html">Knowledge Base</a>
+      </nav>
+      <article class="kb-article">
+        <span class="kb-category-badge">Company Accounts</span>
+        <h2>Why does my year-end accuracy check not show zero?</h2>
+
+        <p>
+          The accuracy check in the Company Accounts package is Row 91 of the Trial Balance, and it should be zero. When it is not, an entry
+          is missing, entered once instead of twice, or has replaced a formula. Work through the checks below in order. Each one narrows the
+          difference.
+        </p>
+        <h3>What the check does</h3>
+        <p>
+          In the <a href="../products/company.html">Company Accounts</a> package, the Trial Balance gathers every entry from sales,
+          purchases and the bank workbooks. Row 91 shows the difference, and zero means the double entries agree. The package guide calls it
+          the audit accuracy check.
+        </p>
+        <h3>Check in this order</h3>
+        <ol>
+          <li>
+            Reconcile each bank workbook. In the Current Account, A3 holds the statement balance and A4 the reconciliation difference. A4
+            should be zero for every month before you look at the Trial Balance.
+          </li>
+          <li>
+            Check the opening balances. A company must enter its opening balance sheet at Financialaccounts, OpenAccounts, in Column E, with
+            subtotals in Columns G to O, before it enters live transactions.
+          </li>
+          <li>
+            Check the opening fixed assets. Enter the original cost and the accumulated depreciation at OpenAccounts, then the details at
+            Fixedassets, Schedule, in the existing fixed assets section.
+          </li>
+          <li>
+            Check that a transfer between two of your own accounts appears on both sides. The Current Account has transfer codes BS, BD and
+            BC for savings, credit card and cash.
+          </li>
+          <li>Check the dates. Enter dates as DD/MM/YY. A date such as 05.04.26 is not recognised.</li>
+          <li>
+            Check the row limits. Sales and Purchases sum to Row 300, and the bank workbooks to Row 200. An entry below the limit is left
+            out of the totals.
+          </li>
+        </ol>
+        <h3>Fixed assets and dividends</h3>
+        <p>
+          Enter a fixed asset purchase on the Purchases workbook with code FA, then enter it again on Fixedassets, Schedule, in the New
+          Assets section from Row 56. An asset on only one of them leaves a difference.
+        </p>
+        <p>
+          Enter the dividend you declare on Companysecretary, Boardmeeting. Enter the payment in the bank workbook with code DV. If the
+          retained profit and the dividend figures differ, compare these two entries.
+        </p>
+        <h3>Overwritten formulas</h3>
+        <p>
+          Sales, Purchases and the bank workbooks are unprotected, so a typed figure replaces a formula. Compare the suspect cell with the
+          same cell in a fresh download of the package. Copy the original formula back from that download.
+        </p>
+        <h3>Self Employed</h3>
+        <p>
+          The <a href="../products/self-employed.html">Self Employed</a> package has a similar check for fixed assets. On Fixedassets,
+          FAreconciliation, Row 15 is zero when every purchase and sale on the Schedule has been included.
+        </p>
+        <h3>Still not zero</h3>
+        <p>
+          Work down the list one month at a time. Enter a month, check the bank difference, then move on. A difference that appears in one
+          month points at that month's entries. For linked files that show blanks, see
+          <a href="linked-workbooks-show-blank-or-wrong-figures.html">why linked workbooks show blank figures</a>.
+        </p>
+
+        <p class="article-attribution">Article generated by Claude Code for DIY Accounting, November 2026.</p>
+        <p class="citation-check-date">Citations checked: <time datetime="2026-11-13">13 November 2026</time></p>
+      </article>
+    </main>
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
+          <a href="../knowledge-base.html">knowledge base</a>
+          <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
+          <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
+          <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Why does my year-end accuracy check not show zero?",
+        "description": "If the accuracy check in your DIY Accounting year-end accounts is not zero, look for a missing opening balance, a one-sided transfer or an overwritten formula.",
+        "url": "https://spreadsheets.diyaccounting.co.uk/articles/year-end-accuracy-check-does-not-show-zero.html",
+        "author": {
+          "@type": "Organization",
+          "name": "DIY Accounting Limited",
+          "description": "Generated by Claude Code"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "DIY Accounting Limited",
+          "url": "https://diyaccounting.co.uk"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "DIY Accounting Spreadsheets",
+            "item": "https://spreadsheets.diyaccounting.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Knowledge Base",
+            "item": "https://spreadsheets.diyaccounting.co.uk/knowledge-base.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Why does my year-end accuracy check not show zero?",
+            "item": "https://spreadsheets.diyaccounting.co.uk/articles/year-end-accuracy-check-does-not-show-zero.html"
+          }
+        ]
+      }
+    </script>
+  </body>
+</html>
