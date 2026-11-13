@@ -26,7 +26,7 @@
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine, ltdBankPlacement } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
-import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
+import { calculateCapitalAllowances, mainWritingDownPercent } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_SCHEDULE_FIRST_ROW,
@@ -1049,9 +1049,9 @@ function buildAdmin(taxData, period, associatedCompanies) {
     U7: rowRates[1].upperLimit,
     P14: associatedCompanies,
     G5: Math.round(capitalAllowances.annual_investment_allowance * 100),
-    G6: Math.round(capitalAllowances.writing_down_allowance_main * 100),
+    G6: mainWritingDownPercent(taxData, period.start, period.yearEnd),
     G7: Math.round(capitalAllowances.annual_investment_allowance * 100),
-    G8: Math.round(capitalAllowances.writing_down_allowance_main * 100),
+    G8: mainWritingDownPercent(taxData, period.start, period.yearEnd),
     G15: depreciation.land_and_property,
     G16: depreciation.plant_and_machinery,
     G17: depreciation.fixtures_and_fittings,

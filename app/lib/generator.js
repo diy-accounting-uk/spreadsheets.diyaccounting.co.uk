@@ -22,6 +22,7 @@ import {
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 import { financialYearRatesFor, financialYearNumber } from "./tax/corporation-tax.js";
+import { mainWritingDownPercentForYearEnd } from "./tax/capital-allowances.js";
 import { refreshCachedValues, refreshZipCachedValues } from "./cached-values.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
@@ -535,11 +536,13 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
     numericEdits[`U${row}`] = rowRates[index].upperLimit;
   }
 
-  // Capital allowances (stored as whole-number percentages)
+  // Capital allowances (stored as percentages; the main rate has decimals when
+  // the period holds 1 April and the rate changed on it)
   numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);
   numericEdits.G7 = Math.round(ca.annual_investment_allowance * 100);
-  numericEdits.G6 = Math.round(ca.writing_down_allowance_main * 100);
-  numericEdits.G8 = Math.round(ca.writing_down_allowance_main * 100);
+  const mainRatePercent = mainWritingDownPercentForYearEnd(taxData, fromExcelSerial(yearEndSerial));
+  numericEdits.G6 = mainRatePercent;
+  numericEdits.G8 = mainRatePercent;
 
   // Depreciation (stored as fractions — same as BST/SE)
   numericEdits.G15 = dep.land_and_property;

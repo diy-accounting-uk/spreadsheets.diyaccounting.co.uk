@@ -33,6 +33,13 @@ writing_down_allowance_main = 0.18
 writing_down_allowance_special = 0.06
 full_expensing_rate = 0
 
+# The main writing down rate of the financial year before this one. An
+# accounting period that reaches back over 1 April works out a hybrid rate from
+# the days it spends at each year's rate:
+# https://www.gov.uk/guidance/calculate-your-hybrid-rate-of-writing-down-allowance
+[capital_allowances_previous_financial_year]
+writing_down_allowance_main = 0.18
+
 [depreciation]
 land_and_property = 0.00
 plant_and_machinery = 0.10

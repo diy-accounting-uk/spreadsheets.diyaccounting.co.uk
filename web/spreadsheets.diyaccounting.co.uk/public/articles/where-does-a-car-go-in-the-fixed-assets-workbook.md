@@ -15,13 +15,13 @@ Each Cars row claims the cost of the car times the main rate times one minus the
 **What a car can claim**
 A car claims one of three allowances. The main rate allowance is 14% of the car's value each year, or 18% before April 2026. The special rate allowance is 6% of the car's value each year. A new and unused car with CO2 emissions of 0g/km, or an electric car, can claim the full value as a 100% first-year allowance when you buy it before April 2027.
 
-From April 2021, a new or second hand car with CO2 emissions of 50g/km or less gets the main rate. A new or second hand car with CO2 emissions over 50g/km gets the special rate. Main and special rates apply from 1 April for businesses that pay Corporation Tax, and from 6 April for businesses that pay Income Tax. If your accounting period includes the day the main rate changed, GOV.UK says you must work out a hybrid rate for that accounting period.
+From April 2021, a new or second hand car with CO2 emissions of 50g/km or less gets the main rate. A new or second hand car with CO2 emissions over 50g/km gets the special rate. Main and special rates apply from 1 April for businesses that pay Corporation Tax, and from 6 April for businesses that pay Income Tax. If your accounting period includes the day the main rate changed, GOV.UK says you must work out a hybrid rate for that accounting period. The Company Accounts package holds the hybrid rate on its Admin sheet for a period that includes 1 April 2026, rounded up to 2 decimal places as GOV.UK says, and shows it as a whole number.
 
 If your business provides a car for an employee or director, you can claim capital allowances on the full cost. In the Company Accounts package, leave column M at 0 for that car.
 
 
 **What the Cars rows do not do**
-The Cars rows claim the main rate. They have no first-year allowance cell. The Self Employed package has a special rate marker, and the other packages do not. Your package guide shows what to type for a car over 50g/km and what to add for a new zero-emission car.
+The Cars rows claim the main rate. They have no first-year allowance cell. A car over 50g/km goes in the special rate pool, at 6%. The Cars rows still claim the main rate, and only the Self Employed package has a special rate marker: type S in column AB of the car's row. Your package guide shows what to add for a new zero-emission car.
 
 
 **What is not a car**

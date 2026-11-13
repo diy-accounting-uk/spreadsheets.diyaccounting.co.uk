@@ -18,6 +18,8 @@
 // Percentages arrive as the sheets hold them, whole numbers out of 100, so a
 // rate read straight off the Admin sheet needs no conversion.
 
+import { financialYearsInPeriod, financialYearNumber } from "./corporation-tax.js";
+
 /**
  * One asset's allowance for the year.
  *
@@ -81,4 +83,58 @@ export function calculateCapitalAllowances(assets, rates) {
     ...totals,
     total: totals.investmentAllowance + totals.writingDownAllowance + totals.balancingAllowance - totals.balancingCharge,
   };
+}
+
+/**
+ * The main writing down rate a Company accounting period claims, as a
+ * percentage.
+ *
+ * A period inside one financial year claims that year's rate, as a whole
+ * percentage. A period that holds the day the rate changed (1 April) claims a
+ * hybrid rate, by the method on
+ * https://www.gov.uk/guidance/calculate-your-hybrid-rate-of-writing-down-allowance :
+ * the days before the change over the days in the period times the earlier
+ * rate, plus the days from the change over the days in the period times the
+ * later rate, rounded up to 2 decimal places. The earlier rate comes from the
+ * tax data's capital_allowances_previous_financial_year table, the later from
+ * its capital_allowances table. The sum is worked in hundredths of a percent
+ * with whole numbers, so the rounding step never moves a figure that is exact.
+ *
+ * @param {Object} taxData - the ltd-<FY>.toml the period's year end falls in
+ * @param {Date} periodStart
+ * @param {Date} periodEnd
+ * @returns {number} the rate as a percentage, such as 14 or 17.01
+ */
+export function mainWritingDownPercent(taxData, periodStart, periodEnd) {
+  // Tax data with no capital allowances table reaches here from callers that
+  // want the period dates off the Admin sheet and nothing else. The rate cell
+  // comes out NaN for them, as the other rate cells do.
+  const current = taxData.capital_allowances?.writing_down_allowance_main;
+  if (current === undefined) return NaN;
+  const wholePercent = Math.round(current * 100);
+  const { years, totalDays } = financialYearsInPeriod(periodStart, periodEnd);
+  const [earlier, later] = years;
+  if (earlier.year === financialYearNumber(periodEnd) || earlier.days <= 0 || later.days <= 0) return wholePercent;
+
+  const previous = taxData.capital_allowances_previous_financial_year?.writing_down_allowance_main;
+  if (previous === undefined) {
+    throw new Error(
+      `the tax data states no capital_allowances_previous_financial_year.writing_down_allowance_main, so the ${earlier.days} days of the period before 1 April have no rate`,
+    );
+  }
+  if (Math.round(previous * 10000) === Math.round(current * 10000)) return wholePercent;
+
+  const hundredths = Math.ceil((earlier.days * Math.round(previous * 10000) + later.days * Math.round(current * 10000)) / totalDays);
+  return hundredths / 100;
+}
+
+/**
+ * mainWritingDownPercent for the twelve month period that ends on a year end.
+ * @param {Object} taxData
+ * @param {Date} yearEnd
+ * @returns {number}
+ */
+export function mainWritingDownPercentForYearEnd(taxData, yearEnd) {
+  const periodStart = new Date(Date.UTC(yearEnd.getUTCFullYear() - 1, yearEnd.getUTCMonth() + 1, 1));
+  return mainWritingDownPercent(taxData, periodStart, yearEnd);
 }

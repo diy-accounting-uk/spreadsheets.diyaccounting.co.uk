@@ -1021,6 +1021,7 @@ export function extractTaxDataFromBook(book, product) {
   baseTaxData.depreciation = taxYearFile.depreciation;
   if (product === "ltd") {
     baseTaxData.corporation_tax_previous_financial_year = taxYearFile.corporation_tax_previous_financial_year;
+    baseTaxData.capital_allowances_previous_financial_year = taxYearFile.capital_allowances_previous_financial_year;
   }
 
   return baseTaxData;

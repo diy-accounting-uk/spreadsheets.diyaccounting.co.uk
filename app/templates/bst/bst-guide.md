@@ -271,12 +271,12 @@ The rate for a car depends on its CO2 emissions. Check the figure for your car, 
 | Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
 |----------------------------|---------------------|------------------------|
 | New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
-| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. Reduce the claim as shown below. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. |
 | New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
 
 Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
 
-**A car over 50g/km (6%).** The sheet has no special rate cell. In column G of the car's row, type `=1-6/14` when the main rate on the Admin sheet is 14%. Type `=1-6/18` when it is 18%. If the car is also used privately, type `=1-(6/14)*(1-0.2)` for a private use share of 0.2, changing 0.2 to your share. The claim in column L is then 6% of the business share of the cost. Next year, type the same formula in column G of the car's row in the existing section.
+**A car over 50g/km (6%).** GOV.UK puts a car with CO2 emissions over 50g/km in the special rate pool, which has a writing down allowance of 6% ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Cars rows claim the main rate.
 
 **A new zero-emission car (100%).** The Cars rows have no first-year allowance column. Add the rest of the cost to the capital allowances on your Self Assessment return. Next year, enter 0 as the written down value in column I of the car's row in the existing section.
 

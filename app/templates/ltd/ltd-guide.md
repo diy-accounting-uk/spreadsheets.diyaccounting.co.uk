@@ -291,16 +291,16 @@ The rate for a car depends on its CO2 emissions. Check the figure for your car, 
 | Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
 |----------------------------|---------------------|------------------------|
 | New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
-| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. Reduce the claim as shown below. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. |
 | New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
 
 Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
 
-**A car over 50g/km (6%).** In column M of the car's row, type `=1-6/14` when the main rate on the Admin sheet is 14%. Type `=1-6/18` when it is 18%. The claim in column R is then 6% of the cost, and column S carries the rest forward. Next year, type the same formula in column M of the car's row in the existing section.
+**A car over 50g/km (6%).** GOV.UK puts a car with CO2 emissions over 50g/km in the special rate pool, which has a writing down allowance of 6% ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Cars rows claim the main rate.
 
 **A new zero-emission car (100%).** The Cars rows have no first-year allowance column. Add the rest of the cost to the capital allowances in your Company Tax Return. Next year, enter 0 as the tax written down value in column O of the car's row in the existing section.
 
-**A period that includes 1 April 2026.** GOV.UK says to work out a hybrid rate for that accounting period ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Admin sheet holds one main rate.
+**A period that includes 1 April 2026.** The main rate of writing down allowance changed from 18% to 14% for Corporation Tax on that day. GOV.UK says that an accounting period that includes it uses a hybrid rate ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools), [GOV.UK: calculate your hybrid rate](https://www.gov.uk/guidance/calculate-your-hybrid-rate-of-writing-down-allowance)). The hybrid rate is the days before 1 April 2026 over the days in the period times 18, plus the days from 1 April 2026 over the days in the period times 14, rounded up to 2 decimal places. The Admin sheet holds that rate for such a period, so a year to 30 June 2026 holds 17.01. The cell shows a whole number, and holds the decimals that the claims use. A period that starts on or after 1 April 2026 holds 14.
 
 If an earlier year has a car on a Plant row, see [where does a car go in the fixed assets workbook](https://spreadsheets.diyaccounting.co.uk/articles/where-does-a-car-go-in-the-fixed-assets-workbook.html).
 

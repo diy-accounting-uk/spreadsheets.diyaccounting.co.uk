@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
+import { mainWritingDownPercentForYearEnd } from "../../lib/tax/capital-allowances.js";
+
 // ── Scenario cell writes ───────────────────────────────────────────────────
 // Ltd Sales: E=code letter, F=gross amount
 // Ltd Purchases: E=code letter, F=gross amount
@@ -190,7 +192,7 @@ export const SCHEDULE_ASSET_CLASSES = {
 // from this same figure. There is no separate rate or cap for motor
 // vehicles -- the pre-2009 expensive-car restriction that used to route
 // motor assets through Admin!E11/G11 has been removed from the template.
-export const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allowances.writing_down_allowance_main;
+export const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData, yearEnd) => mainWritingDownPercentForYearEnd(taxData, yearEnd) / 100;
 
 // An asset bought in the year lands on the New Plant & Machinery rows. A
 // scenario purchase carries a code letter and an amount, and names an asset
