@@ -232,7 +232,7 @@ describe("the builders' small company accounts, read back", () => {
 
   it("names the Corporation Tax the book works against the file's, and keeps the file's figure for the accounts", async () => {
     const source = await readBookSource(fixture("builder-small-consistent.xhtml"), "x");
-    // Full expensing of the 1,000 addition lowers the engine's charge on 5,100 to 874; the file states 969.
+    // The annual investment allowance on the 1,000 addition lowers the engine's charge on 5,100 to 874; the file states 969.
     expect(source.differences).toEqual([
       "Current year: the book works 874 Corporation Tax; the file states 969. The accounts filed keep the file's figure.",
     ]);
