@@ -38,3 +38,19 @@ target = "diya-gl"
 from = "/diya-gl.html"
 to = "/spec.html"
 target = "diya-gl"
+
+# Articles merged into another article on the same subject.
+[[redirect]]
+from = "/articles/solve-business-problems-before-critical-with-accounting-software.html"
+to = "/articles/solve-business-problems-before-they-become-critical.html"
+target = "spreadsheets"
+
+[[redirect]]
+from = "/articles/showing-overdraft-figurein-current-account.html"
+to = "/articles/showing-loan-paymentsin-current-account.html"
+target = "spreadsheets"
+
+[[redirect]]
+from = "/articles/d-i-y-accounting-limited-company-accounting-software.html"
+to = "/articles/d-i-y-accounting-small-business-accounting-software-u-k.html"
+target = "spreadsheets"

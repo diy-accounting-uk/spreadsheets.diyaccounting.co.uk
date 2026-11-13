@@ -15,7 +15,7 @@ Tax accounting software for a private limited company in the UK includes the pri
     Vat registration is not a legal requirement for a limited company. A company must register for VAT when its taxable turnover for the last 12 months goes over £90,000.
     One important aspect a tax accounting software program should provide is an audit trail of transactions that make up the figures reported in the vat return.
     **Tax Software and CT600 Corporation Tax Return**
-    In the UK a private limited company has to complete a Company Tax Return, known as the CT600, for each accounting period. The deadline is 12 months after the end of the accounting period it covers. The Corporation Tax itself is due 9 months and 1 day after the end of the accounting period.
+    In the UK a private limited company has to complete a Company Tax Return, known as the CT600, for each accounting period. The deadline is 12 months after the end of the accounting period it covers. The Corporation Tax itself is due 9 months and 1 day after the end of the accounting period. CT600 Corporation Tax Return Software explains how a company files the return.
     Corporation Tax is charged at 19% on profits under £50,000 and at 25% on profits over £250,000. Profits between the two figures pay the main rate reduced by Marginal Relief.
     HMRC's own online service for filing company accounts and the Company Tax Return closed on 31 March 2026. From 1 April 2026 a company uses commercial software to file its annual accounts and Company Tax Return with HMRC.
     Using the right tax software the CT600 corporation tax return can be completed automatically.

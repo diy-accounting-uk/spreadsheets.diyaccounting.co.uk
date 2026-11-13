@@ -347,7 +347,7 @@ describe("Canonical links (spreadsheets)", () => {
   ];
 
   it("covers the main pages, the donate template and every article", () => {
-    expect(pages.length).toBeGreaterThanOrEqual(124 + 9 + 1);
+    expect(pages.length).toBeGreaterThanOrEqual(121 + 9 + 1);
   });
 
   it("every page has a self-referencing absolute https canonical", () => {
