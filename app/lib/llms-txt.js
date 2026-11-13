@@ -86,6 +86,9 @@ export function pageDescription(document) {
   return metaContent(document, "name", "description");
 }
 
+// A link is kept only when it opens a page, a mailbox or a dialler; any other scheme leaves its text.
+const LINKED_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
 function inlineMarkdown(node, pageUrl) {
   if (node.nodeType === TEXT) return node.data;
   if (node.nodeType !== ELEMENT || SKIPPED_TAGS.has(node.localName)) return "";
@@ -96,8 +99,10 @@ function inlineMarkdown(node, pageUrl) {
   if (node.localName === "a") {
     const label = squash(inner);
     const href = node.getAttribute("href") || "";
-    if (label === "" || href === "" || href.startsWith("#") || href.startsWith("javascript:")) return label;
-    return `[${label}](${new URL(href, pageUrl).href})`;
+    if (label === "" || href === "" || href.startsWith("#")) return label;
+    const target = new URL(href, pageUrl);
+    if (!LINKED_PROTOCOLS.has(target.protocol)) return label;
+    return `[${label}](${target.href})`;
   }
   if (node.localName === "strong" || node.localName === "b") return `**${squash(inner)}**`;
   return inner;
