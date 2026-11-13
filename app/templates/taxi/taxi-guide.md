@@ -198,7 +198,37 @@ Purchase and sales mileage are calculated, totalled and included as a business e
 
 Vehicle depreciation has not been calculated in the accounting system since it has no effect on the business tax, depreciation is disallowed as an expense. Instead the business receives tax allowances on the cost of assets, vehicles, to set against its profit.
 
-Capital allowances on vehicles are calculated using the writing down allowance method, which applies to subsequent years after purchase. First Year Allowances are not applicable to cars except vans which, being commercial vehicles like hackney cabs, are included in the other assets section and attract the 100% annual investment allowance. The remaining value of vehicles is written off against future years' profits at the rate set in the Admin sheet of the book value remaining.
+Capital allowances on a car are calculated using the writing down allowance method. The allowance is a percentage of the car's value each year, at the main rate on the Admin sheet. The Annual Investment Allowance does not apply to a car.
+
+#### Where a Taxi Goes
+
+A purpose-built taxi such as a London black cab (a hackney carriage) is not treated as a car for capital allowances ([GOV.UK Capital Allowances Manual: meaning of car](https://www.gov.uk/hmrc-internal-manuals/capital-allowances-manual/ca23510)). It goes in the block headed Fixed Assets including Commercial vehicles, which attracts the 100% Annual Investment Allowance. Any other vehicle used as a taxi or a minicab is a car. It goes in one of the two Vehicles blocks and attracts the writing down allowance.
+
+| Vehicle | Block on the Fixed Assets sheet | Rows bought before the year start | Rows bought in the year |
+|---------|---------------------------------|-----------------------------------|-------------------------|
+| Purpose-built taxi (hackney carriage) | Fixed Assets including Commercial vehicles | 7 to 14 | 36 to 43 |
+| Any other taxi or car | Vehicles under £12,000 | 18 to 22 | 47 to 51 |
+| Any other taxi or car | Vehicles over £12,000 | 26 to 30 | 55 to 59 |
+
+The two Vehicles blocks use the same formula, so use the block that matches the cost of the car. A car never goes in the Fixed Assets including Commercial vehicles block.
+
+The main rate is 14% for Income Tax from 6 April 2026 and 18% before ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). The rate for a car depends on its CO2 emissions. Check the figure for your car, then find the case:
+
+| Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
+|----------------------------|---------------------|------------------------|
+| New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. Reduce the claim as shown below. |
+| New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
+
+Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
+
+**A car over 50g/km (6%).** The sheet has no special rate cell. In column F of the car's row, type `=1-6/14` when the main rate on the Admin sheet is 14%. Type `=1-6/18` when it is 18%. If the car is also used privately, type `=1-(6/14)*(1-0.2)` for a private use share of 0.2, changing 0.2 to your share. The claim in column J is then 6% of the business share of the cost. Next year, type the same formula in column F of the car's row in the existing section.
+
+**A new zero-emission car (100%).** The Vehicles blocks have no first-year allowance column. Add the rest of the cost to the capital allowances on your Self Assessment return. Next year, enter 0 as the written down value in column H of the car's row in the existing section.
+
+**A period that includes 6 April 2026.** GOV.UK says to work out a hybrid rate for an accounting period that includes the day the rate changed ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The workbook holds one main rate.
+
+If an earlier year has a car in the Fixed Assets including Commercial vehicles block, see [where does a car go in the fixed assets workbook](https://spreadsheets.diyaccounting.co.uk/articles/where-does-a-car-go-in-the-fixed-assets-workbook.html).
 
 ![Fixed Assets sheet — existing and new vehicles with automatic capital allowance calculations](screenshots/fixed-assets.png)
 

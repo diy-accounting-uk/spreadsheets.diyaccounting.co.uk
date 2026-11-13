@@ -644,3 +644,8 @@ keywords = ["package", "choose", "sole trader", "limited company", "taxi", "whic
 id = "year-end-accuracy-check-does-not-show-zero"
 priority = 132
 keywords = ["year end", "accuracy check", "not zero", "company accounts", "balance", "trial balance", "error"]
+
+[[article]]
+id = "where-does-a-car-go-in-the-fixed-assets-workbook"
+priority = 133
+keywords = ["car", "cars rows", "fixed assets", "capital allowances", "plant", "writing down allowance", "taxi", "hackney carriage", "CO2"]

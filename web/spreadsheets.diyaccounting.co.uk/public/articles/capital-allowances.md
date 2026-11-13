@@ -20,3 +20,5 @@ Enter:
     7. V14: 500  
 As soon as the 500 is entered columns W through Z, including Y are calculated.
 Selling below the written down value is a loss bringing in more to claim for a Capital Allowance £220 in this case.
+
+A car claims writing down allowance and never the annual investment allowance. See [where a car goes in the fixed assets workbook](where-does-a-car-go-in-the-fixed-assets-workbook.html) for the rows to use.

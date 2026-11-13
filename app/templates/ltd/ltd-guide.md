@@ -267,11 +267,42 @@ Savings, Credit Card, and Cash accounts follow the same pattern with account-spe
 
 ### Fixed Asset Additions
 
-Enter purchases on the Purchases spreadsheet with code **FA**, then also enter on Fixedassets > Schedule in the New Assets section (Row 56+).
+Enter purchases on the Purchases spreadsheet with code **FA**, then also enter them on Fixedassets > Schedule. The section headed NEW FIXED ASSETS Bought This Year starts at Row 59. It has one block for each kind of asset:
+
+| Asset bought in the year | Block on Fixedassets > Schedule | Rows |
+|--------------------------|---------------------------------|------|
+| Land and property | Land & Property | 61 to 63 |
+| Plant and machinery | Plant & Machinery | 67 to 74 |
+| Fixtures and fittings | Fixtures & Fittings | 78 to 82 |
+| Computers | Computers | 86 to 93 |
+| Car | Motor Vehicles - Cars | 97 to 101 |
+| Van or lorry | Motor Vehicles - Vans & Lorries | 103 to 107 |
+
+A car goes on the Cars rows and never on a Plant row. A Plant row claims 100% of the cost in the year of purchase as the Annual Investment Allowance. Cars do not qualify for that allowance ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). A car owned before the start of the year goes in the EXISTING FIXED ASSETS section, under Motor Vehicles - Cars, rows 44 to 48. A van or a lorry is not a car for capital allowances, and nor is a motorcycle bought from 6 April 2009. Put a van or a lorry on the Vans & Lorries rows ([GOV.UK: what counts as a car](https://www.gov.uk/capital-allowances/business-cars)).
 
 ### Capital Allowances
 
-Annual Investment Allowance, writing down allowances, and balancing charges are automatically calculated. Motor vehicles attract writing down allowances at the rate set in the Admin sheet.
+Annual Investment Allowance, writing down allowances, and balancing charges are calculated from the Schedule, using the rates on the Admin sheet.
+
+The Cars rows claim the main rate of writing down allowance on the cost of the car. The main rate is 14% for Corporation Tax from 1 April 2026 and 18% before ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). Column M, the private use share, reduces the claim. For a car the company provides to a director or an employee, leave column M at 0. GOV.UK says the company can claim on the full cost.
+
+The rate for a car depends on its CO2 emissions. Check the figure for your car, then find the case:
+
+| Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
+|----------------------------|---------------------|------------------------|
+| New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. Reduce the claim as shown below. |
+| New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
+
+Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
+
+**A car over 50g/km (6%).** In column M of the car's row, type `=1-6/14` when the main rate on the Admin sheet is 14%. Type `=1-6/18` when it is 18%. The claim in column R is then 6% of the cost, and column S carries the rest forward. Next year, type the same formula in column M of the car's row in the existing section.
+
+**A new zero-emission car (100%).** The Cars rows have no first-year allowance column. Add the rest of the cost to the capital allowances in your Company Tax Return. Next year, enter 0 as the tax written down value in column O of the car's row in the existing section.
+
+**A period that includes 1 April 2026.** GOV.UK says to work out a hybrid rate for that accounting period ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Admin sheet holds one main rate.
+
+If an earlier year has a car on a Plant row, see [where does a car go in the fixed assets workbook](https://spreadsheets.diyaccounting.co.uk/articles/where-does-a-car-go-in-the-fixed-assets-workbook.html).
 
 ## VAT Returns
 
