@@ -286,14 +286,29 @@ describe("extractTaxDataFromBook", () => {
     const taxData = extractTaxDataFromBook(book, "ltd");
     expect(taxData.capital_allowances.writing_down_allowance_main).toBe(0.18);
     expect(taxData.capital_allowances.writing_down_allowance_special).toBe(0.06);
-    expect(taxData.capital_allowances.full_expensing_rate).toBe(0);
+    expect(taxData.capital_allowances.full_expensing_rate).toBe(1);
     expect(taxData.capital_allowances.writing_down_allowance).toBeUndefined();
   });
 
-  it("defaults full_expensing_rate to 0 when extracting from book.toml", () => {
-    const { book } = loadDiyaGlData(FULL_DATA);
+  it("takes the full expensing rate and the marginal relief fraction from the tax year file when the book states neither", () => {
+    const { book } = loadDiyaGlData(FULL_DATA); // periodCoveredEnd 2026-03-31 -> ltd-2025
     const taxData = extractTaxDataFromBook(book, "ltd");
+    expect(taxData.capital_allowances.full_expensing_rate).toBe(1);
+    expect(taxData.corporation_tax.marginal_relief_fraction).toBe(0.015);
+  });
+
+  it("takes no full expensing and no marginal relief for a company year before 1 April 2023", () => {
+    const { book } = loadDiyaGlData(FULL_DATA);
+    const before2023 = { ...book, documentInfo: { ...book.documentInfo, periodCoveredEnd: new Date("2022-03-31") } };
+    const taxData = extractTaxDataFromBook(before2023, "ltd");
     expect(taxData.capital_allowances.full_expensing_rate).toBe(0);
+    expect(taxData.corporation_tax.marginal_relief_fraction).toBe(0);
+  });
+
+  it("prefers the full expensing rate the book states", () => {
+    const { book } = loadDiyaGlData(FULL_DATA);
+    const stated = { ...book, tax: { ...book.tax, capitalAllowances: { ...book.tax?.capitalAllowances, firstYearAllowanceRate: 0.5 } } };
+    expect(extractTaxDataFromBook(stated, "ltd").capital_allowances.full_expensing_rate).toBe(0.5);
   });
 
   // Depreciation rates are not a field book.toml carries, so every product

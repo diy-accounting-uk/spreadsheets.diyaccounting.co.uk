@@ -895,7 +895,7 @@ export function extractTaxDataFromBook(book, product) {
       annual_investment_allowance: annualInvestmentAllowance,
       writing_down_allowance_main: capitalAllowance(ca.mainRateWDA, "writing_down_allowance_main", "mainRateWDA"),
       writing_down_allowance_special: capitalAllowance(ca.specialRateWDA, "writing_down_allowance_special", "specialRateWDA"),
-      full_expensing_rate: 0, // Defaults to 0; varies by tax year but not available from book.toml
+      full_expensing_rate: capitalAllowance(ca.firstYearAllowanceRate, "full_expensing_rate", "firstYearAllowanceRate"),
     };
     baseTaxData.corporation_tax = {
       main_rate: regimeStated(ct.mainRate, "corporation_tax", "main_rate", "tax.corporationTax.mainRate"),
@@ -907,7 +907,12 @@ export function extractTaxDataFromBook(book, product) {
         "tax.corporationTax.smallProfitsLimit",
       ),
       main_rate_limit: regimeStated(ct.mainRateThreshold, "corporation_tax", "main_rate_limit", "tax.corporationTax.mainRateThreshold"),
-      marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
+      marginal_relief_fraction: regimeStated(
+        undefined,
+        "corporation_tax",
+        "marginal_relief_fraction",
+        "corporation_tax.marginal_relief_fraction",
+      ),
     };
   } else {
     // SE/BST/Taxi use a single writing_down_allowance key; the Self Employed

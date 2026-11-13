@@ -103,6 +103,15 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   const ct600 = run.results.CT600;
   const pl = run.results["MnthP&L"];
 
+  it("claims the same allowance on new plant whatever full expensing rate the tax data carries", () => {
+    const { book, lines, taxData, scenario } = run;
+    expect(taxData.capital_allowances.full_expensing_rate).toBe(1);
+    const withoutRate = { ...taxData, capital_allowances: { ...taxData.capital_allowances, full_expensing_rate: 0 } };
+    const other = calculateFromDiyaGl(book, lines, "ltd", withoutRate, scenario);
+    expect(other.CorporationTax.I15).toBe(ct.I15);
+    expect(other.CorporationTax.K20).toBe(ct.K20);
+  });
+
   it("charges the year on the operating profit plus the non-deductible add-backs", () => {
     expect(pl.B43).toBeCloseTo(170948.725, 2);
     expect(ct.K5).toBeCloseTo(170948.725, 2);
