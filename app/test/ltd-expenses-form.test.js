@@ -73,7 +73,7 @@ describe("Ltd expenses claim form", () => {
 });
 
 describe("Ltd expenses claim form: a rate change inside the period", () => {
-  const NOTE_START = "Mileage: this workbook claims";
+  const NOTE_START = "a mile in every month.";
 
   it("adds no note to a period that ends before the change", async () => {
     const zip = await JSZip.loadAsync(await generateForPeriod("2025", "2026-03-31"));
@@ -96,8 +96,8 @@ describe("Ltd expenses claim form: a rate change inside the period", () => {
   it("puts the note in A31:E31 of every month of a period that spans the change", async () => {
     const zip = await JSZip.loadAsync(await generateForPeriod("2026", "2026-06-30"));
     const note =
-      "Mileage: this workbook claims 55p a mile in every month. Before 6 April 2026 the rate was 45p. " +
-      "For the months before April 2026, type 0.45 in cell C30 on sheet Month 01, then type 0.55 in cell C30 on sheet Month 10.";
+      "Mileage: 55p a mile in every month. It was 45p before 6 April 2026. " +
+      "For months before April 2026 type 0.45 in C30 on Month 01, then 0.55 in C30 on Month 10.";
     for (let month = 1; month <= 12; month++) {
       const xml = await zip.file(sheetPath(month)).async("string");
       expect(xml, sheetName(month)).toContain(`<c r="A31" s="40" t="inlineStr"><is><t>${note}</t></is></c>`);
@@ -107,10 +107,20 @@ describe("Ltd expenses claim form: a rate change inside the period", () => {
     expect(await zip.file(MONTH_01).async("string")).toContain('<c r="C30" s="15"><v>0.55</v></c>');
   });
 
+  it("keeps the note to two lines so the form still prints on one page", async () => {
+    const zip = await JSZip.loadAsync(await generateForPeriod("2026", "2026-06-30"));
+    for (let month = 1; month <= 12; month++) {
+      const xml = await zip.file(sheetPath(month)).async("string");
+      expect(xml, sheetName(month)).toMatch(/<row r="31"[^>]* ht="26"/);
+    }
+    const note = (await zip.file(MONTH_01).async("string")).match(/<c r="A31"[^>]*><is><t>(.*?)<\/t>/)[1];
+    expect(note.length).toBeLessThanOrEqual(160);
+  });
+
   it("names the sheet of the first month that ends on or after the change", async () => {
     const zip = await JSZip.loadAsync(await generateForPeriod("2026", "2026-04-30"));
     const xml = await zip.file(MONTH_01).async("string");
-    expect(xml).toContain("then type 0.55 in cell C30 on sheet Month 12.");
+    expect(xml).toContain("then 0.55 in C30 on Month 12.");
   });
 
   it("keeps the note off the cells the form already uses", async () => {
@@ -119,6 +129,14 @@ describe("Ltd expenses claim form: a rate change inside the period", () => {
     const row = xml.match(/<row r="31"[^>]*>.*?<\/row>/s)[0];
     expect([...row.matchAll(/<c r="([A-Z]+)31"/g)].map((m) => m[1]).slice(0, 6)).toEqual(["A", "B", "C", "D", "E", "F"]);
     expect(xml).toContain('<c r="F31" s="8"><f>SUM(F10:F30)</f>');
+  });
+});
+
+describe("Ltd guide: the first five days of April 2026", () => {
+  it("tells the customer to take 10p off each mile driven on 1 to 5 April 2026", () => {
+    const guide = readFileSync(resolve(LTD_DIR, "ltd-guide.md"), "utf8");
+    expect(guide).toContain("1 to 5 April 2026");
+    expect(guide).toContain("reduce that month's claim by 10p for each of those miles");
   });
 });
 

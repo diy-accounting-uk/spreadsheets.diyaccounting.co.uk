@@ -1108,7 +1108,9 @@ export async function setFullCalcOnLoad(xlsxBuffer) {
 // ── Expenses claim form: a rate change inside the period ───────────────────
 
 const MILEAGE_NOTE_ROW = 31;
-const MILEAGE_NOTE_ROW_HEIGHT = 40;
+// Two lines at 9pt. The form fills its printed page, so a taller row pushes the
+// office-use box onto a second page.
+const MILEAGE_NOTE_ROW_HEIGHT = 26;
 // The wrapped, vertically centred 9pt style the form already uses.
 const MILEAGE_NOTE_STYLE = 40;
 
@@ -1137,10 +1139,10 @@ export function mileageRateChangeNote(mileage, endDate) {
   const changeLabel = changeDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
   const changeMonthLabel = changeDate.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
   return (
-    `Mileage: this workbook claims ${ratePence(mileage.higher_rate_pence)} a mile in every month. ` +
-    `Before ${changeLabel} the rate was ${ratePence(mileage.previous_higher_rate_pence)}. ` +
-    `For the months before ${changeMonthLabel}, type ${mileage.previous_higher_rate_pence} in cell C30 on sheet ${sheetName(1)}, ` +
-    `then type ${mileage.higher_rate_pence} in cell C30 on sheet ${sheetName(monthsBefore + 1)}.`
+    `Mileage: ${ratePence(mileage.higher_rate_pence)} a mile in every month. ` +
+    `It was ${ratePence(mileage.previous_higher_rate_pence)} before ${changeLabel}. ` +
+    `For months before ${changeMonthLabel} type ${mileage.previous_higher_rate_pence} in C30 on ${sheetName(1)}, ` +
+    `then ${mileage.higher_rate_pence} in C30 on ${sheetName(monthsBefore + 1)}.`
   );
 }
 
