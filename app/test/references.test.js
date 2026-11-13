@@ -112,3 +112,20 @@ describe("the published references", () => {
     expect(unknown).toEqual([]);
   });
 });
+
+describe("the references page headings", () => {
+  const pageSource = readFileSync(resolve(PUBLIC_DIR, "lib/references-page.js"), "utf8");
+  const labelled = new Set([...pageSource.split("};")[0].matchAll(/^\s+"([\w-]+)":\s*"/gm)].map((match) => match[1]));
+  const files = [
+    readFileSync(resolve(PUBLIC_DIR, "data/references-core.toml"), "utf8"),
+    ...readdirSync(resolve(PUBLIC_DIR, "data/ref-additions"))
+      .filter((file) => file.endsWith(".toml"))
+      .map((file) => readFileSync(resolve(PUBLIC_DIR, "data/ref-additions", file), "utf8")),
+  ];
+  const records = mergeReferences(files.map((text, index) => ({ name: `file-${index}.toml`, text })));
+
+  it("has a plain-English label for every category a record uses", () => {
+    const unlabelled = [...new Set(records.map((entry) => entry.category))].filter((category) => !labelled.has(category));
+    expect(unlabelled).toEqual([]);
+  });
+});
