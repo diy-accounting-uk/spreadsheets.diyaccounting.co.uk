@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0 -->
+<!-- Copyright (C) 2006-2026 DIY Accounting Limited -->
 # Reconciliation Report: GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007
 
 Scenario: taxi-scenario-basic
@@ -52,6 +54,7 @@ Trade: Owner-driver private hire and taxi services
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
 | Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
 | Admin: NI Class 2 Weekly Rate = tax data | 3.5 | 3.5 | 0 | PASS |
+| Admin: NI Class 2 Small Profits Threshold = tax data | 6845 | 6845 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
@@ -65,7 +68,7 @@ Trade: Owner-driver private hire and taxi services
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Income Tax | 3235 | 3235 | 0 | PASS |
 | NI Class 4 (lower) | 970.5 | 970.5 | 0 | PASS |
-| Total Tax + NI | 4206 | 4205.5 | -0.5 | PASS |
+| Total Tax + NI | 4205.5 | 4205.5 | 0 | PASS |
 | Tax: first payment on account is half the liability | 2102.75 | 2102.75 | 0 | PASS |
 | Tax: second payment on account is half the liability | 2102.75 | 2102.75 | 0 | PASS |
 | Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
@@ -96,7 +99,7 @@ Trade: Owner-driver private hire and taxi services
 | Forecast: tax at higher rate | 0 | 0 | 0 | PASS |
 | Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
 | Forecast: National Insurance | 970.5 | 970.5 | 0 | PASS |
-| Forecast: tax and NI liability | 4206 | 4205.5 | -0.5 | PASS |
+| Forecast: tax and NI liability | 4205.5 | 4205.5 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
@@ -317,6 +320,7 @@ Trade: Owner-driver private hire and taxi services
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Vehicle under £12,000) | 8,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Purpose-built taxi) | — |
 | Total Annual Investment Allowance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance | 1,440 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal | 0 |
@@ -336,6 +340,7 @@ Trade: Owner-driver private hire and taxi services
 | Higher Band Start | 37,701 |
 | Higher Band End | 125,140 |
 | NI Class 2 Weekly Rate | 3.5 |
+| NI Class 2 Small Profits Threshold | 6,845 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
 | NI Class 4 Upper Rate | 0.02 |
@@ -546,6 +551,7 @@ Trade: Owner-driver private hire and taxi services
 | N12 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
 | N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 3.5 | tax.nationalInsurance.class2WeeklyRate |
+| N16 | NI Class 2 Small Profits Threshold | 6845 | tax.nationalInsurance.class2SmallProfitsThreshold |
 | L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |

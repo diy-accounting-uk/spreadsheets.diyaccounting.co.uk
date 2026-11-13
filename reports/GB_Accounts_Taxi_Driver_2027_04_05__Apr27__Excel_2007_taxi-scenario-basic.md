@@ -320,6 +320,7 @@ Trade: Owner-driver private hire and taxi services
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Vehicle under £12,000) | 8,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Purpose-built taxi) | — |
 | Total Annual Investment Allowance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance | 1,120 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal | 0 |
