@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+# New references for what-can-diy-accounting-submit-file-for-me.html
+# Generated: 2026-11-13
+# Merge into references.toml when reviewed
+
+[[reference]]
+id = "REF612"
+claim = "Making Tax Digital for Income Tax applies over 50,000 pounds from 6 April 2026, over 30,000 pounds from 6 April 2027 and over 20,000 pounds from 6 April 2028"
+category = "mtd-itsa"
+articles = ["what-can-diy-accounting-submit-file-for-me"]
+
+[[reference.source]]
+id = "SRC-GOVUK-ITSA-WHEN"
+url = "https://www.gov.uk/guidance/find-out-if-and-when-you-need-to-use-making-tax-digital-for-income-tax"
+title = "Find out if and when you need to use Making Tax Digital for Income Tax"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "£50,000 for the 2024 to 2025 tax year, you should've started using Making Tax Digital for Income Tax from 6 April 2026; £30,000 for the 2025 to 2026 tax year, you will need to use it from 6 April 2027; £20,000 for the 2026 to 2027 tax year, you will need to use it from 6 April 2028"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF613"
+claim = "Bridging software connects to records kept in spreadsheets"
+category = "mtd-itsa"
+articles = ["what-can-diy-accounting-submit-file-for-me"]
+
+[[reference.source]]
+id = "SRC-GOVUK-ITSA-SOFTWARE"
+url = "https://www.gov.uk/guidance/find-software-thats-compatible-with-making-tax-digital-for-income-tax"
+title = "Find software that's compatible with Making Tax Digital for Income Tax"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "will connect to existing records kept in spreadsheets or other accounting tools."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF614"
+claim = "HMRC's online service for company accounts and the Company Tax Return closed on 31 March 2026 and companies use commercial software from 1 April 2026"
+category = "company"
+articles = ["what-can-diy-accounting-submit-file-for-me"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-CLOSURE"
+url = "https://www.gov.uk/guidance/closure-of-the-service-to-file-your-company-accounts-and-tax-return"
+title = "Closure of the service to file your company accounts and tax return"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "The 'File your accounts and Company Tax Return' online service closed on 31 March 2026. From 1 April 2026 you should use commercial software to file annual accounts and Company Tax Returns with HMRC."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF615"
+claim = "A paper Company Tax Return is accepted only with a reasonable excuse or to file in Welsh"
+category = "company"
+articles = ["what-can-diy-accounting-submit-file-for-me"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-CLOSURE"
+url = "https://www.gov.uk/guidance/closure-of-the-service-to-file-your-company-accounts-and-tax-return"
+title = "Closure of the service to file your company accounts and tax return"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You can file a paper return with HMRC if you have a reasonable excuse or want to file in Welsh."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF616"
+claim = "The Company Tax Return deadline is 12 months after the end of the accounting period"
+category = "company"
+articles = ["what-can-diy-accounting-submit-file-for-me"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-DEADLINE"
+url = "https://www.gov.uk/company-tax-returns/deadline-and-penalties"
+title = "Company Tax Returns: deadline and penalties"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "The deadline for your tax return is 12 months after the end of the accounting period it covers."
+accessed = "2026-11-13"
+authority = "primary"
