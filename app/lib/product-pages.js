@@ -137,6 +137,7 @@ export const ORGANIZATION = {
     "https://github.com/diy-accounting-uk",
     "https://www.npmjs.com/package/@diy-accounting-uk/diya-submit",
     "https://www.npmjs.com/package/@diy-accounting-uk/diya-gl",
+    "https://www.wikidata.org/wiki/Q142144452",
   ],
 };
 

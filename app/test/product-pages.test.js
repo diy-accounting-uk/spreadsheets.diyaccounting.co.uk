@@ -78,7 +78,7 @@ describe("buildProductPageHtml", () => {
   it("keeps the Organization record in the agreed order", () => {
     expect(Object.keys(ORGANIZATION)).toEqual(["@context", "@type", "name", "legalName", "url", "address", "identifier", "sameAs"]);
     expect(ORGANIZATION.identifier.value).toBe("06846849");
-    expect(ORGANIZATION.sameAs).toHaveLength(5);
+    expect(ORGANIZATION.sameAs).toHaveLength(6);
   });
 
   it("throws for a product with no page content", () => {
