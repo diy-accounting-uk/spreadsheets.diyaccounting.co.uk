@@ -100,6 +100,8 @@ operator's: they need a factor the session does not hold, or they spend money or
 npm install
 npm run build:redirects  # both sites: --site spreadsheets, --site diya-gl
 node app/bin/build-sitemaps.js
+node app/bin/build-knowledge-base.js
+node app/bin/build-references.js
 ./mvnw clean verify
 node app/bin/build-packages.js
 npm run cdk:synth

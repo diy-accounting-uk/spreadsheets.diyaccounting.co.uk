@@ -45,6 +45,8 @@ web/diya-gl.co.uk/public/llms-full.txt
 # Product pages built from catalogue.toml by app/bin/build-product-pages.js
 web/spreadsheets.diyaccounting.co.uk/public/products/
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
+# Merged citation records built by app/bin/build-references.js
+web/spreadsheets.diyaccounting.co.uk/public/references.toml
 
 # Generated donate page (built per environment from donate.template.html
 # and donate-links.toml by scripts/build-donate-page.mjs)

@@ -17,7 +17,7 @@
 import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
 import { shiftMonths, periodShiftMonths } from "../period-shift.js";
 import { taxYearFileName } from "../tax-year.js";
-import { standardReads, multiFileOptions, SE_YEAR_END_MONTH, SBA_CLAIM_ROWS } from "../../products/se.js";
+import { standardReads, multiFileOptions, SE_YEAR_END_MONTH, SBA_CLAIM_ROWS, NEW_CAR_ROWS } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateMileageAllowance } from "../tax/mileage.js";
@@ -497,9 +497,10 @@ function scheduleRow({
   singleAssetPool = false,
   privateUse = 0,
   disposal,
+  newCar = false,
 }) {
   const written = cost > 0;
-  const isNewAsset = aiaRate !== undefined;
+  const isNewAsset = aiaRate !== undefined || newCar;
   // The car rows multiply the allowances by (1-M), the business share; M is
   // nil on every other row, so the factor is 1 there.
   const businessShare = 1 - privateUse;
@@ -522,6 +523,14 @@ function scheduleRow({
     row.R = claimsWritingDown && !specialPool ? row.O * wdaRate * businessShare : SHEET_BLANK;
     row.AC = claimsWritingDown && specialPool ? row.O * specialRate * businessShare : SHEET_BLANK;
     row.S = claimsWritingDown ? row.O - sheetNumber(row.R) - sheetNumber(row.AC) : SHEET_BLANK;
+  } else if (newCar) {
+    // A car bought in the year claims the main writing down rate on its cost
+    // and no annual investment allowance: the Cars rows hold no formula in Q.
+    row.O = SHEET_BLANK;
+    row.Q = SHEET_BLANK;
+    row.R = written ? cost * wdaRate * businessShare : SHEET_BLANK;
+    row.AC = SHEET_BLANK;
+    row.S = written ? cost - sheetNumber(row.R) : SHEET_BLANK;
   } else {
     row.O = SHEET_BLANK;
     row.P = aiaRate;
@@ -694,14 +703,31 @@ function buildSchedule(scenario, taxData, rate, entries) {
     });
   }
 
-  const newRows = capitalPurchases
-    .slice(0, NEW_PLANT_ROW_COUNT)
-    .map((tx) => scheduleRow({ cost: roundedNetOfVat(tx.amount, rate), depRate: depreciation.plant_and_machinery ?? 0, aiaRate }));
+  // A purchase the book states is a car lands on the Cars rows, any other on
+  // the New Plant & Machinery rows.
+  const plantPurchases = capitalPurchases.filter((tx) => tx.asset_class !== "car").slice(0, NEW_PLANT_ROW_COUNT);
+  const carPurchases = capitalPurchases.filter((tx) => tx.asset_class === "car").slice(0, NEW_CAR_ROWS.length);
+  const newPurchases = [...plantPurchases, ...carPurchases];
+  const newRows = [
+    ...plantPurchases.map((tx) =>
+      scheduleRow({ cost: roundedNetOfVat(tx.amount, rate), depRate: depreciation.plant_and_machinery ?? 0, aiaRate }),
+    ),
+    ...carPurchases.map((tx) =>
+      scheduleRow({
+        cost: roundedNetOfVat(tx.amount, rate),
+        depRate: depreciation.motor_vehicles ?? 0,
+        wdaRate,
+        newCar: true,
+        singleAssetPool: tx.single_asset_pool === true,
+        privateUse: tx.private_use || 0,
+      }),
+    ),
+  ];
 
   const existing = scheduleTotals(existingRows);
   const additions = scheduleTotals(newRows);
   if (entries) {
-    const newRowEntries = capitalPurchases.slice(0, NEW_PLANT_ROW_COUNT).map((tx) => ({ asset: entriesOf([tx]), disposal: new Set() }));
+    const newRowEntries = newPurchases.map((tx) => ({ asset: entriesOf([tx]), disposal: new Set() }));
     entries.existing = scheduleTotalEntries(existingRowEntries);
     entries.additions = scheduleTotalEntries(newRowEntries);
     entries.totals = Object.fromEntries(
@@ -710,8 +736,21 @@ function buildSchedule(scenario, taxData, rate, entries) {
   }
   const register = [
     ...existingRows.map((row, index) => ({ openingAsset: existingAssets[index], row })),
-    ...newRows.map((row, index) => ({ entryNumber: entryOf(capitalPurchases[index]), row })),
+    ...newRows.map((row, index) => ({ entryNumber: entryOf(newPurchases[index]), row })),
   ];
+  // The private use share and single asset pool marker the writer puts on a
+  // new car's row, with that row's AE and AG.
+  carPurchases.forEach((tx, index) => {
+    const rowNumber = NEW_CAR_ROWS[index];
+    const row = newRows[plantPurchases.length + index];
+    motorRowCells[`E${rowNumber}`] = row.E;
+    motorRowCells[`R${rowNumber}`] = row.R;
+    motorRowCells[`S${rowNumber}`] = row.S;
+    motorRowCells[`M${rowNumber}`] = tx.private_use || 0;
+    motorRowCells[`AD${rowNumber}`] = tx.single_asset_pool ? "P" : SHEET_BLANK;
+    motorRowCells[`AE${rowNumber}`] = row.AE;
+    motorRowCells[`AG${rowNumber}`] = row.AG;
+  });
   return { existing, additions, totals: addScheduleTotals(existing, additions), motorRowCells, register };
 }
 

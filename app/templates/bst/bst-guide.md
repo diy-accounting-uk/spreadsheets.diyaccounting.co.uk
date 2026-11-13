@@ -246,7 +246,43 @@ Fixed items are physical items used by the business over a period of more than o
 
 When the fixed asset schedule is completed the capital allowances are automatically calculated and update the profit tax return. Capital allowances on vehicles are automatically reduced by the personal use %.
 
-100% of the cost of the asset can be set off against profits in the year purchased which is called Annual Investment Allowance. The remaining value of the asset and other written down values are then written off against future years profits at 18% of the book value remaining.
+100% of the cost of plant and equipment can be set off against profits in the year purchased which is called Annual Investment Allowance. The remaining value of the asset and other written down values are then written off against future years profits at the main rate on the Admin sheet of the book value remaining. Cars do not qualify for the Annual Investment Allowance, so a car follows the rules in "Where a Car Goes" below.
+
+#### Where a Car Goes
+
+The section headed NEW FIXED ASSETS Bought AFTER on the Fixed Assets sheet starts at Row 59. It has one block for each kind of asset:
+
+| Asset bought in the year | Block on the Fixed Assets sheet | Rows |
+|--------------------------|---------------------------------|------|
+| Land and property | Land & Property | 61 to 63 |
+| Plant and machinery | Plant & Machinery | 67 to 71 |
+| Fixtures and fittings | Fixtures & Fittings | 75 to 79 |
+| Computers | Computers | 83 to 87 |
+| Car costing over the amount beside the heading | Motor Vehicles - costing over | 91 to 95 |
+| Car costing under that amount | Motor Vehicles - costing under | 97 to 101 |
+| Van or lorry | Motor Vehicles - Vans & Lorries | 103 to 107 |
+
+A car goes on the Cars rows, which are the two Motor Vehicles blocks that carry a cost heading. A car never goes on a Plant row. A Plant row claims 100% of the cost in the year of purchase as the Annual Investment Allowance, and cars do not qualify for that allowance ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). A car owned before the start of the year goes in the first section of the sheet, in rows 38 to 42 or 44 to 48. A van or a lorry is not a car for capital allowances, and nor is a motorcycle bought from 6 April 2009. Put a van or a lorry on the Vans & Lorries rows ([GOV.UK: what counts as a car](https://www.gov.uk/capital-allowances/business-cars)).
+
+The Cars rows claim the main rate of writing down allowance on the cost of the car. The main rate is 14% for Income Tax from 6 April 2026 and 18% before ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). Column G, the private use share, reduces the claim by the same share.
+
+The rate for a car depends on its CO2 emissions. Check the figure for your car, then find the case:
+
+| Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
+|----------------------------|---------------------|------------------------|
+| New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. |
+| New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
+
+Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
+
+**A car over 50g/km (6%).** GOV.UK puts a car with CO2 emissions over 50g/km in the special rate pool, which has a writing down allowance of 6% ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Cars rows claim the main rate.
+
+**A new zero-emission car (100%).** The Cars rows have no first-year allowance column. Add the rest of the cost to the capital allowances on your Self Assessment return. Next year, enter 0 as the written down value in column I of the car's row in the existing section.
+
+**A period that includes 6 April 2026.** GOV.UK says to work out a hybrid rate for an accounting period that includes the day the rate changed ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The workbook holds one main rate.
+
+If an earlier year has a car on a Plant row, see [where does a car go in the fixed assets workbook](https://spreadsheets.diyaccounting.co.uk/articles/where-does-a-car-go-in-the-fixed-assets-workbook.html).
 
 Businesses should set a consistent policy in the treatment of fixed assets and it is suggested that only long term assets (used more than one year) and costing over £100 should be classified as "fixed".
 

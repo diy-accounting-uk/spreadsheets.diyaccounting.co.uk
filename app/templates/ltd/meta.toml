@@ -36,7 +36,21 @@ admin = "xl/worksheets/sheet12.xml"
 cellEditFn = "ltd"
 
 [sheets.expensesform]
-mileageMonth = "xl/worksheets/sheet1.xml"
+# The first sheet holds the rate; each later month reads the one before it.
+mileageMonths = [
+  "xl/worksheets/sheet1.xml",
+  "xl/worksheets/sheet2.xml",
+  "xl/worksheets/sheet3.xml",
+  "xl/worksheets/sheet4.xml",
+  "xl/worksheets/sheet5.xml",
+  "xl/worksheets/sheet6.xml",
+  "xl/worksheets/sheet7.xml",
+  "xl/worksheets/sheet8.xml",
+  "xl/worksheets/sheet9.xml",
+  "xl/worksheets/sheet10.xml",
+  "xl/worksheets/sheet11.xml",
+  "xl/worksheets/sheet12.xml",
+]
 
 [sheets.fixedassets]
 adminExternalLink = "xl/externalLinks/externalLink1.xml"

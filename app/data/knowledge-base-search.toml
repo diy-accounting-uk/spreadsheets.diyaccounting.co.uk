@@ -1,0 +1,651 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+#
+# Search keywords and list order for the knowledge base page, one entry per article in
+# web/spreadsheets.diyaccounting.co.uk/public/articles. Nothing in a published article holds these.
+# priority orders the featured list: the lowest number shows first. Keywords hold no commas.
+
+[[article]]
+id = "changing-spreadsheets"
+priority = 1
+keywords = ["amend", "adapt", "add", "delete", "row", "column", "spreadsheet", "document", "formula"]
+
+[[article]]
+id = "accounting-period-over12-months"
+priority = 2
+keywords = ["accounting period", "12 months", "Companies House", "HMRC", "filing", "returns", "overlapping", "first year"]
+
+[[article]]
+id = "accounting-and-basis-periods-self-employed-business"
+priority = 3
+keywords = ["self assessment tax return", "self employed", "tax return", "tax return form", "basis period", "accounting period", "tax", "tax year"]
+
+[[article]]
+id = "self-employed-tax-returns"
+priority = 4
+keywords = ["tax accounting", "self employed", "self employed tax return", "self assessment"]
+
+[[article]]
+id = "cash-accounting-scheme"
+priority = 5
+keywords = ["cash accounting", "double entry"]
+
+[[article]]
+id = "c-i-svs-corporation-tax"
+priority = 6
+keywords = ["contractor", "sub", "CIS", "deduction"]
+
+[[article]]
+id = "common-accounting-questions-for-a-new-business-owner"
+priority = 7
+keywords = ["Turnover", "net profit", "gross profit", "management accounts", "financial accounts", "balance sheet"]
+
+[[article]]
+id = "month-end-year-end"
+priority = 8
+keywords = ["month end year end"]
+
+[[article]]
+id = "directors-loansand-dividends"
+priority = 9
+keywords = ["directors loan", "dividends", "profits", "financial accounts"]
+
+[[article]]
+id = "accounting-for-v-a-t-with-making-tax-digital"
+priority = 10
+keywords = ["self assessment tax return", "VAT return", "VAT return form", "VAT", "MTD", "Making Tax Digital"]
+
+[[article]]
+id = "directors-wages"
+priority = 11
+keywords = ["director", "wages", "shareholder", "dividends"]
+
+[[article]]
+id = "taxi-drivers-miss-outon-capital-tax-allowances"
+priority = 12
+keywords = ["taxi", "taxi accounts", "taxi driver", "taxi driver accounts", "capital tax allowance", "taxi accountants"]
+
+[[article]]
+id = "workingout-costof-salefor-net-profit"
+priority = 13
+keywords = ["cost of sale", "gross profit", "net profit", "stock"]
+
+[[article]]
+id = "c-i-s-deductions"
+priority = 14
+keywords = ["contractor", "sub", "CIS", "deduction"]
+
+[[article]]
+id = "advertising-home-bookkeeping-services-in-the-u-k"
+priority = 15
+keywords = ["bookkeeping", "bookkeeping services", "home bookkeeping", "bookkeeping business", "bookkeeping software", "advertising"]
+
+[[article]]
+id = "bookkeeping-software-and-services"
+priority = 16
+keywords = ["bookkeeping", "bookkeeper", "financial control", "bookkeeping system", "bookkeeping software", "small business", "bookkeeping services"]
+
+[[article]]
+id = "getting-started-with-company-limited-package"
+priority = 17
+keywords = ["start", "company limited", "spreadsheet", "figure", "balance", "open accounts"]
+
+[[article]]
+id = "bookkeepers-networkingfor-business"
+priority = 18
+keywords = ["bookkeeping", "bookkeeping services", "home bookkeeping", "bookkeeping business", "bookkeeping software"]
+
+[[article]]
+id = "lower-tax-bills-small-business-bookkeeping"
+priority = 19
+keywords = []
+
+[[article]]
+id = "small-business-simple-bookkeeping-spreadsheets"
+priority = 20
+keywords = ["small business accounting", "small business accounting software", "bookkeeping", "bookkeeping spreadsheet", "simple bookkeeping", "income", "expenditure", "accounting"]
+
+[[article]]
+id = "small-business-accounting-softwarefor-financial-control"
+priority = 21
+keywords = ["accounting software", "bookkeeping", "financial control", "accounting", "accounts", "small business"]
+
+[[article]]
+id = "software-spreadsheets-essential-small-business-accounting-tools"
+priority = 22
+keywords = ["bookkeeping", "small business", "financial control", "bookkeeping spreadsheets", "bookkeeping software"]
+
+[[article]]
+id = "solve-business-problems-before-they-become-critical"
+priority = 24
+keywords = ["accounting software", "financial control", "debtors", "creditors", "small business", "business problems"]
+
+[[article]]
+id = "accounting-periods-and-basis-periods-for-self-employed-business"
+priority = 25
+keywords = ["self assessment tax return", "self employed", "tax return", "tax return form", "basis period", "accounting period", "tax", "tax year"]
+
+[[article]]
+id = "basic-sole-trader-last-year-figures-brought-forward"
+priority = 26
+keywords = ["last year", "brought forward", "carried forward"]
+
+[[article]]
+id = "self-employed-single-entry-bookkeeping-system"
+priority = 27
+keywords = ["bookkeeping", "single entry bookkeeping", "financial control", "bookkeeper", "bookkeeping software", "self employed bookkeeping"]
+
+[[article]]
+id = "income-tax-rates-calculator-in-accounts-ledger"
+priority = 28
+keywords = []
+
+[[article]]
+id = "filing-self-assessent-tax-return-online"
+priority = 29
+keywords = ["self assessment tax return", "tax return online", "self employed tax return", "self employed business"]
+
+[[article]]
+id = "self-assessment-tax-return-profit-loss-account"
+priority = 30
+keywords = []
+
+[[article]]
+id = "self-employed-self-assessment-tax-return-accounting"
+priority = 31
+keywords = ["Accounting Software", "self employed", "self assessment", "self assessment tax return", "tax return"]
+
+[[article]]
+id = "self-employed-and-small-business-tax-question-and-answers"
+priority = 32
+keywords = []
+
+[[article]]
+id = "self-employed-registration-tax-return-form"
+priority = 33
+keywords = []
+
+[[article]]
+id = "self-employed-status-rules"
+priority = 34
+keywords = []
+
+[[article]]
+id = "self-employed-tax-return-form-capital-tax-allowances"
+priority = 35
+keywords = []
+
+[[article]]
+id = "self-employed-tax-tips"
+priority = 36
+keywords = []
+
+[[article]]
+id = "sole-trader-accounts-income-and-expenditure-basic-tax"
+priority = 37
+keywords = ["sole trader accounts", "income basic tax", "expenditure basic tax", "basic accounts."]
+
+[[article]]
+id = "sole-trader-self-employed-tax-return"
+priority = 38
+keywords = []
+
+[[article]]
+id = "basic-accounts-bookkeeping-save-assessment-tax"
+priority = 39
+keywords = ["sole trader", "basic accounts", "bookkeeping", "self assessment", "tax return", "home accounts"]
+
+[[article]]
+id = "basic-accounts-bookkeeping-saves-assessment-tax"
+priority = 40
+keywords = ["sole trader", "basic accounts", "bookkeeping", "self assessment"]
+
+[[article]]
+id = "double-entry-bookkeeping-for-accuracy"
+priority = 41
+keywords = ["bookkeeping", "double entry bookkeeping", "financial transactions", "bookkeeper", "accountant", "trial balance", "balance sheet", "sales ledger", "purchase ledger"]
+
+[[article]]
+id = "audit-exemptions-for-small-companies"
+priority = 42
+keywords = ["accounting", "audit exemption", "year end accounts", "small companies", "abbreviated accounts", "accounts", "audit"]
+
+[[article]]
+id = "accounts-audit"
+priority = 43
+keywords = ["audit", "error", "sales", "purchases", "bank", "creditors", "debtors", "balance", "match", "settle"]
+
+[[article]]
+id = "balance-sheet-financial-statement-of-assets-and-liabilities"
+priority = 44
+keywords = ["balance sheet", "financial statement", "company accounts", "fixed assets", "current assets", "long term liabilities", "current liabilities"]
+
+[[article]]
+id = "basic-bookkeeping-for-small-business-can-save-money"
+priority = 45
+keywords = ["bookkeeping", "bookkeeping system", "bookkeeper", "single entry bookkeeping", "double entry bookkeeping"]
+
+[[article]]
+id = "c-t600-corporation-tax-return-software"
+priority = 46
+keywords = ["<br>"]
+
+[[article]]
+id = "dividend-tax-credit-tax-rate-income-tax"
+priority = 47
+keywords = ["Dividend voucher", "company dividends", "corporation tax dividends", "income tax", "dividend tax credit", "dividend tax rate", "dividends"]
+
+[[article]]
+id = "double-entry-bookkeeping"
+priority = 48
+keywords = ["bookkeeping", "bookkeeping system", "self employed bookkeeping", "bookkeeping services", "bookkeeper", "single entry bookkeeping", "double entry bookkeeping", "accounting"]
+
+[[article]]
+id = "corporation-tax-refunds"
+priority = 49
+keywords = ["refund", "corporation tax", "liability", "reduced"]
+
+[[article]]
+id = "double-entry-accounts"
+priority = 50
+keywords = ["double entry", "bookkeeping", "accounts", "trade", "creditors", "debtors", "current account"]
+
+[[article]]
+id = "sophisticated-or-simple-bookkeeping-software"
+priority = 51
+keywords = ["accounting software", "bookkeeping", "financial control", "accounting", "single entry bookkeeping", "double entry bookkeeping", "accounts"]
+
+[[article]]
+id = "corporation-tax-non-allowable-expenses"
+priority = 52
+keywords = ["corporation tax", "non allowable expenses"]
+
+[[article]]
+id = "annual-return-dormant-company"
+priority = 53
+keywords = ["dormant company", "companies house", "annual return", "annual accounts", "balance sheet", "accounting"]
+
+[[article]]
+id = "articlesof-association-company-formation"
+priority = 54
+keywords = ["articles of association", "company formation", "table A", "limited liability company", "company registration", "companies house", "starting a limited liability company"]
+
+[[article]]
+id = "limited-liability-company-formation-benefits"
+priority = 55
+keywords = ["company formation", "incorporation", "limited liability company", "limited liability", "company house", "income tax", "corporation tax", "tax", "memorandum of association", "articles of association"]
+
+[[article]]
+id = "memorandum-of-association"
+priority = 56
+keywords = ["memorandum of association", "articles of association", "limited liability company", "forming a company", "company formation", "company registration"]
+
+[[article]]
+id = "limited-company-directors-report"
+priority = 57
+keywords = ["business plan", "start a new business", "small business", "business start up", "entrepreneur", "new business"]
+
+[[article]]
+id = "introducing-share-capital"
+priority = 58
+keywords = ["share", "capital"]
+
+[[article]]
+id = "limited-liability-company-formation"
+priority = 59
+keywords = ["company formation", "incorporation", "limited liability company", "limited liability", "companies house", "limited company registration", "memorandum of association", "articles of association", "starting a limited liability company"]
+
+[[article]]
+id = "company-name-search-register"
+priority = 60
+keywords = ["Company Name", "Limited Company", "Company Name Register", "Company Registration"]
+
+[[article]]
+id = "limited-liability-company-formation-next-steps"
+priority = 61
+keywords = ["company formation", "statutory books", "share certificate", "company registration", "statutory register", "company accounts", "annual return", "Companies House", "Certificate of Incorporation", "limited liability company"]
+
+[[article]]
+id = "company-accounts-v-a-t-inspection"
+priority = 62
+keywords = []
+
+[[article]]
+id = "example-making-tax-digital"
+priority = 63
+keywords = ["MTD", "VAT", "Making Tax Digital"]
+
+[[article]]
+id = "introduction-v-a-t-registration"
+priority = 64
+keywords = []
+
+[[article]]
+id = "sole-trader-business-start-up"
+priority = 65
+keywords = ["Start up", "business plan", "personal liability risk", "sole trader", "insurance", "income tax", "vat registration"]
+
+[[article]]
+id = "company-tax-accounting-software-tax-return"
+priority = 66
+keywords = ["tax accounting", "tax return", "limited company", "quarterly vat returns", "corporation tax return", "tax liability"]
+
+[[article]]
+id = "reference-dates-private-limited-companies"
+priority = 67
+keywords = ["accounting period", "accounting year end", "accounts", "private company", "private limited company", "financial accounting", "final accounts"]
+
+[[article]]
+id = "v-a-tregisteredcompaniesclaiming-v-a-tregistration"
+priority = 68
+keywords = []
+
+[[article]]
+id = "v-a-t-registration-schemes-thresholds"
+priority = 69
+keywords = []
+
+[[article]]
+id = "business-expenses-reduce-tax-bills"
+priority = 70
+keywords = []
+
+[[article]]
+id = "annual-investment-allowance"
+priority = 71
+keywords = ["annual investment allowance", "capital allowance", "fixed assets", "tax allowance", "writing down allowance"]
+
+[[article]]
+id = "capital-allowances"
+priority = 72
+keywords = ["capital allowances", "depreciation", "written down value"]
+
+[[article]]
+id = "claiming-mileage-allowance-expenses"
+priority = 73
+keywords = []
+
+[[article]]
+id = "disallowed-business-expenses"
+priority = 74
+keywords = []
+
+[[article]]
+id = "subsistence-travel-expenses-tax-allowances-car-mileage-rates"
+priority = 75
+keywords = ["business journeys", "subsistence travel expenses", "tax allowances", "car mileage rates"]
+
+[[article]]
+id = "written-down-book-value-and-tax-value"
+priority = 76
+keywords = ["written down", "book value", "tax value", "fixed assets"]
+
+[[article]]
+id = "basic-sole-trader-income-tax-calculation"
+priority = 77
+keywords = ["income tax", "tax calculations", "PAYE"]
+
+[[article]]
+id = "outsourcing-benefits-against-payroll-software"
+priority = 79
+keywords = ["payroll software", "income tax", "national insurance", "payslips", "paye", "paye calculator", "paye administration", "payroll system", "payroll solution"]
+
+[[article]]
+id = "small-business-payroll-software-package"
+priority = 80
+keywords = ["payroll", "payroll software", "payroll software package", "paye", "small business", "employer", "HMRC", "income tax", "national insurance", "payslip", "paye administration"]
+
+[[article]]
+id = "d-i-y-accounting-small-business-accounting-software-u-k"
+priority = 82
+keywords = ["Accounting software", "small business", "small business accounting", "small business accounting software", "bookkeeping", "excel spreadsheets", "self assessment tax return", "vat", "payroll software", "accounting software UK"]
+
+[[article]]
+id = "income-tax-p-a-y-e-employers-payroll"
+priority = 83
+keywords = ["payroll software", "income tax", "national insurance", "payslips", "paye", "paye calculator", "paye administration", "payroll system", "payroll solution"]
+
+[[article]]
+id = "inland-revenue-p-a-y-e-returns-national-insurance-scheme"
+priority = 84
+keywords = ["payroll", "payroll software", "income tax", "national insurance", "paye", "payroll solution", "payroll system", "small business payroll", "payslip", "employee"]
+
+[[article]]
+id = "pay-as-you-earn-wages-salaries-tax-scheme"
+priority = 85
+keywords = ["payroll", "paye", "employer", "employee", "income tax", "national insurance", "payroll software", "paye administration"]
+
+[[article]]
+id = "p-a-y-e-p45-reviewfor-new-employees"
+priority = 86
+keywords = ["payroll software", "income tax", "national insurance", "payslips", "paye", "paye calculator", "paye administration", "payroll system", "payroll solution", "p45", "new employee", "pay status"]
+
+[[article]]
+id = "new-employers-payroll-essentials"
+priority = 87
+keywords = ["payroll", "paye", "employer", "employee", "HMRC", "income tax", "national insurance", "payroll software", "tax", "payslip"]
+
+[[article]]
+id = "review-small-business-p-a-y-epayrollsoftware"
+priority = 88
+keywords = ["payroll", "payroll software", "income tax", "national insurance", "paye", "payroll solution", "payroll system", "small business payroll", "payslip", "employee"]
+
+[[article]]
+id = "p-a-y-e-questions-and-answers"
+priority = 89
+keywords = ["paye", "tax code", "tax", "employer", "employee", "income tax", "national insurance", "paye questions", "paye administration"]
+
+[[article]]
+id = "capital-tax-allowance-tax-rules-for-taxi-accounts"
+priority = 90
+keywords = []
+
+[[article]]
+id = "d-i-y-accounting-cabsmart-taxi-driver-accounts"
+priority = 91
+keywords = []
+
+[[article]]
+id = "easy-taxi-driver-accounting"
+priority = 92
+keywords = []
+
+[[article]]
+id = "small-business-tax-investigations"
+priority = 93
+keywords = []
+
+[[article]]
+id = "revenue-budget"
+priority = 94
+keywords = ["Revenue budget", "financials performance", "financial targets", "business accounting", "financial accounting"]
+
+[[article]]
+id = "accounting-for-profit-with-marginal-costing"
+priority = 95
+keywords = ["marginal costing", "marginal cost", "accounting", "accounting software", "accounting for profit", "break even", "break even analysis", "accounting", "variable costs", "fixed costs"]
+
+[[article]]
+id = "credit-squeeze-flexible-business-finance"
+priority = 96
+keywords = ["bookkeeping", "financial accounts", "business finance", "business planning"]
+
+[[article]]
+id = "bookkeeping-records-on-cash-or-accrual-accounting-basis"
+priority = 97
+keywords = ["bookkeeping", "accounting", "cash accounting", "accrual accounting", "cash basis", "accruals basis", "tax", "taxable profit", "accounts", "small business", "tax point", "financial"]
+
+[[article]]
+id = "business-accounting-software-to-improve-financial-performance"
+priority = 98
+keywords = ["accounting software", "accounting software UK", "small business", "small business accounting", "small business accounting software", "cash flow", "liquidity"]
+
+[[article]]
+id = "cash-flow-managing-stock-levels"
+priority = 99
+keywords = ["credit crunch", "cash flow", "liquidity", "working capital", "stock levels", "stock control", "stock", "inventory"]
+
+[[article]]
+id = "cash-flow-warning-signs"
+priority = 100
+keywords = ["cash flow", "cash flow forecast", "working capital", "liquidity", "credit crunch", "debtors", "creditors", "stock"]
+
+[[article]]
+id = "credit-crunch-cash-flow-management-issues"
+priority = 101
+keywords = ["cash flow", "funding", "credit crunch", "stock control", "working capital", "investment", "financing", "interest"]
+
+[[article]]
+id = "cash-flow-managementof-debtorsand-creditors"
+priority = 102
+keywords = ["cash flow", "credit crunch", "credit control", "debtors", "creditors", "working capital", "bad debt", "liquidity"]
+
+[[article]]
+id = "cost-accounting-for-profit"
+priority = 103
+keywords = ["Accounting software", "accounting for profit", "fixed costs", "variable costs", "cost accounting", "small business"]
+
+[[article]]
+id = "credit-crunch-debt-recovery"
+priority = 104
+keywords = ["cash flow", "debt recovery", "credit crunch", "credit control", "late payment interest", "bad debt"]
+
+[[article]]
+id = "small-business-review-and-planning-profits"
+priority = 105
+keywords = ["profitability", "financial budget", "sales", "cost management", "working capital", "small business", "business plan"]
+
+[[article]]
+id = "introducing-cash"
+priority = 106
+keywords = ["cash", "introduced", "loan", "profits"]
+
+[[article]]
+id = "start-own-business-entrepreneur-personal-qualities"
+priority = 107
+keywords = ["business plan", "start a new business", "small business", "business start up", "entrepreneur", "new business"]
+
+[[article]]
+id = "financial-section-business-planfor-new-business"
+priority = 108
+keywords = ["business plan", "small business", "business start up", "profit and loss", "financial", "cash flow", "liquidity"]
+
+[[article]]
+id = "new-business-successful-business-plan"
+priority = 109
+keywords = ["business plan", "new business", "small business", "business start up", "entrepreneur", "sales", "marketing", "financial"]
+
+[[article]]
+id = "sales-accounting-for-profit"
+priority = 110
+keywords = ["accounting software", "accounting for profit", "sales turnover", "selling prices", "profit", "financial performance"]
+
+[[article]]
+id = "credit-crunch-fuel-prices-supply-and-demand"
+priority = 111
+keywords = ["credit crisis", "recession", "financial crisis", "economic disaster", "fuel prices", "credit crunch", "oil"]
+
+[[article]]
+id = "use-accounting-software-to-make-business-more-profitable"
+priority = 112
+keywords = ["accounting software", "small business", "financial control", "gross profit", "profit margin", "profit and loss"]
+
+[[article]]
+id = "time-to-pay"
+priority = 113
+keywords = ["HMRC", "Covid", "payment", "tax"]
+
+[[article]]
+id = "paying-without-a-pay-pal-account"
+priority = 114
+keywords = ["PayPal payment account credit card"]
+
+[[article]]
+id = "showing-loan-paymentsin-current-account"
+priority = 115
+keywords = ["Loan", "payment", "long term creditor", "current account"]
+
+[[article]]
+id = "product-or-service-sales-price"
+priority = 116
+keywords = ["selling price", "sales volume", "cost basis", "value basis", "market", "competition", "prices", "pricing policy", "set price"]
+
+[[article]]
+id = "taxrelief-work-vehicle"
+priority = 118
+keywords = []
+
+[[article]]
+id = "two-tier-affiliate-program"
+priority = 119
+keywords = []
+
+[[article]]
+id = "using-our-packages-on-a-mac"
+priority = 120
+keywords = ["mac", "openoffice", "excel"]
+
+[[article]]
+id = "mtd-vat-submission-guide"
+priority = 121
+keywords = ["MTD", "VAT", "Making Tax Digital", "VAT return", "submit", "bridging software", "HMRC", "digital records"]
+
+[[article]]
+id = "mtd-vat-penalties-and-deadlines"
+priority = 122
+keywords = ["VAT", "penalties", "deadlines", "penalty points", "late submission", "late payment", "interest", "HMRC"]
+
+[[article]]
+id = "vat-flat-rate-scheme-guide"
+priority = 123
+keywords = ["VAT", "flat rate scheme", "FRS", "small business", "limited cost trader", "MTD", "VAT scheme"]
+
+[[article]]
+id = "free-mtd-vat-bridging-software"
+priority = 124
+keywords = ["bridging software", "MTD", "VAT", "spreadsheet", "free", "Making Tax Digital", "submit", "HMRC API"]
+
+[[article]]
+id = "mtd-income-tax-self-assessment"
+priority = 125
+keywords = ["MTD", "ITSA", "income tax", "self assessment", "Making Tax Digital", "quarterly updates", "self employed", "landlord"]
+
+[[article]]
+id = "cumulative-quarterly-updates-making-tax-digital-income-tax"
+priority = 126
+keywords = ["cumulative quarterly update", "quarterly update", "making tax digital", "income tax", "MTD ITSA", "self employed", "self assessment"]
+
+[[article]]
+id = "how-do-i-download-my-spreadsheet-again"
+priority = 127
+keywords = ["download", "spreadsheet", "lost file", "zip", "package", "reinstall"]
+
+[[article]]
+id = "how-do-i-record-depreciation-and-fixed-assets"
+priority = 128
+keywords = ["depreciation", "fixed assets", "capital allowances", "asset", "write down", "expenses"]
+
+[[article]]
+id = "linked-workbooks-show-blank-or-wrong-figures"
+priority = 129
+keywords = ["linked workbooks", "blank figures", "external links", "update links", "Excel", "wrong figures"]
+
+[[article]]
+id = "what-can-diy-accounting-submit-file-for-me"
+priority = 130
+keywords = ["DIY Accounting Submit", "file", "VAT return", "HMRC", "income tax", "Companies House", "bridging software"]
+
+[[article]]
+id = "which-diy-accounting-package-should-i-choose"
+priority = 131
+keywords = ["package", "choose", "sole trader", "limited company", "taxi", "which spreadsheet", "VAT"]
+
+[[article]]
+id = "year-end-accuracy-check-does-not-show-zero"
+priority = 132
+keywords = ["year end", "accuracy check", "not zero", "company accounts", "balance", "trial balance", "error"]
+
+[[article]]
+id = "where-does-a-car-go-in-the-fixed-assets-workbook"
+priority = 133
+keywords = ["car", "cars rows", "fixed assets", "capital allowances", "plant", "writing down allowance", "taxi", "hackney carriage", "CO2"]

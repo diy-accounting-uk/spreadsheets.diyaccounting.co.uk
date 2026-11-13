@@ -2,6 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 import { toExcelSerial } from "../../../lib/spreadsheet-runner.js";
+import { excelSerialToUtcDate } from "../../../lib/product-sheets/serial-dates.js";
 import { apportionCorporationTax, financialYearRatesFor } from "../../../lib/tax/corporation-tax.js";
 import { TAX_SHEET } from "../cell-map.js";
 import { OPENACCOUNTS_FRANKED_INVESTMENT_INCOME_CELL } from "../layout.js";
@@ -26,7 +27,7 @@ export function checkAdminFiling(ctx) {
   const admin = results.Admin;
   if (admin && taxData) {
     for (const [cell, label, fromTaxData] of ADMIN_TAX_DATA_CELLS) {
-      check(`Admin ${cell}: ${label}`, num(admin[cell]), fromTaxData(taxData), 0.0001);
+      check(`Admin ${cell}: ${label}`, num(admin[cell]), fromTaxData(taxData, excelSerialToUtcDate(num(admin.F21))), 0.0001);
     }
 
     // The associated companies count is a business fact, not a tax-year

@@ -2,7 +2,7 @@
 # Copyright (C) 2006-2026 DIY Accounting Limited
 # Existing refs to update — add "self-employed-registration-tax-return-form" to articles[]:
 # REF018 (Sole traders must register as self-employed with HMRC)
-# REF010 (Writing down allowance: 18% main rate, 6% special rate)
+# REF010 (Writing down allowance: 14% main rate (18% before April 2026), 6% special rate)
 
 [[reference]]
 id = "REF369"

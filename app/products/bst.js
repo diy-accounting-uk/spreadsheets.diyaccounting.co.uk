@@ -38,6 +38,15 @@ const LEDGER_TOTAL_CELLS = { debtors: "C29", creditors: "F29" };
 
 const LEDGER_SHEET = "Debtors & Creditors";
 
+// The Fixed Assets sheet's rows for an asset bought in the year: Plant &
+// Machinery, and Motor Vehicles - Cars (the block under the "costing under"
+// heading, as on the Company and Self Employed Schedules). Verified against
+// the template: K67 = IF(E67>0,E67*J67," ") claims the AIA, and
+// L97 = IF(E97>0,E97*L$4*(1-G97)," ") claims the main rate with no AIA, where
+// G97 is the private use share and L4 = Admin!G5.
+const FIXED_ASSET_PLANT_ROWS = [67, 68, 69, 70, 71];
+const FIXED_ASSET_CAR_ROWS = [97, 98, 99, 100, 101];
+
 // What a transaction contributes to its month's outstanding figure. The sheet
 // carries a row's value into the outstanding column only while nothing is
 // recorded against it in the payment column (Sales H4 = IF(F4<>0, IF(D4>0,
@@ -156,23 +165,27 @@ export function cellWrites(scenario, targetStartYear) {
   }
 
   // Fixed asset additions go on the "Fixed Assets" sheet's Plant & Machinery
-  // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots). That block
-  // is the only one whose K column (First Year Allowance / AIA claimed) is
-  // formula-driven from the cost in E -- the "EXISTING" (opening) block's
+  // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots), where K
+  // (First Year Allowance / AIA claimed) is formula-driven from the cost in E.
+  // An addition the book states is a car goes on the Motor Vehicles - Cars
+  // rows (97-101) instead, which claim the main writing down rate in L and no
+  // AIA, less the private use share in G. The "EXISTING" (opening) block's
   // non-vehicle categories carry no such formula in this template, so an
   // opening-balance asset there would give zero capital-allowance signal.
   const assetAdditions = fixedAssetAdditions(scenario, "f");
   if (assetAdditions.length > 0) {
     if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
     const fa = writes["Fixed Assets"];
-    let row = 67;
+    let plantRow = FIXED_ASSET_PLANT_ROWS[0];
+    let carRow = FIXED_ASSET_CAR_ROWS[0];
     for (const asset of assetAdditions) {
+      const row = asset.car ? carRow++ : plantRow++;
       const d = shiftDate(parseDate(asset.date));
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`C${row}`] = asset.description;
       if (asset.reference) fa[`D${row}`] = asset.reference;
       fa[`E${row}`] = asset.cost;
-      row++;
+      if (asset.car && asset.private_use !== undefined) fa[`G${row}`] = asset.private_use;
     }
   }
 
@@ -601,11 +614,21 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const fa = results["Fixed Assets"];
     const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
     check("Fixed Assets: schedule total cost = asset additions", fa.E1 || 0, expected.fixed_asset_cost ?? assetCost);
-    check("Fixed Assets: first addition recorded", fa.E67 || 0, expectedAdditions[0].cost);
+    // A car goes on the Cars rows and claims no AIA, so the plant block's cost
+    // is the whole cost less the cars'.
+    const plantAdditions = expectedAdditions.filter((asset) => !asset.car);
+    if (plantAdditions.length > 0) check("Fixed Assets: first addition recorded", fa.E67 || 0, plantAdditions[0].cost);
 
     if (results.Admin) {
       const aiaRate = results.Admin.G4;
-      check("Fixed Assets: AIA claimed = schedule cost x Admin AIA rate", fa.K1 || 0, (fa.E1 || 0) * aiaRate);
+      const plantCost = plantAdditions.reduce((s, a) => s + a.cost, 0);
+      check("Fixed Assets: AIA claimed = schedule cost x Admin AIA rate", fa.K1 || 0, plantCost * aiaRate);
+      const cars = expectedAdditions.filter((asset) => asset.car);
+      if (cars.length > 0) {
+        const wdaRate = results.Admin.G5;
+        const carAllowance = cars.reduce((s, a) => s + a.cost * wdaRate * (1 - (a.private_use || 0)), 0);
+        check("Fixed Assets: writing down allowance claimed = car cost x Admin main rate x business share", fa.L1 || 0, carAllowance);
+      }
     }
 
     // Mirrors the SE Short D80/D85/O80/O85 formulas (see the SE-Short-chain

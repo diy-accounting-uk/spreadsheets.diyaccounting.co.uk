@@ -488,11 +488,21 @@
             "default": false,
             "description": "The asset's tax written-down value is its own pool: an asset with private use (CAA 2001 s.206) or under a short-life asset election (ss.83-86). Its writing down allowance still prints in SA103F box 50 or 51 by rate, but the API files it as capitalAllowanceSingleAssetPool and the small pools allowance never applies to it. The Self Employed Schedule marks the row P in column AD and carries the allowance and the written-down value in columns AE to AG. Self Employed only."
           },
+          "car": {
+            "type": "boolean",
+            "default": false,
+            "description": "The asset is a car for capital allowances (CAA 2001 s.268A). On the Company Schedule and the Self Employed Schedule a car bought in the year goes on the Motor Vehicles - Cars rows 97 to 101, and on the Basic Sole Trader Fixed Assets sheet on its rows 97 to 101; each claims the main rate of writing down allowance, never the annual investment allowance. A Company car held at the opening balance sheet date goes on rows 44 to 48. A van, a lorry, a motorcycle and a hackney carriage are not cars. class must be motorVehicles where it is stated. The Taxi Driver workbook already claims the main rate on every vehicle, so a car there changes nothing."
+          },
+          "purposeBuiltTaxi": {
+            "type": "boolean",
+            "default": false,
+            "description": "The asset is a purpose-built taxi (a hackney carriage), which is not a car for capital allowances, so it qualifies for the annual investment allowance. The Taxi Driver Fixed Assets sheet puts it on its Fixed Assets incl Commercial vehicles bought after block (rows 36 to 43) instead of the vehicles block, which claims only the main rate. class must be motorVehicles where it is stated. Taxi Driver only."
+          },
           "privateUseProportion": {
             "type": "number",
             "minimum": 0,
             "maximum": 1,
-            "description": "The share of the asset's use that is not business use, which reduces its writing down and balancing allowances (the Self Employed Schedule's column M on the car rows). An asset with private use is a single asset pool, so singleAssetPool must be true whenever this is above nil. Self Employed motor vehicles only."
+            "description": "The share of the asset's use that is not business use, which reduces its writing down and balancing allowances (column M of the Self Employed Schedule, column G of the Basic Sole Trader Fixed Assets sheet, on the car rows). An asset with private use is a single asset pool, so singleAssetPool must be true whenever this is above nil. Self Employed motor vehicles, and a Basic Sole Trader car bought in the year."
           },
           "description": {
             "type": "string"

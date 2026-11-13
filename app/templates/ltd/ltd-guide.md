@@ -195,7 +195,7 @@ Record expenses from all sources, except bank interest and charges, in the Purch
 
 ## Expenses Claim Form
 
-Twelve monthly expense claim forms are included in expensesform.xlsx. Enter mileage, expense type, total claimed, and VAT. The form calculates mileage allowance at the HMRC rate for cars and vans: 45p a mile for the first 10,000 business miles for an accounting period that ends before 1 April 2026, and 55p for one that ends from 1 April 2026; 25p a mile after that. The workbook uses one rate for the whole period, set by the financial year in which the period ends.
+Twelve monthly expense claim forms are included in expensesform.xlsx. Enter mileage, expense type, total claimed, and VAT. The form calculates mileage allowance at the HMRC rate for cars and vans: 45p a mile for the first 10,000 business miles for an accounting period that ends before 1 April 2026, and 55p for one that ends from 1 April 2026; 25p a mile after that. The workbook uses one rate for the whole period, set by the financial year in which the period ends. To claim the months that end before 6 April 2026 at 45p, type 0.45 in cell C30 on sheet Month 01, then type 0.55 in cell C30 on the sheet of the first month from April 2026. The note under the mileage line on each sheet names both sheets. Business miles driven on 1 to 5 April 2026 belong to the April 2026 sheet, which claims 55p, but the rate on those five days was 45p: reduce that month's claim by 10p for each of those miles. This applies to every period that holds April 2026, including a year that starts on 1 April 2026.
 
 ## Cash and Bank Spreadsheets
 
@@ -267,11 +267,42 @@ Savings, Credit Card, and Cash accounts follow the same pattern with account-spe
 
 ### Fixed Asset Additions
 
-Enter purchases on the Purchases spreadsheet with code **FA**, then also enter on Fixedassets > Schedule in the New Assets section (Row 56+).
+Enter purchases on the Purchases spreadsheet with code **FA**, then also enter them on Fixedassets > Schedule. The section headed NEW FIXED ASSETS Bought This Year starts at Row 59. It has one block for each kind of asset:
+
+| Asset bought in the year | Block on Fixedassets > Schedule | Rows |
+|--------------------------|---------------------------------|------|
+| Land and property | Land & Property | 61 to 63 |
+| Plant and machinery | Plant & Machinery | 67 to 74 |
+| Fixtures and fittings | Fixtures & Fittings | 78 to 82 |
+| Computers | Computers | 86 to 93 |
+| Car | Motor Vehicles - Cars | 97 to 101 |
+| Van or lorry | Motor Vehicles - Vans & Lorries | 103 to 107 |
+
+A car goes on the Cars rows and never on a Plant row. A Plant row claims 100% of the cost in the year of purchase as the Annual Investment Allowance. Cars do not qualify for that allowance ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). A car owned before the start of the year goes in the EXISTING FIXED ASSETS section, under Motor Vehicles - Cars, rows 44 to 48. A van or a lorry is not a car for capital allowances, and nor is a motorcycle bought from 6 April 2009. Put a van or a lorry on the Vans & Lorries rows ([GOV.UK: what counts as a car](https://www.gov.uk/capital-allowances/business-cars)).
 
 ### Capital Allowances
 
-Annual Investment Allowance, writing down allowances, and balancing charges are automatically calculated. Motor vehicles attract writing down allowances at the rate set in the Admin sheet.
+Annual Investment Allowance, writing down allowances, and balancing charges are calculated from the Schedule, using the rates on the Admin sheet.
+
+The Cars rows claim the main rate of writing down allowance on the cost of the car. The main rate is 14% for Corporation Tax from 1 April 2026 and 18% before ([GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars)). Column M, the private use share, reduces the claim. For a car the company provides to a director or an employee, leave column M at 0. GOV.UK says the company can claim on the full cost.
+
+The rate for a car depends on its CO2 emissions. Check the figure for your car, then find the case:
+
+| Car bought from April 2021 | Allowance on GOV.UK | What the workbook does |
+|----------------------------|---------------------|------------------------|
+| New or second hand, CO2 emissions 50g/km or less, or a second hand electric car | Main rate | Claims the main rate. Type nothing more. |
+| New or second hand, CO2 emissions over 50g/km | 6% special rate | Claims the main rate. |
+| New and unused, CO2 emissions 0g/km or electric, bought before April 2027 | 100% first-year allowance | Claims the main rate. Add the rest as shown below. |
+
+Source: [GOV.UK: business cars](https://www.gov.uk/capital-allowances/business-cars) and [GOV.UK: 100% first-year allowances](https://www.gov.uk/capital-allowances/first-year-allowances).
+
+**A car over 50g/km (6%).** GOV.UK puts a car with CO2 emissions over 50g/km in the special rate pool, which has a writing down allowance of 6% ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools)). The Cars rows claim the main rate.
+
+**A new zero-emission car (100%).** The Cars rows have no first-year allowance column. Add the rest of the cost to the capital allowances in your Company Tax Return. Next year, enter 0 as the tax written down value in column O of the car's row in the existing section.
+
+**A period that includes 1 April 2026.** The main rate of writing down allowance changed from 18% to 14% for Corporation Tax on that day. GOV.UK says that an accounting period that includes it uses a hybrid rate ([GOV.UK: rates and pools](https://www.gov.uk/work-out-capital-allowances/rates-and-pools), [GOV.UK: calculate your hybrid rate](https://www.gov.uk/guidance/calculate-your-hybrid-rate-of-writing-down-allowance)). The hybrid rate is the days before 1 April 2026 over the days in the period times 18, plus the days from 1 April 2026 over the days in the period times 14, rounded up to 2 decimal places. The Admin sheet holds that rate for such a period, so a year to 30 June 2026 holds 17.01. The cell shows a whole number, and holds the decimals that the claims use. A period that starts on or after 1 April 2026 holds 14.
+
+If an earlier year has a car on a Plant row, see [where does a car go in the fixed assets workbook](https://spreadsheets.diyaccounting.co.uk/articles/where-does-a-car-go-in-the-fixed-assets-workbook.html).
 
 ## VAT Returns
 

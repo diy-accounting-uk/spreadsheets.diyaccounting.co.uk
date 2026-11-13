@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
+import { excelSerialToUtcDate } from "../../../lib/product-sheets/serial-dates.js";
 import { SCHEDULE_ASSET_CLASSES, SCHEDULE_EXISTING_WRITING_DOWN_PERCENT } from "../layout.js";
 
 export function checkFixedAssets(ctx) {
@@ -33,7 +34,7 @@ export function checkFixedAssets(ctx) {
   if (schedule && taxData && num(schedule.O50) > 0) {
     const openingTaxValue = num(schedule.O50);
     const proceeds = num(schedule.V50) || 0;
-    const wdaRate = SCHEDULE_EXISTING_WRITING_DOWN_PERCENT(taxData);
+    const wdaRate = SCHEDULE_EXISTING_WRITING_DOWN_PERCENT(taxData, excelSerialToUtcDate(num(results.Admin.F21)));
     const expectedWda = openingTaxValue * wdaRate;
     const expectedPool = openingTaxValue - expectedWda;
     const expectedBalancingAllowance = expectedPool - proceeds;

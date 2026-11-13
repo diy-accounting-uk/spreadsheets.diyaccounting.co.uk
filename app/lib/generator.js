@@ -22,6 +22,7 @@ import {
 } from "./payslips-layout.js";
 import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 import { financialYearRatesFor, financialYearNumber } from "./tax/corporation-tax.js";
+import { mainWritingDownPercentForYearEnd } from "./tax/capital-allowances.js";
 import { refreshCachedValues, refreshZipCachedValues } from "./cached-values.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
@@ -535,11 +536,13 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
     numericEdits[`U${row}`] = rowRates[index].upperLimit;
   }
 
-  // Capital allowances (stored as whole-number percentages)
+  // Capital allowances (stored as percentages; the main rate has decimals when
+  // the period holds 1 April and the rate changed on it)
   numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);
   numericEdits.G7 = Math.round(ca.annual_investment_allowance * 100);
-  numericEdits.G6 = Math.round(ca.writing_down_allowance_main * 100);
-  numericEdits.G8 = Math.round(ca.writing_down_allowance_main * 100);
+  const mainRatePercent = mainWritingDownPercentForYearEnd(taxData, fromExcelSerial(yearEndSerial));
+  numericEdits.G6 = mainRatePercent;
+  numericEdits.G8 = mainRatePercent;
 
   // Depreciation (stored as fractions — same as BST/SE)
   numericEdits.G15 = dep.land_and_property;
@@ -1105,6 +1108,67 @@ export async function setFullCalcOnLoad(xlsxBuffer) {
   });
 }
 
+// ── Expenses claim form: a rate change inside the period ───────────────────
+
+const MILEAGE_NOTE_ROW = 31;
+// Two lines at 9pt. The form fills its printed page, so a taller row pushes the
+// office-use box onto a second page.
+const MILEAGE_NOTE_ROW_HEIGHT = 26;
+// The wrapped, vertically centred 9pt style the form already uses.
+const MILEAGE_NOTE_STYLE = 40;
+
+function ratePence(rate) {
+  return `${Math.round(rate * 100)}p`;
+}
+
+// The note a Ltd expenses claim form carries when the rate changed inside the
+// accounting period: the workbook holds one rate for every month, so the
+// months before the change need the earlier rate typed in by hand. Months run
+// from the one after the year-end month, a year back. A month counts as
+// before the change when it ends before the change date. Returns null for a
+// period with no month before the change, or a year with no change.
+export function mileageRateChangeNote(mileage, endDate) {
+  if (mileage.previous_higher_rate_pence === undefined) return null;
+  const changeDate = new Date(mileage.higher_rate_from);
+  const endYear = endDate.getUTCFullYear();
+  const endMonthIndex = endDate.getUTCMonth();
+  let monthsBefore = 0;
+  for (let month = 0; month < 12; month++) {
+    const monthEndDate = new Date(Date.UTC(endYear, endMonthIndex - 11 + month + 1, 0));
+    if (monthEndDate < changeDate) monthsBefore++;
+  }
+  if (monthsBefore === 0) return null;
+  const sheetName = (position) => `Month ${String(position).padStart(2, "0")}`;
+  const changeLabel = changeDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  const changeMonthLabel = changeDate.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  return (
+    `Mileage: ${ratePence(mileage.higher_rate_pence)} a mile in every month. ` +
+    `It was ${ratePence(mileage.previous_higher_rate_pence)} before ${changeLabel}. ` +
+    `For months before ${changeMonthLabel} type ${mileage.previous_higher_rate_pence} in C30 on ${sheetName(1)}, ` +
+    `then ${mileage.higher_rate_pence} in C30 on ${sheetName(monthsBefore + 1)}.`
+  );
+}
+
+// Put the note in the free cells A31:E31 of a month's sheet, beside the rate
+// in C30 and inside the form's print area, and make the row tall enough for it.
+function addMileageNote(sheetXml, note) {
+  const rowStart = new RegExp(`(<row r="${MILEAGE_NOTE_ROW}"[^>]*?) ht="15"`);
+  if (!rowStart.test(sheetXml)) throw new Error(`Row ${MILEAGE_NOTE_ROW} has no height to change`);
+  const firstTaken = `<c r="F${MILEAGE_NOTE_ROW}"`;
+  if (!sheetXml.includes(firstTaken)) throw new Error(`Cell F${MILEAGE_NOTE_ROW} not found in XML`);
+  const mergedColumns = ["B", "C", "D", "E"];
+  const cells =
+    `<c r="A${MILEAGE_NOTE_ROW}" s="${MILEAGE_NOTE_STYLE}" t="inlineStr"><is><t>${escapeXml(note)}</t></is></c>` +
+    mergedColumns.map((column) => `<c r="${column}${MILEAGE_NOTE_ROW}" s="${MILEAGE_NOTE_STYLE}"/>`).join("");
+  let out = sheetXml.replace(rowStart, `$1 ht="${MILEAGE_NOTE_ROW_HEIGHT}"`).replace(firstTaken, `${cells}${firstTaken}`);
+  const merges = out.match(/<mergeCells count="(\d+)">/);
+  if (!merges) throw new Error("Sheet has no mergeCells to extend");
+  out = out
+    .replace(merges[0], `<mergeCells count="${Number(merges[1]) + 1}">`)
+    .replace("</mergeCells>", `<mergeCell ref="A${MILEAGE_NOTE_ROW}:E${MILEAGE_NOTE_ROW}"/></mergeCells>`);
+  return out;
+}
+
 export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig) {
   // SE/BST use tax_year, Ltd uses financial_year
   const yearInfo = taxData.tax_year || taxData.financial_year;
@@ -1287,15 +1351,23 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     await datePayslipsPaymentSchedule(zip, payslipsSheetPaths, payrollYearOpens);
   }
 
-  // Expenses claim form (Ltd only — when sheetsConfig.mileageMonth is
+  // Expenses claim form (Ltd only — when sheetsConfig.mileageMonths is
   // present). The mileage rate is a literal on the first month's sheet and
-  // every other month chains from it, so one write moves the caption, the
-  // rate and the claim on all twelve.
-  if (sheetsConfig.mileageMonth) {
-    let monthXml = await zip.file(sheetsConfig.mileageMonth).async("string");
+  // every other month chains from the month before it, so one write moves the
+  // caption, the rate and the claim on all twelve.
+  if (sheetsConfig.mileageMonths) {
+    const [firstMonth] = sheetsConfig.mileageMonths;
+    let monthXml = await zip.file(firstMonth).async("string");
     monthXml = setCellValue(monthXml, "C30", taxData.mileage.higher_rate_pence);
-    const monthDate = zip.file(sheetsConfig.mileageMonth).date;
-    zip.file(sheetsConfig.mileageMonth, monthXml, { date: monthDate });
+    zip.file(firstMonth, monthXml, { date: zip.file(firstMonth).date });
+
+    const note = mileageRateChangeNote(taxData.mileage, endDate);
+    if (note) {
+      for (const path of sheetsConfig.mileageMonths) {
+        const noteXml = addMileageNote(await zip.file(path).async("string"), note);
+        zip.file(path, noteXml, { date: zip.file(path).date });
+      }
+    }
   }
 
   // Sales invoice VAT rate (Salesinvoice.xlsx Product Details, SE and Ltd

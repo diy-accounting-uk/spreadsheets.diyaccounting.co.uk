@@ -37,16 +37,33 @@ const BST_MONTH_COLS = {
 // no Writing Down Allowance formula on this block at all, unlike Taxi's
 // vehicle block, so a cost the AIA rate does not fully cover is left as the
 // schedule's own written down value and never separately claimed as WDA).
+// An addition the book states is a car goes on the Cars rows instead, which
+// claim the main writing down rate and no AIA (L97 =
+// IF(E97>0,E97*L$4*(1-G97)," "), M97 = IF(E97>0,E97-L97," ")), where G97 is
+// the private use share and L4 = Admin!G5.
+const CAR_ROWS = [97, 98, 99, 100, 101];
+
 function calculateFixedAssetSchedule(additions, taxData) {
   const aiaRate = taxData.capital_allowances.annual_investment_allowance;
+  const wdaRate = taxData.capital_allowances.writing_down_allowance;
   const schedule = { E1: 0, K1: 0, L1: 0, M1: 0, Q1: 0, R1: 0 };
-  additions.forEach((asset, index) => {
-    const aia = asset.cost * aiaRate;
+  let plantCount = 0;
+  let carCount = 0;
+  for (const asset of additions) {
     schedule.E1 += asset.cost;
-    schedule.K1 += aia;
-    schedule.M1 += asset.cost - aia;
-    if (index === 0) schedule.E67 = asset.cost;
-  });
+    if (asset.car) {
+      const wda = asset.cost * wdaRate * (1 - (asset.private_use || 0));
+      const row = CAR_ROWS[carCount++];
+      schedule.L1 += wda;
+      schedule.M1 += asset.cost - wda;
+      if (row !== undefined) Object.assign(schedule, { [`E${row}`]: asset.cost, [`L${row}`]: wda, [`M${row}`]: asset.cost - wda });
+    } else {
+      const aia = asset.cost * aiaRate;
+      schedule.K1 += aia;
+      schedule.M1 += asset.cost - aia;
+      if (plantCount++ === 0) schedule.E67 = asset.cost;
+    }
+  }
   return schedule;
 }
 
@@ -383,7 +400,13 @@ export function calculateBstResults(book, lines, taxData, scenario, attribution)
   // Fixed Assets schedule
   if (assetAdditions.length > 0) {
     results["Fixed Assets"].E1 = Math.round(fa.E1 * 100) / 100;
-    results["Fixed Assets"].E67 = fa.E67;
+    if (fa.E67 !== undefined) results["Fixed Assets"].E67 = fa.E67;
+    for (const row of CAR_ROWS) {
+      if (fa[`E${row}`] === undefined) continue;
+      results["Fixed Assets"][`E${row}`] = fa[`E${row}`];
+      results["Fixed Assets"][`L${row}`] = Math.round(fa[`L${row}`] * 100) / 100;
+      results["Fixed Assets"][`M${row}`] = Math.round(fa[`M${row}`] * 100) / 100;
+    }
     results["Fixed Assets"].K1 = Math.round(fa.K1 * 100) / 100;
     results["Fixed Assets"].L1 = Math.round(fa.L1 * 100) / 100;
     results["Fixed Assets"].M1 = Math.round(fa.M1 * 100) / 100;

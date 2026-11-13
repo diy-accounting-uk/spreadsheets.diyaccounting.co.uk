@@ -32,7 +32,7 @@ If the user did not provide an article filename:
 
 ### Step 1: Load the reference database
 
-Read `web/spreadsheets.diyaccounting.co.uk/public/references.toml` to load all existing references. Note the highest reference ID number (e.g., if REF023 exists, next is REF024).
+Run `npm run build:references`, then read `web/spreadsheets.diyaccounting.co.uk/public/references.toml` to load all existing references. It merges `public/data/references-core.toml` and every file in `public/data/ref-additions/`. The build prints the highest reference ID; the next new reference takes the number after it.
 
 ### Step 2: Read the target article
 
@@ -53,7 +53,7 @@ Skip opinions, advice, how-to instructions, and product descriptions.
 
 For each verifiable claim found:
 
-a. **Check for existing match**: Search references.toml for a reference with a similar `claim` or matching `category`. If the claim is essentially the same fact (even worded differently), REUSE the existing reference ID.
+a. **Check for existing match**: Search the built references.toml for a reference with a similar `claim` or matching `category`. If the claim is essentially the same fact (even worded differently), REUSE the existing reference ID.
 
 b. **If no match exists**: Create a new reference entry:
    - Assign next sequential ID (REF024, REF025, etc.)
@@ -105,7 +105,7 @@ This marks the article as having been reviewed for citations, even if no verifia
 
 ### Step 8: Update references.toml
 
-Append any new `[[reference]]` and `[[reference.source]]` entries to the end of references.toml. Update existing references' `articles` arrays if the current article was added.
+Write any new `[[reference]]` and `[[reference.source]]` entries to `web/spreadsheets.diyaccounting.co.uk/public/data/ref-additions/<article>.toml`, one id in one file only. Update an existing reference's `articles` array in the file that defines it if the current article was added. Never edit the built `references.toml`.
 
 ### Step 8b: If no verifiable claims found
 

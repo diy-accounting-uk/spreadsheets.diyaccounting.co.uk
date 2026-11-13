@@ -43,6 +43,7 @@ import {
   SALESINVOICE_SAMPLE_PRODUCT_ROW,
   EXISTING_ASSET_ROWS,
   NEW_PLANT_ROWS,
+  NEW_CAR_ROWS,
   HP_AGREEMENT_ROWS,
   SBA_CLAIM_ROWS,
   SBA_CLAIM_COLUMNS,
@@ -367,12 +368,14 @@ function isPayslipsInputCell(sheet, cellRef) {
 // its private use share (M), its special rate pool marker (AB) and its single
 // asset pool marker (AD) on its existing-asset row, or an
 // in-year disposal's date/proceeds (U, V) on that same row; a new purchase's
-// date/supplier/cost (B, C, E) on a New Plant & Machinery row; a Structures
+// date/supplier/cost (B, C, E) on a New Plant & Machinery row, or on a Cars
+// row with its private use share and single asset pool marker (M, AD); a Structures
 // and Buildings Allowance claim's date/building/expenditure/postcode/tax
 // site/ceased date (B, C, D, E, F, G, I) on an SBA claim row. See
 // app/products/se.js's cellWrites() Schedule writer.
 const EXISTING_SCHEDULE_ROWS = new Set([...EXISTING_ASSET_ROWS.motor, ...EXISTING_ASSET_ROWS.computer]);
 const NEW_SCHEDULE_ROWS = new Set(NEW_PLANT_ROWS);
+const NEW_CAR_SCHEDULE_ROWS = new Set(NEW_CAR_ROWS);
 const EXISTING_SCHEDULE_COLUMNS = [
   "C",
   "E",
@@ -385,6 +388,7 @@ const EXISTING_SCHEDULE_COLUMNS = [
   SINGLE_ASSET_POOL_MARKER_COLUMN,
 ];
 const NEW_SCHEDULE_COLUMNS = ["B", "C", "E"];
+const NEW_CAR_SCHEDULE_COLUMNS = [...NEW_SCHEDULE_COLUMNS, PRIVATE_USE_COLUMN, SINGLE_ASSET_POOL_MARKER_COLUMN];
 const SBA_SCHEDULE_ROWS = new Set(SBA_CLAIM_ROWS);
 const SBA_SCHEDULE_COLUMNS = Object.values(SBA_CLAIM_COLUMNS);
 const HP_ROWS = new Set(HP_AGREEMENT_ROWS);
@@ -396,6 +400,7 @@ function isFixedAssetsInputCell(sheet, cellRef) {
   if (sheet === "Schedule") {
     if (EXISTING_SCHEDULE_ROWS.has(ref.row)) return EXISTING_SCHEDULE_COLUMNS.includes(ref.col);
     if (NEW_SCHEDULE_ROWS.has(ref.row)) return NEW_SCHEDULE_COLUMNS.includes(ref.col);
+    if (NEW_CAR_SCHEDULE_ROWS.has(ref.row)) return NEW_CAR_SCHEDULE_COLUMNS.includes(ref.col);
     if (SBA_SCHEDULE_ROWS.has(ref.row)) return SBA_SCHEDULE_COLUMNS.includes(ref.col);
     return false;
   }

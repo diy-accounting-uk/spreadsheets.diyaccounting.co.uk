@@ -32,6 +32,7 @@ import {
   GOODS_FOR_OWN_USE_CELL,
   HP_AGREEMENT_ROWS,
   MONTH_KEYS,
+  NEW_CAR_ROWS,
   NEW_PLANT_ROWS,
   PRIVATE_USE_COLUMN,
   SBA_CLAIM_COLUMNS,
@@ -456,12 +457,11 @@ export function composeWrites(scenario, targetStartYear) {
     }
   }
 
-  // New fixed asset purchases (Purchases.xlsx code "fa") all land on the
-  // New Plant & Machinery rows. FAreconciliation only checks the aggregate
-  // New-asset total against Purchases.xlsx's cumulative fa total, not which
-  // category holds it, so any category is a faithful, provable tie-out
-  // target without inventing an asset-class taxonomy the scenario data
-  // doesn't carry.
+  // New fixed asset purchases (Purchases.xlsx code "fa") land on the New Plant
+  // & Machinery rows, except a purchase the book states is a car, which lands
+  // on the Cars rows. FAreconciliation only checks the aggregate New-asset
+  // total against Purchases.xlsx's cumulative fa total, not which category
+  // holds it, so either block is a faithful tie-out target.
   const faPurchases = [];
   if (scenario.purchases) {
     for (const transactions of Object.values(scenario.purchases)) {
@@ -471,17 +471,28 @@ export function composeWrites(scenario, targetStartYear) {
   if (faPurchases.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    for (const tx of faPurchases.slice(NEW_PLANT_ROWS.length)) {
+    const carPurchases = faPurchases.filter((tx) => tx.asset_class === "car");
+    const plantPurchases = faPurchases.filter((tx) => tx.asset_class !== "car");
+    for (const tx of plantPurchases.slice(NEW_PLANT_ROWS.length)) {
       skips.push(skipped("assetPurchase", tx, `the Schedule holds ${NEW_PLANT_ROWS.length} assets bought during the year`));
     }
-    faPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => {
-      const row = NEW_PLANT_ROWS[i];
+    for (const tx of carPurchases.slice(NEW_CAR_ROWS.length)) {
+      skips.push(skipped("assetPurchase", tx, `the Schedule holds ${NEW_CAR_ROWS.length} cars bought during the year`));
+    }
+    const writeNewAsset = (tx, row) => {
       const d = shiftDate(parseDate(tx.date));
       // Left-to-right column order (B, then C, then E) -- see the opening
       // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
       fa[`E${row}`] = netOfVat(tx.amount, rate);
+    };
+    plantPurchases.slice(0, NEW_PLANT_ROWS.length).forEach((tx, i) => writeNewAsset(tx, NEW_PLANT_ROWS[i]));
+    carPurchases.slice(0, NEW_CAR_ROWS.length).forEach((tx, i) => {
+      const row = NEW_CAR_ROWS[i];
+      writeNewAsset(tx, row);
+      if (tx.private_use !== undefined) fa[`${PRIVATE_USE_COLUMN}${row}`] = tx.private_use;
+      if (tx.single_asset_pool) fa[`${SINGLE_ASSET_POOL_MARKER_COLUMN}${row}`] = SINGLE_ASSET_POOL_MARKER;
     });
   }
 

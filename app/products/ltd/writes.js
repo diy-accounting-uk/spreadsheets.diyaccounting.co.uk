@@ -43,7 +43,9 @@ import {
   REGISTER_MEMBER_COLUMNS,
   REGISTER_MEMBER_ROWS,
   SCHEDULE_ASSET_CLASSES,
+  SCHEDULE_CAR_EXISTING_ROWS,
   SCHEDULE_NEW_ASSET_ROWS,
+  SCHEDULE_NEW_CAR_ROWS,
   SHORT_MONTHS,
   STOCK_FINAL_COUNT_CELL,
   STOCK_MATERIALS_PERCENT_CELL,
@@ -524,12 +526,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (!layout) {
         throw new Error(`Opening fixed assets name asset class "${asset.category}", which the Schedule has no block for`);
       }
-      const index = nextIndex[asset.category] || 0;
-      const row = layout.existingRows[index];
+      const blockKey = asset.car ? "car" : asset.category;
+      const blockRows = asset.car ? SCHEDULE_CAR_EXISTING_ROWS : layout.existingRows;
+      const index = nextIndex[blockKey] || 0;
+      const row = blockRows[index];
       if (row === undefined) {
-        throw new Error(`More opening ${asset.category} assets than the Schedule's ${layout.existingRows.length} rows for that class`);
+        throw new Error(`More opening ${blockKey} assets than the Schedule's ${blockRows.length} rows for that class`);
       }
-      nextIndex[asset.category] = index + 1;
+      nextIndex[blockKey] = index + 1;
       if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
@@ -557,11 +561,17 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (assetPurchases.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    if (assetPurchases.length > SCHEDULE_NEW_ASSET_ROWS.length) {
-      throw new Error(`${assetPurchases.length} "fa" purchases exceed the ${SCHEDULE_NEW_ASSET_ROWS.length} Schedule new-asset rows`);
+    const carPurchases = assetPurchases.filter((tx) => tx.asset_class === "car");
+    const otherPurchases = assetPurchases.filter((tx) => tx.asset_class !== "car");
+    if (otherPurchases.length > SCHEDULE_NEW_ASSET_ROWS.length) {
+      throw new Error(`${otherPurchases.length} "fa" purchases exceed the ${SCHEDULE_NEW_ASSET_ROWS.length} Schedule new-asset rows`);
     }
-    assetPurchases.forEach((tx, i) => {
-      const row = SCHEDULE_NEW_ASSET_ROWS[i];
+    if (carPurchases.length > SCHEDULE_NEW_CAR_ROWS.length) {
+      throw new Error(`${carPurchases.length} car purchases exceed the ${SCHEDULE_NEW_CAR_ROWS.length} Schedule new-car rows`);
+    }
+    assetPurchases.forEach((tx) => {
+      const row =
+        tx.asset_class === "car" ? SCHEDULE_NEW_CAR_ROWS[carPurchases.indexOf(tx)] : SCHEDULE_NEW_ASSET_ROWS[otherPurchases.indexOf(tx)];
       const d = shiftDate(parseDate(tx.date));
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;

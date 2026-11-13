@@ -1,0 +1,260 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+# New references for where-does-a-car-go-in-the-fixed-assets-workbook.html
+# Generated: 2026-11-13
+# Merge into references.toml when reviewed
+
+[[reference]]
+id = "REF626"
+claim = "Cars do not qualify for the annual investment allowance"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Cars do not qualify for: annual investment allowance (AIA)"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF627"
+claim = "The main rate of writing down allowance for a car is 14% of the car's value each year, or 18% before April 2026"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "14% (or 18% before April 2026) of the car’s value each year (main rate allowances)"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF628"
+claim = "The special rate of writing down allowance for a car is 6% of the car's value each year"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "6% of the car’s value each year (special rate allowances)"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF629"
+claim = "A new and unused electric car or car with zero CO2 emissions bought before April 2027 can claim a 100% first-year allowance"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-FYA-2027"
+url = "https://www.gov.uk/capital-allowances/first-year-allowances"
+title = "Claim capital allowances: 100% first-year allowances"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "If you buy it before April 2027, you can claim 100% first year allowances on: electric cars and cars with zero CO2 emissions"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF630"
+claim = "From April 2021 a car with CO2 emissions of 50g/km or less gets the main rate and a car over 50g/km gets the special rate"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "New or second hand, CO2 emissions are 50g/km or less: Main rate allowances. New or second hand, CO2 emissions are over 50g/km: Special rate allowances"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF631"
+claim = "The main and special rates apply from 1 April for businesses that pay Corporation Tax and from 6 April for businesses that pay Income Tax"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Main and special rates apply from 1 April for businesses that pay Corporation Tax, and 6 April for businesses that pay Income Tax."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF632"
+claim = "If an accounting period includes the day the main rate changed, a hybrid rate must be worked out for that period"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-RATES"
+url = "https://www.gov.uk/work-out-capital-allowances/rates-and-pools"
+title = "Work out your capital allowances: rates and pools"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "If your accounting period includes the day the rate changed, you must work out a hybrid rate for that accounting period."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF633"
+claim = "A business that provides a car for an employee or director can claim capital allowances on the full cost"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "If your business provides a car for an employee or director you can claim capital allowances on the full cost."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF634"
+claim = "For capital allowances a car is a type of vehicle that is suitable for private use, that most people use privately and that was not built for transporting goods"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "For capital allowances a car is a type of vehicle that: is suitable for private use - this includes motorhomes; most people use privately; was not built for transporting goods"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF635"
+claim = "Lorries, vans, trucks and motorcycles bought from 6 April 2009 do not count as cars"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CA-BUSINESS-CARS"
+url = "https://www.gov.uk/capital-allowances/business-cars"
+title = "Claim capital allowances: business cars"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Because they do not count as cars you can claim annual investment allowance and some first-year allowances on: motorcycles - apart from those bought before 6 April 2009; lorries, vans and trucks"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF636"
+claim = "HMRC does not treat a hackney carriage, a traditional London black cab type of vehicle, as a car for plant and machinery allowances"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-HMRC-CAM-CA23510"
+url = "https://www.gov.uk/hmrc-internal-manuals/capital-allowances-manual/ca23510"
+title = "Capital Allowances Manual CA23510: cars, meaning of 'car'"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Do not treat the following vehicles as cars for PMA purposes: ... Hackney carriages (traditional ‘London black cab’ type vehicles)."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF637"
+claim = "HMRC treats a car that is capable of being used as a private vehicle as a car however the taxpayer actually uses it"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-HMRC-CAM-CA23510"
+url = "https://www.gov.uk/hmrc-internal-manuals/capital-allowances-manual/ca23510"
+title = "Capital Allowances Manual CA23510: cars, meaning of 'car'"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "Treat a car that is capable of being used as a private vehicle as a car for PMA purposes no matter how the taxpayer actually uses it"
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF638"
+claim = "For expenditure from 1 April 2025 for Corporation Tax and 6 April 2025 for Income Tax, HMRC says most double cab pick-ups will be classified as cars"
+category = "capital-allowances"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-HMRC-CAM-CA23511"
+url = "https://www.gov.uk/hmrc-internal-manuals/capital-allowances-manual/ca23511"
+title = "Capital Allowances Manual CA23511: cars, double cab pick-ups"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "It follows that most, if not all, double cab pick-ups, which are equally suited to convey passengers or goods, will be classified as cars."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF639"
+claim = "A company must usually make changes to its Company Tax Return within 12 months of the filing deadline"
+category = "company-accounts"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-AMEND"
+url = "https://www.gov.uk/company-tax-returns/making-changes"
+title = "Company Tax Returns: making changes"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You must usually make any changes (‘amendments’) within 12 months of the filing deadline."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF640"
+claim = "A sole trader can correct a Self Assessment return within 12 months of the Self Assessment deadline"
+category = "self-assessment"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-SA-CORRECT"
+url = "https://www.gov.uk/self-assessment-tax-returns/corrections"
+title = "Self Assessment tax returns: if you need to change your return"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "You can correct a tax return within 12 months of the Self Assessment deadline, online or by sending another paper return."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF641"
+claim = "More than 12 months after the filing deadline, a company that has underpaid Corporation Tax should tell HMRC using the online disclosure service as soon as possible"
+category = "company-accounts"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-CT-AMEND"
+url = "https://www.gov.uk/company-tax-returns/making-changes"
+title = "Company Tax Returns: making changes"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "If you have underpaid Corporation Tax you should tell HMRC using the online disclosure service as soon as possible."
+accessed = "2026-11-13"
+authority = "primary"
+
+[[reference]]
+id = "REF642"
+claim = "A sole trader who misses the deadline to correct a return, or needs to change a return from an earlier tax year, writes to HMRC"
+category = "self-assessment"
+articles = ["where-does-a-car-go-in-the-fixed-assets-workbook"]
+
+[[reference.source]]
+id = "SRC-GOVUK-SA-CORRECT"
+url = "https://www.gov.uk/self-assessment-tax-returns/corrections"
+title = "Self Assessment tax returns: if you need to change your return"
+publisher = "GOV.UK / HM Revenue & Customs"
+extract = "If you miss the deadline or if you need to make a change to a return from an earlier tax year, you’ll need to write to HMRC."
+accessed = "2026-11-13"
+authority = "primary"

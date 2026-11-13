@@ -9,7 +9,7 @@ Depreciation is the accounting charge that spreads the cost of an asset over its
 
 **The steps**
 1. Enter the purchase on the Purchases workbook with code FA.
-2. Open Fixedassets, Schedule, and go to the New Assets section. It starts at Row 56 in the [Company Accounts](../products/company.html) and [Self Employed](../products/self-employed.html) packages.
+2. Open Fixedassets, Schedule, and go to the New Assets section. Its heading is on Row 59 in the [Company Accounts](../products/company.html) and [Self Employed](../products/self-employed.html) packages. Enter a car on the Cars rows and not on a Plant row.
 3. Enter the asset, its cost and its category on the schedule.
 4. Check the result on the Fixedassets reconciliation. In the Self Employed package, Row 15 of FAreconciliation is zero when every purchase and sale is on the schedule.
 
@@ -31,4 +31,4 @@ A car can fall in the special rate pool. The threshold depends on the car and wh
 
 
 **Related articles**
-See [capital allowances](capital-allowances.html) and [written down book value and tax value](written-down-book-value-and-tax-value.html) for more on the difference between the two values.
+See [where a car goes in the fixed assets workbook](where-does-a-car-go-in-the-fixed-assets-workbook.html), [capital allowances](capital-allowances.html) and [written down book value and tax value](written-down-book-value-and-tax-value.html) for more on the difference between the two values.

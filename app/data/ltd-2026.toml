@@ -37,6 +37,13 @@ writing_down_allowance_main = 0.14
 writing_down_allowance_special = 0.06
 full_expensing_rate = 1.00         # companies only, main pool P&M
 
+# The main writing down rate of the financial year before this one. An
+# accounting period that reaches back over 1 April works out a hybrid rate from
+# the days it spends at each year's rate:
+# https://www.gov.uk/guidance/calculate-your-hybrid-rate-of-writing-down-allowance
+[capital_allowances_previous_financial_year]
+writing_down_allowance_main = 0.18
+
 [depreciation]
 land_and_property = 0.00
 plant_and_machinery = 0.10
@@ -48,6 +55,8 @@ motor_vehicles = 0.25
 [mileage]
 higher_rate_limit = 10000
 higher_rate_pence = 0.55
+higher_rate_from = 2026-04-06
+previous_higher_rate_pence = 0.45
 lower_rate_start = 10001
 lower_rate_pence = 0.25
 

@@ -43,6 +43,10 @@ on:
       - 'scripts/example-books.json'
       - 'scripts/build-diya-gl-bundle.mjs'
       - 'scripts/build-spreadsheets-redirects.cjs'
+      # The knowledge base list and the references records are built from the pages and
+      # record files under web/ by these two scripts.
+      - 'app/bin/build-knowledge-base.js'
+      - 'app/bin/build-references.js'
       - 'scripts/build-picker-api-key.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -300,6 +304,12 @@ jobs:
 
       - name: Build sitemaps
         run: npm run build:sitemaps
+
+      - name: Build the knowledge base list
+        run: npm run build:knowledge-base
+
+      - name: Build the references records
+        run: npm run build:references
 
       - name: Build llms.txt and the Atom feed
         run: |

@@ -19,6 +19,7 @@ import {
   SALESINVOICE_SAMPLE_PRODUCT_ROW,
 } from "../../lib/product-sheets/salesinvoice.js";
 import { excelSerialToUtcDate } from "../../lib/product-sheets/serial-dates.js";
+import { mainWritingDownPercentForYearEnd } from "../../lib/tax/capital-allowances.js";
 import { VATINTERFACE_ROWS } from "../../lib/product-sheets/vat-chain.js";
 import { CELL_MAP, TAX_SHEET } from "./cell-map.js";
 import {
@@ -145,8 +146,8 @@ export const ADMIN_RATE_COLUMNS = {
 export const ADMIN_TAX_DATA_CELLS = [
   ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
-  ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
-  ["G8", "writing down allowance (new assets)", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
+  ["G6", "writing down allowance", (t, yearEnd) => mainWritingDownPercentForYearEnd(t, yearEnd)],
+  ["G8", "writing down allowance (new assets)", (t, yearEnd) => mainWritingDownPercentForYearEnd(t, yearEnd)],
   ["G15", "depreciation rate, land and property", (t) => t.depreciation.land_and_property],
   ["G16", "depreciation rate, plant and machinery", (t) => t.depreciation.plant_and_machinery],
   ["G17", "depreciation rate, fixtures and fittings", (t) => t.depreciation.fixtures_and_fittings],

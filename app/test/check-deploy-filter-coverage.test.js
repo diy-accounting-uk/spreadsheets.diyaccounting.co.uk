@@ -123,6 +123,13 @@ describe("extractSources against the real build-diya-gl-bundle.mjs", () => {
     const jszip = items.find((i) => i.label.includes("jszip"));
     expect(jszip.probe).toBe("package-lock.json");
   });
+
+  it("follows a JSON file imported with an import attribute, and the filter covers it", () => {
+    const mapping = items.find((i) => i.probe === "app/data/hmrc/sa103-mtd-mapping.json");
+    expect(mapping, "sa103-mtd-mapping.json is in the import closure").toBeDefined();
+    const patterns = parseDeployPushPaths(readFileSync(DEPLOY_YML, "utf8"));
+    expect(isCovered(mapping.probe, patterns)).toBe(true);
+  });
 });
 
 describe("checkCoverage against the real tree", () => {

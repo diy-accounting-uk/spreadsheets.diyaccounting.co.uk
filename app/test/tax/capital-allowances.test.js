@@ -41,6 +41,33 @@ describe("assetCapitalAllowance", () => {
     expect(claim.balancingAllowance).toBe(19200);
   });
 
+  it("claims the writing down allowance on the cost of a car bought in the year, and no investment allowance", () => {
+    const claim = assetCapitalAllowance({ acquiredInYear: true, car: true, cost: 20000 }, RATES);
+    expect(claim.investmentAllowance).toBe(0);
+    expect(claim.writingDownAllowance).toBe(4000);
+    expect(claim.poolCarriedForward).toBe(16000);
+  });
+
+  it("reduces a car's allowance by its private use share", () => {
+    const claim = assetCapitalAllowance({ acquiredInYear: true, car: true, cost: 20000, privateUse: 0.25 }, RATES);
+    expect(claim.writingDownAllowance).toBe(3000);
+    expect(claim.poolCarriedForward).toBe(17000);
+  });
+
+  it("claims the same on a car brought forward as on any other asset brought forward", () => {
+    const owned = { acquiredInYear: false, cost: 30000, taxWrittenDownValue: 24000 };
+    expect(assetCapitalAllowance({ ...owned, car: true }, RATES)).toEqual(assetCapitalAllowance(owned, RATES));
+  });
+
+  it("reduces a car's balancing allowance by its private use share", () => {
+    const claim = assetCapitalAllowance(
+      { acquiredInYear: false, car: true, taxWrittenDownValue: 24000, disposalProceeds: 15000, privateUse: 0.5 },
+      RATES,
+    );
+    // 24,000 less half of its 20% allowance leaves a pool of 21,600; the 6,600 shortfall counts for half.
+    expect(claim.balancingAllowance).toBe(3300);
+  });
+
   it("claims nothing on an asset with no cost and no written-down value", () => {
     const claim = assetCapitalAllowance({ acquiredInYear: true, cost: 0 }, RATES);
     expect(claim).toMatchObject({ investmentAllowance: 0, writingDownAllowance: 0, poolCarriedForward: 0, balancingCharge: 0 });

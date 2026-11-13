@@ -26,7 +26,7 @@
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine, ltdBankPlacement } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
-import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
+import { calculateCapitalAllowances, mainWritingDownPercent } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
   PAYE_SCHEDULE_FIRST_ROW,
@@ -192,18 +192,20 @@ const SCHEDULE_CLASSES = {
 const SCHEDULE_COST_ROWS = { land: 6, plant: 7, fixtures: 8, computer: 9, motor: 10 };
 const SCHEDULE_DEPRECIATION_ROWS = { land: 11, plant: 12, fixtures: 13, computer: 14, motor: 15 };
 
-// Assets bought in the year all land on the New Plant & Machinery rows,
-// matching the writer.
+// An asset bought in the year lands on the New Plant & Machinery rows, matching
+// the writer, unless the purchase is a car, which lands on the Cars rows.
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
 // The classes whose new-asset rows carry a capital allowance formula, and
 // their existing-block writing down allowance totals. Land claims none.
 const SCHEDULE_ALLOWANCE_CLASSES = ["plant", "fixtures", "computer", "motor"];
 
-// The cars sub-block of the motor class. Its rows carry a writing down
-// allowance formula rather than an investment allowance one, and the
-// calculator never places an asset on them, so each stays on the sheet's own
-// blank branch.
+// The cars sub-block of the motor class, for assets already owned and for
+// assets bought in the year. Its rows carry a writing down allowance formula
+// rather than an investment allowance one: an owned car claims it on the tax
+// written-down value, a car bought in the year on its cost. A car row with no
+// asset on it stays on the sheet's own blank branch.
+const SCHEDULE_CAR_EXISTING_ROWS = [44, 45, 46, 47, 48];
 const SCHEDULE_CAR_ROWS = [97, 98, 99, 100, 101];
 
 // A class totals row states whether the schedule and the opening balance
@@ -503,11 +505,14 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
   for (const asset of scenario.opening_fixed_assets || []) {
     const layout = SCHEDULE_CLASSES[asset.category];
     if (!layout) continue;
-    const index = (usedByClass[asset.category] = (usedByClass[asset.category] || 0) + 1) - 1;
-    const row = layout.existingRows[index];
+    const car = asset.car === true;
+    const blockKey = car ? "car" : asset.category;
+    const index = (usedByClass[blockKey] = (usedByClass[blockKey] || 0) + 1) - 1;
+    const row = (car ? SCHEDULE_CAR_EXISTING_ROWS : layout.existingRows)[index];
     if (row === undefined) continue;
     rows.push({
       assetClass: asset.category,
+      car,
       row,
       acquiredInYear: false,
       openingAsset: asset,
@@ -519,13 +524,16 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
 
   const newLayout = SCHEDULE_CLASSES[SCHEDULE_NEW_ASSET_CLASS];
   let newIndex = 0;
+  let newCarIndex = 0;
   for (const transactions of Object.values(scenario.purchases || {})) {
     for (const transaction of transactions) {
       if (transaction.code !== "fa") continue;
-      const row = newLayout.newRows[newIndex++];
+      const car = transaction.asset_class === "car";
+      const row = car ? SCHEDULE_CAR_ROWS[newCarIndex++] : newLayout.newRows[newIndex++];
       if (row === undefined) continue;
       const scheduleRow = {
-        assetClass: SCHEDULE_NEW_ASSET_CLASS,
+        assetClass: car ? "motor" : SCHEDULE_NEW_ASSET_CLASS,
+        car,
         row,
         acquiredInYear: true,
         entryNumber: entryOf(transaction),
@@ -574,6 +582,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
       [
         {
           acquiredInYear: row.acquiredInYear,
+          car: row.car,
           cost: row.cost,
           taxWrittenDownValue: row.taxWrittenDownValue,
           disposalProceeds: row.disposalProceeds || 0,
@@ -585,7 +594,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
     row.writingDownAllowance = claim.writingDownAllowance;
     row.poolCarriedForward = row.acquiredInYear
       ? row.cost > 0
-        ? row.cost - claim.investmentAllowance
+        ? row.cost - claim.investmentAllowance - claim.writingDownAllowance
         : 0
       : row.taxWrittenDownValue > 0
         ? row.taxWrittenDownValue - claim.writingDownAllowance
@@ -1040,9 +1049,9 @@ function buildAdmin(taxData, period, associatedCompanies) {
     U7: rowRates[1].upperLimit,
     P14: associatedCompanies,
     G5: Math.round(capitalAllowances.annual_investment_allowance * 100),
-    G6: Math.round(capitalAllowances.writing_down_allowance_main * 100),
+    G6: mainWritingDownPercent(taxData, period.start, period.yearEnd),
     G7: Math.round(capitalAllowances.annual_investment_allowance * 100),
-    G8: Math.round(capitalAllowances.writing_down_allowance_main * 100),
+    G8: mainWritingDownPercent(taxData, period.start, period.yearEnd),
     G15: depreciation.land_and_property,
     G16: depreciation.plant_and_machinery,
     G17: depreciation.fixtures_and_fittings,
@@ -1102,7 +1111,7 @@ function scheduleLinkCells(blocks, rows) {
       cells[`Q${row}`] = rows.find((asset) => asset.row === row)?.investmentAllowance ?? SHEET_BLANK;
     }
   }
-  for (const row of SCHEDULE_CAR_ROWS) cells[`R${row}`] = SHEET_BLANK;
+  for (const row of SCHEDULE_CAR_ROWS) cells[`R${row}`] = rows.find((asset) => asset.row === row)?.writingDownAllowance ?? SHEET_BLANK;
   for (const asset of rows) {
     if (!asset.acquiredInYear) continue;
     cells[`B${asset.row}`] = asset.purchasedOn;
