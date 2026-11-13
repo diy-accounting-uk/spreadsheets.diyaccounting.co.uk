@@ -43,6 +43,8 @@ on:
       - 'scripts/example-books.json'
       - 'scripts/build-diya-gl-bundle.mjs'
       - 'scripts/build-spreadsheets-redirects.cjs'
+      # The knowledge base list is built from the article pages under web/ by this script.
+      - 'app/bin/build-knowledge-base.js'
       - 'scripts/build-picker-api-key.mjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -300,6 +302,9 @@ jobs:
 
       - name: Build sitemaps
         run: npm run build:sitemaps
+
+      - name: Build the knowledge base list
+        run: npm run build:knowledge-base
 
       - name: Build llms.txt and the Atom feed
         run: |

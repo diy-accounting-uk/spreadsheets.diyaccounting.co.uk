@@ -30,8 +30,7 @@ const DIYA_GL_SITEMAP_PATH = resolve(ROOT, "web", "diya-gl.co.uk", "public", "si
 
 const DIYA_GL_PAGES = ["index.html", "bst.html", "se.html", "taxi.html", "ltd.html", "spec.html"];
 
-// The articles are the tracked .html pages, not knowledge-base.toml, which only exists
-// where the external content checkout does.
+// The articles are the tracked .html pages.
 const articles = existsSync(ARTICLES_DIR)
   ? readdirSync(ARTICLES_DIR)
       .filter((f) => f.endsWith(".html"))
