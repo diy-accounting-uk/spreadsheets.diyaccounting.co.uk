@@ -1177,6 +1177,7 @@ const SCHEDULE_EXISTING_ASSET_ROWS = {
     { assetClass: "plantMachinery", rows: [14, 15, 16, 17, 18, 19, 20, 21] },
     { assetClass: "fixturesFittings", rows: [25, 26, 27, 28, 29] },
     { assetClass: "computerTechnology", rows: [33, 34, 35, 36, 37, 38, 39, 40] },
+    { assetClass: "motorVehicles", car: true, rows: [44, 45, 46, 47, 48] },
     { assetClass: "motorVehicles", rows: [50, 51, 52, 53, 54] },
   ],
 };
@@ -1290,11 +1291,12 @@ async function fixedAssetRegisterFrom(set, product) {
   const { xml, sharedStrings } = sheet;
 
   const assets = [];
-  for (const { assetClass, rows } of blocks) {
+  for (const { assetClass, car, rows } of blocks) {
     for (const row of rows) {
       const cost = numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.cost}${row}`, sharedStrings);
       if (cost === undefined || cost === 0) continue;
       const asset = { class: assetClass, cost };
+      if (car) asset.car = true;
       if (textAt(xml, `${SCHEDULE_SPECIAL_RATE_POOL_MARKER.column}${row}`, sharedStrings) === SCHEDULE_SPECIAL_RATE_POOL_MARKER.value) {
         asset.capitalAllowancePool = "special";
       }

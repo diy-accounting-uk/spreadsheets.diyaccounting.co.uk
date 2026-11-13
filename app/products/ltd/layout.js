@@ -173,9 +173,10 @@ export const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"
 // W/X formulas then pull that asset's cost and accumulated depreciation out.
 //
 // Motor vehicles have two sub-blocks, cars then vans and lorries; both roll
-// into the same class total. Scenario motor assets go to the vans rows,
+// into the same class total. A scenario motor asset goes to the vans rows,
 // which is what the fixture's van is, and which is the sub-block carrying
-// the van capital-allowance formulas.
+// the van capital-allowance formulas. An asset the book marks as a car goes to
+// the cars rows below instead.
 export const SCHEDULE_ASSET_CLASSES = {
   land: { existingRows: [8, 9, 10], existingTotalRow: 11, newTotalRow: 64, noteColumn: "B", rateCell: "H7" },
   plant: { existingRows: [14, 15, 16, 17, 18, 19, 20, 21], existingTotalRow: 22, newTotalRow: 75, noteColumn: "C", rateCell: "H13" },
@@ -191,11 +192,19 @@ export const SCHEDULE_ASSET_CLASSES = {
 // motor assets through Admin!E11/G11 has been removed from the template.
 export const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allowances.writing_down_allowance_main;
 
-// Assets bought in the year all land on the New Plant & Machinery rows. A
-// scenario purchase carries a code letter and an amount, not an asset class,
-// so any single block is as faithful as another; the note's per-class rows
-// and its total both stay anchored to what was posted to Purchases.xlsx.
+// An asset bought in the year lands on the New Plant & Machinery rows. A
+// scenario purchase carries a code letter and an amount, and names an asset
+// class only when it is a car, so any single block is as faithful as another
+// for the rest; the note's per-class rows and its total both stay anchored to
+// what was posted to Purchases.xlsx.
 export const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
+
+// The Motor Vehicles - Cars rows, which claim writing down allowance at the
+// main rate and never the annual investment allowance: cars owned before the
+// year, and cars bought in it.
+export const SCHEDULE_CAR_EXISTING_ROWS = [44, 45, 46, 47, 48];
+
+export const SCHEDULE_NEW_CAR_ROWS = [97, 98, 99, 100, 101];
 
 export const SCHEDULE_NEW_ASSET_CLASS = "plant";
 

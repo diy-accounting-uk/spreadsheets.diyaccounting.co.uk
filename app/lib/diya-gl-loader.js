@@ -114,6 +114,32 @@ export function bookAssetOf(opening) {
   return BOOK_ASSET_OF.get(opening);
 }
 
+// A car is a fact the book states on its fixedAssets entry, never one read
+// off a description. The purchase line that buys a car names it by
+// diya-gl:assetID, so the "fa" transaction made from that line carries
+// asset_class "car" and the Schedule writer and calculator put it on the Cars
+// rows instead of a Plant row.
+function assertCarClass(asset) {
+  if (asset.class !== "motorVehicles") {
+    throw new Error(`Fixed asset ${asset.assetID} is a car, so its class is motorVehicles, not "${asset.class}"`);
+  }
+}
+
+function markCarPurchases(purchasesByMonth, lines, fixedAssets) {
+  const cars = (fixedAssets || []).filter((asset) => asset.car);
+  cars.forEach(assertCarClass);
+  const carIDs = new Set(cars.map((asset) => asset.assetID));
+  if (carIDs.size === 0) return;
+  const assetIDByEntry = new Map(
+    lines.filter((line) => line["diya-gl:assetID"]).map((line) => [line.entryNumber, line["diya-gl:assetID"]]),
+  );
+  for (const transactions of Object.values(purchasesByMonth)) {
+    for (const transaction of transactions) {
+      if (transaction.code === "fa" && carIDs.has(assetIDByEntry.get(entryOf(transaction)))) transaction.asset_class = "car";
+    }
+  }
+}
+
 // The Fixed Assets Schedule's asset-class blocks, keyed by the book's own
 // class enum. land and plant/fixtures only exist on the Ltd Schedule; SE's
 // Schedule carries motor and computer alone and throws on the other three,
@@ -300,6 +326,7 @@ export function diyaGlToScenario(book, lines, product) {
   // sales/purchases row itself.
   const carriesPaymentLabels = product === "bst";
   const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage, carriesPaymentLabels });
+  if (product === "ltd") markCarPurchases(grouped.purchases, filteredLines, book.fixedAssets);
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
@@ -610,6 +637,13 @@ export function diyaGlToScenario(book, lines, product) {
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
         if (asset.depreciationRate !== undefined) opening.depreciation_rate = asset.depreciationRate;
         if (asset.capitalAllowancePool === "special") opening.pool = "special";
+        if (asset.car) {
+          if (product !== "ltd") {
+            throw new Error(`Fixed asset ${asset.assetID} is marked a car, which only the Company Schedule has Cars rows for`);
+          }
+          assertCarClass(asset);
+          opening.car = true;
+        }
         // A single asset pool is a fact the book states, never one the loader
         // infers: private use puts an asset in its own pool (CAA 2001 s.206),
         // so a private use share without the marker is a contradiction. The

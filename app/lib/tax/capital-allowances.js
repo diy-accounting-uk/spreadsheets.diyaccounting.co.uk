@@ -6,9 +6,11 @@
 //
 // The schedule gives an asset bought in the year the annual investment
 // allowance on its whole cost, and an asset brought forward a writing down
-// allowance on the tax written-down value it carries. Either way the asset
-// leaves the year with a pool value: cost less the allowance for a purchase,
-// written-down value less the allowance for an asset already owned. Selling
+// allowance on the tax written-down value it carries. A car does not qualify
+// for the annual investment allowance, so a car bought in the year claims the
+// writing down allowance on its cost, less its private use share. Either way
+// the asset leaves the year with a pool value: cost less the allowance for a
+// purchase, written-down value less the allowance for an asset already owned. Selling
 // it settles that pool against the sale proceeds, which is a balancing
 // allowance when the proceeds fall short and a balancing charge when they
 // exceed it.
@@ -21,6 +23,8 @@
  *
  * @param {Object} asset
  * @param {boolean} asset.acquiredInYear - bought in the year, so it claims the investment allowance
+ * @param {boolean} [asset.car] - a car, which claims writing down allowance on its cost in the year it is bought
+ * @param {number} [asset.privateUse] - the share of a car's use that is private, 0 to 1; it reduces the allowance and any balancing figure
  * @param {number} asset.cost - original cost, net of VAT
  * @param {number} [asset.taxWrittenDownValue] - the pool value brought forward, for an asset already owned
  * @param {number} [asset.disposalProceeds] - sale proceeds, net of VAT, when the asset was sold in the year
@@ -34,18 +38,21 @@
 export function assetCapitalAllowance(asset, rates) {
   const cost = asset.cost || 0;
   const writtenDownValue = asset.taxWrittenDownValue || 0;
+  const privateUseFactor = 1 - (asset.privateUse || 0);
+  const boughtCar = asset.acquiredInYear && asset.car === true;
 
-  const investmentAllowance = asset.acquiredInYear && cost > 0 ? (cost * rates.investmentAllowancePercent) / 100 : 0;
-  const writingDownAllowance = !asset.acquiredInYear && writtenDownValue > 0 ? (writtenDownValue * rates.writingDownPercent) / 100 : 0;
+  const investmentAllowance = asset.acquiredInYear && !boughtCar && cost > 0 ? (cost * rates.investmentAllowancePercent) / 100 : 0;
+  const writingDownBase = boughtCar ? cost : !asset.acquiredInYear ? writtenDownValue : 0;
+  const writingDownAllowance = writingDownBase > 0 ? (writingDownBase * rates.writingDownPercent * privateUseFactor) / 100 : 0;
 
   let poolCarriedForward = 0;
-  if (asset.acquiredInYear && cost > 0) poolCarriedForward = cost - investmentAllowance;
+  if (asset.acquiredInYear && cost > 0) poolCarriedForward = cost - investmentAllowance - writingDownAllowance;
   else if (writtenDownValue > 0) poolCarriedForward = writtenDownValue - writingDownAllowance;
 
   const proceeds = asset.disposalProceeds || 0;
   const sold = proceeds > 0 || asset.disposed === true;
-  const balancingAllowance = sold && proceeds < poolCarriedForward ? poolCarriedForward - proceeds : 0;
-  const balancingCharge = sold && proceeds > poolCarriedForward ? proceeds - poolCarriedForward : 0;
+  const balancingAllowance = sold && proceeds < poolCarriedForward ? (poolCarriedForward - proceeds) * privateUseFactor : 0;
+  const balancingCharge = sold && proceeds > poolCarriedForward ? (proceeds - poolCarriedForward) * privateUseFactor : 0;
 
   return { investmentAllowance, writingDownAllowance, poolCarriedForward, balancingAllowance, balancingCharge };
 }

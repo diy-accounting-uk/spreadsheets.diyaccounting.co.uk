@@ -488,6 +488,11 @@
             "default": false,
             "description": "The asset's tax written-down value is its own pool: an asset with private use (CAA 2001 s.206) or under a short-life asset election (ss.83-86). Its writing down allowance still prints in SA103F box 50 or 51 by rate, but the API files it as capitalAllowanceSingleAssetPool and the small pools allowance never applies to it. The Self Employed Schedule marks the row P in column AD and carries the allowance and the written-down value in columns AE to AG. Self Employed only."
           },
+          "car": {
+            "type": "boolean",
+            "default": false,
+            "description": "The asset is a car for capital allowances (CAA 2001 s.268A). On the Company Schedule a car bought in the year goes on the Motor Vehicles - Cars rows 97 to 101 and one held at the opening balance sheet date on rows 44 to 48, and claims the main rate of writing down allowance, never the annual investment allowance. A van, a lorry, a motorcycle and a hackney carriage are not cars. class must be motorVehicles. Company only."
+          },
           "privateUseProportion": {
             "type": "number",
             "minimum": 0,
