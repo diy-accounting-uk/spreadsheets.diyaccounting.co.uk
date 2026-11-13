@@ -179,6 +179,12 @@ export const EXISTING_ASSET_ROWS = { motor: [38, 39, 40, 41, 42], computer: [30,
 
 export const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
 
+// A car bought in the year goes on the Motor Vehicles - Cars rows, which claim
+// the main writing down rate on the cost and never the annual investment
+// allowance. Verified against the template:
+// R97 = IF(AND(E97>0,AB97<>"S"),E97*R$4*(1-M97)," ") and S97 = IF(E97>0,E97-N(R97)-N(AC97)," ").
+export const NEW_CAR_ROWS = [97, 98, 99, 100, 101];
+
 // Column AB on an asset row: "S" puts the row's tax written-down value in
 // the special rate pool, so its writing down allowance lands in column AC
 // at Admin!G6 instead of column R at Admin!G5. Verified against the template:

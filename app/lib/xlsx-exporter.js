@@ -1206,9 +1206,9 @@ const SCHEDULE_SINGLE_ASSET_POOL_MARKER = { column: "AD", value: "P" };
 const SCHEDULE_PRIVATE_USE_COLUMN = "M";
 
 // The single-file products keep one Fixed Assets sheet inside the workbook
-// and their writers fill only its in-year addition block: BST the Plant &
-// Machinery "NEW FIXED ASSETS Bought AFTER" rows, Taxi the "Vehicles under
-// £12,000 bought after" rows. Each block's extent is its own sub-total
+// and their writers fill only its in-year addition blocks: BST the Plant &
+// Machinery "NEW FIXED ASSETS Bought AFTER" rows and the Cars rows, Taxi the
+// "Vehicles under £12,000 bought after" rows and the plant block above them. Each block's extent is its own sub-total
 // formula (BST "Fixed Assets"!E72 = SUM(E67:E71), Taxi D52 = SUM(D47:D51)),
 // and each sheet heads its own columns in rows 1 and 2. The reference column
 // beside each row (BST D, Taxi C) takes the buying document's reference, not
@@ -1219,6 +1219,8 @@ const SINGLE_FILE_ASSET_BLOCKS = {
   bst: {
     sheet: "Fixed Assets",
     rows: [67, 68, 69, 70, 71],
+    carRows: [97, 98, 99, 100, 101],
+    privateUse: "G",
     acquiredDate: "B",
     description: "C",
     cost: "E",
@@ -1228,6 +1230,7 @@ const SINGLE_FILE_ASSET_BLOCKS = {
   taxi: {
     sheet: "Fixed Assets",
     rows: [47, 48, 49, 50, 51],
+    purposeBuiltTaxiRows: [36, 37, 38, 39, 40, 41, 42, 43],
     acquiredDate: "A",
     description: "B",
     cost: "D",
@@ -1256,10 +1259,20 @@ async function singleFileAssetRegisterFrom(set, product) {
   const { xml, sharedStrings } = sheet;
 
   const assets = [];
-  for (const row of layout.rows) {
+  const rows = [
+    ...layout.rows.map((row) => ({ row })),
+    ...(layout.carRows || []).map((row) => ({ row, car: true })),
+    ...(layout.purposeBuiltTaxiRows || []).map((row) => ({ row, purposeBuiltTaxi: true })),
+  ];
+  for (const { row, car, purposeBuiltTaxi } of rows) {
     const cost = numberAt(xml, `${layout.cost}${row}`, sharedStrings);
     if (cost === undefined || cost === 0) continue;
     const asset = { cost };
+    if (car) {
+      asset.car = true;
+      assign(asset, "privateUseProportion", numberAt(xml, `${layout.privateUse}${row}`, sharedStrings));
+    }
+    if (purposeBuiltTaxi) asset.purposeBuiltTaxi = true;
     assign(asset, "description", textAt(xml, `${layout.description}${row}`, sharedStrings));
     assign(asset, "acquiredDate", dateAt(xml, `${layout.acquiredDate}${row}`, sharedStrings));
     assign(asset, "disposedDate", dateAt(xml, `${layout.disposedDate}${row}`, sharedStrings));

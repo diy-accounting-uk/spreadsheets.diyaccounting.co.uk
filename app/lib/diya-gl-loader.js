@@ -114,28 +114,71 @@ export function bookAssetOf(opening) {
   return BOOK_ASSET_OF.get(opening);
 }
 
-// A car is a fact the book states on its fixedAssets entry, never one read
-// off a description. The purchase line that buys a car names it by
-// diya-gl:assetID, so the "fa" transaction made from that line carries
-// asset_class "car" and the Schedule writer and calculator put it on the Cars
-// rows instead of a Plant row.
-function assertCarClass(asset) {
-  if (asset.class !== "motorVehicles") {
-    throw new Error(`Fixed asset ${asset.assetID} is a car, so its class is motorVehicles, not "${asset.class}"`);
+// A car, or a purpose-built taxi, is a fact the book states on its fixedAssets
+// entry, never one read off a description. The purchase line that buys the
+// asset names it by diya-gl:assetID, so the transaction made from that line
+// carries the statement and the writer and the calculator put the asset on
+// the rows the workbook gives it: the Cars rows for a car, which claims the
+// main rate and never the annual investment allowance, and the plant block for
+// a taxi on the Taxi Driver workbook.
+//
+// The Self Employed and Basic Sole Trader workbooks and the Company Schedule
+// have Cars rows. The Taxi Driver workbook sends every purchase to its
+// vehicles block at the main rate, which is right for a car, and has a plant
+// block that a purpose-built taxi (a hackney carriage, which is not a car
+// under CAA 2001 s.268A) can claim the annual investment allowance on.
+function assertStatedAssetClass(asset, statement, classRequired) {
+  const missing = asset.class === undefined && !classRequired;
+  if (asset.class !== "motorVehicles" && !missing) {
+    throw new Error(`Fixed asset ${asset.assetID} is ${statement}, so its class is motorVehicles, not "${asset.class}"`);
   }
 }
 
-function markCarPurchases(purchasesByMonth, lines, fixedAssets) {
-  const cars = (fixedAssets || []).filter((asset) => asset.car);
-  cars.forEach(assertCarClass);
-  const carIDs = new Set(cars.map((asset) => asset.assetID));
-  if (carIDs.size === 0) return;
+function assertStatedAssetKinds(fixedAssets, product) {
+  const classRequired = product === "se" || product === "ltd";
+  for (const asset of fixedAssets || []) {
+    if (asset.car && asset.purposeBuiltTaxi) {
+      throw new Error(`Fixed asset ${asset.assetID} is marked both a car and a purpose-built taxi`);
+    }
+    if (asset.car) assertStatedAssetClass(asset, "a car", classRequired);
+    if (asset.purposeBuiltTaxi) {
+      if (product !== "taxi") {
+        throw new Error(
+          `Fixed asset ${asset.assetID} is marked a purpose-built taxi, which only the Taxi Driver workbook has a plant block for`,
+        );
+      }
+      assertStatedAssetClass(asset, "a purpose-built taxi", classRequired);
+    }
+  }
+}
+
+// The fixedAssets entries a purchase line can state a kind for, by assetID.
+function statedAssetsByID(fixedAssets) {
+  return new Map((fixedAssets || []).filter((asset) => asset.car || asset.purposeBuiltTaxi).map((asset) => [asset.assetID, asset]));
+}
+
+function markStatedPurchases(purchasesByMonth, lines, fixedAssets, product) {
+  const stated = statedAssetsByID(fixedAssets);
+  if (stated.size === 0) return;
   const assetIDByEntry = new Map(
     lines.filter((line) => line["diya-gl:assetID"]).map((line) => [line.entryNumber, line["diya-gl:assetID"]]),
   );
   for (const transactions of Object.values(purchasesByMonth)) {
     for (const transaction of transactions) {
-      if (transaction.code === "fa" && carIDs.has(assetIDByEntry.get(entryOf(transaction)))) transaction.asset_class = "car";
+      const asset = transaction.code === "fa" ? stated.get(assetIDByEntry.get(entryOf(transaction))) : undefined;
+      if (!asset?.car) continue;
+      transaction.asset_class = "car";
+      if (!(asset.privateUseProportion > 0)) continue;
+      if (product === "ltd") {
+        throw new Error(`Fixed asset ${asset.assetID} is a car with a private use share, which the Company Schedule writer does not carry`);
+      }
+      if (!asset.singleAssetPool) {
+        throw new Error(
+          `Fixed asset ${asset.assetID} states privateUseProportion without singleAssetPool; a privately used asset is its own pool`,
+        );
+      }
+      transaction.private_use = asset.privateUseProportion;
+      transaction.single_asset_pool = true;
     }
   }
 }
@@ -326,7 +369,8 @@ export function diyaGlToScenario(book, lines, product) {
   // sales/purchases row itself.
   const carriesPaymentLabels = product === "bst";
   const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage, carriesPaymentLabels });
-  if (product === "ltd") markCarPurchases(grouped.purchases, filteredLines, book.fixedAssets);
+  assertStatedAssetKinds(book.fixedAssets, product);
+  if (product === "ltd" || product === "se") markStatedPurchases(grouped.purchases, filteredLines, book.fixedAssets, product);
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
@@ -637,22 +681,18 @@ export function diyaGlToScenario(book, lines, product) {
         if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
         if (asset.depreciationRate !== undefined) opening.depreciation_rate = asset.depreciationRate;
         if (asset.capitalAllowancePool === "special") opening.pool = "special";
-        if (asset.car) {
-          if (product !== "ltd") {
-            throw new Error(`Fixed asset ${asset.assetID} is marked a car, which only the Company Schedule has Cars rows for`);
-          }
-          assertCarClass(asset);
-          opening.car = true;
-        }
+        if (asset.car) opening.car = true;
         // A single asset pool is a fact the book states, never one the loader
         // infers: private use puts an asset in its own pool (CAA 2001 s.206),
         // so a private use share without the marker is a contradiction. The
-        // Schedule applies the private use share on the motor rows only, and
-        // the Company Schedule has neither column.
+        // Schedule applies the private use share on the motor rows only. The
+        // Company Schedule has a private use column (M) on its car rows, and
+        // its writer does not fill it, so the loader refuses the share
+        // instead of dropping it.
         if (asset.singleAssetPool || asset.privateUseProportion > 0) {
           if (product !== "se") {
             throw new Error(
-              `Fixed asset ${asset.assetID} states a single asset pool or private use, which the Company Schedule has no column for`,
+              `Fixed asset ${asset.assetID} states a single asset pool or private use, which the Company Schedule writer does not carry`,
             );
           }
           if (category !== "motor") {
@@ -761,19 +801,24 @@ export function diyaGlToScenario(book, lines, product) {
   // schedules are written from their own asset journals, so neither derives
   // its additions from the purchase journal.
   if (product === "bst" || product === "taxi") {
+    const statedAssets = statedAssetsByID(book.fixedAssets);
     const additions = purchaseLines
       .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
-      .map((l) =>
-        tagEntry(
-          {
-            date: l.postingDate,
-            description: l.lineItemComment || "",
-            reference: l.documentReference || "",
-            cost: l.amount,
-          },
-          l.entryNumber,
-        ),
-      );
+      .map((l) => {
+        const addition = {
+          date: l.postingDate,
+          description: l.lineItemComment || "",
+          reference: l.documentReference || "",
+          cost: l.amount,
+        };
+        const stated = statedAssets.get(l["diya-gl:assetID"]);
+        if (stated?.car) {
+          addition.car = true;
+          if (stated.privateUseProportion > 0) addition.private_use = stated.privateUseProportion;
+        }
+        if (stated?.purposeBuiltTaxi) addition.purpose_built_taxi = true;
+        return tagEntry(addition, l.entryNumber);
+      });
     if (additions.length > 0) {
       scenario.fixed_asset_additions = additions;
       expected.fixed_asset_cost = additions.reduce((total, asset) => total + asset.cost, 0);

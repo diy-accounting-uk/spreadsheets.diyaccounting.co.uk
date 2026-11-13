@@ -38,6 +38,11 @@ export class TaxiDateOffGridError extends Error {
 
 const round2 = (v) => Math.round(v * 100) / 100;
 
+// The Fixed Assets sheet's rows for an asset bought in the year: the vehicles
+// block, and the block above it that claims the annual investment allowance.
+const FIXED_ASSET_VEHICLE_ROWS = [47, 48, 49, 50, 51];
+const FIXED_ASSET_PLANT_ROWS = [36, 37, 38, 39, 40, 41, 42, 43];
+
 // ── Date-to-row mapping for pre-filled Sales sheets ────────────────────────
 
 // Every day of the tax year mapped to its row on the month's Sales sheet,
@@ -211,24 +216,28 @@ export function cellWrites(scenario, targetStartYear = null) {
   }
 
   // Fixed asset additions go on the "Fixed Assets" sheet's "Vehicles under
-  // £12,000 bought after" block (rows 47-51, 5 slots). A Purchases entry
-  // coded "f" only reaches the analysis column S, which no P&L formula
-  // reads -- it does not register the asset on the capital-allowance
-  // schedule, so this write is a separate, deliberate step modelling the
-  // same real-world double entry (cash purchase in Purchases, asset
-  // registered in the Fixed Assets book).
+  // £12,000 bought after" block (rows 47-51, 5 slots), which claims the main
+  // writing down rate. An addition the book states is a purpose-built taxi is
+  // not a car, so it goes on the "Fixed Assets incl Commercial vehicles bought
+  // after" block (rows 36-43), which claims the annual investment allowance.
+  // A Purchases entry coded "f" only reaches the analysis column S, which no
+  // P&L formula reads -- it does not register the asset on the
+  // capital-allowance schedule, so this write is a separate, deliberate step
+  // modelling the same real-world double entry (cash purchase in Purchases,
+  // asset registered in the Fixed Assets book).
   const assetAdditions = fixedAssetAdditions(scenario, "f");
   if (assetAdditions.length > 0) {
     if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
     const fa = writes["Fixed Assets"];
-    let row = 47;
+    let vehicleRow = FIXED_ASSET_VEHICLE_ROWS[0];
+    let plantRow = FIXED_ASSET_PLANT_ROWS[0];
     for (const asset of assetAdditions) {
+      const row = asset.purpose_built_taxi ? plantRow++ : vehicleRow++;
       const d = parseDate(asset.date);
       fa[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`B${row}`] = asset.description;
       if (asset.reference) fa[`C${row}`] = asset.reference;
       fa[`D${row}`] = asset.cost;
-      row++;
     }
   }
 
@@ -402,6 +411,7 @@ export const CELL_MAP = [
   ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "fixedAssets (purchased, year total)",       "Purchase Analysis", 0, "money"],
   // ── Fixed Assets schedule ──
   ["Fixed Assets", "D47", "New Asset Cost (Vehicle under £12,000)", "fixedAssets[0].cost",              "Fixed Assets", 1, "money"],
+  ["Fixed Assets", "D36", "New Asset Cost (Purpose-built taxi)",    "fixedAssets[0].cost",              "Fixed Assets", 1, "money"],
   ["Fixed Assets", "I1",  "Total Annual Investment Allowance",      "tax.capitalAllowances.aia (schedule)",            "Fixed Assets", 0, "money"],
   ["Fixed Assets", "J1",  "Total Writing Down Allowance",           "tax.capitalAllowances.wda (schedule)",            "Fixed Assets", 1, "money"],
   ["Fixed Assets", "P1",  "Total Capital Allowance on Disposal",    "tax.capitalAllowances.disposals (schedule)",      "Fixed Assets", 1, "money"],
@@ -738,13 +748,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
     const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
-    check("Fixed Assets: New asset cost recorded", fa.D47 || 0, expected.fixed_asset_cost ?? assetCost);
-    check("Fixed Assets: written-down value = cost less the allowance", fa.K1 || 0, assetCost - (fa.J1 || 0), 0);
+    check("Fixed Assets: New asset cost recorded", (fa.D47 || 0) + (fa.D36 || 0), expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: written-down value = cost less the allowance", fa.K1 || 0, assetCost - (fa.I1 || 0) - (fa.J1 || 0), 0);
 
     if (results.Admin) {
       const wdaRate = results.Admin.G5;
-      const expectedWda = (fa.D47 || 0) * wdaRate;
-      check("Fixed Assets: WDA claimed = cost x Admin WDA rate", fa.J1 || 0, expectedWda);
+      const vehicleCost = fa.D47 || 0;
+      check("Fixed Assets: WDA claimed = cost x Admin WDA rate", fa.J1 || 0, vehicleCost * wdaRate);
+      if (expectedAdditions.some((asset) => asset.purpose_built_taxi)) {
+        check("Fixed Assets: AIA claimed = plant cost x Admin AIA rate", fa.I1 || 0, (fa.D36 || 0) * results.Admin.G4);
+      }
     }
 
     // The P&L charges the schedule's allowance only on the actual-cost route:

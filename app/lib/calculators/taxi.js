@@ -37,13 +37,6 @@ const MONTH_COLS = {
   mar: "N",
 };
 
-// The Fixed Assets schedule. Every capital addition lands in the "Vehicles
-// under £12,000 bought after" block regardless of what it actually is (see
-// cellWrites in app/products/taxi.js), and that block only ever claims a
-// Writing Down Allowance at the main rate -- never Annual Investment
-// Allowance (verified against the template: Fixed Assets!J47 =
-// IF(D47>0,D47*J$4*(1-F47)," "), with no AIA formula anywhere on this
-// block).
 // Business miles a line records: the distance a fare day was driven, or the
 // distance a mileage-log entry claims at the approved rate. cellWrites gives
 // the sheet the miles, and on a purchase gives them instead of the amount --
@@ -52,15 +45,35 @@ function carriesBusinessMiles(line) {
   return line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number";
 }
 
+// The Fixed Assets schedule. A capital addition lands in the "Vehicles
+// under £12,000 bought after" block, which only ever claims a Writing Down
+// Allowance at the main rate -- never Annual Investment Allowance (verified
+// against the template: Fixed Assets!J47 = IF(D47>0,D47*J$4*(1-F47)," "),
+// with no AIA formula anywhere on this block). That is right for a car. An
+// addition the book states is a purpose-built taxi is not a car, so it lands
+// in the "Fixed Assets incl Commercial vehicles bought after" block above
+// (rows 36 to 43), which claims the Annual Investment Allowance (I36 =
+// IF((D36>0),D36*I$4," "), K36 = IF(D36>0,D36-D36*I$4," ") where I4 =
+// Admin!G4).
 function calculateFixedAssetSchedule(additions, taxData) {
   const wdaRate = taxData.capital_allowances.writing_down_allowance;
-  const schedule = { D47: 0, I1: 0, J1: 0, K1: 0, P1: 0, Q1: 0 };
-  additions.forEach((asset, index) => {
-    const wda = asset.cost * wdaRate;
-    schedule.J1 += wda;
-    schedule.K1 += asset.cost - wda;
-    if (index === 0) schedule.D47 = asset.cost;
-  });
+  const aiaRate = taxData.capital_allowances.annual_investment_allowance;
+  const schedule = { D36: 0, D47: 0, I1: 0, J1: 0, K1: 0, P1: 0, Q1: 0 };
+  let vehicleCount = 0;
+  let plantCount = 0;
+  for (const asset of additions) {
+    if (asset.purpose_built_taxi) {
+      const aia = asset.cost * aiaRate;
+      schedule.I1 += aia;
+      schedule.K1 += asset.cost - aia;
+      if (plantCount++ === 0) schedule.D36 = asset.cost;
+    } else {
+      const wda = asset.cost * wdaRate;
+      schedule.J1 += wda;
+      schedule.K1 += asset.cost - wda;
+      if (vehicleCount++ === 0) schedule.D47 = asset.cost;
+    }
+  }
   return schedule;
 }
 
@@ -377,6 +390,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario, attribution
 
   if (assetAdditions.length > 0) {
     results["Fixed Assets"].D47 = fa.D47;
+    if (assetAdditions.some((asset) => asset.purpose_built_taxi)) results["Fixed Assets"].D36 = fa.D36;
     results["Fixed Assets"].I1 = Math.round(fa.I1 * 100) / 100;
     results["Fixed Assets"].J1 = Math.round(fa.J1 * 100) / 100;
     results["Fixed Assets"].K1 = Math.round(fa.K1 * 100) / 100;
