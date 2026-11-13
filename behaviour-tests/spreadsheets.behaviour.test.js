@@ -84,7 +84,7 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     // Verify page loaded
     const title = await page.title();
     console.log(` Page title: "${title}"`);
-    expect(title).toContain("DIY Accounting Spreadsheets");
+    expect(title).toContain("Bookkeeping Spreadsheets");
     console.log(" Index page loaded successfully");
 
     // ============================================================

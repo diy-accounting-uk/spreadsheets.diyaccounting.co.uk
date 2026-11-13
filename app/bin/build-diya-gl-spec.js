@@ -38,6 +38,21 @@ const EXAMPLES_DIR = resolve(ROOT, "examples");
 const OUT_PATH = resolve(DIYA_GL_DIR, "spec.html");
 
 const CANONICAL_URL = "https://diya-gl.co.uk/spec.html";
+const BREADCRUMBS_JSON_LD = JSON.stringify(
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "DIYA-GL", "item": "https://diya-gl.co.uk/" },
+      { "@type": "ListItem", "position": 2, "name": "The DIYA-GL format", "item": CANONICAL_URL },
+    ],
+  },
+  null,
+  2,
+)
+  .split("\n")
+  .map((l) => `      ${l}`)
+  .join("\n");
 const PAGE_TITLE = "The DIYA-GL format - DIY Accounting Spreadsheets";
 const PAGE_DESCRIPTION =
   "The diya-gl accounting file format: the fields it declares and the XBRL GL 2015 element each one comes from, the SA103S box every computed figure lands in, the check catalogue, the zip layout and the reconciliation evidence.";
@@ -636,6 +651,7 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
     <meta property="og:url" content="${CANONICAL_URL}" />
     <meta property="og:site_name" content="DIY Accounting" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
     <link rel="canonical" href="${CANONICAL_URL}" />
     <link rel="stylesheet" href="spreadsheets.css" />
     <style>
@@ -703,6 +719,9 @@ ${sections.join("\n\n")}
         </div>
       </div>
     </footer>
+    <script type="application/ld+json">
+${BREADCRUMBS_JSON_LD}
+    </script>
   </body>
 </html>
 `;

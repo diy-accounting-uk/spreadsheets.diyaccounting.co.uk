@@ -25,7 +25,7 @@ test.describe("Spreadsheets index.html", () => {
 
     // Title
     const title = await page.title();
-    expect(title).toContain("DIY Accounting Spreadsheets");
+    expect(title).toContain("Bookkeeping Spreadsheets");
 
     // Meta description
     const metaDesc = page.locator('meta[name="description"]');

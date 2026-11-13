@@ -565,6 +565,24 @@ function renderReportSections(sections, headingLevel = 4) {
     .join("\n");
 }
 
+function breadcrumbScript(title, canonical) {
+  const site = "https://spreadsheets.diyaccounting.co.uk";
+  const reconciliationIndex = `${site}/reconciliation/index.html`;
+  const trail = [["DIY Accounting Spreadsheets", `${site}/`]];
+  if (canonical !== reconciliationIndex) trail.push(["Reconciliation reports", reconciliationIndex]);
+  trail.push([title.replace(/ - DIY Accounting Spreadsheets$/, ""), canonical]);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": trail.map(([name, item], i) => ({ "@type": "ListItem", "position": i + 1, name, item })),
+  };
+  const json = JSON.stringify(data, null, 2)
+    .split("\n")
+    .map((l) => `      ${l}`)
+    .join("\n");
+  return `    <script type="application/ld+json">\n${json}\n    </script>\n`;
+}
+
 function pageShell({ title, description, canonical, body }) {
   return `<!doctype html>
 <html lang="en">
@@ -580,6 +598,7 @@ function pageShell({ title, description, canonical, body }) {
     <meta property="og:url" content="${escapeHtml(canonical)}" />
     <meta property="og:site_name" content="DIY Accounting" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
     <link rel="canonical" href="${escapeHtml(canonical)}" />
     <link rel="stylesheet" href="../spreadsheets.css" />
     <style>
@@ -648,7 +667,7 @@ ${body}
         </div>
       </div>
     </footer>
-  </body>
+${breadcrumbScript(title, canonical)}  </body>
 </html>
 `;
 }

@@ -62,6 +62,35 @@ function parseRobotsTxt(content) {
   return directives;
 }
 
+// Helper: split robots.txt into groups. Consecutive User-agent lines share one rule set.
+function parseRobotsGroups(content) {
+  const groups = [];
+  let current;
+  let collectingAgents = false;
+  for (const raw of content.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("#") || line === "") continue;
+    const [key, ...valueParts] = line.split(":");
+    const keyLower = key.toLowerCase().trim();
+    const value = valueParts.join(":").trim();
+    if (keyLower === "user-agent") {
+      if (!collectingAgents) {
+        current = { agents: [], allows: [], disallows: [], signals: [] };
+        groups.push(current);
+      }
+      current.agents.push(value);
+      collectingAgents = true;
+      continue;
+    }
+    collectingAgents = false;
+    if (!current) continue;
+    if (keyLower === "allow") current.allows.push(value);
+    else if (keyLower === "disallow") current.disallows.push(value);
+    else if (keyLower === "content-signal") current.signals.push(value);
+  }
+  return groups;
+}
+
 // Helper: check if a path is disallowed by robots.txt rules
 function isDisallowed(urlPath, disallows) {
   return disallows.some((rule) => urlPath.startsWith(rule));
@@ -80,6 +109,45 @@ function extractJsonLd(html) {
     }
   }
   return blocks;
+}
+
+// The company record every home page publishes, in this property order.
+const ORGANIZATION_CORE = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "DIY Accounting Limited",
+  "legalName": "DIY Accounting Limited",
+  "url": "https://diyaccounting.co.uk",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "37 Sutherland Avenue",
+    "addressLocality": "Leeds",
+    "postalCode": "LS8 1BY",
+    "addressCountry": "GB",
+  },
+  "identifier": { "@type": "PropertyValue", "propertyID": "Companies House company number", "value": "06846849" },
+  "sameAs": [
+    "https://find-and-update.company-information.service.gov.uk/company/06846849",
+    "https://www.youtube.com/@DIYAccountingSubmit",
+    "https://github.com/diy-accounting-uk",
+    "https://www.npmjs.com/package/@diy-accounting-uk/diya-submit",
+    "https://www.npmjs.com/package/@diy-accounting-uk/diya-gl",
+  ],
+};
+
+// The file that serves a sitemap URL. donate.html is built from its template, which carries the same head.
+function fileForSitemapUrl(site, url) {
+  const urlPath = new URL(url).pathname;
+  if (urlPath === "/") return path.join(site.dir, "index.html");
+  if (site.name === "spreadsheets" && urlPath === "/donate.html") {
+    return path.join(site.dir, "..", "donate.template.html");
+  }
+  return path.join(site.dir, urlPath);
+}
+
+function metaContent(html, attribute, name) {
+  const match = html.match(new RegExp(`<meta\\s+${attribute}="${escapeRegExp(name)}"\\s+content="([^"]*)"`));
+  return match ? match[1] : undefined;
 }
 
 for (const site of sites) {
@@ -126,6 +194,43 @@ for (const site of sites) {
   describe(`robots.txt validation (${site.name})`, () => {
     const robotsPath = path.join(site.dir, "robots.txt");
 
+    it("names the search and user-fetch agents and the training agents, each allowed", () => {
+      const named = parseRobotsGroups(readFile(robotsPath)).filter((g) => !g.agents.includes("*"));
+      const searchGroup = named.find((g) => g.agents.includes("OAI-SearchBot"));
+      const trainingGroup = named.find((g) => g.agents.includes("GPTBot"));
+      expect(searchGroup?.agents).toEqual([
+        "OAI-SearchBot",
+        "ChatGPT-User",
+        "Claude-SearchBot",
+        "Claude-User",
+        "PerplexityBot",
+        "Perplexity-User",
+        "Bingbot",
+        "Googlebot",
+        "Applebot",
+      ]);
+      expect(trainingGroup?.agents).toEqual(["GPTBot", "ClaudeBot", "Google-Extended", "CCBot", "Applebot-Extended"]);
+      for (const group of [searchGroup, trainingGroup]) {
+        expect(group.allows).toEqual(["/"]);
+      }
+    });
+
+    it("states one Content-Signal line", () => {
+      const signals = parseRobotsGroups(readFile(robotsPath)).flatMap((g) => g.signals);
+      expect(signals).toEqual(["search=yes, ai-input=yes, ai-train=yes"]);
+    });
+
+    it("disallows no named agent from any sitemap URL", () => {
+      const named = parseRobotsGroups(readFile(robotsPath)).filter((g) => !g.agents.includes("*"));
+      const urls = extractSitemapUrls(readFile(path.join(site.dir, "sitemap.xml")));
+      expect(named.length).toBeGreaterThan(0);
+      for (const group of named) {
+        for (const url of urls) {
+          expect(isDisallowed(new URL(url).pathname, group.disallows), `${group.agents.join(", ")} is blocked from ${url}`).toBe(false);
+        }
+      }
+    });
+
     it("robots.txt exists", () => {
       expect(fs.existsSync(robotsPath), `${robotsPath} should exist`).toBe(true);
     });
@@ -139,6 +244,47 @@ for (const site of sites) {
       const robots = parseRobotsTxt(readFile(robotsPath));
       const expectedSitemap = `${site.domain}/sitemap.xml`;
       expect(robots.sitemaps, `Should contain ${expectedSitemap}`).toContain(expectedSitemap);
+    });
+  });
+
+  describe(`Head tags and structured data on every sitemap URL (${site.name})`, () => {
+    const sitemapPath = path.join(site.dir, "sitemap.xml");
+    // The spreadsheets product pages are built at deploy and not committed; app/test/product-pages.test.js asserts them.
+    const urls = fs.existsSync(sitemapPath)
+      ? extractSitemapUrls(readFile(sitemapPath)).filter((u) => !new URL(u).pathname.startsWith("/products/"))
+      : [];
+
+    it("lists pages to check", () => {
+      expect(urls.length).toBeGreaterThan(0);
+    });
+
+    for (const url of urls) {
+      it(`${url} has og:title, twitter:card, a canonical and, below the home page, a BreadcrumbList`, () => {
+        const html = readFile(fileForSitemapUrl(site, url));
+        expect(metaContent(html, "property", "og:title"), "og:title").toBeTruthy();
+        expect(metaContent(html, "name", "twitter:card"), "twitter:card").toMatch(/^summary(_large_image)?$/);
+        expect(canonicalHref(html), "canonical").toBe(url);
+        const blocks = extractJsonLd(html);
+        const breadcrumbs = blocks.find((b) => b["@type"] === "BreadcrumbList");
+        if (new URL(url).pathname === "/") {
+          expect(breadcrumbs, "the home page has no BreadcrumbList").toBeUndefined();
+          return;
+        }
+        expect(breadcrumbs, "BreadcrumbList").toBeTruthy();
+        const items = breadcrumbs.itemListElement;
+        expect(items.length).toBeGreaterThanOrEqual(2);
+        expect(items.map((i) => i.position)).toEqual(items.map((_, n) => n + 1));
+        expect(items[0].item).toBe(`${site.domain}/`);
+        expect(items[items.length - 1].item).toBe(url);
+      });
+    }
+
+    it(`${site.landing} carries the Organization record`, () => {
+      const org = extractJsonLd(readFile(path.join(site.dir, site.landing))).find((b) => b["@type"] === "Organization");
+      expect(org, "Organization block").toBeTruthy();
+      const core = Object.keys(ORGANIZATION_CORE);
+      expect(Object.keys(org).slice(0, core.length)).toEqual(core);
+      expect(org).toMatchObject(ORGANIZATION_CORE);
     });
   });
 

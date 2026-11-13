@@ -294,6 +294,9 @@ jobs:
       - name: Build packages (zips + catalogue)
         run: npm run build:packages
 
+      - name: Build product pages
+        run: npm run build:product-pages
+
       - name: Build sitemaps
         run: npm run build:sitemaps
 
@@ -380,6 +383,10 @@ jobs:
           BUCKET_NAME=$(jq -r ".\"${STACK_NAME}\".OriginBucketName" cdk-spreadsheets.out/cdk-outputs-diya-gl.json)
           echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
           aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
+
+      - name: Tell IndexNow about the changed pages
+        if: ${{ needs.params.outputs.environment-name == 'prod' }}
+        run: node scripts/indexnow-submit.mjs
 
       - name: Show stack outputs
         run: |

@@ -36,6 +36,8 @@ web/spreadsheets.diyaccounting.co.uk/redirect-function.js
 # Generated data files (built by scripts)
 web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml
 web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
+# Product pages built from catalogue.toml by app/bin/build-product-pages.js
+web/spreadsheets.diyaccounting.co.uk/public/products/
 web/spreadsheets.diyaccounting.co.uk/public/knowledge-base.toml
 
 # Generated donate page (built per environment from donate.template.html
