@@ -568,8 +568,10 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
-      - name: Build the knowledge base list
-        run: npm run build:knowledge-base
+      - name: Build the knowledge base list and the references records
+        run: |
+          npm run build:knowledge-base
+          npm run build:references
 
       - name: Build the donate page
         run: npm run build:donate-page

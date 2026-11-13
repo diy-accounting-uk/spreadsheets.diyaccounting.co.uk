@@ -3,7 +3,7 @@
 # DIY Accounting Knowledge Base — Citation Reference Database
 # Each [[reference]] has a unique ID, a claim summary, and one or more [[reference.source]] entries.
 # Sources include verbatim extracts, access dates, and authority level.
-# This file is the single source of truth; references.html and sources.html are generated from it.
+# References REF001 to REF023. Later records sit in ref-additions/; app/bin/build-references.js merges both into references.toml, which references.html and sources.html read.
 
 [[reference]]
 id = "REF001"
