@@ -115,6 +115,23 @@ describe("pageMarkdown", () => {
     const document = parseHtml("<html><head><title>T</title></head><body><h2>Head</h2><p>Line<br/>two</p></body></html>");
     expect(pageMarkdown(document, `${SITE}/x.html`)).toBe("## Head\n\nLine\ntwo");
   });
+
+  it("keeps a link to a page, a mailbox or a phone number, and leaves only the text of any other scheme", () => {
+    const links = [
+      "/a.html",
+      "mailto:x@example.com",
+      "tel:+441234567890",
+      "javascript:alert(1)",
+      "data:text/html,x",
+      "vbscript:x",
+      "JaVaScRiPt:alert(1)",
+    ];
+    const body = links.map((href, index) => `<p><a href="${href}">L${index}</a></p>`).join("");
+    const document = parseHtml(`<html><head><title>T</title></head><body>${body}</body></html>`);
+    expect(pageMarkdown(document, `${SITE}/x.html`)).toBe(
+      [`[L0](${SITE}/a.html)`, "[L1](mailto:x@example.com)", "[L2](tel:+441234567890)", "L3", "L4", "L5", "L6"].join("\n\n"),
+    );
+  });
 });
 
 describe("feed", () => {
