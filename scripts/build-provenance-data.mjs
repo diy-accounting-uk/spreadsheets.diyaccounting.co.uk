@@ -180,6 +180,23 @@ export function differsOnlyByEngineVersion(before, after) {
   return blank(before) === blank(after);
 }
 
+// reconciledCommit is the commit a generate run reconciled against, so it
+// differs on every run. A run whose engine, tax data and template stamps are
+// unchanged leaves the committed file as it is, so that run commits nothing.
+// Exported for the unit test: pure string comparison.
+const RECONCILED_COMMIT_PATTERN = /reconciledCommit:\s*"[^"]*"/;
+
+export function differsOnlyByReconciledCommit(before, after) {
+  if (before === after) return false;
+  const blank = (text) => text.replace(RECONCILED_COMMIT_PATTERN, 'reconciledCommit: ""');
+  return blank(before) === blank(after);
+}
+
+export function differsOnlyByStampsOfThisRun(before, after) {
+  const blank = (text) => text.replace(RECONCILED_COMMIT_PATTERN, 'reconciledCommit: ""');
+  return differsOnlyByEngineVersion(blank(before), blank(after)) || differsOnlyByReconciledCommit(before, after);
+}
+
 async function main() {
   const { reconciledCommit, release } = parseArgs(process.argv.slice(2));
   const data = {
@@ -212,9 +229,9 @@ export const PROVENANCE_DATA = ${JSON.stringify(data, null, 2)};
   const config = await prettier.resolveConfig(OUT_FILE);
   const formatted = await prettier.format(body, { ...config, filepath: OUT_FILE });
   const existing = existsSync(OUT_FILE) ? readFileSync(OUT_FILE, "utf8") : null;
-  if (!release && existing !== null && differsOnlyByEngineVersion(existing, formatted)) {
+  if (!release && existing !== null && differsOnlyByStampsOfThisRun(existing, formatted)) {
     console.log(
-      `provenance data: ${OUT_FILE.replace(ROOT + "/", "")} left as committed -- the only difference is engineVersion (${data.engineVersion}), which this checkout's own installed version or commit produces, not an engine, tax data or template change.`,
+      `provenance data: ${OUT_FILE.replace(ROOT + "/", "")} left as committed -- only engineVersion (${data.engineVersion}) and reconciledCommit (${data.reconciledCommit}) differ, and no engine, tax data or template change produced them.`,
     );
     return;
   }

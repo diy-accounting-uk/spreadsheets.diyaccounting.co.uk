@@ -10,7 +10,11 @@
 // dirtying the tree for a push .githooks/pre-push then refuses.
 
 import { describe, it, expect } from "vitest";
-import { differsOnlyByEngineVersion } from "../../scripts/build-provenance-data.mjs";
+import {
+  differsOnlyByEngineVersion,
+  differsOnlyByReconciledCommit,
+  differsOnlyByStampsOfThisRun,
+} from "../../scripts/build-provenance-data.mjs";
 
 function source(engineVersion, taxDataHash) {
   return ["export const PROVENANCE_DATA = {", `  engineVersion: "${engineVersion}",`, `  taxDataHash: "${taxDataHash}",`, "};", ""].join(
@@ -40,5 +44,43 @@ describe("differsOnlyByEngineVersion", () => {
     const before = source("1.2.34+aaaaaaaaaa", "deadbeefcafe");
     const after = source("1.2.34+aaaaaaaaaa", "0000000000000");
     expect(differsOnlyByEngineVersion(before, after)).toBe(false);
+  });
+});
+
+describe("differsOnlyByReconciledCommit", () => {
+  const withCommit = (commit, taxDataHash) =>
+    ["export const PROVENANCE_DATA = {", `  taxDataHash: "${taxDataHash}",`, `  reconciledCommit: "${commit}",`, "};", ""].join("\n");
+
+  it("is true when reconciledCommit is the only line that changed", () => {
+    expect(differsOnlyByReconciledCommit(withCommit("aaaa", "deadbeefcafe"), withCommit("bbbb", "deadbeefcafe"))).toBe(true);
+  });
+
+  it("is false when a stamp other than reconciledCommit also changed", () => {
+    expect(differsOnlyByReconciledCommit(withCommit("aaaa", "deadbeefcafe"), withCommit("bbbb", "000000000000"))).toBe(false);
+  });
+
+  it("is false when the two texts are identical", () => {
+    const text = withCommit("aaaa", "deadbeefcafe");
+    expect(differsOnlyByReconciledCommit(text, text)).toBe(false);
+  });
+});
+
+describe("differsOnlyByStampsOfThisRun", () => {
+  const text = (engineVersion, commit, taxDataHash) =>
+    [
+      "export const PROVENANCE_DATA = {",
+      `  engineVersion: "${engineVersion}",`,
+      `  taxDataHash: "${taxDataHash}",`,
+      `  reconciledCommit: "${commit}",`,
+      "};",
+      "",
+    ].join("\n");
+
+  it("is true when engineVersion and reconciledCommit both moved and nothing else", () => {
+    expect(differsOnlyByStampsOfThisRun(text("1.2.3+a", "aaaa", "dead"), text("1.2.4+b", "bbbb", "dead"))).toBe(true);
+  });
+
+  it("is false when a template or tax stamp moved too", () => {
+    expect(differsOnlyByStampsOfThisRun(text("1.2.3+a", "aaaa", "dead"), text("1.2.4+b", "bbbb", "beef"))).toBe(false);
   });
 });

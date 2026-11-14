@@ -760,7 +760,35 @@ function detectFeatures(report, scenario, shots) {
   };
 }
 
-function buildProductPage(product, options) {
+// The date the page shows as updated: the day the product's templates last
+// changed, so an unchanged input gives an unchanged page. Needs the history of
+// app/templates, not a shallow clone.
+export function templateCommitDate(product) {
+  const date = execFileSync("git", ["log", "-1", "--format=%cs", "--", `app/templates/${product}`], {
+    cwd: ROOT,
+    encoding: "utf8",
+  }).trim();
+  if (!date) throw new Error(`No commit history for app/templates/${product}`);
+  return date;
+}
+
+export function buildProductMetadata(product, built, shots, updated) {
+  return {
+    product,
+    name: built.config.name,
+    page: `${product}.html`,
+    catalogue: built.config.catalogue,
+    featuredScenario: built.featured.scenario,
+    yearEnd: built.featured.yearEnd,
+    status: built.featured.status,
+    runs: built.runs.length,
+    updated,
+    features: detectFeatures(built.report, built.scenario, shots),
+    license: "LicenseRef-PolyForm-Internal-Use-1.0.0",
+  };
+}
+
+export function buildProductPage(product, options) {
   const config = PRODUCTS[product];
   const runs = loadProductReports(options.reportsDir, product);
   if (runs.length === 0) throw new Error(`No reports for ${product} in ${options.reportsDir}`);
@@ -785,7 +813,7 @@ function buildProductPage(product, options) {
   return { config, runs, featured, report, scenario, verdict, checksSection, statementSections, taxSections, appendixSections };
 }
 
-function renderProductPage(product, built, shots) {
+export function renderProductPage(product, built, shots) {
   const { config, runs, featured, report, scenario, verdict, checksSection, statementSections, taxSections, appendixSections } = built;
   const checks = checksSection?.blocks.find((block) => block.type === "table");
   const passes = checks ? checks.rows.filter((row) => /PASS/.test(row[row.length - 1])).length : 0;
@@ -874,7 +902,7 @@ function renderProductPage(product, built, shots) {
 
 // ── Index page ──────────────────────────────────────────────────────────────
 
-function renderIndexPage(metadata) {
+export function renderIndexPage(metadata) {
   const products = PRODUCT_ORDER.filter((product) => metadata[product]);
   const matrix = renderTable({
     head: ["Feature", ...products.map((product) => metadata[product].name)],
@@ -1060,19 +1088,7 @@ async function main() {
       const built = buildProductPage(product, args);
       const shots = args.screenshots ? await buildScreenshots(product, args.outDir) : [];
       writeFileSync(join(args.outDir, `${product}.html`), renderProductPage(product, built, shots), "utf8");
-      const metadata = {
-        product,
-        name: built.config.name,
-        page: `${product}.html`,
-        catalogue: built.config.catalogue,
-        featuredScenario: built.featured.scenario,
-        yearEnd: built.featured.yearEnd,
-        status: built.featured.status,
-        runs: built.runs.length,
-        updated: new Date().toISOString().slice(0, 10),
-        features: detectFeatures(built.report, built.scenario, shots),
-        license: "LicenseRef-PolyForm-Internal-Use-1.0.0",
-      };
+      const metadata = buildProductMetadata(product, built, shots, templateCommitDate(product));
       writeFileSync(join(args.outDir, `${product}.json`), `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
       console.log(`  page ${product}.html (${built.runs.length} runs, ${shots.length} screenshots)`);
     }

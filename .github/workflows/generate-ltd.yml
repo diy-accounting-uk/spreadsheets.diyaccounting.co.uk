@@ -10,10 +10,12 @@ on:
   schedule:
     # Mondays 04:00 UTC (4am GMT, 5am BST): rolls the catalogue's year-end
     # window forward and keeps repo activity above GitHub's 60-day
-    # disabled_inactivity threshold. A scheduled run commits only package
-    # folders that main does not hold yet, so a week with no new year-end
-    # commits nothing. The DAILY schedule's mass commits of rewritten files
-    # contributed to the 2026-05 flagging incident; this run adds none.
+    # disabled_inactivity threshold. Every generated output is byte-stable for
+    # unchanged input (package PDFs take the epoch of the last template commit,
+    # the example workbooks and provenance data keep their committed bytes, the
+    # reconciliation pages take the template commit date), so a week with no new
+    # year-end and no template change commits nothing. The DAILY schedule's mass
+    # commits of rewritten files contributed to the 2026-05 flagging incident.
     - cron: '0 4 * * 1'
   # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
   # Excel files per run. Combined with the daily schedule, that produced a high
@@ -129,6 +131,8 @@ jobs:
       latest: ${{ steps.matrix.outputs.latest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -143,7 +147,8 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends pandoc
           pip install --quiet weasyprint
       - run: rm -rf packages
-      - run: npm run generate -- --package ltd
+      - name: Generate the packages
+        run: npm run generate -- --package ltd --source-date-epoch "$(git log -1 --format=%ct -- app/templates/ltd)"
       - name: Compute reconciliation matrix
         id: matrix
         env:
@@ -223,6 +228,8 @@ jobs:
         year-end: ${{ fromJson(needs.generate.outputs.matrix) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -476,6 +483,8 @@ jobs:
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Keep the committed example workbooks whose content did not change
+        run: node scripts/keep-unchanged-examples.mjs examples/ltd-latest
       - name: Stamp the provenance data with this reconciled commit
         run: node scripts/build-provenance-data.mjs --reconciled-commit "$GITHUB_SHA"
       - name: Build the diya-gl spec page
@@ -495,22 +504,8 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*ltd-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          if [[ '${{ github.event_name }}' == 'schedule' ]]; then
-            # A scheduled run commits only package folders that main does not
-            # hold yet; generate.js rebuilds every package, so the rewritten
-            # ones stay out. A dispatched run, and generate-all (a dispatch, whose
-            # event name this called workflow inherits), commits everything.
-            git reset -q
-            for dir in packages/*/; do
-              if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
-                git add -- "$dir"
-              fi
-            done
-            git restore --worktree -- .
-          else
-            git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
-              app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
-          fi
+          git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
+            app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
