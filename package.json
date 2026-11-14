@@ -107,10 +107,10 @@
   "devDependencies": {
     "@axe-core/cli": "^4.14.0",
     "@axe-core/playwright": "^4.14.0",
-    "@playwright/test": "1.65.0",
+    "@playwright/test": "1.65.1",
     "aws-cdk": "^2.1148.1",
     "esbuild": "^0.28.2",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "eslint-plugin-security": "^4.2.1",
     "globals": "^17.14.0",
     "http-server": "^14.1.1",
@@ -129,7 +129,7 @@
     "wait-on": "^9.5.1"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1168.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1169.0",
     "@xmldom/xmldom": "^0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
