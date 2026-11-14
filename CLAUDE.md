@@ -63,8 +63,17 @@ Skills live at `.claude/skills/<name>/SKILL.md`.
 - `.claude/skills/session-report/SKILL.md` — write `../REPORT_SESSION_SPREADSHEETS_<id>_<date>.md` (workspace root) from measured figures: result, method in prose, mechanisms that worked, losses with a board row each; invoke as `/session-report`
 - `.claude/skills/clean/SKILL.md` — gather merged branches, worktrees of merged branches, logs and test artefacts, and build output; ask once; remove every agreed category in one go; then fetch, switch to main and pull when nothing is in progress; invoke as `/clean`
 - `.claude/skills/compact-ready/SKILL.md` — answer whether now is a good time for compaction and make it true: land reported agent work, write changed board rows back, then print the `/compact <summary>` line; `/board` runs it after every render; invoke as `/compact-ready`
+- `.claude/skills/orient-submit/SKILL.md` — read before working in `../submit.diyaccounting.co.uk`: the submission app, the board in `NEXT.md` and the `PLAN_*.md` files, the deploy and test rules; invoke as `/orient-submit`
+- `.claude/skills/orient-www/SKILL.md` — read before working in `../www.diyaccounting.co.uk`: the gateway static site and its deploy; invoke as `/orient-www`
+- `.claude/skills/orient-root/SKILL.md` — read before working in `../root.diyaccounting.co.uk`: Route53 DNS, the holding page and the failover runbook; invoke as `/orient-root`
+- `.claude/skills/orient-archive/SKILL.md` — read before working in `../diy-accounting-archive`: the archived repository, which is history and not a place to develop; invoke as `/orient-archive`
+- `.claude/skills/orient-private/SKILL.md` — read before working in `../private.diyaccounting.co.uk`: the private documents repository, which has no CLAUDE.md of its own; invoke as `/orient-private`
 
 Note: Read the relevant skill when working on that product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
+
+## Working in a sibling repository
+
+A session started here that works in another repository of this workspace invokes that repository's `orient-*` skill first, then follows the sibling's own `CLAUDE.md` and skills where they differ from this file. The skills are `orient-submit`, `orient-www`, `orient-root`, `orient-archive`, `orient-private`.
 
 ## Git Workflow
 
