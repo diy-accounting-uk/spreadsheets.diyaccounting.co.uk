@@ -55,7 +55,6 @@ None required. All authentication is via OIDC; no third-party tokens are used du
 | `deploy.yml` | push to main, schedule (daily), workflow_dispatch | Deploy `SpreadsheetsStack` to S3 + CloudFront |
 | `generate-bst.yml`, `generate-ltd.yml`, `generate-se.yml`, `generate-taxi.yml` | schedule (daily, staggered), workflow_dispatch | Regenerate the per-product Excel package outputs and self-commit them under `packages/`. Push triggers were disabled 2026-05-07 to reduce the volume of bot-authored mass-file-change commits — see the comment at the top of each generate workflow. |
 | `update.yml` | push (workflow file only), schedule (daily 02:17 UTC), workflow_dispatch | Bumps `package-lock.json`, `package.json`, `pom.xml` and self-commits |
-| `init.yml` | workflow_dispatch only | Orchestrator — clean + regenerate + commit + dispatch test/deploy |
 
 ## Sequence to bring a new repo online
 
