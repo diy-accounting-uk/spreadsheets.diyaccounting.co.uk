@@ -26,7 +26,7 @@ export const PROVENANCE_DATA = {
     },
     se: {
       hash: "064605ae76ed",
-      scorecard: "8015 passed, 0 warnings, 0 failed",
+      scorecard: "8189 passed, 0 warnings, 0 failed",
     },
     ltd: {
       hash: "b90d8b0f54a0",
