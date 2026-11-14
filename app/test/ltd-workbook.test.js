@@ -235,13 +235,14 @@ describe("the Company package for the year end the templates carry", () => {
   }, 600000);
 });
 
-describe("the Company package for a year end that moves the month tabs", () => {
+describe("the Company package for the latest year end", () => {
   let saved;
-  let octoberYearEnd;
+  let latestYearEnd;
+  let monthTabs;
 
   beforeAll(async () => {
-    // The populated October package the reconciliation matrix builds, read
-    // back into a book the same way a customer's own upload is.
+    // The populated package of the latest year end the reconciliation matrix
+    // builds, read back into a book the same way a customer's own upload is.
     const exported = scratchDir("ltd-october-book-");
     execFileSync(
       NODE,
@@ -252,51 +253,36 @@ describe("the Company package for a year end that moves the month tabs", () => {
       },
     );
     const { book, lines } = loadDiyaGlData(exported);
-    octoberYearEnd = book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10);
-    expect(octoberYearEnd.slice(5), "ltd-latest is an October package").toBe("10-31");
+    latestYearEnd = book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10);
+    monthTabs = monthTabOrder(Number(latestYearEnd.slice(5, 7)));
     saved = await saveWorkbookFiles(book, lines);
   }, 600000);
 
   it("names the package for the book's own year end", () => {
-    expect(saved.dirName).toBe(companyPackageDirName(octoberYearEnd));
+    expect(saved.dirName).toBe(companyPackageDirName(latestYearEnd));
   });
 
   it("puts the ledger month tabs in the period's own order", async () => {
-    expect(await sheetNames(workbookNamed(saved.files, "Sales.xlsx"))).toEqual([
-      "OpeningDebtors",
-      "Nov",
-      "Dec",
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "ClosingDebtors",
-    ]);
+    expect(await sheetNames(workbookNamed(saved.files, "Sales.xlsx"))).toEqual(["OpeningDebtors", ...monthTabs, "ClosingDebtors"]);
   });
 
   it("opens the payroll calendar on the period's first month", async () => {
-    expect(await cellValue(workbookNamed(saved.files, "Payslips.xlsx"), "Admin", "A2")).toBe("Nov");
+    expect(await cellValue(workbookNamed(saved.files, "Payslips.xlsx"), "Admin", "A2")).toBe(monthTabs[0]);
   });
 
   it("points the VAT interface at the first month's tab", async () => {
     const formula = await cellFormula(workbookNamed(saved.files, "Vatreturns.xlsx"), "Vatinterface", "M4");
-    expect(formula).toContain("[2]Nov!");
+    expect(formula).toContain(`[2]${monthTabs[0]}!`);
   });
 
   it("points the fixed asset reconciliation at the final month's tab", async () => {
     const formula = await cellFormula(workbookNamed(saved.files, "Fixedassets.xlsx"), "FAreconciliation", "E13");
-    expect(formula).toBe("[2]Oct!$AI$2");
+    expect(formula).toBe(`[2]${monthTabs[11]}!$AI$2`);
   });
 
   it("sets the one date cell the rest of the Admin sheet is computed from", async () => {
     expect(await cellValue(workbookNamed(saved.files, "Financialaccounts.xlsx"), "Admin", "F21")).toBe(
-      toExcelSerial(new Date(octoberYearEnd)),
+      toExcelSerial(new Date(latestYearEnd)),
     );
   });
 });

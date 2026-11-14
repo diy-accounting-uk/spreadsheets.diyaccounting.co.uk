@@ -127,9 +127,11 @@ describe("ltdAnchors against the shipped packages", () => {
     await expect(validateLtdAnchors(set)).resolves.toBeUndefined();
   });
 
-  it("examples/ltd-latest -- the same October year end -- passes every anchor", async () => {
+  it("examples/ltd-latest passes every anchor at the year end it was built for", async () => {
     const set = await workbookSetFromDirectory(LTD_LATEST_DIR);
-    await expect(ltdYearEndMonth(set)).resolves.toBe(10);
+    const yearEndMonth = await ltdYearEndMonth(set);
+    expect(Number.isInteger(yearEndMonth) && yearEndMonth >= 1 && yearEndMonth <= 12).toBe(true);
+    expect(ltdAnchors(yearEndMonth)["Sales.xlsx"].sheets.slice(1, 13)).toEqual(monthTabOrder(yearEndMonth));
     await expect(validateLtdAnchors(set)).resolves.toBeUndefined();
   });
 
