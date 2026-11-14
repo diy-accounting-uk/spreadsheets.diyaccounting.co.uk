@@ -8,11 +8,13 @@ concurrency:
 
 on:
   schedule:
-    # Monthly (25th): rolls the catalogue's year-end window forward and keeps
-    # repo activity above GitHub's 60-day disabled_inactivity threshold. The
-    # DAILY schedule stays off — its mass-commit volume contributed to the
-    # 2026-05 flagging incident; one deliberate run a month does not.
-    - cron: '47 4 25 * *'
+    # Mondays 04:00 UTC (4am GMT, 5am BST): rolls the catalogue's year-end
+    # window forward and keeps repo activity above GitHub's 60-day
+    # disabled_inactivity threshold. A scheduled run commits only package
+    # folders that main does not hold yet, so a week with no new year-end
+    # commits nothing. The DAILY schedule's mass commits of rewritten files
+    # contributed to the 2026-05 flagging incident; this run adds none.
+    - cron: '0 4 * * 1'
   # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
   # Excel files per run. Combined with the daily schedule, that produced a high
   # volume of bot-authored mass-file-change commits — a pattern that contributes
@@ -493,8 +495,22 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*ltd-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
-            app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
+          if [[ '${{ github.event_name }}' == 'schedule' ]]; then
+            # A scheduled run commits only package folders that main does not
+            # hold yet; generate.js rebuilds every package, so the rewritten
+            # ones stay out. A dispatched run, and generate-all (a dispatch, whose
+            # event name this called workflow inherits), commits everything.
+            git reset -q
+            for dir in packages/*/; do
+              if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
+                git add -- "$dir"
+              fi
+            done
+            git restore --worktree -- .
+          else
+            git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
+              app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
+          fi
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

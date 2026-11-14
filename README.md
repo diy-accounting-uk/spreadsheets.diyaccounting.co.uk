@@ -63,7 +63,7 @@ https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/issues.
 ### Dependency Updates
 
 - Daily `update.yml` workflow runs formatting fixes, node dependency updates, and java dependency updates in parallel, validates with tests and Maven verify, then commits
-- Manual: `npm run update:node`, `npm run update:java`, `npm run formatting-fix`
+- Manual: `npm run update-to-latest`, `npm run update:java`, `npm run formatting-fix`
 
 ### Reconciliation
 

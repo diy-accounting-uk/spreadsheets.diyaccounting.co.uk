@@ -213,7 +213,7 @@ async function main() {
 
   // Find generated packages
   if (!existsSync(packagesDir)) {
-    console.error(`No packages directory at ${packagesDir}. Run 'npm run build' first.`);
+    console.error(`No packages directory at ${packagesDir}. Run 'npm run generate' first.`);
     process.exit(1);
   }
 
