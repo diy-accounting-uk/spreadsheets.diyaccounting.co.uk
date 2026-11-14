@@ -592,7 +592,9 @@ export function flattenBook(value, prefix = "") {
  * differ still fails to match.
  *
  * The claim is worked out the way the exporter does it: each line claims the
- * step its miles add to the running total of miles, in date order.
+ * step its miles add to the running total of miles, month by month, with a
+ * month's Sales miles counted before its mileage-log rows where the export
+ * carries them.
  *
  * @param {Array<Object>} lines - fixture lines, already on the export's date frame
  * @param {Array<Object>} exportedLines - the export's lines
@@ -613,16 +615,32 @@ function restateMileageClaims(lines, exportedLines, exportedBook) {
     higher_rate_pence: stated.carFirst10000,
     lower_rate_pence: stated.carOver10000,
   };
+  // Taxi and SE pool each month's Sales miles with the Purchases ones before
+  // banding any mileage-log row of that month, so for them every earlier
+  // Sales mile counts towards the running total. Basic Sole Trader keeps no
+  // sales miles on its export, so only the mileage-log rows count there.
+  const salesMilesCount = exportedLines.some((line) => line.sourceJournalID === "sales" && typeof line.measurableQuantity === "number");
+  const counted = (line) =>
+    isMileage(line) || (salesMilesCount && line.sourceJournalID === "sales" && typeof line.measurableQuantity === "number");
   const ordered = lines
     .map((line, index) => ({ line, index }))
-    .filter(({ line }) => isMileage(line))
-    .sort((a, b) => String(a.line.postingDate).localeCompare(String(b.line.postingDate)) || a.index - b.index);
+    .filter(({ line }) => counted(line))
+    .sort(
+      (a, b) =>
+        String(a.line.postingDate).slice(0, 7).localeCompare(String(b.line.postingDate).slice(0, 7)) ||
+        (a.line.sourceJournalID === "sales" ? 0 : 1) - (b.line.sourceJournalID === "sales" ? 0 : 1) ||
+        String(a.line.postingDate).localeCompare(String(b.line.postingDate)) ||
+        a.index - b.index,
+    );
   const restated = new Map();
   let milesToDate = 0;
   for (const { line, index } of ordered) {
-    const claimed = calculateMileageAllowance(milesToDate + line.measurableQuantity, rates) - calculateMileageAllowance(milesToDate, rates);
+    if (isMileage(line)) {
+      const claimed =
+        calculateMileageAllowance(milesToDate + line.measurableQuantity, rates) - calculateMileageAllowance(milesToDate, rates);
+      restated.set(index, Math.round(claimed * 100) / 100);
+    }
     milesToDate += line.measurableQuantity;
-    restated.set(index, Math.round(claimed * 100) / 100);
   }
   return lines.map((line, index) => (restated.has(index) ? { ...line, amount: restated.get(index) } : line));
 }

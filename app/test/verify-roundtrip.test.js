@@ -357,6 +357,22 @@ describe("scoreDataHalves", () => {
       expect(score.groupedFixtureLines - score.coarseMatches).toBe(0);
     });
 
+    it("bands a mileage line past the miles already claimed on sales days", () => {
+      const salesDay = {
+        sourceJournalID: "sales",
+        postingDate: "2026-04-10",
+        accountMainID: "4000",
+        amount: 100,
+        measurableQuantity: 9900,
+        measurableUnitOfMeasure: "miles",
+      };
+      const log = { ...MILEAGE_LINE, postingDate: "2026-04-30", measurableQuantity: 200 };
+      // 100 miles to the 10,000 limit at 55p, then 100 at 25p.
+      const { fixture, exported } = writePair([salesDay, { ...log, amount: 90 }], [salesDay, { ...log, amount: 80 }], BOOK, BOOK);
+      const score = scoreDataHalves(fixture, exported);
+      expect(score.groupedFixtureLines - score.coarseMatches).toBe(0);
+    });
+
     it("leaves a line unmatched when its miles differ", () => {
       const changed = [exportLines[0], { ...exportLines[1], measurableQuantity: 121, amount: 66.55 }];
       const { fixture, exported } = writePair(fixtureLines, changed, BOOK, BOOK);
