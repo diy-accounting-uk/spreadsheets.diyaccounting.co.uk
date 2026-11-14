@@ -30,6 +30,7 @@ import { resolve } from "path";
 import { parse as parseTOML } from "smol-toml";
 import { MONEY_DECIMALS, roundHalfUp, isDecimal, canonicalForUnit } from "../lib/canonical-report-value.js";
 import { shiftMonths, bookPeriodShiftMonths } from "../lib/period-shift.js";
+import { calculateMileageAllowance, FIXTURE_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
 export { roundHalfUp, canonicalForUnit };
 
@@ -583,6 +584,50 @@ export function flattenBook(value, prefix = "") {
 }
 
 /**
+ * Restate each mileage-log line's claim at the mileage rates the export's
+ * own book states ([tax.mileage]). The exporter prices a mileage-log row from
+ * its miles and the package's rates, so a fixture written at another year's
+ * rate carries a different amount for the same miles. Only the amount is restated: the miles,
+ * the date and the journal stay as the fixture has them, so a line whose miles
+ * differ still fails to match.
+ *
+ * The claim is worked out the way the exporter does it: each line claims the
+ * step its miles add to the running total of miles, in date order.
+ *
+ * @param {Array<Object>} lines - fixture lines, already on the export's date frame
+ * @param {Array<Object>} exportedLines - the export's lines
+ * @param {Object} exportedBook - the export's parsed book.toml
+ * @returns {Array<Object>} the lines, with mileage-log amounts restated
+ */
+function restateMileageClaims(lines, exportedLines, exportedBook) {
+  const isMileage = (line) => line.documentType === "mileage-log" && typeof line.measurableQuantity === "number";
+  // A product whose export holds no mileage-log line does not price miles
+  // (the Company package), so its fixture amounts are already what it exports.
+  if (!lines.some(isMileage) || !exportedLines.some(isMileage)) return lines;
+  const stated = exportedBook.tax?.mileage;
+  if (stated?.carFirst10000 === undefined || stated?.carOver10000 === undefined) {
+    throw new Error("the export's book.toml states no [tax.mileage] rates, so the rates its mileage claims are priced at cannot be read");
+  }
+  const rates = {
+    higher_rate_limit: FIXTURE_CAR_MILEAGE_RATES.higher_rate_limit,
+    higher_rate_pence: stated.carFirst10000,
+    lower_rate_pence: stated.carOver10000,
+  };
+  const ordered = lines
+    .map((line, index) => ({ line, index }))
+    .filter(({ line }) => isMileage(line))
+    .sort((a, b) => String(a.line.postingDate).localeCompare(String(b.line.postingDate)) || a.index - b.index);
+  const restated = new Map();
+  let milesToDate = 0;
+  for (const { line, index } of ordered) {
+    const claimed = calculateMileageAllowance(milesToDate + line.measurableQuantity, rates) - calculateMileageAllowance(milesToDate, rates);
+    milesToDate += line.measurableQuantity;
+    restated.set(index, Math.round(claimed * 100) / 100);
+  }
+  return lines.map((line, index) => (restated.has(index) ? { ...line, amount: restated.get(index) } : line));
+}
+
+/**
  * Score EQ2 between the fixture (the JS side's data/, which is the original
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
@@ -629,9 +674,13 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
     : monthShift
       ? (d) => shiftPostingDate(d, monthShift)
       : null;
-  const shiftedFixtureLines = shiftDate
-    ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
-    : rawFixtureLines;
+  const shiftedFixtureLines = restateMileageClaims(
+    shiftDate
+      ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
+      : rawFixtureLines,
+    exportedLines,
+    exportedBook,
+  );
 
   // The lines the inventory declares held outside the journals the export
   // reads. They are counted and set aside before anything is scored, so a
