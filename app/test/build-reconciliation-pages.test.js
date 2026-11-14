@@ -6,7 +6,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "fs
 import { tmpdir } from "os";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
-import { parseReport, renderFrontMatter, loadReleases, recordRelease } from "../bin/build-reconciliation-pages.js";
+import { parseReport, renderFrontMatter, renderKeyValueTable, loadReleases, recordRelease } from "../bin/build-reconciliation-pages.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const RECONCILIATION_DIR = resolve(__dirname, "..", "..", "web", "spreadsheets.diyaccounting.co.uk", "public", "reconciliation");
@@ -76,6 +76,19 @@ describe("renderFrontMatter", () => {
 
   it("renders nothing when the report has no front matter", () => {
     expect(renderFrontMatter({ frontMatter: [] })).toBe("");
+  });
+});
+
+describe("renderKeyValueTable", () => {
+  it("prints one row per class of a nested table that has no prototype", () => {
+    const nested = Object.create(null);
+    nested.motor_vehicles = 30000;
+    nested.land_buildings = 200000;
+    const html = renderKeyValueTable({ share_capital: 100, fixed_asset_cost: nested });
+    expect(html).not.toContain("[object Object]");
+    expect(html).toContain('<td>Fixed asset cost: Motor vehicles</td><td class="num">30,000.00</td>');
+    expect(html).toContain('<td>Fixed asset cost: Land buildings</td><td class="num">200,000.00</td>');
+    expect(html).toContain('<td>Share capital</td><td class="num">100.00</td>');
   });
 });
 

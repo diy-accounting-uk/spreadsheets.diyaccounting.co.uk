@@ -994,3 +994,18 @@ describe("generate.js module export", () => {
     expect(typeof main).toBe("function");
   });
 });
+
+describe("yearEndCutoff", () => {
+  it.each([
+    ["2026-11-15", "2027-12-31"],
+    ["2026-11-16", "2028-01-31"],
+    ["2027-01-31", "2028-03-31"],
+  ])("a run on %s builds year-ends up to %s", async (runDay, expected) => {
+    const { yearEndCutoff } = await import("../bin/generate.js");
+    expect(
+      yearEndCutoff(new Date(`${runDay}T04:00:00Z`))
+        .toISOString()
+        .slice(0, 10),
+    ).toBe(expected);
+  });
+});

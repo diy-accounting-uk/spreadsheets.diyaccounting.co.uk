@@ -303,8 +303,16 @@ function renderJournal(journal, heading, id) {
   return parts.join("\n");
 }
 
-function renderKeyValueTable(object) {
-  const rows = Object.entries(object).map(([key, value]) => [titleCase(key), formatCell(value)]);
+function isNestedTable(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date);
+}
+
+export function renderKeyValueTable(object) {
+  const rows = Object.entries(object).flatMap(([key, value]) =>
+    isNestedTable(value)
+      ? Object.entries(value).map(([nestedKey, nestedValue]) => [`${titleCase(key)}: ${titleCase(nestedKey)}`, formatCell(nestedValue)])
+      : [[titleCase(key), formatCell(value)]],
+  );
   return renderTable({ head: ["Item", "Value"], align: ["left", "right"], rows });
 }
 

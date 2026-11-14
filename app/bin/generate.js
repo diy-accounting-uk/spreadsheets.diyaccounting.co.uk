@@ -41,6 +41,18 @@ const PRODUCTS = {
   ltd: LTD,
 };
 
+// Last year-end date a run on runDate builds. Up to the 15th of a month the
+// window ends on the last day of the month 13 months ahead; from the 16th it
+// ends one month further on. This makes the next tax year's packages available
+// from early March (covers the budget-in-March scenario where SE Apr 2027 is
+// needed by 6 Mar 2026). The website download default uses a tighter 13-month
+// window for the pre-selected year. Date.UTC with day 0 starts from a fixed
+// day, so a run on the 31st does not skip a month.
+export function yearEndCutoff(runDate) {
+  const monthsAhead = runDate.getUTCDate() >= 16 ? 15 : 14;
+  return new Date(Date.UTC(runDate.getUTCFullYear(), runDate.getUTCMonth() + monthsAhead, 0));
+}
+
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide, outputDir, opts = {}) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
@@ -50,13 +62,8 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
   const yearEndMonth = opts.yearEndMonth || 0;
   const endDate = new Date(ty.end);
 
-  // Skip packages whose year-end is more than 14 months from now.
-  // 14 months ensures the next tax year's packages are available from early March
-  // (covers the budget-in-March scenario where SE Apr 2027 is needed by 6 Mar 2026).
-  // The website download default uses a tighter 13-month window for the pre-selected year.
-  const cutoff = new Date();
-  cutoff.setUTCMonth(cutoff.getUTCMonth() + 14);
-  cutoff.setUTCDate(0); // last day of the month 13 months from now
+  // Skip packages whose year-end is beyond the year-end window (see yearEndCutoff).
+  const cutoff = yearEndCutoff(new Date());
   if (endDate > cutoff) {
     console.log(
       `\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`,
