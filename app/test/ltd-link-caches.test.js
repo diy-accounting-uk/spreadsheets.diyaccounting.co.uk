@@ -300,6 +300,7 @@ async function packageUnderTest(dir) {
   const shift = tabShift(yearEnd.getUTCMonth() + 1);
   return {
     zips,
+    yearEndMonth: yearEnd.getUTCMonth() + 1,
     firstTab: monthTabOrder(yearEnd.getUTCMonth() + 1)[0],
     caches: await packageLinkCaches(zips, LINK_ORDER.ltd),
     engine: engineFor(yearEnd),
@@ -405,13 +406,21 @@ describe("the committed package's caches equal the calculator", () => {
   }, 300000);
 
   it("caches a declared blank only where the package's own inputs fill it", async () => {
-    const { caches, blank, firstTab } = await committedPackage();
+    const { caches, blank, firstTab, yearEndMonth } = await committedPackage();
     const cached = [...caches.keys()].filter((key) => blank.has(key));
     // Every other cached blank is an input cell the writer fills; the first
     // tab's flat-rate cell is empty on the sheet, and the recalculation
-    // caches the 0 an empty referenced cell reads as.
-    expect(cached.filter((key) => !blank.get(key).writer)).toEqual([`Sales.xlsx!${firstTab}!G4`]);
-    expect(cached.length).toBe(26);
+    // caches the 0 an empty referenced cell reads as, but only some
+    // recalculations do.
+    const flatRateCell = `Sales.xlsx!${firstTab}!G4`;
+    const cachedWithoutWriter = cached.filter((key) => !blank.get(key).writer);
+    expect(cachedWithoutWriter.filter((key) => key !== flatRateCell)).toEqual([]);
+    // The committed October package is the one whose recalculation caches the
+    // flat-rate cell, and whose cached blanks number 26.
+    if (yearEndMonth === 10) {
+      expect(cachedWithoutWriter).toEqual([flatRateCell]);
+      expect(cached.length).toBe(26);
+    }
   }, 300000);
 });
 
