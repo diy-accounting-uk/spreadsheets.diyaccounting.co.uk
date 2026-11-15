@@ -424,6 +424,12 @@ jobs:
       - deploy-spreadsheets
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # The mint rotates the one shared Cognito test user's password and TOTP
+    # device, so two deploys that mint at once invalidate each other's sign-in.
+    # Every ref shares this group and the second job waits for the first.
+    concurrency:
+      group: spreadsheets-smoke-test-user
+      cancel-in-progress: false
     environment: ${{ needs.params.outputs.github-environment }}
     steps:
       - name: Checkout
