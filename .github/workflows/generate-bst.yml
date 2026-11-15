@@ -80,7 +80,8 @@ jobs:
 
   params:
     runs-on: ubuntu-24.04
-    permissions: {}
+    permissions:
+      contents: read
     steps:
       - name: "github.event_name=[${{ github.event_name }}]"
         run: ":"
@@ -121,11 +122,52 @@ jobs:
             *) echo "::error::Unknown commit-scope '${COMMIT_SCOPE}'"; exit 1 ;;
           esac
           echo "commit-scope=${COMMIT_SCOPE}" | tee -a "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        if: ${{ steps.normalise.outputs.commit-scope == 'new-folders' }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        if: ${{ steps.normalise.outputs.commit-scope == 'new-folders' }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        if: ${{ steps.normalise.outputs.commit-scope == 'new-folders' }}
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Check the window for new folders
+        id: window
+        shell: bash
+        env:
+          COMMIT_SCOPE: ${{ steps.normalise.outputs.commit-scope }}
+          SKIP_TESTS: ${{ steps.normalise.outputs.skip-tests }}
+          SKIP_GENERATION: ${{ steps.normalise.outputs.skip-generation }}
+          SKIP_RECONCILIATION: ${{ steps.normalise.outputs.skip-reconciliation }}
+          SKIP_COMMIT: ${{ steps.normalise.outputs.skip-commit }}
+        run: |
+          # A new-folders run writes only the folders main lacks. When the window holds none,
+          # every later job is skipped. A changed-packages run passes its skips through.
+          if [[ "$COMMIT_SCOPE" == "new-folders" ]]; then
+            WORK=$(mktemp -d)
+            node app/bin/generate.js --package bst --list | sort > "$WORK/window.txt"
+            git ls-tree --name-only HEAD packages/ | sed 's|^packages/||' | sort > "$WORK/held.txt"
+            MISSING=$(comm -23 "$WORK/window.txt" "$WORK/held.txt")
+            if [[ -z "$MISSING" ]]; then
+              SKIP_TESTS=true; SKIP_GENERATION=true; SKIP_RECONCILIATION=true; SKIP_COMMIT=true
+              echo "The bst window holds no package folder that main lacks, so this run stops after params." | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              echo "Package folders main lacks:"
+              echo "$MISSING"
+            fi
+          fi
+          echo "skip-tests=${SKIP_TESTS}" | tee -a "$GITHUB_OUTPUT"
+          echo "skip-generation=${SKIP_GENERATION}" | tee -a "$GITHUB_OUTPUT"
+          echo "skip-reconciliation=${SKIP_RECONCILIATION}" | tee -a "$GITHUB_OUTPUT"
+          echo "skip-commit=${SKIP_COMMIT}" | tee -a "$GITHUB_OUTPUT"
     outputs:
-      skip-tests: ${{ steps.normalise.outputs.skip-tests }}
-      skip-generation: ${{ steps.normalise.outputs.skip-generation }}
-      skip-reconciliation: ${{ steps.normalise.outputs.skip-reconciliation }}
-      skip-commit: ${{ steps.normalise.outputs.skip-commit }}
+      skip-tests: ${{ steps.window.outputs.skip-tests }}
+      skip-generation: ${{ steps.window.outputs.skip-generation }}
+      skip-reconciliation: ${{ steps.window.outputs.skip-reconciliation }}
+      skip-commit: ${{ steps.window.outputs.skip-commit }}
       commit-scope: ${{ steps.normalise.outputs.commit-scope }}
 
   test:
