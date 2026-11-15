@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
-// The generate-*.yml workflows hand reconciliation reports from the job that
-// writes them to the job that commits them through named artifacts. The commit
-// job collects them by glob, so an upload whose name falls outside that glob is
-// dropped in silence: the run stays green and the committed report goes stale.
+// The generate-*.yml workflows hand the generated packages from the job that
+// builds them to the jobs that test and commit them through named artifacts.
+// An upload that no job downloads is dead weight, and the run stays green.
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "fs";
@@ -66,15 +65,20 @@ describe.each(GENERATE_WORKFLOWS)("%s", (workflow) => {
   const uploads = artifactSteps(yaml, "upload-artifact").filter((s) => s.name);
   const downloads = artifactSteps(yaml, "download-artifact");
 
-  it("uploads at least one reports artifact", () => {
-    expect(uploads.filter((s) => s.name.includes("reports")).length).toBeGreaterThan(0);
+  it("uploads the generated packages", () => {
+    expect(uploads.filter((s) => s.name.endsWith("-packages")).length).toBeGreaterThan(0);
   });
 
-  it("downloads every reports artifact it uploads", () => {
-    const reportUploads = uploads.filter((s) => s.name.includes("reports")).map((s) => concreteName(s.name));
-    const collected = reportUploads.filter((name) =>
+  it("downloads every artifact it uploads", () => {
+    const uploaded = uploads.map((s) => concreteName(s.name));
+    const collected = uploaded.filter((name) =>
       downloads.some((d) => (d.pattern && globMatches(d.pattern, name)) || (d.name && concreteName(d.name) === name)),
     );
-    expect(collected).toEqual(reportUploads);
+    expect(collected).toEqual(uploaded);
+  });
+
+  it("carries no artifact for reports, examples or pages that no step commits", () => {
+    const names = [...uploads, ...downloads].map((s) => s.name || s.pattern || "");
+    expect(names.filter((n) => /reports|examples|reconciliation-page/.test(n))).toEqual([]);
   });
 });
