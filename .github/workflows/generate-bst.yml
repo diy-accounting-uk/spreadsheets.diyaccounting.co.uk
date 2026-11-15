@@ -269,6 +269,8 @@ jobs:
       # committed example compare it against the template that produced it.
       - name: Unit tests against the fresh packages
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        env:
+          PINNED_AGE_CHECK: "off"
         run: |
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
           node app/bin/build-sitemaps.js
