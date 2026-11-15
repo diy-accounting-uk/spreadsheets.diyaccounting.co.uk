@@ -67,7 +67,11 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
 
     const opened = await page.evaluate(() => window.__opened);
     expect(opened).toHaveLength(1);
-    expect(opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/itsa/selfEmploymentPeriod.html#books=`)).toBe(true);
+    expect(
+      opened[0].startsWith(
+        `${SUBMIT_ORIGIN}/hmrc/itsa/selfEmploymentPeriod.html?utm_source=spreadsheets&utm_medium=book-save-menu&utm_campaign=se#books=`,
+      ),
+    ).toBe(true);
     const sent = decodeFragment(opened[0]);
     expect(sent.kind).toBe("itsa-quarterly");
     expect(sent.period.taxYear).toMatch(/^\d{4}-\d{2}$/);
@@ -86,11 +90,52 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
 
     const opened = await page.evaluate(() => window.__opened);
     expect(opened).toHaveLength(1);
-    expect(opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html#books=`)).toBe(true);
+    expect(
+      opened[0].startsWith(
+        `${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-save-menu&utm_campaign=ltd#books=`,
+      ),
+    ).toBe(true);
     const sent = decodeFragment(opened[0]);
     expect(sent.kind).toBe("vat");
     expect(sent.period.periodEnd).toBe("2025-12-31");
     expect(Object.keys(sent.figures)).toHaveLength(7);
+  });
+
+  test("the VAT view of a VAT registered company book files a quarter with its figures and a tagged link", async ({ page }) => {
+    await openBook(page, "ltd", "ltd-brickwork-pro-vat");
+    await page.locator('.tab-btn[data-view="vat-returns"]').click();
+    const action = page.getByRole("link", { name: "File this VAT return" }).first();
+    await expect(action).toBeVisible();
+    await expect(action).toHaveAttribute(
+      "href",
+      `${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd`,
+    );
+    const periodEnd = await action.getAttribute("data-submit-vat-period-end");
+    expect(periodEnd).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    await action.click();
+    await expect(page.locator("#submit-handoff-kind")).toHaveValue("vat");
+    await expect(page.locator("#submit-handoff-period-date")).toHaveValue(periodEnd);
+    await page.locator("#submit-handoff-go").click();
+    await expect(page.locator("#submit-handoff")).toHaveCount(0, { timeout: 30_000 });
+
+    const opened = await page.evaluate(() => window.__opened);
+    expect(opened).toHaveLength(1);
+    expect(
+      opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd#books=`),
+    ).toBe(true);
+    const sent = decodeFragment(opened[0]);
+    expect(sent.period.periodEnd).toBe(periodEnd);
+    expect(Object.keys(sent.figures)).toHaveLength(7);
+  });
+
+  test("the VAT view of a book that is not VAT registered still links to Submit's VAT page with its tag", async ({ page }) => {
+    await openBook(page, "ltd", "ltd-brickwork-pro-nonvat");
+    await page.locator('.tab-btn[data-view="vat-returns"]').click();
+    await expect(page.getByRole("link", { name: "File this VAT return" }).first()).toHaveAttribute(
+      "href",
+      /\/hmrc\/vat\/submitVat\.html\?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd$/,
+    );
   });
 
   test("a company book that is not VAT registered offers no filing", async ({ page }) => {

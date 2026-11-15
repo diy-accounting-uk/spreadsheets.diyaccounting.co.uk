@@ -2659,3 +2659,9 @@ table.kv-table tr.total td {
 .app-footer a {
   color: var(--rule);
 }
+.form-file-action {
+  margin: 0.9rem 0 0;
+}
+.form-file-action .btn {
+  text-decoration: none;
+}

@@ -306,7 +306,9 @@
         });
       })
       .join("");
-    return form.render(heading, v.notice, '<div class="form-period">' + dates + "</div>" + form.section("", rows));
+    var periodEnd = rawValue(snap, vatRef(v, quarter, v.period));
+    var fileAction = typeof periodEnd === "number" ? form.fileVatReturn(excelDate(periodEnd)) : "";
+    return form.render(heading, v.notice, '<div class="form-period">' + dates + "</div>" + form.section("", rows) + fileAction);
   }
 
   function renderVat(snap, state, helpers) {

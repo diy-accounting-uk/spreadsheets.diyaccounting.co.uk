@@ -28,6 +28,11 @@ function showDownloadAvailable(fileUrl) {
     availableLink.href = fileUrl;
     availableLink.textContent = fileUrl;
     availableSection.classList.remove("hidden");
+    // The reader has just donated or downloaded: show the thank-you placement in place of the page one.
+    var thanksStep = document.getElementById("submit-step-thanks");
+    var pageStep = document.getElementById("submit-step-download");
+    if (thanksStep) thanksStep.classList.remove("hidden");
+    if (pageStep) pageStep.classList.add("hidden");
     availableSection.scrollIntoView({ behavior: "smooth" });
   }
 }
