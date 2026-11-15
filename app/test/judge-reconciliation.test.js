@@ -2,7 +2,7 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 
 import { describe, it, expect, vi } from "vitest";
-import { mkdtempSync, readFileSync, writeFileSync } from "fs";
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -268,7 +268,7 @@ describe("buildIndicators for the Limited Company", () => {
   });
 
   it("puts the corporation tax charge next to the profit it is charged on", () => {
-    expect(text).toContain("capital allowances 12,000.00 take the profit chargeable to 7,969.00, charge for the year 1,514.11");
+    expect(text).toContain("less capital allowances 12,000.00 leaves 7,969.00");
   });
 
   it("states the profit bridge residue", () => {
@@ -281,7 +281,61 @@ describe("buildIndicators for the Limited Company", () => {
 
   it("states a nil charge next to the negative chargeable profit that explains it", () => {
     const nonVat = indicatorText("ltd", "ltdNonVat", { vatRegistered: false });
-    expect(nonVat).toContain("take the profit chargeable to -9,046.00, charge for the year 0.00");
+    expect(nonVat).toContain("gives a profit chargeable to corporation tax of -9,046.00. Charge for the year 0.00");
+  });
+});
+
+describe("the corporation tax bridge in the Limited Company digest", () => {
+  const sheet = "Corporation Tax working sheet";
+  const ltdReports = readdirSync(REPORTS).filter((name) => name.includes("_ltd-") && name.endsWith(".md"));
+
+  it("covers the committed reports of all three scenarios", () => {
+    for (const scenario of ["ltd-scenario-full", "ltd-brickwork-pro-vat", "ltd-brickwork-pro-nonvat"]) {
+      expect(ltdReports.some((name) => name.includes(scenario))).toBe(true);
+    }
+  });
+
+  it.each(ltdReports)("%s: the working sheet's bridge adds up to the profit chargeable", (name) => {
+    const parsed = parseReport(readFileSync(join(REPORTS, name), "utf8"));
+    const operating = requireValue(parsed, sheet, "Operating Profit");
+    const addBacks = requireValue(parsed, sheet, "Add back: total");
+    const allowances = value(parsed, sheet, "Less: Capital Allowances") ?? 0;
+    const interest = value(parsed, sheet, "Add: gross bank interest") ?? 0;
+    const losses = value(parsed, sheet, "Less: losses brought forward") ?? 0;
+    const chargeable = requireValue(parsed, sheet, "Profit Chargeable to CT");
+    expect(Math.abs(operating + addBacks - allowances + interest - losses - chargeable)).toBeLessThanOrEqual(0.01 + 1e-6);
+  });
+
+  it.each(ltdReports.filter((name) => name.includes("Oct27")))(
+    "%s: the digest names the add-backs, the interest and the losses",
+    (name) => {
+      const line = buildIndicators("ltd", readFileSync(join(REPORTS, name), "utf8"), { vatRegistered: true }).find((entry) =>
+        entry.startsWith("Corporation tax:"),
+      );
+      expect(line).toContain("add-backs");
+      expect(line).toContain("gross bank interest");
+      expect(line).toContain("losses brought forward");
+    },
+  );
+
+  it("reads the return's tax from the two-year box numbers", () => {
+    const full = ltdReports.find((name) => name.includes("Oct27") && name.includes("ltd-scenario-full"));
+    const line = buildIndicators("ltd", readFileSync(join(REPORTS, full), "utf8"), { vatRegistered: true }).find((entry) =>
+      entry.startsWith("Corporation tax:"),
+    );
+    expect(line).toContain("The return files 30,954.98 before marginal relief of 1,371.22, leaving 29,583.76 net.");
+  });
+
+  it("states the bridge figures of the full scenario", () => {
+    const full = ltdReports.find((name) => name.includes("Oct27") && name.includes("ltd-scenario-full"));
+    const line = buildIndicators("ltd", readFileSync(join(REPORTS, full), "utf8"), { vatRegistered: true }).find((entry) =>
+      entry.startsWith("Corporation tax:"),
+    );
+    expect(line).toContain("operating profit 170,948.73");
+    expect(line).toContain("goodwill 2,500.00, depreciation 13,740.00, business entertainment 291.67 (16,531.67 in total)");
+    expect(line).toContain("less capital allowances 64,000.00 leaves 123,480.39");
+    expect(line).toContain("plus gross bank interest 339.51, less losses brought forward 0.00");
+    expect(line).toContain("profit chargeable to corporation tax of 123,819.90");
   });
 });
 
