@@ -21,6 +21,7 @@ import { splitVat } from "../lib/tax/vat.js";
 import { calculateSeCells } from "../lib/calculators/se.js";
 import { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmission, setPath } from "../lib/calculators/se-derivations.js";
 import { parseReport, value } from "../lib/report-indicators.js";
+import { pinnedReport } from "../lib/pinned.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -43,9 +44,9 @@ const TAX_DATA_BY_YEAR = {
 };
 
 const REPORT_FILES = {
-  "se-scenario-advanced": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
-  "se-brickwork-pro-nonvat": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
-  "se-brickwork-pro-vat": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-vat.md",
+  "se-scenario-advanced": pinnedReport("se", "se-scenario-advanced"),
+  "se-brickwork-pro-nonvat": pinnedReport("se", "se-brickwork-pro-nonvat"),
+  "se-brickwork-pro-vat": pinnedReport("se", "se-brickwork-pro-vat"),
 };
 
 function round2(n) {
