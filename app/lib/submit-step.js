@@ -8,9 +8,9 @@
 
 const SUBMIT_ORIGIN = "https://submit.diyaccounting.co.uk/";
 
-export const SUBMIT_STEP_HEADING = "File this return with HMRC";
+export const SUBMIT_STEP_HEADING = "File with HMRC and Companies House";
 export const SUBMIT_STEP_TEXT =
-  "DIY Accounting Submit is HMRC recognised and files VAT returns. It costs £9.99 a year (£0.99 a month), with a free day pass to try it.";
+  "DIY Accounting Submit is HMRC recognised. It files VAT returns, and company accounts and confirmation statements to Companies House. £9.99 a year (£0.99 a month), with a free day pass to try it.";
 export const SUBMIT_STEP_LINK_TEXT = "File with DIY Accounting Submit";
 
 const ARTICLE_STEP_START = "<!-- submit-step:start -->";

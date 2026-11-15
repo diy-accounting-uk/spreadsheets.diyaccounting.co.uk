@@ -19,7 +19,7 @@ function trackRunnerDownload(product) {
 
 let catalogue = null;
 
-function showDownloadAvailable(fileUrl) {
+function showDownloadAvailable(fileUrl, productId) {
   var availableSection = document.getElementById("download-available");
   var availableBtn = document.getElementById("download-available-btn");
   var availableLink = document.getElementById("download-available-link");
@@ -29,10 +29,8 @@ function showDownloadAvailable(fileUrl) {
     availableLink.textContent = fileUrl;
     availableSection.classList.remove("hidden");
     // The reader has just donated or downloaded: show the thank-you placement in place of the page one.
-    var thanksStep = document.getElementById("submit-step-thanks");
-    var pageStep = document.getElementById("submit-step-download");
-    if (thanksStep) thanksStep.classList.remove("hidden");
-    if (pageStep) pageStep.classList.add("hidden");
+    renderSubmitStep(document.getElementById("submit-step-thanks"), submitStepForProduct(productId, "donate-thanks"));
+    renderSubmitStep(document.getElementById("submit-step-download"), null);
     availableSection.scrollIntoView({ behavior: "smooth" });
   }
 }
@@ -102,7 +100,7 @@ function initForm() {
       const amount = savedAmount !== null ? parseFloat(savedAmount) : null;
       trackEvent("donate", buildPurchaseEvent(provider, savedProduct, amount, savedCurrency));
       const fileUrl = "/zips/" + encodeURIComponent(savedFilename);
-      showDownloadAvailable(fileUrl);
+      showDownloadAvailable(fileUrl, savedProduct);
       window.location = fileUrl;
       return;
     }
@@ -121,6 +119,7 @@ function getSelectedProduct() {
 
 function updateTitle() {
   const product = getSelectedProduct();
+  renderSubmitStep(document.getElementById("submit-step-download"), product ? submitStepForProduct(product.id, "download") : null);
   if (product) {
     document.getElementById("product-title").textContent = "Download " + product.name;
     document.getElementById("product-description").textContent = product.description;

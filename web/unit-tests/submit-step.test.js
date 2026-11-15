@@ -9,6 +9,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { createContext, runInContext } from "node:vm";
 import {
   SUBMIT_STEP_HEADING,
   SUBMIT_STEP_TEXT,
@@ -44,29 +45,61 @@ describe("submitStepUrl", () => {
   });
 });
 
-describe("the copy", () => {
-  it("states what production offers and the price", () => {
-    expect(SUBMIT_STEP_HEADING).toBe("File this return with HMRC");
-    expect(SUBMIT_STEP_TEXT).toContain("HMRC recognised");
-    expect(SUBMIT_STEP_TEXT).toContain("£9.99 a year (£0.99 a month)");
-    expect(SUBMIT_STEP_TEXT).toContain("free day pass");
+describe("the article footer copy", () => {
+  it("is neutral and states what production offers and the price", () => {
+    expect(SUBMIT_STEP_HEADING).toBe("File with HMRC and Companies House");
+    expect(SUBMIT_STEP_TEXT).toBe(
+      "DIY Accounting Submit is HMRC recognised. It files VAT returns, and company accounts and confirmation statements to Companies House. £9.99 a year (£0.99 a month), with a free day pass to try it.",
+    );
     expect(SUBMIT_STEP_TEXT).not.toMatch(/approved|income tax|CT600/i);
   });
 });
 
-describe("download page", () => {
-  const html = read("download.html");
-  it("carries the page step and the thank-you step, each tagged", () => {
-    expectTagged(html, "download", "download");
-    expectTagged(html, "donate-thanks", "download");
+describe("download page step by product", () => {
+  const context = createContext({});
+  runInContext(readFileSync(resolve(publicDir, "lib/download-submit-step.js"), "utf8"), context);
+  const stepFor = (productId, medium) =>
+    runInContext(`submitStepForProduct(${JSON.stringify(productId)}, ${JSON.stringify(medium)})`, context);
+  const price = "It costs £9.99 a year (£0.99 a month), with a free day pass to try it.";
+
+  it("offers a Company reader the Companies House filings", () => {
+    const step = stepFor("Company", "download");
+    expect(step.heading).toBe("File your accounts with Companies House");
+    expect(step.text).toContain("micro-entity and small company accounts and confirmation statements to Companies House");
+    expect(step.text).toContain(price);
+    expect(decodeEntities(step.href)).toBe(submitStepUrl({ medium: "download", campaign: "company" }));
+  });
+
+  it.each([
+    ["SelfEmployed", "self-employed"],
+    ["TaxiDriver", "taxi-driver"],
+  ])("offers %s the VAT step for VAT registered businesses", (productId, slug) => {
+    const step = stepFor(productId, "download");
+    expect(step.heading).toBe("File this return with HMRC");
+    expect(step.text).toContain("If your business is VAT registered");
+    expect(step.text).toContain("HMRC recognised");
+    expect(step.text).toContain(price);
+    expect(step.href).toBe(submitStepUrl({ medium: "download", campaign: slug }));
+  });
+
+  it.each(["BasicSoleTrader", "Payslip05", "Payslip10", "Payslip20", "", "Unknown"])("offers %s no step", (productId) => {
+    expect(stepFor(productId, "download")).toBeNull();
+  });
+
+  it("tags the after-donation version donate-thanks", () => {
+    expect(stepFor("Company", "donate-thanks").href).toBe(submitStepUrl({ medium: "donate-thanks", campaign: "company" }));
+    expect(stepFor("SelfEmployed", "donate-thanks").href).toBe(submitStepUrl({ medium: "donate-thanks", campaign: "self-employed" }));
+    expect(stepFor("BasicSoleTrader", "donate-thanks")).toBeNull();
+  });
+
+  it("is wired into the page: two sections, filled from the picker and after a donation", () => {
+    const html = read("download.html");
     expect(html).toContain('id="submit-step-download"');
     expect(html).toContain('id="submit-step-thanks"');
-    expect(html.split(`<h3>${SUBMIT_STEP_HEADING}</h3>`).length - 1).toBe(2);
-  });
-  it("shows the thank-you step in place of the page step when a download is ready", () => {
+    expect(html).toContain('src="lib/download-submit-step.js"');
     const script = readFileSync(resolve(publicDir, "lib/download-page.js"), "utf8");
-    expect(script).toContain('getElementById("submit-step-thanks")');
-    expect(script).toContain('getElementById("submit-step-download")');
+    expect(script).toContain('submitStepForProduct(product.id, "download")');
+    expect(script).toContain('submitStepForProduct(productId, "donate-thanks")');
   });
 });
 
