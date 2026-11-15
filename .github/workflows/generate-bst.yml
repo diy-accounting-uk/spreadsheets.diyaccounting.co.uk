@@ -188,7 +188,7 @@ jobs:
         with:
           name: bst-packages
           path: packages/
-      - name: Keep the committed reports for the page build
+      - name: Keep the committed reports for the unit tests
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           mkdir -p /tmp/page-reports
@@ -264,24 +264,12 @@ jobs:
         if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
         timeout-minutes: 10
         run: npm run judge:reconciliation -- --package bst
-      - name: Copy latest populated to examples
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        run: |
-          rm -rf examples/bst-latest
-          mkdir -p examples/bst-latest
-          POPULATED=$(ls reports/populated/*bst-scenario-basic*.xlsx 2>/dev/null | head -1)
-          if [ -f "$POPULATED" ]; then
-            cp "$POPULATED" examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx
-            echo "Copied $POPULATED to examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx"
-          fi
-      # Runs here, not in the generate job: this is the first point where both the
-      # fresh packages/ (downloaded above) and the fresh examples/bst-latest (just
-      # copied above) are in place together, so the unit tests that read the
+      # Runs here, not in the generate job: this is the first point where the fresh
+      # packages/ (downloaded above) are in place, so the unit tests that read the
       # committed example compare it against the template that produced it.
-      - name: Unit tests against the fresh packages and example
+      - name: Unit tests against the fresh packages
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
-          ls reports/*.md > /tmp/own-reports.txt 2>/dev/null || : > /tmp/own-reports.txt
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
           node app/bin/build-sitemaps.js
           # donate.html is generated and gitignored, and this step runs vitest
@@ -293,42 +281,6 @@ jobs:
           # committed reports, waits for the push-side test workflow, which runs every file
           # against a tree where all four products are settled.
           npx vitest run --project unit-tests $(node scripts/leg-test-files.mjs bst)
-      - name: Build the reconciliation page
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        run: |
-          cp -f reports/*.md /tmp/page-reports/
-          cp -f reports/judge-verdict-*.json /tmp/page-reports/ 2>/dev/null || true
-          npm run build:reconciliation-pages -- --product bst --reports /tmp/page-reports
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        with:
-          name: bst-reconciliation-page
-          retention-days: 1
-          path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
-      - name: Keep only this run's own reports in the uploaded artifact
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        run: |
-          # The unit tests above need the other year-ends' committed reports on
-          # disk to read, but uploading them puts a stale copy of a filename
-          # another leg is uploading fresh into the same merge. The commit job
-          # merges the artifacts by name, so the loser of that clash is written
-          # over the winner and the file ends up holding both generations.
-          for f in reports/*.md; do
-            [ -f "$f" ] || continue
-            grep -qxF "$f" /tmp/own-reports.txt || rm -f "$f"
-          done
-      - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: bst-reports-${{ matrix.year-end }}
-          retention-days: 1
-          path: reports/
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        with:
-          name: bst-examples
-          retention-days: 1
-          path: examples/bst-latest/
 
   reconcile-extra:
     runs-on: ubuntu-24.04
@@ -357,14 +309,6 @@ jobs:
         run: |
           npm run reconciliation -- --package bst --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
           npm run reconciliation -- --package bst --scenario sp-sixty --year-end ${{ needs.generate.outputs.latest }}
-      - run: rm -rf reports/populated
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          # The commit job collects reports by the bst-reports-* pattern, so this
-          # name has to start with it or the extra scenarios never reach the tree.
-          name: bst-reports-extra
-          retention-days: 1
-          path: reports/
       - name: Check extra reconciliation
         run: |
           COUNT=0
@@ -395,21 +339,6 @@ jobs:
         with:
           name: bst-packages
           path: packages/
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
-        with:
-          pattern: bst-reports-*
-          path: reports/
-          merge-multiple: true
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
-        continue-on-error: true
-        with:
-          name: bst-examples
-          path: examples/bst-latest/
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
-        continue-on-error: true
-        with:
-          name: bst-reconciliation-page
-          path: web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -418,10 +347,6 @@ jobs:
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
-      - name: Stamp the provenance data with this reconciled commit
-        run: node scripts/build-provenance-data.mjs --reconciled-commit "$GITHUB_SHA"
-      - name: Build the diya-gl spec page
-        run: npm run build:diya-gl-spec
       - name: Commit and push
         id: push
         continue-on-error: true
