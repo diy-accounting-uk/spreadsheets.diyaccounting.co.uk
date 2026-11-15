@@ -109,6 +109,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -121,9 +124,11 @@ jobs:
         timeout-minutes: 5
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends pandoc
-          pip install --quiet weasyprint
+          pip install --quiet weasyprint==70.0 pydyf==0.13.0 fonttools==4.68.0
       - run: rm -rf packages
-      - run: npm run generate -- --package se
+      - name: Generate the se packages
+        run: |
+          npm run generate -- --package se --source-date-epoch "$(git log -1 --format=%ct -- app/templates/se)"
       - name: Create Payslip 05 packages
         run: |
           for se_dir in packages/GB\ Accounts\ Self\ Employed*/; do
@@ -180,6 +185,7 @@ jobs:
         env:
           # This job has node alone, so the router covers the app tiers here.
           TEST_SCOPE_TIERS: unit,calc
+          PINNED_AGE_CHECK: "off"
 
   reconcile:
     runs-on: ubuntu-24.04
@@ -293,6 +299,8 @@ jobs:
       # committed example compare it against the template that produced it.
       - name: Unit tests against the fresh packages
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        env:
+          PINNED_AGE_CHECK: "off"
         run: |
           cp -n /tmp/page-reports/*.md reports/ 2>/dev/null || true
           node app/bin/build-sitemaps.js
