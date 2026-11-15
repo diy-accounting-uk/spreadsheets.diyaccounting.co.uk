@@ -19,6 +19,7 @@ on:
     paths:
       - 'app/templates/**'
       - 'app/data/**'
+      - '!app/data/releases.json'
       - 'app/products/**'
       - 'app/lib/**'
       - '!app/lib/provenance-data.js'

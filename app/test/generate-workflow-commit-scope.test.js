@@ -128,6 +128,7 @@ describe.each(PRODUCTS)("generate-%s.yml", (product) => {
       paths: [
         "app/templates/**",
         "app/data/**",
+        "!app/data/releases.json",
         "app/products/**",
         "app/lib/**",
         "!app/lib/provenance-data.js",
