@@ -4,10 +4,10 @@
   "page": "ltd.html",
   "catalogue": "GB Accounts Company",
   "featuredScenario": "ltd-scenario-full",
-  "yearEnd": "2027-12-31",
+  "yearEnd": "2027-10-31",
   "status": "RECONCILES",
-  "runs": 94,
-  "updated": "2026-11-14",
+  "runs": 93,
+  "updated": "2026-09-13",
   "features": {
     "checks": true,
     "sales": true,
