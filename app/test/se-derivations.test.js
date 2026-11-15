@@ -21,7 +21,7 @@ import { splitVat } from "../lib/tax/vat.js";
 import { calculateSeCells } from "../lib/calculators/se.js";
 import { buildSelfEmploymentQuarterlyUpdates, buildSelfEmploymentAnnualSubmission, setPath } from "../lib/calculators/se-derivations.js";
 import { parseReport, value } from "../lib/report-indicators.js";
-import { pinnedReport } from "../lib/pinned.js";
+import { pinnedReport, readPinned, taxYearDataFile, taxYearLabel } from "../lib/pinned.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -31,7 +31,15 @@ const EXAMPLES_DIR = resolve(REPO_DIR, "examples");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 const TAX_OWN_YEAR = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8"));
-const TAX_APR27 = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2026-2027.toml"), "utf8"));
+
+// The tax year the pinned se package covers, and the year the fixtures' own
+// period sits in; the whole-year gap between them shifts every fixture date.
+const PINNED_YEAR_END = readPinned().se.yearEnd;
+const PINNED_END_YEAR = Number(PINNED_YEAR_END.slice(0, 4));
+const PINNED_LABEL = taxYearLabel(PINNED_YEAR_END);
+const FIXTURE_PERIOD_END = "2026-03-31";
+const MONTH_OFFSET = (PINNED_END_YEAR - Number(FIXTURE_PERIOD_END.slice(0, 4))) * 12;
+const TAX_PINNED = parseTOML(readFileSync(resolve(APP_DIR, "data", taxYearDataFile("se", PINNED_YEAR_END)), "utf8"));
 
 // Every tax year api.years names in sa103-mtd-mapping.json, loaded so the
 // field-set tests below can drive buildSelfEmploymentAnnualSubmission
@@ -40,7 +48,8 @@ const TAX_DATA_BY_YEAR = {
   "2023-24": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2023-2024.toml"), "utf8")),
   "2024-25": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2024-2025.toml"), "utf8")),
   "2025-26": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.toml"), "utf8")),
-  "2026-27": TAX_APR27,
+  "2026-27": parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2026-2027.toml"), "utf8")),
+  [PINNED_LABEL]: TAX_PINNED,
 };
 
 const REPORT_FILES = {
@@ -64,7 +73,7 @@ function dateIso(value) {
 function loadFixture(name) {
   if (name === "se-scenario-advanced") {
     const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
-    return { book: { documentInfo: { periodCoveredEnd: "2026-03-31" } }, lines: [], scenario };
+    return { book: { documentInfo: { periodCoveredEnd: FIXTURE_PERIOD_END } }, lines: [], scenario };
   }
   const dirName = name === "se-brickwork-pro-nonvat" ? "se-nonvat" : "se-vat";
   const { book, lines } = loadDiyaGlData(resolve(EXAMPLES_DIR, "brickwork-pro", dirName));
@@ -138,11 +147,18 @@ function quarterSumOfRows(cells, rows, quarterIndex) {
 // HMRC's own quarter boundaries, held here independently of the module
 // under test -- these dates are what the calendar and standard elections
 // mean, not part of the arithmetic the checks below verify.
-const APR27_CALENDAR_QUARTERS = [
-  { start: "2026-04-06", end: "2026-06-30" },
-  { start: "2026-07-01", end: "2026-09-30" },
-  { start: "2026-10-01", end: "2026-12-31" },
-  { start: "2027-01-01", end: "2027-04-05" },
+const PINNED_CALENDAR_QUARTERS = [
+  { start: `${PINNED_END_YEAR - 1}-04-06`, end: `${PINNED_END_YEAR - 1}-06-30` },
+  { start: `${PINNED_END_YEAR - 1}-07-01`, end: `${PINNED_END_YEAR - 1}-09-30` },
+  { start: `${PINNED_END_YEAR - 1}-10-01`, end: `${PINNED_END_YEAR - 1}-12-31` },
+  { start: `${PINNED_END_YEAR}-01-01`, end: PINNED_YEAR_END },
+];
+
+const PINNED_STANDARD_QUARTERS = [
+  { periodStartDate: `${PINNED_END_YEAR - 1}-04-06`, periodEndDate: `${PINNED_END_YEAR - 1}-07-05` },
+  { periodStartDate: `${PINNED_END_YEAR - 1}-07-06`, periodEndDate: `${PINNED_END_YEAR - 1}-10-05` },
+  { periodStartDate: `${PINNED_END_YEAR - 1}-10-06`, periodEndDate: `${PINNED_END_YEAR}-01-05` },
+  { periodStartDate: `${PINNED_END_YEAR}-01-06`, periodEndDate: PINNED_YEAR_END },
 ];
 
 const FIXTURES = ["se-scenario-advanced", "se-brickwork-pro-nonvat", "se-brickwork-pro-vat"];
@@ -169,7 +185,7 @@ const ROW_ANCHORED_FIELDS = {
 describe("buildSelfEmploymentQuarterlyUpdates — the four quarters sum to the box, and each equals three P&L months", () => {
   for (const fixture of FIXTURES) {
     describe(fixture, () => {
-      const { quarterly } = derive(fixture, TAX_APR27);
+      const { quarterly } = derive(fixture, TAX_PINNED);
       const rpt = report(fixture);
       const plCells = appendixCells(fixture, "Profit & Loss Account");
 
@@ -220,12 +236,11 @@ describe("buildSelfEmploymentQuarterlyUpdates — wages and bank-sourced fields 
   // report-regenerating change). Anchored here against the fixture's own
   // dated transactions instead, independently of the engine under test.
   it("se-scenario-advanced: Q1 wagesAndStaffCosts equals the payroll plus purchases account 5101, dated inside Q1", () => {
-    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_APR27);
-    const monthOffset = 12; // the fixture's own 2025-26 period, shifted onto the Apr27 package
+    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     const inQ1 = (dateValue) => {
-      const shifted = shiftMonths(parseDate(dateValue), monthOffset);
+      const shifted = shiftMonths(parseDate(dateValue), MONTH_OFFSET);
       const iso = `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
-      return iso >= APR27_CALENDAR_QUARTERS[0].start && iso <= APR27_CALENDAR_QUARTERS[0].end;
+      return iso >= PINNED_CALENDAR_QUARTERS[0].start && iso <= PINNED_CALENDAR_QUARTERS[0].end;
     };
     let expected = 0;
     for (const entries of Object.values(scenario.payroll || {})) {
@@ -238,12 +253,11 @@ describe("buildSelfEmploymentQuarterlyUpdates — wages and bank-sourced fields 
   });
 
   it("se-scenario-advanced: interestOnBankOtherLoans and financeCharges are nil and 3,900 for the year, split by bank line date", () => {
-    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_APR27);
-    const monthOffset = 12;
+    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     const quarterOf = (dateValue) => {
-      const shifted = shiftMonths(parseDate(dateValue), monthOffset);
+      const shifted = shiftMonths(parseDate(dateValue), MONTH_OFFSET);
       const iso = `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
-      return APR27_CALENDAR_QUARTERS.findIndex((q) => iso >= q.start && iso <= q.end);
+      return PINNED_CALENDAR_QUARTERS.findIndex((q) => iso >= q.start && iso <= q.end);
     };
     const expectedFinance = [0, 0, 0, 0];
     const expectedInterest = [0, 0, 0, 0];
@@ -267,25 +281,24 @@ describe("buildSelfEmploymentQuarterlyUpdates — wages and bank-sourced fields 
 
 describe("buildSelfEmploymentQuarterlyUpdates — turnover follows box 15, not VitalTax", () => {
   it("se-scenario-advanced: Q1 turnover equals sales codes a-d dated inside Q1, VAT stripped", () => {
-    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_APR27);
-    const monthOffset = 12;
+    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     let expected = 0;
     for (const transactions of Object.values(scenario.sales || {})) {
       for (const tx of transactions) {
         if (!["a", "b", "c", "d"].includes(tx.code)) continue;
-        const shifted = shiftMonths(parseDate(tx.date), monthOffset);
+        const shifted = shiftMonths(parseDate(tx.date), MONTH_OFFSET);
         const iso = `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}-${String(shifted.getUTCDate()).padStart(2, "0")}`;
         // Q1's lower edge is unbounded (the first quarter starts at the
         // accounting period start, not a literal 6 April), so only the
         // upper edge is checked here.
-        if (iso <= APR27_CALENDAR_QUARTERS[0].end) expected += splitVat(tx.amount, 0.2).net;
+        if (iso <= PINNED_CALENDAR_QUARTERS[0].end) expected += splitVat(tx.amount, 0.2).net;
       }
     }
     expect(quarterly.periods[0].periodIncome.turnover).toBeCloseTo(round2(expected), 2);
   });
 
   it("se-scenario-advanced: account 4003 (code d) sales are inside turnover, not left out as VitalTax leaves them", () => {
-    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_APR27);
+    const { quarterly, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     const codeDNet = Object.values(scenario.sales || {})
       .flat()
       .filter((tx) => tx.code === "d")
@@ -315,7 +328,7 @@ describe("buildSelfEmploymentQuarterlyUpdates — a book kept in its own tax yea
 
 describe("buildSelfEmploymentQuarterlyUpdates — the depreciation pair against the schedule", () => {
   it("se-scenario-advanced: each quarter is Schedule I1 / 4, plus the disposal loss quarter for box 29", () => {
-    const { quarterly } = derive("se-scenario-advanced", TAX_APR27);
+    const { quarterly } = derive("se-scenario-advanced", TAX_PINNED);
     const rpt = report("se-scenario-advanced");
     const scheduleI1 = value(rpt, "Fixed Asset Schedule", "Depreciation charged for the year (Schedule I1)");
     const disposalLossAnnual = value(rpt, "Profit & Loss Account", "Loss (Profit) on Disposal of Assets");
@@ -330,8 +343,8 @@ describe("buildSelfEmploymentQuarterlyUpdates — the depreciation pair against 
 
 describe("buildSelfEmploymentQuarterlyUpdates — the 1 to 5 April postings land in Q1 under both period types", () => {
   it("se-brickwork-pro-nonvat: the four early-April lines reach Q1 under calendar and standard boundaries alike", () => {
-    const calendar = derive("se-brickwork-pro-nonvat", TAX_APR27, { quarterlyPeriodType: "calendar" }).quarterly;
-    const standard = derive("se-brickwork-pro-nonvat", TAX_APR27, { quarterlyPeriodType: "standard" }).quarterly;
+    const calendar = derive("se-brickwork-pro-nonvat", TAX_PINNED, { quarterlyPeriodType: "calendar" }).quarterly;
+    const standard = derive("se-brickwork-pro-nonvat", TAX_PINNED, { quarterlyPeriodType: "standard" }).quarterly;
     // 2025-04-01 code g (60), 2025-04-01 code y (1200), 2025-04-05 code s (800):
     // present in Q1's adminCosts, otherExpenses and costOfGoods under both types.
     for (const quarterly of [calendar, standard]) {
@@ -344,16 +357,16 @@ describe("buildSelfEmploymentQuarterlyUpdates — the 1 to 5 April postings land
   it("se-brickwork-pro-nonvat: a line dated 2 April is unaffected by the 6 April boundary under either type", () => {
     const { book, lines } = loadFixture("se-brickwork-pro-nonvat");
     const shifted = lines.map((line) => (line.postingDate === "2025-04-06" ? { ...line, postingDate: "2025-04-02" } : line));
-    const before = buildSelfEmploymentQuarterlyUpdates(book, lines, TAX_APR27, { quarterlyPeriodType: "standard" });
-    const after = buildSelfEmploymentQuarterlyUpdates(book, shifted, TAX_APR27, { quarterlyPeriodType: "standard" });
+    const before = buildSelfEmploymentQuarterlyUpdates(book, lines, TAX_PINNED, { quarterlyPeriodType: "standard" });
+    const after = buildSelfEmploymentQuarterlyUpdates(book, shifted, TAX_PINNED, { quarterlyPeriodType: "standard" });
     expect(after.periods).toEqual(before.periods);
   });
 });
 
 describe("buildSelfEmploymentQuarterlyUpdates — the standard election moves figures and keeps the annual total", () => {
   it("se-scenario-advanced: at least one field's quarter split changes, and every field's four-quarter sum matches the calendar election", () => {
-    const calendar = derive("se-scenario-advanced", TAX_APR27, { quarterlyPeriodType: "calendar" }).quarterly;
-    const standard = derive("se-scenario-advanced", TAX_APR27, { quarterlyPeriodType: "standard" }).quarterly;
+    const calendar = derive("se-scenario-advanced", TAX_PINNED, { quarterlyPeriodType: "calendar" }).quarterly;
+    const standard = derive("se-scenario-advanced", TAX_PINNED, { quarterlyPeriodType: "standard" }).quarterly;
     const fields = Object.keys(calendar.periods[0].periodExpenses);
     let anyDiffers = false;
     for (const field of fields) {
@@ -368,33 +381,23 @@ describe("buildSelfEmploymentQuarterlyUpdates — the standard election moves fi
   });
 
   it("se-scenario-advanced: the standard election's periodDates carry the confirmed HMRC boundaries", () => {
-    const { quarterly } = derive("se-scenario-advanced", TAX_APR27, { quarterlyPeriodType: "standard" });
-    expect(quarterly.periods.map((p) => p.periodDates)).toEqual([
-      { periodStartDate: "2026-04-06", periodEndDate: "2026-07-05" },
-      { periodStartDate: "2026-07-06", periodEndDate: "2026-10-05" },
-      { periodStartDate: "2026-10-06", periodEndDate: "2027-01-05" },
-      { periodStartDate: "2027-01-06", periodEndDate: "2027-04-05" },
-    ]);
+    const { quarterly } = derive("se-scenario-advanced", TAX_PINNED, { quarterlyPeriodType: "standard" });
+    expect(quarterly.periods.map((p) => p.periodDates)).toEqual(PINNED_STANDARD_QUARTERS);
   });
 });
 
 describe("buildSelfEmploymentQuarterlyUpdates — obligations periods override the fallback boundaries", () => {
   it("uses the given periodStartDate/periodEndDate pairs instead of computing them", () => {
-    const periods = [
-      { periodStartDate: "2026-04-06", periodEndDate: "2026-07-05" },
-      { periodStartDate: "2026-07-06", periodEndDate: "2026-10-05" },
-      { periodStartDate: "2026-10-06", periodEndDate: "2027-01-05" },
-      { periodStartDate: "2027-01-06", periodEndDate: "2027-04-05" },
-    ];
-    const fromPeriods = derive("se-scenario-advanced", TAX_APR27, { periods }).quarterly;
-    const fromType = derive("se-scenario-advanced", TAX_APR27, { quarterlyPeriodType: "standard" }).quarterly;
+    const periods = PINNED_STANDARD_QUARTERS;
+    const fromPeriods = derive("se-scenario-advanced", TAX_PINNED, { periods }).quarterly;
+    const fromType = derive("se-scenario-advanced", TAX_PINNED, { quarterlyPeriodType: "standard" }).quarterly;
     expect(fromPeriods.periods).toEqual(fromType.periods);
   });
 });
 
 describe("buildSelfEmploymentAnnualSubmission — allowances against the schedule", () => {
   it("se-scenario-advanced: matches boxes 49, 50, 55, 56 and 59, and capitalAllowanceMainPool independently against the opening tax written down value", () => {
-    const { annual } = derive("se-scenario-advanced", TAX_APR27);
+    const { annual } = derive("se-scenario-advanced", TAX_PINNED);
     const rpt = report("se-scenario-advanced");
     expect(annual.allowances.annualInvestmentAllowance).toBeCloseTo(
       value(rpt, "Self Assessment (SA103F)", "Annual investment allowance (box 49)"),
@@ -420,14 +423,14 @@ describe("buildSelfEmploymentAnnualSubmission — allowances against the schedul
     // times the year's own writing down rate, so a main pool figure that
     // merely echoes the cell it was read from cannot pass this half.
     const openingTaxWdv = 24000; // examples/.../se-scenario-advanced.toml's one asset carrying a tax_wdv
-    const rate = TAX_APR27.capital_allowances.writing_down_allowance;
+    const rate = TAX_PINNED.capital_allowances.writing_down_allowance;
     expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(round2(openingTaxWdv * rate), 2);
   });
 });
 
 describe("buildSelfEmploymentAnnualSubmission — grants reach the annual submission, not the quarterly other-income field", () => {
   it("se-scenario-advanced: outstandingBusinessIncome equals the account 4004 sales net of VAT, and periodIncome.other is nil throughout", () => {
-    const { annual, quarterly, scenario } = derive("se-scenario-advanced", TAX_APR27);
+    const { annual, quarterly, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     const grantsNet = Object.values(scenario.sales || {})
       .flat()
       .filter((tx) => tx.code === "g")
@@ -453,7 +456,7 @@ describe("buildSelfEmploymentAnnualSubmission — box 55 is warned as a small po
 
   for (const fixture of FIXTURES) {
     it(`${fixture}: the field HMRC's mapping names for box 55 carries a warning that the figure is a small pools write-off`, () => {
-      const { annual } = derive(fixture, TAX_APR27);
+      const { annual } = derive(fixture, TAX_PINNED);
       expect(Object.keys(annual.allowances)).toContain("enhancedCapitalAllowance");
       const warning = annual.warnings.find((w) => w.field === enhancedField);
       expect(warning).toBeDefined();
@@ -564,7 +567,7 @@ describe("buildSelfEmploymentAnnualSubmission — the annual field set follows a
     // A full, otherwise-valid tax year file with only the label moved past
     // what api.years names, so the throw under test is the one this check
     // is about and not some other missing rate.
-    const unknownYear = { ...TAX_APR27, tax_year: { ...TAX_APR27.tax_year, label: "2027-28" } };
+    const unknownYear = { ...TAX_PINNED, tax_year: { ...TAX_PINNED.tax_year, label: TAX_PINNED.tax_year.next_label } };
     expect(() => derive("se-scenario-advanced", unknownYear)).toThrow(/api\.years carries no entry/);
   });
 });
@@ -572,7 +575,7 @@ describe("buildSelfEmploymentAnnualSubmission — the annual field set follows a
 describe("the derivations — unsourced fields are absent, not nil, and each carries a warning naming its box", () => {
   for (const fixture of FIXTURES) {
     it(`${fixture}: quarterly periods never carry consolidatedExpenses, businessEntertainmentCosts or a disallowable field beyond depreciation`, () => {
-      const { quarterly } = derive(fixture, TAX_APR27);
+      const { quarterly } = derive(fixture, TAX_PINNED);
       for (const period of quarterly.periods) {
         expect(Object.keys(period.periodExpenses).sort()).toEqual(
           [
@@ -608,7 +611,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
     });
 
     it(`${fixture}: annual submission never carries the fields with no cell and no book statement, and each is warned by box`, () => {
-      const { annual } = derive(fixture, TAX_APR27);
+      const { annual } = derive(fixture, TAX_PINNED);
       const statesAnnualFigures = fixture === "se-scenario-advanced";
       expect(Object.keys(annual.allowances).sort()).toEqual(
         [
@@ -663,7 +666,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
     });
 
     it(`${fixture}: the stated annual figures come through as the book states them`, () => {
-      const { annual, scenario, book, lines } = derive(fixture, TAX_APR27);
+      const { annual, scenario, book, lines } = derive(fixture, TAX_PINNED);
       const stated = scenario
         ? { allowances: scenario.annual_allowances, adjustments: scenario.annual_adjustments }
         : book.tax?.selfEmployment;
@@ -672,41 +675,41 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
       expect(annual.adjustments.includedNonTaxableProfits).toBe(stated.adjustments.includedNonTaxableProfits);
       expect(annual.adjustments.accountingAdjustment).toBe(stated.adjustments.accountingAdjustment);
       expect(annual.adjustments.goodsAndServicesOwnUse).toBe(stated.adjustments.goodsAndServicesOwnUse);
-      const seFull = calculateSeCells(book, lines, TAX_APR27, scenario)["SE Full"];
+      const seFull = calculateSeCells(book, lines, TAX_PINNED, scenario)["SE Full"];
       expect(seFull.O194).toBeCloseTo(seFull.O174 + stated.adjustments.accountingAdjustment, 2);
       expect(seFull.D219).toBe(0);
     });
   }
 
   it("box 51 files the special rate pool the schedule computes: the marked asset's tax written-down value at the special rate", () => {
-    const { annual, scenario } = derive("se-scenario-advanced", TAX_APR27);
+    const { annual, scenario } = derive("se-scenario-advanced", TAX_PINNED);
     const specialAssets = scenario.opening_fixed_assets.filter((asset) => asset.pool === "special");
     expect(specialAssets).toHaveLength(1);
-    const expected = specialAssets[0].tax_wdv * TAX_APR27.capital_allowances.writing_down_allowance_special;
+    const expected = specialAssets[0].tax_wdv * TAX_PINNED.capital_allowances.writing_down_allowance_special;
     expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeCloseTo(expected, 2);
     expect(annual.allowances.capitalAllowanceSpecialRatePool).toBeGreaterThan(0);
     // The main pool no longer carries the marked asset, nor the single asset pool.
     const mainWdv = scenario.opening_fixed_assets
       .filter((asset) => asset.pool !== "special" && !asset.single_asset_pool)
       .reduce((t, a) => t + (a.tax_wdv || 0), 0);
-    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(mainWdv * TAX_APR27.capital_allowances.writing_down_allowance, 2);
+    expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(mainWdv * TAX_PINNED.capital_allowances.writing_down_allowance, 2);
     expect(annual.warnings.map((w) => w.field)).not.toContain("allowances.capitalAllowanceSpecialRatePool");
   });
 
   it("the single asset pool files apart from both rate pools: the marked car's tax written-down value at the main rate, less its private use", () => {
-    const { annual, scenario, book, lines } = derive("se-scenario-advanced", TAX_APR27);
+    const { annual, scenario, book, lines } = derive("se-scenario-advanced", TAX_PINNED);
     const singleAssets = scenario.opening_fixed_assets.filter((asset) => asset.single_asset_pool);
     expect(singleAssets).toHaveLength(1);
     const [car] = singleAssets;
     expect(car.pool).toBeUndefined();
     // 8,000 at the year's main rate on the 70% business share: 1,008 at the
     // 18% of 2025-26, 784 at the 14% of 2026-27.
-    const wda = TAX_APR27.capital_allowances.writing_down_allowance;
+    const wda = TAX_PINNED.capital_allowances.writing_down_allowance;
     const expected = car.tax_wdv * wda * (1 - car.private_use);
     expect(expected).toBeCloseTo(8000 * wda * 0.7, 6);
     expect(annual.allowances.capitalAllowanceSingleAssetPool).toBeCloseTo(expected, 2);
     // The printed box 50 still carries it beside the main pool.
-    const seFull = calculateSeCells(book, lines, TAX_APR27, scenario)["SE Full"];
+    const seFull = calculateSeCells(book, lines, TAX_PINNED, scenario)["SE Full"];
     expect(seFull.D144).toBeCloseTo(annual.allowances.capitalAllowanceMainPool + expected, 2);
     expect(annual.allowances.capitalAllowanceMainPool).toBeCloseTo(24000 * wda, 2);
     expect(annual.allowances.capitalAllowanceSpecialRatePool).toBe(540);
@@ -714,7 +717,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
   });
 
   it("the Structures and Buildings Allowance claims file as one item each, firstYear only on the claim newly qualifying this period", () => {
-    const { annual } = derive("se-scenario-advanced", TAX_APR27);
+    const { annual } = derive("se-scenario-advanced", TAX_PINNED);
     // Every scenario date shifts by the same whole-year offset onto the
     // 2026-27 package: the Trafford Park claim (2023-10-01) lands on
     // 2024-10-01, well before the period opens on 2026-04-06, so it carries
@@ -743,7 +746,7 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
   it("a box 52 figure stated for a year whose schema dropped the field is not filed, and the warning carries it", () => {
     const { book, lines, scenario } = loadFixture("se-scenario-advanced");
     const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, zeroEmissionsGoodsVehicleAllowance: 900 } };
-    const later = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario: stating });
+    const later = buildSelfEmploymentAnnualSubmission(book, lines, TAX_PINNED, { scenario: stating });
     expect(later.allowances.zeroEmissionsGoodsVehicleAllowance).toBeUndefined();
     const dropped = later.warnings.find((w) => w.field === "allowances.zeroEmissionsGoodsVehicleAllowance");
     expect(dropped.handComputed).toBe(900);
@@ -754,9 +757,9 @@ describe("the derivations — unsourced fields are absent, not nil, and each car
 
   it("a stated box 54 figure joins box 55 under enhancedCapitalAllowance, HMRC's primary field for both boxes", () => {
     const { book, lines, scenario } = loadFixture("se-scenario-advanced");
-    const base = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario });
+    const base = buildSelfEmploymentAnnualSubmission(book, lines, TAX_PINNED, { scenario });
     const stating = { ...scenario, annual_allowances: { ...scenario.annual_allowances, electricChargePointAllowance: 450 } };
-    const withChargePoint = buildSelfEmploymentAnnualSubmission(book, lines, TAX_APR27, { scenario: stating });
+    const withChargePoint = buildSelfEmploymentAnnualSubmission(book, lines, TAX_PINNED, { scenario: stating });
     expect(withChargePoint.allowances.enhancedCapitalAllowance).toBeCloseTo(base.allowances.enhancedCapitalAllowance + 450, 2);
     expect(withChargePoint.allowances.electricChargePointAllowance).toBeUndefined();
     expect(withChargePoint.warnings.find((w) => w.field === "allowances.electricChargePointAllowance").handComputed).toBe(450);
@@ -768,7 +771,7 @@ describe("the derivations — the boxes with no cell really do read blank in the
     it(`${fixture}: the stated boxes are blank only where the book states nothing`, () => {
       const { book, lines, scenario: fixtureScenario } = loadFixture(fixture);
       const scenario = fixtureScenario || undefined;
-      const results = calculateSeCells(book, lines, TAX_APR27, scenario);
+      const results = calculateSeCells(book, lines, TAX_PINNED, scenario);
       const seFull = results["SE Full"];
       const stated = fixture === "se-scenario-advanced";
       for (const cell of ["D150", "O139"]) expect(typeof seFull[cell]).not.toBe("number");
@@ -783,9 +786,9 @@ describe("the derivations — the boxes with no cell really do read blank in the
 
 describe("breakability — every check above can fail", () => {
   const { scenario: base } = loadFixture("se-scenario-advanced");
-  const book = { documentInfo: { periodCoveredEnd: "2026-03-31" } };
+  const book = { documentInfo: { periodCoveredEnd: FIXTURE_PERIOD_END } };
   const clone = (value) => JSON.parse(JSON.stringify(value));
-  const baseline = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_APR27, { scenario: base });
+  const baseline = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_PINNED, { scenario: base });
 
   function quarterlyDiffs(a, b) {
     const diffs = [];
@@ -813,7 +816,7 @@ describe("breakability — every check above can fail", () => {
       }
     }
     expect(moved).toBe(true);
-    const mutatedResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_APR27, { scenario: mutated });
+    const mutatedResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_PINNED, { scenario: mutated });
     const diffs = quarterlyDiffs(baseline, mutatedResult);
     const quarter = diffs[0].split(".")[0];
     expect(diffs.sort()).toEqual([`${quarter}.periodExpenses.adminCosts`, `${quarter}.periodExpenses.otherExpenses`].sort());
@@ -828,7 +831,7 @@ describe("breakability — every check above can fail", () => {
         break;
       }
     }
-    const toDResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_APR27, { scenario: toD });
+    const toDResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_PINNED, { scenario: toD });
     expect(quarterlyDiffs(baseline, toDResult)).toEqual([]);
 
     const toG = clone(base);
@@ -839,9 +842,9 @@ describe("breakability — every check above can fail", () => {
         break;
       }
     }
-    const toGQuarterly = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_APR27, { scenario: toG });
-    const toGAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: toG });
-    const baseAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: base });
+    const toGQuarterly = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_PINNED, { scenario: toG });
+    const toGAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: toG });
+    const baseAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: base });
     const diffs = quarterlyDiffs(baseline, toGQuarterly);
     expect(diffs).toEqual([`${diffs[0].split(".")[0]}.periodIncome.turnover`]);
     expect(toGAnnual.adjustments.outstandingBusinessIncome).not.toBeCloseTo(baseAnnual.adjustments.outstandingBusinessIncome, 2);
@@ -864,7 +867,7 @@ describe("breakability — every check above can fail", () => {
       }
     }
     expect(moved).toBe(true);
-    const mutatedResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_APR27, { scenario: mutated });
+    const mutatedResult = buildSelfEmploymentQuarterlyUpdates(book, [], TAX_PINNED, { scenario: mutated });
     const diffs = quarterlyDiffs(baseline, mutatedResult);
     const fields = new Set(diffs.map((d) => d.split(".").slice(1).join(".")));
     expect(fields.size).toBe(1);
@@ -887,8 +890,8 @@ describe("breakability — every check above can fail", () => {
     expect(original).toBeTruthy();
     const mutatedLines = bwLines.map((line) => (line === original ? { ...line, postingDate: "2025-04-02" } : line));
     for (const quarterlyPeriodType of ["calendar", "standard"]) {
-      const before = buildSelfEmploymentQuarterlyUpdates(bwBook, bwLines, TAX_APR27, { quarterlyPeriodType });
-      const after = buildSelfEmploymentQuarterlyUpdates(bwBook, mutatedLines, TAX_APR27, { quarterlyPeriodType });
+      const before = buildSelfEmploymentQuarterlyUpdates(bwBook, bwLines, TAX_PINNED, { quarterlyPeriodType });
+      const after = buildSelfEmploymentQuarterlyUpdates(bwBook, mutatedLines, TAX_PINNED, { quarterlyPeriodType });
       expect(quarterlyDiffs(before, after)).toEqual([]);
     }
   });
@@ -900,11 +903,11 @@ describe("breakability — every check above can fail", () => {
     // order, not something this check is about.
     const withExtra = clone(base);
     withExtra.opening_fixed_assets.push({ category: "motor", cost: 5000, acc_dep: 500, tax_wdv: 4000 });
-    const withExtraAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: withExtra });
+    const withExtraAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: withExtra });
 
     const halved = clone(withExtra);
     halved.opening_fixed_assets[halved.opening_fixed_assets.length - 1].tax_wdv = 2000;
-    const halvedAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: halved });
+    const halvedAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: halved });
 
     // structuredBuildingAllowance and enhancedStructuredBuildingAllowance are
     // arrays, rebuilt fresh on every call, so a strict !== always reads them
@@ -916,7 +919,7 @@ describe("breakability — every check above can fail", () => {
     expect(changed).toEqual(["capitalAllowanceMainPool"]);
     expect(withExtraAnnual.adjustments).toEqual(halvedAnnual.adjustments);
     expect(round2(withExtraAnnual.allowances.capitalAllowanceMainPool - halvedAnnual.allowances.capitalAllowanceMainPool)).toBeCloseTo(
-      round2((4000 - 2000) * TAX_APR27.capital_allowances.writing_down_allowance),
+      round2((4000 - 2000) * TAX_PINNED.capital_allowances.writing_down_allowance),
       2,
     );
   });
@@ -933,8 +936,8 @@ describe("breakability — every check above can fail", () => {
       }
     }
     expect(moved).toBe(true);
-    const baseAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: base });
-    const mutatedAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_APR27, { scenario: mutated });
+    const baseAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: base });
+    const mutatedAnnual = buildSelfEmploymentAnnualSubmission(book, [], TAX_PINNED, { scenario: mutated });
     expect(baseAnnual.allowances.allowanceOnSales).toBeCloseTo(8140, 2);
     expect(mutatedAnnual.allowances.allowanceOnSales).toBe(0);
     expect(baseAnnual.adjustments.balancingChargeOther).toBe(0);

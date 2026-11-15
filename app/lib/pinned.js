@@ -55,6 +55,19 @@ export function pinnedReport(product, scenario) {
   return reportFileName(product, readPinned()[product].yearEnd, scenario);
 }
 
+// The label of the UK tax year that ends on an April year-end, e.g. "2027-04-05" -> "2026-27".
+export function taxYearLabel(yearEnd) {
+  const endYear = Number(yearEnd.slice(0, 4));
+  return `${endYear - 1}-${String(endYear).slice(-2)}`;
+}
+
+// The app/data file name of a product's tax data for the tax year that ends on an
+// April year-end, e.g. ("se", "2027-04-05") -> "se-2026-2027.toml".
+export function taxYearDataFile(product, yearEnd) {
+  const endYear = Number(yearEnd.slice(0, 4));
+  return `${product}-${endYear - 1}-${endYear}.toml`;
+}
+
 // The date six calendar months before today, as an ISO date string.
 export function sixMonthsBefore(today) {
   const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
