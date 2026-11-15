@@ -365,6 +365,45 @@ function incomeTaxLine(report, section) {
   return parts.join(" ");
 }
 
+// The working sheet walks from the operating profit to the profit chargeable in
+// steps: add-backs for what the accounts charged but tax does not allow, capital
+// allowances in place of depreciation, then bank interest and losses brought
+// forward. Naming every step lets a reader tie the chargeable figure to the profit
+// before tax, which the capital allowances alone cannot do.
+function corporationTaxBridge(report, chargeable, allowances) {
+  const sheet = "Corporation Tax working sheet";
+  const operating = value(report, sheet, "Operating Profit");
+  const addBacks = [
+    ["goodwill", value(report, sheet, "Add back: Goodwill")],
+    ["depreciation", value(report, sheet, "Add back: Depreciation")],
+    ["business entertainment", value(report, sheet, "Add back: Business entertainment")],
+  ]
+    .filter(([, figure]) => figure !== null)
+    .map(([name, figure]) => `${name} ${amount(figure)}`);
+  const addBackTotal = value(report, sheet, "Add back: total");
+  const addBackText = addBacks.length === 0 ? "no add-backs" : `add-backs of ${addBacks.join(", ")} (${amount(addBackTotal)} in total)`;
+  const afterAllowances = value(report, sheet, "Profit after capital allowances");
+  const interest = value(report, sheet, "Add: gross bank interest");
+  const losses = value(report, sheet, "Less: losses brought forward");
+  return (
+    `Corporation tax: operating profit ${amount(operating)}, ${addBackText}, ` +
+    `less capital allowances ${amount(allowances)} leaves ${amount(afterAllowances)}, ` +
+    `plus gross bank interest ${amount(interest)}, less losses brought forward ${amount(losses)}, ` +
+    `gives a profit chargeable to corporation tax of ${amount(chargeable)}.`
+  );
+}
+
+// The CT600 prints one box number per figure on a single-year layout (63, 64, 65)
+// and another where the period straddles two financial years (430, 435, 440), so
+// the figure is read under whichever label the report carries.
+function ct600Box(report, ...boxes) {
+  for (const [box, name] of boxes) {
+    const found = value(report, "CT600 as filed", `Box ${box}: ${name}`);
+    if (found !== null) return found;
+  }
+  return null;
+}
+
 function ltdIndicators(report, vatRegistered) {
   const turnover = requireValue(report, "Published P&L", "Total Sales Turnover");
   const gross = requireValue(report, "Published P&L", "Gross Profit");
@@ -375,9 +414,13 @@ function ltdIndicators(report, vatRegistered) {
   const chargeable = requireValue(report, "Corporation Tax working sheet", "Profit Chargeable to CT");
   const allowances = value(report, "Corporation Tax working sheet", "Less: Capital Allowances");
   const charge = requireValue(report, "Corporation Tax working sheet", "Corporation Tax");
-  const filed = value(report, "CT600 as filed", "Box 63: corporation tax");
-  const relief = value(report, "CT600 as filed", "Box 64: marginal rate relief");
-  const netOfRelief = value(report, "CT600 as filed", "Box 65: corporation tax net of marginal rate relief");
+  const filed = ct600Box(report, [63, "corporation tax"], [430, "corporation tax"]);
+  const relief = ct600Box(report, [64, "marginal rate relief"], [435, "marginal rate relief"]);
+  const netOfRelief = ct600Box(
+    report,
+    [65, "corporation tax net of marginal rate relief"],
+    [440, "corporation tax net of marginal rate relief"],
+  );
   const nbv = value(report, "Fixed Asset Note", "Net book value");
   const depreciation = value(report, "Fixed Asset Note", "Charge for the year");
   const stock = value(report, "Published Balance Sheet", "Stock at cost");
@@ -409,7 +452,7 @@ function ltdIndicators(report, vatRegistered) {
     `Balance sheet: net assets ${amount(netAssets)} against shareholders' funds ${amount(funds)}, difference ${amount(netAssets - funds)}.`,
     `Trial balance audit accuracy (cell EJ91): ${amount(audit)}.`,
     `Fixed assets: net book value ${amount(nbv)}, depreciation charged for the year ${amount(depreciation)}. Stock at the year end ${amount(stock)}.`,
-    `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}. The return files ${amount(filed)} in box 63 before marginal relief of ${amount(relief)}, leaving ${amount(netOfRelief)} in box 65.`,
+    `${corporationTaxBridge(report, chargeable, allowances)} Charge for the year ${amount(charge)}. The return files ${amount(filed)} before marginal relief of ${amount(relief)}, leaving ${amount(netOfRelief)} net.`,
     `Directors' report: turnover ${amount(reportTurnover)} against ${amount(reportPriorTurnover)} last year, trading margin ${amount(reportMargin)}, dividend declared ${amount(reportDividend)} on ${amount(reportShares)} ordinary shares issued.`,
     `Cash at bank and in hand ${amount(closingCash)} at the year end against ${amount(openingCash)} at the start: the year made ${amount(pbt)} before tax, declared ${amount(dividendsDeclared)} of dividends and paid ${amount(dividendsPaid)} of them out of the bank, and still owes ${amount(dividendsOwedAtEnd)} to the members and ${amount(taxOwed)} of tax.`,
     `Stock: ${amount(openingStock)} at the start, ${amount(calculatedStock)} calculated at the year end against ${amount(countedStock)} counted, a loss adjustment of ${amount(lossAdjustment)}.`,
