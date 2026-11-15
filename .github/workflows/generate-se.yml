@@ -460,8 +460,17 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*se-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          git add packages/ reports/ examples/se-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
-            app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
+          # Every run commits only the package folders that main does not hold
+          # yet. generate.js rebuilds every package and the later steps rewrite
+          # the examples, the reports and the provenance data; none of that is
+          # committed, so the pinned examples and reports stay as main has them.
+          git reset -q
+          for dir in packages/*/; do
+            if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
+              git add -- "$dir"
+            fi
+          done
+          git restore --worktree -- .
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

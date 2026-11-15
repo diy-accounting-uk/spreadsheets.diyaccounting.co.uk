@@ -495,22 +495,17 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports -name "*ltd-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
           fi
-          if [[ '${{ github.event_name }}' == 'schedule' ]]; then
-            # A scheduled run commits only package folders that main does not
-            # hold yet; generate.js rebuilds every package, so the rewritten
-            # ones stay out. A dispatched run, and generate-all (a dispatch, whose
-            # event name this called workflow inherits), commits everything.
-            git reset -q
-            for dir in packages/*/; do
-              if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
-                git add -- "$dir"
-              fi
-            done
-            git restore --worktree -- .
-          else
-            git add packages/ reports/ examples/ltd-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/ \
-              app/lib/provenance-data.js web/diya-gl.co.uk/public/spec.html
-          fi
+          # Every run commits only the package folders that main does not hold
+          # yet. generate.js rebuilds every package and the later steps rewrite
+          # the examples, the reports and the provenance data; none of that is
+          # committed, so the pinned examples and reports stay as main has them.
+          git reset -q
+          for dir in packages/*/; do
+            if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
+              git add -- "$dir"
+            fi
+          done
+          git restore --worktree -- .
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
