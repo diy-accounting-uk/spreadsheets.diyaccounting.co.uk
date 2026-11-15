@@ -12,9 +12,15 @@ import {
   deltaLine,
   ESCALATION_MODEL,
   judgeAndRecord,
-  judgeWithEscalation,
+  judgeOnce,
   loadExistingVerdict,
+  MAX_JUDGEMENTS,
   MAX_TOKENS,
+  maxTokensFor,
+  REASONING_MAX_TOKENS,
+  settledOutcome,
+  settleVerdict,
+  TEMPERATURE,
   runDiverges,
   VERDICT_SCHEMA,
   VERDICT_TOOL,
@@ -789,21 +795,35 @@ describe("parseVerdict", () => {
 describe("requestVerdict", () => {
   const prompt = { system: "system", user: "user" };
 
-  it("forces the verdict tool and sends no sampling parameters", async () => {
+  it("forces the verdict tool and decodes greedily on both models", async () => {
     const send = vi.fn().mockResolvedValue(messageWith(PASSING));
     await requestVerdict({ send }, prompt);
+    await requestVerdict({ send }, prompt, { model: ESCALATION_MODEL });
     const request = send.mock.calls[0][0].input;
     expect(request.modelId).toBe(DEFAULT_MODEL);
     expect(request.toolConfig.tools[0].toolSpec).toMatchObject({ name: VERDICT_TOOL, inputSchema: { json: VERDICT_SCHEMA } });
     expect(request.toolConfig.toolChoice).toEqual({ tool: { name: VERDICT_TOOL } });
-    expect(request.inferenceConfig.temperature).toBeUndefined();
+    expect(TEMPERATURE).toBe(0);
+    expect(request.inferenceConfig.temperature).toBe(0);
     expect(request.inferenceConfig.topP).toBeUndefined();
+    expect(send.mock.calls[1][0].input.inferenceConfig.temperature).toBe(0);
   });
 
-  it("caps output tokens for a terse concern list rather than a long report", async () => {
+  it("gives the reasoning model room for its reasoning and the verdict, and the other model a terse cap", async () => {
     const send = vi.fn().mockResolvedValue(messageWith(PASSING));
     await requestVerdict({ send }, prompt);
-    expect(send.mock.calls[0][0].input.inferenceConfig.maxTokens).toBe(MAX_TOKENS);
+    await requestVerdict({ send }, prompt, { model: ESCALATION_MODEL });
+    expect(send.mock.calls[0][0].input.inferenceConfig.maxTokens).toBe(REASONING_MAX_TOKENS);
+    expect(send.mock.calls[1][0].input.inferenceConfig.maxTokens).toBe(MAX_TOKENS);
+    expect(maxTokensFor(DEFAULT_MODEL)).toBe(REASONING_MAX_TOKENS);
+  });
+
+  it("logs the stop reason and output tokens of each call, so the cap can be measured from a run", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const send = vi.fn().mockResolvedValue({ ...messageWith(PASSING), stopReason: "tool_use", usage: { outputTokens: 2417 } });
+    await requestVerdict({ send }, prompt);
+    expect(log).toHaveBeenCalledWith(`Judge (${DEFAULT_MODEL}) attempt 1: stop reason tool_use, 2417 output tokens.`);
+    log.mockRestore();
   });
 
   it("marks the system preamble and rubric as a cached prefix", async () => {
@@ -869,55 +889,175 @@ describe("requestVerdict", () => {
   });
 });
 
-describe("judgeWithEscalation", () => {
+const FAILING = {
+  verdict: "fail",
+  summary: "All four VAT quarters read zero for a registered trader.",
+  concerns: [{ figure: "VAT box 1", where: "VAT indicator", why: "Nil for a registered trader.", severity: "blocking" }],
+};
+
+describe("judgeOnce", () => {
   const prompt = { system: "system", user: "user" };
-  const FAILING = {
-    verdict: "fail",
-    summary: "All four VAT quarters read zero for a registered trader.",
-    concerns: [{ figure: "VAT box 1", where: "VAT indicator", why: "Nil for a registered trader.", severity: "blocking" }],
-  };
 
-  it("stands on a primary pass without escalating", async () => {
-    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
-    const result = await judgeWithEscalation({ send }, prompt);
-    expect(result.escalated).toBe(false);
-    expect(result.model).toBe(DEFAULT_MODEL);
-    expect(result.verdict.verdict).toBe("pass");
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(send.mock.calls[0][0].input.modelId).toBe(DEFAULT_MODEL);
-  });
-
-  it("escalates a primary fail to the second model for confirmation, on the same digest", async () => {
-    const send = vi.fn().mockResolvedValueOnce(messageWith(FAILING)).mockResolvedValueOnce(messageWith(PASSING));
-    const result = await judgeWithEscalation({ send }, prompt);
-    expect(result.escalated).toBe(true);
-    expect(result.model).toBe(ESCALATION_MODEL);
-    expect(result.verdict.verdict).toBe("pass");
-    expect(send).toHaveBeenCalledTimes(2);
-    expect(send.mock.calls[0][0].input.modelId).toBe(DEFAULT_MODEL);
-    expect(send.mock.calls[1][0].input.modelId).toBe(ESCALATION_MODEL);
-    expect(send.mock.calls[1][0].input.messages).toEqual(send.mock.calls[0][0].input.messages);
-  });
-
-  it("keeps a fail the second model also confirms, rather than softening it", async () => {
+  it("stands on the primary model's verdict without asking the escalation model", async () => {
     const send = vi.fn().mockResolvedValue(messageWith(FAILING));
-    const result = await judgeWithEscalation({ send }, prompt);
-    expect(result.escalated).toBe(true);
-    expect(result.model).toBe(ESCALATION_MODEL);
+    const result = await judgeOnce({ send }, prompt);
+    expect(result.model).toBe(DEFAULT_MODEL);
     expect(result.verdict.verdict).toBe("fail");
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
-  it("escalates when the primary cannot reach a verdict at all", async () => {
+  it("asks the escalation model, on the same digest, only when the primary cannot reach a verdict", async () => {
     const send = vi
       .fn()
-      .mockRejectedValueOnce(new Error("socket hang up"))
-      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockResolvedValueOnce({ output: { message: { content: [] } }, stopReason: "malformed_tool_use" })
+      .mockResolvedValueOnce({ output: { message: { content: [] } }, stopReason: "max_tokens" })
       .mockResolvedValueOnce(messageWith(PASSING));
-    const result = await judgeWithEscalation({ send }, prompt);
-    expect(result.escalated).toBe(true);
+    const result = await judgeOnce({ send }, prompt);
     expect(result.model).toBe(ESCALATION_MODEL);
-    // Two exhausted attempts on the primary (requestVerdict's own retry), then one on the second model.
     expect(send).toHaveBeenCalledTimes(3);
+    expect(send.mock.calls[2][0].input.modelId).toBe(ESCALATION_MODEL);
+    expect(send.mock.calls[2][0].input.messages).toEqual(send.mock.calls[0][0].input.messages);
+  });
+});
+
+describe("settledOutcome", () => {
+  it("stands on a first pass", () => {
+    expect(settledOutcome(["pass"])).toBe("pass");
+  });
+
+  it("waits for a second judgement after a first fail", () => {
+    expect(settledOutcome(["fail"])).toBeNull();
+  });
+
+  it("fails on two failing judgements in a row", () => {
+    expect(settledOutcome(["fail", "fail"])).toBe("fail");
+  });
+
+  it("waits for a third judgement when the first two disagree, and takes it", () => {
+    expect(settledOutcome(["fail", "pass"])).toBeNull();
+    expect(settledOutcome(["fail", "pass", "pass"])).toBe("pass");
+    expect(settledOutcome(["fail", "pass", "fail"])).toBe("fail");
+  });
+
+  it("is never left unsettled after the most judgements it asks for", () => {
+    for (const second of ["pass", "fail"]) {
+      for (const third of ["pass", "fail"]) {
+        expect(settledOutcome(["fail", second, third].slice(0, MAX_JUDGEMENTS))).not.toBeNull();
+      }
+    }
+  });
+});
+
+describe("settleVerdict", () => {
+  const prompt = { system: "system", user: "user" };
+
+  it("asks once when the first judgement passes", async () => {
+    const send = vi.fn().mockResolvedValue(messageWith(PASSING));
+    const result = await settleVerdict({ send }, prompt);
+    expect(result.verdict.verdict).toBe("pass");
+    expect(result.model).toBe(DEFAULT_MODEL);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails when two judgements in a row fail, and records the fail's concerns", async () => {
+    const send = vi.fn().mockResolvedValue(messageWith(FAILING));
+    const result = await settleVerdict({ send }, prompt);
+    expect(result.verdict.verdict).toBe("fail");
+    expect(result.verdict.concerns[0].severity).toBe("blocking");
+    expect(result.judgements.map((judgement) => judgement.verdict.verdict)).toEqual(["fail", "fail"]);
+    expect(send).toHaveBeenCalledTimes(2);
+  });
+
+  it("lets a third judgement decide when a fail and a pass disagree", async () => {
+    const passes = vi
+      .fn()
+      .mockResolvedValueOnce(messageWith(FAILING))
+      .mockResolvedValueOnce(messageWith(PASSING))
+      .mockResolvedValueOnce(messageWith(PASSING));
+    expect((await settleVerdict({ send: passes }, prompt)).verdict.verdict).toBe("pass");
+    const fails = vi
+      .fn()
+      .mockResolvedValueOnce(messageWith(FAILING))
+      .mockResolvedValueOnce(messageWith(PASSING))
+      .mockResolvedValueOnce(messageWith(FAILING));
+    const result = await settleVerdict({ send: fails }, prompt);
+    expect(result.verdict.verdict).toBe("fail");
+    expect(result.verdict.summary).toBe(FAILING.summary);
+  });
+
+  it("does not let one escalated fail block a run the primary model passes", async () => {
+    const empty = (stopReason) => ({ output: { message: { content: [] } }, stopReason });
+    const send = vi
+      .fn()
+      .mockResolvedValueOnce(empty("malformed_tool_use"))
+      .mockResolvedValueOnce(empty("max_tokens"))
+      .mockResolvedValueOnce(messageWith(FAILING))
+      .mockResolvedValueOnce(messageWith(PASSING))
+      .mockResolvedValueOnce(messageWith(PASSING));
+    const result = await settleVerdict({ send }, prompt);
+    expect(result.verdict.verdict).toBe("pass");
+    expect(result.model).toBe(DEFAULT_MODEL);
+    expect(result.judgements.map((judgement) => [judgement.model, judgement.verdict.verdict])).toEqual([
+      [ESCALATION_MODEL, "fail"],
+      [DEFAULT_MODEL, "pass"],
+      [DEFAULT_MODEL, "pass"],
+    ]);
+  });
+
+  it("throws when neither model can reach a verdict", async () => {
+    const send = vi.fn().mockRejectedValue(new Error("socket hang up"));
+    await expect(settleVerdict({ send }, prompt)).rejects.toThrow("socket hang up");
+  });
+});
+
+// A judge that reads the digest as the rubric says: a run the headline calls unregistered for
+// VAT, whose quarters carry a non-zero box, is a blocking concern. It stands in for the model so
+// the test proves the corruption reaches the digest and the settling rule keeps the fail.
+function rubricJudge() {
+  return vi.fn(async (command) => {
+    const digest = command.input.messages[0].content[0].text;
+    const contradicted = digest
+      .split("<run ")
+      .some((run) => run.includes("Not registered for VAT") && /[1-4] of the four quarters carry a non-zero box/.test(run));
+    if (!contradicted) return messageWith(PASSING);
+    return messageWith({
+      concerns: [{ figure: "Box 1", where: "VAT indicator", why: "VAT on a trader not registered for VAT.", severity: "blocking" }],
+      verdict: "fail",
+      summary: "An unregistered trader's VAT return carries output VAT.",
+    });
+  });
+}
+
+describe("the judge on a corrupted Self Employed report", () => {
+  const nonVatReport = FIXTURES.seNonVat;
+  // Both rows that read the first quarter's box 1, so the corrupted report stays self-consistent.
+  const outputVatRows = /^(\| VAT Q1: box 1(?:\/3 output VAT)? \(G9\) = [^|]+\| )0 \| 0 \| 0 \| PASS \|$/gm;
+
+  function seReportsDir(content) {
+    return reportsDirWith({ [nonVatReport]: content });
+  }
+
+  it("passes the shipped non-VAT report", async () => {
+    const prompt = assemblePrompt("se", { reportsDir: seReportsDir(report("seNonVat")) });
+    expect(prompt.user).toContain("0 of the four quarters carry a non-zero box");
+    const send = rubricJudge();
+    const result = await settleVerdict({ send }, prompt);
+    expect(result.verdict.verdict).toBe("pass");
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails the same report once a non-VAT trader's box 1 carries output VAT", async () => {
+    const shipped = report("seNonVat");
+    expect(shipped.match(outputVatRows)).toHaveLength(2);
+    const corrupted = shipped.replace(outputVatRows, (row, label) => `${label}2600 | 2600 | 0 | PASS |`);
+    const prompt = assemblePrompt("se", { reportsDir: seReportsDir(corrupted) });
+    expect(prompt.user).toContain("Box 1 output VAT by quarter 2,600.00 / 0.00 / 0.00 / 0.00;");
+    expect(prompt.user).toContain("1 of the four quarters carry a non-zero box");
+    const send = rubricJudge();
+    const result = await settleVerdict({ send }, prompt);
+    expect(result.verdict.verdict).toBe("fail");
+    expect(result.judgements).toHaveLength(2);
+    expect(send.mock.calls.every(([command]) => command.input.inferenceConfig.temperature === 0)).toBe(true);
   });
 });
 
@@ -998,16 +1138,16 @@ describe("judgeAndRecord", () => {
     expect(written.verdict).toBe("pass");
   });
 
-  it("records the escalation model's hash when the primary failed and the second model confirmed", async () => {
-    const failing = {
-      verdict: "fail",
-      summary: "Something is off.",
-      concerns: [{ figure: "x", where: "y", why: "z", severity: "blocking" }],
-    };
-    const send = vi.fn().mockResolvedValueOnce(messageWith(failing)).mockResolvedValueOnce(messageWith(PASSING));
+  it("records the escalation model's hash when the escalation model gave the deciding judgement", async () => {
+    const send = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockResolvedValueOnce(messageWith(PASSING));
     const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => null, client: { send } });
     expect(result.verdict.model).toBe(ESCALATION_MODEL);
     expect(result.verdict.digestHash).toBe(computeDigestHash(prompt, ESCALATION_MODEL));
+    expect(result.verdict.judgements).toEqual([{ model: ESCALATION_MODEL, verdict: "pass" }]);
   });
 });
 

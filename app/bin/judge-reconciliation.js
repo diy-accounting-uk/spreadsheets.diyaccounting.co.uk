@@ -23,12 +23,13 @@
 //         already-committed reports/judge-verdict-<product>.json (to skip an unchanged digest).
 // Writes: reports/judge-verdict-<product>.json
 //
-// Exit codes: 0 for a pass verdict, 1 for a fail verdict and 1 when the model cannot be
-// reached or its answer cannot be parsed after one retry.
+// Exit codes: 0 for a pass verdict, 1 for a fail verdict and 1 when no model can give a
+// parseable answer.
 //
-// Nova 2 Lite judges every digest by default; a fail or an unparseable answer escalates the
-// same digest to Nova Pro for confirmation before anything blocks. A digest, rubric and model
-// whose hash matches an already-committed verdict skips the Bedrock call entirely.
+// Nova 2 Lite judges every digest by default, and Nova Pro answers a judgement Nova 2 Lite
+// cannot. A first pass stands. A fail stands only when the next judgement fails too; when the
+// two disagree, a third decides (see settleVerdict). A digest, rubric and model whose hash
+// matches an already-committed verdict skips the Bedrock call entirely.
 //
 // What this needs in AWS:
 //   1. The workflow role (SPREADSHEETS_ACTIONS_ROLE_ARN, assumed by OIDC) allows
@@ -56,26 +57,37 @@ const FIXTURES_DIR = resolve(ROOT, "app", "test", "fixtures");
 const RUBRIC_PATH = resolve(ROOT, "app", "data", "judge-rubric.md");
 
 // Both models are served through their us. cross-region inference profiles; the region comes
-// from the workflow. Nova 2 Lite judges every run by default; a fail or an unparseable answer
-// escalates the same digest to Nova Pro for confirmation before anything blocks (see
-// judgeWithEscalation). Nova Premier is retired on Bedrock, so Pro is the second reader.
+// from the workflow. Nova 2 Lite judges every run by default; Nova Pro answers only a
+// judgement Nova 2 Lite could not give (see judgeOnce). Nova Premier is retired on Bedrock.
 export const DEFAULT_MODEL = "us.amazon.nova-2-lite-v1:0";
 export const ESCALATION_MODEL = "us.amazon.nova-pro-v1:0";
 export const DEFAULT_REGION = "us-east-1";
 
-// No sampling parameters are sent; the models take their own defaults. Nova 2 Lite reasons
-// before it answers, and the effort is capped at medium because high forbids an output cap
-// and takes ten times as long on a digest this size. Nova Pro takes no reasoning field.
+// Nova 2 Lite reasons before it answers, and the effort is capped at medium because high
+// forbids an output cap and a temperature, and takes ten times as long on a digest this size.
+// Nova Pro takes no reasoning field.
 export const REASONING_EFFORT = "medium";
 const MODEL_REQUEST_FIELDS = {
   [DEFAULT_MODEL]: { reasoningConfig: { type: "enabled", maxReasoningEffort: REASONING_EFFORT } },
 };
-// Concerns and a summary, not a second report: the digest already carries the figures, so the
-// model's own output only needs to name what does not fit. Output tokens price at several times
-// the input rate, and a terse answer parses just as reliably as a long one. The cap covers the
-// reasoning too, which is why it sits well above what the verdict itself needs: a cap the
-// reasoning exhausts leaves no tool call behind.
+// Greedy decoding, so unchanged reports get the same reading. At the models' default of 0.7
+// the same digest drew a pass on one call and a malformed tool call on the next, and Amazon's
+// Nova guide names temperature 0 as the setting for reliable tool calls.
+export const TEMPERATURE = 0;
+// The output cap of a model that reasons covers the reasoning as well as the verdict, and a cap
+// the reasoning exhausts leaves no tool call behind. 6,000 tokens ran out on Nova 2 Lite twice
+// in one deploy (stop reason max_tokens). 30,000 is the figure Amazon's Nova guide gives for
+// medium effort. A model that does not reason writes only the concerns and the summary.
+export const REASONING_MAX_TOKENS = 30000;
 export const MAX_TOKENS = 6000;
+
+export function maxTokensFor(model) {
+  return MODEL_REQUEST_FIELDS[model]?.reasoningConfig ? REASONING_MAX_TOKENS : MAX_TOKENS;
+}
+
+// A fail needs a second failing judgement before it blocks a deploy; a disagreement takes a
+// third. Three judgements always settle it.
+export const MAX_JUDGEMENTS = 3;
 
 // More runs than this in one directory means a local tree with years of history in it.
 const MAX_RUNS = 6;
@@ -464,7 +476,7 @@ export function verdictRequest(prompt, model) {
     // that prefix instead of the full input rate.
     system: [{ text: prompt.system }, { cachePoint: { type: "default" } }],
     messages: [{ role: "user", content: [{ text: prompt.user }] }],
-    inferenceConfig: { maxTokens: MAX_TOKENS },
+    inferenceConfig: { maxTokens: maxTokensFor(model), temperature: TEMPERATURE },
     toolConfig: {
       tools: [
         {
@@ -482,10 +494,9 @@ export function verdictRequest(prompt, model) {
   return request;
 }
 
-// One retry covers a dropped connection or a mangled response: Nova 2 Lite now and then ends
-// a turn with stop reason malformed_tool_use and no verdict call, about one attempt in four
-// on a digest this size, and the retry (then the escalation) absorbs it. A second failure is
-// real.
+// One retry covers a dropped connection or a mangled response, such as a turn that ends with
+// stop reason malformed_tool_use and no verdict call. A second failure on the same model is
+// real, and judgeOnce takes the judgement to the escalation model.
 export async function requestVerdict(client, prompt, options = {}) {
   const model = options.model ?? DEFAULT_MODEL;
   const attempts = options.attempts ?? 2;
@@ -493,6 +504,8 @@ export async function requestVerdict(client, prompt, options = {}) {
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       const response = await client.send(new ConverseCommand(verdictRequest(prompt, model)));
+      const outputTokens = response?.usage?.outputTokens ?? "unknown";
+      console.log(`Judge (${model}) attempt ${attempt}: stop reason ${response?.stopReason ?? "unknown"}, ${outputTokens} output tokens.`);
       return parseVerdict(response);
     } catch (error) {
       lastError = error;
@@ -552,12 +565,13 @@ export function loadExistingVerdict(outPath, readFile = readFileSync) {
   }
 }
 
-export function verdictRecord(args, prompt, verdict, digestHash) {
+export function verdictRecord(args, prompt, verdict, digestHash, judgements = []) {
   return {
     product: args.product,
     verdict: verdict.verdict,
     summary: verdict.summary,
     concerns: verdict.concerns,
+    judgements: judgements.map((judgement) => ({ model: judgement.model, verdict: judgement.verdict.verdict })),
     model: args.model,
     region: args.region,
     digestHash,
@@ -566,33 +580,54 @@ export function verdictRecord(args, prompt, verdict, digestHash) {
   };
 }
 
-// The judge stands on Nova 2 Lite's verdict when it passes; a fail or an unparseable answer (both
-// exhausted requestVerdict's own retry) escalates the same digest to Nova Pro for confirmation
-// before anything blocks a deploy. The rubric applied is identical either way -- escalation
-// buys a second read, never a softer one.
-export async function judgeWithEscalation(client, prompt, options = {}) {
+// One judgement: the primary model's verdict, or the escalation model's when the primary
+// cannot give one after its own retry. The escalation model answers only then: a lone fail
+// from it has quoted 0.00 as a non-zero VAT box and set a profit against the tax charged on it.
+export async function judgeOnce(client, prompt, options = {}) {
   const primaryModel = options.model ?? DEFAULT_MODEL;
   const escalationModel = options.escalationModel ?? ESCALATION_MODEL;
   const requestVerdictFn = options.requestVerdict ?? requestVerdict;
-
-  let primaryFailure = null;
   try {
-    const verdict = await requestVerdictFn(client, prompt, { ...options, model: primaryModel });
-    if (verdict.verdict === "pass") return { verdict, model: primaryModel, escalated: false };
-    primaryFailure = verdict;
+    return { verdict: await requestVerdictFn(client, prompt, { ...options, model: primaryModel }), model: primaryModel };
   } catch (error) {
     console.warn(`Judge (${primaryModel}) could not reach a verdict, escalating to ${escalationModel}: ${error.message}`);
   }
+  return { verdict: await requestVerdictFn(client, prompt, { ...options, model: escalationModel }), model: escalationModel };
+}
 
-  const escalated = await requestVerdictFn(client, prompt, { ...options, model: escalationModel });
-  if (primaryFailure && escalated.verdict === "pass") {
-    console.warn(`Judge (${primaryModel}) failed this run; ${escalationModel} confirmed a pass on the same digest.`);
+// The outcome of the judgements so far, or null when another judgement is needed. A first pass
+// stands. A fail stands on a second fail in a row. A pass after a fail is a disagreement, and
+// the third judgement decides it.
+export function settledOutcome(verdicts) {
+  if (verdicts.length === 0) return null;
+  if (verdicts[0] === "pass") return "pass";
+  if (verdicts.length === 1) return null;
+  if (verdicts[1] === "fail") return "fail";
+  if (verdicts.length === 2) return null;
+  return verdicts[2];
+}
+
+// Judge until the judgements settle. The record carries the last judgement that agrees with
+// the outcome, so a fail names the concerns of a fail and a pass the notes of a pass. The
+// rubric is the same on every judgement; a second reading never softens it.
+export async function settleVerdict(client, prompt, options = {}) {
+  const judgeOnceFn = options.judgeOnce ?? judgeOnce;
+  const judgements = [];
+  for (let count = 1; count <= MAX_JUDGEMENTS; count++) {
+    const judgement = await judgeOnceFn(client, prompt, options);
+    judgements.push(judgement);
+    console.log(`Judgement ${count} (${judgement.model}): ${judgement.verdict.verdict}`);
+    const outcome = settledOutcome(judgements.map((entry) => entry.verdict.verdict));
+    if (outcome) {
+      const deciding = judgements.findLast((entry) => entry.verdict.verdict === outcome);
+      return { verdict: deciding.verdict, model: deciding.model, judgements };
+    }
   }
-  return { verdict: escalated, model: escalationModel, escalated: true };
+  throw new Error(`${MAX_JUDGEMENTS} judgements did not settle the verdict`);
 }
 
 // Orchestrates one product's judging: skip the Bedrock call entirely when a committed verdict
-// already carries this exact digest, rubric and model's hash; otherwise judge (with escalation)
+// already carries this exact digest, rubric and model's hash; otherwise judge until settled
 // and write the new verdict. Checked against both the primary and the escalation model's hash,
 // so a digest that previously needed escalation is recognised without re-running the primary first.
 export async function judgeAndRecord(args, prompt, options = {}) {
@@ -609,9 +644,9 @@ export async function judgeAndRecord(args, prompt, options = {}) {
   }
 
   const client = options.client ?? (await createClientFn(args.region));
-  const { verdict, model } = await judgeWithEscalation(client, prompt, { ...options, model: primaryModel, escalationModel });
+  const { verdict, model, judgements } = await settleVerdict(client, prompt, { ...options, model: primaryModel, escalationModel });
   const digestHash = computeDigestHash(prompt, model);
-  const record = verdictRecord({ ...args, model }, prompt, verdict, digestHash);
+  const record = verdictRecord({ ...args, model }, prompt, verdict, digestHash, judgements);
 
   mkdirSync(dirname(args.outPath), { recursive: true });
   writeFileSync(args.outPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
