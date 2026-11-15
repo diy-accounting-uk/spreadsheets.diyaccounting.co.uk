@@ -3,8 +3,8 @@
 name: generate-ltd
 run-name: "generate-ltd from ${{ github.ref_name }}"
 concurrency:
-  group: ltd-packages-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.event_name == 'push' && format('ltd-packages-push-{0}', github.ref) || format('ltd-packages-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 on:
   schedule:
@@ -15,21 +15,20 @@ on:
     # commits nothing. The DAILY schedule's mass commits of rewritten files
     # contributed to the 2026-05 flagging incident; this run adds none.
     - cron: '0 4 * * 1'
-  # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
-  # Excel files per run. Combined with the daily schedule, that produced a high
-  # volume of bot-authored mass-file-change commits — a pattern that contributes
-  # to GitHub's account-takeover/abuse heuristics. Run via workflow_dispatch or
-  # the schedule only until generated artefacts move out of git.
-  # push:
-  #   branches:
-  #     - '**'
-  #     - '!gh_pages'
-  #   paths:
-  #     - 'app/data/ltd-*'
-  #     - 'app/templates/ltd/**'
-  #     - 'app/templates/meta.toml'
-  #     - 'app/products/ltd.js'
-  #     - '.github/workflows/generate-ltd.yml'
+  # A change to what the packages are built from regenerates them on main, and the
+  # commit job stages every package file whose bytes changed. The bot commit touches
+  # packages/ alone and is pushed with GITHUB_TOKEN, so it starts no run of its own.
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/templates/**'
+      - 'app/data/**'
+      - 'app/products/**'
+      - 'app/lib/**'
+      - '!app/lib/provenance-data.js'
+      - 'app/bin/generate.js'
+      - '.github/workflows/generate-ltd.yml'
   workflow_call:
     inputs:
       skip-tests:
@@ -44,6 +43,9 @@ on:
       skip-commit:
         type: boolean
         default: false
+      commit-scope:
+        type: string
+        default: 'changed-packages'
       reconcile-all:
         type: boolean
         default: false
@@ -65,6 +67,13 @@ on:
         description: 'Skip commit'
         type: boolean
         default: false
+      commit-scope:
+        description: 'Commit every new or changed package file, or only the folders main does not hold'
+        type: choice
+        options:
+          - changed-packages
+          - new-folders
+        default: 'changed-packages'
       reconcile-all:
         description: 'Reconcile all packages (not just latest 24 months)'
         type: boolean
@@ -96,11 +105,16 @@ jobs:
         run: ":"
       - name: "inputs.skip-commit=[${{ inputs.skip-commit }}]"
         run: ":"
+      - name: "inputs.commit-scope=[${{ inputs.commit-scope }}]"
+        run: ":"
       - name: "inputs.reconcile-all=[${{ inputs.reconcile-all }}]"
         run: ":"
       - name: Normalise Params
         id: normalise
         shell: bash
+        env:
+          COMMIT_SCOPE_INPUT: ${{ inputs.commit-scope }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           SKIP_TESTS='${{ inputs.skip-tests }}'; [[ -z "$SKIP_TESTS" ]] && SKIP_TESTS="false"
           echo "skip-tests=${SKIP_TESTS}" | tee -a "$GITHUB_OUTPUT"
@@ -110,6 +124,16 @@ jobs:
           echo "skip-reconciliation=${SKIP_RECONCILIATION}" | tee -a "$GITHUB_OUTPUT"
           SKIP_COMMIT='${{ inputs.skip-commit }}'; [[ -z "$SKIP_COMMIT" ]] && SKIP_COMMIT="false"
           echo "skip-commit=${SKIP_COMMIT}" | tee -a "$GITHUB_OUTPUT"
+          # A schedule and a push carry no inputs. A called workflow sees its caller's event.
+          COMMIT_SCOPE="$COMMIT_SCOPE_INPUT"
+          if [[ -z "$COMMIT_SCOPE" ]]; then
+            if [[ "$EVENT_NAME" == "schedule" ]]; then COMMIT_SCOPE="new-folders"; else COMMIT_SCOPE="changed-packages"; fi
+          fi
+          case "$COMMIT_SCOPE" in
+            changed-packages | new-folders) ;;
+            *) echo "::error::Unknown commit-scope '${COMMIT_SCOPE}'"; exit 1 ;;
+          esac
+          echo "commit-scope=${COMMIT_SCOPE}" | tee -a "$GITHUB_OUTPUT"
           RECONCILE_ALL='${{ inputs.reconcile-all }}'; [[ -z "$RECONCILE_ALL" ]] && RECONCILE_ALL="false"
           echo "reconcile-all=${RECONCILE_ALL}" | tee -a "$GITHUB_OUTPUT"
     outputs:
@@ -117,6 +141,7 @@ jobs:
       skip-generation: ${{ steps.normalise.outputs.skip-generation }}
       skip-reconciliation: ${{ steps.normalise.outputs.skip-reconciliation }}
       skip-commit: ${{ steps.normalise.outputs.skip-commit }}
+      commit-scope: ${{ steps.normalise.outputs.commit-scope }}
       reconcile-all: ${{ steps.normalise.outputs.reconcile-all }}
 
   generate:
@@ -409,16 +434,24 @@ jobs:
       - name: Commit and push
         id: push
         continue-on-error: true
+        env:
+          COMMIT_SCOPE: ${{ needs.params.outputs.commit-scope }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Every run commits only the package folders that main does not hold yet.
           git reset -q
-          for dir in packages/*/; do
-            if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
-              git add -- "$dir"
-            fi
-          done
+          if [[ "$COMMIT_SCOPE" == "new-folders" ]]; then
+            # Only the package folders that main does not hold yet.
+            for dir in packages/*/; do
+              if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
+                git add -- "$dir"
+              fi
+            done
+          else
+            # Every new or changed package file. --ignore-removal stages no deletion, so a
+            # committed folder outside this run's year-end window stays on main.
+            git add --ignore-removal -- packages/
+          fi
           git restore --worktree -- .
           if git diff --staged --quiet; then
             echo "No changes to commit"
