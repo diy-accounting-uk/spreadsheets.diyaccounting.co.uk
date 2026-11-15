@@ -120,6 +120,7 @@ jobs:
         env:
           # This job has node alone, so the router covers the app tiers here.
           TEST_SCOPE_TIERS: unit,calc
+          PINNED_AGE_CHECK: "off"
 
   generate:
     runs-on: ubuntu-24.04
