@@ -12,6 +12,7 @@
 //   node app/bin/generate.js --years se-2024-2025 se-2025-2026        # specific years
 //   node app/bin/generate.js --skip-guide                             # spreadsheets only, no PDF
 //   node app/bin/generate.js --source-date-epoch 1711670400           # override PDF timestamp
+//   node app/bin/generate.js --package se --list                      # print the folder names a run writes, write nothing
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
@@ -53,27 +54,99 @@ export function yearEndCutoff(runDate) {
   return new Date(Date.UTC(runDate.getUTCFullYear(), runDate.getUTCMonth() + monthsAhead, 0));
 }
 
+// The year end a tax data file describes, the folder it is written to, and
+// whether a run on runDate builds it (see yearEndCutoff). A run and --list both
+// decide through this.
+function packageInWindow(productMeta, sharedMeta, taxData, runDate) {
+  const ty = taxData.tax_year || taxData.financial_year;
+  const endDate = new Date(ty.end);
+  const cutoff = yearEndCutoff(runDate);
+  const { dirName, xlsxFilename } = packageNaming(productMeta, sharedMeta, endDate);
+  return { ty, endDate, cutoff, dirName, xlsxFilename, inWindow: endDate <= cutoff };
+}
+
+// Every generateProduct call a run of one product makes, in order: the tax
+// data file, plus an override and year-end month for each month-end of an Ltd
+// financial year. Reads tax data files but writes nothing.
+function* plannedProductRuns(productDir, productMeta, tomlFiles, yearEndFilter) {
+  for (const tomlFile of tomlFiles) {
+    const tomlName = tomlFile.split("/").pop();
+    if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
+
+    if (productMeta.product.tax_regime === "ltd") {
+      const taxData = parseTOML(readFileSync(tomlFile, "utf8"));
+      const fyStart = new Date(taxData.financial_year.start);
+      const fyEnd = new Date(taxData.financial_year.end);
+
+      for (let m = 0; m < 12; m++) {
+        const meYear = fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12);
+        const meMonth = (fyStart.getUTCMonth() + m) % 12;
+        const yearEndDate = monthEnd(meYear, meMonth + 1);
+
+        if (yearEndDate > fyEnd) break;
+
+        const yeStr = yearEndDate.toISOString().slice(0, 10);
+        if (yearEndFilter && !yearEndFilter.includes(yeStr)) continue;
+
+        const overrideTaxData = JSON.parse(JSON.stringify(taxData));
+        overrideTaxData.financial_year.end = yearEndDate.toISOString().slice(0, 10);
+
+        yield { tomlFile, opts: { overrideTaxData, yearEndMonth: yearEndDate.getUTCMonth() + 1 } };
+      }
+    } else {
+      if (yearEndFilter) {
+        const td = parseTOML(readFileSync(tomlFile, "utf8"));
+        const tyEnd = (td.tax_year || td.financial_year).end;
+        const tyEndStr = typeof tyEnd === "string" ? tyEnd : new Date(tyEnd).toISOString().slice(0, 10);
+        if (!yearEndFilter.includes(tyEndStr)) continue;
+      }
+      yield { tomlFile, opts: {} };
+    }
+  }
+}
+
+// The Self Employed package folder name carries the Payslip 05 folder name too:
+// generate-se.yml copies each Self Employed folder's payslip files into it.
+export function payslipFolderName(selfEmployedDirName) {
+  return selfEmployedDirName.replace("Self Employed", "Payslip 05");
+}
+
+// The package folder names a run of these products writes for runDate, with no
+// file written.
+export function listPackageFolders(productKeys, tomlFiles, yearEndFilter, runDate) {
+  const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
+  const names = [];
+  for (const key of productKeys) {
+    const productDir = resolve(APP_DIR, "templates", PRODUCTS[key].dir);
+    const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
+    for (const { tomlFile, opts } of plannedProductRuns(productDir, productMeta, tomlFiles, yearEndFilter)) {
+      const taxData = opts.overrideTaxData || parseTOML(readFileSync(tomlFile, "utf8"));
+      const window = packageInWindow(productMeta, sharedMeta, taxData, runDate);
+      if (!window.inWindow) continue;
+      names.push(window.dirName);
+      if (key === "se") names.push(payslipFolderName(window.dirName));
+    }
+  }
+  return [...new Set(names)];
+}
+
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide, outputDir, opts = {}) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
   const taxData = opts.overrideTaxData || parseTOML(readFileSync(tomlPath, "utf8"));
-  const ty = taxData.tax_year || taxData.financial_year;
   const yearEndMonth = opts.yearEndMonth || 0;
-  const endDate = new Date(ty.end);
+  const window = packageInWindow(productMeta, sharedMeta, taxData, new Date());
+  const { ty, endDate, dirName, xlsxFilename } = window;
 
-  // Skip packages whose year-end is beyond the year-end window (see yearEndCutoff).
-  const cutoff = yearEndCutoff(new Date());
-  if (endDate > cutoff) {
+  if (!window.inWindow) {
     console.log(
-      `\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`,
+      `\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${window.cutoff.toISOString().slice(0, 10)})`,
     );
     return null;
   }
 
   console.log(`\nGenerating ${productMeta.product.name} for ${ty.label}...`);
-
-  const { dirName, xlsxFilename } = packageNaming(productMeta, sharedMeta, endDate);
 
   const outDir = resolve(outputDir, dirName);
   mkdirSync(outDir, { recursive: true });
@@ -164,6 +237,7 @@ function parseArgs(argv) {
   }
 
   const skipGuide = args.includes("--skip-guide");
+  const list = args.includes("--list");
 
   let yearEndFilter = null;
   const yeIdx = args.indexOf("--year-end");
@@ -197,12 +271,10 @@ function parseArgs(argv) {
     offset = args[offIdx + 1];
   }
 
-  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir, offset };
+  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir, offset, list };
 }
 
 export async function main() {
-  console.log("=== generate.js ===");
-
   const {
     packageFilter,
     tomlFiles,
@@ -212,6 +284,7 @@ export async function main() {
     dataDir,
     outputDir: outputDirOverride,
     offset,
+    list,
   } = parseArgs(process.argv);
 
   // Determine which products to generate
@@ -223,6 +296,20 @@ export async function main() {
       process.exit(1);
     }
   }
+
+  if (list) {
+    for (const name of listPackageFolders(
+      productsToGenerate.map(([key]) => key),
+      tomlFiles,
+      yearEndFilter,
+      new Date(),
+    )) {
+      console.log(name);
+    }
+    return;
+  }
+
+  console.log("=== generate.js ===");
 
   const outputDir = outputDirOverride ? resolve(outputDirOverride) : OUTPUT_DIR;
 
@@ -240,45 +327,9 @@ export async function main() {
     const productDir = resolve(APP_DIR, "templates", product.dir);
     const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
 
-    for (const tomlFile of tomlFiles) {
-      const tomlName = tomlFile.split("/").pop();
-      if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
-
-      if (productMeta.product.tax_regime === "ltd") {
-        const taxData = parseTOML(readFileSync(tomlFile, "utf8"));
-        const fyStart = new Date(taxData.financial_year.start);
-        const fyEnd = new Date(taxData.financial_year.end);
-
-        for (let m = 0; m < 12; m++) {
-          const meYear = fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12);
-          const meMonth = (fyStart.getUTCMonth() + m) % 12;
-          const yearEndDate = monthEnd(meYear, meMonth + 1);
-
-          if (yearEndDate > fyEnd) break;
-
-          const yeStr = yearEndDate.toISOString().slice(0, 10);
-          if (yearEndFilter && !yearEndFilter.includes(yeStr)) continue;
-
-          const overrideTaxData = JSON.parse(JSON.stringify(taxData));
-          overrideTaxData.financial_year.end = yearEndDate.toISOString().slice(0, 10);
-
-          const yearEndMonth = yearEndDate.getUTCMonth() + 1;
-          const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, outputDir, {
-            overrideTaxData,
-            yearEndMonth,
-          });
-          if (result) results.push(result);
-        }
-      } else {
-        if (yearEndFilter) {
-          const td = parseTOML(readFileSync(tomlFile, "utf8"));
-          const tyEnd = (td.tax_year || td.financial_year).end;
-          const tyEndStr = typeof tyEnd === "string" ? tyEnd : new Date(tyEnd).toISOString().slice(0, 10);
-          if (!yearEndFilter.includes(tyEndStr)) continue;
-        }
-        const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, outputDir);
-        if (result) results.push(result);
-      }
+    for (const { tomlFile, opts } of plannedProductRuns(productDir, productMeta, tomlFiles, yearEndFilter)) {
+      const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, outputDir, opts);
+      if (result) results.push(result);
     }
   }
 

@@ -9,7 +9,7 @@
 
 import { describe, it, expect, afterAll } from "vitest";
 import { execFileSync } from "child_process";
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "fs";
+import { chmodSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -61,6 +61,49 @@ function normalise(step, inputs, eventName) {
       .filter(Boolean)
       .map((l) => l.split("=")),
   );
+}
+
+// Runs the window-check step the way Actions would, with `node app/bin/generate.js --list`
+// and `git ls-tree` replaced by shims that print the given lines.
+function checkWindow(step, product, scope, skips, listed, held) {
+  const dir = scratch();
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  const shim = (name, body) => {
+    writeFileSync(join(bin, name), `#!/bin/bash\n${body}\n`);
+    chmodSync(join(bin, name), 0o755);
+  };
+  shim("node", `[[ "$*" == "app/bin/generate.js --package ${product} --list" ]] || exit 9\ncat <<'LIST'\n${listed.join("\n")}\nLIST`);
+  shim(
+    "git",
+    `[[ "$*" == "ls-tree --name-only HEAD packages/" ]] || exit 9\ncat <<'HELD'\n${held.map((n) => `packages/${n}`).join("\n")}\nHELD`,
+  );
+  const output = join(dir, "output");
+  const summary = join(dir, "summary");
+  writeFileSync(output, "");
+  writeFileSync(summary, "");
+  execFileSync("bash", ["-e", "-o", "pipefail", "-c", step.run], {
+    env: {
+      PATH: `${bin}:${process.env.PATH}`,
+      GITHUB_OUTPUT: output,
+      GITHUB_STEP_SUMMARY: summary,
+      COMMIT_SCOPE: scope,
+      SKIP_TESTS: skips.tests ?? "false",
+      SKIP_GENERATION: skips.generation ?? "false",
+      SKIP_RECONCILIATION: skips.reconciliation ?? "false",
+      SKIP_COMMIT: skips.commit ?? "false",
+    },
+    stdio: "pipe",
+  });
+  return {
+    outputs: Object.fromEntries(
+      readFileSync(output, "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((l) => l.split("=")),
+    ),
+    summary: readFileSync(summary, "utf8"),
+  };
 }
 
 function git(cwd, ...args) {
@@ -226,5 +269,70 @@ describe.each(PRODUCTS)("generate-%s.yml", (product) => {
     expect(commitStep.run).toMatch(
       /for dir in packages\/\*\/; do\n\s+if \[\[ -z "\$\(git ls-files -- "\$dir" \| head -1\)" \]\]; then\n\s+git add -- "\$dir"/,
     );
+  });
+
+  describe("the new-folders window check in the params job", () => {
+    const windowStep = params.steps.find((s) => s.id === "window");
+    const SKIPS = ["tests", "generation", "reconciliation", "commit"];
+    const listed = ["GB Accounts A 2025-03-31", "GB Accounts A 2026-03-31"];
+
+    it("reads the repository with contents: read and no other permission", () => {
+      expect(params.permissions).toEqual({ contents: "read" });
+    });
+
+    it("checks out, sets up node and installs only when commit-scope is new-folders", () => {
+      const setup = params.steps.filter((s) => typeof s.uses === "string" || /npm ci/.test(s.run ?? ""));
+      expect(setup.map((s) => s.uses ?? "npm ci").map((u) => u.split("@")[0])).toEqual([
+        "actions/checkout",
+        "actions/setup-node",
+        "npm ci",
+      ]);
+      for (const step of setup) {
+        expect(step.if).toBe("${{ steps.normalise.outputs.commit-scope == 'new-folders' }}");
+      }
+    });
+
+    it("lists the window for this product and compares it with the tree of HEAD", () => {
+      expect(windowStep.run).toContain(`node app/bin/generate.js --package ${product} --list`);
+      expect(windowStep.run).toContain("git ls-tree --name-only HEAD packages/");
+    });
+
+    it("outputs the four skips from the window step", () => {
+      for (const name of SKIPS) {
+        expect(params.outputs[`skip-${name}`]).toBe(`\${{ steps.window.outputs.skip-${name} }}`);
+      }
+    });
+
+    it("keeps every later job's condition on its skip output", () => {
+      const conditions = Object.entries(workflow.jobs)
+        .filter(([name]) => name !== "params")
+        .map(([, job]) => String(job.if ?? ""))
+        .join("\n");
+      for (const name of ["skip-tests", "skip-generation", "skip-reconciliation", "skip-commit"]) {
+        expect(conditions).toContain(`needs.params.outputs.${name} != 'true'`);
+      }
+    });
+
+    it("sets all four skips to true when new-folders finds nothing missing", () => {
+      const { outputs, summary } = checkWindow(windowStep, product, "new-folders", {}, listed, [...listed, "GB Accounts Old 2020-03-31"]);
+      for (const name of SKIPS) expect(outputs[`skip-${name}`], name).toBe("true");
+      expect(summary).toMatch(/holds no package folder that main lacks/);
+    });
+
+    it("leaves the skips false when new-folders finds a folder main lacks", () => {
+      const { outputs, summary } = checkWindow(windowStep, product, "new-folders", {}, listed, [listed[0]]);
+      for (const name of SKIPS) expect(outputs[`skip-${name}`], name).toBe("false");
+      expect(summary).toBe("");
+    });
+
+    it("keeps a skip that the input already set to true", () => {
+      const { outputs } = checkWindow(windowStep, product, "new-folders", { tests: "true" }, listed, [listed[0]]);
+      expect(outputs).toMatchObject({ "skip-tests": "true", "skip-generation": "false" });
+    });
+
+    it("never stops a changed-packages run early, and never lists the window", () => {
+      const { outputs } = checkWindow(windowStep, "never-listed", "changed-packages", {}, [], listed);
+      for (const name of SKIPS) expect(outputs[`skip-${name}`], name).toBe("false");
+    });
   });
 });
