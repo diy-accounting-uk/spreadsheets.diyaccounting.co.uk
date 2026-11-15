@@ -34,21 +34,23 @@ import {
 } from "../bin/judge-reconciliation.js";
 import { buildIndicators, checkActual, checkCounts, parseReport, requireValue, toNumber, value } from "../lib/report-indicators.js";
 import { loadScenario } from "../lib/scenario-loader.js";
+import { pinnedReport } from "../lib/pinned.js";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "..", "..", "..");
 const REPORTS = resolve(ROOT, "reports");
 
-// The shipped reports, not a hand-written stand-in. An indicator that stops matching the
-// report generator's labels is the failure this suite exists to catch.
+// The shipped reports at each product's pinned year-end, not a hand-written stand-in. An
+// indicator that stops matching the report generator's labels is the failure this suite
+// exists to catch.
 const FIXTURES = {
-  ltdVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-vat.md",
-  ltdNonVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-nonvat.md",
-  seVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-vat.md",
-  seNonVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
-  seAdvanced: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
-  bst: "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
-  taxi: "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-basic.md",
-  taxiSpSixty: "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-sp-sixty.md",
+  ltdVat: pinnedReport("ltd", "ltd-brickwork-pro-vat"),
+  ltdNonVat: pinnedReport("ltd", "ltd-brickwork-pro-nonvat"),
+  seVat: pinnedReport("se", "se-brickwork-pro-vat"),
+  seNonVat: pinnedReport("se", "se-brickwork-pro-nonvat"),
+  seAdvanced: pinnedReport("se", "se-scenario-advanced"),
+  bst: pinnedReport("bst", "bst-scenario-basic"),
+  taxi: pinnedReport("taxi", "taxi-scenario-basic"),
+  taxiSpSixty: pinnedReport("taxi", "taxi-scenario-sp-sixty"),
 };
 
 function report(key) {

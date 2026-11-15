@@ -2,16 +2,57 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // pinned.js — the year-end and build date of each committed example package
-// in examples/<product>-latest. This is the only reader of examples/pinned.json.
+// in examples/<product>-latest. This is the only module that reads or writes
+// examples/pinned.json.
 
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { productModule } from "./products.js";
 
-const PINNED_PATH = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "examples", "pinned.json");
+export const PINNED_PATH = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "examples", "pinned.json");
 
-export function readPinned() {
-  return JSON.parse(readFileSync(PINNED_PATH, "utf8"));
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function readPinned(path = PINNED_PATH) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+// The pins with one product's entry set to a new year-end and build date.
+export function withPin(pinned, product, yearEnd, built) {
+  if (!(product in pinned)) throw new Error(`withPin: no pinned entry for product "${product}"`);
+  return { ...pinned, [product]: { yearEnd, built } };
+}
+
+// One line per product, in the layout prettier keeps for this file.
+export function formatPinned(pinned) {
+  const lines = Object.entries(pinned).map(
+    ([product, pin]) =>
+      `  ${JSON.stringify(product)}: { "yearEnd": ${JSON.stringify(pin.yearEnd)}, "built": ${JSON.stringify(pin.built)} }`,
+  );
+  return `{\n${lines.join(",\n")}\n}\n`;
+}
+
+export function writePinned(pinned, path = PINNED_PATH) {
+  writeFileSync(path, formatPinned(pinned));
+}
+
+// The packages/ folder name of a product's package for one year-end,
+// e.g. "GB Accounts Company 2027-10-31 (Oct27) Excel 2007".
+export function packageDirName(product, yearEnd) {
+  const [year, month] = yearEnd.split("-");
+  return `${productModule(product).PRODUCT.prefix} ${yearEnd} (${MONTHS[Number(month) - 1]}${year.slice(-2)}) Excel 2007`;
+}
+
+// The reports/ file name app/bin/reconcile.js writes for one scenario run
+// against that package.
+export function reportFileName(product, yearEnd, scenario) {
+  return `${packageDirName(product, yearEnd).replace(/[^a-zA-Z0-9]/g, "_")}_${scenario}.md`;
+}
+
+// The committed report of one scenario at the product's pinned year-end.
+export function pinnedReport(product, scenario) {
+  return reportFileName(product, readPinned()[product].yearEnd, scenario);
 }
 
 // The date six calendar months before today, as an ISO date string.

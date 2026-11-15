@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+name: refresh-pinned
+run-name: "refresh-pinned ${{ inputs.product }} from ${{ github.ref_name }}"
+concurrency:
+  group: refresh-pinned-${{ inputs.product }}
+  cancel-in-progress: false
+
+# Rebuilds one product's pinned example package (examples/<product>-latest) at the
+# newest year-end in packages/, with its reports, parity fixtures and pinned.json
+# entry, and opens a pull request for review. app/test/pinned-age.test.js names
+# this workflow when a pin is more than six months old.
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: 'The product whose pinned example package to refresh'
+        required: true
+        type: choice
+        options:
+          - ltd
+          - bst
+          - se
+          - taxi
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Install LibreOffice
+        timeout-minutes: 5
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc poppler-utils
+      - name: Refresh the pinned package
+        env:
+          PRODUCT: ${{ inputs.product }}
+        run: node scripts/refresh-pinned.mjs --product "$PRODUCT"
+      - name: Commit to a new branch and open a pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRODUCT: ${{ inputs.product }}
+          BASE: ${{ github.ref_name }}
+          BRANCH: refresh-pinned/${{ inputs.product }}-${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add -A -- "examples/${PRODUCT}-latest" "examples/parity/${PRODUCT}" examples/pinned.json reports
+          if git diff --staged --quiet; then
+            echo "::error::The refresh changed nothing for ${PRODUCT}"
+            exit 1
+          fi
+          git diff --staged --stat
+          YEAR_END=$(node -e "import('./app/lib/pinned.js').then((m) => console.log(m.readPinned()[process.argv[1]].yearEnd))" "$PRODUCT")
+          git commit -m "Refresh the pinned ${PRODUCT} example package at ${YEAR_END}
+
+          Triggered by: ${{ github.sha }} (run ${{ github.run_id }})"
+          # --no-verify: npm ci points core.hooksPath at .githooks, and the pre-push
+          # router would run the browser tier in a job that has no browsers.
+          git push --no-verify origin "$BRANCH"
+          gh pr create --base "$BASE" --head "$BRANCH" \
+            --title "Refresh the pinned ${PRODUCT} example package at ${YEAR_END}" \
+            --body "Rebuilt by refresh-pinned run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}: examples/${PRODUCT}-latest, examples/parity/${PRODUCT}, the ${PRODUCT} reports and the ${PRODUCT} entry in examples/pinned.json, at year-end ${YEAR_END}."
