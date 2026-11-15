@@ -363,33 +363,13 @@ jobs:
         with:
           name: se-packages
           path: packages/
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
-        timeout-minutes: 6
-        env:
-          NPM_CONFIG_FETCH_RETRIES: "3"
       - name: Commit and push
         id: push
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          # The extra scenarios reconcile only at the latest year-end, so a
-          # committed report at any older year-end can never refresh again and
-          # the deploy judge would read its frozen behaviour forever. Drop
-          # superseded ones; the latest year-end's are the only ones kept.
-          LATEST='${{ needs.generate.outputs.latest }}'
-          if [[ -n "$LATEST" ]]; then
-            find reports -name "*se-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
-          fi
-          # Every run commits only the package folders that main does not hold
-          # yet. generate.js rebuilds every package and the later steps rewrite
-          # the examples, the reports and the provenance data; none of that is
-          # committed, so the pinned examples and reports stay as main has them.
+          # Every run commits only the package folders that main does not hold yet.
           git reset -q
           for dir in packages/*/; do
             if [[ -z "$(git ls-files -- "$dir" | head -1)" ]]; then
@@ -405,9 +385,7 @@ jobs:
 
           Triggered by: ${{ github.sha }}"
             git pull --rebase
-            # --no-verify: npm ci's postinstall points core.hooksPath at .githooks, so
-            # otherwise this push runs the pre-push router -- the whole suite, LibreOffice
-            # tier included, in a job with no LibreOffice, over output this run has
+            # --no-verify: the pre-push router has nothing to add to output this run has
             # already generated, reconciled and tested.
             git push --no-verify
           fi
