@@ -656,7 +656,13 @@
         return rowHtml(helpers, resolved) + noteHtml(helpers, resolved.note);
       })
       .join("");
-    return helpers.form.render(heading, vat.microcopy, '<div class="form-period">' + dates + "</div>" + helpers.form.section("", rows));
+    var periodEnd = rawValue(snap, vatRef(vat, quarter, vat.period.endCell));
+    var fileAction = typeof periodEnd === "number" ? helpers.form.fileVatReturn(excelDate(periodEnd)) : "";
+    return helpers.form.render(
+      heading,
+      vat.microcopy,
+      '<div class="form-period">' + dates + "</div>" + helpers.form.section("", rows) + fileAction,
+    );
   }
 
   function renderVatReturns(snap, state, helpers) {

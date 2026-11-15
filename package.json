@@ -37,6 +37,7 @@
     "build:feed": "node app/bin/build-feed.js",
     "build:reconciliation-pages": "node app/bin/build-reconciliation-pages.js",
     "build:knowledge-base": "node app/bin/build-knowledge-base.js",
+    "build:article-steps": "node app/bin/build-article-steps.js",
     "build:references": "node app/bin/build-references.js",
     "build:redirects": "node scripts/build-spreadsheets-redirects.cjs --site spreadsheets && node scripts/build-spreadsheets-redirects.cjs --site diya-gl",
     "build:donate-page": "node scripts/build-donate-page.mjs",

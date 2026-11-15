@@ -85,6 +85,7 @@
   var els = {};
 
   document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("click", onFileVatReturnClick);
 
   // ============================== boot and mount ==============================
 
@@ -2625,6 +2626,25 @@
         "</div>"
       );
     },
+    // The "File this VAT return" action under a VAT quarter. Without a handoff it is a plain
+    // tagged link to Submit's VAT return page; the click handler in init opens the filing
+    // dialog with the quarter's period end when the book can file VAT.
+    fileVatReturn: function (periodEnd) {
+      var config = window.DIYA_GL_CLOUD_CONFIG || {};
+      var href = window.DiyaGlSubmitHandoff
+        ? window.DiyaGlSubmitHandoff.submitUrl(config.submitOrigin || "https://submit.diyaccounting.co.uk", "vat", "", {
+            medium: "book-vat",
+            campaign: active ? active.id : "book",
+          })
+        : "https://submit.diyaccounting.co.uk/hmrc/vat/submitVat.html";
+      return (
+        '<p class="form-file-action"><a class="btn btn-primary" href="' +
+        esc(href) +
+        '" data-submit-vat-period-end="' +
+        esc(periodEnd) +
+        '" target="_blank" rel="noopener">File this VAT return</a></p>'
+      );
+    },
     section: function (heading, rowsHtml) {
       return '<div class="form-section"><h3>' + esc(heading) + "</h3>" + rowsHtml + "</div>";
     },
@@ -3210,7 +3230,8 @@
   // "File with DIY Accounting Submit": asks which filing and which period, derives the figures
   // from the live book here in the browser, and opens Submit's filing page with them in the URL
   // fragment. The book itself is never sent.
-  function openSubmitDialog(current) {
+  // preset { kind, periodEnd } opens the dialog already pointed at one filing and period.
+  function openSubmitDialog(current, preset) {
     var handoff = window.DiyaGlSubmitHandoff;
     var kinds = handoff.activitiesFor(active, current.book);
     var config = window.DIYA_GL_CLOUD_CONFIG || {};
@@ -3345,7 +3366,10 @@
               loaded.resources,
             )
             .then(function (built) {
-              var url = handoff.submitUrl(config.submitOrigin, kind, handoff.encodeFragment(built));
+              var url = handoff.submitUrl(config.submitOrigin, kind, handoff.encodeFragment(built), {
+                medium: preset ? "book-vat" : "book-save-menu",
+                campaign: active.id,
+              });
               window.open(url, "_blank", "noopener");
               close();
             });
@@ -3359,7 +3383,24 @@
     document.addEventListener("keydown", onKey);
     document.body.appendChild(overlay);
     refreshPeriod();
+    if (preset && kinds.indexOf(preset.kind) !== -1) {
+      kindSelect.value = preset.kind;
+      refreshPeriod();
+      if (preset.kind === "vat") periodDate.value = preset.periodEnd;
+    }
     kindSelect.focus();
+  }
+
+  // A "File this VAT return" link in a VAT view: a book that can file VAT opens the filing
+  // dialog with that quarter's period end; any other book follows the link to Submit.
+  function onFileVatReturnClick(event) {
+    var link = event.target.closest ? event.target.closest("[data-submit-vat-period-end]") : null;
+    if (!link) return;
+    var current = currentBookAndLines();
+    if (!current || !window.DiyaGlSubmitHandoff || window.DiyaGlSubmitHandoff.activitiesFor(active, current.book).indexOf("vat") === -1)
+      return;
+    event.preventDefault();
+    openSubmitDialog(current, { kind: "vat", periodEnd: link.getAttribute("data-submit-vat-period-end") });
   }
 
   function onOutsideSaveMenuClick(event) {
