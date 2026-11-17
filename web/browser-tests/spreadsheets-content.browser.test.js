@@ -208,6 +208,8 @@ test.describe("Books pages have a footer", () => {
 });
 
 test.describe("DIYA-GL pages link back to Submit and Spreadsheets", () => {
+  const SUBMIT_FOOTER_HREF = "https://submit.diyaccounting.co.uk/?utm_source=diya-gl&utm_medium=footer";
+  const SUBMIT_NAV_HREF = "https://submit.diyaccounting.co.uk/?utm_source=diya-gl&utm_medium=nav";
   const productFiles = ["index.html", "bst.html", "se.html", "ltd.html", "taxi.html"];
 
   for (const file of productFiles) {
@@ -215,7 +217,7 @@ test.describe("DIYA-GL pages link back to Submit and Spreadsheets", () => {
       await page.setContent(readBooksHtml(file), { waitUntil: "domcontentloaded" });
 
       const footer = page.locator("footer");
-      await expect(footer.locator('a[href="https://submit.diyaccounting.co.uk/"]')).toBeVisible();
+      await expect(footer.locator(`a[href="${SUBMIT_FOOTER_HREF}"]`)).toBeVisible();
       await expect(footer.locator('a[href="https://spreadsheets.diyaccounting.co.uk/"]')).toBeVisible();
     });
   }
@@ -224,7 +226,7 @@ test.describe("DIYA-GL pages link back to Submit and Spreadsheets", () => {
     await page.setContent(readBooksHtml("index.html"), { waitUntil: "domcontentloaded" });
 
     const homeStrip = page.locator(".home-strip");
-    await expect(homeStrip.locator('a[href="https://submit.diyaccounting.co.uk/"]')).toBeVisible();
+    await expect(homeStrip.locator(`a[href="${SUBMIT_NAV_HREF}"]`)).toBeVisible();
     await expect(homeStrip.locator('a[href="https://spreadsheets.diyaccounting.co.uk/"]')).toBeVisible();
   });
 });
