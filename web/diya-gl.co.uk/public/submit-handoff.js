@@ -135,12 +135,12 @@
   }
 
   // tags names the placement that sent the reader: { medium, campaign }. The link carries
-  // utm_source=spreadsheets, so Submit's analytics can count the visits each placement sends.
+  // utm_source=diya-gl, so Submit's analytics can count the visits each placement sends.
   function submitUrl(origin, kind, fragment, tags) {
     var activity = ACTIVITIES[kind];
     if (!activity) throw new Error("Unknown kind of filing " + kind);
     var query = tags
-      ? "?utm_source=spreadsheets&utm_medium=" + encodeURIComponent(tags.medium) + "&utm_campaign=" + encodeURIComponent(tags.campaign)
+      ? "?utm_source=diya-gl&utm_medium=" + encodeURIComponent(tags.medium) + "&utm_campaign=" + encodeURIComponent(tags.campaign)
       : "";
     return origin.replace(/\/$/, "") + activity.path + query + fragment;
   }

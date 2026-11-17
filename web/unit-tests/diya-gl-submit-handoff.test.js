@@ -93,7 +93,7 @@ describe("submitUrl", () => {
 describe("submitUrl placement tags", () => {
   it("puts the tagged query between the page and the fragment", () => {
     expect(handoff.submitUrl("https://submit.diyaccounting.co.uk", "vat", "#books=abc", { medium: "book-vat", campaign: "ltd" })).toBe(
-      "https://submit.diyaccounting.co.uk/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd#books=abc",
+      "https://submit.diyaccounting.co.uk/hmrc/vat/submitVat.html?utm_source=diya-gl&utm_medium=book-vat&utm_campaign=ltd#books=abc",
     );
   });
 });
