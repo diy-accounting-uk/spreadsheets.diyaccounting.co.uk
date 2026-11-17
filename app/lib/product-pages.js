@@ -3,6 +3,8 @@
 //
 // product-pages.js — Pure functions that render one static page per spreadsheet product.
 
+import { submitPlacementHref } from "./submit-step.js";
+
 export const SITE = "https://spreadsheets.diyaccounting.co.uk";
 
 const SUBMIT_URL = "https://submit.diyaccounting.co.uk/";
@@ -228,7 +230,7 @@ export function buildProductPageHtml(product) {
       <a href="../download.html">Download</a>
       <a href="../knowledge-base.html">Knowledge Base</a>
       <a href="../community.html">Community</a>
-      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="${submitPlacementHref({ site: "spreadsheets", medium: "nav" })}">Submit VAT MTD</a>
       <a href="../donate.html">Donate</a>
     </nav>
     <header>
