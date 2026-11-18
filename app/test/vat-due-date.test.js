@@ -22,14 +22,17 @@ describe("VAT return due date", () => {
     expect(due(y, m, d)).toBe(expected);
   });
 
-  it.each(["app/templates/ltd/Vatreturns.xlsx", "app/templates/se/Vat.xlsx"])("%s dates every interface row EOMONTH(B,1)+7", async (file) => {
-    const zip = await JSZip.loadAsync(readFileSync(new URL(`../../${file}`, import.meta.url)));
-    const xml = await zip.file("xl/worksheets/sheet6.xml").async("string");
-    for (let r = 4; r <= 20; r++) {
-      const b = Number(xml.match(new RegExp(`<c r="B${r}"[^>]*><f>[^<]*</f><v>(\\d+)</v>`))[1]);
-      const c = xml.match(new RegExp(`<c r="C${r}"[^>]*><f>([^<]*)</f><v>(\\d+)</v>`));
-      expect(c[1]).toBe(`EOMONTH(B${r},1)+7`);
-      expect(Number(c[2])).toBe(vatDueDateSerial(b));
-    }
-  });
+  it.each(["app/templates/ltd/Vatreturns.xlsx", "app/templates/se/Vat.xlsx"])(
+    "%s dates every interface row EOMONTH(B,1)+7",
+    async (file) => {
+      const zip = await JSZip.loadAsync(readFileSync(new URL(`../../${file}`, import.meta.url)));
+      const xml = await zip.file("xl/worksheets/sheet6.xml").async("string");
+      for (let r = 4; r <= 20; r++) {
+        const b = Number(xml.match(new RegExp(`<c r="B${r}"[^>]*><f>[^<]*</f><v>(\\d+)</v>`))[1]);
+        const c = xml.match(new RegExp(`<c r="C${r}"[^>]*><f>([^<]*)</f><v>(\\d+)</v>`));
+        expect(c[1]).toBe(`EOMONTH(B${r},1)+7`);
+        expect(Number(c[2])).toBe(vatDueDateSerial(b));
+      }
+    },
+  );
 });
