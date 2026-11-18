@@ -8,14 +8,14 @@
 // twelve accounting months, each fed by its own Sales and Purchases month tab.
 // Rows 4 and 5 are the two periods before the accounting year and rows 18 to 20
 // the three after it, each fed by its own straddling entry sheet. Column B is
-// the period end, C the payment due date, D/F the period's sales net and output
+// the period end, C the payment due date (one calendar month and seven days later), D/F the period's sales net and output
 // VAT, H/J its purchases net and input VAT, and E/G/I/K the rolling
 // three-period sums the return boxes read.
 //
 // A return form names a period end in G5 and looks every box up against the
 // interface row carrying that date.
 
-import { VAT_RETURN_END_MONTHS } from "../generator.js";
+import { VAT_RETURN_END_MONTHS, vatDueDateSerial } from "../generator.js";
 import { SHEET_BLANK } from "../calculators/shared.js";
 
 export { VAT_RETURN_END_MONTHS };
@@ -106,12 +106,11 @@ export function buildVatinterface({
     };
   }
 
-  // The payment due date is the next period's end, and the last row takes the
-  // extra date the Admin sheet carries for it.
-  for (let row = VATINTERFACE_FIRST_ROW; row < VATINTERFACE_LAST_ROW; row++) {
-    rows[row].C = rows[row + 1].B;
+  // The payment due date is one calendar month and seven days after the
+  // period ends.
+  for (let row = VATINTERFACE_FIRST_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
+    rows[row].C = vatDueDateSerial(rows[row].B);
   }
-  rows[VATINTERFACE_LAST_ROW].C = adminDateSerials[25];
 
   // A quarter column sums its own period row and the two before it. The first
   // two rows close no quarter, so the sheet leaves their quarter columns empty.
