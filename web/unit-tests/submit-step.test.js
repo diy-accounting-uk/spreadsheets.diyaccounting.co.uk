@@ -14,6 +14,7 @@ import {
   SUBMIT_STEP_HEADING,
   SUBMIT_STEP_TEXT,
   submitStepUrl,
+  submitPlacementHref,
   articleStepHtml,
   withArticleStep,
   tagArticleSubmitLinks,
@@ -165,5 +166,41 @@ describe("book VAT action", () => {
     for (const file of ["ltd-forms.js", "se-forms.js"]) {
       expect(readFileSync(resolve(process.cwd(), "web/diya-gl.co.uk/public/products", file), "utf8")).toContain("fileVatReturn(");
     }
+  });
+});
+
+describe("Submit VAT MTD placement links", () => {
+  it("builds the navigation and footer addresses with the site and the placement", () => {
+    expect(submitPlacementHref({ site: "spreadsheets", medium: "nav" })).toBe(
+      "https://submit.diyaccounting.co.uk/?utm_source=spreadsheets&amp;utm_medium=nav",
+    );
+    expect(submitPlacementHref({ site: "diya-gl", medium: "footer", path: "x.html" })).toBe(
+      "https://submit.diyaccounting.co.uk/x.html?utm_source=diya-gl&amp;utm_medium=footer",
+    );
+  });
+
+  it("tags every Submit VAT MTD link on both sites with its site and placement", () => {
+    const webDir = resolve(process.cwd(), "web");
+    const pages = [];
+    const walk = (dir) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = resolve(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name.endsWith(".html")) pages.push(full);
+      }
+    };
+    walk(resolve(webDir, "spreadsheets.diyaccounting.co.uk"));
+    walk(resolve(webDir, "diya-gl.co.uk/public"));
+    let found = 0;
+    for (const page of pages) {
+      const site = page.includes("/diya-gl.co.uk/") ? "diya-gl" : "spreadsheets";
+      for (const match of readFileSync(page, "utf8").matchAll(/<a href="([^"]*)">Submit VAT MTD<\/a>/g)) {
+        found += 1;
+        expect(decodeEntities(match[1]), page).toMatch(
+          new RegExp(`^https://submit\\.diyaccounting\\.co\\.uk/?\\?utm_source=${site}&utm_medium=(nav|footer)$`),
+        );
+      }
+    }
+    expect(found).toBeGreaterThan(0);
   });
 });

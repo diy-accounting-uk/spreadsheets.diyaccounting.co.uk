@@ -69,7 +69,7 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     expect(opened).toHaveLength(1);
     expect(
       opened[0].startsWith(
-        `${SUBMIT_ORIGIN}/hmrc/itsa/selfEmploymentPeriod.html?utm_source=spreadsheets&utm_medium=book-save-menu&utm_campaign=se#books=`,
+        `${SUBMIT_ORIGIN}/hmrc/itsa/selfEmploymentPeriod.html?utm_source=diya-gl&utm_medium=book-save-menu&utm_campaign=se#books=`,
       ),
     ).toBe(true);
     const sent = decodeFragment(opened[0]);
@@ -91,9 +91,7 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     const opened = await page.evaluate(() => window.__opened);
     expect(opened).toHaveLength(1);
     expect(
-      opened[0].startsWith(
-        `${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-save-menu&utm_campaign=ltd#books=`,
-      ),
+      opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=diya-gl&utm_medium=book-save-menu&utm_campaign=ltd#books=`),
     ).toBe(true);
     const sent = decodeFragment(opened[0]);
     expect(sent.kind).toBe("vat");
@@ -108,7 +106,7 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     await expect(action).toBeVisible();
     await expect(action).toHaveAttribute(
       "href",
-      `${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd`,
+      `${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=diya-gl&utm_medium=book-vat&utm_campaign=ltd`,
     );
     const periodEnd = await action.getAttribute("data-submit-vat-period-end");
     expect(periodEnd).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -122,7 +120,7 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     const opened = await page.evaluate(() => window.__opened);
     expect(opened).toHaveLength(1);
     expect(
-      opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd#books=`),
+      opened[0].startsWith(`${SUBMIT_ORIGIN}/hmrc/vat/submitVat.html?utm_source=diya-gl&utm_medium=book-vat&utm_campaign=ltd#books=`),
     ).toBe(true);
     const sent = decodeFragment(opened[0]);
     expect(sent.period.periodEnd).toBe(periodEnd);
@@ -134,7 +132,7 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     await page.locator('.tab-btn[data-view="vat-returns"]').click();
     await expect(page.getByRole("link", { name: "File this VAT return" }).first()).toHaveAttribute(
       "href",
-      /\/hmrc\/vat\/submitVat\.html\?utm_source=spreadsheets&utm_medium=book-vat&utm_campaign=ltd$/,
+      /\/hmrc\/vat\/submitVat\.html\?utm_source=diya-gl&utm_medium=book-vat&utm_campaign=ltd$/,
     );
   });
 

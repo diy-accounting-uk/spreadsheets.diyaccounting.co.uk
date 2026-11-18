@@ -26,6 +26,7 @@ import { fileURLToPath } from "url";
 import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { runBookChecks } from "../lib/book-checks.js";
+import { submitPlacementHref } from "../lib/submit-step.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -675,7 +676,7 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       <a href="https://spreadsheets.diyaccounting.co.uk/download.html">Download</a>
       <a href="https://spreadsheets.diyaccounting.co.uk/knowledge-base.html">Knowledge Base</a>
       <a href="https://spreadsheets.diyaccounting.co.uk/community.html">Community</a>
-      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="${submitPlacementHref({ site: "diya-gl", medium: "nav" })}">Submit VAT MTD</a>
       <a href="https://spreadsheets.diyaccounting.co.uk/donate.html">Donate</a>
     </nav>
 

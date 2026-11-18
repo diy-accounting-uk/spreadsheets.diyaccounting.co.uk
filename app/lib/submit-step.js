@@ -43,6 +43,12 @@ function escapeAttribute(text) {
   return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
+// The "Submit VAT MTD" link of a site's navigation (medium "nav") or footer (medium "footer"),
+// as an attribute-safe address. The site is "spreadsheets" or "diya-gl".
+export function submitPlacementHref({ site, medium, path = "" }) {
+  return escapeAttribute(`${SUBMIT_ORIGIN}${path}?utm_source=${encodeURIComponent(site)}&utm_medium=${encodeURIComponent(medium)}`);
+}
+
 // The article footer: one block at the foot of the article element.
 export function articleStepHtml(slug) {
   const href = escapeAttribute(submitStepUrl({ medium: "article-footer", campaign: slug }));

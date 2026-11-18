@@ -31,6 +31,7 @@ import JSZip from "jszip";
 import { loadScenario, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { getLibreOffice } from "../lib/spreadsheet-runner.js";
 import { PROVENANCE_DATA } from "../lib/provenance-data.js";
+import { submitPlacementHref } from "../lib/submit-step.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -642,7 +643,7 @@ function pageShell({ title, description, canonical, body }) {
       <a href="../download.html">Download</a>
       <a href="../knowledge-base.html">Knowledge Base</a>
       <a href="../community.html">Community</a>
-      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="${submitPlacementHref({ site: "spreadsheets", medium: "nav" })}">Submit VAT MTD</a>
       <a href="../donate.html">Donate</a>
     </nav>
 
