@@ -925,6 +925,10 @@ function runStep(label, command, args, env, heartbeatLabel = label) {
 // tier and which step: "... browser/packages still running, 2m30s
 // elapsed" rather than just "packages", which by itself does not say
 // whether it is the browser tier's packages step or another tier's.
+// tap-flat alone hides a failed hook behind "ok # SKIP" lines; the second
+// reporter prints those errors and stays silent on a pass.
+const VITEST_REPORTERS = ["--reporter=tap-flat", "--reporter=./scripts/vitest-error-reporter.mjs"];
+
 async function runSteps(steps, env, tierName) {
   const start = Date.now();
   const multiStep = steps.length > 1;
@@ -953,6 +957,7 @@ export {
   tiersAfterGates,
   isSourcePath,
   findLiveConflictingProcesses,
+  VITEST_REPORTERS,
 };
 
 // ------------------------------------------------------------------ main
@@ -1217,7 +1222,7 @@ async function main() {
       ["donate page", "node", ["scripts/build-donate-page.mjs"]],
     ];
     if (unitFiles.length) {
-      steps.push(["unit", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...unitFiles]]);
+      steps.push(["unit", "npx", ["vitest", "run", "--project", "unit-tests", ...VITEST_REPORTERS, ...unitFiles]]);
     } else {
       console.log("\n--- unit: no test file in the repo reaches this diff");
     }
@@ -1228,7 +1233,7 @@ async function main() {
 
   if (!gatesFailed && willRun("calc", chosenCalc.length > 0)) {
     const calc = await runSteps(
-      [["calc", "npx", ["vitest", "run", "--project", "unit-tests", "--reporter=tap-flat", ...chosenCalc]]],
+      [["calc", "npx", ["vitest", "run", "--project", "unit-tests", ...VITEST_REPORTERS, ...chosenCalc]]],
       {},
       "calc",
     );
