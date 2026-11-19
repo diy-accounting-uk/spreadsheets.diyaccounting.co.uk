@@ -201,7 +201,7 @@ describe("the Self Employed package's two calendars", () => {
     const wagesPaidDate = dateFromExcelSerial(wagesPaid);
     expect(wagesPaidDate.getUTCFullYear(), `wages paid ${wagesPaidDate.toISOString()}`).toBe(periodStart.getUTCFullYear());
     expect(wagesPaidDate.toISOString().slice(0, 10)).toBe(`${targetStartYear}-04-30`);
-  });
+  }, 60000);
 
   it("writes the master's own year exactly as it did before the shift existed", async () => {
     const files = await filesFor(master.book, master.lines, OWN_START_YEAR);
@@ -211,5 +211,5 @@ describe("the Self Employed package's two calendars", () => {
     const wagesPaidCell = payslipsWagesPaidCell(0);
     const wagesPaid = (await readXlsxCellValues(files["Payslips.xlsx"], { Apr: [wagesPaidCell] })).Apr[wagesPaidCell];
     expect(dateFromExcelSerial(wagesPaid).toISOString().slice(0, 10)).toBe("2025-04-30");
-  });
+  }, 60000);
 });

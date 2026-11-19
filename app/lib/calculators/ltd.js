@@ -24,6 +24,7 @@
 // makes the two comparable.
 
 import { toExcelSerial } from "../spreadsheet-runner.js";
+import { vatDueDateSerial } from "../generator.js";
 import { BANK_ACCOUNT_FILES, BANK_LAYOUTS, OPENING_FIXED_ASSET_COLUMNS, isLtdOpeningBankLine, ltdBankPlacement } from "../ltd-layout.js";
 import { apportionCorporationTax, financialYearsInPeriod, financialYearNumber, financialYearRatesFor } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances, mainWritingDownPercent } from "../tax/capital-allowances.js";
@@ -2062,10 +2063,11 @@ function buildVatReturns(salesMonths, purchaseMonths, period, scenario, rate) {
     const monthIndex = row - VATINTERFACE_FIRST_MONTH_ROW;
     const tab = monthIndex >= 0 && monthIndex < 12 ? period.tabs[monthIndex] : null;
     const straddling = straddlingTotals(scenario, row, rate);
+    const end = serialOf(period.adminMonthEnd(adminRow));
     rows.push({
       row,
-      end: serialOf(period.adminMonthEnd(adminRow)),
-      due: serialOf(period.adminMonthEnd(adminRow + 2)),
+      end,
+      due: vatDueDateSerial(end),
       salesNet: tab ? salesMonths[tab].H1 : straddling.salesNet,
       salesVat: tab ? salesMonths[tab].G1 : straddling.salesVat,
       purchasesNet: tab ? purchaseMonths[tab].H1 : straddling.purchasesNet,

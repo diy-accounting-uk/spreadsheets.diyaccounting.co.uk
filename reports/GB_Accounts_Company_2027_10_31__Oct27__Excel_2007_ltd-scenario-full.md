@@ -157,7 +157,7 @@ Trade: IT consultancy and software development
 | VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 6023.875 | 6023.875 | 0 | PASS |
 | VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 30119.375 | 30119.375 | 0 | PASS |
 | VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
-| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 46446 | 46446 | 0 | PASS |
+| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 46453 | 46453 | 0 | PASS |
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E11: quarter sales net = its three period rows | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | Vatinterface G11: quarter output VAT = its three period rows | 17256.66666666667 | 17256.6666666667 | +2.9103830456733704e-11 | PASS |
@@ -167,7 +167,7 @@ Trade: IT consultancy and software development
 | VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4531.58333333334 | 4531.58333333334 | 0 | PASS |
 | VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 22657.9166666666 | 22657.9166666666 | 0 | PASS |
 | VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
-| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46538 | 46538 | 0 | PASS |
+| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46545 | 46545 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E14: quarter sales net = its three period rows | 98899.9999999999 | 98899.9999999999 | 0 | PASS |
 | Vatinterface G14: quarter output VAT = its three period rows | 19780.000000000007 | 19780 | -7.275957614183426e-12 | PASS |
@@ -177,7 +177,7 @@ Trade: IT consultancy and software development
 | VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K14) | 9895.875 | 9895.875 | 0 | PASS |
 | VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I14) | 49479.375 | 49479.375 | 0 | PASS |
 | VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 98899.9999999999 | 98899.9999999999 | 0 | PASS |
-| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46630 | 46630 | 0 | PASS |
+| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46637 | 46637 | 0 | PASS |
 | VAT Q4: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E17: quarter sales net = its three period rows | 83699.9999999999 | 83699.9999999999 | 0 | PASS |
 | Vatinterface G17: quarter output VAT = its three period rows | 16740.000000000007 | 16740 | -7.275957614183426e-12 | PASS |
@@ -187,7 +187,7 @@ Trade: IT consultancy and software development
 | VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2105.70833333333 | 2105.70833333333 | 0 | PASS |
 | VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 10528.5416666667 | 10528.5416666667 | 0 | PASS |
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 83699.9999999999 | 83699.9999999999 | 0 | PASS |
-| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46721 | 46721 | 0 | PASS |
+| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46728 | 46728 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E20: quarter sales net = its three period rows | 5500 | 5500 | 0 | PASS |
 | Vatinterface G20: quarter output VAT = its three period rows | 1100 | 1100 | 0 | PASS |
@@ -197,7 +197,7 @@ Trade: IT consultancy and software development
 | VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K20) | 180 | 180 | 0 | PASS |
 | VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I20) | 900 | 900 | 0 | PASS |
 | VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 5500 | 5500 | 0 | PASS |
-| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 46812 | 46812 | 0 | PASS |
+| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 46819 | 46819 | 0 | PASS |
 | VAT: the five returns end on five different periods | 5 | 5 | 0 | PASS |
 | VAT: Q2 ends a quarter after Q1 | 3 | 3 | 0 | PASS |
 | VAT: Q3 ends a quarter after Q2 | 3 | 3 | 0 | PASS |
@@ -284,10 +284,13 @@ Trade: IT consultancy and software development
 | Directors' report: second member's holding = register of members | 25 | 25 | 0 | PASS |
 | Register of members: row 3 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
 | Register of members: row 3 holds Carol Smith's shares | 60 | 60 | 0 | PASS |
+| Register of members: row 3 prices Carol Smith's shares | 1 | 1 | 0 | PASS |
 | Register of members: row 4 names David Brown | David Brown | David Brown |  | PASS |
 | Register of members: row 4 holds David Brown's shares | 25 | 25 | 0 | PASS |
+| Register of members: row 4 prices David Brown's shares | 1 | 1 | 0 | PASS |
 | Register of members: row 5 names Emma Wilson | Emma Wilson | Emma Wilson |  | PASS |
 | Register of members: row 5 holds Emma Wilson's shares | 15 | 15 | 0 | PASS |
+| Register of members: row 5 prices Emma Wilson's shares | 1 | 1 | 0 | PASS |
 | Directors' report: first shareholder named | Carol Smith | Carol Smith |  | PASS |
 | Directors' report: second shareholder named | David Brown | David Brown |  | PASS |
 | Directors&Secretary: row 2 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
@@ -1036,6 +1039,7 @@ Trade: IT consultancy and software development
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 123480.391666666 | 123480.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
+| CT600: trading loss arising = the loss on the working sheet | 0 | 0 | 0 | PASS |
 | CT600: net trading profits = trading profits - losses brought forward | 123480.391666666 | 123480.391666666 | 0 | PASS |
 | CT600: interest received = CT interest received | 339.51 | 339.51 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 123819.90166666599 | 123819.901666666 | +1.4551915228366852e-11 | PASS |
@@ -1281,6 +1285,7 @@ Journal amounts include VAT at 20%.
 | **Box 440: corporation tax net of marginal rate relief** | 29,583.76 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 327: associated companies, first financial year | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 328: associated companies, second financial year | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 780: trading loss arising | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 620: franked investment income | 20,000 |
 
 ## Published P&L
@@ -2504,7 +2509,7 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46418 |  |
-| G7 |  | 46446 |  |
+| G7 |  | 46453 |  |
 | G9 |  | 16920 |  |
 | G13 |  | 16920 |  |
 | G15 |  | 6023.875 |  |
@@ -2517,7 +2522,7 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46507 |  |
-| G7 |  | 46538 |  |
+| G7 |  | 46545 |  |
 | G9 |  | 17256.6666666667 |  |
 | G13 |  | 17256.6666666667 |  |
 | G15 |  | 4531.58333333334 |  |
@@ -2530,7 +2535,7 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46599 |  |
-| G7 |  | 46630 |  |
+| G7 |  | 46637 |  |
 | G9 |  | 19780 |  |
 | G13 |  | 19780 |  |
 | G15 |  | 9895.875 |  |
@@ -2543,7 +2548,7 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46691 |  |
-| G7 |  | 46721 |  |
+| G7 |  | 46728 |  |
 | G9 |  | 16740 |  |
 | G13 |  | 16740 |  |
 | G15 |  | 2105.70833333333 |  |
@@ -2556,7 +2561,7 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46783 |  |
-| G7 |  | 46812 |  |
+| G7 |  | 46819 |  |
 | G9 |  | 1100 |  |
 | G13 |  | 1100 |  |
 | G15 |  | 180 |  |
@@ -2569,21 +2574,21 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | B4 |  | 46295 |  |
-| C4 |  | 46326 |  |
+| C4 |  | 46333 |  |
 | D4 |  | 4000 |  |
 | F4 |  | 800 |  |
 | H4 |  | 600 |  |
 | J4 |  | 120 |  |
 | M4 |  | 0 |  |
 | B5 |  | 46326 |  |
-| C5 |  | 46356 |  |
+| C5 |  | 46363 |  |
 | D5 |  | 2000 |  |
 | F5 |  | 400 |  |
 | H5 |  | 1000 |  |
 | J5 |  | 200 |  |
 | M5 |  | 0 |  |
 | B6 |  | 46356 |  |
-| C6 |  | 46387 |  |
+| C6 |  | 46394 |  |
 | D6 |  | 27833.3333333333 |  |
 | E6 |  | 33833.3333333333 |  |
 | F6 |  | 5566.66666666667 |  |
@@ -2594,7 +2599,7 @@ Journal amounts include VAT at 20%.
 | K6 |  | 1171.875 |  |
 | M6 |  | 0 |  |
 | B7 |  | 46387 |  |
-| C7 |  | 46418 |  |
+| C7 |  | 46425 |  |
 | D7 |  | 27433.3333333333 |  |
 | E7 |  | 57266.6666666666 |  |
 | F7 |  | 5486.66666666667 |  |
@@ -2605,7 +2610,7 @@ Journal amounts include VAT at 20%.
 | K7 |  | 2114.375 |  |
 | M7 |  | 0 |  |
 | B8 |  | 46418 |  |
-| C8 |  | 46446 |  |
+| C8 |  | 46453 |  |
 | D8 |  | 29333.3333333333 |  |
 | E8 |  | 84599.9999999999 |  |
 | F8 |  | 5866.66666666667 |  |
@@ -2616,7 +2621,7 @@ Journal amounts include VAT at 20%.
 | K8 |  | 6023.875 |  |
 | M8 |  | 0 |  |
 | B9 |  | 46446 |  |
-| C9 |  | 46477 |  |
+| C9 |  | 46484 |  |
 | D9 |  | 28133.3333333333 |  |
 | E9 |  | 84899.9999999999 |  |
 | F9 |  | 5626.66666666667 |  |
@@ -2627,7 +2632,7 @@ Journal amounts include VAT at 20%.
 | K9 |  | 6681.875 |  |
 | M9 |  | 0 |  |
 | B10 |  | 46477 |  |
-| C10 |  | 46507 |  |
+| C10 |  | 46514 |  |
 | D10 |  | 30016.6666666667 |  |
 | E10 |  | 87483.3333333333 |  |
 | F10 |  | 6003.33333333333 |  |
@@ -2638,7 +2643,7 @@ Journal amounts include VAT at 20%.
 | K10 |  | 6411.91666666667 |  |
 | M10 |  | 0 |  |
 | B11 |  | 46507 |  |
-| C11 |  | 46538 |  |
+| C11 |  | 46545 |  |
 | D11 |  | 28133.3333333333 |  |
 | E11 |  | 86283.3333333333 |  |
 | F11 |  | 5626.66666666667 |  |
@@ -2649,7 +2654,7 @@ Journal amounts include VAT at 20%.
 | K11 |  | 4531.58333333334 |  |
 | M11 |  | 0 |  |
 | B12 |  | 46538 |  |
-| C12 |  | 46568 |  |
+| C12 |  | 46575 |  |
 | D12 |  | 42133.3333333333 |  |
 | E12 |  | 100283.333333333 |  |
 | F12 |  | 8426.66666666667 |  |
@@ -2660,7 +2665,7 @@ Journal amounts include VAT at 20%.
 | K12 |  | 10189.3333333333 |  |
 | M12 |  | 0 |  |
 | B13 |  | 46568 |  |
-| C13 |  | 46599 |  |
+| C13 |  | 46606 |  |
 | D13 |  | 29433.3333333333 |  |
 | E13 |  | 99699.9999999999 |  |
 | F13 |  | 5886.66666666667 |  |
@@ -2671,7 +2676,7 @@ Journal amounts include VAT at 20%.
 | K13 |  | 10549.7916666667 |  |
 | M13 |  | 0 |  |
 | B14 |  | 46599 |  |
-| C14 |  | 46630 |  |
+| C14 |  | 46637 |  |
 | D14 |  | 27333.3333333333 |  |
 | E14 |  | 98899.9999999999 |  |
 | F14 |  | 5466.66666666667 |  |
@@ -2682,7 +2687,7 @@ Journal amounts include VAT at 20%.
 | K14 |  | 9895.875 |  |
 | M14 |  | 0 |  |
 | B15 |  | 46630 |  |
-| C15 |  | 46660 |  |
+| C15 |  | 46667 |  |
 | D15 |  | 29533.3333333333 |  |
 | E15 |  | 86299.9999999999 |  |
 | F15 |  | 5906.66666666667 |  |
@@ -2693,7 +2698,7 @@ Journal amounts include VAT at 20%.
 | K15 |  | 3480.125 |  |
 | M15 |  | 0 |  |
 | B16 |  | 46660 |  |
-| C16 |  | 46691 |  |
+| C16 |  | 46698 |  |
 | D16 |  | 28633.3333333333 |  |
 | E16 |  | 85499.9999999999 |  |
 | F16 |  | 5726.66666666667 |  |
@@ -2704,7 +2709,7 @@ Journal amounts include VAT at 20%.
 | K16 |  | 3059.875 |  |
 | M16 |  | 0 |  |
 | B17 |  | 46691 |  |
-| C17 |  | 46721 |  |
+| C17 |  | 46728 |  |
 | D17 |  | 25533.3333333333 |  |
 | E17 |  | 83699.9999999999 |  |
 | F17 |  | 5106.66666666667 |  |
@@ -2715,7 +2720,7 @@ Journal amounts include VAT at 20%.
 | K17 |  | 2105.70833333333 |  |
 | M17 |  | 0 |  |
 | B18 |  | 46721 |  |
-| C18 |  | 46752 |  |
+| C18 |  | 46759 |  |
 | D18 |  | 3000 |  |
 | E18 |  | 57166.6666666666 |  |
 | F18 |  | 600 |  |
@@ -2726,7 +2731,7 @@ Journal amounts include VAT at 20%.
 | K18 |  | 1393.83333333333 |  |
 | M18 |  | 0 |  |
 | B19 |  | 46752 |  |
-| C19 |  | 46783 |  |
+| C19 |  | 46790 |  |
 | D19 |  | 1500 |  |
 | E19 |  | 30033.3333333333 |  |
 | F19 |  | 300 |  |
@@ -2737,7 +2742,7 @@ Journal amounts include VAT at 20%.
 | K19 |  | 721.083333333333 |  |
 | M19 |  | 0 |  |
 | B20 |  | 46783 |  |
-| C20 |  | 46812 |  |
+| C20 |  | 46819 |  |
 | D20 |  | 1000 |  |
 | E20 |  | 5500 |  |
 | F20 |  | 200 |  |
@@ -3220,10 +3225,13 @@ Journal amounts include VAT at 20%.
 | F1 |  | 1 |  |
 | G1 |  | 100 |  |
 | A3 |  | Carol Smith |  |
+| F3 |  | 1 |  |
 | G3 |  | 60 |  |
 | A4 |  | David Brown |  |
+| F4 |  | 1 |  |
 | G4 |  | 25 |  |
 | A5 |  | Emma Wilson |  |
+| F5 |  | 1 |  |
 | G5 |  | 15 |  |
 
 ### Companysecretary.xlsx!Boardmeeting

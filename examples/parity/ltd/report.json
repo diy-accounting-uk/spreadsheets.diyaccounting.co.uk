@@ -5,11 +5,11 @@
   "yearEnd": "2027-10-31",
   "provenance": {
     "formatVersion": "diya-gl/2",
-    "engineVersion": "1.2.63+2c4a0a8c",
-    "taxDataHash": "51bdff60e993",
+    "engineVersion": "1.2.92+d9809fcfd",
+    "taxDataHash": "b27e8cc50497",
     "templateHash": "b90d8b0f54a0",
     "templateScorecard": "101608 passed, 0 warnings, 0 failed",
-    "reconciledCommit": "54e8731a91279975e61b1a232fbb67fda89515f0"
+    "reconciledCommit": "5be3f83c0e69ed4cb25bf57d63cf5a384492765f"
   },
   "values": [
     {
@@ -6475,7 +6475,7 @@
     {
       "key": "cell/Vatreturns.xlsx!VATQtr1!G7",
       "unit": "date",
-      "value": "46446"
+      "value": "46453"
     },
     {
       "key": "cell/Vatreturns.xlsx!VATQtr1!G9",
@@ -6515,7 +6515,7 @@
     {
       "key": "cell/Vatreturns.xlsx!VATQtr2!G7",
       "unit": "date",
-      "value": "46538"
+      "value": "46545"
     },
     {
       "key": "cell/Vatreturns.xlsx!VATQtr2!G9",
@@ -6555,7 +6555,7 @@
     {
       "key": "cell/Vatreturns.xlsx!VATQtr3!G7",
       "unit": "date",
-      "value": "46630"
+      "value": "46637"
     },
     {
       "key": "cell/Vatreturns.xlsx!VATQtr3!G9",
@@ -6595,7 +6595,7 @@
     {
       "key": "cell/Vatreturns.xlsx!VATQtr4!G7",
       "unit": "date",
-      "value": "46721"
+      "value": "46728"
     },
     {
       "key": "cell/Vatreturns.xlsx!VATQtr4!G9",
@@ -6635,7 +6635,7 @@
     {
       "key": "cell/Vatreturns.xlsx!VATQtr5!G7",
       "unit": "date",
-      "value": "46812"
+      "value": "46819"
     },
     {
       "key": "cell/Vatreturns.xlsx!VATQtr5!G9",
@@ -6730,87 +6730,87 @@
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C10",
       "unit": "date",
-      "value": "46507"
+      "value": "46514"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C11",
       "unit": "date",
-      "value": "46538"
+      "value": "46545"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C12",
       "unit": "date",
-      "value": "46568"
+      "value": "46575"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C13",
       "unit": "date",
-      "value": "46599"
+      "value": "46606"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C14",
       "unit": "date",
-      "value": "46630"
+      "value": "46637"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C15",
       "unit": "date",
-      "value": "46660"
+      "value": "46667"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C16",
       "unit": "date",
-      "value": "46691"
+      "value": "46698"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C17",
       "unit": "date",
-      "value": "46721"
+      "value": "46728"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C18",
       "unit": "date",
-      "value": "46752"
+      "value": "46759"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C19",
       "unit": "date",
-      "value": "46783"
+      "value": "46790"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C20",
       "unit": "date",
-      "value": "46812"
+      "value": "46819"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C4",
       "unit": "date",
-      "value": "46326"
+      "value": "46333"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C5",
       "unit": "date",
-      "value": "46356"
+      "value": "46363"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C6",
       "unit": "date",
-      "value": "46387"
+      "value": "46394"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C7",
       "unit": "date",
-      "value": "46418"
+      "value": "46425"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C8",
       "unit": "date",
-      "value": "46446"
+      "value": "46453"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!C9",
       "unit": "date",
-      "value": "46477"
+      "value": "46484"
     },
     {
       "key": "cell/Vatreturns.xlsx!Vatinterface!D10",
@@ -14576,8 +14576,8 @@
       "key": "check/VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46446",
-      "actual": "46446",
+      "expected": "46453",
+      "actual": "46453",
       "tolerance": "0"
     },
     {
@@ -14632,8 +14632,8 @@
       "key": "check/VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46538",
-      "actual": "46538",
+      "expected": "46545",
+      "actual": "46545",
       "tolerance": "0"
     },
     {
@@ -14688,8 +14688,8 @@
       "key": "check/VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46630",
-      "actual": "46630",
+      "expected": "46637",
+      "actual": "46637",
       "tolerance": "0"
     },
     {
@@ -14744,8 +14744,8 @@
       "key": "check/VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46721",
-      "actual": "46721",
+      "expected": "46728",
+      "actual": "46728",
       "tolerance": "0"
     },
     {
@@ -14792,8 +14792,8 @@
       "key": "check/VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20)",
       "unit": "verdict",
       "value": "pass",
-      "expected": "46812",
-      "actual": "46812",
+      "expected": "46819",
+      "actual": "46819",
       "tolerance": "0"
     },
     {

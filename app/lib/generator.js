@@ -173,6 +173,13 @@ export function fromExcelSerial(serial) {
   return new Date(epoch + serial * 24 * 60 * 60 * 1000);
 }
 
+// The day a VAT return is due: one calendar month and seven days after the
+// period ends, which is the month end after the period's month end, plus seven.
+export function vatDueDateSerial(periodEndSerial) {
+  const periodEnd = fromExcelSerial(periodEndSerial);
+  return toExcelSerial(monthEnd(periodEnd.getUTCFullYear(), periodEnd.getUTCMonth() + 2)) + 7;
+}
+
 // ── Admin date generation ───────────────────────────────────────────────────
 
 export function generateAdminDates(startYear) {
@@ -1463,27 +1470,16 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       }
     }
 
-    // Roll the Vatinterface C4:C18 column, which reads the next row's B
-    // column rather than the external link directly: C4's own formula is
-    // "B5", and C5:C18 share that same +1 row offset via a shared formula
-    // anchored at C5 = "B6". Read both anchors from the XML rather than
-    // assuming the offset.
-    const c4Formula = matchCell(viXml, "C4")?.fullMatch.match(/<f[^>]*>B(\d+)<\/f>/);
-    const c5Formula = matchCell(viXml, "C5")?.fullMatch.match(/<f[^>]*>B(\d+)<\/f>/);
-    if (!c4Formula || !c5Formula) {
-      throw new Error("Vatinterface C4/C5 do not have the expected B-column formula");
-    }
-    const cToBOffset = parseInt(c4Formula[1], 10) - 4;
-    if (parseInt(c5Formula[1], 10) - 5 !== cToBOffset) {
-      throw new Error("Vatinterface C4 and C5 formulas do not share the same row offset to column B");
-    }
-    for (let r = 4; r <= 18; r++) {
-      const sourceRef = `B${r + cToBOffset}`;
-      if (viValues[sourceRef] === undefined) {
-        throw new Error(`Vatinterface C${r} resolves to ${sourceRef}, which has no generated value`);
+    // Roll the Vatinterface C4:C20 column. Each cell is EOMONTH(B,1)+7: the
+    // return is due one calendar month and seven days after the period ends.
+    for (let r = 4; r <= 20; r++) {
+      const periodEnd = viValues[`B${r}`];
+      if (periodEnd === undefined) {
+        throw new Error(`Vatinterface C${r} resolves to B${r}, which has no generated value`);
       }
-      viXml = setCellCachedValue(viXml, `C${r}`, viValues[sourceRef]);
-      viValues[`C${r}`] = viValues[sourceRef];
+      const dueDate = vatDueDateSerial(periodEnd);
+      viXml = setCellCachedValue(viXml, `C${r}`, dueDate);
+      viValues[`C${r}`] = dueDate;
     }
 
     if (viXml !== viXmlOriginal) {
