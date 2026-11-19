@@ -479,7 +479,7 @@ async function isolateSheet(xlsxPath, sheetName) {
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
-async function renderSheetScreenshot(xlsxPath, sheetName, outPath) {
+export async function renderSheetScreenshot(xlsxPath, sheetName, outPath) {
   const workDir = mkdtempSync(join(tmpdir(), "recon-shot-"));
   try {
     const isolated = await isolateSheet(xlsxPath, sheetName);
