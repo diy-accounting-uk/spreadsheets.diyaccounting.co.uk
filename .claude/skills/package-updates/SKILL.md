@@ -162,6 +162,16 @@ Note: SE files use `[tax_year]` with `label = "2025-26"`, while Ltd files use `[
 
 ## Updating Tax Data
 
+### The monthly Action (update-tax-rates.yml)
+
+`.github/workflows/update-tax-rates.yml` does this work each month (the 2nd, 05:23 UTC, or on a dispatch). It runs `app/bin/update-tax-rates.js`, and the logic is in `app/lib/tax-rate-update.js`.
+
+1. It reads the gov.uk pages that submit's `.claude/skills/tax-sources/sources/*.json` name (the rate sources), the pages `scripts/hmrc-rate-urls.cjs` lists, and `https://www.gov.uk/tax-on-dividends`.
+2. For each data file whose period has not ended, and for the next year's pair, it makes one Bedrock call (Nova 2 Lite, temperature 0, role `SPREADSHEETS_ACTIONS_ROLE_ARN`). The answer is a forced `record_rates` tool call whose `field` enum lists the file's fields. Each figure carries a quote and a URL.
+3. A figure is used only when its URL is a page the job read, its quote is on that page word for word, and the quote prints the figure. A next year's file is written only when a quote names that year and at least one figure passes.
+4. The writer changes only the lines whose value changed, in a fixed format per kind (rate `0.20`, amount `12570`, money `3.65`). A new year's file copies the year before, with a new header, the metadata a year on, and no comment that names a year. Derived values follow: `higher_band_start`, `lower_rate_start`, `class2_rate`, and a financial year's previous-year sections.
+5. On `main`, a change is committed and pushed with `GITHUB_TOKEN`, and the job dispatches `generate-all.yml`. On any other branch it commits nothing. The job summary lists each change with its quote, and each figure it did not use.
+
 ### Option 1: Local Script (scripts/update-tax-data.sh)
 
 Run `npm run update-tax-data` to scrape HMRC pages and generate missing TOML files with `gh copilot`. Pass a year to use as the base, for example `npm run update-tax-data -- 2027`. It defaults to the current calendar year.

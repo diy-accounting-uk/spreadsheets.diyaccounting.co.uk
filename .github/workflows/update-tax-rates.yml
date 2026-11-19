@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: LicenseRef-PolyForm-Internal-Use-1.0.0
+# Copyright (C) 2006-2026 DIY Accounting Limited
+name: update-tax-rates
+run-name: "update-tax-rates from ${{ github.ref_name }}"
+concurrency:
+  group: update-tax-rates
+  cancel-in-progress: false
+
+# Reads the gov.uk rate pages through Bedrock (Nova 2 Lite, temperature 0) and
+# updates app/data/se-YYYY-YYYY.toml and app/data/ltd-YYYY.toml: the work of
+# .claude/skills/package-updates/SKILL.md, by machine. Each figure is used only
+# when its verbatim quote is on the page and states the figure. The writer
+# changes only the lines whose value changed, so a month with no change leaves
+# the files byte for byte as they were and the run commits nothing.
+#
+# On main, a change is committed and pushed with GITHUB_TOKEN. A GITHUB_TOKEN
+# push starts no workflow, so the job then dispatches generate-all.yml, whose
+# changed-packages scope commits the rebuilt packages. A run on any other
+# branch reads, writes and shows the diff, and commits and dispatches nothing.
+on:
+  schedule:
+    # The 2nd of each month, 05:23 UTC.
+    - cron: '23 5 2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  id-token: write
+
+env:
+  NODE_VERSION: '24'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.ref }}
+      # The gov.uk pages behind the site's tax facts, one JSON file per source.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: diy-accounting-uk/submit.diyaccounting.co.uk
+          path: target/submit
+          sparse-checkout: .claude/skills/tax-sources/sources
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          retry-max-attempts: 3
+      - name: Read the rates and write the data files
+        timeout-minutes: 20
+        run: |
+          node app/bin/update-tax-rates.js \
+            --sources-dir target/submit/.claude/skills/tax-sources/sources \
+            --summary "$RUNNER_TEMP/tax-rates-summary.md"
+          cat "$RUNNER_TEMP/tax-rates-summary.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Stage the data files
+        id: stage
+        run: |
+          git add -A -- 'app/data/se-*.toml' 'app/data/ltd-*.toml'
+          if git diff --staged --quiet; then
+            echo "No tax data file changed."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff --staged
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Commit and push
+        if: ${{ steps.stage.outputs.changed == 'true' && github.ref == 'refs/heads/main' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          {
+            echo "Update tax rates from gov.uk"
+            echo ""
+            cat "$RUNNER_TEMP/tax-rates-summary.md"
+            echo ""
+            echo "Triggered by: ${{ github.sha }} (run ${{ github.run_id }})"
+          } > "$RUNNER_TEMP/commit-message.txt"
+          git commit -F "$RUNNER_TEMP/commit-message.txt"
+          git pull --rebase
+          # --no-verify: npm ci points core.hooksPath at .githooks, and the pre-push
+          # router would run tiers this job has no tools for. generate-all.yml tests
+          # and reconciles the change.
+          git push --no-verify
+      - name: Regenerate the packages
+        if: ${{ steps.stage.outputs.changed == 'true' && github.ref == 'refs/heads/main' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run generate-all.yml --repo "${{ github.repository }}" --ref main
