@@ -206,7 +206,7 @@ describe("parseReport", () => {
 
   it("reads the status line and the compliance check rows", () => {
     expect(parsed.status).toBe("RECONCILES");
-    expect(checkCounts(parsed)).toEqual({ passed: 1032, warnings: 0, failed: 0 });
+    expect(checkCounts(parsed)).toEqual({ passed: 1036, warnings: 0, failed: 0 });
   });
 
   it("indexes each section by its row label, indentation and bold stripped", () => {
@@ -251,7 +251,7 @@ describe("buildIndicators for the Limited Company", () => {
   const text = indicatorText("ltd", "ltdVat", { vatRegistered: true });
 
   it("states the run status and the check counts", () => {
-    expect(text).toContain("Deterministic run: RECONCILES. Checks: 1032 passed, 0 warnings, 0 failed.");
+    expect(text).toContain("Deterministic run: RECONCILES. Checks: 1036 passed, 0 warnings, 0 failed.");
     expect(text).not.toContain("Warned:");
   });
 
