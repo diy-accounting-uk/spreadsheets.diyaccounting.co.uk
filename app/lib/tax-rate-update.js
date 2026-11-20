@@ -511,7 +511,7 @@ export const INSTRUCTIONS = [
   "Answer with one call to the record_rates tool.",
   "Give a figure only when a page states it for the year the request names. A table often has one column per year: read the column for that year.",
   "Leave out a field the pages do not state for that year. Never carry a figure across from another year.",
-  "For each figure, quote copies the page text word for word: the sentence or the table row that states the figure, as the page prints it, without the column headings. In a table row, keep the figure of every year column in the page's order.",
+  "For each figure, quote copies the page text word for word: the sentence or the table row that states the figure, as the page prints it, without the column headings. In a table row, start the quote at the row's label and keep the figure of every year column in the page's order.",
   "url is the URL of the page the quote is on.",
   "value is a number: a rate as a decimal fraction (25% is 0.25), an amount in whole pounds (£12,570 is 12570), money in pounds (£3.65 is 3.65, 55p is 0.55).",
 ].join("\n");
@@ -709,7 +709,7 @@ export async function updateTaxRates({ dataDir, pages, client, today, model = MO
       const retryUser = [
         user,
         "",
-        "These quotes are not on any page above, word for word. For each field, give a quote copied from the page text, or leave the field out. In a table row, keep the figure of every year column in the page's order:",
+        "These quotes are not accepted: a quote must be on a page above word for word and hold more than its figure. For each field, give a quote copied from the page text, or leave the field out. Start a table row's quote at its label and keep the figure of every year column in the page's order:",
         ...refused.map(({ spec, entry }) => `- ${spec.field}: ${JSON.stringify(entry.quote)}`),
       ].join("\n");
       const second = await requestRates(

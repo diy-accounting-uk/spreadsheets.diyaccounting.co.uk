@@ -342,9 +342,7 @@ describe("the quote check on table pages", () => {
       send: vi.fn(async (command) => {
         const text = command.input.messages[0].content[0].text;
         if (!text.startsWith("Data file: ltd-2027.toml")) return converseReply({ figures: [] });
-        const quote = text.includes("not on any page above")
-          ? "The dividend ordinary rate is 11.75%."
-          : "The dividend ordinary rate was 11.75%.";
+        const quote = text.includes("not accepted") ? "The dividend ordinary rate is 11.75%." : "The dividend ordinary rate was 11.75%.";
         return converseReply({ figures: [figure("dividend_tax.basic_rate", 0.1175, quote)] });
       }),
     };
@@ -357,6 +355,6 @@ describe("the quote check on table pages", () => {
     });
     expect(result.rejected).toEqual([]);
     expect(result.changes.map((c) => c.field)).toContain("dividend_tax.basic_rate");
-    expect(client.send.mock.calls.some(([c]) => c.input.messages[0].content[0].text.includes("not on any page above"))).toBe(true);
+    expect(client.send.mock.calls.some(([c]) => c.input.messages[0].content[0].text.includes("not accepted"))).toBe(true);
   });
 });
