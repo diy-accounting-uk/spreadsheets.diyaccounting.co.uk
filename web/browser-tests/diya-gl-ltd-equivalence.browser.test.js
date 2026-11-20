@@ -206,14 +206,12 @@ async function sweepPage(page, example) {
 // Two families of shared keys disagree, each named and asserted rather than
 // dropped:
 //
-// 1. The package declares an accounting period a year ahead of the postings
-//    it carries: its Admin year-end seed says 31 October 2027 and its bank
-//    lines run November 2025 to October 2026. That is the period shift this
-//    row fixed in app/products/ltd.js; until generate-ltd.yml refreshes the
-//    package, every cell the workbook derives from its own year end sits a
-//    year ahead of the same cell derived from the entries. Each such key has
-//    to differ by exactly a year -- a wrong figure in this family still
-//    fails -- and the family empties itself when the refresh lands.
+// 1. A package whose declared accounting period sits a year ahead of the
+//    postings it carries. Every cell the workbook derives from its own year
+//    end then sits a year ahead of the same cell derived from the entries.
+//    Each such key has to differ by exactly a year -- a wrong figure in this
+//    family still fails. The committed package declares 31 January 2028
+//    over postings for the same year, so the family is empty.
 //
 // 2. Vatreturns.xlsx carries the fixture's straddling VAT periods, the two
 //    quarters before the accounting year and the three after it. S2 here is
@@ -514,11 +512,11 @@ test.describe("DIYA-GL Company books page — the fixture holds (A6)", () => {
 // nine, so a cache left behind in Vatreturns is named on Vatreturns' own
 // cell, not missed because the hub's copy is fresh.
 //
-// Sales.xlsx's November tab is the first month of this package's year.
+// Sales.xlsx's February tab is the first month of this package's year.
 // Its O1 is cached by the hub alone, under TrialBalance!F53 and Stock!J8;
 // its G1 is cached twice, by the hub under TrialBalance!F33 and by
 // Vatreturns under Vatinterface!F6. So one leaf cell proves both halves.
-const FIRST_TAB = "Nov";
+const FIRST_TAB = "Feb";
 const LEAF_ONLY_THE_HUB_READS = { sheet: FIRST_TAB, cell: "O1" };
 const LEAF_TWO_WORKBOOKS_READ = { sheet: FIRST_TAB, cell: "G1" };
 const HUB_MARKS_FOR_O1 = ["Financialaccounts.xlsx!Stock!J8", "Financialaccounts.xlsx!TrialBalance!F53"];

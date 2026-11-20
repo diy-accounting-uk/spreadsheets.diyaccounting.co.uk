@@ -5,7 +5,7 @@
 //
 // E3 to E5 for the Company page (diya-gl/ltd.html): the round trips its
 // downloads make with the CLI, over both a March year end and the
-// committed October package, the files it refuses and what it says about
+// committed January package, the files it refuses and what it says about
 // them, and that every download the save menu offers is well-formed.
 //
 // A Company package is thirteen workbooks joined by external links, read
@@ -64,7 +64,7 @@ async function marchPackageZipBytes() {
   return zipOf(Object.fromEntries(files.map((file) => [file.name, file.bytes])));
 }
 
-// The committed October package's own thirteen workbooks, zipped the way a
+// The committed January package's own thirteen workbooks, zipped the way a
 // customer's own download ships.
 function latestPackageWorkbookNames() {
   return fs.readdirSync(LATEST_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"));
@@ -267,7 +267,7 @@ test.describe("DIYA-GL Company books page — round trips (E3)", () => {
     expect(withoutEntriesComment(parseTOML(cli.bookToml))).toEqual(withoutEntriesComment(parseTOML(firstBookToml)));
   });
 
-  // ltd-latest's own workbooks already declare their own period (an October
+  // ltd-latest's own workbooks already declare their own period (a January
   // year end), so a shift in the extraction would show up here without a
   // second lap to introduce one.
   test("E3: package zip -> page's diya-gl zip agrees with the CLI's own export of the same zip, on ltd-latest", async ({ page }) => {

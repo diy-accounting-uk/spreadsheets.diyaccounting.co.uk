@@ -23,8 +23,8 @@ describe("pinned example packages", () => {
   });
 
   it("flags a pin built before the six-month limit and no other", () => {
-    const stale = stalePins(new Date("2027-05-10T00:00:00Z")).map((s) => s.product);
-    expect(stale).toEqual(["ltd"]);
+    const stale = stalePins(new Date("2027-05-14T00:00:00Z")).map((s) => s.product);
+    expect(stale).toEqual(["taxi"]);
   });
 
   it.skipIf(process.env.PINNED_AGE_CHECK === "off")("has no pinned package built more than six months ago", () => {

@@ -140,12 +140,12 @@ describe("scoreDataHalves against a package built for a year end the fixture doe
     }
   }, 60000);
 
-  // examples/ltd-latest is the committed October package generate-ltd.yml's
-  // own pipeline produced; its period (November to October) already sits a
-  // whole year and seven months from examples/precision-code-ltd/full's own
-  // March period, exercising the year-counting gap directly rather than
-  // rebuilding a Company package by hand.
-  it("Ltd: matches every line of the committed October package against the March fixture", () => {
+  // examples/ltd-latest is the committed January package generate-ltd.yml's
+  // own pipeline produced; its period (February to January) already sits a
+  // whole year and ten months from examples/precision-code-ltd/full's own
+  // April to March period, exercising the year-counting gap directly rather
+  // than rebuilding a Company package by hand.
+  it("Ltd: matches every line of the committed January package against the March fixture", () => {
     const scratchDir = mkdtempSync(join(tmpdir(), "verify-roundtrip-frame-ltd-"));
     try {
       const fixtureDir = buildFixture(scratchDir, "ltd", "examples/precision-code-ltd/full", "ltd-2025");
