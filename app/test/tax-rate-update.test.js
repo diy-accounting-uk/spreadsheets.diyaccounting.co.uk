@@ -226,6 +226,7 @@ describe("a run", () => {
       figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%."),
       "the quote is not on",
     ],
+    ["a quote that is only the figure", figure("dividend_tax.basic_rate", 0.1075, "10.75%"), "the quote has no words besides figures"],
     [
       "a quote that does not state the figure",
       figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 10.75%."),
@@ -233,8 +234,8 @@ describe("a run", () => {
     ],
     [
       "a page the job did not read",
-      figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 10.75%.", "https://example.com/"),
-      "is not a page the job read",
+      figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%.", "https://example.com/"),
+      "the quote is not on https://example.com/",
     ],
     ["a rate given as a percentage", figure("dividend_tax.basic_rate", 10.75, "The dividend ordinary rate is 10.75%."), "is not a rate"],
   ])("never uses %s", async (_, answer, reason) => {
@@ -322,6 +323,12 @@ describe("the quote check on table pages", () => {
     );
     expect(result.rejected).toEqual([]);
     expect(result.changes[0].url).toBe(other.url);
+  });
+
+  it("refuses a quote that skips another column's figure", () => {
+    const years = pageText("<main><p>Main rate expenditure 14% 12%</p></main>");
+    expect(quoteOnPage("Main rate expenditure 12%", years)).toBe(false);
+    expect(quoteOnPage("Main rate expenditure 14% 12%", years)).toBe(true);
   });
 
   it("refuses a paraphrase and a quote whose words are far apart", () => {

@@ -427,7 +427,8 @@ function plausible(kind, value) {
 
 // A table row quoted without the cells between its label and its value leaves
 // gaps in the page's words. Every word of the quote must still appear on the
-// page, in order, with at most this many page words in each gap and in all.
+// page, in order, with at most this many page words in each gap and in all,
+// and no figure outside brackets in a gap.
 const QUOTE_GAP_WORDS = 8;
 const QUOTE_EXTRA_WORDS = 12;
 
@@ -451,8 +452,14 @@ export function quoteOnPage(quote, pageText) {
     let found = true;
     for (let w = 1; w < wanted.length && found; w++) {
       let next = at + 1;
-      while (next < have.length && next - at - 1 <= QUOTE_GAP_WORDS && have[next] !== wanted[w]) next++;
-      if (next >= have.length || next - at - 1 > QUOTE_GAP_WORDS) found = false;
+      let depth = 0;
+      while (next < have.length && next - at - 1 <= QUOTE_GAP_WORDS && have[next] !== wanted[w]) {
+        // A figure in the gap would be another column's value, such as another year's, unless it is in brackets.
+        depth += (have[next].match(/\(/g) ?? []).length - (have[next].match(/\)/g) ?? []).length;
+        if (/\d/.test(have[next]) && depth <= 0 && !have[next].includes(")")) break;
+        next++;
+      }
+      if (next >= have.length || next - at - 1 > QUOTE_GAP_WORDS || have[next] !== wanted[w]) found = false;
       else {
         extra += next - at - 1;
         at = next;
@@ -463,13 +470,11 @@ export function quoteOnPage(quote, pageText) {
   return false;
 }
 
-/** The page the quote is on: the page the figure names, else another page the job read that holds it, else null. */
+/** The page the quote is on: the page the figure names, else any other page the job read that holds it, else null. */
 export function quotePage(figure, pages) {
   const named = pages.find((p) => p.url === figure.url);
-  if (!named) return null;
-  if (quoteOnPage(figure.quote, named.text)) return named;
-  const others = pages.filter((p) => p !== named && quoteOnPage(figure.quote, p.text));
-  return others[0] ?? null;
+  if (named && quoteOnPage(figure.quote, named.text)) return named;
+  return pages.find((p) => p !== named && quoteOnPage(figure.quote, p.text)) ?? null;
 }
 
 /**
@@ -479,8 +484,8 @@ export function quotePage(figure, pages) {
  */
 export function figureProblem(figure, kind, pages) {
   if (!plausible(kind, figure.value)) return `the value ${JSON.stringify(figure.value)} is not a ${kind}`;
-  if (!pages.some((p) => p.url === figure.url)) return `${figure.url} is not a page the job read`;
   if (typeof figure.quote !== "string" || normaliseText(figure.quote).length === 0) return "the quote is empty";
+  if (!words(figure.quote).some((word) => /[a-z]{2}/.test(word))) return "the quote has no words besides figures";
   if (!quotePage(figure, pages)) return `the quote is not on ${figure.url}`;
   if (!quoteStatesFigure(figure.quote, kind, figure.value)) return `the quote does not state ${formatValue(kind, figure.value)}`;
   return null;
@@ -506,7 +511,7 @@ export const INSTRUCTIONS = [
   "Answer with one call to the record_rates tool.",
   "Give a figure only when a page states it for the year the request names. A table often has one column per year: read the column for that year.",
   "Leave out a field the pages do not state for that year. Never carry a figure across from another year.",
-  "For each figure, quote copies the page text word for word: the sentence or the table row that states the figure, as the page prints it, without the column headings.",
+  "For each figure, quote copies the page text word for word: the sentence or the table row that states the figure, as the page prints it, without the column headings. In a table row, keep the figure of every year column in the page's order.",
   "url is the URL of the page the quote is on.",
   "value is a number: a rate as a decimal fraction (25% is 0.25), an amount in whole pounds (£12,570 is 12570), money in pounds (£3.65 is 3.65, 55p is 0.55).",
 ].join("\n");
@@ -674,7 +679,8 @@ export async function updateTaxRates({ dataDir, pages, client, today, model = MO
           rejected.push({ file: item.name, field: String(figure.field), reason: "the file has no such field" });
           continue;
         }
-        const problem = accepted.has(spec.field) ? "the model gave the field twice" : figureProblem(figure, spec.kind, pages);
+        if (accepted.has(spec.field)) continue;
+        const problem = figureProblem(figure, spec.kind, pages);
         if (problem) {
           const entry = { file: item.name, field: spec.field, value: figure.value, quote: figure.quote, url: figure.url, reason: problem };
           if (problem.startsWith("the quote is not on")) refused.push({ spec, entry });
@@ -703,7 +709,7 @@ export async function updateTaxRates({ dataDir, pages, client, today, model = MO
       const retryUser = [
         user,
         "",
-        "These quotes are not on any page above, word for word. For each field, give a quote copied from the page text, or leave the field out:",
+        "These quotes are not on any page above, word for word. For each field, give a quote copied from the page text, or leave the field out. In a table row, keep the figure of every year column in the page's order:",
         ...refused.map(({ spec, entry }) => `- ${spec.field}: ${JSON.stringify(entry.quote)}`),
       ].join("\n");
       const second = await requestRates(
