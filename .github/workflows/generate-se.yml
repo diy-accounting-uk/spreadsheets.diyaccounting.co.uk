@@ -188,11 +188,13 @@ jobs:
         timeout-minutes: 6
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
-      - name: Install pandoc and weasyprint
-        timeout-minutes: 5
-        run: |
-          sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 pandoc
-          pip install --quiet weasyprint==70.0 pydyf==0.13.0 fonttools==4.68.0
+      - name: Install pandoc
+        timeout-minutes: 15
+        uses: ./.github/actions/apt-install
+        with:
+          packages: pandoc
+      - name: Install weasyprint
+        run: pip install --quiet weasyprint==70.0 pydyf==0.13.0 fonttools==4.68.0
       - run: rm -rf packages
       - name: Generate the se packages
         run: |
@@ -276,7 +278,9 @@ jobs:
           NPM_CONFIG_FETCH_RETRIES: "3"
       - name: Install LibreOffice
         timeout-minutes: 15
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc poppler-utils
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc poppler-utils
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
@@ -399,7 +403,9 @@ jobs:
           NPM_CONFIG_FETCH_RETRIES: "3"
       - name: Install LibreOffice
         timeout-minutes: 15
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: se-packages
