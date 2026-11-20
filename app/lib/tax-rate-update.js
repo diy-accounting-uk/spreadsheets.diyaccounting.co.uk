@@ -355,7 +355,8 @@ export function normaliseText(text) {
     .replace(/[“”]/g, '"')
     .replace(/[–—−]/g, "-")
     .replace(/ /g, " ")
-    .replace(/\s+([.,;:])/g, "$1")
+    .replace(/\s+([.,;:%)])/g, "$1")
+    .replace(/\(\s+/g, "(")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -424,17 +425,63 @@ function plausible(kind, value) {
   return false;
 }
 
+// A table row quoted without the cells between its label and its value leaves
+// gaps in the page's words. Every word of the quote must still appear on the
+// page, in order, with at most this many page words in each gap and in all.
+const QUOTE_GAP_WORDS = 8;
+const QUOTE_EXTRA_WORDS = 12;
+
+function words(text) {
+  return normaliseText(text)
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.replace(/[.,;:]+$/, ""))
+    .filter(Boolean);
+}
+
+/** True when the quote's words are on the page in order, close together, or the quote is on it word for word. */
+export function quoteOnPage(quote, pageText) {
+  const wanted = words(quote);
+  if (wanted.length === 0) return false;
+  const have = words(pageText);
+  for (let start = 0; start < have.length; start++) {
+    if (have[start] !== wanted[0]) continue;
+    let at = start;
+    let extra = 0;
+    let found = true;
+    for (let w = 1; w < wanted.length && found; w++) {
+      let next = at + 1;
+      while (next < have.length && next - at - 1 <= QUOTE_GAP_WORDS && have[next] !== wanted[w]) next++;
+      if (next >= have.length || next - at - 1 > QUOTE_GAP_WORDS) found = false;
+      else {
+        extra += next - at - 1;
+        at = next;
+      }
+    }
+    if (found && extra <= QUOTE_EXTRA_WORDS) return true;
+  }
+  return false;
+}
+
+/** The page the quote is on: the page the figure names, else another page the job read that holds it, else null. */
+export function quotePage(figure, pages) {
+  const named = pages.find((p) => p.url === figure.url);
+  if (!named) return null;
+  if (quoteOnPage(figure.quote, named.text)) return named;
+  const others = pages.filter((p) => p !== named && quoteOnPage(figure.quote, p.text));
+  return others[0] ?? null;
+}
+
 /**
- * Why a figure cannot be used, or null when it can: the page must be one the
- * job read, the quote must be on it word for word, and the quote must state
- * the figure.
+ * Why a figure cannot be used, or null when it can: the quote must be on a
+ * page the job read, its words in order on that page, and it must state the
+ * figure.
  */
 export function figureProblem(figure, kind, pages) {
   if (!plausible(kind, figure.value)) return `the value ${JSON.stringify(figure.value)} is not a ${kind}`;
-  const page = pages.find((p) => p.url === figure.url);
-  if (!page) return `${figure.url} is not a page the job read`;
+  if (!pages.some((p) => p.url === figure.url)) return `${figure.url} is not a page the job read`;
   if (typeof figure.quote !== "string" || normaliseText(figure.quote).length === 0) return "the quote is empty";
-  if (!page.text.includes(normaliseText(figure.quote))) return `the quote is not on ${figure.url}`;
+  if (!quotePage(figure, pages)) return `the quote is not on ${figure.url}`;
   if (!quoteStatesFigure(figure.quote, kind, figure.value)) return `the quote does not state ${formatValue(kind, figure.value)}`;
   return null;
 }
@@ -619,27 +666,54 @@ export async function updateTaxRates({ dataDir, pages, client, today, model = MO
       }
     }
     const accepted = new Map();
-    for (const figure of answer.figures) {
-      const spec = fields.find((f) => f.field === figure.field);
-      if (!spec) {
-        rejected.push({ file: item.name, field: String(figure.field), reason: "the file has no such field" });
-        continue;
+    const judge = (figures, askedFields) => {
+      const refused = [];
+      for (const figure of figures) {
+        const spec = askedFields.find((f) => f.field === figure.field);
+        if (!spec) {
+          rejected.push({ file: item.name, field: String(figure.field), reason: "the file has no such field" });
+          continue;
+        }
+        const problem = accepted.has(spec.field) ? "the model gave the field twice" : figureProblem(figure, spec.kind, pages);
+        if (problem) {
+          const entry = { file: item.name, field: spec.field, value: figure.value, quote: figure.quote, url: figure.url, reason: problem };
+          if (problem.startsWith("the quote is not on")) refused.push({ spec, entry });
+          else rejected.push(entry);
+          continue;
+        }
+        accepted.set(spec.field, { kind: spec.kind, value: figure.value });
+        if (Math.abs(numbers.get(spec.field) - figure.value) > 1e-9) {
+          changes.push({
+            file: item.name,
+            field: spec.field,
+            from: formatValue(spec.kind, numbers.get(spec.field)),
+            to: formatValue(spec.kind, figure.value),
+            quote: figure.quote,
+            url: quotePage(figure, pages).url,
+          });
+        }
       }
-      const problem = accepted.has(spec.field) ? "the model gave the field twice" : figureProblem(figure, spec.kind, pages);
-      if (problem) {
-        rejected.push({ file: item.name, field: spec.field, value: figure.value, quote: figure.quote, url: figure.url, reason: problem });
-        continue;
-      }
-      accepted.set(spec.field, { kind: spec.kind, value: figure.value });
-      if (Math.abs(numbers.get(spec.field) - figure.value) > 1e-9) {
-        changes.push({
-          file: item.name,
-          field: spec.field,
-          from: formatValue(spec.kind, numbers.get(spec.field)),
-          to: formatValue(spec.kind, figure.value),
-          quote: figure.quote,
-          url: figure.url,
-        });
+      return refused;
+    };
+    const refused = judge(answer.figures, fields);
+    // One more call for the figures whose quote was not on any page: it names
+    // each refused quote and asks for the page's own words, or no figure.
+    if (refused.length > 0) {
+      const retryFields = refused.map(({ spec }) => spec);
+      const retryUser = [
+        user,
+        "",
+        "These quotes are not on any page above, word for word. For each field, give a quote copied from the page text, or leave the field out:",
+        ...refused.map(({ spec, entry }) => `- ${spec.field}: ${JSON.stringify(entry.quote)}`),
+      ].join("\n");
+      const second = await requestRates(
+        client,
+        ratesRequest({ pages, user: retryUser, fields: retryFields, askForYearEvidence: false, model }),
+      );
+      const again = new Set(judge(second.figures, retryFields).map(({ spec }) => spec.field));
+      for (const { spec, entry } of refused) {
+        if (accepted.has(spec.field)) continue;
+        if (again.has(spec.field) || !second.figures.some((f) => f.field === spec.field)) rejected.push(entry);
       }
     }
     if (item.isNew && accepted.size === 0) {
@@ -678,7 +752,10 @@ export function summaryMarkdown({ written, created, changes, rejected }) {
     lines.push(`- ${change.file} ${change.field}: ${change.from} to ${change.to}. "${change.quote}" (${change.url})`);
   if (rejected.length > 0) {
     lines.push("", "Figures not used:");
-    for (const item of rejected) lines.push(`- ${item.file} ${item.field}: ${item.reason}`);
+    for (const item of rejected) {
+      lines.push(`- ${item.file} ${item.field}: ${item.reason}`);
+      if (item.quote) lines.push(`  quote: ${JSON.stringify(item.quote)}`);
+    }
   }
   return `${lines.join("\n")}\n`;
 }

@@ -20,6 +20,7 @@ import {
   derivedValues,
   formatValue,
   parseFileName,
+  quoteOnPage,
   quoteStatesFigure,
   readNumbers,
   pageText,
@@ -299,5 +300,56 @@ describe("a new year", () => {
     expect(result.created).toEqual([]);
     expect(result.written).toEqual([]);
     unchangedExcept([]);
+  });
+});
+
+describe("the quote check on table pages", () => {
+  const table = pageText(
+    "<main><table><tr><td>Main rate</td><td>(companies with profits over &pound;250,000)</td><td>25&nbsp;%</td><td>25%</td></tr>" +
+      "<tr><td>Dividend allowance</td><td>of</td><td>&pound;500</td></tr></main>",
+  );
+
+  it("accepts a table row quoted without the cells between its label and its value", () => {
+    expect(quoteOnPage("Main rate 25%", table)).toBe(true);
+    expect(quoteOnPage("dividend allowance \u00a3500", table)).toBe(true);
+  });
+
+  it("uses a figure whose quote is on another page the job read", async () => {
+    const other = { url: "https://www.gov.uk/other", text: "The dividend ordinary rate is 11.75%." };
+    const result = await run(
+      { "ltd-2027.toml": { figures: [figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%.")] } },
+      [...page("Nothing here."), other],
+    );
+    expect(result.rejected).toEqual([]);
+    expect(result.changes[0].url).toBe(other.url);
+  });
+
+  it("refuses a paraphrase and a quote whose words are far apart", () => {
+    expect(quoteOnPage("The main rate of corporation tax is 25%", table)).toBe(false);
+    const far = pageText(`<main><p>Main rate ${"filler ".repeat(30)} 25%</p></main>`);
+    expect(quoteOnPage("Main rate 25%", far)).toBe(false);
+  });
+
+  it("asks once more for a refused quote and uses the corrected one", async () => {
+    const client = {
+      send: vi.fn(async (command) => {
+        const text = command.input.messages[0].content[0].text;
+        if (!text.startsWith("Data file: ltd-2027.toml")) return converseReply({ figures: [] });
+        const quote = text.includes("not on any page above")
+          ? "The dividend ordinary rate is 11.75%."
+          : "The dividend ordinary rate was 11.75%.";
+        return converseReply({ figures: [figure("dividend_tax.basic_rate", 0.1175, quote)] });
+      }),
+    };
+    const result = await updateTaxRates({
+      dataDir: dir,
+      pages: page("The dividend ordinary rate is 11.75%."),
+      client,
+      today: TODAY,
+      log: () => {},
+    });
+    expect(result.rejected).toEqual([]);
+    expect(result.changes.map((c) => c.field)).toContain("dividend_tax.basic_rate");
+    expect(client.send.mock.calls.some(([c]) => c.input.messages[0].content[0].text.includes("not on any page above"))).toBe(true);
   });
 });
