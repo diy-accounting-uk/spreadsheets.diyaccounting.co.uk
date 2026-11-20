@@ -20,6 +20,7 @@ import {
   derivedValues,
   formatValue,
   parseFileName,
+  quoteOnPage,
   quoteStatesFigure,
   readNumbers,
   pageText,
@@ -225,6 +226,7 @@ describe("a run", () => {
       figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%."),
       "the quote is not on",
     ],
+    ["a quote that is only the figure", figure("dividend_tax.basic_rate", 0.1075, "10.75%"), "the quote has no words besides figures"],
     [
       "a quote that does not state the figure",
       figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 10.75%."),
@@ -232,8 +234,8 @@ describe("a run", () => {
     ],
     [
       "a page the job did not read",
-      figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 10.75%.", "https://example.com/"),
-      "is not a page the job read",
+      figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%.", "https://example.com/"),
+      "the quote is not on https://example.com/",
     ],
     ["a rate given as a percentage", figure("dividend_tax.basic_rate", 10.75, "The dividend ordinary rate is 10.75%."), "is not a rate"],
   ])("never uses %s", async (_, answer, reason) => {
@@ -299,5 +301,60 @@ describe("a new year", () => {
     expect(result.created).toEqual([]);
     expect(result.written).toEqual([]);
     unchangedExcept([]);
+  });
+});
+
+describe("the quote check on table pages", () => {
+  const table = pageText(
+    "<main><table><tr><td>Main rate</td><td>(companies with profits over &pound;250,000)</td><td>25&nbsp;%</td><td>25%</td></tr>" +
+      "<tr><td>Dividend allowance</td><td>of</td><td>&pound;500</td></tr></main>",
+  );
+
+  it("accepts a table row quoted without the cells between its label and its value", () => {
+    expect(quoteOnPage("Main rate 25%", table)).toBe(true);
+    expect(quoteOnPage("dividend allowance \u00a3500", table)).toBe(true);
+  });
+
+  it("uses a figure whose quote is on another page the job read", async () => {
+    const other = { url: "https://www.gov.uk/other", text: "The dividend ordinary rate is 11.75%." };
+    const result = await run(
+      { "ltd-2027.toml": { figures: [figure("dividend_tax.basic_rate", 0.1175, "The dividend ordinary rate is 11.75%.")] } },
+      [...page("Nothing here."), other],
+    );
+    expect(result.rejected).toEqual([]);
+    expect(result.changes[0].url).toBe(other.url);
+  });
+
+  it("refuses a quote that skips another column's figure", () => {
+    const years = pageText("<main><p>Main rate expenditure 14% 12%</p></main>");
+    expect(quoteOnPage("Main rate expenditure 12%", years)).toBe(false);
+    expect(quoteOnPage("Main rate expenditure 14% 12%", years)).toBe(true);
+  });
+
+  it("refuses a paraphrase and a quote whose words are far apart", () => {
+    expect(quoteOnPage("The main rate of corporation tax is 25%", table)).toBe(false);
+    const far = pageText(`<main><p>Main rate ${"filler ".repeat(30)} 25%</p></main>`);
+    expect(quoteOnPage("Main rate 25%", far)).toBe(false);
+  });
+
+  it("asks once more for a refused quote and uses the corrected one", async () => {
+    const client = {
+      send: vi.fn(async (command) => {
+        const text = command.input.messages[0].content[0].text;
+        if (!text.startsWith("Data file: ltd-2027.toml")) return converseReply({ figures: [] });
+        const quote = text.includes("not accepted") ? "The dividend ordinary rate is 11.75%." : "The dividend ordinary rate was 11.75%.";
+        return converseReply({ figures: [figure("dividend_tax.basic_rate", 0.1175, quote)] });
+      }),
+    };
+    const result = await updateTaxRates({
+      dataDir: dir,
+      pages: page("The dividend ordinary rate is 11.75%."),
+      client,
+      today: TODAY,
+      log: () => {},
+    });
+    expect(result.rejected).toEqual([]);
+    expect(result.changes.map((c) => c.field)).toContain("dividend_tax.basic_rate");
+    expect(client.send.mock.calls.some(([c]) => c.input.messages[0].content[0].text.includes("not accepted"))).toBe(true);
   });
 });
