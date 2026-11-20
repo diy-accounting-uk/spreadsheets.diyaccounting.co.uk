@@ -683,7 +683,7 @@ export async function updateTaxRates({ dataDir, pages, client, today, model = MO
         const problem = figureProblem(figure, spec.kind, pages);
         if (problem) {
           const entry = { file: item.name, field: spec.field, value: figure.value, quote: figure.quote, url: figure.url, reason: problem };
-          if (problem.startsWith("the quote is not on")) refused.push({ spec, entry });
+          if (problem.startsWith("the quote is not on") || problem.startsWith("the quote has no words")) refused.push({ spec, entry });
           else rejected.push(entry);
           continue;
         }
