@@ -251,7 +251,10 @@ jobs:
       - name: Install LibreOffice Calc
         if: ${{ !cancelled() }}
         timeout-minutes: 10
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
+          no-install-recommends: "false"
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -296,7 +299,10 @@ jobs:
 
       - name: Install LibreOffice Calc
         timeout-minutes: 10
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
+          no-install-recommends: "false"
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -351,7 +357,10 @@ jobs:
 
       - name: Install LibreOffice Calc
         timeout-minutes: 10
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
+          no-install-recommends: "false"
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -406,7 +415,10 @@ jobs:
 
       - name: Install LibreOffice Calc
         timeout-minutes: 10
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
+          no-install-recommends: "false"
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -461,7 +473,10 @@ jobs:
 
       - name: Install LibreOffice Calc
         timeout-minutes: 10
-        run: sudo rm -f /var/lib/man-db/auto-update && sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && sudo apt-get install -y -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libreoffice-calc
+        uses: ./.github/actions/apt-install
+        with:
+          packages: libreoffice-calc
+          no-install-recommends: "false"
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
