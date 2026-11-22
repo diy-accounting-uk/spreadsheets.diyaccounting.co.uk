@@ -10,6 +10,7 @@
 
 import { isStraddlingLine } from "./scenario-extractor.js";
 import { postingAccountNames, postingsOf, reasonApart, yearEndPostings } from "./posting-rules.js";
+import { accountClassesOfBook } from "./account-classes.js";
 
 function isoDate(value) {
   if (!value) return "";
@@ -203,14 +204,21 @@ function rowsFed(account, rows, entriesOfAccount, accountOfEntry) {
 
 /**
  * The book's chart of accounts: each account's id, name, group (the
- * book.toml table it sits in), its other declared fields, how many lines
- * post to it and their signed total in pence, and the report rows it feeds.
+ * book.toml table it sits in), its class and normal side (account-classes.js;
+ * null for an account the product's chart does not know), its other declared
+ * fields, how many lines post to it and their signed total in pence, and the
+ * report rows it feeds. A Company account also gives `frs102`, the FRS 102
+ * concept it feeds, and `frs105`, the FRS 105 line it feeds (null where the
+ * published statements leave it out), with the workbook's placement in
+ * `asFound` where a filed concept of the same name lands elsewhere.
  * @param {Object} book
  * @param {Array} lines
  * @param {Object} attributedReport - R built with entryNumbers on every figure
+ * @param {string} product - bst, taxi, se or ltd
  * @returns {Array<Object>}
  */
-export function chartOfAccounts(book, lines, attributedReport) {
+export function chartOfAccounts(book, lines, attributedReport, product) {
+  const classes = accountClassesOfBook(book, product);
   const rows = attributedReport.values
     .filter((entry) => entry.key.startsWith("section/") && !entry.key.startsWith(NOT_A_REPORT_ROW) && entry.entryNumbers?.length > 0)
     .map((entry) => ({ key: entry.key, label: entry.label, entries: new Set(entry.entryNumbers) }));
@@ -228,10 +236,22 @@ export function chartOfAccounts(book, lines, attributedReport) {
     for (const [id, account] of Object.entries(accounts || {})) {
       const { accountMainDescription, ...declared } = account || {};
       const posted = lines.filter((line) => String(line.accountMainID) === id);
+      const classOf = classes.get(id);
+      const placement =
+        product === "ltd"
+          ? {
+              frs102: classOf?.frs102 ?? null,
+              frs105: classOf?.frs105 ?? null,
+              ...(classOf?.asFound ? { asFound: classOf.asFound } : {}),
+            }
+          : {};
       chart.push({
         id,
         name: accountMainDescription ?? null,
         group,
+        accountClass: classOf?.accountClass ?? null,
+        normalSide: classOf?.normalSide ?? null,
+        ...placement,
         ...plainValue(declared),
         lineCount: posted.length,
         totalPence: posted.reduce((sum, line) => sum + signedPence(line), 0),

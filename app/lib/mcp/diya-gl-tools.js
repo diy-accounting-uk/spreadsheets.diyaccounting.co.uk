@@ -373,7 +373,8 @@ function lines(session, params = {}) {
 
 function chart(session, params = {}) {
   const { book, lines: bookLines } = bookAndLines(session, params);
-  return { product: productOf(book), accounts: chartOfAccounts(book, bookLines, reportFor(book, bookLines, true)) };
+  const product = productOf(book);
+  return { product, accounts: chartOfAccounts(book, bookLines, reportFor(book, bookLines, true), product) };
 }
 
 function profile(session, params = {}) {
@@ -573,7 +574,7 @@ export const TOOLS = {
   chart: {
     name: "chart",
     description:
-      "The loaded book's chart of accounts: each account's id, name, group (sales, purchases, bank, capital, assets, liabilities), its declared fields (the workbook column it lands in), how many lines post to it and their total in pence, and feeds, the report rows (key and printed label) its lines reach. Answers: Which account is fuel? Where does rent show in my accounts? What accounts can I post to? Which accounts have no activity this year?",
+      "The loaded book's chart of accounts: each account's id, name, group (sales, purchases, bank, capital, assets, liabilities), its class (asset, liability, equity, income or expense) and normal side (D or C), for a Company book the FRS 102 concept and the FRS 105 line it feeds, its declared fields (the workbook column it lands in), how many lines post to it and their total in pence, and feeds, the report rows (key and printed label) its lines reach. Answers: Which account is fuel? Where does rent show in my accounts? What accounts can I post to? Which accounts have no activity this year? Is this account an asset or an expense? Which line of the filed accounts does this account reach?",
     inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
     handler: chart,
   },
