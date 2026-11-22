@@ -185,7 +185,7 @@ export { headlinesFromReport } from "./headlines.js";
 // The postings each Company line stands for, the year-end postings from the
 // registers, and the trial balance they sum to over a date range.
 export { POSTING_RULES, POSTING_ACCOUNTS, postingsOf, yearEndPostings, reasonApart } from "./posting-rules.js";
-export { trialBalance } from "./book-queries.js";
+export { trialBalance, trialBalancePeriods, trialBalanceRange, trialBalanceReport, trialBalanceAccountLines } from "./book-queries.js";
 
 // Saving it back out as a workbook or the package zip.
 export {

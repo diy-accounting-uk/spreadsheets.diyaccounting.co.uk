@@ -190,3 +190,17 @@
     color: var(--ink);
   }
 }
+
+/* The Trial balance view's period picker. */
+.trial-balance-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.trial-balance-picker select {
+  max-width: 100%;
+  font: inherit;
+}

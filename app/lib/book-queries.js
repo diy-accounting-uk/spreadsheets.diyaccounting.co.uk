@@ -9,7 +9,7 @@
 // server and any other caller read the same answers.
 
 import { isStraddlingLine } from "./scenario-extractor.js";
-import { postingAccountNames, postingsOf, reasonApart } from "./posting-rules.js";
+import { postingAccountNames, postingsOf, reasonApart, yearEndPostings } from "./posting-rules.js";
 
 function isoDate(value) {
   if (!value) return "";
@@ -289,6 +289,173 @@ export function trialBalance(book, lines, { from, to, yearEndPostings = [] } = {
     credit: accounts.reduce((total, row) => total + row.credit, 0),
   };
   return { from: from ?? null, to: to ?? null, accounts, totals, apart };
+}
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const monthId = (year, monthIndex) => {
+  const date = new Date(Date.UTC(year, monthIndex, 1));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
+// The first and last day of the `length` months that end with the month `endId` (YYYY-MM).
+function monthsEndingAt(endId, length) {
+  const [year, month] = endId.split("-").map(Number);
+  const from = new Date(Date.UTC(year, month - length, 1));
+  const to = new Date(Date.UTC(year, month, 0));
+  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+}
+
+const dayLabel = (iso) => `${Number(iso.slice(8, 10))} ${MONTH_NAMES[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+
+/**
+ * The periods a trial balance can be read over: the book's year, each of its
+ * months, and the VAT quarters of the three staggers (quarters ending in
+ * January, April, July and October; February, May, August and November;
+ * March, June, September and December) that touch the year. A month or
+ * quarter is named by the YYYY-MM of its last month.
+ * @param {Object} book
+ * @returns {{year: Object, months: Array<Object>, vatQuarters: Array<Object>}}
+ */
+export function trialBalancePeriods(book) {
+  const start = isoDate(book?.documentInfo?.periodCoveredStart);
+  const end = isoDate(book?.documentInfo?.periodCoveredEnd);
+  if (!start || !end) throw new Error("The book states no period, so it has no trial balance periods");
+  const firstMonth = Number(start.slice(0, 4)) * 12 + Number(start.slice(5, 7)) - 1;
+  const lastMonth = Number(end.slice(0, 4)) * 12 + Number(end.slice(5, 7)) - 1;
+  const months = [];
+  const vatQuarters = [];
+  for (let index = firstMonth; index <= lastMonth + 2; index++) {
+    const id = monthId(Math.floor(index / 12), index % 12);
+    if (index <= lastMonth) {
+      const { from, to } = monthsEndingAt(id, 1);
+      months.push({ id, label: `${MONTH_NAMES[index % 12]} ${Math.floor(index / 12)}`, from, to });
+    }
+    if (index - 2 <= lastMonth && index >= firstMonth) {
+      const { from, to } = monthsEndingAt(id, 3);
+      vatQuarters.push({ id, stagger: index % 3, label: `Quarter ending ${dayLabel(to)}`, from, to });
+    }
+  }
+  vatQuarters.sort((a, b) => a.stagger - b.stagger || (a.id < b.id ? -1 : 1));
+  return { year: { id: "year", label: `Year ${dayLabel(start)} to ${dayLabel(end)}`, from: start, to: end }, months, vatQuarters };
+}
+
+/**
+ * The date range a trial balance selection names: the year (the default),
+ * a month, a VAT quarter, or an explicit from and to.
+ * @param {Object} book
+ * @param {Object} [selection]
+ * @param {string} [selection.period] - year, month or vatQuarter
+ * @param {string} [selection.month] - YYYY-MM of the month, or of the quarter's last month
+ * @param {string} [selection.from] - YYYY-MM-DD, used with period "custom" or when no period is given
+ * @param {string} [selection.to]
+ * @returns {{period: string, id: string|null, label: string, from: string, to: string}}
+ */
+export function trialBalanceRange(book, { period, month, from, to } = {}) {
+  const periods = trialBalancePeriods(book);
+  const kind = period ?? (from || to ? "custom" : "year");
+  if (kind === "year") return { period: "year", id: null, label: periods.year.label, from: periods.year.from, to: periods.year.to };
+  if (kind === "custom") {
+    if (!from || !to) throw new Error("A custom trial balance period needs both from and to");
+    return { period: "custom", id: null, label: `${dayLabel(from)} to ${dayLabel(to)}`, from, to };
+  }
+  if (kind !== "month" && kind !== "vatQuarter")
+    throw new Error(`Unknown trial balance period "${kind}": use year, month, vatQuarter or custom`);
+  if (!month)
+    throw new Error(
+      `A ${kind} trial balance needs the month argument (YYYY-MM${kind === "vatQuarter" ? " of the quarter's last month" : ""})`,
+    );
+  const found = (kind === "month" ? periods.months : periods.vatQuarters).find((entry) => entry.id === month);
+  if (!found) throw new Error(`The book has no ${kind} ending ${month}`);
+  return { period: kind, id: found.id, label: found.label, from: found.from, to: found.to };
+}
+
+/**
+ * The trial balance a reader asks for, with the periods on offer and, when an
+ * account is named, the lines and year-end postings behind that account's
+ * balance in the same period.
+ * @param {Object} book - a Company book
+ * @param {Array} lines
+ * @param {Object} taxData - the book's tax year data, for the year-end postings
+ * @param {Object} [selection] - see trialBalanceRange, plus `account`
+ * @returns {Object}
+ */
+export function trialBalanceReport(book, lines, taxData, selection = {}) {
+  const range = trialBalanceRange(book, selection);
+  const yearEnd = yearEndPostings(book, lines, taxData);
+  const balance = trialBalance(book, lines, { from: range.from, to: range.to, yearEndPostings: yearEnd });
+  const report = { ...range, accounts: balance.accounts, totals: balance.totals, apart: balance.apart, periods: trialBalancePeriods(book) };
+  if (selection.account !== undefined && selection.account !== null && selection.account !== "") {
+    report.accountLines = trialBalanceAccountLines(book, lines, String(selection.account), { ...range, yearEndPostings: yearEnd });
+  }
+  return report;
+}
+
+/**
+ * The postings behind one account's trial balance row over a date range:
+ * each line that posts to it with its entry number, and each year-end
+ * posting from a register that posts to it. Debits less credits is the
+ * account's balance in trialBalance for the same range.
+ * @param {Object} book - a Company book
+ * @param {Array} lines
+ * @param {string} account
+ * @param {Object} range - from, to and yearEndPostings, as trialBalance takes them
+ * @returns {{account: string, name: string|null, rows: Array<Object>, totals: {debit: number, credit: number}}}
+ */
+export function trialBalanceAccountLines(book, lines, account, { from, to, yearEndPostings: yearEnd = [] } = {}) {
+  const inRange = (date) => (!from || date >= from) && (!to || date <= to);
+  const rows = [];
+  for (const line of lines) {
+    const date = isoDate(line.postingDate);
+    if (!inRange(date) || reasonApart(book, line)) continue;
+    for (const posting of postingsOf(book, line)) {
+      if (posting.account !== account) continue;
+      rows.push({
+        source: `line ${line.entryNumber}`,
+        entryNumber: line.entryNumber,
+        journal: line.sourceJournalID,
+        postingDate: date,
+        description: line.detailComment ?? line.lineItemComment ?? "",
+        debit: posting.debit,
+        credit: posting.credit,
+      });
+    }
+  }
+  for (const entry of yearEnd) {
+    if (!inRange(entry.date)) continue;
+    for (const posting of entry.postings) {
+      if (posting.account !== account) continue;
+      rows.push({
+        source: `${entry.register} register`,
+        entryNumber: null,
+        journal: null,
+        postingDate: entry.date,
+        description: entry.description,
+        debit: posting.debit,
+        credit: posting.credit,
+      });
+    }
+  }
+  rows.sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0));
+  return {
+    account,
+    name: postingAccountNames(book)[account] ?? null,
+    rows,
+    totals: { debit: rows.reduce((t, r) => t + r.debit, 0), credit: rows.reduce((t, r) => t + r.credit, 0) },
+  };
 }
 
 /**

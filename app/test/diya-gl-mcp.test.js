@@ -123,7 +123,7 @@ function startMcpClient() {
 // ============================================================================
 
 describe("diya-gl MCP server: stdio handshake", () => {
-  it("initializes, lists exactly the eleven tools, and answers tools/call", async () => {
+  it("initializes, lists exactly the twelve tools, and answers tools/call", async () => {
     const client = startMcpClient();
     try {
       const initResult = await client.request("initialize", { protocolVersion: "2025-06-18" });
@@ -146,6 +146,7 @@ describe("diya-gl MCP server: stdio handshake", () => {
         "report",
         "roll_forward",
         "save_workbook",
+        "trial_balance",
       ]);
       for (const tool of listResult.tools) {
         expect(typeof tool.description).toBe("string");

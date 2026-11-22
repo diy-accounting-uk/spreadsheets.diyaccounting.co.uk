@@ -51,7 +51,7 @@ import {
 } from "../diya-gl-edits.js";
 import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
-import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
+import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, trialBalanceReport, LINE_GROUPINGS } from "../book-queries.js";
 import { buildNewBook } from "../diya-gl-new-book.js";
 import { buildBookFromRegister } from "../diya-gl-register-book.js";
 import { rollForward, rollForwardChecks, rolledYearEnd } from "../diya-gl-roll-forward.js";
@@ -386,6 +386,13 @@ async function checks(session, params = {}) {
   return checksWithEntries(await bookChecksFor(book, bookLines));
 }
 
+async function trialBalanceOf(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  const taxData = await loadTaxDataForBook(book);
+  const { periods, ...report } = trialBalanceReport(book, bookLines, taxData, params);
+  return report;
+}
+
 const BYPASS_PROPERTIES = {
   book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
   lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
@@ -583,5 +590,32 @@ export const TOOLS = {
       "Every book check and warning over the loaded book, each with its verdict (pass, warn or fail), what it means, and the entryNumbers of the lines that fail it, plus the pass/warn/fail summary. Answers: Is anything wrong with my books? Which entries are dated outside the year? Which sales have no invoice number? Are there duplicate entries? Am I near the VAT threshold?",
     inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
     handler: checks,
+  },
+  trial_balance: {
+    name: "trial_balance",
+    description:
+      "The trial balance of the loaded Company book: every account's balance in the debit or the credit column and the two column totals, which are equal, over the year, one month, one VAT quarter or a date range. The balances sum each line's postings and the year-end postings of the registers (fixed assets, stock, hire purchase, dividends, the corporation tax charge), so a month shows its own movement and the year-end postings fall in the year and in the month that holds the year end. `apart` lists the lines that post to nothing, with the reason (an in-year journal line, a VAT-straddling line). Name an account to also get accountLines: each line and register posting behind that account's balance, in date order. Answers: Does my trial balance balance? What is the balance on 1300 debtors at the year end? What moved in the bank account in June? What makes up the VAT quarter's creditors? Company books only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        period: {
+          type: "string",
+          enum: ["year", "month", "vatQuarter", "custom"],
+          description: "Optional: year (the default), month, vatQuarter, or custom with from and to",
+        },
+        month: {
+          type: "string",
+          description: "Optional: YYYY-MM of the month, or of the VAT quarter's last month; needed for month and vatQuarter",
+        },
+        from: { type: "string", description: "Optional: first day, YYYY-MM-DD inclusive, for a custom range" },
+        to: { type: "string", description: "Optional: last day, YYYY-MM-DD inclusive, for a custom range" },
+        account: {
+          type: "string",
+          description: "Optional: an account id (for example 1300); adds accountLines with that account's postings",
+        },
+        ...BYPASS_PROPERTIES,
+      },
+    },
+    handler: trialBalanceOf,
   },
 };

@@ -50,6 +50,7 @@ export default defineConfig({
         "**/diya-gl-se-edits.browser.test.js",
         "**/diya-gl-se-layouts.browser.test.js",
         "**/diya-gl-ltd-page.browser.test.js",
+        "**/diya-gl-ltd-trial-balance.browser.test.js",
         "**/diya-gl-ltd-forms.browser.test.js",
         "**/diya-gl-ltd-deep-links.browser.test.js",
         "**/diya-gl-ltd-equivalence.browser.test.js",
