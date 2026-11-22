@@ -579,7 +579,8 @@ async function buildYear(accounts, which, deps) {
           disposalResult: assets.disposalResult,
         })
       : [];
-    const derivedBeforeTax = derivedProfit + (derivedProfit > 0 ? derivedTax : 0) + assets.engineCharge;
+    // The engine takes the stock movement into the profit from the book's opening and closing stock.
+    const derivedBeforeTax = derivedProfit + (derivedProfit > 0 ? derivedTax : 0) + assets.engineCharge - stockMovement;
     if (derivesProfit && derivedBeforeTax !== 0) {
       stated.push({
         concept: "NetAssetsLiabilities",

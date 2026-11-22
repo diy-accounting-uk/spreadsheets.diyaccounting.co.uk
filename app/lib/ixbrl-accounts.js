@@ -130,7 +130,12 @@ export const MAPPING_TABLE = [
     account: "2100",
     note: "a heading outside the creditors, which net assets take off; posts as a trade creditor",
   },
-  { concept: "TaxationSocialSecurityPayable", figure: "taxationSocialSecurity", account: "2100", note: "within one year" },
+  {
+    concept: "TaxationSocialSecurityPayable",
+    figure: "taxationSocialSecurity",
+    account: "2100",
+    note: "within one year; less the corporation tax when the creditors within one year count it as the total that includes the corporation tax",
+  },
   {
     concept: "OtherTaxationSocialSecurityPayable",
     figure: "taxationSocialSecurity",
@@ -439,6 +444,7 @@ function balanceSheetAt(set, endDay, notes, label) {
     retained = (retained ?? 0) + sumOf(otherReserves.map(([, value]) => value));
   }
 
+  const taxationSocialSecurityTotal = set.maturity("TaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]);
   const year = pick({
     fixedAssets: set.instant("FixedAssets", endDay) ?? sumDefined(FIXED_ASSET_HEADINGS.map((heading) => set.instant(heading, endDay))),
     stocks: set.instant("TotalInventories", endDay),
@@ -455,8 +461,7 @@ function balanceSheetAt(set, endDay, notes, label) {
       NO_MATURITY,
     ]),
     taxationSocialSecurity:
-      set.maturity("TaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]) ??
-      set.maturity("OtherTaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
+      taxationSocialSecurityTotal ?? set.maturity("OtherTaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
     accruals:
       set.maturity("AccruedLiabilities", endDay, WITHIN_ONE_YEAR) ??
       set.maturity("AccruedLiabilitiesDeferredIncome", endDay, WITHIN_ONE_YEAR),
@@ -490,7 +495,22 @@ function balanceSheetAt(set, endDay, notes, label) {
     year.accrualsDeferredIncome = accrualsDeferredIncomeOnNoMaturity.value;
     set.consumed.add(accrualsDeferredIncomeOnNoMaturity);
   }
+  if (taxationSocialSecurityTotal !== undefined && creditorsTotalCountsTaxationSocialSecurityOnce(year)) {
+    year.taxationSocialSecurity = taxationSocialSecurityTotal - year.corporationTax;
+    notes.push(
+      `${label}: the taxation and social security of ${taxationSocialSecurityTotal} include the corporation tax of ${year.corporationTax}, as the creditors within one year state; the other taxation and social security is ${year.taxationSocialSecurity}.`,
+    );
+  }
   return year;
+}
+
+// TaxationSocialSecurityPayable is a total that includes CorporationTaxPayable, but some software tags
+// it as the line beside the corporation tax. The stated creditors within one year settle which: the
+// total is counted once only when they agree with the lines counted that way and not with both added.
+function creditorsTotalCountsTaxationSocialSecurityOnce(year) {
+  if (year.creditorsWithinOneYear === undefined || !year.corporationTax) return false;
+  const bothAdded = sumOf(WITHIN_LINES.map((line) => year[line] ?? 0));
+  return close(bothAdded - year.corporationTax, year.creditorsWithinOneYear) && !close(bothAdded, year.creditorsWithinOneYear);
 }
 
 const currentAssetsOf = (year) => year.currentAssets ?? sumOf([year.stocks, year.debtors, year.cashAtBank].map((v) => v ?? 0));
@@ -745,19 +765,27 @@ function checkBalance(year, label) {
   }
 }
 
+// A stated total above its tagged lines leaves a line untagged; the summary book posts the part no
+// line explains to the account it belongs to. A small company's total is taken so only when a total
+// the document states is worked from it: checkBalance has then held the total to that stated total.
+// Lines above their total are refused.
+const statesATotalWorkedFromItsTotals = (s) =>
+  [s.netCurrentAssets, s.totalAssetsLessCurrentLiabilities, s.netAssets, s.capitalAndReserves].some((total) => total !== undefined);
+
 function checkTotals(year, label, regime) {
   const s = year;
+  const untaggedLinesAllowed = regime !== "small" || statesATotalWorkedFromItsTotals(s);
   const lines = sumDefined([s.stocks, s.debtors, s.cashAtBank]);
   if (s.currentAssets !== undefined && lines !== undefined) {
     const over = lines - s.currentAssets > WITHIN;
-    const under = s.currentAssets - lines > WITHIN && regime === "small";
+    const under = s.currentAssets - lines > WITHIN && !untaggedLinesAllowed;
     if (over || under)
       throw problem(`The ${label} current assets of ${s.currentAssets} differ from the lines under it, which add up to ${lines}.`);
   }
   const creditors = sumDefined(WITHIN_LINES.map((line) => s[line]));
   if (s.creditorsWithinOneYear !== undefined && creditors !== undefined) {
     const over = creditors - s.creditorsWithinOneYear > WITHIN;
-    const under = s.creditorsWithinOneYear - creditors > WITHIN && regime === "small";
+    const under = s.creditorsWithinOneYear - creditors > WITHIN && !untaggedLinesAllowed;
     if (over || under) {
       throw problem(
         `The ${label} creditors within one year of ${s.creditorsWithinOneYear} differ from the lines under it, which add up to ${creditors}.`,
@@ -765,11 +793,65 @@ function checkTotals(year, label, regime) {
     }
   }
   const reserves = sumDefined([s.calledUpShareCapital, s.profitAndLossAccount]);
-  if (s.capitalAndReserves !== undefined && reserves !== undefined && !close(reserves, s.capitalAndReserves)) {
+  // checkBalance has held the capital and reserves to the balance sheet's other side.
+  if (s.capitalAndReserves !== undefined && reserves !== undefined && reserves - s.capitalAndReserves > WITHIN) {
     throw problem(
       `The ${label} capital and reserves of ${s.capitalAndReserves} differ from the lines under it, which add up to ${reserves}.`,
     );
   }
+}
+
+// The balance sheet lines that are amounts and never below nothing, and the totals a file states that
+// the checks hold them to.
+const UNSIGNED_LINES = [
+  "fixedAssets",
+  "stocks",
+  "debtors",
+  "prepaymentsAccruedIncome",
+  "calledUpShareCapitalNotPaid",
+  "cashAtBank",
+  "currentAssets",
+  ...WITHIN_LINES,
+  "creditorsWithinOneYear",
+  "bankLoansAfterOneYear",
+  "creditorsAfterOneYear",
+  "provisionsForLiabilities",
+  "accrualsDeferredIncome",
+];
+const STATED_TOTALS = [
+  "currentAssets",
+  "creditorsWithinOneYear",
+  "netCurrentAssets",
+  "totalAssetsLessCurrentLiabilities",
+  "netAssets",
+  "capitalAndReserves",
+];
+
+function agreesWithItsTotals(year, label, regime) {
+  try {
+    checkBalance(year, label);
+    checkTotals(year, label, regime);
+    return true;
+  } catch (error) {
+    if (error instanceof IxbrlError) return false;
+    throw error;
+  }
+}
+
+// Some software tags a line the balance sheet takes off with a minus sign. A negative line is read as
+// positive only when the file's stated totals disagree with the tagged value and agree with the
+// reversed one, and no other single line's reversal would also make them agree. Otherwise the year
+// stays as tagged and the checks refuse it. The note names the line so that no figure changes unseen.
+function reverseTheSignItsTotalsContradict(year, label, regime, notes, noteLabel) {
+  if (!STATED_TOTALS.some((total) => year[total] !== undefined)) return;
+  if (agreesWithItsTotals(year, label, regime)) return;
+  const reversible = UNSIGNED_LINES.filter(
+    (line) => year[line] < 0 && agreesWithItsTotals({ ...year, [line]: -year[line] }, label, regime),
+  );
+  if (reversible.length !== 1) return;
+  const [line] = reversible;
+  notes.push(`${noteLabel}: ${line} is tagged as ${year[line]}, which the file's own totals contradict; it is read as ${-year[line]}.`);
+  year[line] = -year[line];
 }
 
 function checkProfitAndLoss(pl, label) {
@@ -952,10 +1034,12 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
 
   // Balance and totals.
   if (hasBalanceSheet(currentYear)) {
+    reverseTheSignItsTotalsContradict(currentYear, "current-year", regime, notes, "Current year");
     checkBalance(currentYear, "current-year");
     checkTotals(currentYear, "current-year", regime);
   }
   if (hasBalanceSheet(priorYear)) {
+    reverseTheSignItsTotalsContradict(priorYear, "prior-year", regime, notes, "Prior year");
     checkBalance(priorYear, "prior-year");
     checkTotals(priorYear, "prior-year", regime);
   }

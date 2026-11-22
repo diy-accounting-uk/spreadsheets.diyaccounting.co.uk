@@ -1018,3 +1018,82 @@ describe("readBookSource on the FRS 105 filing tool's accounts from the register
     });
   });
 });
+
+describe("readBookSource on register accounts whose creditors total is above the lines they tag", () => {
+  // IRIS: the 2024 creditors of 313,304 hold trade creditors 104,422, corporation tax 676, other taxes
+  // 1,314, other creditors 160 and accruals 3,325, and directors' current accounts of 203,407 that carry
+  // no tag. Less the corporation tax, 312,628 is the opening trade creditor.
+  it("posts IRIS's untagged directors' current accounts as a trade creditor, and keeps its net assets in both years", async () => {
+    const source = await readBookSource(fixture("register/register-small-company-filleted-iris-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      fixedAssets: 4834,
+      currentAssets: 304337,
+      creditorsWithinOneYear: 188412,
+      netAssets: 120759,
+      capitalAndReserves: 120759,
+    });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      fixedAssets: 6445,
+      currentAssets: 442560,
+      creditorsWithinOneYear: 313304,
+      netAssets: 135701,
+      capitalAndReserves: 135701,
+    });
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 312628 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2300", debitCreditCode: "C", amount: 676 }));
+  });
+
+  // Acorah: the 2025 creditors of 11,293 hold trade creditors 576, taxation and social security 0 and
+  // other creditors of 10,717 that carry no tag, all of it the opening trade creditor.
+  it("posts Acorah's untagged other creditors as a trade creditor, and keeps its net liabilities in both years", async () => {
+    const source = await readBookSource(fixture("register/register-small-company-filleted-acorah-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      currentAssets: 4850,
+      creditorsWithinOneYear: 13859,
+      netAssets: -9009,
+      capitalAndReserves: -9009,
+    });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      currentAssets: 7197,
+      creditorsWithinOneYear: 11293,
+      netAssets: -4096,
+      capitalAndReserves: -4096,
+    });
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 11293 }));
+  });
+});
+
+describe("readBookSource on Digita's first accounts from the register", () => {
+  // 40,948 total assets less current liabilities, less creditors after one year of 17,087 and the
+  // accruals and deferred income of 1,200, give the stated net assets of 22,661.
+  it("keeps the net assets the document states, with the accruals it tags with a minus sign taken off", async () => {
+    const source = await readBookSource(fixture("register/register-micro-entity-filleted-digita-current-year-only.xhtml"), "x", {
+      expect: { companyNumber: "16140216", firstAccounts: true },
+    });
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      fixedAssets: 28562,
+      currentAssets: 38642,
+      netAssets: 22661,
+      capitalAndReserves: 22661,
+    });
+    expect(source.accounts.notes.join(" ")).toMatch(/accrualsDeferredIncome is tagged as -1200/);
+  });
+});
+
+describe("readBookSource on accounts whose taxation and social security include the corporation tax", () => {
+  it("states the corporation tax once, so the book keeps the creditors and net assets the document states", async () => {
+    const text = fixture("builder-small-bank-lines.xhtml").toString("utf-8");
+    const asTotal = text.replace(/(name="core:TaxationSocialSecurityPayable" contextRef="e2026-within-one-year"[^>]*>)200</, "$11,700<");
+    expect(asTotal).not.toBe(text);
+    const source = await readBookSource(new TextEncoder().encode(asTotal), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      currentAssets: 5000,
+      creditorsWithinOneYear: 3700,
+      creditorsAfterOneYear: 2000,
+      netAssets: 9300,
+      capitalAndReserves: 9300,
+    });
+  });
+});

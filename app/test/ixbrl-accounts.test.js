@@ -671,6 +671,23 @@ describe("the checks on import", () => {
     });
   });
 
+  it("takes capital and reserves above the reserves it tags, and refuses reserves that add up to more", () => {
+    const reserves = (retained) =>
+      accountsOf(
+        money("core:FixedAssets", "CY_END", "1,000") +
+          money("core:NetAssetsLiabilities", "CY_END", "1,000") +
+          money("core:Equity", "SHARE_CY", "100") +
+          money("core:Equity", "RETAINED_CY", retained) +
+          money("core:Equity", "CY_END", "1,000"),
+      );
+    expect(reserves("700").balanceSheet.currentYear).toMatchObject({
+      calledUpShareCapital: 100,
+      profitAndLossAccount: 700,
+      capitalAndReserves: 1000,
+    });
+    expect(() => reserves("1,200")).toThrow(/capital and reserves of 1000 differ from the lines under it, which add up to 1300/);
+  });
+
   it("allows a pound of rounding in a total", () => {
     const body =
       money("core:Debtors", "CY_END", "100") + money("core:CashBankOnHand", "CY_END", "199") + money("core:CurrentAssets", "CY_END", "300");
@@ -1019,6 +1036,40 @@ describe("the files from the register and the builders, read as accounts", () =>
       creditorsAfterOneYear: 2000,
       capitalAndReserves: 9300,
     });
+  });
+
+  // The builder's 2026 creditors within one year of 3,700 are bank loans 300, trade creditors 1,000,
+  // corporation tax 1,500, taxation and social security 200, other creditors 300 and accruals 400.
+  const bankLines = () => fixture("builder-small-bank-lines.xhtml").toString("utf-8");
+  const withTaxationSocialSecurity = (value) => {
+    const text = bankLines();
+    const changed = text.replace(/(name="core:TaxationSocialSecurityPayable" contextRef="e2026-within-one-year"[^>]*>)200</, `$1${value}<`);
+    expect(changed).not.toBe(text);
+    return mapIxbrlAccounts(changed, { companyNumber: "02706061" });
+  };
+
+  it("counts taxation and social security once, as the total that includes the corporation tax, when the creditors total says so", () => {
+    const accounts = withTaxationSocialSecurity("1,700");
+    expect(accounts.balanceSheet.currentYear).toMatchObject({
+      corporationTax: 1500,
+      taxationSocialSecurity: 200,
+      creditorsWithinOneYear: 3700,
+    });
+    expect(accounts.notes).toEqual([
+      "Current year: the taxation and social security of 1700 include the corporation tax of 1500, as the creditors within one year state; the other taxation and social security is 200.",
+    ]);
+  });
+
+  it("reads the builder's taxation and social security beside the corporation tax, as its creditors total adds them", () => {
+    const accounts = mapIxbrlAccounts(fixture("builder-small-bank-lines.xhtml"), { companyNumber: "02706061" });
+    expect(accounts.balanceSheet.currentYear).toMatchObject({ corporationTax: 1500, taxationSocialSecurity: 200 });
+    expect(accounts.notes).toEqual([]);
+  });
+
+  it("refuses taxation and social security that neither reading of the creditors total explains", () => {
+    expect(() => withTaxationSocialSecurity("1,000")).toThrow(
+      "The current-year creditors within one year of 3700 differ from the lines under it, which add up to 4500.",
+    );
   });
 
   it("reads the builders' small company accounts back to the figures they were built from", () => {

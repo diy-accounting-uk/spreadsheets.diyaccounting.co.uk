@@ -18,6 +18,4 @@ All five were fetched on 2026-11-22 through the Document API, content type `appl
 | `register-small-company-filleted-acorah-both-years.xhtml` | 14618153 | 2026-01-31 | MzUxNzcxNjE3NWFkaXF6a2N4 | Acorah Software Products - Accounts Production |
 | `register-micro-entity-filleted-digita-current-year-only.xhtml` | 16140216 | 2025-12-31 | MzUzNzE5NjI4MGFkaXF6a2N4 | Digita Accounts Production Advanced |
 
-`expected.json` holds the figures read from each document by hand. An entry with `unreadable` is a
-document the reader refuses today: it holds the reader's message and, in `gap`, the line the
-reader does not place and the figures that show the document is consistent.
+`app/test/ixbrl-register-filings.test.js` holds the figures read from each document by hand.
