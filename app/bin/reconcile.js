@@ -28,7 +28,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
-import { loadScenario } from "../lib/scenario-loader.js";
+import { loadScenario, scenarioForTaxYear } from "../lib/scenario-loader.js";
 import { generateReport } from "../lib/report-generator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
@@ -299,7 +299,8 @@ async function main() {
       const startYear = endYear ? endYear - 1 : null;
 
       // Product module owns cell writes and reads
-      const writes = productMod.cellWrites(scenario, startYear, endMonth);
+      const packageScenario = scenarioForTaxYear(scenario, endYear);
+      const writes = productMod.cellWrites(packageScenario, startYear, endMonth);
       const reads = productMod.standardReads();
 
       let results;
@@ -358,7 +359,7 @@ async function main() {
       // Product module owns compliance checks. Fixture anchors (opening_debtors,
       // closing_creditors, ...) are top-level scenario tables, not [expected] keys,
       // so checks that anchor against fixtures need the whole scenario merged in.
-      const mergedScenario = { ...scenario, ...scenario.expected };
+      const mergedScenario = { ...packageScenario, ...packageScenario.expected };
       const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, packageYearEnd(pkgDir));
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod, mergedScenario, taxData);
 

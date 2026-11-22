@@ -51,6 +51,19 @@ export function extractTaxYearStart(scenario) {
   return null;
 }
 
+// The scenario as one package's tax year sees it. A scenario that carries
+// basis_period_changes states the basis period record from each
+// firstTaxYearEnd on, in place of basis_period: the last entry the tax year
+// has reached applies.
+export function scenarioForTaxYear(scenario, taxYearEnd) {
+  const reached = (scenario.basis_period_changes || []).filter((change) => taxYearEnd >= change.firstTaxYearEnd);
+  if (reached.length === 0) return scenario;
+  const { firstTaxYearEnd, ...basisPeriod } = reached.reduce((latest, change) =>
+    change.firstTaxYearEnd > latest.firstTaxYearEnd ? change : latest,
+  );
+  return { ...scenario, basis_period: basisPeriod };
+}
+
 // The assets a year bought, for the products whose asset schedule is a
 // separate sheet from the purchase journal. A purchase coded as capital
 // reaches the journal's own fixed asset analysis column and stops there, so a

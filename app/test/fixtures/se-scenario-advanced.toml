@@ -6216,6 +6216,16 @@ overlapProfitBroughtForward = 2400
 transitionProfitBroughtForward = 6000
 transitionProfitAccelerationAmount = 1000
 
+[[basis_period_changes]]
+firstTaxYearEnd = 2028
+overlapProfitBroughtForward = 2400
+transitionProfitBroughtForward = 6000
+transitionProfitAccelerationAmount = 0
+
+[[basis_period_changes]]
+firstTaxYearEnd = 2029
+overlapProfitBroughtForward = 2400
+
 [[sba_claims]]
 qualifyingDate = 2023-10-01
 qualifyingAmountExpenditure = 60000
