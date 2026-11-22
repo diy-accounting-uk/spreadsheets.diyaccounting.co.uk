@@ -645,7 +645,7 @@ describe("every filed balance sheet line, read back from the summary books", () 
     "accruals",
     "bankLoansOverdrafts",
     "bankLoansAfterOneYear",
-    "provisions",
+    "provisionsForLiabilities",
   ];
 
   function mismatches(filed, sheet) {
@@ -899,6 +899,51 @@ describe("a micro-entity file with the headings outside the totals", () => {
     expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "1200", debitCreditCode: "D", amount: 3000 }));
     expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 1590 }));
     expect(source.differences.join(" ")).not.toMatch(/net assets/);
+  });
+});
+
+describe("a file with provisions for liabilities", () => {
+  const MATURITY = "core:MaturitiesOrExpirationPeriodsDimension";
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("AFTER_CY", { instant: "2025-03-31", members: [[MATURITY, "core:AfterOneYear"]] }),
+        context("AFTER_PY", { instant: "2024-03-31", members: [[MATURITY, "core:AfterOneYear"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:CashBankOnHand", "CY_END", "5,000"),
+        money("core:CashBankOnHand", "PY_END", "4,000"),
+        money("core:CurrentAssets", "CY_END", "5,000"),
+        money("core:CurrentAssets", "PY_END", "4,000"),
+        money("core:Creditors", "AFTER_CY", "1,700"),
+        money("core:Creditors", "AFTER_PY", "1,500"),
+        money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "300"),
+        money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "PY_END", "200"),
+        money("core:NetAssetsLiabilities", "CY_END", "3,000"),
+        money("core:NetAssetsLiabilities", "PY_END", "2,300"),
+        money("core:Equity", "CY_END", "3,000"),
+        money("core:Equity", "PY_END", "2,300"),
+      ].join(""),
+    }),
+  );
+
+  it("posts the provisions with the creditors after one year, so each year's book has the file's net assets", async () => {
+    const source = await readBookSource(bytes, "x");
+    expect(source.accounts.balanceSheet.currentYear).toMatchObject({ creditorsAfterOneYear: 1700, provisionsForLiabilities: 300 });
+    for (const [book, lines, afterOneYear, netAssets] of [
+      [source.book, source.lines, 2000, 3000],
+      [source.comparative.book, source.comparative.lines, 1700, 2300],
+    ]) {
+      const sheet = (await resultsOf(book, lines)).PubBalSht;
+      expect(Math.abs(sheet.F31 - afterOneYear)).toBeLessThan(0.01);
+      expect(Math.abs(sheet.F33 - netAssets)).toBeLessThan(0.01);
+    }
   });
 });
 

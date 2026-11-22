@@ -140,8 +140,8 @@ const ROWS = [
   [
     "ProvisionsForLiabilitiesBalanceSheetSubtotal",
     money("core:Creditors", "AFTER_CY", "2,000") + money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "250"),
-    "balanceSheet.currentYear.creditorsAfterOneYear",
-    2250,
+    "balanceSheet.currentYear.provisionsForLiabilities",
+    250,
   ],
   ["Equity", money("core:Equity", "SHARE_CY", "100"), "balanceSheet.currentYear.calledUpShareCapital", 100],
   ["Equity", money("core:Equity", "RETAINED_CY", "19,900"), "balanceSheet.currentYear.profitAndLossAccount", 19900],
@@ -414,9 +414,26 @@ describe("the mapping table", () => {
     expect(note.computerEquipment).toMatchObject({ costAtStart: 5000, depreciationAtStart: 1500 });
   });
 
-  it("names the provisions and the reserves it folds into other lines", () => {
-    const provisions = accountsOf(money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "250"));
-    expect(provisions.notes.join(" ")).toMatch(/provisions for liabilities of 250/);
+  it("states creditors after one year without the provisions, and gives the provisions as a line of their own", () => {
+    const accounts = accountsOf(
+      money("core:FixedAssets", "CY_END", "5,000") +
+        money("core:Creditors", "AFTER_CY", "1,700") +
+        money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "300") +
+        money("core:NetAssetsLiabilities", "CY_END", "3,000"),
+    );
+    expect(accounts.balanceSheet.currentYear).toMatchObject({ creditorsAfterOneYear: 1700, provisionsForLiabilities: 300 });
+    expect(accounts.notes.join(" ")).not.toMatch(/provisions/);
+    expect(() =>
+      accountsOf(
+        money("core:FixedAssets", "CY_END", "5,000") +
+          money("core:Creditors", "AFTER_CY", "1,700") +
+          money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "300") +
+          money("core:NetAssetsLiabilities", "CY_END", "3,300"),
+      ),
+    ).toThrow(/does not balance/);
+  });
+
+  it("names the reserves it folds into other lines", () => {
     const reserves = accountsOf(money("core:Equity", "REVAL_CY", "1,000"));
     expect(reserves.notes.join(" ")).toMatch(/RevaluationReserve 1000/);
   });
@@ -788,7 +805,7 @@ describe("the files from the register and the builders, read as accounts", () =>
       accrualsDeferredIncome: 0,
       creditorsWithinOneYear: 3219,
       creditorsAfterOneYear: 0,
-      provisions: 0,
+      provisionsForLiabilities: 0,
       netAssets: 134,
       netCurrentAssets: 134,
       totalAssetsLessCurrentLiabilities: 134,

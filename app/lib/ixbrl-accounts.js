@@ -143,9 +143,9 @@ export const MAPPING_TABLE = [
   { concept: "Creditors", dimension: MATURITY, member: "AfterOneYear", figure: "creditorsAfterOneYear", account: "2600" },
   {
     concept: "ProvisionsForLiabilitiesBalanceSheetSubtotal",
-    figure: "creditorsAfterOneYear",
+    figure: "provisionsForLiabilities",
     account: "2600",
-    note: "added to creditorsAfterOneYear and named",
+    note: "a line of its own, which net assets take off; posts with the creditors after one year",
   },
   { concept: "Equity", dimension: EQUITY_CLASS, member: "ShareCapital", figure: "calledUpShareCapital", account: "3000" },
   {
@@ -359,7 +359,6 @@ function balanceSheetAt(set, endDay, notes, label) {
   const provisions = set.instant("ProvisionsForLiabilitiesBalanceSheetSubtotal", endDay);
   const bankLoansAfterOneYear = set.instant("BankBorrowingsOverdrafts", endDay, { [MATURITY]: "AfterOneYear" });
   const afterOneYear = set.instant("Creditors", endDay, { [MATURITY]: "AfterOneYear" }) ?? bankLoansAfterOneYear;
-  if (provisions) notes.push(`${label}: provisions for liabilities of ${provisions} are added to creditors after more than one year.`);
 
   const equityClasses = set.find("Equity", null, (fact) => fact.period.instant === endDay && Object.keys(fact.dimensions).length === 1);
   const classMembers = equityClasses.filter((fact) => local(Object.keys(fact.dimensions)[0]) === EQUITY_CLASS);
@@ -401,8 +400,8 @@ function balanceSheetAt(set, endDay, notes, label) {
     bankLoansOverdrafts: set.maturity("BankBorrowingsOverdrafts", endDay, ["WithinOneYear", null]),
     bankLoansAfterOneYear,
     creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
-    creditorsAfterOneYear: sumDefined([afterOneYear, provisions]),
-    provisions,
+    creditorsAfterOneYear: afterOneYear,
+    provisionsForLiabilities: provisions,
     netAssets: set.instant("NetAssetsLiabilities", endDay),
     netCurrentAssets: set.instant("NetCurrentAssetsLiabilities", endDay),
     totalAssetsLessCurrentLiabilities: set.instant("TotalAssetsLessCurrentLiabilities", endDay),
@@ -593,14 +592,15 @@ const WITHIN_LINES = ["bankLoansOverdrafts", "tradeCreditors", "corporationTax",
 
 // The headings outside the totals: prepayments and accrued income count in the
 // net current assets, called up share capital not paid in the total assets less
-// current liabilities, and accruals and deferred income come off the net assets.
+// current liabilities, and the provisions and accruals and deferred income come
+// off the net assets.
 function checkBalance(year, label) {
   const s = year;
   const current = s.currentAssets ?? sumOf([s.stocks, s.debtors, s.cashAtBank].map((v) => v ?? 0));
   const within = s.creditorsWithinOneYear ?? sumOf(WITHIN_LINES.map((line) => s[line] ?? 0));
   const netCurrent = current + (s.prepaymentsAccruedIncome ?? 0) - within;
   const totalLessCurrent = (s.calledUpShareCapitalNotPaid ?? 0) + (s.fixedAssets ?? 0) + netCurrent;
-  const net = totalLessCurrent - (s.creditorsAfterOneYear ?? 0) - (s.accrualsDeferredIncome ?? 0);
+  const net = totalLessCurrent - (s.creditorsAfterOneYear ?? 0) - (s.provisionsForLiabilities ?? 0) - (s.accrualsDeferredIncome ?? 0);
   const equity = s.capitalAndReserves ?? s.netAssets;
   if (s.netCurrentAssets !== undefined && !close(netCurrent, s.netCurrentAssets)) {
     throw problem(

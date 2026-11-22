@@ -85,7 +85,7 @@ function sheetOf(balanceSheet) {
   const corporationTax = n(balanceSheet.corporationTax);
   const calledUp = n(balanceSheet.calledUpShareCapital);
   const fixedAssets = n(balanceSheet.fixedAssets);
-  const afterOneYear = n(balanceSheet.creditorsAfterOneYear);
+  const afterOneYear = n(balanceSheet.creditorsAfterOneYear) + n(balanceSheet.provisionsForLiabilities);
   const accrualsDeferredIncome = n(balanceSheet.accrualsDeferredIncome);
   const equity =
     balanceSheet.capitalAndReserves ??
