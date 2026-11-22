@@ -14,6 +14,7 @@
 
 import { buildIxbrlSummaryBooks } from "./ixbrl-summary-book.js";
 import { rollForward } from "./diya-gl-roll-forward.js";
+import { loadTaxYearFilesFor } from "./diya-gl-loader.js";
 import { buildNewBook } from "./diya-gl-new-book.js";
 import { loadTaxDataForBook, isTwelveWholeMonths } from "./product-workbook.js";
 import { nodeResourceLoader } from "./app-resources.js";
@@ -353,7 +354,8 @@ export async function buildBookFromRegister(
   if (rolls) {
     const summary = await buildIxbrlSummaryBooks(lastAccounts, { resources });
     for (const text of summary.differences) differences.push({ code: "filed-accounts", text });
-    ({ book, lines } = rollForward(summary.book, summary.lines, rateData));
+    const yearFiles = await loadTaxYearFilesFor(summary.book, "ltd", resources);
+    ({ book, lines } = rollForward(summary.book, summary.lines, rateData, { yearFiles }));
     book.documentInfo.periodCoveredEnd = period.end;
   } else {
     book = buildNewBook({ product: "ltd", businessName: profile.companyName, yearEnd: period.end, vatRegistered: false }, rateData);

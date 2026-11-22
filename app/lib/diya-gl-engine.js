@@ -144,6 +144,9 @@ export { NEW_BOOK_CHARTS, newBookChart, buildNewBook } from "./diya-gl-new-book.
 // The book of a company's next period from what Companies House holds.
 export { buildBookFromRegister, RegisterBookError } from "./diya-gl-register-book.js";
 
+// A filed iXBRL accounts document mapped to the figures the register book rolls forward.
+export { mapIxbrlAccounts, IxbrlError } from "./ixbrl-accounts.js";
+
 // Editing it.
 export {
   addSaleLine,

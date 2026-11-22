@@ -20,6 +20,7 @@ export default defineConfig({
       testMatch: [
         "**/spreadsheets-content.browser.test.js",
         "**/spreadsheets-download-lookup.browser.test.js",
+        "**/spreadsheets-download-generate.browser.test.js",
         "**/site-ecommerce-events.browser.test.js",
         "**/diya-gl-bst.browser.test.js",
         "**/diya-gl-bst-edits.browser.test.js",

@@ -1477,7 +1477,8 @@ footer {
 }
 
 .company-hint,
-#company-status {
+#company-status,
+#company-generate-status {
   margin: 0.5em 0 0;
   font-size: 0.9em;
   color: var(--color-text-secondary);
@@ -1534,4 +1535,36 @@ footer {
 .company-mark-none {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
+}
+
+.company-generate {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.company-generate p {
+  margin: 0 0 0.6em;
+}
+
+#company-generate-result h4 {
+  margin: var(--spacing-md) 0 0.3em;
+}
+
+#company-generate-result .btn-download {
+  display: inline-block;
+  margin-top: var(--spacing-sm);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.generate-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.generate-list li {
+  margin-bottom: 0.3em;
 }

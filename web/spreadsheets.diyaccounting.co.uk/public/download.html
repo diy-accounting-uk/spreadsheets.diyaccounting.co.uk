@@ -89,6 +89,12 @@
             <div id="company-matches"></div>
             <div id="company-periods"></div>
             <p id="company-status" role="status" aria-live="polite"></p>
+            <div class="company-generate hidden" id="company-generate">
+              <p id="company-generate-prompt"></p>
+              <button type="button" id="company-generate-btn" class="btn-download btn-secondary">Generate</button>
+              <p id="company-generate-status" role="status" aria-live="polite"></p>
+              <div id="company-generate-result"></div>
+            </div>
           </div>
 
           <div class="download-actions">
@@ -202,6 +208,7 @@
     <script src="lib/ecommerce-events.js"></script>
     <script src="lib/download-submit-step.js"></script>
     <script src="lib/company-lookup.js"></script>
+    <script src="lib/generate-package.js"></script>
     <script src="lib/download-page.js"></script>
     <script src="lib/docs-download.js"></script>
     <script type="application/ld+json">

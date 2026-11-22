@@ -43,6 +43,10 @@ const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const DIYA_GL_SCHEMA_DIR = resolve(DIYA_GL_DIR, "schema");
 const BUNDLE_FILE = resolve(ENGINE_DIR, "diya-gl-engine.js");
 
+// The spreadsheets site's own copy of the engine and the Company package's templates, which the
+// download page loads only when the reader chooses to generate a package.
+const GENERATE_DIR = resolve(PUBLIC_DIR, "generate");
+
 // Files the spreadsheets site already owns that the new site's own
 // 'default-src self' CSP cannot fetch cross-origin, so each is a local copy
 // rather than a link back to the old host. favicon.svg is listed for the
@@ -282,6 +286,37 @@ function copyRuntimeAssets() {
   return { yearFiles: yearFiles.length, seFiles: seFiles.length, ltdFiles: ltdFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
+// The engine and only the Company package's files, for the download page's generate option: the
+// rate data of each Company year (and the self-employed years a Company roll forward reads), the templates' own meta and the thirteen workbooks and the
+// docx the Company meta names. The page's resource loader reads them under generate/assets/.
+function copyGenerateAssets() {
+  rmSync(GENERATE_DIR, { recursive: true, force: true });
+
+  const engineOut = resolve(GENERATE_DIR, "engine");
+  mkdirSync(engineOut, { recursive: true });
+  cpSync(BUNDLE_FILE, resolve(engineOut, "diya-gl-engine.js"));
+
+  const assetsOut = resolve(GENERATE_DIR, "assets");
+  const dataOut = resolve(assetsOut, "data");
+  mkdirSync(dataOut, { recursive: true });
+  const dataIn = resolve(ROOT, "app", "data");
+  for (const name of readdirSync(dataIn).filter((file) => /^ltd-\d{4}\.toml$/.test(file) || /^se-\d{4}-\d{4}\.toml$/.test(file))) {
+    cpSync(resolve(dataIn, name), resolve(dataOut, name));
+  }
+
+  const templatesOut = resolve(assetsOut, "templates");
+  const ltdOut = resolve(templatesOut, "ltd");
+  mkdirSync(ltdOut, { recursive: true });
+  cpSync(resolve(ROOT, "app", "templates", "meta.toml"), resolve(templatesOut, "meta.toml"));
+  const ltdDir = resolve(ROOT, "app", "templates", "ltd");
+  const ltdMeta = parseTOML(readFileSync(resolve(ltdDir, "meta.toml"), "utf8"));
+  const ltdFiles = ["meta.toml", ...ltdMeta.template.files];
+  for (const name of ltdFiles) cpSync(resolve(ltdDir, name), resolve(ltdOut, name));
+
+  const bytes = walk(GENERATE_DIR).reduce((sum, file) => sum + statSync(file).size, 0);
+  return { bytes, engineBytes: statSync(resolve(engineOut, "diya-gl-engine.js")).size };
+}
+
 // ── PWA precache manifest and build stamp ───────────────────────────────────
 //
 // sw.js needs two things it cannot know on its own: which URLs to precache,
@@ -422,6 +457,7 @@ async function main() {
   generateExamplesJs();
   const assets = copyRuntimeAssets();
   copySiteFiles();
+  const generate = copyGenerateAssets();
   const buildStamp = writeBuildStamp();
   const bytes = statSync(BUNDLE_FILE).size;
   const inputCount = Object.keys(result.metafile.inputs).length;
@@ -429,6 +465,9 @@ async function main() {
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
   console.log(
     `  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.seFiles} Self Employed template files, the Taxi template, ${assets.ltdFiles} Limited Company template files, ${assets.examples} example book(s)`,
+  );
+  console.log(
+    `  generate: ${GENERATE_DIR.replace(ROOT + "/", "")}, ${(generate.bytes / 1048576).toFixed(1)} MB (engine ${(generate.engineBytes / 1048576).toFixed(1)} MB)`,
   );
   console.log(`  pwa: cache ${buildStamp.stamp}, ${buildStamp.count} URLs precached`);
 }

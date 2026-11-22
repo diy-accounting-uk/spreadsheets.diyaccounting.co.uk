@@ -123,8 +123,9 @@ function fetchCompanyDeadlines(parameter, value) {
 }
 
 // Wires the lookup. getProductPeriods returns the packages of the selected product;
-// selectPackage takes an index into that list and selects it in the year-end list.
-function initCompanyLookup(getProductPeriods, selectPackage) {
+// selectPackage takes an index into that list and selects it in the year-end list;
+// periodChosen takes the company and the year end the reader chose, or null when the results go.
+function initCompanyLookup(getProductPeriods, selectPackage, periodChosen) {
   var query = document.getElementById("company-query");
   var searchButton = document.getElementById("company-search-btn");
   var status = document.getElementById("company-status");
@@ -139,6 +140,7 @@ function initCompanyLookup(getProductPeriods, selectPackage) {
   function clearResults() {
     matches.replaceChildren();
     periodsBox.replaceChildren();
+    periodChosen(null);
   }
 
   function fail(error) {
@@ -174,6 +176,7 @@ function initCompanyLookup(getProductPeriods, selectPackage) {
       button.append(mark("company-mark " + (packageIndex >= 0 ? "company-mark-ready" : "company-mark-none"), packageMark));
       button.addEventListener("click", function () {
         if (packageIndex >= 0) selectPackage(packageIndex);
+        periodChosen(answer, period.end);
         say(
           "Year end " +
             formatIsoDate(period.end) +

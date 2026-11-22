@@ -833,6 +833,21 @@ export function diyaGlToScenario(book, lines, product) {
   return scenario;
 }
 
+function taxYearNameForBook(book, taxRegime) {
+  const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
+  if (!periodCoveredEnd) {
+    throw new Error("book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table");
+  }
+  return taxYearFileName(new Date(periodCoveredEnd), taxRegime);
+}
+
+function checkedTaxYearFile(taxYearData, taxYearName) {
+  if (!taxYearData.depreciation) {
+    throw new Error(`${taxYearName}.toml declares no [depreciation] table`);
+  }
+  return taxYearData;
+}
+
 /**
  * The depreciation table for a book's own accounting period. book.toml
  * carries no depreciation rates at all, so unlike the rest of
@@ -841,12 +856,12 @@ export function diyaGlToScenario(book, lines, product) {
  * same file --years names and the page's loadTaxDataForBook resolves via
  * taxYearFileName, so a --data extraction and a --years run agree.
  *
- * Resolves app/data's path from import.meta.url lazily, on the first call,
- * rather than at module load: this module is bundled into the books page
- * (diya-gl-engine.js re-exports diyaGlToScenario from it), where url and path
- * are stubs that throw when called -- extractTaxDataFromBook itself is
- * Node-only and never reached from the bundle, but a module-scope call
- * would run for every importer, browser included.
+ * With the files supplied by the caller (loadTaxYearFilesFor) nothing is read
+ * from disk. Without them the path to app/data is resolved from
+ * import.meta.url lazily, on the first call, rather than at module load: this
+ * module is bundled into the books page (diya-gl-engine.js re-exports
+ * diyaGlToScenario from it), where url and path are stubs that throw when
+ * called, and a module-scope call would run for every importer.
  * The previous financial year's small profits rate comes off the same file
  * for the same reason: a book states the rates of its own year, and a period
  * that reaches back over 1 April charges its earlier days at the year
@@ -854,24 +869,39 @@ export function diyaGlToScenario(book, lines, product) {
  *
  * @param {Object} book - parsed book.toml
  * @param {"se"|"ltd"} taxRegime
+ * @param {Object} [yearFiles] - the parsed tax-year files by regime, from loadTaxYearFilesFor
  * @returns {Object} the parsed tax-year file
  */
-function taxYearFileForBook(book, taxRegime) {
-  const periodCoveredEnd = book?.documentInfo?.periodCoveredEnd;
-  if (!periodCoveredEnd) {
-    throw new Error("book has no documentInfo.periodCoveredEnd, so no tax-year file can be chosen for its depreciation table");
+function taxYearFileForBook(book, taxRegime, yearFiles) {
+  const taxYearName = taxYearNameForBook(book, taxRegime);
+  if (yearFiles) {
+    if (!yearFiles[taxRegime]) throw new Error(`no ${taxRegime} tax-year file was supplied for ${taxYearName}.toml`);
+    return checkedTaxYearFile(yearFiles[taxRegime], taxYearName);
   }
-  const taxYearName = taxYearFileName(new Date(periodCoveredEnd), taxRegime);
   const taxDataDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "data");
   const taxYearPath = resolve(taxDataDir, `${taxYearName}.toml`);
   if (!existsSync(taxYearPath)) {
-    throw new Error(`no tax-year file covers ${periodCoveredEnd} (looked for ${taxYearName}.toml)`);
+    throw new Error(`no tax-year file covers ${book.documentInfo.periodCoveredEnd} (looked for ${taxYearName}.toml)`);
   }
-  const taxYearData = parseTOML(readFileSync(taxYearPath, "utf8"));
-  if (!taxYearData.depreciation) {
-    throw new Error(`${taxYearName}.toml declares no [depreciation] table`);
+  return checkedTaxYearFile(parseTOML(readFileSync(taxYearPath, "utf8")), taxYearName);
+}
+
+/**
+ * The tax-year files extractTaxDataFromBook reads for a book, through a resource loader: the
+ * product's own regime and, for a company, the self-employed file as well. A caller with no file
+ * system reads them here and hands them to extractTaxDataFromBook.
+ *
+ * @param {Object} book - parsed book.toml
+ * @param {string} product - 'bst' | 'taxi' | 'se' | 'ltd'
+ * @param {Object} resources - resource loader
+ * @returns {Promise<Object>} the parsed files by regime: { ltd?, se }
+ */
+export async function loadTaxYearFilesFor(book, product, resources) {
+  const files = {};
+  for (const regime of product === "ltd" ? ["ltd", "se"] : ["se"]) {
+    files[regime] = parseTOML(await resources.readText(`data/${taxYearNameForBook(book, regime)}.toml`));
   }
-  return taxYearData;
+  return files;
 }
 
 /**
@@ -879,9 +909,10 @@ function taxYearFileForBook(book, taxRegime) {
  * Bridges diya-gl field names (camelCase) to tax data field names (snake_case).
  * @param {Object} book - parsed book.toml
  * @param {string} [product] - 'bst' | 'taxi' | 'se' | 'ltd' (optional; defaults to SE key shape)
+ * @param {Object} [yearFiles] - the parsed tax-year files by regime from loadTaxYearFilesFor; absent, they are read from app/data
  * @returns {Object} tax data in the same format as app/data/se-YYYY-YYYY.toml or app/data/ltd-YYYY.toml
  */
-export function extractTaxDataFromBook(book, product) {
+export function extractTaxDataFromBook(book, product, yearFiles) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
@@ -899,8 +930,8 @@ export function extractTaxDataFromBook(book, product) {
 
   // A figure the book does not state is the figure of the book's own tax
   // year; a year file that lacks it too refuses the book.
-  const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se");
-  const selfEmploymentYearFile = product === "ltd" ? taxYearFileForBook(book, "se") : taxYearFile;
+  const taxYearFile = taxYearFileForBook(book, product === "ltd" ? "ltd" : "se", yearFiles);
+  const selfEmploymentYearFile = product === "ltd" ? taxYearFileForBook(book, "se", yearFiles) : taxYearFile;
   const taxYearLabel = (taxYearFile.tax_year ?? taxYearFile.financial_year)?.label;
   const stated = (bookValue, yearFile, section, key, bookField) => {
     if (bookValue !== undefined && bookValue !== null) return bookValue;

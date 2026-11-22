@@ -71,8 +71,8 @@ function productOfBook(book) {
 
 // The year's calculated cells, through the same D -> R loop the report runs,
 // so the closing figures read here are the figures the report printed.
-function closingPosition(book, lines, product) {
-  const taxData = extractTaxDataFromBook(book, product);
+function closingPosition(book, lines, product, yearFiles) {
+  const taxData = extractTaxDataFromBook(book, product, yearFiles);
   const scenario = diyaGlToScenario(book, lines, product);
   const results = calculateFromDiyaGl(book, lines, product, taxData, scenario);
   return { taxData, scenario, results };
@@ -477,11 +477,13 @@ function setOrDelete(target, key, value) {
  * @param {Object} book - the year's book
  * @param {Array} lines - the year's lines
  * @param {Object} rateData - the parsed app/data/<year>.toml the next year end falls in
+ * @param {Object} [deps]
+ * @param {Object} [deps.yearFiles] - the book's own year's tax-year files from loadTaxYearFilesFor; absent, they are read from app/data
  * @returns {{book: Object, lines: Array}}
  */
-export function rollForward(book, lines, rateData) {
+export function rollForward(book, lines, rateData, deps = {}) {
   const product = productOfBook(book);
-  const { taxData, scenario, results } = closingPosition(book, lines, product);
+  const { taxData, scenario, results } = closingPosition(book, lines, product, deps.yearFiles);
   const priorStart = new Date(isoDay(book.documentInfo.periodCoveredStart));
   const priorEnd = isoDay(book.documentInfo.periodCoveredEnd);
   const period = periodFromYearEnd(rolledYearEnd(book));

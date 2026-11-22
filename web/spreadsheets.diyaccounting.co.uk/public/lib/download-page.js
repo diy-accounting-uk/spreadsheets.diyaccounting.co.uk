@@ -209,6 +209,8 @@ document.getElementById("product-select").addEventListener("change", function ()
 });
 document.getElementById("period-select").addEventListener("change", updateLinks);
 
+const generatePackage = initGeneratePackage();
+
 initCompanyLookup(
   function () {
     const product = getSelectedProduct();
@@ -218,6 +220,7 @@ initCompanyLookup(
     document.getElementById("period-select").value = packageIndex;
     updateLinks();
   },
+  generatePackage.choose,
 );
 
 // GA4 ecommerce: begin_checkout when user clicks "Download with optional donation"
