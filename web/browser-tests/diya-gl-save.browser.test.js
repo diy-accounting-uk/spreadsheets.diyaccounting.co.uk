@@ -104,4 +104,40 @@ test.describe("books save — the browser save path produces a well-formed downl
       await close();
     }
   });
+
+  test("the save menu's spreadsheet package holds the Company workbooks", async ({ page }) => {
+    const { baseUrl, close } = await startStaticServer(
+      PUBLIC_DIR,
+      path.join(process.cwd(), "infra/main/resources/diya-gl-security-headers.json"),
+    );
+    try {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`${baseUrl}/ltd.html?example=ltd-scenario-full`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+      await page.click("#save-btn");
+      const item = page.getByRole("menuitem", { name: "Download as a spreadsheet package (.zip)", exact: true });
+      await item.waitFor({ state: "visible" });
+      const [download] = await Promise.all([page.waitForEvent("download", { timeout: 60_000 }), item.click()]);
+
+      expect(download.suggestedFilename()).toMatch(/\.zip$/);
+      const stream = await download.createReadStream();
+      const chunks = [];
+      for await (const chunk of stream) chunks.push(chunk);
+      const zip = await JSZip.loadAsync(Buffer.concat(chunks));
+      const workbooks = Object.keys(zip.files).filter((name) => name.endsWith(".xlsx"));
+      expect(workbooks.length, "the package holds more than one workbook").toBeGreaterThan(1);
+      for (const name of workbooks) {
+        const workbook = await JSZip.loadAsync(await zip.file(name).async("uint8array"));
+        expect(workbook.file("xl/workbook.xml"), `${name} is a workbook`).not.toBeNull();
+      }
+      const hub = await JSZip.loadAsync(
+        await zip.file(workbooks.find((name) => /accounts/i.test(name)) ?? workbooks[0]).async("uint8array"),
+      );
+      const sheetNames = (await hub.file("xl/workbook.xml").async("string")).match(/<sheet [^>]*name="[^"]+"/g) ?? [];
+      expect(sheetNames.join(" ")).toMatch(/TrialBalance|CT600|CorporationTax/);
+    } finally {
+      await close();
+    }
+  });
 });

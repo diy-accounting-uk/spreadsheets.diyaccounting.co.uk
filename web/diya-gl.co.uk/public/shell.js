@@ -265,6 +265,7 @@
       example: params.get("example") || defaults.defaultExample || null,
       view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
       month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
+      download: params.get("download"),
       fromPageDefault: fromPageDefault,
     };
   }
@@ -331,6 +332,16 @@
     return document;
   }
 
+  var DOWNLOAD_PACKAGE = "package";
+
+  function clearDownloadFromQuery() {
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has("download")) return;
+    params.delete("download");
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+  }
+
   function bootFromBookFragment(deepLink) {
     var sniffing = decodeBookFragment(deepLink.book).then(function (document) {
       return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
@@ -348,7 +359,9 @@
         sendBookLoadedEvent(snapshot.source.product, "link");
         showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (from a link)");
         applyDeepLinkViewAndMonth(deepLink, snapshot);
+        if (deepLink.download === DOWNLOAD_PACKAGE) runSave(currentBookAndLines(), "package");
       }
+      clearDownloadFromQuery();
     });
   }
 
@@ -973,7 +986,7 @@
 
   // ============================== empty state ==============================
 
-  var DROP_HINT_RESTING = "or drop one here — .xlsx, .zip or .json";
+  var DROP_HINT_RESTING = "or drop one here — .xlsx, .zip, .json, .xhtml, .html or .xml";
 
   // The manifest's example books, loadable without a file. A reader picks a
   // business, not a fixture id, so the name leads and the id follows in
@@ -1003,7 +1016,7 @@
       '<div class="empty-state-actions">' +
       '<div class="picker-row">' +
       '<label class="file-picker-label" for="file-picker">Choose a file</label>' +
-      '<input type="file" id="file-picker" accept=".xlsx,.zip,.json" class="hidden" />' +
+      '<input type="file" id="file-picker" accept=".xlsx,.zip,.json,.xhtml,.html,.xml" class="hidden" />' +
       "</div>" +
       '<p class="drop-hint" id="drop-hint">' +
       DROP_HINT_RESTING +
@@ -1328,15 +1341,29 @@
   function loadFromAnySource(file) {
     var loadedProductId = null;
     var loadedSourceKind = null;
+    var loadedDifferences = [];
     return loadThrough("Reading " + file.name + "…", window.DiyaGlLoader.sniff(file), function (sniffed, manifest) {
       loadedProductId = manifest.id;
       loadedSourceKind = sniffed.kind;
+      loadedDifferences = sniffed.differences || [];
       return window.DiyaGlLoader.loadSniffed(sniffed, manifest);
     }).then(function (snapshot) {
       if (snapshot) {
         sendBookLoadedEvent(loadedProductId, loadedSourceKind);
         loadedSourceName = file.name;
-        showToast("Loaded " + file.name);
+        if (loadedDifferences.length === 0) {
+          showToast("Loaded " + file.name);
+        } else {
+          showToast(
+            "Loaded " +
+              file.name +
+              ". The book and the file differ in " +
+              loadedDifferences.length +
+              (loadedDifferences.length === 1 ? " place: " : " places: ") +
+              loadedDifferences.join(" "),
+            { label: "Dismiss", onClick: function () {} },
+          );
+        }
       }
       return snapshot;
     });
@@ -1390,7 +1417,9 @@
     if (card) card.classList.toggle("is-drag-over", on);
     var hint = document.getElementById("drop-hint");
     if (hint) {
-      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : DROP_HINT_RESTING;
+      hint.textContent = on
+        ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip, a diya-gl JSON file or an accounts document (.xhtml, .html, .xml)"
+        : DROP_HINT_RESTING;
     }
   }
 
@@ -3169,6 +3198,7 @@
     var items = [
       { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
       { label: "Download books as JSON (.json)", format: "json" },
+      { label: "Download as a spreadsheet package (.zip)", format: "package" },
     ];
     var current = currentBookAndLines();
     if (current && window.DiyaGlSubmitHandoff && window.DiyaGlSubmitHandoff.activitiesFor(active, current.book).length > 0) {
@@ -3423,6 +3453,7 @@
   function saveFormatLabel(format) {
     if (format === "diya-gl-zip") return "the diya-gl zip";
     if (format === "json") return "the diya-gl JSON";
+    if (format === "package") return "the spreadsheet package";
     return "the download";
   }
 

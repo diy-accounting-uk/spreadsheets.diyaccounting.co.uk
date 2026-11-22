@@ -288,8 +288,15 @@
     // the published schemas as it reads them, so the schemas have to be in
     // place before this call.
     var loaded = await loadEngineAndResources();
-    var source = await loaded.engine.readBookSource(fileBytes, file.name);
-    return { kind: source.kind, name: file.name, productId: source.product, book: source.book, lines: source.lines };
+    var source = await loaded.engine.readBookSource(fileBytes, file.name, { resources: loaded.resources });
+    return {
+      kind: source.kind,
+      name: file.name,
+      productId: source.product,
+      book: source.book,
+      lines: source.lines,
+      differences: source.differences || [],
+    };
   }
 
   /**
