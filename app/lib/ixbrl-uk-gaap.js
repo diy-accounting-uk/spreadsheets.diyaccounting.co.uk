@@ -72,7 +72,7 @@ export const UK_GAAP_TO_FRS_102 = [
   gaap("OtherCreditors", "OtherCreditors", MATURITY, WITHIN),
   gaap("OtherCreditorsDueWithinOneYear", "OtherCreditors", MATURITY, WITHIN),
   gaap("TaxationSocialSecurityDueWithinOneYear", "TaxationSocialSecurityPayable", MATURITY, WITHIN),
-  gaap("AccrualsDeferredIncomeWithinOneYear", "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", MATURITY, WITHIN),
+  gaap("AccrualsDeferredIncomeWithinOneYear", "AccruedLiabilities", MATURITY, WITHIN),
   gaap("ProvisionsForLiabilitiesCharges", "ProvisionsForLiabilitiesBalanceSheetSubtotal"),
   gaap("NetAssetsLiabilitiesIncludingPensionAssetLiability", "NetAssetsLiabilities"),
   gaap("CalledUpShareCapital", "Equity", EQUITY_CLASS, "ShareCapital"),

@@ -84,14 +84,14 @@ const ROWS = [
     "PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal",
     money("core:Debtors", "CY_END", "2,000") +
       money("core:PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", "CY_END", "300"),
-    "balanceSheet.currentYear.debtors",
-    2300,
+    "balanceSheet.currentYear.prepaymentsAccruedIncome",
+    300,
   ],
   [
     "CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset",
     money("core:Debtors", "CY_END", "2,000") + money("core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", "CY_END", "100"),
-    "balanceSheet.currentYear.debtors",
-    2100,
+    "balanceSheet.currentYear.calledUpShareCapitalNotPaid",
+    100,
   ],
   ["CashBankOnHand", money("core:CashBankOnHand", "CY_END", "12,000"), "balanceSheet.currentYear.cashAtBank", 12000],
   ["CurrentAssets", money("core:CurrentAssets", "CY_END", "15,000"), "balanceSheet.currentYear.currentAssets", 15000],
@@ -107,8 +107,8 @@ const ROWS = [
     "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal",
     money("core:OtherCreditors", "WITHIN_CY", "500") +
       money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "WITHIN_CY", "70"),
-    "balanceSheet.currentYear.otherCreditors",
-    570,
+    "balanceSheet.currentYear.accrualsDeferredIncome",
+    70,
   ],
   [
     "TaxationSocialSecurityPayable",
@@ -697,6 +697,80 @@ describe("the checks on import", () => {
   });
 });
 
+describe("a micro-entity balance sheet with the headings outside the totals", () => {
+  const STANDARDS = context("STANDARDS", {
+    start: "2024-04-01",
+    end: "2025-03-31",
+    members: [["uk-bus:AccountingStandardsDimension", "uk-bus:Micro-entities"]],
+  });
+  const SHARE_PY = context("SHARE_PY", { instant: "2024-03-31", members: [[EQUITY, "core:ShareCapital"]] });
+  const RETAINED_PY = context("RETAINED_PY", { instant: "2024-03-31", members: [[EQUITY, "core:RetainedEarningsAccumulatedLosses"]] });
+  const HEADINGS = {
+    calledUpShareCapitalNotPaid: "CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset",
+    prepaymentsAccruedIncome: "PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal",
+    accrualsDeferredIncome: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal",
+  };
+
+  // A year's lines and the totals they give: prepayments count in the net current assets, called up
+  // share capital not paid in the total assets less current liabilities, and accruals and deferred
+  // income come off the net assets.
+  function year(headings) {
+    const lines = { fixedAssets: 800, currentAssets: 6000, creditorsWithinOneYear: 1968, calledUpShareCapital: 100, ...headings };
+    const netCurrentAssets = lines.currentAssets + (lines.prepaymentsAccruedIncome ?? 0) - lines.creditorsWithinOneYear;
+    const totalAssetsLessCurrentLiabilities = (lines.calledUpShareCapitalNotPaid ?? 0) + lines.fixedAssets + netCurrentAssets;
+    const netAssets = totalAssetsLessCurrentLiabilities - (lines.accrualsDeferredIncome ?? 0);
+    return { ...lines, netCurrentAssets, totalAssetsLessCurrentLiabilities, netAssets, capitalAndReserves: netAssets };
+  }
+
+  function document(current, prior) {
+    const facts = (figures, end, share, retained) =>
+      [
+        ...Object.entries(HEADINGS)
+          .filter(([figure]) => figures[figure] !== undefined)
+          .map(([figure, concept]) => money(`core:${concept}`, end, String(figures[figure]))),
+        money("core:FixedAssets", end, String(figures.fixedAssets)),
+        money("core:CurrentAssets", end, String(figures.currentAssets)),
+        money("core:Creditors", end === "CY_END" ? "WITHIN_CY" : "WITHIN_PY", String(figures.creditorsWithinOneYear)),
+        money("core:NetCurrentAssetsLiabilities", end, String(figures.netCurrentAssets)),
+        money("core:TotalAssetsLessCurrentLiabilities", end, String(figures.totalAssetsLessCurrentLiabilities)),
+        money("core:NetAssetsLiabilities", end, String(figures.netAssets)),
+        money("core:Equity", share, String(figures.calledUpShareCapital)),
+        money("core:Equity", retained, String(figures.capitalAndReserves - figures.calledUpShareCapital)),
+        money("core:Equity", end, String(figures.capitalAndReserves)),
+      ].join("");
+    return ixbrlDocument({
+      contexts: CONTEXTS + STANDARDS + SHARE_PY + RETAINED_PY,
+      hidden: COVER + words("uk-bus:AccountingStandardsApplied", "STANDARDS", "", 'format="ixt2:nocontent"'),
+      body: facts(current, "CY_END", "SHARE_CY", "RETAINED_CY") + facts(prior, "PY_END", "SHARE_PY", "RETAINED_PY"),
+    });
+  }
+
+  it.each([
+    ["called up share capital not paid", { calledUpShareCapitalNotPaid: 50 }, { calledUpShareCapitalNotPaid: 40 }],
+    ["prepayments and accrued income", { prepaymentsAccruedIncome: 200 }, { prepaymentsAccruedIncome: 120 }],
+    ["accruals and deferred income", { accrualsDeferredIncome: 150 }, { accrualsDeferredIncome: 90 }],
+    [
+      "all three",
+      { calledUpShareCapitalNotPaid: 50, prepaymentsAccruedIncome: 200, accrualsDeferredIncome: 150 },
+      { calledUpShareCapitalNotPaid: 40, prepaymentsAccruedIncome: 120, accrualsDeferredIncome: 90 },
+    ],
+  ])("takes %s in both years and gives each as its own line", (_name, currentHeadings, priorHeadings) => {
+    const current = year(currentHeadings);
+    const prior = year(priorHeadings);
+    const accounts = mapIxbrlAccounts(document(current, prior), { regime: "micro" });
+    expect(accounts.regime).toBe("micro");
+    expect(accounts.balanceSheet.currentYear).toMatchObject({ ...currentHeadings, netAssets: current.netAssets });
+    expect(accounts.balanceSheet.priorYear).toMatchObject({ ...priorHeadings, netAssets: prior.netAssets });
+    expect(accounts.balanceSheet.currentYear.debtors).toBeUndefined();
+    expect(accounts.balanceSheet.currentYear.otherCreditors).toBeUndefined();
+  });
+
+  it("still refuses a balance sheet whose headings do not give its totals", () => {
+    const current = { ...year({ prepaymentsAccruedIncome: 200 }), prepaymentsAccruedIncome: 300 };
+    expect(() => mapIxbrlAccounts(document(current, year({})), { regime: "micro" })).toThrow(/net current assets are stated as 4232/);
+  });
+});
+
 describe("the files from the register and the builders, read as accounts", () => {
   it("reads DIY Accounting Limited's 2025 accounts, with the figures as the document shows them", () => {
     const accounts = mapIxbrlAccounts(fixture("diya-2025-accounts.xhtml"), { companyNumber: "06846849", periodEnd: "2025-03-31" });
@@ -708,9 +782,10 @@ describe("the files from the register and the builders, read as accounts", () =>
     expect(accounts.filleted).toBe(false);
     expect(accounts.balanceSheet.currentYear).toEqual({
       fixedAssets: 0,
-      debtors: 0,
+      prepaymentsAccruedIncome: 0,
+      calledUpShareCapitalNotPaid: 0,
       currentAssets: 3353,
-      otherCreditors: 0,
+      accrualsDeferredIncome: 0,
       creditorsWithinOneYear: 3219,
       creditorsAfterOneYear: 0,
       provisions: 0,

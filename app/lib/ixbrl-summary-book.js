@@ -66,10 +66,13 @@ const addYears = (isoDay, years) => {
 // The figures a book needs from one balance sheet. What no tagged line
 // explains stays in the account it belongs to: the part of current assets no
 // line explains is cash, and the part of the creditors within one year no
-// line explains is a trade creditor.
+// line explains is a trade creditor. The headings outside the totals post as
+// a debtor (prepayments and accrued income, called up share capital not paid)
+// and as a trade creditor (accruals and deferred income).
 function sheetOf(balanceSheet) {
   const stocks = n(balanceSheet.stocks);
   const debtors = n(balanceSheet.debtors);
+  const outsideDebtors = n(balanceSheet.prepaymentsAccruedIncome) + n(balanceSheet.calledUpShareCapitalNotPaid);
   const currentAssets = balanceSheet.currentAssets ?? stocks + debtors + n(balanceSheet.cashAtBank);
   const lineCreditors =
     n(balanceSheet.bankLoansOverdrafts) +
@@ -83,13 +86,17 @@ function sheetOf(balanceSheet) {
   const calledUp = n(balanceSheet.calledUpShareCapital);
   const fixedAssets = n(balanceSheet.fixedAssets);
   const afterOneYear = n(balanceSheet.creditorsAfterOneYear);
-  const equity = balanceSheet.capitalAndReserves ?? balanceSheet.netAssets ?? fixedAssets + currentAssets - within - afterOneYear;
+  const accrualsDeferredIncome = n(balanceSheet.accrualsDeferredIncome);
+  const equity =
+    balanceSheet.capitalAndReserves ??
+    balanceSheet.netAssets ??
+    fixedAssets + currentAssets + outsideDebtors - within - afterOneYear - accrualsDeferredIncome;
   return {
     fixedAssets,
     stock: stocks,
-    debtors,
+    debtors: debtors + outsideDebtors,
     cash: currentAssets - stocks - debtors,
-    creditors: within - corporationTax,
+    creditors: within - corporationTax + accrualsDeferredIncome,
     corporationTax,
     afterOneYear,
     shareCapital: calledUp,

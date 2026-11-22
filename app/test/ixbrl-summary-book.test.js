@@ -394,7 +394,7 @@ describe("another vendor's files", () => {
     expect(Math.round(results["PubP&L"].F50)).toBe(1425);
     expect(source.differences).toEqual([
       "Current year: the book's profit and loss account is 85643 and the file's 87068.",
-      "Current year: the book's net assets are 85643 and the file's 87069.",
+      "Current year: the book's net assets are 85644 and the file's 87069.",
     ]);
   });
 });
@@ -634,8 +634,11 @@ describe("every filed balance sheet line, read back from the summary books", () 
     profitAndLossAccount: (sheet) => sheet.F39 - sheet.F36,
     capitalAndReserves: (sheet) => sheet.F39,
   };
-  // The mapping posts these to 2100 or 2600, so the book states each only inside its creditors total.
+  // The mapping posts these to 1300, 2100 or 2600, so the book states each only inside its debtors or creditors total.
   const IN_A_TOTAL = [
+    "prepaymentsAccruedIncome",
+    "calledUpShareCapitalNotPaid",
+    "accrualsDeferredIncome",
     "tradeCreditors",
     "otherCreditors",
     "taxationSocialSecurity",
@@ -831,6 +834,71 @@ describe("a fixed asset note that opens above the prior-year balance sheet", () 
     expect(Math.abs(sheet.F6 - 1170)).toBeLessThan(0.01);
     expect(Math.abs(sheet.E12 - 800)).toBeLessThan(0.01);
     expect(Math.abs(sheet.F39 - 1970)).toBeLessThan(0.01);
+  });
+});
+
+describe("a micro-entity file with the headings outside the totals", () => {
+  const MATURITY = "core:MaturitiesOrExpirationPeriodsDimension";
+  // Called up share capital not paid 50 and 40, prepayments 200 and 120, accruals and deferred income
+  // 150 and 90, beside fixed assets, current assets and creditors within one year.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("WITHIN_CY", { instant: "2025-03-31", members: [[MATURITY, "core:WithinOneYear"]] }),
+        context("WITHIN_PY", { instant: "2024-03-31", members: [[MATURITY, "core:WithinOneYear"]] }),
+        context("STANDARDS", {
+          start: "2024-04-01",
+          end: "2025-03-31",
+          members: [["uk-bus:AccountingStandardsDimension", "uk-bus:Micro-entities"]],
+        }),
+      ].join(""),
+      hidden: words("uk-bus:AccountingStandardsApplied", "STANDARDS", "", 'format="ixt2:nocontent"'),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", "CY_END", "50"),
+        money("core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", "PY_END", "40"),
+        money("core:FixedAssets", "CY_END", "800"),
+        money("core:FixedAssets", "PY_END", "800"),
+        money("core:CurrentAssets", "CY_END", "6,000"),
+        money("core:CurrentAssets", "PY_END", "3,000"),
+        money("core:PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", "CY_END", "200"),
+        money("core:PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", "PY_END", "120"),
+        money("core:Creditors", "WITHIN_CY", "1,968"),
+        money("core:Creditors", "WITHIN_PY", "1,500"),
+        money("core:NetCurrentAssetsLiabilities", "CY_END", "4,232"),
+        money("core:NetCurrentAssetsLiabilities", "PY_END", "1,620"),
+        money("core:TotalAssetsLessCurrentLiabilities", "CY_END", "5,082"),
+        money("core:TotalAssetsLessCurrentLiabilities", "PY_END", "2,460"),
+        money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "CY_END", "150"),
+        money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "PY_END", "90"),
+        money("core:NetAssetsLiabilities", "CY_END", "4,932"),
+        money("core:NetAssetsLiabilities", "PY_END", "2,370"),
+        money("core:Equity", "CY_END", "4,932"),
+        money("core:Equity", "PY_END", "2,370"),
+      ].join(""),
+    }),
+  );
+
+  it("posts the headings as a debtor and a trade creditor, so each year's book has the file's net assets", async () => {
+    const source = await readBookSource(bytes, "x");
+    for (const [book, lines, netAssets] of [
+      [source.book, source.lines, 4932],
+      [source.comparative.book, source.comparative.lines, 2370],
+    ]) {
+      const sheet = (await resultsOf(book, lines)).PubBalSht;
+      expect(Math.abs(sheet.F33 - netAssets)).toBeLessThan(0.01);
+      expect(Math.abs(sheet.F39 - netAssets)).toBeLessThan(0.01);
+    }
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "1300", debitCreditCode: "D", amount: 160 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "1200", debitCreditCode: "D", amount: 3000 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 1590 }));
+    expect(source.differences.join(" ")).not.toMatch(/net assets/);
   });
 });
 

@@ -16,7 +16,7 @@ import { readBookSource } from "../lib/diya-gl-interchange.js";
 import { diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadTaxDataForBook } from "../lib/product-workbook.js";
-import { context, ixbrlDocument, words, STANDARD_CONTEXTS } from "./helpers/ixbrl-document.js";
+import { context, ixbrlDocument, money, words, STANDARD_CONTEXTS } from "./helpers/ixbrl-document.js";
 
 const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "fixtures", "ixbrl");
 const fixture = (name) => readFileSync(resolve(FIXTURES, name));
@@ -100,6 +100,30 @@ describe("the translation table", () => {
       ["TradeCreditorsTradePayables", "7"],
       ["TradeCreditorsWithinOneYear", "9"],
     ]);
+  });
+});
+
+describe("a UK GAAP file's accruals and deferred income within one year", () => {
+  it("reads as accruals inside the creditors within one year, which the balance sheet's totals take in", () => {
+    const accounts = mapIxbrlAccounts(
+      document(
+        money("gaap:FixedAssets", "CY_END", "1,000") +
+          money("gaap:CashBankInHand", "CY_END", "500") +
+          money("gaap:CurrentAssets", "CY_END", "500") +
+          money("gaap:TradeCreditorsWithinOneYear", "WITHIN", "200") +
+          money("gaap:AccrualsDeferredIncomeWithinOneYear", "WITHIN", "100") +
+          money("gaap:CreditorsDueWithinOneYear", "WITHIN", "300") +
+          money("gaap:NetAssetsLiabilitiesIncludingPensionAssetLiability", "CY_END", "1,200"),
+      ),
+      { firstAccounts: true },
+    );
+    expect(accounts.balanceSheet.currentYear).toMatchObject({
+      tradeCreditors: 200,
+      accruals: 100,
+      creditorsWithinOneYear: 300,
+      netAssets: 1200,
+    });
+    expect(accounts.balanceSheet.currentYear.accrualsDeferredIncome).toBeUndefined();
   });
 });
 

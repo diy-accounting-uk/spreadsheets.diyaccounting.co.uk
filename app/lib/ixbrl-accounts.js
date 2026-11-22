@@ -79,8 +79,18 @@ export const MAPPING_TABLE = [
   },
   { concept: "TotalInventories", figure: "stocks", account: "1100" },
   { concept: "Debtors", figure: "debtors", account: "1300", note: "with or without WithinOneYear" },
-  { concept: "PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", figure: "debtors", account: "1300" },
-  { concept: "CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", figure: "debtors", account: "1300" },
+  {
+    concept: "PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal",
+    figure: "prepaymentsAccruedIncome",
+    account: "1300",
+    note: "a heading outside current assets, which net current assets take in",
+  },
+  {
+    concept: "CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset",
+    figure: "calledUpShareCapitalNotPaid",
+    account: "1300",
+    note: "a heading outside current assets, which total assets less current liabilities take in",
+  },
   { concept: "CashBankOnHand", figure: "cashAtBank", account: "1200" },
   { concept: "CurrentAssets", figure: "currentAssets", account: "-", note: "a check; the part no line explains posts to 1200" },
   { concept: "TradeCreditorsTradePayables", figure: "tradeCreditors", account: "2100", note: "WithinOneYear" },
@@ -91,7 +101,12 @@ export const MAPPING_TABLE = [
     account: "2100",
     note: "WithinOneYear; posts as a trade creditor, which the balance sheet shows within one year",
   },
-  { concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", figure: "otherCreditors", account: "2100", note: "WithinOneYear" },
+  {
+    concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal",
+    figure: "accrualsDeferredIncome",
+    account: "2100",
+    note: "a heading outside the creditors, which net assets take off; posts as a trade creditor",
+  },
   { concept: "TaxationSocialSecurityPayable", figure: "taxationSocialSecurity", account: "2100", note: "WithinOneYear" },
   {
     concept: "AccruedLiabilities",
@@ -99,7 +114,7 @@ export const MAPPING_TABLE = [
     member: "CurrentFinancialInstruments",
     figure: "accruals",
     account: "2100",
-    note: "on a context that also carries WithinOneYear",
+    note: "on a context that also carries WithinOneYear, or on WithinOneYear alone (a UK GAAP file's accruals within one year)",
   },
   {
     concept: "BankBorrowingsOverdrafts",
@@ -340,11 +355,7 @@ function pick(object) {
 }
 
 function balanceSheetAt(set, endDay, notes, label) {
-  const debtors = sumDefined([
-    set.maturity("Debtors", endDay, ["WithinOneYear", null]),
-    set.instant("PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", endDay),
-    set.instant("CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", endDay),
-  ]);
+  const debtors = set.maturity("Debtors", endDay, ["WithinOneYear", null]);
   const provisions = set.instant("ProvisionsForLiabilitiesBalanceSheetSubtotal", endDay);
   const bankLoansAfterOneYear = set.instant("BankBorrowingsOverdrafts", endDay, { [MATURITY]: "AfterOneYear" });
   const afterOneYear = set.instant("Creditors", endDay, { [MATURITY]: "AfterOneYear" }) ?? bankLoansAfterOneYear;
@@ -373,19 +384,20 @@ function balanceSheetAt(set, endDay, notes, label) {
     fixedAssets: set.instant("FixedAssets", endDay),
     stocks: set.instant("TotalInventories", endDay),
     debtors,
+    prepaymentsAccruedIncome: set.instant("PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", endDay),
+    calledUpShareCapitalNotPaid: set.instant("CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", endDay),
     cashAtBank: set.instant("CashBankOnHand", endDay),
     currentAssets: set.instant("CurrentAssets", endDay),
     tradeCreditors: set.maturity("TradeCreditorsTradePayables", endDay, ["WithinOneYear", null]),
     corporationTax: set.maturity("CorporationTaxPayable", endDay, ["WithinOneYear", null]),
-    otherCreditors: sumDefined([
-      set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
-      set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
-    ]),
+    otherCreditors: set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
+    accrualsDeferredIncome: set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
     taxationSocialSecurity: set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
-    accruals: set.instant("AccruedLiabilities", endDay, {
-      [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments",
-      [MATURITY]: "WithinOneYear",
-    }),
+    accruals:
+      set.instant("AccruedLiabilities", endDay, {
+        [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments",
+        [MATURITY]: "WithinOneYear",
+      }) ?? set.instant("AccruedLiabilities", endDay, { [MATURITY]: "WithinOneYear" }),
     bankLoansOverdrafts: set.maturity("BankBorrowingsOverdrafts", endDay, ["WithinOneYear", null]),
     bankLoansAfterOneYear,
     creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
@@ -579,23 +591,25 @@ function problem(message) {
 // The lines that add up to the creditors falling due within one year.
 const WITHIN_LINES = ["bankLoansOverdrafts", "tradeCreditors", "corporationTax", "taxationSocialSecurity", "otherCreditors", "accruals"];
 
+// The headings outside the totals: prepayments and accrued income count in the
+// net current assets, called up share capital not paid in the total assets less
+// current liabilities, and accruals and deferred income come off the net assets.
 function checkBalance(year, label) {
   const s = year;
   const current = s.currentAssets ?? sumOf([s.stocks, s.debtors, s.cashAtBank].map((v) => v ?? 0));
   const within = s.creditorsWithinOneYear ?? sumOf(WITHIN_LINES.map((line) => s[line] ?? 0));
-  const net = (s.fixedAssets ?? 0) + current - within - (s.creditorsAfterOneYear ?? 0);
+  const netCurrent = current + (s.prepaymentsAccruedIncome ?? 0) - within;
+  const totalLessCurrent = (s.calledUpShareCapitalNotPaid ?? 0) + (s.fixedAssets ?? 0) + netCurrent;
+  const net = totalLessCurrent - (s.creditorsAfterOneYear ?? 0) - (s.accrualsDeferredIncome ?? 0);
   const equity = s.capitalAndReserves ?? s.netAssets;
-  if (s.netCurrentAssets !== undefined && !close(current - within, s.netCurrentAssets)) {
+  if (s.netCurrentAssets !== undefined && !close(netCurrent, s.netCurrentAssets)) {
     throw problem(
-      `The ${label} net current assets are stated as ${s.netCurrentAssets}; current assets less creditors within one year give ${current - within}.`,
+      `The ${label} net current assets are stated as ${s.netCurrentAssets}; current assets less creditors within one year give ${netCurrent}.`,
     );
   }
-  if (
-    s.totalAssetsLessCurrentLiabilities !== undefined &&
-    !close((s.fixedAssets ?? 0) + current - within, s.totalAssetsLessCurrentLiabilities)
-  ) {
+  if (s.totalAssetsLessCurrentLiabilities !== undefined && !close(totalLessCurrent, s.totalAssetsLessCurrentLiabilities)) {
     throw problem(
-      `The ${label} total assets less current liabilities are stated as ${s.totalAssetsLessCurrentLiabilities}; the lines give ${(s.fixedAssets ?? 0) + current - within}.`,
+      `The ${label} total assets less current liabilities are stated as ${s.totalAssetsLessCurrentLiabilities}; the lines give ${totalLessCurrent}.`,
     );
   }
   if (s.netAssets !== undefined && !close(net, s.netAssets)) {
