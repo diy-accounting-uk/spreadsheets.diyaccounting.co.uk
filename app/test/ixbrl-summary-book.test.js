@@ -775,6 +775,65 @@ describe("a year's additions depreciated faster than the plant rate", () => {
   });
 });
 
+describe("a fixed asset note that opens above the prior-year balance sheet", () => {
+  const PPE = "core:PropertyPlantEquipmentClassesDimension";
+  // The note opens with plant at 2,000 cost and 700 depreciation, 1,300 net, and the prior-year
+  // balance sheet states fixed assets of 1,000. The note's closing 1,170 is the balance sheet's.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("PLANT_CY", { start: "2024-04-01", end: "2025-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+        context("PLANT_CY_END", { instant: "2025-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+        context("PLANT_PY_END", { instant: "2024-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:PropertyPlantEquipmentGrossCost", "PLANT_PY_END", "2,000"),
+        money("core:PropertyPlantEquipmentGrossCost", "PLANT_CY_END", "2,000"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "PLANT_PY_END", "700"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "PLANT_CY_END", "830"),
+        money("core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment", "PLANT_CY", "130"),
+        money("core:FixedAssets", "CY_END", "1,170"),
+        money("core:FixedAssets", "PY_END", "1,000"),
+        money("core:CashBankOnHand", "CY_END", "800"),
+        money("core:CashBankOnHand", "PY_END", "500"),
+        money("core:CurrentAssets", "CY_END", "800"),
+        money("core:CurrentAssets", "PY_END", "500"),
+        money("core:Equity", "CY_END", "1,970"),
+        money("core:Equity", "PY_END", "1,500"),
+      ].join(""),
+    }),
+  );
+
+  it("keeps the note's figures and balances the opening journal with a line that states the gap and both figures", async () => {
+    const source = await readBookSource(bytes, "x");
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    const side = (code) => opening.filter((line) => line.debitCreditCode === code).reduce((total, line) => total + line.amount, 0);
+    expect(Math.abs(side("D") - side("C"))).toBeLessThan(0.01);
+    expect(opening).toContainEqual(
+      expect.objectContaining({
+        accountMainID: "3100",
+        debitCreditCode: "C",
+        amount: 300,
+        lineItemComment: expect.stringMatching(/1300.*1000/),
+      }),
+    );
+    expect(source.book.fixedAssets).toEqual([
+      expect.objectContaining({ assetID: "FA-IXBRL-plantMachinery", cost: 2000, accumulatedDepreciation: 700 }),
+    ]);
+    expect(source.differences.join(" ")).toMatch(/net book value of 1300 .* fixed assets of 1000/);
+    const sheet = (await resultsOf(source.book, source.lines)).PubBalSht;
+    expect(Math.abs(sheet.F6 - 1170)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.E12 - 800)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - 1970)).toBeLessThan(0.01);
+  });
+});
+
 describe("a plain XBRL instance", () => {
   const instance = xbrlInstance(
     `<uk-bus:UKCompaniesHouseRegisteredNumber contextRef="CY">12345678</uk-bus:UKCompaniesHouseRegisteredNumber>
