@@ -500,6 +500,14 @@ const SE_ADVANCED_BASIS_PERIOD = {
   transitionProfitAccelerationAmount: 1000,
 };
 
+// 2027-28 is the last transition year: the whole balance arises in it, so it
+// carries no election. A package for a later tax year carries neither a
+// balance nor an election. The overlap figure stays throughout.
+const SE_ADVANCED_BASIS_PERIOD_CHANGES = [
+  { firstTaxYearEnd: 2028, overlapProfitBroughtForward: 2400, transitionProfitBroughtForward: 6000, transitionProfitAccelerationAmount: 0 },
+  { firstTaxYearEnd: 2029, overlapProfitBroughtForward: 2400 },
+];
+
 // Structures and Buildings Allowance claims (SA103F boxes 53 and 53.1): a
 // standard-rate claim running the whole year (60,000 x 3% = 1,800, box 53
 // exactly, whatever package year the fixture runs against) and a Freeport
@@ -651,6 +659,7 @@ const advToml = formatScenarioToml(
     annual_allowances: SE_ADVANCED_ANNUAL.allowances,
     annual_adjustments: SE_ADVANCED_ANNUAL.adjustments,
     basis_period: SE_ADVANCED_BASIS_PERIOD,
+    basis_period_changes: SE_ADVANCED_BASIS_PERIOD_CHANGES,
     sba_claims: SE_ADVANCED_SBA_CLAIMS,
     opening_stock: 10000,
     closing_stock: 6000,
