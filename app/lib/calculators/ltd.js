@@ -194,7 +194,9 @@ const SCHEDULE_COST_ROWS = { land: 6, plant: 7, fixtures: 8, computer: 9, motor:
 const SCHEDULE_DEPRECIATION_ROWS = { land: 11, plant: 12, fixtures: 13, computer: 14, motor: 15 };
 
 // An asset bought in the year lands on the New Plant & Machinery rows, matching
-// the writer, unless the purchase is a car, which lands on the Cars rows.
+// the writer, unless the purchase is a car, which lands on the Cars rows, or
+// its fixedAssets entry states a rate of its own, which puts it on its own
+// class's new-asset rows at that rate.
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
 // The classes whose new-asset rows carry a capital allowance formula, and
@@ -517,26 +519,29 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
       row,
       acquiredInYear: false,
       openingAsset: asset,
+      depreciationRate: asset.depreciation_rate,
       cost: asset.cost,
       depreciationBroughtForward: asset.acc_dep || 0,
       taxWrittenDownValue: asset.tax_wdv || 0,
     });
   }
 
-  const newLayout = SCHEDULE_CLASSES[SCHEDULE_NEW_ASSET_CLASS];
-  let newIndex = 0;
+  const usedNewByClass = {};
   let newCarIndex = 0;
   for (const transactions of Object.values(scenario.purchases || {})) {
     for (const transaction of transactions) {
       if (transaction.code !== "fa") continue;
       const car = transaction.asset_class === "car";
-      const row = car ? SCHEDULE_CAR_ROWS[newCarIndex++] : newLayout.newRows[newIndex++];
+      const assetClass = car ? "motor" : (transaction.asset_category ?? SCHEDULE_NEW_ASSET_CLASS);
+      const newIndex = (usedNewByClass[assetClass] = (usedNewByClass[assetClass] || 0) + 1) - 1;
+      const row = car ? SCHEDULE_CAR_ROWS[newCarIndex++] : SCHEDULE_CLASSES[assetClass].newRows[newIndex];
       if (row === undefined) continue;
       const scheduleRow = {
-        assetClass: car ? "motor" : SCHEDULE_NEW_ASSET_CLASS,
+        assetClass,
         car,
         row,
         acquiredInYear: true,
+        depreciationRate: transaction.depreciation_rate,
         entryNumber: entryOf(transaction),
         purchasedOn: serialOf(parseDate(transaction.date)),
         description: transaction.supplier,
@@ -566,7 +571,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
 
   for (const row of rows) {
     // An asset that states its own rate depreciates at it; any other takes its class's rate.
-    const ratePercent = row.openingAsset?.depreciation_rate ?? depreciationRates[row.assetClass];
+    const ratePercent = row.depreciationRate ?? depreciationRates[row.assetClass];
     const netBookValue = row.cost - row.depreciationBroughtForward;
     row.depreciationCharge = row.cost > 0 ? Math.min(row.cost * ratePercent, netBookValue) : 0;
     row.depreciationCarriedForward = row.cost > 0 ? row.depreciationBroughtForward + row.depreciationCharge : 0;

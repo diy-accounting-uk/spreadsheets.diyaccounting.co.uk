@@ -253,8 +253,9 @@ describe("the builders' small company accounts, read back", () => {
     closeTo(results["PubP&L"].F49 - results["PubP&L"].F46, 100);
   });
 
-  it("registers an asset for each class of the fixed asset note, with the rate that gives the tagged charge", async () => {
+  it("registers an asset for each class of the fixed asset note, and for each class's additions, with the rate that gives the tagged charge", async () => {
     const source = await readBookSource(fixture("builder-small-consistent.xhtml"), "x");
+    // The note's charge of 500 on computers falls on the 5,000 held and the 1,000 bought at one rate.
     expect(source.book.fixedAssets).toEqual([
       {
         assetID: "FA-IXBRL-landBuildings",
@@ -270,16 +271,29 @@ describe("the builders' small company accounts, read back", () => {
         description: "Computer equipment",
         cost: 5000,
         accumulatedDepreciation: 1500,
-        depreciationRate: 0.08,
+        depreciationRate: 0.083333,
+      },
+      {
+        assetID: "FA-IXBRL-computerEquipment-additions",
+        class: "computerTechnology",
+        description: "Computer equipment, bought in the year",
+        cost: 1000,
+        accumulatedDepreciation: 0,
+        depreciationRate: 0.083333,
+        acquiredDate: "2025-12-31",
       },
     ]);
-    // The addition of 1,000 is bought in the year and takes the plant rate (10%), so the computers held take the other 400.
     const addition = source.lines.find((line) => line.documentReference === "IXBRL-PropertyPlantEquipmentAdditions");
-    expect(addition).toMatchObject({ sourceJournalID: "purchases", accountMainID: "5900", amount: 1000 });
+    expect(addition).toMatchObject({
+      "sourceJournalID": "purchases",
+      "accountMainID": "5900",
+      "amount": 1000,
+      "diya-gl:assetID": "FA-IXBRL-computerEquipment-additions",
+    });
     const notes = (await resultsOf(source.book, source.lines)).PubNotes;
     expect(notes.G15).toBeCloseTo(500, 2);
-    expect(notes.E15).toBeCloseTo(400, 2);
-    expect(notes.C15).toBeCloseTo(100, 2);
+    expect(notes.E15).toBeCloseTo(500, 2);
+    expect(notes.C15).toBeCloseTo(0, 2);
   });
 
   it("reads the register's own depreciationRate in the Company calculator, and the class rate where it states none", async () => {
@@ -379,8 +393,8 @@ describe("another vendor's files", () => {
     // reserves that only grew by the profit, so its net assets are the file's less that tax.
     expect(Math.round(results["PubP&L"].F50)).toBe(1425);
     expect(source.differences).toEqual([
-      "Current year: the book's profit and loss account is 85643.01 and the file's 87068.",
-      "Current year: the book's net assets are 85643.01 and the file's 87069.",
+      "Current year: the book's profit and loss account is 85643 and the file's 87068.",
+      "Current year: the book's net assets are 85643 and the file's 87069.",
     ]);
   });
 });
@@ -700,6 +714,64 @@ describe("every filed balance sheet line, read back from the summary books", () 
       }),
     );
     await expectFiledLines(bytes);
+  });
+});
+
+describe("a year's additions depreciated faster than the plant rate", () => {
+  const PPE = "core:PropertyPlantEquipmentClassesDimension";
+  // A filleted file whose company buys 1,200 of computers in its first year with fixed assets and
+  // depreciates them by 400, so the balance sheet carries them at 800.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("COMP_CY", { start: "2024-04-01", end: "2025-03-31", members: [[PPE, "core:ComputerEquipment"]] }),
+        context("COMP_CY_END", { instant: "2025-03-31", members: [[PPE, "core:ComputerEquipment"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:PropertyPlantEquipmentGrossCost", "COMP_CY_END", "1,200"),
+        money("core:AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment", "COMP_CY", "1,200"),
+        money("core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment", "COMP_CY", "400"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "COMP_CY_END", "400"),
+        money("core:FixedAssets", "CY_END", "800"),
+        money("core:FixedAssets", "PY_END", "0"),
+        money("core:CashBankOnHand", "CY_END", "1,500"),
+        money("core:CashBankOnHand", "PY_END", "1,000"),
+        money("core:CurrentAssets", "CY_END", "1,500"),
+        money("core:CurrentAssets", "PY_END", "1,000"),
+        money("core:Equity", "CY_END", "2,300"),
+        money("core:Equity", "PY_END", "1,000"),
+      ].join(""),
+    }),
+  );
+
+  it("gives back the filed fixed assets and cash, the additions bought as computers at the note's rate", async () => {
+    const source = await readBookSource(bytes, "x");
+    const sheet = (await resultsOf(source.book, source.lines)).PubBalSht;
+    expect(Math.abs(sheet.F6 - 800)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.E12 - 1500)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - 2300)).toBeLessThan(0.01);
+    expect(source.differences).toEqual([]);
+    expect(source.book.fixedAssets).toEqual([
+      expect.objectContaining({ assetID: "FA-IXBRL-computerEquipment-additions", class: "computerTechnology", cost: 1200 }),
+    ]);
+  });
+
+  it("depreciates a purchase at its register entry's own class and rate, and one whose entry states no rate on the plant rows at the plant rate", async () => {
+    const source = await readBookSource(bytes, "x");
+    const rated = (await resultsOf(source.book, source.lines)).PubNotes;
+    expect(rated.E15).toBeCloseTo(400, 1);
+    expect(rated.C15).toBeCloseTo(0, 2);
+    const unrated = structuredClone(source.book);
+    delete unrated.fixedAssets[0].depreciationRate;
+    const plant = (await resultsOf(unrated, source.lines)).PubNotes;
+    expect(plant.E15).toBeCloseTo(0, 2);
+    expect(plant.C15).toBeCloseTo(120, 2);
   });
 });
 

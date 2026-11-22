@@ -183,6 +183,31 @@ function markStatedPurchases(purchasesByMonth, lines, fixedAssets, product) {
   }
 }
 
+// A Company purchase line whose fixedAssets entry states its own depreciation
+// rate depreciates at that rate, on its entry's class block of the Schedule,
+// as an asset brought forward with a rate of its own does. A purchase whose
+// entry states no rate stays on the New Plant & Machinery rows at the plant
+// rate, where the writer puts every purchase.
+function markRatedPurchases(purchasesByMonth, lines, fixedAssets) {
+  const rated = new Map((fixedAssets || []).filter((asset) => asset.depreciationRate !== undefined).map((asset) => [asset.assetID, asset]));
+  if (rated.size === 0) return;
+  const assetIDByEntry = new Map(
+    lines.filter((line) => line["diya-gl:assetID"]).map((line) => [line.entryNumber, line["diya-gl:assetID"]]),
+  );
+  for (const transactions of Object.values(purchasesByMonth)) {
+    for (const transaction of transactions) {
+      const asset = transaction.code === "fa" ? rated.get(assetIDByEntry.get(entryOf(transaction))) : undefined;
+      if (!asset) continue;
+      const category = ASSET_CLASS_TO_CATEGORY[asset.class];
+      if (!category) {
+        throw new Error(`Fixed asset ${asset.assetID} declares class "${asset.class}", which the Schedule has no category for`);
+      }
+      transaction.asset_category = category;
+      transaction.depreciation_rate = asset.depreciationRate;
+    }
+  }
+}
+
 // The Fixed Assets Schedule's asset-class blocks, keyed by the book's own
 // class enum. land and plant/fixtures only exist on the Ltd Schedule; SE's
 // Schedule carries motor and computer alone and throws on the other three,
@@ -371,6 +396,7 @@ export function diyaGlToScenario(book, lines, product) {
   const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage, carriesPaymentLabels });
   assertStatedAssetKinds(book.fixedAssets, product);
   if (product === "ltd" || product === "se") markStatedPurchases(grouped.purchases, filteredLines, book.fixedAssets, product);
+  if (product === "ltd") markRatedPurchases(grouped.purchases, filteredLines, book.fixedAssets);
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
