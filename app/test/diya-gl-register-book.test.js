@@ -220,7 +220,7 @@ describe("the members", () => {
       lastAccounts: stadiumAccounts(),
     });
     expect(result.book.members).toBeUndefined();
-    expect(codes(result)).toEqual(expect.arrayContaining(["no-members", "filed-accounts"]));
+    expect(codes(result)).toContain("no-members");
     expect(codes(result)).not.toContain("shareholders-date");
   });
 

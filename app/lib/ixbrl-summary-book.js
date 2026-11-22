@@ -330,8 +330,10 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
   add("OwnWorkCapitalised", "sales", "4003", profitAndLoss.ownWorkCapitalised, "Own work capitalised");
   const costOfSales = profitAndLoss.costOfSales !== undefined ? profitAndLoss.costOfSales : profitAndLoss.rawMaterialsConsumables;
   const costConcept = profitAndLoss.costOfSales !== undefined ? "CostSales" : "RawMaterialsConsumablesUsed";
-  if (costOfSales !== undefined || stockMovement !== 0)
-    add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement, "Cost of sales");
+  // The engine takes the stock movement off the purchases; a stated change in stocks is that movement already.
+  const changeInStocks = n(profitAndLoss.changeInStocks);
+  if (costOfSales !== undefined || stockMovement !== 0 || changeInStocks !== 0)
+    add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement - changeInStocks, "Cost of sales");
   add("OtherExternalCharges", "purchases", "5001", profitAndLoss.otherExternalCharges, "Other external charges");
   add("StaffCostsEmployeeBenefitsExpense", "purchases", "5101", profitAndLoss.staffCosts, "Staff costs");
   add("InterestPayableSimilarChargesFinanceCosts", "purchases", "5803", profitAndLoss.interestPayable, "Interest payable");
@@ -383,6 +385,7 @@ function bookShell(accounts, period, taxData, extras) {
   book.accounts.purchases["5001"] = { "accountMainDescription": "Sub contractors", "diya-gl:column": "P" };
   book.accounts.purchases["5101"] = { "accountMainDescription": "Employee wages (non-PAYE)", "diya-gl:column": "S" };
   book.accounts.purchases["5501"] = { "accountMainDescription": "General admin", "diya-gl:column": "AA" };
+  book.accounts.purchases["5803"] = { "accountMainDescription": "Interest payable", "diya-gl:column": "AF" };
   book.accounts.sales["4006"] = { accountMainDescription: "Fixed asset sales" };
   book.accounts.capital = { 3000: { accountMainDescription: "Share capital" }, 3100: { accountMainDescription: "Retained earnings" } };
   book.accounts.assets = {
@@ -586,7 +589,7 @@ async function buildYear(accounts, which, deps) {
   let first;
   let results;
   let derivedTax = 0;
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < 25; attempt += 1) {
     posted = postsFor(derivedTax);
     first = build(flows);
     results = await runEngine(first.book, first.lines, taxData);
