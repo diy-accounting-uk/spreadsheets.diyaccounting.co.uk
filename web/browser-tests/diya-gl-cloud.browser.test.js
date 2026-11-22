@@ -174,7 +174,9 @@ test.describe("DIYA-GL page — signed out", () => {
     await expect(panel.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
-  test("a disabled config hides the account button and keeps a two-item save menu, with no console error", async ({ page }) => {
+  test("a disabled config hides the account button and keeps a save menu of the three downloads, with no console error", async ({
+    page,
+  }) => {
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(String(error)));
     await page.addInitScript(() => {
@@ -188,7 +190,11 @@ test.describe("DIYA-GL page — signed out", () => {
     await loadExample(page);
     await page.click("#save-btn");
     await expect(page.getByRole("menu")).toBeVisible();
-    await expect(page.getByRole("menuitem")).toHaveCount(2);
+    await expect(page.getByRole("menuitem")).toHaveText([
+      "Download books as diya-gl (.zip)",
+      "Download books as JSON (.json)",
+      "Download as a spreadsheet package (.zip)",
+    ]);
 
     expect(pageErrors).toEqual([]);
   });
