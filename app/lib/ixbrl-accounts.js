@@ -23,6 +23,23 @@ const CURRENT_INSTRUMENT = "FinancialInstrumentCurrentNon-currentDimension";
 const EQUITY_CLASS = "EquityClassesDimension";
 const PPE_CLASS = "PropertyPlantEquipmentClassesDimension";
 
+// The spellings of a balance due within one year and after one year: the maturity member, the
+// financial instrument member the FRC suite gives current and non-current items, or both together.
+const WITHIN_ONE_YEAR = [
+  { [MATURITY]: "WithinOneYear" },
+  { [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments", [MATURITY]: "WithinOneYear" },
+  { [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments" },
+];
+const AFTER_ONE_YEAR = [
+  { [MATURITY]: "AfterOneYear" },
+  { [CURRENT_INSTRUMENT]: "Non-currentFinancialInstruments", [MATURITY]: "AfterOneYear" },
+  { [CURRENT_INSTRUMENT]: "Non-currentFinancialInstruments" },
+];
+const NO_MATURITY = {};
+
+// The headings that make up the fixed assets on the balance sheet.
+const FIXED_ASSET_HEADINGS = ["IntangibleAssets", "PropertyPlantEquipment", "InvestmentProperty", "InvestmentsFixedAssets"];
+
 export const FIXED_ASSET_CLASSES = ["landBuildings", "plantMachinery", "furnitureFittings", "computerEquipment", "motorVehicles"];
 
 const PPE_MEMBER = {
@@ -51,6 +68,12 @@ const NATURE_NOTE = "micro-entity and Format 2 profit and loss";
  */
 export const MAPPING_TABLE = [
   { concept: "FixedAssets", figure: "fixedAssets", account: "0000-0040", note: "by class from the note; 0010 when the file has no note" },
+  ...FIXED_ASSET_HEADINGS.map((concept) => ({
+    concept,
+    figure: "fixedAssets",
+    account: "0000-0040",
+    note: "added with the other fixed asset headings when the file states no fixed assets total",
+  })),
   { concept: "PropertyPlantEquipmentGrossCost", dimension: PPE_CLASS, figure: "fixedAssetNote.costAtStart", account: "0000-0040" },
   {
     concept: "AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment",
@@ -78,7 +101,7 @@ export const MAPPING_TABLE = [
     account: "-",
   },
   { concept: "TotalInventories", figure: "stocks", account: "1100" },
-  { concept: "Debtors", figure: "debtors", account: "1300", note: "with or without WithinOneYear" },
+  { concept: "Debtors", figure: "debtors", account: "1300", note: "within one year, or on no maturity" },
   {
     concept: "PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal",
     figure: "prepaymentsAccruedIncome",
@@ -93,13 +116,13 @@ export const MAPPING_TABLE = [
   },
   { concept: "CashBankOnHand", figure: "cashAtBank", account: "1200" },
   { concept: "CurrentAssets", figure: "currentAssets", account: "-", note: "a check; the part no line explains posts to 1200" },
-  { concept: "TradeCreditorsTradePayables", figure: "tradeCreditors", account: "2100", note: "WithinOneYear" },
+  { concept: "TradeCreditorsTradePayables", figure: "tradeCreditors", account: "2100", note: "within one year" },
   { concept: "CorporationTaxPayable", figure: "corporationTax", account: "2300" },
   {
     concept: "OtherCreditors",
     figure: "otherCreditors",
     account: "2100",
-    note: "WithinOneYear; posts as a trade creditor, which the balance sheet shows within one year",
+    note: "within one year; posts as a trade creditor, which the balance sheet shows within one year",
   },
   {
     concept: "AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal",
@@ -107,14 +130,42 @@ export const MAPPING_TABLE = [
     account: "2100",
     note: "a heading outside the creditors, which net assets take off; posts as a trade creditor",
   },
-  { concept: "TaxationSocialSecurityPayable", figure: "taxationSocialSecurity", account: "2100", note: "WithinOneYear" },
+  { concept: "TaxationSocialSecurityPayable", figure: "taxationSocialSecurity", account: "2100", note: "within one year" },
+  {
+    concept: "OtherTaxationSocialSecurityPayable",
+    figure: "taxationSocialSecurity",
+    account: "2100",
+    note: "within one year; read when TaxationSocialSecurityPayable is absent",
+  },
   {
     concept: "AccruedLiabilities",
     dimension: CURRENT_INSTRUMENT,
     member: "CurrentFinancialInstruments",
     figure: "accruals",
     account: "2100",
-    note: "on a context that also carries WithinOneYear, or on WithinOneYear alone (a UK GAAP file's accruals within one year)",
+    note: "within one year: CurrentFinancialInstruments, WithinOneYear (a UK GAAP file's accruals within one year), or both",
+  },
+  {
+    concept: "AccruedLiabilitiesDeferredIncome",
+    dimension: MATURITY,
+    member: "WithinOneYear",
+    figure: "accruals",
+    account: "2100",
+    note: "within one year; read when AccruedLiabilities is absent",
+  },
+  {
+    concept: "AccruedLiabilitiesDeferredIncome",
+    dimension: MATURITY,
+    member: "AfterOneYear",
+    figure: "creditorsAfterOneYear",
+    account: "2600",
+    note: "added with the bank loans after one year when the file states no creditors after one year",
+  },
+  {
+    concept: "AccruedLiabilitiesDeferredIncome",
+    figure: "accrualsDeferredIncome",
+    account: "2100",
+    note: "on no maturity, the heading outside the creditors when the stated net assets take it off; otherwise unmapped",
   },
   {
     concept: "BankBorrowingsOverdrafts",
@@ -122,7 +173,7 @@ export const MAPPING_TABLE = [
     member: "WithinOneYear",
     figure: "bankLoansOverdrafts",
     account: "2100",
-    note: "with or without the WithinOneYear member",
+    note: "within one year, or on no maturity",
   },
   {
     concept: "BankBorrowingsOverdrafts",
@@ -138,9 +189,16 @@ export const MAPPING_TABLE = [
     member: "WithinOneYear",
     figure: "creditorsWithinOneYear",
     account: "-",
-    note: "a check; the part no line explains posts to 2100",
+    note: "a check; within one year: WithinOneYear, CurrentFinancialInstruments or both, or no maturity when the stated net current assets (or total assets less current liabilities) agree; the part no line explains posts to 2100",
   },
-  { concept: "Creditors", dimension: MATURITY, member: "AfterOneYear", figure: "creditorsAfterOneYear", account: "2600" },
+  {
+    concept: "Creditors",
+    dimension: MATURITY,
+    member: "AfterOneYear",
+    figure: "creditorsAfterOneYear",
+    account: "2600",
+    note: "after one year: AfterOneYear, Non-currentFinancialInstruments or both",
+  },
   {
     concept: "ProvisionsForLiabilitiesBalanceSheetSubtotal",
     figure: "provisionsForLiabilities",
@@ -336,9 +394,9 @@ class FactSet {
   }
 
   // The first stated of several maturity spellings of one line.
-  maturity(localName, endDay, members) {
-    for (const member of members) {
-      const value = this.instant(localName, endDay, member === null ? {} : { [MATURITY]: member });
+  maturity(localName, endDay, spellings) {
+    for (const want of spellings) {
+      const value = this.instant(localName, endDay, want);
       if (value !== undefined) return value;
     }
     return undefined;
@@ -355,10 +413,12 @@ function pick(object) {
 }
 
 function balanceSheetAt(set, endDay, notes, label) {
-  const debtors = set.maturity("Debtors", endDay, ["WithinOneYear", null]);
+  const debtors = set.maturity("Debtors", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]);
   const provisions = set.instant("ProvisionsForLiabilitiesBalanceSheetSubtotal", endDay);
-  const bankLoansAfterOneYear = set.instant("BankBorrowingsOverdrafts", endDay, { [MATURITY]: "AfterOneYear" });
-  const afterOneYear = set.instant("Creditors", endDay, { [MATURITY]: "AfterOneYear" }) ?? bankLoansAfterOneYear;
+  const bankLoansAfterOneYear = set.maturity("BankBorrowingsOverdrafts", endDay, AFTER_ONE_YEAR);
+  const accrualsDeferredIncomeAfterOneYear = set.maturity("AccruedLiabilitiesDeferredIncome", endDay, AFTER_ONE_YEAR);
+  const afterOneYear =
+    set.maturity("Creditors", endDay, AFTER_ONE_YEAR) ?? sumDefined([bankLoansAfterOneYear, accrualsDeferredIncomeAfterOneYear]);
 
   const equityClasses = set.find("Equity", null, (fact) => fact.period.instant === endDay && Object.keys(fact.dimensions).length === 1);
   const classMembers = equityClasses.filter((fact) => local(Object.keys(fact.dimensions)[0]) === EQUITY_CLASS);
@@ -379,27 +439,30 @@ function balanceSheetAt(set, endDay, notes, label) {
     retained = (retained ?? 0) + sumOf(otherReserves.map(([, value]) => value));
   }
 
-  return pick({
-    fixedAssets: set.instant("FixedAssets", endDay),
+  const year = pick({
+    fixedAssets: set.instant("FixedAssets", endDay) ?? sumDefined(FIXED_ASSET_HEADINGS.map((heading) => set.instant(heading, endDay))),
     stocks: set.instant("TotalInventories", endDay),
     debtors,
     prepaymentsAccruedIncome: set.instant("PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", endDay),
     calledUpShareCapitalNotPaid: set.instant("CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", endDay),
     cashAtBank: set.instant("CashBankOnHand", endDay),
     currentAssets: set.instant("CurrentAssets", endDay),
-    tradeCreditors: set.maturity("TradeCreditorsTradePayables", endDay, ["WithinOneYear", null]),
-    corporationTax: set.maturity("CorporationTaxPayable", endDay, ["WithinOneYear", null]),
-    otherCreditors: set.maturity("OtherCreditors", endDay, ["WithinOneYear", null]),
-    accrualsDeferredIncome: set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, ["WithinOneYear", null]),
-    taxationSocialSecurity: set.maturity("TaxationSocialSecurityPayable", endDay, ["WithinOneYear", null]),
+    tradeCreditors: set.maturity("TradeCreditorsTradePayables", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
+    corporationTax: set.maturity("CorporationTaxPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
+    otherCreditors: set.maturity("OtherCreditors", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
+    accrualsDeferredIncome: set.maturity("AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", endDay, [
+      { [MATURITY]: "WithinOneYear" },
+      NO_MATURITY,
+    ]),
+    taxationSocialSecurity:
+      set.maturity("TaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]) ??
+      set.maturity("OtherTaxationSocialSecurityPayable", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
     accruals:
-      set.instant("AccruedLiabilities", endDay, {
-        [CURRENT_INSTRUMENT]: "CurrentFinancialInstruments",
-        [MATURITY]: "WithinOneYear",
-      }) ?? set.instant("AccruedLiabilities", endDay, { [MATURITY]: "WithinOneYear" }),
-    bankLoansOverdrafts: set.maturity("BankBorrowingsOverdrafts", endDay, ["WithinOneYear", null]),
+      set.maturity("AccruedLiabilities", endDay, WITHIN_ONE_YEAR) ??
+      set.maturity("AccruedLiabilitiesDeferredIncome", endDay, WITHIN_ONE_YEAR),
+    bankLoansOverdrafts: set.maturity("BankBorrowingsOverdrafts", endDay, [...WITHIN_ONE_YEAR, NO_MATURITY]),
     bankLoansAfterOneYear,
-    creditorsWithinOneYear: set.instant("Creditors", endDay, { [MATURITY]: "WithinOneYear" }),
+    creditorsWithinOneYear: set.maturity("Creditors", endDay, WITHIN_ONE_YEAR),
     creditorsAfterOneYear: afterOneYear,
     provisionsForLiabilities: provisions,
     netAssets: set.instant("NetAssetsLiabilities", endDay),
@@ -409,6 +472,62 @@ function balanceSheetAt(set, endDay, notes, label) {
     profitAndLossAccount: retained,
     capitalAndReserves: set.instant("Equity", endDay),
   });
+  const [creditorsOnNoMaturity] = set.find("Creditors", NO_MATURITY, (fact) => fact.period.instant === endDay);
+  if (creditorsOnNoMaturity && year.creditorsWithinOneYear === undefined && year.creditorsAfterOneYear === undefined) {
+    year.creditorsWithinOneYear = creditorsOnNoMaturityWithinOneYearByStatedTotals(year, creditorsOnNoMaturity.value, label);
+    set.consumed.add(creditorsOnNoMaturity);
+  }
+  const [accrualsDeferredIncomeOnNoMaturity] = set.find(
+    "AccruedLiabilitiesDeferredIncome",
+    NO_MATURITY,
+    (f) => f.period.instant === endDay,
+  );
+  if (
+    accrualsDeferredIncomeOnNoMaturity &&
+    year.accrualsDeferredIncome === undefined &&
+    statedNetAssetsTakeOffAccrualsDeferredIncome(year, accrualsDeferredIncomeOnNoMaturity.value)
+  ) {
+    year.accrualsDeferredIncome = accrualsDeferredIncomeOnNoMaturity.value;
+    set.consumed.add(accrualsDeferredIncomeOnNoMaturity);
+  }
+  return year;
+}
+
+const currentAssetsOf = (year) => year.currentAssets ?? sumOf([year.stocks, year.debtors, year.cashAtBank].map((v) => v ?? 0));
+const netCurrentAssetsOf = (year, within) => currentAssetsOf(year) + (year.prepaymentsAccruedIncome ?? 0) - within;
+const totalAssetsLessCurrentLiabilitiesOf = (year, within) =>
+  (year.calledUpShareCapitalNotPaid ?? 0) + (year.fixedAssets ?? 0) + netCurrentAssetsOf(year, within);
+const creditorsWithinOneYearOf = (year) => year.creditorsWithinOneYear ?? sumOf(WITHIN_LINES.map((line) => year[line] ?? 0));
+const netAssetsOf = (year, within, accrualsDeferredIncome) =>
+  totalAssetsLessCurrentLiabilitiesOf(year, within) -
+  (year.creditorsAfterOneYear ?? 0) -
+  (year.provisionsForLiabilities ?? 0) -
+  (accrualsDeferredIncome ?? 0);
+
+// Accruals and deferred income the file states on no maturity are the heading outside the creditors
+// (the micro-entity balance sheet's line after the provisions) when the file's stated net assets, or
+// its capital and reserves, take them off. Otherwise they are left unmapped, as a line the totals do
+// not place.
+function statedNetAssetsTakeOffAccrualsDeferredIncome(year, accrualsDeferredIncome) {
+  const stated = year.netAssets ?? year.capitalAndReserves;
+  return stated !== undefined && close(netAssetsOf(year, creditorsWithinOneYearOf(year), accrualsDeferredIncome), stated);
+}
+
+// Creditors the file states on no maturity are due within one year when its own net current assets,
+// or its total assets less current liabilities where it states no net current assets, agree with
+// that reading. When neither total is stated, or the stated one disagrees, the file is refused.
+function creditorsOnNoMaturityWithinOneYearByStatedTotals(year, creditors, label) {
+  const agrees =
+    year.netCurrentAssets !== undefined
+      ? close(netCurrentAssetsOf(year, creditors), year.netCurrentAssets)
+      : year.totalAssetsLessCurrentLiabilities !== undefined &&
+        close(totalAssetsLessCurrentLiabilitiesOf(year, creditors), year.totalAssetsLessCurrentLiabilities);
+  if (!agrees) {
+    throw problem(
+      `${label}: the Creditors fact of ${creditors} states no maturity, and the file's net current assets and total assets less current liabilities do not place it within one year.`,
+    );
+  }
+  return creditors;
 }
 
 // The concepts that say which format the profit and loss account takes. Format 1 analyses costs by
@@ -596,11 +715,10 @@ const WITHIN_LINES = ["bankLoansOverdrafts", "tradeCreditors", "corporationTax",
 // off the net assets.
 function checkBalance(year, label) {
   const s = year;
-  const current = s.currentAssets ?? sumOf([s.stocks, s.debtors, s.cashAtBank].map((v) => v ?? 0));
-  const within = s.creditorsWithinOneYear ?? sumOf(WITHIN_LINES.map((line) => s[line] ?? 0));
-  const netCurrent = current + (s.prepaymentsAccruedIncome ?? 0) - within;
-  const totalLessCurrent = (s.calledUpShareCapitalNotPaid ?? 0) + (s.fixedAssets ?? 0) + netCurrent;
-  const net = totalLessCurrent - (s.creditorsAfterOneYear ?? 0) - (s.provisionsForLiabilities ?? 0) - (s.accrualsDeferredIncome ?? 0);
+  const within = creditorsWithinOneYearOf(s);
+  const netCurrent = netCurrentAssetsOf(s, within);
+  const totalLessCurrent = totalAssetsLessCurrentLiabilitiesOf(s, within);
+  const net = netAssetsOf(s, within, s.accrualsDeferredIncome);
   const equity = s.capitalAndReserves ?? s.netAssets;
   if (s.netCurrentAssets !== undefined && !close(netCurrent, s.netCurrentAssets)) {
     throw problem(
@@ -751,7 +869,9 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
   const entityIdentifier = numberFact?.entity.identifier ?? read.facts[0]?.entity.identifier ?? null;
   const set = new FactSet(read.facts, entityIdentifier);
 
-  const companyNumber = String(numberFact?.value ?? entityIdentifier ?? "").trim();
+  const statedCompanyNumber = String(numberFact?.value ?? entityIdentifier ?? "").trim();
+  // Some software drops the leading zeros of a number; Companies House numbers are eight characters.
+  const companyNumber = /^\d{1,7}$/.test(statedCompanyNumber) ? statedCompanyNumber.padStart(8, "0") : statedCompanyNumber;
   const companyName = textFact(set, "EntityCurrentLegalOrRegisteredName");
   if (numberFact) set.consumed.add(numberFact);
   const period = periodOf(set);

@@ -77,6 +77,21 @@ const exercised = new Set();
 const ROWS = [
   ["FixedAssets", money("core:FixedAssets", "CY_END", "1,000"), "balanceSheet.currentYear.fixedAssets", 1000],
   ["FixedAssets", money("core:FixedAssets", "PY_END", "900"), "balanceSheet.priorYear.fixedAssets", 900],
+  ["IntangibleAssets", money("core:IntangibleAssets", "CY_END", "300"), "balanceSheet.currentYear.fixedAssets", 300],
+  ["PropertyPlantEquipment", money("core:PropertyPlantEquipment", "CY_END", "4,834"), "balanceSheet.currentYear.fixedAssets", 4834],
+  ["InvestmentProperty", money("core:InvestmentProperty", "CY_END", "50,000"), "balanceSheet.currentYear.fixedAssets", 50000],
+  [
+    "InvestmentsFixedAssets",
+    money("core:PropertyPlantEquipment", "CY_END", "1,000") + money("core:InvestmentsFixedAssets", "CY_END", "250"),
+    "balanceSheet.currentYear.fixedAssets",
+    1250,
+  ],
+  [
+    "FixedAssets",
+    money("core:FixedAssets", "CY_END", "1,000") + money("core:PropertyPlantEquipment", "CY_END", "800"),
+    "balanceSheet.currentYear.fixedAssets",
+    1000,
+  ],
   ["TotalInventories", money("core:TotalInventories", "CY_END", "500"), "balanceSheet.currentYear.stocks", 500],
   ["Debtors", money("core:Debtors", "CY_END", "2,500"), "balanceSheet.currentYear.debtors", 2500],
   ["Debtors", money("core:Debtors", "WITHIN_CY", "2,400"), "balanceSheet.currentYear.debtors", 2400],
@@ -116,7 +131,19 @@ const ROWS = [
     "balanceSheet.currentYear.taxationSocialSecurity",
     4451,
   ],
+  [
+    "OtherTaxationSocialSecurityPayable",
+    money("core:OtherTaxationSocialSecurityPayable", "WITHIN_CY", "53"),
+    "balanceSheet.currentYear.taxationSocialSecurity",
+    53,
+  ],
   ["AccruedLiabilities", money("core:AccruedLiabilities", "ACCRUALS_CY", "400"), "balanceSheet.currentYear.accruals", 400],
+  [
+    "AccruedLiabilitiesDeferredIncome",
+    money("core:AccruedLiabilitiesDeferredIncome", "WITHIN_CY", "400"),
+    "balanceSheet.currentYear.accruals",
+    400,
+  ],
   [
     "BankBorrowingsOverdrafts",
     money("core:BankBorrowingsOverdrafts", "WITHIN_CY", "900"),
@@ -344,7 +371,7 @@ const CLASS_ROWS = [
 
 describe("the mapping table", () => {
   it("has a row for each concept and member the reader maps", () => {
-    expect(MAPPING_TABLE).toHaveLength(67);
+    expect(MAPPING_TABLE).toHaveLength(75);
     for (const row of MAPPING_TABLE) {
       expect(row.concept).toMatch(/^[A-Z]/);
       expect(row.figure).toBeTruthy();
@@ -785,6 +812,135 @@ describe("a micro-entity balance sheet with the headings outside the totals", ()
   it("still refuses a balance sheet whose headings do not give its totals", () => {
     const current = { ...year({ prepaymentsAccruedIncome: 200 }), prepaymentsAccruedIncome: 300 };
     expect(() => mapIxbrlAccounts(document(current, year({})), { regime: "micro" })).toThrow(/net current assets are stated as 4232/);
+  });
+});
+
+describe("creditors stated on no maturity, placed within one year only when the stated totals agree", () => {
+  const year = (body) => accountsOf(money("core:CurrentAssets", "CY_END", "1,000") + money("core:Creditors", "CY_END", "400") + body);
+
+  it("places them within one year when the stated net current assets agree", () => {
+    const accounts = year(money("core:NetCurrentAssetsLiabilities", "CY_END", "600"));
+    expect(accounts.balanceSheet.currentYear.creditorsWithinOneYear).toBe(400);
+    expect(accounts.unmapped.map((fact) => fact.concept)).not.toContain("Creditors");
+  });
+
+  it("places them within one year when the file states no net current assets and its total assets less current liabilities agree", () => {
+    const accounts = year(money("core:FixedAssets", "CY_END", "500") + money("core:TotalAssetsLessCurrentLiabilities", "CY_END", "1,100"));
+    expect(accounts.balanceSheet.currentYear.creditorsWithinOneYear).toBe(400);
+  });
+
+  it("refuses them, naming the fact, when the stated net current assets disagree", () => {
+    expect(() => year(money("core:NetCurrentAssetsLiabilities", "CY_END", "1,000"))).toThrow(
+      "Current year: the Creditors fact of 400 states no maturity, and the file's net current assets and total assets less current liabilities do not place it within one year.",
+    );
+  });
+
+  it("refuses them, naming the fact, when the file states neither total", () => {
+    expect(() => year(money("core:NetAssetsLiabilities", "CY_END", "600"))).toThrow(/the Creditors fact of 400 states no maturity/);
+  });
+
+  it("leaves them to the stated creditors within one year when the file states those", () => {
+    const accounts = year(money("core:Creditors", "WITHIN_CY", "400") + money("core:NetCurrentAssetsLiabilities", "CY_END", "600"));
+    expect(accounts.balanceSheet.currentYear.creditorsWithinOneYear).toBe(400);
+  });
+});
+
+describe("accruals and deferred income on each maturity", () => {
+  const AFTER_PY = context("ACCRUALS_AFTER", { instant: "2025-03-31", members: [[MATURITY, "core:AfterOneYear"]] });
+  const accountsOn = (body) => mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS + AFTER_PY, hidden: COVER, body }), FIRST);
+  const microFace = (accruals, netAssets) =>
+    money("core:FixedAssets", "CY_END", "1,000") +
+    money("core:CurrentAssets", "CY_END", "500") +
+    money("core:Creditors", "WITHIN_CY", "200") +
+    money("core:AccruedLiabilitiesDeferredIncome", "CY_END", accruals) +
+    money("core:NetAssetsLiabilities", "CY_END", netAssets);
+
+  it("reads them within one year as the accruals line of the creditors", () => {
+    const year = accountsOn(money("core:AccruedLiabilitiesDeferredIncome", "WITHIN_CY", "40")).balanceSheet.currentYear;
+    expect(year.accruals).toBe(40);
+    expect(year.accrualsDeferredIncome).toBeUndefined();
+  });
+
+  it("reads them after one year as creditors after one year when the file states no total of those", () => {
+    const year = accountsOn(money("core:AccruedLiabilitiesDeferredIncome", "ACCRUALS_AFTER", "90")).balanceSheet.currentYear;
+    expect(year.creditorsAfterOneYear).toBe(90);
+  });
+
+  it("reads them on no maturity as the heading outside the creditors when the stated net assets take them off once", () => {
+    const year = accountsOn(microFace("150", "1,150")).balanceSheet.currentYear;
+    expect(year).toMatchObject({ accrualsDeferredIncome: 150, creditorsWithinOneYear: 200, netAssets: 1150 });
+    expect(year.accruals).toBeUndefined();
+  });
+
+  it("leaves them unmapped on no maturity when the stated net assets do not take them off", () => {
+    const accounts = accountsOn(microFace("150", "1,300"));
+    expect(accounts.balanceSheet.currentYear.accrualsDeferredIncome).toBeUndefined();
+    expect(accounts.unmapped.map((fact) => fact.concept)).toContain("AccruedLiabilitiesDeferredIncome");
+  });
+
+  it("reads the accruals and deferred income heading the file names outside the creditors before the plain one", () => {
+    const year = accountsOn(microFace("150", "1,230") + money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "CY_END", "70"))
+      .balanceSheet.currentYear;
+    expect(year.accrualsDeferredIncome).toBe(70);
+  });
+});
+
+describe("a balance due within or after one year, by the financial instrument members", () => {
+  const INSTRUMENT = "core:FinancialInstrumentCurrentNon-currentDimension";
+  const MATURITY_CONTEXTS =
+    context("CURRENT_CY", { instant: "2025-03-31", members: [[INSTRUMENT, "core:CurrentFinancialInstruments"]] }) +
+    context("NONCURRENT_CY", { instant: "2025-03-31", members: [[INSTRUMENT, "core:Non-currentFinancialInstruments"]] }) +
+    context("NONCURRENT_AFTER_CY", {
+      instant: "2025-03-31",
+      members: [
+        [INSTRUMENT, "core:Non-currentFinancialInstruments"],
+        [MATURITY, "core:AfterOneYear"],
+      ],
+    });
+  const accountsOn = (body) => mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS + MATURITY_CONTEXTS, hidden: COVER, body }), FIRST);
+
+  it("reads creditors on the current financial instruments member as due within one year", () => {
+    const accounts = accountsOn(
+      money("core:CurrentAssets", "CY_END", "1,000") +
+        money("core:Creditors", "CURRENT_CY", "400") +
+        money("core:NetCurrentAssetsLiabilities", "CY_END", "600"),
+    );
+    expect(accounts.balanceSheet.currentYear.creditorsWithinOneYear).toBe(400);
+  });
+
+  it("reads creditors on the non-current financial instruments member, alone or with after one year, as due after one year", () => {
+    const after = (contextRef) =>
+      accountsOn(
+        money("core:FixedAssets", "CY_END", "1,000") +
+          money("core:Creditors", contextRef, "300") +
+          money("core:NetAssetsLiabilities", "CY_END", "700"),
+      ).balanceSheet.currentYear.creditorsAfterOneYear;
+    expect(after("NONCURRENT_CY")).toBe(300);
+    expect(after("NONCURRENT_AFTER_CY")).toBe(300);
+  });
+
+  it("reads the creditor lines, accruals and bank loans on the financial instruments members", () => {
+    const year = accountsOn(
+      money("core:TradeCreditorsTradePayables", "CURRENT_CY", "10") +
+        money("core:CorporationTaxPayable", "CURRENT_CY", "20") +
+        money("core:OtherCreditors", "CURRENT_CY", "30") +
+        money("core:TaxationSocialSecurityPayable", "CURRENT_CY", "40") +
+        money("core:AccruedLiabilities", "CURRENT_CY", "50") +
+        money("core:BankBorrowingsOverdrafts", "CURRENT_CY", "60") +
+        money("core:BankBorrowingsOverdrafts", "NONCURRENT_CY", "70") +
+        money("core:Debtors", "CURRENT_CY", "80"),
+    ).balanceSheet.currentYear;
+    expect(year).toMatchObject({
+      tradeCreditors: 10,
+      corporationTax: 20,
+      otherCreditors: 30,
+      taxationSocialSecurity: 40,
+      accruals: 50,
+      bankLoansOverdrafts: 60,
+      bankLoansAfterOneYear: 70,
+      creditorsAfterOneYear: 70,
+      debtors: 80,
+    });
   });
 });
 

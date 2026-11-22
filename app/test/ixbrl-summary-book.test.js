@@ -1006,3 +1006,15 @@ describe("a year diya-gl has no tax tables for", () => {
     );
   });
 });
+
+describe("readBookSource on the FRS 105 filing tool's accounts from the register", () => {
+  it("keeps the net assets the document states, with the accruals and deferred income taken off once, in both years", async () => {
+    const source = await readBookSource(fixture("register/register-micro-entity-filing-tool-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), { fixedAssets: 29615, netAssets: 8606, capitalAndReserves: 8606 });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      fixedAssets: 34841,
+      netAssets: 13871,
+      capitalAndReserves: 13871,
+    });
+  });
+});
