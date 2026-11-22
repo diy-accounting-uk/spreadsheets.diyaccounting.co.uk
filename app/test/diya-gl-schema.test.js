@@ -15,6 +15,9 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "os";
 import { resolve, dirname, join, relative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
+import { buildNewBook } from "../lib/diya-gl-new-book.js";
+import { addBankLine } from "../lib/diya-gl-edits.js";
+import { rollForward } from "../lib/diya-gl-roll-forward.js";
 import { validateBook, validateLines, useSchemas, useValidators, generateStandaloneValidatorSource } from "../lib/diya-gl-schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -217,5 +220,42 @@ describe("diya-gl schema, the standalone-generated validators agree with the run
     expect(generatedValidLines).toEqual(runtimeValidLines);
     expect(generatedInvalidBook).toEqual(runtimeInvalidBook);
     expect(generatedInvalidLines).toEqual(runtimeInvalidLines);
+  });
+});
+
+describe("diya-gl schema, opening balances below nil", () => {
+  const rates = (name) => parseTOML(readFileSync(resolve(ROOT, "app", "data", `${name}.toml`), "utf8"));
+  const withOpening = (openingBalances) => ({ ...readBook(resolve(EXAMPLES_DIR, "precision-code-ltd", "full")), openingBalances });
+
+  it("accepts the book a roll forward writes after a payment with no invoice behind it", () => {
+    const book = buildNewBook({ product: "ltd", businessName: "Early Payer Ltd", yearEnd: "2023-03-31" }, rates("ltd-2022"));
+    const lines = addBankLine(book, [], {
+      line: {
+        "entryNumber": "TXN-0001",
+        "sourceJournalID": "bank",
+        "postingDate": "2022-04-01",
+        "accountMainID": "1200",
+        "debitCreditCode": "C",
+        "amount": 0.01,
+        "documentType": "bank-statement",
+        "documentReference": "BNK-1",
+        "detailComment": "Supplier",
+        "taxCode": "OS",
+        "taxRate": 0,
+        "diya-gl:bankCode": "CR",
+        "diya-gl:bankAccountID": "1200",
+      },
+    });
+    const rolled = rollForward(book, lines, rates("ltd-2023"));
+    expect(rolled.book.openingBalances.tradeCreditors).toBe(-0.01);
+    expect(validateBook(rolled.book).errors).toEqual([]);
+  });
+
+  it.each(["tradeDebtors", "tradeCreditors", "longTermDebtors"])("accepts a negative %s", (name) => {
+    expect(validateBook(withOpening({ [name]: -25.5 })).errors).toEqual([]);
+  });
+
+  it("still refuses a negative stock figure", () => {
+    expect(validateBook(withOpening({ stock: -1 })).errors).toEqual(["book/openingBalances/stock must be >= 0"]);
   });
 });
