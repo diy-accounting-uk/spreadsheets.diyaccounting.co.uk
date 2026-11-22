@@ -32,6 +32,28 @@ function businessSlug(book) {
   return slug || "diya-gl-book";
 }
 
+function longDate(value) {
+  const iso = value instanceof Date ? value.toISOString() : String(value);
+  return new Date(`${iso.slice(0, 10)}T00:00:00Z`).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// A company's package holds twelve monthly sheets, a year of payroll and a year of tax rates, so
+// the engine refuses a company book of any other period. This says why, in plain words, before it does.
+function refuseUnlessCompanyYear(engine, book) {
+  const productName = book.entityInformation && book.entityInformation["diya-gl:product"];
+  if (engine.productIdOf(productName) !== "ltd") return;
+  const { periodCoveredStart: start, periodCoveredEnd: end } = book.documentInfo;
+  if (engine.isTwelveWholeMonths(start, end)) return;
+  throw new Error(
+    `No package is built for the period ${longDate(start)} to ${longDate(end)}. A package needs twelve whole months, from the first of a month. Save the book as a diya-gl file instead.`,
+  );
+}
+
 /**
  * The current book turned into downloadable bytes.
  *
@@ -45,6 +67,7 @@ export async function buildSaveArtifact(book, lines, format, extras) {
   const engine = await import(ENGINE_MODULE);
   const withExtras = extras || {};
   if (format === "package") {
+    refuseUnlessCompanyYear(engine, book);
     const { browserResourceLoader } = await import(RESOURCES_MODULE);
     const { zip, filename } = await engine.savePackageZip(book, lines, { resources: browserResourceLoader() });
     return { bytes: zip, filename, mimeType: ZIP_MIME };

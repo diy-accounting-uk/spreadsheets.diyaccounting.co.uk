@@ -55,6 +55,7 @@ const GENERATE_DIR = resolve(PUBLIC_DIR, "generate");
 // a no-op copy today and starts working the day that source file exists.
 const SITE_FILES = [
   ["lib", "analytics.js"],
+  ["lib", "company-register.js"],
   ["lib", "consent-banner.js"],
   ["lib", "ecommerce-events.js"],
   ["lib", "rum-config.js"],

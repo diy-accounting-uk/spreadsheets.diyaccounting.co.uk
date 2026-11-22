@@ -240,6 +240,11 @@ test.describe("Download page generate option", () => {
     );
     await expect(page.locator("#company-generate-status")).toContainText("twelve whole months");
     await expect(page.locator("#company-generate-download")).toHaveCount(0);
+    await expect(page.locator("#company-generate-book-link")).toHaveAttribute(
+      "href",
+      "https://diya-gl.co.uk/ltd.html?company=06846849&yearEnd=2026-03-31",
+    );
+    await expect(page.locator("#company-generate-book-link")).toHaveText("Open a DIYA-GL book for this period");
   });
 
   for (const [label, status, headers, message] of [

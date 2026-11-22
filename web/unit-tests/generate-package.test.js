@@ -11,7 +11,7 @@ import { resolve } from "node:path";
 import { createContext, runInContext } from "node:vm";
 
 const context = createContext({});
-for (const file of ["company-lookup.js", "generate-package.js"]) {
+for (const file of ["company-register.js", "company-lookup.js", "generate-package.js"]) {
   runInContext(readFileSync(resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public/lib", file), "utf8"), context);
 }
 const run = (expression) => JSON.parse(runInContext(`JSON.stringify(${expression})`, context));

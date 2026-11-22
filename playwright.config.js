@@ -57,6 +57,7 @@ export default defineConfig({
         "**/diya-gl-ltd-layouts.browser.test.js",
         "**/diya-gl-ltd-formats.browser.test.js",
         "**/diya-gl-ltd-ixbrl.browser.test.js",
+        "**/diya-gl-ltd-company-book.browser.test.js",
         "**/diya-gl-taxi-equivalence.browser.test.js",
         "**/diya-gl-taxi-formats.browser.test.js",
         "**/diya-gl-taxi-edits.browser.test.js",

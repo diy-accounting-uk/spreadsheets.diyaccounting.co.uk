@@ -58,6 +58,8 @@
     drawerOpen: false,
     mobileTab: "books",
     newBookFormOpen: false,
+    companyBookOpen: false,
+    companyBookStart: null,
     savedBook: null, // { book, lines, source, savedAt }, once the autosave check resolves
     // Set when a continued working book was already changed before this
     // session picked it up; isEdited() adds what this session has done.
@@ -132,6 +134,8 @@
           bootFromBookFragment(deepLink);
         } else if (deepLink.bookUrl) {
           bootFromBookUrl(deepLink);
+        } else if (deepLink.company) {
+          bootFromCompanyLink(deepLink);
         } else if (deepLink.example) {
           bootFromDeepLink(deepLink);
         } else if (!state.loaded) {
@@ -249,6 +253,8 @@
   // fragment leaves the address bar once the load has finished.
   // ?book=<url> fetches a book from an allow-listed host (link-hosts.js) and
   // loads it the same way, then drops book from the query string.
+  // ?company=<number> opens the Ltd page's "New book from a company" for that company, and
+  // &yearEnd=YYYY-MM-DD builds the book for that period straight away.
   // Unknown view/month values are ignored; an unknown example shows the
   // empty state with a message naming the ids the manifest knows. A page
   // that names its own example in body[data-default-example] (with
@@ -266,6 +272,7 @@
       view: params.get("view") || (fromPageDefault ? defaults.defaultView : null) || null,
       month: params.get("month") || (fromPageDefault ? defaults.defaultMonth : null) || null,
       download: params.get("download"),
+      company: active && active.newBookFromCompany ? companyFromLinkParams(params) : null,
       fromPageDefault: fromPageDefault,
     };
   }
@@ -405,6 +412,22 @@
       return window.DiyaGlLoader.sniffBookText("Shared link", document.toml, document.lines);
     }
     return window.DiyaGlLoader.sniff(new File([bytes], "book.json"));
+  }
+
+  function clearCompanyFromQuery() {
+    var params = new URLSearchParams(window.location.search);
+    if (!params.has("company") && !params.has("yearEnd")) return;
+    params.delete("company");
+    params.delete("yearEnd");
+    var rest = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+  }
+
+  function bootFromCompanyLink(deepLink) {
+    clearCompanyFromQuery();
+    state.companyBookOpen = true;
+    state.companyBookStart = deepLink.company;
+    render();
   }
 
   function bootFromBookUrl(deepLink) {
@@ -1025,6 +1048,12 @@
       (state.newBookFormOpen ? "true" : "false") +
       '">Start a new book</button>' +
       (state.newBookFormOpen ? renderNewBookForm() : "") +
+      (active.newBookFromCompany
+        ? '<button type="button" class="btn" id="company-book-btn" aria-expanded="' +
+          (state.companyBookOpen ? "true" : "false") +
+          '">New book from a company</button>' +
+          (state.companyBookOpen ? '<div id="company-book" class="company-book"></div>' : "")
+        : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
       getExamples().map(exampleButton).join("") +
@@ -1175,8 +1204,25 @@
       loadFromAnySource(file);
     });
 
+    var companyBookButton = document.getElementById("company-book-btn");
+    if (companyBookButton) {
+      companyBookButton.addEventListener("click", function () {
+        state.companyBookOpen = !state.companyBookOpen;
+        state.companyBookStart = null;
+        if (state.companyBookOpen) state.newBookFormOpen = false;
+        render();
+      });
+    }
+    var companyBookRoot = document.getElementById("company-book");
+    if (companyBookRoot) {
+      var start = state.companyBookStart;
+      state.companyBookStart = null;
+      window.DiyaGlCompanyBook.mount(companyBookRoot, { openBook: loadFromRegister, start: start });
+    }
+
     document.getElementById("new-book-btn").addEventListener("click", function () {
       state.newBookFormOpen = !state.newBookFormOpen;
+      if (state.newBookFormOpen) state.companyBookOpen = false;
       render();
       var firstField = active.newBook.fields[0] && document.getElementById(active.newBook.fields[0].id);
       if (firstField) firstField.focus();
@@ -1360,6 +1406,34 @@
               ". The book and the file differ in " +
               loadedDifferences.length +
               (loadedDifferences.length === 1 ? " place: " : " places: ") +
+              loadedDifferences.join(" "),
+            { label: "Dismiss", onClick: function () {} },
+          );
+        }
+      }
+      return snapshot;
+    });
+  }
+
+  // The book built from the register: what sniffRegisterBook returns goes through the same
+  // loader as a file read by sniff(), so autosave, the title and the views behave the same. Its
+  // differences are the notice an iXBRL file's differences get.
+  function loadFromRegister(sniffed) {
+    var loadedDifferences = sniffed.differences || [];
+    return loadThrough("Opening the book for " + sniffed.name + "…", Promise.resolve(sniffed), function (found, manifest) {
+      return window.DiyaGlLoader.loadSniffed(found, manifest);
+    }).then(function (snapshot) {
+      if (snapshot) {
+        sendBookLoadedEvent(snapshot.source.product, sniffed.kind);
+        if (loadedDifferences.length === 0) {
+          showToast("Opened a book for " + sniffed.name + " from Companies House.");
+        } else {
+          showToast(
+            "Opened a book for " +
+              sniffed.name +
+              " from Companies House. Check " +
+              loadedDifferences.length +
+              (loadedDifferences.length === 1 ? " thing: " : " things: ") +
               loadedDifferences.join(" "),
             { label: "Dismiss", onClick: function () {} },
           );

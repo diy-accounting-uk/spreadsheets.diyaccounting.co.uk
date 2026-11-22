@@ -9,7 +9,6 @@
 // the company, the registered office, the officers' names, roles and appointment dates, and the
 // last filed accounts.
 
-var COMPANY_REGISTER_URL = "https://submit.diyaccounting.co.uk/api/v1/public/company-register";
 var GENERATE_ENGINE_URL = "/generate/engine/diya-gl-engine.js";
 var GENERATE_ASSET_ROOT = "/generate/assets";
 var GENERATE_SCHEMA_ROOT = "/schema";
@@ -28,56 +27,6 @@ function registerFailureMessage(status) {
   return "The package builder is not available now. You can still download a package from the list.";
 }
 
-function RegisterCallError(status) {
-  this.status = status;
-}
-
-function fetchCompanyRegister(companyNumber) {
-  return fetch(COMPANY_REGISTER_URL + "?number=" + encodeURIComponent(companyNumber)).then(
-    function (response) {
-      if (!response.ok) throw new RegisterCallError(response.status);
-      return response.json().catch(function () {
-        throw new RegisterCallError(502);
-      });
-    },
-    function () {
-      throw new RegisterCallError(0);
-    },
-  );
-}
-
-// The profile fields the builder reads, one at a time.
-function profileForBook(profile) {
-  var office = profile.registeredOffice || {};
-  return {
-    companyNumber: profile.companyNumber,
-    companyName: profile.companyName,
-    dateOfCreation: profile.dateOfCreation,
-    registeredOffice: {
-      addressLine1: office.addressLine1,
-      addressLine2: office.addressLine2,
-      addressLine3: office.addressLine3,
-      cityOrTown: office.cityOrTown,
-      postalCode: office.postalCode,
-    },
-    accountsNextPeriodStart: profile.accountsNextPeriodStart,
-    accountsNextPeriodEnd: profile.accountsNextPeriodEnd,
-    accountsLastPeriodEnd: profile.accountsLastPeriodEnd,
-  };
-}
-
-// An officer's name, role and appointment date.
-function officersForBook(officers) {
-  return (officers || []).map(function (officer) {
-    return { name: officer.name, officerRole: officer.officerRole, appointedOn: officer.appointedOn };
-  });
-}
-
-// True when the last filed set starts on the day the company was incorporated.
-function isFirstAccounts(profile) {
-  return Boolean(profile.dateOfCreation) && profile.accountsLastPeriodStart === profile.dateOfCreation;
-}
-
 function notTwelveMonthsMessage(start, end) {
   return (
     "No package is built for the period " +
@@ -85,7 +34,7 @@ function notTwelveMonthsMessage(start, end) {
     " to " +
     formatIsoDate(end) +
     ". A package holds twelve monthly sheets, a year of payroll and a year of tax rates, so it needs twelve whole months, from the first of a month. " +
-    "Choose a year end from the list for a package of twelve months."
+    "Choose a year end from the list for a package of twelve months, or open a book for this period in DIYA-GL."
   );
 }
 
@@ -145,45 +94,25 @@ function generatePackageFromRegister(companyNumber, yearEnd, say) {
     })
     .then(function () {
       say("Building the package...");
-      var profile = profileForBook(answer.profile);
-      var filed = answer.filedAccounts || { status: "none" };
-      var lastAccounts;
-      var unreadable;
-      if (filed.status === "ixbrl") {
-        try {
-          lastAccounts = engine.mapIxbrlAccounts(filed.ixbrl, {
-            companyNumber: profile.companyNumber,
-            periodEnd: profile.accountsLastPeriodEnd,
-            regime: "any",
-            firstAccounts: isFirstAccounts(answer.profile),
-          });
-        } catch (error) {
-          if (!(error instanceof engine.IxbrlError)) throw error;
-          unreadable = error.message;
+      return buildBookFromRegisterAnswer(engine, answer, yearEnd, resources).then(function (built) {
+        var start = built.result.book.documentInfo.periodCoveredStart;
+        var end = built.result.book.documentInfo.periodCoveredEnd;
+        if (!engine.isTwelveWholeMonths(start, end)) {
+          return { kind: "no-package", message: notTwelveMonthsMessage(start, end), companyNumber: companyNumber, yearEnd: yearEnd };
         }
-      }
-      return engine
-        .buildBookFromRegister(
-          { profile: profile, officers: officersForBook(answer.officers), lastAccounts: lastAccounts, periodEnd: yearEnd },
-          { resources: resources },
-        )
-        .then(function (built) {
-          var start = built.book.documentInfo.periodCoveredStart;
-          var end = built.book.documentInfo.periodCoveredEnd;
-          if (!engine.isTwelveWholeMonths(start, end)) return { kind: "no-package", message: notTwelveMonthsMessage(start, end) };
-          return engine.savePackageZip(built.book, built.lines, { resources: resources }).then(function (saved) {
-            return {
-              kind: "package",
-              zip: saved.zip,
-              filename: saved.filename,
-              book: built.book,
-              lastAccounts: lastAccounts,
-              filed: filed,
-              unreadable: unreadable,
-              differences: built.differences,
-            };
-          });
+        return engine.savePackageZip(built.result.book, built.result.lines, { resources: resources }).then(function (saved) {
+          return {
+            kind: "package",
+            zip: saved.zip,
+            filename: saved.filename,
+            book: built.result.book,
+            lastAccounts: built.lastAccounts,
+            filed: built.filed,
+            unreadable: built.unreadable,
+            differences: built.result.differences,
+          };
         });
+      });
     })
     .catch(function (error) {
       if (error instanceof GenerateError) throw error;
@@ -271,6 +200,14 @@ function initGeneratePackage() {
     resultBox.append(heading, element);
   }
 
+  function showBookLink(result) {
+    var link = document.createElement("a");
+    link.id = "company-generate-book-link";
+    link.href = newBookFromCompanyLink(window.location.hostname, result.companyNumber, result.yearEnd);
+    link.textContent = "Open a DIYA-GL book for this period";
+    status.append(" ", link);
+  }
+
   function showPackage(result) {
     objectUrl = URL.createObjectURL(new Blob([result.zip], { type: "application/zip" }));
     var link = document.createElement("a");
@@ -313,6 +250,7 @@ function initGeneratePackage() {
         if (chosen !== request) return;
         if (result.kind === "no-package") {
           say(result.message);
+          showBookLink(result);
           return;
         }
         say("The package is ready.");

@@ -570,6 +570,57 @@ body[data-default-example] .sheet-tabs.hidden {
   margin-top: 0.5rem;
 }
 
+/* The new book from a company: a search box, the matches, then the periods of the chosen
+   company. The matches and periods are buttons in a list, the same shape as the example list. */
+.company-book {
+  text-align: left;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-faint);
+}
+.company-book-search {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+.company-book-search .editable-field {
+  flex: 1;
+  margin: 0;
+}
+.company-book-status {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+  color: var(--pencil);
+}
+.company-book-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.company-book-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+}
+.company-book-mark {
+  font-size: 0.8rem;
+  color: var(--hint);
+}
+.company-book-mark-overdue {
+  font-weight: 700;
+  color: var(--ink);
+}
+.company-book h3 {
+  margin: 0.8rem 0 0;
+  font-size: 0.95rem;
+}
+
 /* The IndexedDB continue-offer: a saved working book, offered alongside the
    fresh options, never loaded until the reader asks for it. */
 .continue-offer {

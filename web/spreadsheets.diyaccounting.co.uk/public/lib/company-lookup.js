@@ -6,85 +6,6 @@
 // period selects its year end in the list. The answer comes from DIY Accounting Submit's public
 // company-deadlines route; this page never calls Companies House.
 
-var COMPANY_DEADLINES_URL = "https://submit.diyaccounting.co.uk/api/v1/public/company-deadlines";
-var COMPANY_MIN_QUERY_LENGTH = 2;
-var COMPANY_MAX_COMPUTED_PERIODS = 3;
-var ACCOUNTS_DUE_MONTHS_AFTER_PERIOD_END = 9;
-var COMPANY_MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-function isIsoDate(value) {
-  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !isNaN(Date.parse(value + "T00:00:00Z"));
-}
-
-function formatIsoDate(iso) {
-  var parts = iso.split("-");
-  return Number(parts[2]) + " " + COMPANY_MONTH_NAMES[Number(parts[1]) - 1] + " " + parts[0];
-}
-
-function daysInMonth(year, monthIndex) {
-  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
-}
-
-// Adds whole months. A date at the end of its month stays at the end of the target month;
-// any other day is kept, or cut back to the last day when the target month is shorter.
-function addMonthsIso(iso, months) {
-  var parts = iso.split("-").map(Number);
-  var total = parts[0] * 12 + (parts[1] - 1) + months;
-  var year = Math.floor(total / 12);
-  var monthIndex = total - year * 12;
-  var wasMonthEnd = parts[2] === daysInMonth(parts[0], parts[1] - 1);
-  var day = wasMonthEnd ? daysInMonth(year, monthIndex) : Math.min(parts[2], daysInMonth(year, monthIndex));
-  return year + "-" + String(monthIndex + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
-}
-
-function dayAfterIso(iso) {
-  var next = new Date(Date.parse(iso + "T00:00:00Z") + 24 * 60 * 60 * 1000);
-  return next.toISOString().slice(0, 10);
-}
-
-// The periods with no accounts filed, earliest first. The first is the period Companies House
-// states. Each later one is the twelve months that follow, marked computed, and is listed while
-// the period before it has already ended. A missing date is left out: nothing is worked out
-// from it.
-function unfiledPeriods(answer, todayIso) {
-  if (!answer || !isIsoDate(answer.accountsNextPeriodEnd)) return [];
-  var periods = [
-    {
-      start: isIsoDate(answer.accountsNextPeriodStart) ? answer.accountsNextPeriodStart : null,
-      end: answer.accountsNextPeriodEnd,
-      due: isIsoDate(answer.accountsNextDue) ? answer.accountsNextDue : null,
-      overdue: answer.accountsOverdue === true,
-      computed: false,
-    },
-  ];
-  var previousEnd = answer.accountsNextPeriodEnd;
-  while (previousEnd < todayIso && periods.length <= COMPANY_MAX_COMPUTED_PERIODS) {
-    var end = addMonthsIso(previousEnd, 12);
-    periods.push({
-      start: dayAfterIso(previousEnd),
-      end: end,
-      due: addMonthsIso(end, ACCOUNTS_DUE_MONTHS_AFTER_PERIOD_END),
-      overdue: false,
-      computed: true,
-    });
-    previousEnd = end;
-  }
-  return periods;
-}
-
 // The index in the product's period list of the package for this year end, or -1.
 function packageIndexForYearEnd(productPeriods, yearEnd) {
   for (var i = 0; i < (productPeriods || []).length; i++) {
@@ -93,33 +14,9 @@ function packageIndexForYearEnd(productPeriods, yearEnd) {
   return -1;
 }
 
-function periodWords(period) {
-  var span = period.start ? formatIsoDate(period.start) + " to " + formatIsoDate(period.end) : "Period ending " + formatIsoDate(period.end);
-  var due = period.due ? ", accounts due " + formatIsoDate(period.due) : "";
-  return span + due;
-}
-
 function lookupFailureMessage(status) {
   if (status === 429) return "Companies House is busy. Try again in a few minutes. You can still choose a year end from the list.";
   return "The company lookup is not available now. You can still choose a year end from the list.";
-}
-
-function CompanyLookupError(status) {
-  this.status = status;
-}
-
-function fetchCompanyDeadlines(parameter, value) {
-  return fetch(COMPANY_DEADLINES_URL + "?" + parameter + "=" + encodeURIComponent(value)).then(
-    function (response) {
-      if (!response.ok) throw new CompanyLookupError(response.status);
-      return response.json().catch(function () {
-        throw new CompanyLookupError(502);
-      });
-    },
-    function () {
-      throw new CompanyLookupError(0);
-    },
-  );
 }
 
 // Wires the lookup. getProductPeriods returns the packages of the selected product;

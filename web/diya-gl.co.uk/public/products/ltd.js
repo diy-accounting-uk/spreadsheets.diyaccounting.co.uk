@@ -917,6 +917,7 @@
       },
     },
     snapshot: snapshot,
+    newBookFromCompany: true,
     newBook: {
       fields: [
         { id: "new-book-name", name: "businessName", label: "Company name", type: "text", required: "Enter a company name." },
