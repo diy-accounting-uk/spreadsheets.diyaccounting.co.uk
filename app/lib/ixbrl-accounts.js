@@ -939,7 +939,7 @@ const hasBalanceSheet = (year) =>
  * @param {string} [expect.periodEnd]
  * @param {"micro"|"small"|"any"} [expect.regime]
  * @param {boolean} [expect.dormant] - whether the page is the dormant case
- * @param {boolean} [expect.firstAccounts] - the company was incorporated inside the period
+ * @param {boolean} [expect.firstAccounts] - the company was incorporated inside the period; a file that states its formation date at the start of its period is first accounts without it
  * @param {Object} [options]
  * @param {(suiteDate: string) => Set<string>|undefined} [options.suiteConcepts] - the concept names the FRC suite of that date defines
  * @returns {Object} the accounts
@@ -1020,8 +1020,15 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
   const filleted = regime === "small" && (Boolean(notDelivered) || !hasProfitAndLoss);
   if (notDelivered) set.consumed.add(notDelivered);
 
+  // The company marks its first accounts by stating its formation date at the start of the period.
+  const formationFacts = set.find("DateFormationOrIncorporation");
+  for (const fact of formationFacts) set.consumed.add(fact);
+  const markedFirstAccounts =
+    Boolean(period.start) && formationFacts.some((f) => f.period.instant === period.start && f.value === period.start);
+  const firstAccounts = Boolean(expect.firstAccounts) || markedFirstAccounts;
+
   // Both years.
-  if (!expect.firstAccounts) {
+  if (!firstAccounts) {
     if (!hasBalanceSheet(currentYear)) throw problem("This file has no balance sheet for its own year.");
     if (!hasBalanceSheet(priorYear))
       throw problem("This file has no prior-year balance sheet; both years are needed unless the company is new.");
@@ -1123,7 +1130,7 @@ export function mapIxbrlAccounts(source, expect = {}, { suiteConcepts } = {}) {
             shareClass: shareClassMember(shares) ?? shareClassMember(nominal),
           }
         : null,
-    firstAccounts: Boolean(expect.firstAccounts),
+    firstAccounts,
     notes,
     sourceConcepts,
     unmapped,

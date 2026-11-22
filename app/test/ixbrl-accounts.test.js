@@ -736,6 +736,35 @@ describe("the checks on import", () => {
     expect(accounts.balanceSheet.priorYear).toEqual({});
   });
 
+  describe("a file that marks itself as a company's first accounts", () => {
+    const START = context("CY_START", { instant: "2024-04-01" });
+    const OTHER_DAY = context("OTHER_DAY", { instant: "2024-05-01" });
+    const formed = (contextRef, text) => words("uk-bus:DateFormationOrIncorporation", contextRef, text, 'format="ixt2:datedaymonthyearen"');
+    const oneYear = money("core:FixedAssets", "CY_END", "1,000") + money("core:NetAssetsLiabilities", "CY_END", "1,000");
+    const read = (mark) =>
+      mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS + START + OTHER_DAY, hidden: COVER, body: oneYear + mark }), {});
+
+    it("maps the one year with no comparatives", () => {
+      const accounts = read(formed("CY_START", "1 April 2024"));
+      expect(accounts.firstAccounts).toBe(true);
+      expect(accounts.balanceSheet.currentYear.fixedAssets).toBe(1000);
+      expect(accounts.balanceSheet.priorYear).toEqual({});
+      expect(accounts.profitAndLoss).toBeNull();
+    });
+
+    it("refuses the same file without the mark", () => {
+      expect(() => read("")).toThrow(/no prior-year balance sheet/);
+    });
+
+    it("refuses a mark whose date is not the start of the period", () => {
+      expect(() => read(formed("CY_START", "2 April 2024"))).toThrow(/no prior-year balance sheet/);
+    });
+
+    it("refuses a mark whose context is not the start of the period", () => {
+      expect(() => read(formed("OTHER_DAY", "1 April 2024"))).toThrow(/no prior-year balance sheet/);
+    });
+  });
+
   it("refuses a profit and loss account for one year only", () => {
     const body =
       money("core:FixedAssets", "CY_END", "10") + money("core:FixedAssets", "PY_END", "10") + money("core:TurnoverRevenue", "CY", "10");
