@@ -24,6 +24,8 @@ const SHARED_IDS = [
   "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
+  "book-posting-status-counted",
+  "book-currency-not-gbp",
 ];
 const TAXI_IDS = ["book-taxi-fare-miles", "book-taxi-vehicle-register", "book-taxi-miles-band"];
 const ALL_IDS = SHARED_IDS.filter((id) => id !== "book-missing-document-reference").concat(TAXI_IDS);
@@ -47,7 +49,7 @@ describe("the three Taxi example books", () => {
     const { results, summary } = runBookChecks({ book, lines, taxData });
 
     for (const id of TAXI_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 11, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 13, warn: 0, fail: 0 });
   });
 
   it("Kestrel Executive Cars: all three Taxi rules pass; the shared VAT threshold is the book's only warning", () => {
@@ -56,7 +58,7 @@ describe("the three Taxi example books", () => {
 
     for (const id of TAXI_IDS) expect(resultFor(results, id).result, id).toBe("pass");
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
-    expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 12, warn: 1, fail: 0 });
   });
 
   it("SP Sixty Driving: crosses the higher-rate mileage band in October and every fare day carries its miles", () => {
@@ -71,7 +73,7 @@ describe("the three Taxi example books", () => {
     expect(milesBand.result).toBe("warn");
     expect(milesBand.offenders).toEqual([{ month: "2025-10", milesToDate: 11662 }]);
 
-    expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 12, warn: 1, fail: 0 });
   });
 });
 
@@ -211,7 +213,7 @@ describe("the register helper", () => {
 // ============================== a BST book carries none of the three ids ==============================
 
 describe("a BST book carries none of the three Taxi ids", () => {
-  it("the shared nine run alone", () => {
+  it("the shared eleven run alone", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "precision-code-ltd", "bst"));
     const taxData = extractTaxDataFromBook(book, "bst");
     const { results } = runBookChecks({ book, lines, taxData });

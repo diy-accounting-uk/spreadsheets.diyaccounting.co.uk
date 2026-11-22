@@ -503,11 +503,11 @@
       <p>
         A book is read in three stages. The two JSON Schemas validate <code>book.toml</code> and every line of <code>lines.jsonl</code>. The
         validator then refuses a file whose lines reach an account the book does not declare, or name a hire purchase agreement, an asset or
-        a member the registers do not hold. Last, the 28 book checks below run over the data itself.
+        a member the registers do not hold. Last, the 37 book checks below run over the data itself.
       </p>
       <p>
         A <strong>check</strong> passes or fails, and a failure names the entries that caused it; 13 of the rules are checks. A
-        <strong>warning</strong> passes or warns and never blocks a save; 15 of them are warnings. Which rules a book runs
+        <strong>warning</strong> passes or warns and never blocks a save; 24 of them are warnings. Which rules a book runs
         depends on the product it declares. Every result is written to <code>bookchecks.json</code> in the zip.
       </p>
       <p>
@@ -521,10 +521,12 @@
             <tr><td><code>book-accounts-in-chart</code></td><td>Every entry reaches an account the book's chart of accounts declares.</td><td>check</td><td>all</td></tr>
             <tr><td><code>book-amounts-whole-pence</code></td><td>Every amount is a whole number of pence.</td><td>check</td><td>all</td></tr>
             <tr><td><code>book-dates-in-period</code></td><td>Every entry is dated inside the accounting period the book declares.</td><td>check</td><td>all</td></tr>
+            <tr><td><code>book-currency-not-gbp</code></td><td>Every entry is in pounds sterling; another currency is added into the totals as pounds.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-duplicate-entries</code></td><td>No two entries share the same journal, date, amount and detail without being each other's two sides.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-empty-detail</code></td><td>Every entry names who or what it was with.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-empty-month</code></td><td>Every month between the first and last entry has at least one entry.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-negative-amount</code></td><td>Every sale and purchase amount is zero or more.</td><td>warning</td><td>all</td></tr>
+            <tr><td><code>book-posting-status-counted</code></td><td>Every entry is posted; a draft or voided entry is still added into the totals.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-vat-threshold</code></td><td>Turnover for the year against the VAT registration threshold for that year.</td><td>warning</td><td>all</td></tr>
             <tr><td><code>book-bank-account-has-workbook</code></td><td>Every bank entry is on an account the package keeps a workbook for.</td><td>check</td><td>Self Employed</td></tr>
             <tr><td><code>book-bank-code-analysed</code></td><td>Every bank entry is coded to a column its workbook analyses.</td><td>check</td><td>Self Employed</td></tr>
@@ -539,9 +541,16 @@
             <tr><td><code>book-bank-overdrawn</code></td><td>The bank book closes every month at zero or more.</td><td>warning</td><td>Self Employed</td></tr>
             <tr><td><code>book-cash-never-overdrawn</code></td><td>The cash book closes every month at zero or more.</td><td>warning</td><td>Self Employed</td></tr>
             <tr><td><code>book-employee-paid-every-month</code></td><td>Every employee is paid in each month between their first and last payslip.</td><td>warning</td><td>Self Employed</td></tr>
+            <tr><td><code>book-journal-balances</code></td><td>Every journal entry has debits equal to credits.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-journal-has-reason</code></td><td>Every journal line gives a reason.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-journal-reaches-no-report</code></td><td>Every journal line after the opening balances reaches a report.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-ltd-cis-on-subcontractor-line</code></td><td>Every CIS deduction sits on a sub-contractor purchase.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-directors-loan-always-long-term</code></td><td>The directors' loan account closes at nil; the published balance sheet shows it as due after more than one year.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-ltd-dividend-within-distributable-profits</code></td><td>Dividends declared against the retained profits available to pay them.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-loan-interest-in-administrative-expenses</code></td><td>No line is coded as loan interest (5803); the published profit and loss shows it in administrative expenses.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-long-term-debtors-unpublished</code></td><td>Long-term debtors close at nil; the published balance sheet has no line for them.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-ltd-transfer-has-counter-leg</code></td><td>Every transfer between the company's own accounts appears on both of them.</td><td>warning</td><td>Limited Company</td></tr>
+            <tr><td><code>book-ltd-vat-code-not-applied</code></td><td>Every sale and purchase of a VAT-registered company is standard rated at 20%.</td><td>warning</td><td>Limited Company</td></tr>
             <tr><td><code>book-missing-document-reference</code></td><td>Every sale names its invoice or receipt.</td><td>warning</td><td>Basic Sole Trader, Self Employed, Limited Company</td></tr>
             <tr><td><code>book-taxi-fare-miles</code></td><td>Every fare day that carries miles elsewhere carries its own.</td><td>warning</td><td>Taxi Driver</td></tr>
             <tr><td><code>book-taxi-miles-band</code></td><td>Business miles stay inside the higher-rate mileage band.</td><td>warning</td><td>Taxi Driver</td></tr>

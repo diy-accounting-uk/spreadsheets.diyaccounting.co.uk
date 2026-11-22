@@ -14,7 +14,8 @@
 // up from the book's own entityInformation["diya-gl:product"].
 
 import { changeLinePostingDate } from "../diya-gl-edits.js";
-import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../scenario-extractor.js";
+import { LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP, isOpeningBalanceLine } from "../scenario-extractor.js";
+import { longTermDebtorsClosing } from "../diya-gl-roll-forward.js";
 import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, ltdBankPlacement } from "../ltd-layout.js";
 
 // The bank account each transfer letter names: Currentaccount is BB, so a
@@ -377,7 +378,141 @@ function cisAccountWarning(ctx) {
   };
 }
 
-export const LTD_WARNINGS = [transferCounterLegWarning, dividendsWarning, cisAccountWarning];
+const PENNY = 0.005;
+const STANDARD_VAT_RATE = 0.2;
+
+function openingBalanceOf(lines, account) {
+  let balance = 0;
+  for (const line of lines) {
+    if (isOpeningBalanceLine(line) && String(line.accountMainID) === account)
+      balance += line.debitCreditCode === "D" ? line.amount : -line.amount;
+  }
+  return balance;
+}
+
+function vatCodeNotAppliedWarning(ctx) {
+  const registered = ctx.book && ctx.book.entityInformation && ctx.book.entityInformation["diya-gl:vatRegistered"] === true;
+  const offenders = registered
+    ? ctx.lines
+        .filter(function (line) {
+          if (line.sourceJournalID !== "sales" && line.sourceJournalID !== "purchases") return false;
+          const rateSet = line.taxRate !== undefined && line.taxRate !== null;
+          return line.taxCode !== "S" || (rateSet && Math.abs(line.taxRate - STANDARD_VAT_RATE) > 1e-9);
+        })
+        .sort(byEntryNumber)
+    : [];
+  const warn = offenders.length > 0;
+  return {
+    id: "book-ltd-vat-code-not-applied",
+    tier: "warning",
+    label: "Every sale and purchase of a VAT-registered company is standard rated at 20%",
+    result: warn ? "warn" : "pass",
+    actual: offenders.length,
+    consequence: warn
+      ? "The VAT return and the accounts apply 20% VAT to every sales and purchases line and read no tax code, so a line coded exempt, zero rated or outside the scope of VAT is still treated as standard rated."
+      : null,
+    offenders: offenders.map(offenderOf),
+  };
+}
+
+function longTermDebtorsUnpublishedWarning(ctx) {
+  const closing = longTermDebtorsClosing(ctx.lines, ctx.period.start, { long_term_debtors: openingBalanceOf(ctx.lines, "1400") });
+  const warn = Math.abs(closing) >= PENNY;
+  const offenders = warn
+    ? ctx.lines
+        .filter(function (line) {
+          return (
+            (isOpeningBalanceLine(line) && String(line.accountMainID) === "1400") ||
+            (isBankLine(line) && line["diya-gl:bankCode"] === "LDR")
+          );
+        })
+        .sort(byEntryNumber)
+    : [];
+  return {
+    id: "book-ltd-long-term-debtors-unpublished",
+    tier: "warning",
+    label: "Long-term debtors close at " + formatMoney(closing),
+    result: warn ? "warn" : "pass",
+    actual: closing,
+    consequence: warn
+      ? "The published balance sheet has no line for long-term debtors, so it leaves out " + formatMoney(closing) + " of assets."
+      : null,
+    offenders: offenders.map(offenderOf),
+  };
+}
+
+function directorsLoanAlwaysLongTermWarning(ctx, taxData, results) {
+  const trialBalance = results && results.TrialBalance;
+  if (!trialBalance || typeof trialBalance.EJ39 !== "number") {
+    return {
+      id: "book-ltd-directors-loan-always-long-term",
+      tier: "warning",
+      label: "The closing directors' loan account is not known without the calculated accounts.",
+      result: "pass",
+      actual: 0,
+      consequence: null,
+      offenders: [],
+    };
+  }
+  const closing = 0 - trialBalance.EJ39;
+  const warn = Math.abs(closing) >= PENNY;
+  const offenders = warn
+    ? ctx.lines
+        .filter(function (line) {
+          return (
+            (isOpeningBalanceLine(line) && String(line.accountMainID) === "2500") || (isBankLine(line) && line["diya-gl:bankCode"] === "DL")
+          );
+        })
+        .sort(byEntryNumber)
+    : [];
+  return {
+    id: "book-ltd-directors-loan-always-long-term",
+    tier: "warning",
+    label: "The directors' loan account closes at " + formatMoney(closing) + " owed to the directors",
+    result: warn ? "warn" : "pass",
+    actual: closing,
+    consequence: warn
+      ? "The published balance sheet shows the directors' loan account of " +
+        formatMoney(closing) +
+        " in creditors due after more than one year, whatever its terms of repayment."
+      : null,
+    offenders: offenders.map(offenderOf),
+  };
+}
+
+function loanInterestInAdministrativeExpensesWarning(ctx) {
+  const offenders = ctx.lines
+    .filter(function (line) {
+      return String(line.accountMainID) === "5803";
+    })
+    .sort(byEntryNumber);
+  let total = 0;
+  for (const line of offenders) total += line.amount;
+  const warn = offenders.length > 0;
+  return {
+    id: "book-ltd-loan-interest-in-administrative-expenses",
+    tier: "warning",
+    label: "No line is coded as loan interest (5803)",
+    result: warn ? "warn" : "pass",
+    actual: total,
+    consequence: warn
+      ? "The published profit and loss shows loan interest of " +
+        formatMoney(total) +
+        " in administrative expenses and not in interest payable, so interest payable is understated by that amount."
+      : null,
+    offenders: offenders.map(offenderOf),
+  };
+}
+
+export const LTD_WARNINGS = [
+  transferCounterLegWarning,
+  dividendsWarning,
+  cisAccountWarning,
+  vatCodeNotAppliedWarning,
+  longTermDebtorsUnpublishedWarning,
+  directorsLoanAlwaysLongTermWarning,
+  loanInterestInAdministrativeExpensesWarning,
+];
 
 // ============================== the shared checks Ltd reads differently ==============================
 // A Company book reaches four more journals than a sole trader's, and its

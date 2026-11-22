@@ -376,7 +376,7 @@ function ltdOpeningEntries({ results, lines, fixedAssets, periodStart, priorOpen
 // Long term debtors close on the opening figure plus what the bank lent out
 // under LDR less what came back under it; the trial balance row is not among
 // the cells the year reports.
-function longTermDebtorsClosing(lines, periodStart, priorOpening) {
+export function longTermDebtorsClosing(lines, periodStart, priorOpening) {
   let balance = priorOpening.long_term_debtors || 0;
   for (const line of lines) {
     if (line.sourceJournalID !== "bank" || line["diya-gl:bankCode"] !== "LDR") continue;

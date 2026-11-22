@@ -27,6 +27,8 @@ const SHARED_IDS = [
   "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
+  "book-posting-status-counted",
+  "book-currency-not-gbp",
 ];
 const LTD_IDS = [
   "book-ltd-bank-line-has-side",
@@ -38,7 +40,16 @@ const LTD_IDS = [
   "book-ltd-dividend-within-distributable-profits",
   "book-ltd-cis-on-subcontractor-line",
 ];
-const ALL_IDS = SHARED_IDS.concat(LTD_IDS);
+const COMPANY_WARNING_IDS = [
+  "book-journal-balances",
+  "book-journal-has-reason",
+  "book-journal-reaches-no-report",
+  "book-ltd-vat-code-not-applied",
+  "book-ltd-long-term-debtors-unpublished",
+  "book-ltd-directors-loan-always-long-term",
+  "book-ltd-loan-interest-in-administrative-expenses",
+];
+const ALL_IDS = SHARED_IDS.concat(LTD_IDS, COMPANY_WARNING_IDS);
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -62,7 +73,7 @@ const FULL = loadLtd("examples/precision-code-ltd/full");
 // Read as they stand, not as they are hoped to be.
 
 describe("the Ltd example books", () => {
-  it("Precision Code Ltd runs seventeen rules: every check passes but the shared VAT threshold", () => {
+  it("Precision Code Ltd runs twenty-six rules: every check passes", () => {
     const { results, summary } = runBookChecks(clone(FULL));
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
@@ -86,17 +97,29 @@ describe("the Ltd example books", () => {
     // still read as no duplicate.
     expect(resultFor(results, "book-vat-threshold").result).toBe("warn");
     expect(resultFor(results, "book-duplicate-entries").actual).toBe(0);
-    expect(summary).toEqual({ pass: 16, warn: 1, fail: 0 });
+
+    // Precision Code Ltd's own books also trip four of the report-only
+    // Company warnings: its stock journal, its VAT-exempt and outside-scope
+    // purchases, its directors' loan and its loan interest.
+    for (const id of [
+      "book-journal-reaches-no-report",
+      "book-ltd-vat-code-not-applied",
+      "book-ltd-directors-loan-always-long-term",
+      "book-ltd-loan-interest-in-administrative-expenses",
+    ]) {
+      expect(resultFor(results, id).result, id).toBe("warn");
+    }
+    expect(summary).toEqual({ pass: 21, warn: 5, fail: 0 });
   });
 
-  it("BrickWork Pro (Company, non-VAT): the year-end sweep's missing savings leg warns, and the other sixteen rules pass", () => {
+  it("BrickWork Pro (Company, non-VAT): the year-end sweep's missing savings leg warns, and the other twenty-five rules pass", () => {
     const { results, summary } = runBookChecks(loadLtd("examples/brickwork-pro/ltd-nonvat"));
     const transfers = resultFor(results, "book-ltd-transfer-has-counter-leg");
     expect(transfers.result).toBe("warn");
     expect(transfers.offenders.map((offender) => offender.entryNumber)).toEqual(["TXN-0167"]);
     for (const id of ALL_IDS.filter((id) => id !== "book-ltd-transfer-has-counter-leg"))
       expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 16, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 25, warn: 1, fail: 0 });
   });
 
   it("BrickWork Pro (Company, VAT): every rule but the shared VAT threshold passes", () => {
@@ -349,7 +372,7 @@ describe("bookChecksJson over a Company book", () => {
     expect(bookChecksJson(runBookChecks(reversed).results)).toBe(bookChecksJson(runBookChecks(fixture).results));
   });
 
-  it("lists the seventeen ids in id order", () => {
+  it("lists the twenty-six ids in id order", () => {
     const parsed = JSON.parse(bookChecksJson(runBookChecks(baseline()).results));
     expect(parsed.map((r) => r.id)).toEqual(ALL_IDS.slice().sort());
   });

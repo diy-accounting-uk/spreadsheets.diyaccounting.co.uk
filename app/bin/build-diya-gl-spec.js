@@ -252,6 +252,17 @@ const CHECK_DESCRIPTIONS = {
   "book-ltd-transfer-has-counter-leg": "Every transfer between the company's own accounts appears on both of them.",
   "book-ltd-dividend-within-distributable-profits": "Dividends declared against the retained profits available to pay them.",
   "book-ltd-cis-on-subcontractor-line": "Every CIS deduction sits on a sub-contractor purchase.",
+  "book-journal-balances": "Every journal entry has debits equal to credits.",
+  "book-journal-has-reason": "Every journal line gives a reason.",
+  "book-journal-reaches-no-report": "Every journal line after the opening balances reaches a report.",
+  "book-posting-status-counted": "Every entry is posted; a draft or voided entry is still added into the totals.",
+  "book-currency-not-gbp": "Every entry is in pounds sterling; another currency is added into the totals as pounds.",
+  "book-ltd-vat-code-not-applied": "Every sale and purchase of a VAT-registered company is standard rated at 20%.",
+  "book-ltd-long-term-debtors-unpublished": "Long-term debtors close at nil; the published balance sheet has no line for them.",
+  "book-ltd-directors-loan-always-long-term":
+    "The directors' loan account closes at nil; the published balance sheet shows it as due after more than one year.",
+  "book-ltd-loan-interest-in-administrative-expenses":
+    "No line is coded as loan interest (5803); the published profit and loss shows it in administrative expenses.",
 };
 
 // One example book per product, taken in path order so the same book is read
