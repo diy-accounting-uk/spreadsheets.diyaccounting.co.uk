@@ -138,7 +138,13 @@ function updateTitle() {
   }
 }
 
+function updateCompanyLookup() {
+  const product = getSelectedProduct();
+  document.getElementById("company-lookup").classList.toggle("hidden", !product || product.id !== "Company");
+}
+
 function updatePeriods() {
+  updateCompanyLookup();
   const product = getSelectedProduct();
   const periodSelect = document.getElementById("period-select");
   periodSelect.innerHTML = "";
@@ -202,6 +208,17 @@ document.getElementById("product-select").addEventListener("change", function ()
   updatePeriods();
 });
 document.getElementById("period-select").addEventListener("change", updateLinks);
+
+initCompanyLookup(
+  function () {
+    const product = getSelectedProduct();
+    return product ? product.periods : [];
+  },
+  function (packageIndex) {
+    document.getElementById("period-select").value = packageIndex;
+    updateLinks();
+  },
+);
 
 // GA4 ecommerce: begin_checkout when user clicks "Download with optional donation"
 document.getElementById("download-donate-btn").addEventListener("click", function () {
