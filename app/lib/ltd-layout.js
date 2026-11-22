@@ -54,6 +54,22 @@ export function isLtdOpeningBankLine(code, date, periodStart) {
   return code === "BC" && date.getTime() === periodStart.getTime();
 }
 
+/**
+ * Whether a bank line of a book is that account's opening balance line, by
+ * the same test against the first day of the twelve month tabs the
+ * calculation engine runs (the month eleven months before the year end's).
+ * @param {Object} book - its documentInfo.periodCoveredEnd sets the month tabs
+ * @param {Object} line - a bank line
+ * @returns {boolean}
+ */
+export function isLtdBookOpeningBankLine(book, line) {
+  if (line.sourceJournalID !== "bank") return false;
+  const day = (value) => (value instanceof Date ? value.toISOString() : String(value ?? "")).slice(0, 10);
+  const end = new Date(`${day(book?.documentInfo?.periodCoveredEnd)}T00:00:00Z`);
+  const periodStart = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 11, 1));
+  return isLtdOpeningBankLine(line["diya-gl:bankCode"], new Date(`${day(line.postingDate)}T00:00:00Z`), periodStart);
+}
+
 // The order the four transfer codes take across row 5 of every bank month
 // tab, which is not the order BANK_TRANSFER_CODES declares them in. A book
 // keeps this order with its own code dropped out.

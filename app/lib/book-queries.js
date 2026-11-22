@@ -9,6 +9,7 @@
 // server and any other caller read the same answers.
 
 import { isStraddlingLine } from "./scenario-extractor.js";
+import { postingAccountNames, postingsOf, reasonApart } from "./posting-rules.js";
 
 function isoDate(value) {
   if (!value) return "";
@@ -239,6 +240,55 @@ export function chartOfAccounts(book, lines, attributedReport) {
     }
   }
   return chart;
+}
+
+/**
+ * The trial balance of a Company book over a date range: each line's
+ * postings (posting-rules.js) summed by account, every account's balance in
+ * the debit or the credit column, and the column totals. A line the posting
+ * rules list apart (an in-year journal, a VAT-straddling line, a bank
+ * account's opening balance line) is listed in `apart` with its reason and
+ * is not totalled. Year-end postings (yearEndPostings) are summed with the
+ * lines when they are given and dated in the range.
+ * @param {Object} book - a Company book
+ * @param {Array} lines
+ * @param {Object} [range]
+ * @param {string} [range.from] - YYYY-MM-DD, inclusive
+ * @param {string} [range.to] - YYYY-MM-DD, inclusive
+ * @param {Array} [range.yearEndPostings] - yearEndPostings(book, lines, taxData)
+ * @returns {{from: string|null, to: string|null, accounts: Array<Object>, totals: {debit: number, credit: number}, apart: Array<Object>}}
+ */
+export function trialBalance(book, lines, { from, to, yearEndPostings = [] } = {}) {
+  const inRange = (date) => (!from || date >= from) && (!to || date <= to);
+  const balances = new Map();
+  const add = (postings) => {
+    for (const { account, debit, credit } of postings) balances.set(account, (balances.get(account) ?? 0) + debit - credit);
+  };
+  const apart = [];
+  for (const line of lines) {
+    const date = isoDate(line.postingDate);
+    if (!inRange(date)) continue;
+    const reason = reasonApart(book, line);
+    if (reason) {
+      apart.push({ entryNumber: line.entryNumber, sourceJournalID: line.sourceJournalID, postingDate: date, reason });
+      continue;
+    }
+    add(postingsOf(book, line));
+  }
+  for (const entry of yearEndPostings) if (inRange(entry.date)) add(entry.postings);
+
+  const names = postingAccountNames(book);
+  const accounts = [...balances.keys()]
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    .map((account) => {
+      const balance = balances.get(account);
+      return { account, name: names[account] ?? null, debit: balance > 0 ? balance : 0, credit: balance < 0 ? -balance : 0 };
+    });
+  const totals = {
+    debit: accounts.reduce((total, row) => total + row.debit, 0),
+    credit: accounts.reduce((total, row) => total + row.credit, 0),
+  };
+  return { from: from ?? null, to: to ?? null, accounts, totals, apart };
 }
 
 /**

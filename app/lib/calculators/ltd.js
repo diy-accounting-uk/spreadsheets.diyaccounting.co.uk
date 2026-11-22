@@ -963,7 +963,8 @@ function computeLtd(book, lines, taxData, scenario, attribution) {
     });
   }
 
-  return { results, linkCells };
+  const workings = { blocks, stock, hp, dividendDeclared, corporationTaxCharge: corporationTax.K35 };
+  return { results, linkCells, trialBalance, workings };
 }
 
 /**
@@ -1004,6 +1005,22 @@ export function ltdScheduleRows(book, taxData, scenario) {
 
 export function calculateLtdResults(book, lines, taxData, scenario, attribution) {
   return computeLtd(book, lines, taxData, scenario, attribution).results;
+}
+
+/**
+ * The whole trial balance after the tax charge and the close, every row and
+ * not only the cells the reconciliation reads, with the register figures it
+ * took in: the asset schedule's blocks, the stock sheet, the hire purchase
+ * sheet, the dividend the board declared and the corporation tax charge.
+ * @param {Object} book
+ * @param {Array} lines
+ * @param {Object} taxData
+ * @param {Object} scenario - diyaGlToScenario's output
+ * @returns {{trialBalance: Object, workings: Object}}
+ */
+export function calculateLtdTrialBalance(book, lines, taxData, scenario) {
+  const { trialBalance, workings } = computeLtd(book, lines, taxData, scenario);
+  return { trialBalance, workings };
 }
 
 // Every cell a sibling workbook's link addresses, on top of the report's

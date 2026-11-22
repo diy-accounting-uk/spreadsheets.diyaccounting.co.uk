@@ -30,6 +30,7 @@ import {
 import { setDividend, setMembers, setCharges } from "../../lib/diya-gl-edits-ltd.js";
 import { rollForward } from "../../lib/diya-gl-roll-forward.js";
 import { buildIxbrlSummaryBooks } from "../../lib/ixbrl-summary-book.js";
+import { isLtdBookOpeningBankLine } from "../../lib/ltd-layout.js";
 
 const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -59,6 +60,17 @@ function rateDataFor(yearEnd) {
   const name = `ltd-${month >= 4 ? year : year - 1}`;
   if (!rateDataCache.has(name)) rateDataCache.set(name, parseTOML(readFileSync(resolve(APP_DIR, "data", `${name}.toml`), "utf8")));
   return rateDataCache.get(name);
+}
+
+// An edit the plan asks for that the writers refuse: it must throw, starting with this message.
+function expectRefusal(edit, message) {
+  try {
+    edit();
+  } catch (error) {
+    if (String(error.message).startsWith(message)) return;
+    throw error;
+  }
+  throw new Error(`Expected the edit to refuse: ${message}`);
 }
 
 const isoDay = (value) => (value instanceof Date ? value.toISOString() : String(value)).slice(0, 10);
@@ -250,7 +262,14 @@ function carryOut(plan, writers) {
           if (hit) lines = writers.removeLine(book, lines, { entryNumber: hit.entryNumber });
           break;
         case "changeDate":
-          if (hit) {
+          if (hit && isLtdBookOpeningBankLine(book, hit)) {
+            // An opening balance stays on the first day of the year: the edit refuses, and the book is unchanged.
+            expectRefusal(
+              () =>
+                writers.changeLinePostingDate(book, lines, { entryNumber: hit.entryNumber, newPostingDate: addDays(start, action.day) }),
+              `changeLinePostingDate refuses ${hit.entryNumber}: it is an opening bank balance line`,
+            );
+          } else if (hit) {
             lines = writers.changeLinePostingDate(book, lines, {
               entryNumber: hit.entryNumber,
               newPostingDate: addDays(start, action.day),
