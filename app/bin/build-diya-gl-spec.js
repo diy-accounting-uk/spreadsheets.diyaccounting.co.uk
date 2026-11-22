@@ -601,6 +601,13 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       </p>
       <pre><code>diya-gl roll-forward --data my-book --output-dir next-year</code></pre>
       <p>
+        A limited company's next period can start from what Companies House holds. The package's <code>buildBookFromRegister</code>
+        function and the MCP server's <code>new_book_from_register</code> tool take the company profile, its officers, its
+        statement of capital with the shareholdings and the result of reading its last filed accounts, and answer the book, its
+        opening entries and a list of the places the register and the book part. The book takes no date of birth, nationality or
+        address of a person.
+      </p>
+      <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
         <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
       </p>

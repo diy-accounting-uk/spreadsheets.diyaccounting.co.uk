@@ -166,8 +166,8 @@
         },
         "diya-gl:companyNumber": {
           "type": "string",
-          "pattern": "^([0-9]{8})?$",
-          "description": "diya-gl: extension \u2014 Companies House number (8 digits, Company Accounts only)"
+          "pattern": "^([0-9]{8}|[A-Z]{2}[0-9]{6})?$",
+          "description": "diya-gl: extension \u2014 Companies House number (8 digits, or two letters and six digits for a Scottish or Northern Ireland company; Company Accounts only)"
         },
         "diya-gl:cisRegistered": {
           "type": "boolean",

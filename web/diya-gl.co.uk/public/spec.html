@@ -142,7 +142,7 @@
             <tr><td><code>entityInformation.diya-gl:basisOfAccounting</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>Accounting basis. Cash for sole traders, accrual for companies.</td><td>optional</td></tr>
             <tr><td><code>entityInformation.diya-gl:nino</code></td><td>string</td><td><em>diya-gl extension</em></td><td>National Insurance Number (format: AB123456C)</td><td>optional</td></tr>
             <tr><td><code>entityInformation.diya-gl:vatNumber</code></td><td>string</td><td><em>diya-gl extension</em></td><td>VAT registration number (9 digits)</td><td>optional</td></tr>
-            <tr><td><code>entityInformation.diya-gl:companyNumber</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Companies House number (8 digits, Company Accounts only)</td><td>optional</td></tr>
+            <tr><td><code>entityInformation.diya-gl:companyNumber</code></td><td>string</td><td><em>diya-gl extension</em></td><td>Companies House number (8 digits, or two letters and six digits for a Scottish or Northern Ireland company; Company Accounts only)</td><td>optional</td></tr>
             <tr><td><code>entityInformation.diya-gl:cisRegistered</code></td><td>boolean</td><td><em>diya-gl extension</em></td><td>Whether the business is registered under the Construction Industry Scheme (CIS)</td><td>optional</td></tr>
             <tr><td><code>entityInformation.diya-gl:companiesHouseName</code></td><td>string</td><td><em>diya-gl extension</em></td><td>The first director's name as filed at Companies House, for the directors' report and CT600 (Company Accounts only).</td><td>optional</td></tr>
             <tr><td><code>entityInformation.diya-gl:mileageBasis</code></td><td>string, one of 2</td><td><em>diya-gl extension</em></td><td>Whether the Taxi Driver return claims actual vehicle costs or the HMRC mileage allowance. Where absent, the calculator compares both and claims the higher, matching the shipped workbook's own comparison.</td><td>optional</td></tr>
@@ -653,6 +653,13 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
         <code>roll_forward</code> tool rolls the same book.
       </p>
       <pre><code>diya-gl roll-forward --data my-book --output-dir next-year</code></pre>
+      <p>
+        A limited company's next period can start from what Companies House holds. The package's <code>buildBookFromRegister</code>
+        function and the MCP server's <code>new_book_from_register</code> tool take the company profile, its officers, its
+        statement of capital with the shareholdings and the result of reading its last filed accounts, and answer the book, its
+        opening entries and a list of the places the register and the book part. The book takes no date of birth, nationality or
+        address of a person.
+      </p>
       <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
         <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.

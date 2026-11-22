@@ -50,6 +50,18 @@ describe("the diya-gl spec page", () => {
     }
   });
 
+  it("names the function and the tool that start a company book from the register", () => {
+    expect(published).toContain("buildBookFromRegister");
+    expect(published).toContain("new_book_from_register");
+  });
+
+  it("states the wider company number pattern the book schema accepts", () => {
+    const schema = JSON.parse(readFileSync(resolve(PUBLIC_DIR, "schema", "diya-gl-book-v2.schema.json"), "utf8"));
+    const property = schema.properties.entityInformation.properties["diya-gl:companyNumber"];
+    expect(property.pattern).toBe("^([0-9]{8}|[A-Z]{2}[0-9]{6})?$");
+    expect(published).toContain("two letters and six digits");
+  });
+
   it("carries a DIYA-GL entry in the top nav, linking back to diya-gl.co.uk", () => {
     expect(published).toContain('<a href="https://diya-gl.co.uk/">DIYA-GL</a>');
   });

@@ -104,6 +104,20 @@ function isoDay(date) {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * Whether a period is twelve whole months: it starts on the first of a month
+ * and ends on the last day of the twelfth month.
+ * @param {string|Date} start - YYYY-MM-DD or a Date
+ * @param {string|Date} end - YYYY-MM-DD or a Date
+ * @returns {boolean}
+ */
+export function isTwelveWholeMonths(start, end) {
+  const first = new Date(start);
+  const last = new Date(end);
+  const twelfthMonthEnd = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 12, 0));
+  return first.getUTCDate() === 1 && last.getTime() === twelfthMonthEnd.getTime();
+}
+
 // A company's package is twelve month tabs, a payroll calendar of twelve
 // months and a year's rates, so a book covering anything else has no package
 // to be written into. The refusal comes before the first template read: a
@@ -111,8 +125,7 @@ function isoDay(date) {
 function refuseUnlessTwelveWholeMonths(book) {
   const start = new Date(book.documentInfo.periodCoveredStart);
   const end = new Date(book.documentInfo.periodCoveredEnd);
-  const twelfthMonthEnd = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 12, 0));
-  if (start.getUTCDate() === 1 && end.getTime() === twelfthMonthEnd.getTime()) return;
+  if (isTwelveWholeMonths(start, end)) return;
   throw new BookFieldError(
     "documentInfo.periodCoveredEnd",
     `book covers ${isoDay(start)} to ${isoDay(end)}, which is not the twelve whole months a company's accounts cover`,

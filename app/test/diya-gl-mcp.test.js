@@ -33,6 +33,7 @@ import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import { savePackageZip } from "../lib/product-workbook.js";
 import * as bst from "../products/bst.js";
+import { mapIxbrlAccounts } from "../lib/ixbrl-accounts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -122,7 +123,7 @@ function startMcpClient() {
 // ============================================================================
 
 describe("diya-gl MCP server: stdio handshake", () => {
-  it("initializes, lists exactly the eight tools, and answers tools/call", async () => {
+  it("initializes, lists exactly the eleven tools, and answers tools/call", async () => {
     const client = startMcpClient();
     try {
       const initResult = await client.request("initialize", { protocolVersion: "2025-06-18" });
@@ -141,6 +142,7 @@ describe("diya-gl MCP server: stdio handshake", () => {
         "extract_book",
         "lines",
         "new_book",
+        "new_book_from_register",
         "report",
         "roll_forward",
         "save_workbook",
@@ -1113,5 +1115,60 @@ describe("diya-gl MCP server: reading every detail of the book", () => {
     expect(summary.fail).toBeGreaterThan(0);
     const clean = await toolLayer(book, lines).call("checks", {});
     expect(clean.checks.find((check) => check.id === "book-dates-in-period")).toMatchObject({ verdict: "pass", entryNumbers: [] });
+  });
+});
+
+describe("new_book_from_register", () => {
+  const profile = {
+    companyNumber: "06846849",
+    companyName: "DIY ACCOUNTING LIMITED",
+    dateOfCreation: "2009-03-13",
+    accountsNextPeriodStart: "2025-04-01",
+    accountsNextPeriodEnd: "2026-03-31",
+    accountsLastPeriodEnd: "2025-03-31",
+  };
+  const lastAccounts = () =>
+    mapIxbrlAccounts(readFileSync(resolve(__dirname, "fixtures", "ixbrl", "diya-2025-accounts.xhtml")), {
+      companyNumber: "06846849",
+      periodEnd: "2025-03-31",
+    });
+  const officers = [{ name: "TESTER, Alex", officerRole: "director", appointedOn: "2010-01-04" }];
+
+  it("loads the roll forward of the filed accounts into the session, with its differences, report and checks", async () => {
+    const session = createSession();
+    const methods = createMethods(session);
+    const response = await methods["tools/call"]({
+      name: "new_book_from_register",
+      arguments: { profile, officers, lastAccounts: lastAccounts() },
+    });
+    const result = response.structuredContent;
+    expect(result.book.documentInfo).toMatchObject({ periodCoveredStart: "2025-04-01", periodCoveredEnd: "2026-03-31" });
+    expect(result.book.directors).toEqual([{ name: "Alex TESTER", role: "Director", appointed: "2010-01-04" }]);
+    expect(result.lines.length).toBeGreaterThan(0);
+    expect(result.differences.map((difference) => difference.code)).toContain("no-members");
+    expect(result.bookToml).toContain("DIY ACCOUNTING LIMITED");
+    expect(result.bookChecks.summary).toEqual({ pass: expect.any(Number), warn: expect.any(Number), fail: expect.any(Number) });
+    expect(session.book).toEqual(result.book);
+    expect(session.lines).toEqual(result.lines);
+    const reported = await methods["tools/call"]({ name: "report", arguments: {} });
+    expect(reported.structuredContent.report).toEqual(result.report);
+  });
+
+  it("loads an empty book when no filed accounts are given", async () => {
+    const session = createSession();
+    const methods = createMethods(session);
+    const response = await methods["tools/call"]({ name: "new_book_from_register", arguments: { profile } });
+    expect(response.structuredContent.lines).toEqual([]);
+    expect(response.structuredContent.differences.map((difference) => difference.code)).toContain("no-figures");
+    expect(session.lines).toEqual([]);
+  });
+
+  it("refuses a profile with no company number by name, and leaves the session as it was", async () => {
+    const session = createSession();
+    const methods = createMethods(session);
+    await expect(methods["tools/call"]({ name: "new_book_from_register", arguments: { profile: { companyName: "X" } } })).rejects.toThrow(
+      "company number",
+    );
+    expect(session.book).toBeFalsy();
   });
 });

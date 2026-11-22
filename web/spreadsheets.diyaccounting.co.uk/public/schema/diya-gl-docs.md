@@ -565,7 +565,7 @@ metadata needed for the spreadsheet mapping:
 | `diya-gl:vatRegistered`      | Whether the business is VAT registered       | book.toml |
 | `diya-gl:basisOfAccounting`  | cash or accrual                              | book.toml |
 | `diya-gl:nino`               | National Insurance Number                    | book.toml |
-| `diya-gl:companyNumber`      | Companies House number (8 digits)            | book.toml |
+| `diya-gl:companyNumber`      | Companies House number (8 digits, or two letters and six digits) | book.toml |
 | `diya-gl:vatNumber`          | VAT registration number (9 digits)           | book.toml |
 | `diya-gl:cisRegistered`      | Whether registered under CIS                 | book.toml |
 | `diya-gl:column`             | Excel column letter for this account code    | book.toml |
@@ -1009,3 +1009,73 @@ written-down value against the pool the year carried forward.
 ```
 diya-gl roll-forward --data my-book --output-dir next-year
 ```
+
+---
+
+## 12. Starting a Company Book from the Companies House Register
+
+`buildBookFromRegister` and the MCP server's `new_book_from_register` tool build the book of
+a company's next accounting period from the data Companies House holds. The caller supplies
+the data as plain objects. The function reads no file except through its resource loader and
+calls no network.
+
+```js
+import { buildBookFromRegister, RegisterBookError } from "@diy-accounting-uk/diya-gl/dist/app/lib/diya-gl-register-book.js";
+
+const { book, lines, differences } = await buildBookFromRegister(
+  { profile, officers, capital, shareholdings, capitalDate, lastAccounts, periodEnd },
+  { resources },
+);
+```
+
+| Input | Content |
+|-------|---------|
+| `profile` | Required. `companyNumber`, `companyName`, `dateOfCreation`, `registeredOffice` (`addressLine1` to `addressLine3`, `cityOrTown`, `postalCode`), `accountsNextPeriodStart`, `accountsNextPeriodEnd`, `accountsLastPeriodEnd` |
+| `officers` | Each officer's `name`, `officerRole`, `appointedOn`, `resignedOn` |
+| `capital` | The statement of capital: `shareCurrency`, `totalAggregateNominalValue`, `shares[]` of `shareClass`, `numShares`, `aggregateNominalValue` |
+| `shareholdings` | Each holding: `shareClass`, `numberHeld`, `shareholders[]` of `forename` and `surname`, or `amalgamatedName` |
+| `capitalDate` | The date the shareholdings are stated as at, `YYYY-MM-DD` |
+| `lastAccounts` | The result of `mapIxbrlAccounts` for the last filed iXBRL set |
+| `periodEnd` | The year end chosen, on or after `accountsNextPeriodEnd` |
+| `resources` | Optional resource loader for the rate data; defaults to reading `app/` |
+
+The period starts on `accountsNextPeriodStart`, else the day after `accountsLastPeriodEnd`,
+else `dateOfCreation`. It ends on `periodEnd`, else `accountsNextPeriodEnd`.
+
+- With `lastAccounts` and an end equal to `accountsNextPeriodEnd`, the book is the roll
+  forward of the filed set, and `lines` holds its opening entries. The opening balance sheet
+  equals the filed closing one, with called up share capital on account `3000`.
+- In every other case the book is an empty book for the period and `lines` is `[]`.
+
+The company name goes to `organizationIdentifier`, the number to `diya-gl:companyNumber` and
+the registered office to `organizationAddressLine`, `organizationTown` and
+`organizationPostcode`. Each current director and secretary goes to `directors[]`, at most
+seven, with the name written "Forenames SURNAME" for a person. `diya-gl:companiesHouseName` is
+the first director's name. Each holding goes to `members[]`, at most seventeen, numbered `M1`
+onward, with one nominal value for the book. The book takes no date of birth, nationality,
+occupation, country of residence or address of a person.
+
+`differences` is an array of `{ code, text }`, each text one plain sentence:
+
+| Code | When |
+|------|------|
+| `filed-accounts` | The book and the filed set part: one for each place |
+| `period` | The period is not twelve whole months, so the book file is available and the spreadsheet package is not |
+| `no-figures` | The register holds a last set and no figures from it were given |
+| `first-period` | The company has filed no accounts |
+| `periods-between` | `periodEnd` is after `accountsNextPeriodEnd`, so the periods between are not on the register |
+| `capital` | The filed called up share capital and the statement of capital differ by more than 50p |
+| `capital-currency` | The statement of capital is not in GBP |
+| `no-members` | No shareholdings, or no statement of capital to price them, reached the builder |
+| `shareholders-date` | The date the members are stated as at |
+| `share-classes` | The company has more than one share class |
+| `holding-left-out` | A holding the book does not carry, with its class, holder and number of shares |
+| `shareholdings-total` | The holdings of a class do not add up to its number of shares |
+| `officers-left-out` | An officer of a role the book does not hold, or past the seventh |
+
+The function throws `RegisterBookError` with a `field`: `profile`, `period`, `periodEnd`,
+`lastAccounts` or `taxYear`. `isTwelveWholeMonths(start, end)` tells a consumer whether the
+spreadsheet package can be written for the period.
+
+The tool takes the same data as JSON, replaces the session's loaded book with the result, and
+answers the book, the lines, `differences`, the report and the book checks.

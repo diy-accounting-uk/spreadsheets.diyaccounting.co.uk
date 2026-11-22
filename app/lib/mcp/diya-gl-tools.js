@@ -53,6 +53,7 @@ import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
 import { buildNewBook } from "../diya-gl-new-book.js";
+import { buildBookFromRegister } from "../diya-gl-register-book.js";
 import { rollForward, rollForwardChecks, rolledYearEnd } from "../diya-gl-roll-forward.js";
 import { taxYearFileName } from "../tax-year.js";
 
@@ -207,6 +208,26 @@ async function newBook(session, params = {}) {
   return {
     book,
     lines,
+    bookToml: canonicalBookToml(stampBook(book)),
+    report: reportFor(book, lines),
+    bookChecks: await bookChecksFor(book, lines),
+  };
+}
+
+/**
+ * new_book_from_register: the book of a company's next period from the data
+ * Companies House holds, given as JSON -- the roll forward of its last filed
+ * accounts when they are given, an empty book otherwise, with the company, its
+ * officers and its members written in. Replaces the session's loaded book.
+ * The server calls no Companies House interface; the caller supplies the data.
+ */
+async function newBookFromRegister(session, params = {}) {
+  const { book, lines, differences } = await buildBookFromRegister(params);
+  loadIntoSession(session, book, lines);
+  return {
+    book,
+    lines,
+    differences,
     bookToml: canonicalBookToml(stampBook(book)),
     report: reportFor(book, lines),
     bookChecks: await bookChecksFor(book, lines),
@@ -419,6 +440,36 @@ export const TOOLS = {
       required: ["product", "businessName", "yearEnd"],
     },
     handler: newBook,
+  },
+  new_book_from_register: {
+    name: "new_book_from_register",
+    description:
+      "Start the book of a limited company's next accounting period from the data Companies House holds, which you supply as JSON: the company profile, its officers, and optionally the statement of capital with the shareholdings and the result of reading its last filed iXBRL accounts. With the filed accounts the book is the roll forward of them and its opening balance sheet equals the filed closing one; without them it is empty. The company, its directors and secretaries and its members are written in. Returns the book, its lines, the differences the builder found between the register and the book, its report and its book checks. Calls no Companies House interface. Replaces the session's loaded book. Answers: How do I start next year's books for my company from Companies House? What does the register not tell the book?",
+    inputSchema: {
+      type: "object",
+      properties: {
+        profile: {
+          type: "object",
+          description:
+            "companyNumber, companyName, dateOfCreation, registeredOffice (addressLine1 to addressLine3, cityOrTown, postalCode), accountsNextPeriodStart, accountsNextPeriodEnd, accountsLastPeriodEnd",
+        },
+        officers: { type: "array", description: "Each officer: name, officerRole, appointedOn, resignedOn" },
+        capital: {
+          type: "object",
+          description:
+            "The statement of capital: shareCurrency, totalAggregateNominalValue, shares[] of shareClass, numShares, aggregateNominalValue (strings)",
+        },
+        shareholdings: {
+          type: "array",
+          description: "Each holding: shareClass, numberHeld, shareholders[] of forename and surname, or amalgamatedName",
+        },
+        capitalDate: { type: "string", description: "The date the shareholdings are stated as at, YYYY-MM-DD" },
+        lastAccounts: { type: "object", description: "The result of reading the last filed iXBRL accounts for this company" },
+        periodEnd: { type: "string", description: "Optional: the year end chosen, YYYY-MM-DD, on or after the register's next period end" },
+      },
+      required: ["profile"],
+    },
+    handler: newBookFromRegister,
   },
   roll_forward: {
     name: "roll_forward",

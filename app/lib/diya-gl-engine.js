@@ -141,6 +141,9 @@ export { PRODUCTS, productModule } from "./products.js";
 
 export { NEW_BOOK_CHARTS, newBookChart, buildNewBook } from "./diya-gl-new-book.js";
 
+// The book of a company's next period from what Companies House holds.
+export { buildBookFromRegister, RegisterBookError } from "./diya-gl-register-book.js";
+
 // Editing it.
 export {
   addSaleLine,
@@ -184,6 +187,7 @@ export {
   productOf,
   taxYearFileName,
   loadTaxDataForBook,
+  isTwelveWholeMonths,
   BookFieldError,
   SingleFileOnlyError,
 } from "./product-workbook.js";
