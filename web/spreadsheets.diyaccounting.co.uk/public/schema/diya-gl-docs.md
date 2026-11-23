@@ -1111,3 +1111,37 @@ spreadsheet package can be written for the period.
 
 The tool takes the same data as JSON, replaces the session's loaded book with the result, and
 answers the book, the lines, `differences`, the report and the book checks.
+
+---
+
+## 13. The Trial Balance of a Company Book
+
+The Trial balance view on the Company books page and the MCP server's `trial_balance` tool
+read the same trial balance, built from the lines. Each line posts to its accounts by the
+posting rules, and the registers add their year-end postings: fixed assets, stock, hire
+purchase, dividends and the corporation tax charge. Every account's balance sits in the
+debit or the credit column, and the two column totals are equal. The tool reads Company
+books only.
+
+| Argument | Content |
+|----------|---------|
+| `period` | Optional. `year` (the default), `month`, `vatQuarter`, or `custom` with `from` and `to` |
+| `month` | `YYYY-MM` of the month, or of the VAT quarter's last month. Needed for `month` and `vatQuarter` |
+| `from` | `YYYY-MM-DD`, the first day of a custom range, inclusive |
+| `to` | `YYYY-MM-DD`, the last day of a custom range, inclusive |
+| `account` | Optional. An account id, e.g. `1300`, to add `accountLines` |
+| `book`, `lines` | Optional. A book and its lines, in place of the session's loaded book |
+
+A month shows its own movement. The year-end postings fall in the year, and in the month
+and the quarter that hold the year end. A VAT quarter can be one of any of the three
+staggers that touch the year.
+
+| Answer | Content |
+|--------|---------|
+| `period`, `id`, `label`, `from`, `to` | The period read: its kind, the `YYYY-MM` that names a month or quarter, its printed name and its first and last day |
+| `accounts` | One row per account with a balance: `account`, `name`, `debit`, `credit`, in pounds |
+| `totals` | `debit` and `credit`, the column totals |
+| `apart` | The lines that post to nothing, each with `entryNumber`, `sourceJournalID`, `postingDate` and `reason`: an in-year journal line, a line that straddles a VAT period, or a bank account's opening balance line |
+| `accountLines` | With `account` only: `account`, `name`, `rows` (each line and register posting behind the balance, in date order: `source`, `entryNumber`, `journal`, `postingDate`, `description`, `debit`, `credit`) and their `totals` |
+
+The view takes the same periods from a picker and shows an account's lines on demand.

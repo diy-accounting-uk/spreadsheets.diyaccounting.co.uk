@@ -55,6 +55,10 @@ describe("the diya-gl spec page", () => {
     expect(published).toContain("new_book_from_register");
   });
 
+  it("names the tool that reads a company book's trial balance", () => {
+    expect(published).toContain("<code>trial_balance</code>");
+  });
+
   it("states the wider company number pattern the book schema accepts", () => {
     const schema = JSON.parse(readFileSync(resolve(PUBLIC_DIR, "schema", "diya-gl-book-v2.schema.json"), "utf8"));
     const property = schema.properties.entityInformation.properties["diya-gl:companyNumber"];

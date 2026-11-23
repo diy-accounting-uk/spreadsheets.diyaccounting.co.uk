@@ -86,13 +86,15 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   another site. The book stays in the browser (the part of the address after `#` is never sent
   anywhere). The server stays up until Ctrl-C. The workbook templates come from
   spreadsheets.diyaccounting.co.uk the first time a page action needs one.
-- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with ten tools:
-  `extract_book`, `new_book` (the empty book **new-book** writes), `roll_forward` (the next
-  year **roll-forward** writes), `report`, `edit_lines`, `save_workbook`, and four that read every detail of
-  the loaded book: `lines` (filter and group every transaction, e.g. best customer or spend on
-  fuel in June), `chart` (the accounts and the report rows each feeds), `book` (the business,
-  period, tax settings and registers) and `checks` (every book check with the entryNumbers
-  behind it). Point an MCP client at `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
+- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with twelve tools:
+  `extract_book`, `new_book` (the empty book **new-book** writes), `new_book_from_register`
+  (a company's next book from what Companies House holds), `roll_forward` (the next year
+  **roll-forward** writes), `report`, `edit_lines`, `save_workbook`, and five that read every
+  detail of the loaded book: `lines` (filter and group every transaction, e.g. best customer or
+  spend on fuel in June), `chart` (the accounts and the report rows each feeds), `book` (the
+  business, period, tax settings and registers), `checks` (every book check with the
+  entryNumbers behind it) and `trial_balance` (a Company book's trial balance over the year, a
+  month, a VAT quarter or a date range, with one account's lines on request). Point an MCP client at `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
 
 ## API
 

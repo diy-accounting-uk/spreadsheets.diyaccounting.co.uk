@@ -619,6 +619,12 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
         address of a person.
       </p>
       <p>
+        A company book's trial balance is built from its lines: each line posts to its accounts, the registers add their year-end
+        postings, and the debit and credit columns total the same. The Trial balance view on the Company books page and the MCP
+        server's <code>trial_balance</code> tool read it over the year, one month, one VAT quarter or a date range, and name the
+        lines behind any one account's balance.
+      </p>
+      <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
         <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.
       </p>
