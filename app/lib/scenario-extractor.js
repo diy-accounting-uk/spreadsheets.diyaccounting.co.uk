@@ -1218,6 +1218,15 @@ export function formatScenarioToml(metadata, grouped, expected) {
     parts.push("");
   }
 
+  // The basis period record from a later tax year end on, in place of
+  // basis_period; the last entry whose firstTaxYearEnd the package reaches
+  // applies (scenarioForTaxYear).
+  for (const change of expected.basis_period_changes || []) {
+    parts.push("[[basis_period_changes]]");
+    for (const [key, amount] of Object.entries(change)) parts.push(`${key} = ${amount}`);
+    parts.push("");
+  }
+
   // Structures and Buildings Allowance claims (boxes 53 and 53.1), the
   // book's own two arrays merged with an enhanced flag the way
   // diyaGlToScenario merges them. The Schedule's SBA block computes the
