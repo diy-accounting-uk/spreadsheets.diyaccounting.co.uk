@@ -25,6 +25,7 @@ import { yearEndPostings } from "../lib/posting-rules.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import { productModule } from "../lib/products.js";
 import { buildBooksFromPlan, companyBookPlans } from "./support/book-generators.js";
+import * as engine from "../lib/diya-gl-engine.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const IXBRL_FIXTURES = resolve(ROOT, "app", "test", "fixtures", "ixbrl");
@@ -101,8 +102,8 @@ describe("account classes", () => {
     expect(accountClasses("taxi").get("5900").accountClass).toBe("expense");
   });
 
-  it("names concepts, dimensions and members the FRC suite defines", () => {
-    const defined = new Set(JSON.parse(readFileSync(resolve(ROOT, "app", "data", "frc-taxonomy", "2021.json"), "utf8")).concepts);
+  it.each(["2021", "2026"])("names concepts, dimensions and members the %s FRC suite defines", (year) => {
+    const defined = new Set(JSON.parse(readFileSync(resolve(ROOT, "app", "data", "frc-taxonomy", `${year}.json`), "utf8")).concepts);
     const named = new Set();
     for (const entry of accountClasses("ltd").values()) {
       for (const placed of [entry.frs102, entry.frs105]) {
@@ -110,7 +111,7 @@ describe("account classes", () => {
         for (const name of [placed.concept, placed.dimension, placed.member]) if (name) named.add(name);
       }
     }
-    expect(named.size).toBeGreaterThan(25);
+    expect(named.size).toBe(30);
     expect([...named].filter((name) => !defined.has(name))).toEqual([]);
   });
 });
@@ -278,5 +279,15 @@ describe("the chart of accounts", () => {
     expect(chart.find((account) => account.id === "7000")).toMatchObject({ accountClass: "asset" });
     expect(chart.find((account) => account.id === "5900")).toMatchObject({ accountClass: "expense" });
     expect(chart.some((account) => "frs102" in account || "frs105" in account)).toBe(false);
+  });
+});
+
+describe("the engine", () => {
+  it("gives the same account classes as the module that builds them", () => {
+    for (const product of ["ltd", "se", "bst", "taxi"]) {
+      expect(engine.accountClasses(product)).toBe(accountClasses(product));
+    }
+    const { book } = EXAMPLES.find(({ name }) => name === "examples/sp-sixty-driving/bst");
+    expect([...engine.accountClassesOfBook(book, "bst").entries()]).toEqual([...accountClassesOfBook(book, "bst").entries()]);
   });
 });

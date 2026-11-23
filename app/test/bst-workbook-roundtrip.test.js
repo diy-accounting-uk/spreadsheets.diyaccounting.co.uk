@@ -74,4 +74,10 @@ describe("saveWorkbook round trip: import -> save -> re-import", () => {
     const { lines, reimported } = await saveAndReimport("examples/sp-sixty-driving/bst");
     expect(reimported.lines.length).toBe(lines.length);
   }, 120000);
+
+  it("declares the Taxi Driver chart's fixed asset account 7000 as a purchase account", async () => {
+    const { reimported } = await saveAndReimport("examples/sp-sixty-driving/bst");
+    expect(Object.keys(reimported.book.accounts.purchases)).toContain("7000");
+    expect(Object.keys(reimported.book.accounts.assets ?? {})).not.toContain("7000");
+  }, 120000);
 });

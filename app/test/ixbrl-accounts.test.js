@@ -491,6 +491,53 @@ describe("the mapping table", () => {
     ]);
   });
 
+  // [suite date, name, whether the suite defines it]
+  it.each([
+    ["2026-01-01", "Goodwill", true],
+    ["2026-01-01", "AcquisitionIntegrationCosts", true],
+    ["2026-01-01", "DecreaseInAssetsDefinedBenefitPlanFromBenefitsPaid", false],
+    ["2021-01-01", "AcquisitionIntegrationCosts", false],
+    ["2021-01-01", "DecreaseInAssetsDefinedBenefitPlanFromBenefitsPaid", true],
+  ])("marks the unmapped %s name %s as defined by that suite: %s", (date, name, defined) => {
+    const schemaRef = `https://xbrl.frc.org.uk/FRS-102/${date}/FRS-102-${date}.xsd`;
+    const body = money(`core:${name}`, "CY_END", "5");
+    const accounts = mapIxbrlAccounts(ixbrlDocument({ contexts: CONTEXTS, hidden: COVER, body, schemaRef }), FIRST, {
+      suiteConcepts: frcSuiteConcepts,
+    });
+    expect(accounts.unmapped.map((fact) => [fact.concept, fact.inSuite])).toEqual([[name, defined]]);
+  });
+
+  // [fixture on the 2026 suite, the names it leaves unmapped]
+  it.each([
+    [
+      "adp-dormant.xhtml",
+      [
+        "AccountingStandardsAppliedMatchesTaxonomyEntry-pointTruefalse",
+        "ReportIncludesDetailedProfitLossStatementTruefalse",
+        "EntityHasTakenExemptionUnderCompaniesActInNotPublishingItsOwnProfitLossAccountTruefalse",
+      ],
+    ],
+    [
+      "builder-small-bank-lines.xhtml",
+      [
+        "ReportAnAmendedRevisedVersionPreviouslyFiledReportTruefalse",
+        "AccountingStandardsAppliedMatchesTaxonomyEntry-pointTruefalse",
+        "ReportIncludesDetailedProfitLossStatementTruefalse",
+        "DateSigningDirectorsReport",
+        "OtherCreditors",
+        "OtherCreditors",
+        "StatementComplianceWithApplicableReportingFramework",
+        "GeneralDescriptionBasisMeasurementUsedInPreparingFinancialStatements",
+        "CurrentTaxForPeriod",
+        "CurrentTaxForPeriod",
+      ],
+    ],
+  ])("marks every name %s leaves unmapped as one its suite defines", (name, concepts) => {
+    const accounts = mapIxbrlAccounts(fixture(name), {}, { suiteConcepts: frcSuiteConcepts });
+    expect(accounts.suite.date).toBe("2026-01-01");
+    expect(accounts.unmapped.map((fact) => [fact.concept, fact.inSuite])).toEqual(concepts.map((concept) => [concept, true]));
+  });
+
   it("leaves the mark null when no resolver is passed", () => {
     const schemaRef = "https://xbrl.frc.org.uk/FRS-102/2021-01-01/FRS-102-2021-01-01.xsd";
     const body = money("core:Goodwill", "CY_END", "5");

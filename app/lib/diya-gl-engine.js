@@ -187,6 +187,10 @@ export { headlinesFromReport } from "./headlines.js";
 export { POSTING_RULES, POSTING_ACCOUNTS, postingsOf, yearEndPostings, reasonApart } from "./posting-rules.js";
 export { trialBalance, trialBalancePeriods, trialBalanceRange, trialBalanceReport, trialBalanceAccountLines } from "./book-queries.js";
 
+// What kind of account each account of a product's chart is, and for a
+// Company account the filed concept it feeds.
+export { accountClasses, accountClassesOfBook } from "./account-classes.js";
+
 // Saving it back out as a workbook or the package zip.
 export {
   saveWorkbook,
