@@ -252,6 +252,17 @@ const CHECK_DESCRIPTIONS = {
   "book-ltd-transfer-has-counter-leg": "Every transfer between the company's own accounts appears on both of them.",
   "book-ltd-dividend-within-distributable-profits": "Dividends declared against the retained profits available to pay them.",
   "book-ltd-cis-on-subcontractor-line": "Every CIS deduction sits on a sub-contractor purchase.",
+  "book-journal-balances": "Every journal entry has debits equal to credits.",
+  "book-journal-has-reason": "Every journal line gives a reason.",
+  "book-journal-reaches-no-report": "Every journal line after the opening balances reaches a report.",
+  "book-posting-status-counted": "Every entry is posted; a draft or voided entry is still added into the totals.",
+  "book-currency-not-gbp": "Every entry is in pounds sterling; another currency is added into the totals as pounds.",
+  "book-ltd-vat-code-not-applied": "Every sale and purchase of a VAT-registered company is standard rated at 20%.",
+  "book-ltd-long-term-debtors-unpublished": "Long-term debtors close at nil; the published balance sheet has no line for them.",
+  "book-ltd-directors-loan-always-long-term":
+    "The directors' loan account closes at nil; the published balance sheet shows it as due after more than one year.",
+  "book-ltd-loan-interest-in-administrative-expenses":
+    "No line is coded as loan interest (5803); the published profit and loss shows it in administrative expenses.",
 };
 
 // One example book per product, taken in path order so the same book is read
@@ -600,6 +611,19 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
         <code>roll_forward</code> tool rolls the same book.
       </p>
       <pre><code>diya-gl roll-forward --data my-book --output-dir next-year</code></pre>
+      <p>
+        A limited company's next period can start from what Companies House holds. The package's <code>buildBookFromRegister</code>
+        function and the MCP server's <code>new_book_from_register</code> tool take the company profile, its officers, its
+        statement of capital with the shareholdings and the result of reading its last filed accounts, and answer the book, its
+        opening entries and a list of the places the register and the book part. The book takes no date of birth, nationality or
+        address of a person.
+      </p>
+      <p>
+        A company book's trial balance is built from its lines: each line posts to its accounts, the registers add their year-end
+        postings, and the debit and credit columns total the same. The Trial balance view on the Company books page and the MCP
+        server's <code>trial_balance</code> tool read it over the year, one month, one VAT quarter or a date range, and name the
+        lines behind any one account's balance.
+      </p>
       <p>
         Every green deploy of this site publishes the next version to all three, and each release is listed on the
         <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/releases.html">reconciled releases</a> page with its five provenance stamps.

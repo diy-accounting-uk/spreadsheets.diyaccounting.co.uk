@@ -139,6 +139,19 @@ describe("the figures a book hands over", () => {
     expectNumbers(sent.figures);
     expect(sent.period.periodStart).toMatch(ISO_DATE);
     expect(sent.period.periodEnd).toBe(periodEnd);
+    expect(built.notice).toBeUndefined();
+  });
+
+  it("VAT: a book whose lines carry other tax codes sends the boxes by tax code, and a notice that stays out of the fragment", async () => {
+    const { book, lines } = await loadDiyaGlData(resolve(examples, "precision-code-ltd", "full"));
+    const derived = await engine.deriveVatReturn(book, lines, { periodEnd: "2025-09-30" });
+    expect(derived.workbookDifference).toMatch(/follow each line's tax code/);
+    const built = await handoff.buildHandoff(engine, "vat", book, lines, "2025-09-30", source);
+    expect(built.notice).toBe(derived.workbookDifference);
+    const sent = decodeFragment(handoff.encodeFragment(built));
+    expect(Object.keys(sent).sort()).toEqual(["figures", "kind", "packageVersion", "period", "sourceFileName"]);
+    handoff.VAT_BOX_IDS.forEach((id) => expect(sent.figures[id]).toBe(derived.hmrc[id]));
+    expect(sent.figures.vatReclaimedCurrPeriod).not.toBe(derived.workbookBoxes.box4);
   });
 
   it("ITSA quarterly: tax year, period dates and the three figure groups", async () => {

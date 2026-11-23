@@ -255,6 +255,185 @@
     });
   }
 
+  // ============================== trial balance ==============================
+
+  var STAGGER_NAMES = ["March, June, September and December", "April, July, October and January", "May, August, November and February"];
+
+  function trialBalanceViewState(helpers) {
+    return helpers.viewState("trial-balance", { period: "year", account: null });
+  }
+
+  // The picker's value names a period the way the engine does: "year",
+  // "month:YYYY-MM" or "vatQuarter:YYYY-MM" (the last month of the quarter).
+  function trialBalanceSelection(view) {
+    var parts = view.period.split(":");
+    return { period: parts[0], month: parts[1], account: view.account };
+  }
+
+  function trialBalancePicker(report, view, helpers) {
+    function option(value, label) {
+      return (
+        '<option value="' + helpers.esc(value) + '"' + (value === view.period ? " selected" : "") + ">" + helpers.esc(label) + "</option>"
+      );
+    }
+    var months = report.periods.months
+      .map(function (month) {
+        return option("month:" + month.id, month.label);
+      })
+      .join("");
+    var quarters = [0, 1, 2]
+      .map(function (stagger) {
+        var inStagger = report.periods.vatQuarters.filter(function (quarter) {
+          return quarter.stagger === stagger;
+        });
+        if (!inStagger.length) return "";
+        return (
+          '<optgroup label="VAT quarters ending ' +
+          helpers.esc(STAGGER_NAMES[stagger]) +
+          '">' +
+          inStagger
+            .map(function (quarter) {
+              return option("vatQuarter:" + quarter.id, quarter.label);
+            })
+            .join("") +
+          "</optgroup>"
+        );
+      })
+      .join("");
+    return (
+      '<div class="trial-balance-picker"><label for="trial-balance-period">Period</label>' +
+      '<select id="trial-balance-period">' +
+      option("year", report.periods.year.label) +
+      '<optgroup label="Months">' +
+      months +
+      "</optgroup>" +
+      quarters +
+      "</select></div>"
+    );
+  }
+
+  function trialBalanceSide(helpers, amount) {
+    return amount ? helpers.fmtMoney(amount) : "";
+  }
+
+  function trialBalanceAccountPanel(report, helpers) {
+    var detail = report.accountLines;
+    var rows = detail.rows.length
+      ? detail.rows
+          .map(function (row) {
+            return (
+              "<tr><td>" +
+              helpers.esc(row.postingDate) +
+              "</td><td>" +
+              helpers.esc(row.source) +
+              "</td><td>" +
+              helpers.esc(row.description) +
+              '</td><td class="num">' +
+              trialBalanceSide(helpers, row.debit) +
+              '</td><td class="num">' +
+              trialBalanceSide(helpers, row.credit) +
+              "</td></tr>"
+            );
+          })
+          .join("")
+      : '<tr><td colspan="5">Nothing posts to this account in this period.</td></tr>';
+    return (
+      '<div class="panel-card" id="trial-balance-lines"><h3>' +
+      helpers.esc(detail.account + (detail.name ? " " + detail.name : "") + ", " + report.label) +
+      "</h3>" +
+      '<table class="register-table"><thead><tr><th>Date</th><th>Source</th><th>Description</th><th>Debit</th><th>Credit</th></tr></thead><tbody>' +
+      rows +
+      "</tbody></table>" +
+      '<button type="button" class="btn" data-trial-balance-close>Close</button></div>'
+    );
+  }
+
+  function renderTrialBalance(snap, state, helpers) {
+    var view = trialBalanceViewState(helpers);
+    var report = snap.context.engine.trialBalanceReport(snap.book, snap.lines, snap.context.taxData, trialBalanceSelection(view));
+    var rows = report.accounts
+      .map(function (row) {
+        return (
+          "<tr><th>" +
+          helpers.esc(row.account) +
+          "</th><td>" +
+          helpers.esc(row.name || "") +
+          '</td><td class="num">' +
+          trialBalanceSide(helpers, row.debit) +
+          '</td><td class="num">' +
+          trialBalanceSide(helpers, row.credit) +
+          '</td><td><button type="button" class="btn" data-trial-balance-account="' +
+          helpers.esc(row.account) +
+          '" aria-expanded="' +
+          (view.account === row.account ? "true" : "false") +
+          '">Lines</button></td></tr>'
+        );
+      })
+      .join("");
+    var balanced = Math.abs(report.totals.debit - report.totals.credit) < 0.005;
+    var apart = report.apart.length
+      ? '<p class="entries-note">' +
+        report.apart.length +
+        (report.apart.length === 1 ? " line posts to no account" : " lines post to no account") +
+        " and is left out of the totals: " +
+        helpers.esc(
+          report.apart
+            .map(function (entry) {
+              return entry.entryNumber + " (" + entry.reason + ")";
+            })
+            .join("; "),
+        ) +
+        "</p>"
+      : "";
+    return (
+      "<h2>Trial balance</h2>" +
+      "<p class=\"view-lede\">Every account's balance from the book's lines and its registers, " +
+      helpers.esc(report.label) +
+      ".</p>" +
+      trialBalancePicker(report, view, helpers) +
+      '<div class="panel-card"><table class="register-table" id="trial-balance-table"><thead><tr><th>Account</th><th>Name</th><th>Debit</th><th>Credit</th><th></th></tr></thead><tbody>' +
+      rows +
+      '</tbody><tfoot><tr class="total"><th colspan="2">Total</th><td class="num" id="trial-balance-total-debit">' +
+      helpers.fmtMoney(report.totals.debit) +
+      '</td><td class="num" id="trial-balance-total-credit">' +
+      helpers.fmtMoney(report.totals.credit) +
+      "</td><td></td></tr></tfoot></table>" +
+      '<p class="entries-note" id="trial-balance-status">' +
+      (balanced
+        ? "Debits equal credits."
+        : "Debits and credits differ by " + helpers.fmtMoney(Math.abs(report.totals.debit - report.totals.credit)) + ".") +
+      "</p></div>" +
+      apart +
+      (report.accountLines ? trialBalanceAccountPanel(report, helpers) : "")
+    );
+  }
+
+  function bindTrialBalance(root, state, helpers) {
+    var view = trialBalanceViewState(helpers);
+    var picker = root.querySelector("#trial-balance-period");
+    if (picker) {
+      picker.addEventListener("change", function () {
+        view.period = picker.value;
+        view.account = null;
+        helpers.render();
+      });
+    }
+    Array.prototype.forEach.call(root.querySelectorAll("[data-trial-balance-account]"), function (button) {
+      button.addEventListener("click", function () {
+        var account = button.getAttribute("data-trial-balance-account");
+        view.account = view.account === account ? null : account;
+        helpers.render();
+      });
+    });
+    var close = root.querySelector("[data-trial-balance-close]");
+    if (close) {
+      close.addEventListener("click", function () {
+        view.account = null;
+        helpers.render();
+      });
+    }
+  }
+
   // ============================== ledgers ==============================
 
   // Every CELL_MAP row of one report section, as a label/value/key panel --
@@ -846,6 +1025,8 @@
     renderBank: renderBank,
     bindBank: bindBank,
     renderLedgers: renderLedgers,
+    renderTrialBalance: renderTrialBalance,
+    bindTrialBalance: bindTrialBalance,
     renderProfitLoss: renderProfitLoss,
     bindProfitLoss: bindProfitLoss,
     renderStock: renderStock,

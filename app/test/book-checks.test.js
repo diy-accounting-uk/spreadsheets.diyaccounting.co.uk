@@ -35,6 +35,8 @@ const WARNING_IDS = [
   "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
+  "book-posting-status-counted",
+  "book-currency-not-gbp",
 ];
 const ALL_IDS = CHECK_IDS.concat(WARNING_IDS);
 
@@ -58,10 +60,12 @@ describe("the three example books", () => {
       "book-missing-document-reference",
       "book-negative-amount",
       "book-empty-month",
+      "book-posting-status-counted",
+      "book-currency-not-gbp",
     ]) {
       expect(resultFor(results, id).result, id).toBe("pass");
     }
-    expect(summary).toEqual({ pass: 8, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
   });
 
   it("SP Sixty Driving: every entry sits inside the declared period, and only the 180 sales without a document reference warn", () => {
@@ -80,7 +84,7 @@ describe("the three example books", () => {
     }
     expect(resultFor(results, "book-missing-document-reference").actual).toBe(180);
 
-    expect(summary).toEqual({ pass: 8, warn: 1, fail: 0 });
+    expect(summary).toEqual({ pass: 10, warn: 1, fail: 0 });
   });
 
   it("Kestrel Executive Cars: every entry sits inside the declared period", () => {
@@ -95,7 +99,7 @@ describe("the three example books", () => {
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
 
     for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 9, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 11, warn: 0, fail: 0 });
   });
 });
 
@@ -221,11 +225,11 @@ function baseline() {
 }
 
 describe("the controlled fixture starts clean", () => {
-  it("passes all nine rules", () => {
+  it("passes all eleven rules", () => {
     const { book, lines, taxData } = baseline();
     const { results, summary } = runBookChecks({ book, lines, taxData });
     for (const id of ALL_IDS) expect(resultFor(results, id).result, id).toBe("pass");
-    expect(summary).toEqual({ pass: 9, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 11, warn: 0, fail: 0 });
   });
 });
 

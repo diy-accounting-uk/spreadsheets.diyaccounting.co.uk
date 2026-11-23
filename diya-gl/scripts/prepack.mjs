@@ -54,7 +54,7 @@ for (const file of closure) {
 // reads through app-resources.js at run time.
 cpSync(resolve(REPO_ROOT, "app", "data"), resolve(DIST, "app", "data"), { recursive: true });
 
-// The two published v2 schemas, at the path app-resources.js's
+// The published v2 and v3 schemas, at the path app-resources.js's
 // nodeResourceLoader resolves relative to dist/app: dist/app/../web/....
 cpSync(
   resolve(REPO_ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "schema"),
@@ -66,4 +66,4 @@ cpSync(
 // line of stdout, and a lifecycle script's stdout output lands ahead of it
 // on the same stream, so a caller parsing that line as JSON needs this
 // script to stay off stdout entirely.
-console.error(`diya-gl: prepack copied ${closure.length} engine files, app/data and the v2 schemas into dist/`);
+console.error(`diya-gl: prepack copied ${closure.length} engine files, app/data and the published schemas into dist/`);

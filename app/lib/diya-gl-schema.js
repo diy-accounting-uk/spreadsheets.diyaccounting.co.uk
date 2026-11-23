@@ -2,11 +2,12 @@
 // Copyright (C) 2006-2026 DIY Accounting Limited
 //
 // diya-gl-schema.js — The one validator for diya-gl book.toml and lines.jsonl
-// data. Compiles the published v2 JSON Schemas (draft 2020-12) with ajv, and
-// adds the two rules JSON Schema itself cannot state: that every line's
-// accountMainID names a declared account, and that every
-// diya-gl:hpAgreement, diya-gl:assetID and diya-gl:memberID names an entry
-// on the matching book.toml register.
+// data. Compiles the published v2 and v3 JSON Schemas (draft 2020-12) with
+// ajv, validates each book against the version its own diya-gl:formatVersion
+// selects (schemaVersionOf), and adds the two rules JSON Schema itself cannot
+// state: that every line's accountMainID names a declared account, and that
+// every diya-gl:hpAgreement, diya-gl:assetID and diya-gl:memberID names an
+// entry on the matching book.toml register.
 
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
@@ -14,27 +15,41 @@ import standaloneCode from "ajv/dist/standalone/index.js";
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { BOOK_SCHEMA_RESOURCE, LINES_SCHEMA_RESOURCE, nodeResourceLoader } from "./app-resources.js";
+import { SCHEMA_RESOURCES, SCHEMA_VERSIONS, nodeResourceLoader, resourcePathWithinRoot, schemaVersionOf } from "./app-resources.js";
 
-// The two published schemas compile once, on the first validation rather than
+// The published schemas compile once, on the first validation rather than
 // on import. A caller that cannot read files — the books page — hands them in
 // with useSchemas() before validating anything; in Node they come off disk.
 let validators = null;
 
-function compileSchemas(bookSchema, linesSchema) {
+// Every schema version the engine reads, each with its book and its lines
+// schema. A caller that hands in fewer would leave a book of the missing
+// version with nothing to validate it, so the call fails instead.
+function requireEveryVersion(schemas, caller) {
+  for (const version of SCHEMA_VERSIONS) {
+    if (!schemas?.[version]?.book || !schemas?.[version]?.lines) {
+      throw new Error(`${caller} needs the book and lines schemas of every version (${SCHEMA_VERSIONS.join(", ")}); ${version} is missing`);
+    }
+  }
+}
+
+function compileSchemas(schemas) {
+  requireEveryVersion(schemas, "useSchemas()");
   const ajv = new Ajv2020({ allErrors: true });
   addFormats(ajv);
-  return { book: ajv.compile(bookSchema), lines: ajv.compile(linesSchema) };
+  return Object.fromEntries(
+    SCHEMA_VERSIONS.map((version) => [version, { book: ajv.compile(schemas[version].book), lines: ajv.compile(schemas[version].lines) }]),
+  );
 }
 
 /**
- * Supply the two v2 schemas rather than have them read from disk. The books
- * page fetches them and calls this before its first validation.
- * @param {Object} bookSchema - parsed diya-gl-book-v2.schema.json
- * @param {Object} linesSchema - parsed diya-gl-lines-v2.schema.json
+ * Supply the schemas rather than have them read from disk. The books page
+ * fetches them and calls this before its first validation.
+ * @param {{v2: {book: Object, lines: Object}, v3: {book: Object, lines: Object}}} schemas -
+ *   each version's parsed diya-gl-book-<version>.schema.json and diya-gl-lines-<version>.schema.json
  */
-export function useSchemas(bookSchema, linesSchema) {
-  validators = compileSchemas(bookSchema, linesSchema);
+export function useSchemas(schemas) {
+  validators = compileSchemas(schemas);
 }
 
 /**
@@ -52,46 +67,76 @@ export function useSchemas(bookSchema, linesSchema) {
  * and loadSchemasFrom() keep working unchanged); this function is the direct
  * seam for a caller - a test proving the two validator sources agree, or a
  * future one - that would rather hand the compiled validators in itself.
- * @param {{book: Function, lines: Function}} generated
+ * @param {{v2: {book: Function, lines: Function}, v3: {book: Function, lines: Function}}} generated
  */
 export function useValidators(generated) {
+  requireEveryVersion(generated, "useValidators()");
   validators = generated;
 }
 
 /**
- * Turn the two v2 schemas into the source of a standalone JavaScript module
- * that exports `validateBook` and `validateLines` - ajv's own code
- * generator, run once here rather than by `new Function` every time a page
- * loads. The source still calls a bare `require("ajv-formats/dist/formats")`
- * for its format checks, so a caller bundles it (esbuild, webpack, rollup)
- * before running it anywhere the module has no `require`.
- * @param {Object} bookSchema - parsed diya-gl-book-v2.schema.json
- * @param {Object} linesSchema - parsed diya-gl-lines-v2.schema.json
+ * The names generateStandaloneValidatorSource() exports each version's two
+ * validators under: validateBookV2, validateLinesV2, validateBookV3,
+ * validateLinesV3.
+ */
+export const STANDALONE_VALIDATOR_NAMES = Object.fromEntries(
+  SCHEMA_VERSIONS.map((version) => {
+    const suffix = version.toUpperCase();
+    return [version, { book: `validateBook${suffix}`, lines: `validateLines${suffix}` }];
+  }),
+);
+
+/**
+ * Turn the schemas into the source of a standalone JavaScript module that
+ * exports each version's two validators under STANDALONE_VALIDATOR_NAMES -
+ * ajv's own code generator, run once here rather than by `new Function`
+ * every time a page loads. The source still calls a bare
+ * `require("ajv-formats/dist/formats")` for its format checks, so a caller
+ * bundles it (esbuild, webpack, rollup) before running it anywhere the module
+ * has no `require`.
+ * @param {{v2: {book: Object, lines: Object}, v3: {book: Object, lines: Object}}} schemas - as useSchemas() takes them
  * @returns {string} an ES module's source
  */
-export function generateStandaloneValidatorSource(bookSchema, linesSchema) {
+export function generateStandaloneValidatorSource(schemas) {
+  requireEveryVersion(schemas, "generateStandaloneValidatorSource()");
   const ajv = new Ajv2020({ allErrors: true, code: { source: true, esm: true } });
   addFormats(ajv);
-  ajv.addSchema(bookSchema, "book");
-  ajv.addSchema(linesSchema, "lines");
-  return standaloneCode(ajv, { validateBook: "book", validateLines: "lines" });
+  const exports = {};
+  for (const version of SCHEMA_VERSIONS) {
+    for (const kind of ["book", "lines"]) {
+      const key = `${kind}-${version}`;
+      ajv.addSchema(schemas[version][kind], key);
+      exports[STANDALONE_VALIDATOR_NAMES[version][kind]] = key;
+    }
+  }
+  return standaloneCode(ajv, exports);
+}
+
+// Every version's two schemas, read through a resource loader or off disk.
+async function readSchemas(readText) {
+  const entries = await Promise.all(
+    SCHEMA_VERSIONS.map(async (version) => {
+      const [book, lines] = await Promise.all([
+        readText(SCHEMA_RESOURCES[version].book).then(JSON.parse),
+        readText(SCHEMA_RESOURCES[version].lines).then(JSON.parse),
+      ]);
+      return [version, { book, lines }];
+    }),
+  );
+  return Object.fromEntries(entries);
 }
 
 /**
- * Load and compile the two schemas through a resource loader, for a caller
- * that has one but would rather not parse the JSON itself.
+ * Load and compile every version's schemas through a resource loader, for a
+ * caller that has one but would rather not parse the JSON itself.
  * @param {{readText: (path: string) => Promise<string>}} [resources]
  */
 export async function loadSchemasFrom(resources = nodeResourceLoader()) {
-  const [book, lines] = await Promise.all([
-    resources.readText(BOOK_SCHEMA_RESOURCE).then(JSON.parse),
-    resources.readText(LINES_SCHEMA_RESOURCE).then(JSON.parse),
-  ]);
-  useSchemas(book, lines);
+  useSchemas(await readSchemas((path) => resources.readText(path)));
 }
 
 // Validation is synchronous, and every caller in the pipeline relies on that,
-// so the Node fallback reads the two files synchronously. A bundle with no
+// so the Node fallback reads the schema files synchronously. A bundle with no
 // file system reaches this only when the page forgot to call useSchemas(), and
 // then it fails loudly rather than validating nothing.
 function compiled() {
@@ -106,8 +151,15 @@ function compiled() {
       "public",
       "schema",
     );
-    const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
-    validators = compileSchemas(read("diya-gl-book-v2.schema.json"), read("diya-gl-lines-v2.schema.json"));
+    const read = (resource) => JSON.parse(readFileSync(resolve(schemaDir, resourcePathWithinRoot(resource)), "utf8"));
+    validators = compileSchemas(
+      Object.fromEntries(
+        SCHEMA_VERSIONS.map((version) => [
+          version,
+          { book: read(SCHEMA_RESOURCES[version].book), lines: read(SCHEMA_RESOURCES[version].lines) },
+        ]),
+      ),
+    );
   } catch (cause) {
     throw new Error(
       "the diya-gl schemas could not be read; a caller with no file system has to call useSchemas() or loadSchemasFrom() first",
@@ -140,12 +192,14 @@ function withIsoDates(value) {
 }
 
 /**
- * Validate a parsed book.toml against the published diya-gl-book-v2 schema.
+ * Validate a parsed book.toml against the published book schema of its own
+ * version (schemaVersionOf): diya-gl-book-v3 for a "diya-gl/3" book,
+ * diya-gl-book-v2 for every other.
  * @param {Object} book - parsed book.toml (TOML dates as JS Date instances, as every TOML parser returns them)
  * @returns {{valid: boolean, errors: string[]}}
  */
 export function validateBook(book) {
-  const validateBookSchema = compiled().book;
+  const validateBookSchema = compiled()[schemaVersionOf(book)].book;
   const valid = validateBookSchema(withIsoDates(book));
   const errors = valid ? [] : validateBookSchema.errors.map((e) => formatAjvError("book", e));
   return { valid, errors };
@@ -167,11 +221,11 @@ function declaredIDs(entries, idField) {
 }
 
 /**
- * Validate a book's lines.jsonl entries against the published
- * diya-gl-lines-v2 schema, then against the book: every accountMainID has
- * to name a declared account, and every diya-gl:hpAgreement /
- * diya-gl:assetID / diya-gl:memberID has to name an entry on the book's own
- * hpAgreements / fixedAssets / members register. A register the book does
+ * Validate a book's lines.jsonl entries against the published lines schema
+ * of the book's own version (schemaVersionOf), then against the book: every
+ * accountMainID has to name a declared account, and every
+ * diya-gl:hpAgreement / diya-gl:assetID / diya-gl:memberID has to name an
+ * entry on the book's own hpAgreements / fixedAssets / members register. A register the book does
  * not declare is not checked, because a product subset with no such
  * register carries no lines that could name one either.
  * @param {Array} lines - parsed lines.jsonl entries
@@ -179,7 +233,7 @@ function declaredIDs(entries, idField) {
  * @returns {{valid: boolean, errors: string[]}}
  */
 export function validateLines(lines, book) {
-  const validateLineSchema = compiled().lines;
+  const validateLineSchema = compiled()[schemaVersionOf(book)].lines;
   const errors = [];
 
   const accountCodes = declaredAccountCodes(book);

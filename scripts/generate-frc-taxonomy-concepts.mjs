@@ -18,9 +18,9 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// The suites the FRC publishes between 2014 and 2021. Each date is the folder
-// the FRC site serves the suite under.
-export const SUITE_DATES = ["2014-09-01", "2018-01-01", "2019-01-01", "2021-01-01"];
+// The FRC suites with a list here. Each date is the folder the FRC site
+// serves the suite under.
+export const SUITE_DATES = ["2014-09-01", "2018-01-01", "2019-01-01", "2021-01-01", "2026-01-01"];
 
 const BASE = "https://xbrl.frc.org.uk";
 

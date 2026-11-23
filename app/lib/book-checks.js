@@ -19,7 +19,7 @@ import { changeLinePostingDate, changeLineAccount, changeLineAmount, addSaleLine
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
 import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
 import { SE_PRODUCT_RULES } from "./book-checks/se.js";
-import { isStraddlingLine, signedAmount } from "./scenario-extractor.js";
+import { isStraddlingLine, signedAmount, isOpeningBalanceLine } from "./scenario-extractor.js";
 
 // ============================== shared helpers ==============================
 
@@ -484,6 +484,104 @@ function emptyMonthWarning(ctx) {
   };
 }
 
+const PENNY = 0.005;
+
+function isCompanyBook(ctx) {
+  const entity = (ctx.book && ctx.book.entityInformation) || {};
+  return entity["diya-gl:product"] === "Company";
+}
+
+function journalLinesOf(ctx) {
+  return ctx.lines.filter(function (line) {
+    return line.sourceJournalID === "journal";
+  });
+}
+
+function warningResult(id, label, offenders, consequence, actual) {
+  const warn = offenders.length > 0;
+  return {
+    id: id,
+    tier: "warning",
+    label: label,
+    result: warn ? "warn" : "pass",
+    actual: actual === undefined ? offenders.length : actual,
+    consequence: warn ? consequence : null,
+    offenders: offenders.slice().sort(byEntryNumber).map(offenderOf),
+  };
+}
+
+// A journal entry is the journal lines that share a documentReference; a
+// line with no reference falls in the entry whose reference is blank.
+function journalBalancesWarning(ctx) {
+  const entries = new Map();
+  for (const line of journalLinesOf(ctx)) {
+    const key = String(line.documentReference || "");
+    if (!entries.has(key)) entries.set(key, []);
+    entries.get(key).push(line);
+  }
+  let offenders = [];
+  for (const group of entries.values()) {
+    let net = 0;
+    for (const line of group) net += line.debitCreditCode === "C" ? -line.amount : line.amount;
+    if (Math.abs(net) >= PENNY) offenders = offenders.concat(group);
+  }
+  return warningResult(
+    "book-journal-balances",
+    "Every journal entry has debits equal to credits",
+    offenders,
+    "A journal entry whose debits and credits differ is half a double entry, so any ledger built from the journal lines is out by the difference.",
+  );
+}
+
+function journalHasReasonWarning(ctx) {
+  const offenders = journalLinesOf(ctx).filter(function (line) {
+    return !String(line.detailComment || "").trim() && !String(line.lineItemComment || "").trim();
+  });
+  return warningResult(
+    "book-journal-has-reason",
+    "Every journal line gives a reason",
+    offenders,
+    "A journal line with no reason leaves a reviewer unable to tell why the books were adjusted, which auditors query on every manual journal.",
+  );
+}
+
+function journalReachesNoReportWarning(ctx) {
+  const offenders = journalLinesOf(ctx).filter(function (line) {
+    return !isOpeningBalanceLine(line);
+  });
+  return warningResult(
+    "book-journal-reaches-no-report",
+    "Every journal line after the opening balances reaches a report",
+    offenders,
+    "The reports total sales, purchases, bank and payroll lines and the opening balances, but no in-year journal line, so these lines change no figure in the accounts.",
+  );
+}
+
+function postingStatusCountedWarning(ctx) {
+  const offenders = ctx.lines.filter(function (line) {
+    return line.postingStatus !== undefined && line.postingStatus !== null && line.postingStatus !== "posted";
+  });
+  return warningResult(
+    "book-posting-status-counted",
+    "Every entry is posted",
+    offenders,
+    "An entry that is a draft or voided is still added into every total, so the figures include entries that are not final.",
+  );
+}
+
+function currencyNotGbpWarning(ctx) {
+  const offenders = ctx.lines.filter(function (line) {
+    const currency = line.amountCurrency;
+    return currency !== undefined && currency !== null && currency !== "" && String(currency).toUpperCase() !== "GBP";
+  });
+  return warningResult(
+    "book-currency-not-gbp",
+    "Every entry is in pounds sterling",
+    offenders,
+    "An amount in another currency is added into the totals as pounds, so each such entry is wrong by the exchange rate.",
+  );
+}
+
 function runWarnings(ctx, taxData, results) {
   const shared = [
     vatWarning(ctx, taxData),
@@ -492,7 +590,10 @@ function runWarnings(ctx, taxData, results) {
     missingDocumentReferenceWarning(ctx),
     negativeAmountWarning(ctx),
     emptyMonthWarning(ctx),
+    postingStatusCountedWarning(ctx),
+    currencyNotGbpWarning(ctx),
   ]
+    .concat(isCompanyBook(ctx) ? [journalBalancesWarning(ctx), journalHasReasonWarning(ctx), journalReachesNoReportWarning(ctx)] : [])
     .filter(function (warning) {
       // A product whose sales carry no document leaves that shared warning out.
       return !(ctx.productRules.omittedSharedWarnings || []).includes(warning.id);

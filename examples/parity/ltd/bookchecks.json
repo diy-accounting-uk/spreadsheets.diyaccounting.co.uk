@@ -18,6 +18,15 @@
     "offenders": []
   },
   {
+    "id": "book-currency-not-gbp",
+    "tier": "warning",
+    "label": "Every entry is in pounds sterling",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
     "id": "book-dates-in-period",
     "tier": "check",
     "label": "Every entry is dated inside the accounting period",
@@ -54,6 +63,48 @@
     "offenders": []
   },
   {
+    "id": "book-journal-balances",
+    "tier": "warning",
+    "label": "Every journal entry has debits equal to credits",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-journal-has-reason",
+    "tier": "warning",
+    "label": "Every journal line gives a reason",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-journal-reaches-no-report",
+    "tier": "warning",
+    "label": "Every journal line after the opening balances reaches a report",
+    "result": "warn",
+    "actual": 2,
+    "consequence": "The reports total sales, purchases, bank and payroll lines and the opening balances, but no in-year journal line, so these lines change no figure in the accounts.",
+    "offenders": [
+      {
+        "entryNumber": "JNL-0019",
+        "postingDate": "2028-01-31",
+        "accountMainID": "1100",
+        "detail": "Stock adjustment",
+        "amount": 4000
+      },
+      {
+        "entryNumber": "JNL-0020",
+        "postingDate": "2028-01-31",
+        "accountMainID": "5000",
+        "detail": "Stock adjustment",
+        "amount": 4000
+      }
+    ]
+  },
+  {
     "id": "book-ltd-bank-code-analysed",
     "tier": "check",
     "label": "Every bank entry is coded to a column its workbook analyses",
@@ -81,6 +132,114 @@
     "offenders": []
   },
   {
+    "id": "book-ltd-directors-loan-always-long-term",
+    "tier": "warning",
+    "label": "The directors' loan account closes at £13,000.00 owed to the directors",
+    "result": "warn",
+    "actual": 13000,
+    "consequence": "The published balance sheet shows the directors' loan account of £13,000.00 in creditors due after more than one year, whatever its terms of repayment.",
+    "offenders": [
+      {
+        "entryNumber": "BNK-0009",
+        "postingDate": "2027-02-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0019",
+        "postingDate": "2027-03-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0030",
+        "postingDate": "2027-04-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0043",
+        "postingDate": "2027-05-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0057",
+        "postingDate": "2027-06-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0066",
+        "postingDate": "2027-07-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0079",
+        "postingDate": "2027-08-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0093",
+        "postingDate": "2027-09-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0103",
+        "postingDate": "2027-10-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0110",
+        "postingDate": "2027-11-15",
+        "accountMainID": "1200",
+        "detail": "Director loan",
+        "amount": 5000
+      },
+      {
+        "entryNumber": "BNK-0115",
+        "postingDate": "2027-11-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0127",
+        "postingDate": "2027-12-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "BNK-0136",
+        "postingDate": "2028-01-01",
+        "accountMainID": "1200",
+        "detail": "Director",
+        "amount": 1000
+      },
+      {
+        "entryNumber": "JNL-0015",
+        "postingDate": "2027-02-01",
+        "accountMainID": "2500",
+        "detail": "Opening balances",
+        "amount": 20000
+      }
+    ]
+  },
+  {
     "id": "book-ltd-dividend-within-distributable-profits",
     "tier": "warning",
     "label": "Dividends declared are £15,000.00, against £322,766.48 of retained profit brought forward plus profit after tax for the year.",
@@ -93,6 +252,53 @@
     "id": "book-ltd-fixed-asset-rows-fit-schedule",
     "tier": "check",
     "label": "Every asset, disposal and hire purchase agreement has a row on the Fixed Assets Schedule",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-ltd-loan-interest-in-administrative-expenses",
+    "tier": "warning",
+    "label": "No line is coded as loan interest (5803)",
+    "result": "warn",
+    "actual": 750,
+    "consequence": "The published profit and loss shows loan interest of £750.00 in administrative expenses and not in interest payable, so interest payable is understated by that amount.",
+    "offenders": [
+      {
+        "entryNumber": "PUR-0098",
+        "postingDate": "2027-04-30",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 250
+      },
+      {
+        "entryNumber": "PUR-0199",
+        "postingDate": "2027-07-30",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 208
+      },
+      {
+        "entryNumber": "PUR-0299",
+        "postingDate": "2027-10-31",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 167
+      },
+      {
+        "entryNumber": "PUR-0396",
+        "postingDate": "2028-01-31",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 125
+      }
+    ]
+  },
+  {
+    "id": "book-ltd-long-term-debtors-unpublished",
+    "tier": "warning",
+    "label": "Long-term debtors close at £0.00",
     "result": "pass",
     "actual": 0,
     "consequence": null,
@@ -126,6 +332,3572 @@
     "offenders": []
   },
   {
+    "id": "book-ltd-vat-code-not-applied",
+    "tier": "warning",
+    "label": "Every sale and purchase of a VAT-registered company is standard rated at 20%",
+    "result": "warn",
+    "actual": 508,
+    "consequence": "The accounts and the spreadsheet package's VAT returns apply 20% VAT to every sales and purchases line and read no tax code, so a line coded exempt, zero rated or outside the scope of VAT is treated as standard rated there. The VAT return sent to Submit follows each line's tax code, so its boxes differ from the package's.",
+    "offenders": [
+      {
+        "entryNumber": "PUR-0001",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0002",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0003",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0004",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0005",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5700",
+        "detail": "Hiscox",
+        "amount": 1440
+      },
+      {
+        "entryNumber": "PUR-0006",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0007",
+        "postingDate": "2027-02-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0008",
+        "postingDate": "2027-02-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0009",
+        "postingDate": "2027-02-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0010",
+        "postingDate": "2027-02-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0011",
+        "postingDate": "2027-02-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0012",
+        "postingDate": "2027-02-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0013",
+        "postingDate": "2027-02-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0014",
+        "postingDate": "2027-02-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0015",
+        "postingDate": "2027-02-10",
+        "accountMainID": "5701",
+        "detail": "Xerox",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0016",
+        "postingDate": "2027-02-10",
+        "accountMainID": "5000",
+        "detail": "TechParts",
+        "amount": 600
+      },
+      {
+        "entryNumber": "PUR-0017",
+        "postingDate": "2027-02-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0018",
+        "postingDate": "2027-02-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 42
+      },
+      {
+        "entryNumber": "PUR-0019",
+        "postingDate": "2027-02-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0020",
+        "postingDate": "2027-02-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0021",
+        "postingDate": "2027-02-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0022",
+        "postingDate": "2027-02-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0023",
+        "postingDate": "2027-02-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0024",
+        "postingDate": "2027-02-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0025",
+        "postingDate": "2027-02-20",
+        "accountMainID": "5400",
+        "detail": "Office Maintenance Ltd",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0026",
+        "postingDate": "2027-02-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0027",
+        "postingDate": "2027-02-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0028",
+        "postingDate": "2027-02-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0029",
+        "postingDate": "2027-02-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 38.25
+      },
+      {
+        "entryNumber": "PUR-0030",
+        "postingDate": "2027-02-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0031",
+        "postingDate": "2027-02-28",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0032",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0033",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0034",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0035",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0036",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0037",
+        "postingDate": "2027-03-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0038",
+        "postingDate": "2027-03-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0039",
+        "postingDate": "2027-03-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0040",
+        "postingDate": "2027-03-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0041",
+        "postingDate": "2027-03-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0042",
+        "postingDate": "2027-03-06",
+        "accountMainID": "5600",
+        "detail": "Trainline",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0043",
+        "postingDate": "2027-03-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0044",
+        "postingDate": "2027-03-08",
+        "accountMainID": "5301",
+        "detail": "Hilti",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0045",
+        "postingDate": "2027-03-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0046",
+        "postingDate": "2027-03-10",
+        "accountMainID": "5500",
+        "detail": "Google Ads",
+        "amount": 600
+      },
+      {
+        "entryNumber": "PUR-0047",
+        "postingDate": "2027-03-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0048",
+        "postingDate": "2027-03-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0049",
+        "postingDate": "2027-03-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0050",
+        "postingDate": "2027-03-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0051",
+        "postingDate": "2027-03-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0052",
+        "postingDate": "2027-03-15",
+        "accountMainID": "5000",
+        "detail": "ComponentsDirect",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0053",
+        "postingDate": "2027-03-15",
+        "accountMainID": "5900",
+        "detail": "Dell",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "PUR-0054",
+        "postingDate": "2027-03-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0055",
+        "postingDate": "2027-03-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0056",
+        "postingDate": "2027-03-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0057",
+        "postingDate": "2027-03-20",
+        "accountMainID": "5300",
+        "detail": "ParcelForce",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0058",
+        "postingDate": "2027-03-20",
+        "accountMainID": "5000",
+        "detail": "CableCo",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0059",
+        "postingDate": "2027-03-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0060",
+        "postingDate": "2027-03-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0061",
+        "postingDate": "2027-03-22",
+        "accountMainID": "5601",
+        "detail": "Halfords",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0062",
+        "postingDate": "2027-03-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0063",
+        "postingDate": "2027-03-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 54
+      },
+      {
+        "entryNumber": "PUR-0064",
+        "postingDate": "2027-03-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0065",
+        "postingDate": "2027-03-31",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0066",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0067",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0068",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0069",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0070",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0071",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0072",
+        "postingDate": "2027-04-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0073",
+        "postingDate": "2027-04-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0074",
+        "postingDate": "2027-04-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0075",
+        "postingDate": "2027-04-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0076",
+        "postingDate": "2027-04-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0077",
+        "postingDate": "2027-04-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0078",
+        "postingDate": "2027-04-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0079",
+        "postingDate": "2027-04-10",
+        "accountMainID": "5501",
+        "detail": "Vistaprint",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0080",
+        "postingDate": "2027-04-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0081",
+        "postingDate": "2027-04-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0082",
+        "postingDate": "2027-04-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0083",
+        "postingDate": "2027-04-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0084",
+        "postingDate": "2027-04-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0085",
+        "postingDate": "2027-04-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0086",
+        "postingDate": "2027-04-15",
+        "accountMainID": "5001",
+        "detail": "BuildTech Solutions",
+        "amount": 5000
+      },
+      {
+        "entryNumber": "PUR-0087",
+        "postingDate": "2027-04-18",
+        "accountMainID": "5600",
+        "detail": "Premier Inn",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0088",
+        "postingDate": "2027-04-18",
+        "accountMainID": "5000",
+        "detail": "ElectroParts",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0089",
+        "postingDate": "2027-04-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0090",
+        "postingDate": "2027-04-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0091",
+        "postingDate": "2027-04-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0092",
+        "postingDate": "2027-04-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0093",
+        "postingDate": "2027-04-25",
+        "accountMainID": "5201",
+        "detail": "EnergySupply",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0094",
+        "postingDate": "2027-04-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0095",
+        "postingDate": "2027-04-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 90
+      },
+      {
+        "entryNumber": "PUR-0096",
+        "postingDate": "2027-04-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0097",
+        "postingDate": "2027-04-30",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0098",
+        "postingDate": "2027-04-30",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 250
+      },
+      {
+        "entryNumber": "PUR-0099",
+        "postingDate": "2027-04-01",
+        "accountMainID": "5900",
+        "detail": "Precision Tooling Supplies",
+        "amount": 15600
+      },
+      {
+        "entryNumber": "PUR-0100",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0101",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0102",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0103",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0104",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5802",
+        "detail": "J. Smith Consulting",
+        "amount": 3000
+      },
+      {
+        "entryNumber": "PUR-0105",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0106",
+        "postingDate": "2027-05-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0107",
+        "postingDate": "2027-05-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0108",
+        "postingDate": "2027-05-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0109",
+        "postingDate": "2027-05-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0110",
+        "postingDate": "2027-05-05",
+        "accountMainID": "5500",
+        "detail": "LinkedIn",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0111",
+        "postingDate": "2027-05-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0112",
+        "postingDate": "2027-05-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0113",
+        "postingDate": "2027-05-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0114",
+        "postingDate": "2027-05-10",
+        "accountMainID": "5701",
+        "detail": "Xerox",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0115",
+        "postingDate": "2027-05-10",
+        "accountMainID": "5000",
+        "detail": "TechParts",
+        "amount": 720
+      },
+      {
+        "entryNumber": "PUR-0116",
+        "postingDate": "2027-05-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0117",
+        "postingDate": "2027-05-12",
+        "accountMainID": "5301",
+        "detail": "ToolHire",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0118",
+        "postingDate": "2027-05-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0119",
+        "postingDate": "2027-05-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0120",
+        "postingDate": "2027-05-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0121",
+        "postingDate": "2027-05-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0122",
+        "postingDate": "2027-05-15",
+        "accountMainID": "5900",
+        "detail": "IKEA",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0123",
+        "postingDate": "2027-05-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0124",
+        "postingDate": "2027-05-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0125",
+        "postingDate": "2027-05-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0126",
+        "postingDate": "2027-05-20",
+        "accountMainID": "5300",
+        "detail": "DHL",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0127",
+        "postingDate": "2027-05-20",
+        "accountMainID": "5400",
+        "detail": "Office Maintenance Ltd",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0128",
+        "postingDate": "2027-05-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0129",
+        "postingDate": "2027-05-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0130",
+        "postingDate": "2027-05-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0131",
+        "postingDate": "2027-05-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 20.25
+      },
+      {
+        "entryNumber": "PUR-0132",
+        "postingDate": "2027-05-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0133",
+        "postingDate": "2027-05-31",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0134",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0135",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0136",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0137",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0138",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0139",
+        "postingDate": "2027-06-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0140",
+        "postingDate": "2027-06-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0141",
+        "postingDate": "2027-06-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0142",
+        "postingDate": "2027-06-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0143",
+        "postingDate": "2027-06-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0144",
+        "postingDate": "2027-06-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0145",
+        "postingDate": "2027-06-06",
+        "accountMainID": "5600",
+        "detail": "Trainline",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0146",
+        "postingDate": "2027-06-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0147",
+        "postingDate": "2027-06-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0148",
+        "postingDate": "2027-06-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0149",
+        "postingDate": "2027-06-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0150",
+        "postingDate": "2027-06-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0151",
+        "postingDate": "2027-06-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0152",
+        "postingDate": "2027-06-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0153",
+        "postingDate": "2027-06-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0154",
+        "postingDate": "2027-06-15",
+        "accountMainID": "5000",
+        "detail": "ComponentsDirect",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0155",
+        "postingDate": "2027-06-18",
+        "accountMainID": "5400",
+        "detail": "PC Repair Shop",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0156",
+        "postingDate": "2027-06-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0157",
+        "postingDate": "2027-06-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0158",
+        "postingDate": "2027-06-20",
+        "accountMainID": "5101",
+        "detail": "Casual worker",
+        "amount": 800
+      },
+      {
+        "entryNumber": "PUR-0159",
+        "postingDate": "2027-06-20",
+        "accountMainID": "5000",
+        "detail": "CableCo",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0160",
+        "postingDate": "2027-06-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0161",
+        "postingDate": "2027-06-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0162",
+        "postingDate": "2027-06-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0163",
+        "postingDate": "2027-06-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 38.25
+      },
+      {
+        "entryNumber": "PUR-0164",
+        "postingDate": "2027-06-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0165",
+        "postingDate": "2027-06-30",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0166",
+        "postingDate": "2027-06-12",
+        "accountMainID": "5502",
+        "detail": "The Ivy",
+        "amount": 350
+      },
+      {
+        "entryNumber": "PUR-0167",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0168",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0169",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0170",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0171",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0172",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0173",
+        "postingDate": "2027-07-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0174",
+        "postingDate": "2027-07-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0175",
+        "postingDate": "2027-07-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0176",
+        "postingDate": "2027-07-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0177",
+        "postingDate": "2027-07-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0178",
+        "postingDate": "2027-07-08",
+        "accountMainID": "5301",
+        "detail": "Hilti",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0179",
+        "postingDate": "2027-07-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0180",
+        "postingDate": "2027-07-10",
+        "accountMainID": "5300",
+        "detail": "Royal Mail",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0181",
+        "postingDate": "2027-07-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0182",
+        "postingDate": "2027-07-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0183",
+        "postingDate": "2027-07-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0184",
+        "postingDate": "2027-07-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0185",
+        "postingDate": "2027-07-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0186",
+        "postingDate": "2027-07-15",
+        "accountMainID": "5800",
+        "detail": "Jones Solicitors",
+        "amount": 960
+      },
+      {
+        "entryNumber": "PUR-0187",
+        "postingDate": "2027-07-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0188",
+        "postingDate": "2027-07-18",
+        "accountMainID": "5000",
+        "detail": "ElectroParts",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0189",
+        "postingDate": "2027-07-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0190",
+        "postingDate": "2027-07-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0191",
+        "postingDate": "2027-07-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0192",
+        "postingDate": "2027-07-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0193",
+        "postingDate": "2027-07-22",
+        "accountMainID": "5601",
+        "detail": "Halfords",
+        "amount": 72
+      },
+      {
+        "entryNumber": "PUR-0194",
+        "postingDate": "2027-07-25",
+        "accountMainID": "5201",
+        "detail": "EnergySupply",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0195",
+        "postingDate": "2027-07-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0196",
+        "postingDate": "2027-07-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 72
+      },
+      {
+        "entryNumber": "PUR-0197",
+        "postingDate": "2027-07-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0198",
+        "postingDate": "2027-07-30",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0199",
+        "postingDate": "2027-07-30",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 208
+      },
+      {
+        "entryNumber": "PUR-0200",
+        "postingDate": "2027-07-01",
+        "accountMainID": "5900",
+        "detail": "Precision Tooling Supplies",
+        "amount": 8400
+      },
+      {
+        "entryNumber": "PUR-0201",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0202",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0203",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0204",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0205",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5700",
+        "detail": "Simply Business",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0206",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0207",
+        "postingDate": "2027-08-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0208",
+        "postingDate": "2027-08-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0209",
+        "postingDate": "2027-08-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0210",
+        "postingDate": "2027-08-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0211",
+        "postingDate": "2027-08-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0212",
+        "postingDate": "2027-08-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0213",
+        "postingDate": "2027-08-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0214",
+        "postingDate": "2027-08-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0215",
+        "postingDate": "2027-08-10",
+        "accountMainID": "5701",
+        "detail": "Xerox",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0216",
+        "postingDate": "2027-08-10",
+        "accountMainID": "5000",
+        "detail": "TechParts",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0217",
+        "postingDate": "2027-08-10",
+        "accountMainID": "5500",
+        "detail": "Google Ads",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "PUR-0218",
+        "postingDate": "2027-08-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0219",
+        "postingDate": "2027-08-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0220",
+        "postingDate": "2027-08-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0221",
+        "postingDate": "2027-08-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0222",
+        "postingDate": "2027-08-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0223",
+        "postingDate": "2027-08-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0224",
+        "postingDate": "2027-08-15",
+        "accountMainID": "5500",
+        "detail": "TechExpo",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0225",
+        "postingDate": "2027-08-18",
+        "accountMainID": "5600",
+        "detail": "Premier Inn",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0226",
+        "postingDate": "2027-08-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0227",
+        "postingDate": "2027-08-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0228",
+        "postingDate": "2027-08-20",
+        "accountMainID": "5400",
+        "detail": "Office Maintenance Ltd",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0229",
+        "postingDate": "2027-08-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0230",
+        "postingDate": "2027-08-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0231",
+        "postingDate": "2027-08-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0232",
+        "postingDate": "2027-08-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 42.75
+      },
+      {
+        "entryNumber": "PUR-0233",
+        "postingDate": "2027-08-25",
+        "accountMainID": "5900",
+        "detail": "Ford",
+        "amount": 36000
+      },
+      {
+        "entryNumber": "PUR-0234",
+        "postingDate": "2027-08-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0235",
+        "postingDate": "2027-08-31",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0236",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0237",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0238",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0239",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0240",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0241",
+        "postingDate": "2027-09-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0242",
+        "postingDate": "2027-09-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0243",
+        "postingDate": "2027-09-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0244",
+        "postingDate": "2027-09-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0245",
+        "postingDate": "2027-09-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0246",
+        "postingDate": "2027-09-06",
+        "accountMainID": "5600",
+        "detail": "Trainline",
+        "amount": 72
+      },
+      {
+        "entryNumber": "PUR-0247",
+        "postingDate": "2027-09-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0248",
+        "postingDate": "2027-09-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0249",
+        "postingDate": "2027-09-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0250",
+        "postingDate": "2027-09-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0251",
+        "postingDate": "2027-09-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0252",
+        "postingDate": "2027-09-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0253",
+        "postingDate": "2027-09-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0254",
+        "postingDate": "2027-09-15",
+        "accountMainID": "5000",
+        "detail": "ComponentsDirect",
+        "amount": 540
+      },
+      {
+        "entryNumber": "PUR-0255",
+        "postingDate": "2027-09-15",
+        "accountMainID": "5001",
+        "detail": "BuildTech Solutions",
+        "amount": 3000
+      },
+      {
+        "entryNumber": "PUR-0256",
+        "postingDate": "2027-09-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0257",
+        "postingDate": "2027-09-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0258",
+        "postingDate": "2027-09-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0259",
+        "postingDate": "2027-09-20",
+        "accountMainID": "5300",
+        "detail": "ParcelForce",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0260",
+        "postingDate": "2027-09-20",
+        "accountMainID": "5000",
+        "detail": "CableCo",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0261",
+        "postingDate": "2027-09-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0262",
+        "postingDate": "2027-09-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0263",
+        "postingDate": "2027-09-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0264",
+        "postingDate": "2027-09-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 81
+      },
+      {
+        "entryNumber": "PUR-0265",
+        "postingDate": "2027-09-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0266",
+        "postingDate": "2027-09-30",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0267",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0268",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0269",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0270",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0271",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0272",
+        "postingDate": "2027-10-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0273",
+        "postingDate": "2027-10-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0274",
+        "postingDate": "2027-10-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0275",
+        "postingDate": "2027-10-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0276",
+        "postingDate": "2027-10-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0277",
+        "postingDate": "2027-10-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0278",
+        "postingDate": "2027-10-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0279",
+        "postingDate": "2027-10-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0280",
+        "postingDate": "2027-10-10",
+        "accountMainID": "5501",
+        "detail": "Vistaprint",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0281",
+        "postingDate": "2027-10-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0282",
+        "postingDate": "2027-10-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0283",
+        "postingDate": "2027-10-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0284",
+        "postingDate": "2027-10-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0285",
+        "postingDate": "2027-10-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0286",
+        "postingDate": "2027-10-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0287",
+        "postingDate": "2027-10-15",
+        "accountMainID": "5801",
+        "detail": "Code Club UK",
+        "amount": 500
+      },
+      {
+        "entryNumber": "PUR-0288",
+        "postingDate": "2027-10-18",
+        "accountMainID": "5000",
+        "detail": "ElectroParts",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0289",
+        "postingDate": "2027-10-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0290",
+        "postingDate": "2027-10-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0291",
+        "postingDate": "2027-10-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0292",
+        "postingDate": "2027-10-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0293",
+        "postingDate": "2027-10-25",
+        "accountMainID": "5201",
+        "detail": "EnergySupply",
+        "amount": 420
+      },
+      {
+        "entryNumber": "PUR-0294",
+        "postingDate": "2027-10-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0295",
+        "postingDate": "2027-10-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 49.5
+      },
+      {
+        "entryNumber": "PUR-0296",
+        "postingDate": "2027-10-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0297",
+        "postingDate": "2027-10-31",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0298",
+        "postingDate": "2027-10-31",
+        "accountMainID": "5100",
+        "detail": "Director",
+        "amount": 5000
+      },
+      {
+        "entryNumber": "PUR-0299",
+        "postingDate": "2027-10-31",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 167
+      },
+      {
+        "entryNumber": "PUR-0300",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0301",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0302",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0303",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0304",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0305",
+        "postingDate": "2027-11-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0306",
+        "postingDate": "2027-11-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0307",
+        "postingDate": "2027-11-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0308",
+        "postingDate": "2027-11-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0309",
+        "postingDate": "2027-11-05",
+        "accountMainID": "5500",
+        "detail": "LinkedIn",
+        "amount": 480
+      },
+      {
+        "entryNumber": "PUR-0310",
+        "postingDate": "2027-11-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0311",
+        "postingDate": "2027-11-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0312",
+        "postingDate": "2027-11-08",
+        "accountMainID": "5301",
+        "detail": "Hilti",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0313",
+        "postingDate": "2027-11-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0314",
+        "postingDate": "2027-11-10",
+        "accountMainID": "5701",
+        "detail": "Xerox",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0315",
+        "postingDate": "2027-11-10",
+        "accountMainID": "5000",
+        "detail": "TechParts",
+        "amount": 600
+      },
+      {
+        "entryNumber": "PUR-0316",
+        "postingDate": "2027-11-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0317",
+        "postingDate": "2027-11-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0318",
+        "postingDate": "2027-11-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0319",
+        "postingDate": "2027-11-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0320",
+        "postingDate": "2027-11-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0321",
+        "postingDate": "2027-11-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0322",
+        "postingDate": "2027-11-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0323",
+        "postingDate": "2027-11-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0324",
+        "postingDate": "2027-11-20",
+        "accountMainID": "5300",
+        "detail": "DHL",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0325",
+        "postingDate": "2027-11-20",
+        "accountMainID": "5400",
+        "detail": "Office Maintenance Ltd",
+        "amount": 144
+      },
+      {
+        "entryNumber": "PUR-0326",
+        "postingDate": "2027-11-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0327",
+        "postingDate": "2027-11-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0328",
+        "postingDate": "2027-11-22",
+        "accountMainID": "5601",
+        "detail": "Halfords",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0329",
+        "postingDate": "2027-11-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0330",
+        "postingDate": "2027-11-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 38.25
+      },
+      {
+        "entryNumber": "PUR-0331",
+        "postingDate": "2027-11-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0332",
+        "postingDate": "2027-11-30",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0333",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0334",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0335",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0336",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0337",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0338",
+        "postingDate": "2027-12-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0339",
+        "postingDate": "2027-12-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0340",
+        "postingDate": "2027-12-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0341",
+        "postingDate": "2027-12-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0342",
+        "postingDate": "2027-12-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0343",
+        "postingDate": "2027-12-05",
+        "accountMainID": "5002",
+        "detail": "DigitalOcean",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0344",
+        "postingDate": "2027-12-06",
+        "accountMainID": "5600",
+        "detail": "Trainline",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0345",
+        "postingDate": "2027-12-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0346",
+        "postingDate": "2027-12-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0347",
+        "postingDate": "2027-12-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0348",
+        "postingDate": "2027-12-12",
+        "accountMainID": "5301",
+        "detail": "ToolHire",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0349",
+        "postingDate": "2027-12-14",
+        "accountMainID": "5401",
+        "detail": "Toolstation",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0350",
+        "postingDate": "2027-12-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0351",
+        "postingDate": "2027-12-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0352",
+        "postingDate": "2027-12-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0353",
+        "postingDate": "2027-12-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0354",
+        "postingDate": "2027-12-15",
+        "accountMainID": "5000",
+        "detail": "ComponentsDirect",
+        "amount": 420
+      },
+      {
+        "entryNumber": "PUR-0355",
+        "postingDate": "2027-12-18",
+        "accountMainID": "5400",
+        "detail": "PC Repair Shop",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0356",
+        "postingDate": "2027-12-18",
+        "accountMainID": "5600",
+        "detail": "Premier Inn",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0357",
+        "postingDate": "2027-12-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0358",
+        "postingDate": "2027-12-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0359",
+        "postingDate": "2027-12-20",
+        "accountMainID": "5000",
+        "detail": "CableCo",
+        "amount": 240
+      },
+      {
+        "entryNumber": "PUR-0360",
+        "postingDate": "2027-12-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0361",
+        "postingDate": "2027-12-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0362",
+        "postingDate": "2027-12-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0363",
+        "postingDate": "2027-12-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 31.5
+      },
+      {
+        "entryNumber": "PUR-0364",
+        "postingDate": "2027-12-28",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0365",
+        "postingDate": "2027-12-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0366",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5200",
+        "detail": "WorkSpace Ltd",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "PUR-0367",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5501",
+        "detail": "Microsoft",
+        "amount": 30
+      },
+      {
+        "entryNumber": "PUR-0368",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5501",
+        "detail": "Slack",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0369",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5002",
+        "detail": "GitHub",
+        "amount": 45
+      },
+      {
+        "entryNumber": "PUR-0370",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5002",
+        "detail": "Cloudflare",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0371",
+        "postingDate": "2028-01-01",
+        "accountMainID": "5501",
+        "detail": "Zoom",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0372",
+        "postingDate": "2028-01-03",
+        "accountMainID": "5002",
+        "detail": "AWS",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0373",
+        "postingDate": "2028-01-03",
+        "accountMainID": "5401",
+        "detail": "Argos",
+        "amount": 22
+      },
+      {
+        "entryNumber": "PUR-0374",
+        "postingDate": "2028-01-05",
+        "accountMainID": "5401",
+        "detail": "Ryman",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0375",
+        "postingDate": "2028-01-05",
+        "accountMainID": "5601",
+        "detail": "BP",
+        "amount": 180
+      },
+      {
+        "entryNumber": "PUR-0376",
+        "postingDate": "2028-01-08",
+        "accountMainID": "5600",
+        "detail": "National Rail",
+        "amount": 48
+      },
+      {
+        "entryNumber": "PUR-0377",
+        "postingDate": "2028-01-10",
+        "accountMainID": "5401",
+        "detail": "Amazon",
+        "amount": 36
+      },
+      {
+        "entryNumber": "PUR-0378",
+        "postingDate": "2028-01-10",
+        "accountMainID": "5300",
+        "detail": "Royal Mail",
+        "amount": 144
+      },
+      {
+        "entryNumber": "PUR-0379",
+        "postingDate": "2028-01-12",
+        "accountMainID": "5601",
+        "detail": "NCP",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0380",
+        "postingDate": "2028-01-14",
+        "accountMainID": "5600",
+        "detail": "Uber",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0381",
+        "postingDate": "2028-01-14",
+        "accountMainID": "5600",
+        "detail": "Costa Coffee",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0382",
+        "postingDate": "2028-01-15",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 150
+      },
+      {
+        "entryNumber": "PUR-0383",
+        "postingDate": "2028-01-15",
+        "accountMainID": "5501",
+        "detail": "Royal Mail",
+        "amount": 12
+      },
+      {
+        "entryNumber": "PUR-0384",
+        "postingDate": "2028-01-16",
+        "accountMainID": "5501",
+        "detail": "WHSmith",
+        "amount": 24
+      },
+      {
+        "entryNumber": "PUR-0385",
+        "postingDate": "2028-01-18",
+        "accountMainID": "5000",
+        "detail": "ElectroParts",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0386",
+        "postingDate": "2028-01-18",
+        "accountMainID": "5601",
+        "detail": "Jet",
+        "amount": 96
+      },
+      {
+        "entryNumber": "PUR-0387",
+        "postingDate": "2028-01-20",
+        "accountMainID": "5501",
+        "detail": "BT Business",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0388",
+        "postingDate": "2028-01-21",
+        "accountMainID": "5600",
+        "detail": "Greggs",
+        "amount": 8
+      },
+      {
+        "entryNumber": "PUR-0389",
+        "postingDate": "2028-01-22",
+        "accountMainID": "5401",
+        "detail": "Screwfix",
+        "amount": 18
+      },
+      {
+        "entryNumber": "PUR-0390",
+        "postingDate": "2028-01-22",
+        "accountMainID": "5601",
+        "detail": "Halfords",
+        "amount": 60
+      },
+      {
+        "entryNumber": "PUR-0391",
+        "postingDate": "2028-01-25",
+        "accountMainID": "5201",
+        "detail": "EnergySupply",
+        "amount": 360
+      },
+      {
+        "entryNumber": "PUR-0392",
+        "postingDate": "2028-01-25",
+        "accountMainID": "5401",
+        "detail": "Wilko",
+        "amount": 15
+      },
+      {
+        "entryNumber": "PUR-0393",
+        "postingDate": "2028-01-25",
+        "accountMainID": "5601",
+        "detail": "Mileage claim",
+        "amount": 58.5
+      },
+      {
+        "entryNumber": "PUR-0394",
+        "postingDate": "2028-01-28",
+        "accountMainID": "5601",
+        "detail": "Shell",
+        "amount": 120
+      },
+      {
+        "entryNumber": "PUR-0395",
+        "postingDate": "2028-01-31",
+        "accountMainID": "5800",
+        "detail": "Smith & Co",
+        "amount": 300
+      },
+      {
+        "entryNumber": "PUR-0396",
+        "postingDate": "2028-01-31",
+        "accountMainID": "5803",
+        "detail": "Directors loan",
+        "amount": 125
+      },
+      {
+        "entryNumber": "SAL-0001",
+        "postingDate": "2027-02-01",
+        "accountMainID": "4001",
+        "detail": "Beta Systems",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0002",
+        "postingDate": "2027-02-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0003",
+        "postingDate": "2027-02-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0004",
+        "postingDate": "2027-02-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0005",
+        "postingDate": "2027-02-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0006",
+        "postingDate": "2027-02-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0007",
+        "postingDate": "2027-02-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0008",
+        "postingDate": "2027-02-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0009",
+        "postingDate": "2027-02-28",
+        "accountMainID": "4003",
+        "detail": "Horizon Analytics",
+        "amount": 840
+      },
+      {
+        "entryNumber": "SAL-0010",
+        "postingDate": "2027-03-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0011",
+        "postingDate": "2027-03-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0012",
+        "postingDate": "2027-03-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0013",
+        "postingDate": "2027-03-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0014",
+        "postingDate": "2027-03-12",
+        "accountMainID": "4000",
+        "detail": "QuickFix IT",
+        "amount": 960
+      },
+      {
+        "entryNumber": "SAL-0015",
+        "postingDate": "2027-03-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0016",
+        "postingDate": "2027-03-16",
+        "accountMainID": "4002",
+        "detail": "Summit Training",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0017",
+        "postingDate": "2027-03-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0018",
+        "postingDate": "2027-03-25",
+        "accountMainID": "4000",
+        "detail": "Oakridge Partners",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0019",
+        "postingDate": "2027-04-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0020",
+        "postingDate": "2027-04-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0021",
+        "postingDate": "2027-04-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0022",
+        "postingDate": "2027-04-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0023",
+        "postingDate": "2027-04-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0024",
+        "postingDate": "2027-04-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0025",
+        "postingDate": "2027-04-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0026",
+        "postingDate": "2027-04-20",
+        "accountMainID": "4002",
+        "detail": "Gamma Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0027",
+        "postingDate": "2027-04-22",
+        "accountMainID": "4000",
+        "detail": "WidgetWorks",
+        "amount": 1440
+      },
+      {
+        "entryNumber": "SAL-0028",
+        "postingDate": "2027-05-01",
+        "accountMainID": "4001",
+        "detail": "Beta Systems",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0029",
+        "postingDate": "2027-05-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0030",
+        "postingDate": "2027-05-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0031",
+        "postingDate": "2027-05-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0032",
+        "postingDate": "2027-05-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0033",
+        "postingDate": "2027-05-14",
+        "accountMainID": "4000",
+        "detail": "NorthStar Digital",
+        "amount": 2160
+      },
+      {
+        "entryNumber": "SAL-0034",
+        "postingDate": "2027-05-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0035",
+        "postingDate": "2027-05-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0036",
+        "postingDate": "2027-05-28",
+        "accountMainID": "4003",
+        "detail": "Horizon Analytics",
+        "amount": 840
+      },
+      {
+        "entryNumber": "SAL-0037",
+        "postingDate": "2027-06-01",
+        "accountMainID": "4004",
+        "detail": "Innovate UK",
+        "amount": 2500
+      },
+      {
+        "entryNumber": "SAL-0038",
+        "postingDate": "2027-06-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0039",
+        "postingDate": "2027-06-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0040",
+        "postingDate": "2027-06-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0041",
+        "postingDate": "2027-06-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0042",
+        "postingDate": "2027-06-12",
+        "accountMainID": "4000",
+        "detail": "QuickFix IT",
+        "amount": 960
+      },
+      {
+        "entryNumber": "SAL-0043",
+        "postingDate": "2027-06-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0044",
+        "postingDate": "2027-06-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0045",
+        "postingDate": "2027-06-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0046",
+        "postingDate": "2027-06-25",
+        "accountMainID": "4000",
+        "detail": "Oakridge Partners",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0047",
+        "postingDate": "2027-07-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0048",
+        "postingDate": "2027-07-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0049",
+        "postingDate": "2027-07-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0050",
+        "postingDate": "2027-07-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0051",
+        "postingDate": "2027-07-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0052",
+        "postingDate": "2027-07-16",
+        "accountMainID": "4002",
+        "detail": "Summit Training",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0053",
+        "postingDate": "2027-07-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0054",
+        "postingDate": "2027-07-20",
+        "accountMainID": "4002",
+        "detail": "StartupHub",
+        "amount": 960
+      },
+      {
+        "entryNumber": "SAL-0055",
+        "postingDate": "2027-07-22",
+        "accountMainID": "4000",
+        "detail": "WidgetWorks",
+        "amount": 1440
+      },
+      {
+        "entryNumber": "SAL-0056",
+        "postingDate": "2027-07-25",
+        "accountMainID": "4003",
+        "detail": "Epsilon Partners",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0057",
+        "postingDate": "2027-08-01",
+        "accountMainID": "4001",
+        "detail": "Beta Systems",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0058",
+        "postingDate": "2027-08-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0059",
+        "postingDate": "2027-08-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0060",
+        "postingDate": "2027-08-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0061",
+        "postingDate": "2027-08-10",
+        "accountMainID": "4006",
+        "detail": "Private buyer",
+        "amount": 15000
+      },
+      {
+        "entryNumber": "SAL-0062",
+        "postingDate": "2027-08-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0063",
+        "postingDate": "2027-08-14",
+        "accountMainID": "4000",
+        "detail": "NorthStar Digital",
+        "amount": 2160
+      },
+      {
+        "entryNumber": "SAL-0064",
+        "postingDate": "2027-08-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0065",
+        "postingDate": "2027-08-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0066",
+        "postingDate": "2027-08-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0067",
+        "postingDate": "2027-08-28",
+        "accountMainID": "4003",
+        "detail": "Horizon Analytics",
+        "amount": 840
+      },
+      {
+        "entryNumber": "SAL-0068",
+        "postingDate": "2027-09-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0069",
+        "postingDate": "2027-09-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0070",
+        "postingDate": "2027-09-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0071",
+        "postingDate": "2027-09-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0072",
+        "postingDate": "2027-09-12",
+        "accountMainID": "4000",
+        "detail": "QuickFix IT",
+        "amount": 960
+      },
+      {
+        "entryNumber": "SAL-0073",
+        "postingDate": "2027-09-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0074",
+        "postingDate": "2027-09-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0075",
+        "postingDate": "2027-09-20",
+        "accountMainID": "4002",
+        "detail": "Delta PLC",
+        "amount": 3600
+      },
+      {
+        "entryNumber": "SAL-0076",
+        "postingDate": "2027-09-25",
+        "accountMainID": "4000",
+        "detail": "Oakridge Partners",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0077",
+        "postingDate": "2027-10-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0078",
+        "postingDate": "2027-10-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0079",
+        "postingDate": "2027-10-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0080",
+        "postingDate": "2027-10-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0081",
+        "postingDate": "2027-10-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0082",
+        "postingDate": "2027-10-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0083",
+        "postingDate": "2027-10-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0084",
+        "postingDate": "2027-10-22",
+        "accountMainID": "4000",
+        "detail": "WidgetWorks",
+        "amount": 1440
+      },
+      {
+        "entryNumber": "SAL-0085",
+        "postingDate": "2027-11-01",
+        "accountMainID": "4001",
+        "detail": "Beta Systems",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0086",
+        "postingDate": "2027-11-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0087",
+        "postingDate": "2027-11-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0088",
+        "postingDate": "2027-11-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0089",
+        "postingDate": "2027-11-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0090",
+        "postingDate": "2027-11-14",
+        "accountMainID": "4000",
+        "detail": "NorthStar Digital",
+        "amount": 2160
+      },
+      {
+        "entryNumber": "SAL-0091",
+        "postingDate": "2027-11-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0092",
+        "postingDate": "2027-11-16",
+        "accountMainID": "4002",
+        "detail": "Summit Training",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0093",
+        "postingDate": "2027-11-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0094",
+        "postingDate": "2027-11-25",
+        "accountMainID": "4003",
+        "detail": "Lambda Corp",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0095",
+        "postingDate": "2027-11-28",
+        "accountMainID": "4003",
+        "detail": "Horizon Analytics",
+        "amount": 840
+      },
+      {
+        "entryNumber": "SAL-0096",
+        "postingDate": "2027-12-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0097",
+        "postingDate": "2027-12-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0098",
+        "postingDate": "2027-12-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0099",
+        "postingDate": "2027-12-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0100",
+        "postingDate": "2027-12-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0101",
+        "postingDate": "2027-12-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0102",
+        "postingDate": "2027-12-20",
+        "accountMainID": "4000",
+        "detail": "DataFlow Inc",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0103",
+        "postingDate": "2027-12-20",
+        "accountMainID": "4002",
+        "detail": "MegaCorp",
+        "amount": 1800
+      },
+      {
+        "entryNumber": "SAL-0104",
+        "postingDate": "2027-12-25",
+        "accountMainID": "4000",
+        "detail": "Oakridge Partners",
+        "amount": 1200
+      },
+      {
+        "entryNumber": "SAL-0105",
+        "postingDate": "2028-01-03",
+        "accountMainID": "4001",
+        "detail": "FreshField Ltd",
+        "amount": 360
+      },
+      {
+        "entryNumber": "SAL-0106",
+        "postingDate": "2028-01-05",
+        "accountMainID": "4001",
+        "detail": "CloudNine Ltd",
+        "amount": 600
+      },
+      {
+        "entryNumber": "SAL-0107",
+        "postingDate": "2028-01-08",
+        "accountMainID": "4000",
+        "detail": "Cedar Systems",
+        "amount": 480
+      },
+      {
+        "entryNumber": "SAL-0108",
+        "postingDate": "2028-01-10",
+        "accountMainID": "4000",
+        "detail": "Pinnacle Group",
+        "amount": 720
+      },
+      {
+        "entryNumber": "SAL-0109",
+        "postingDate": "2028-01-15",
+        "accountMainID": "4000",
+        "detail": "Acme Corp",
+        "amount": 25000
+      },
+      {
+        "entryNumber": "SAL-0110",
+        "postingDate": "2028-01-18",
+        "accountMainID": "4000",
+        "detail": "TechStart Ltd",
+        "amount": 2400
+      },
+      {
+        "entryNumber": "SAL-0111",
+        "postingDate": "2028-01-22",
+        "accountMainID": "4000",
+        "detail": "WidgetWorks",
+        "amount": 1440
+      },
+      {
+        "entryNumber": "SAL-0112",
+        "postingDate": "2028-01-31",
+        "accountMainID": "4005",
+        "detail": "Zeta Corp",
+        "amount": 360
+      }
+    ]
+  },
+  {
     "id": "book-missing-document-reference",
     "tier": "warning",
     "label": "Every sale names its invoice or receipt",
@@ -138,6 +3910,15 @@
     "id": "book-negative-amount",
     "tier": "warning",
     "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-posting-status-counted",
+    "tier": "warning",
+    "label": "Every entry is posted",
     "result": "pass",
     "actual": 0,
     "consequence": null,

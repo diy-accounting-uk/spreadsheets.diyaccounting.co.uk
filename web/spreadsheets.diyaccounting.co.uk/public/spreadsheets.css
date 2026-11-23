@@ -1457,3 +1457,114 @@ footer {
   margin: 0 0 1rem 0;
   text-align: center;
 }
+
+.company-search-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: stretch;
+}
+
+.company-search-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6em 0.8em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-base);
+  font-size: 1em;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+.company-hint,
+#company-status,
+#company-generate-status {
+  margin: 0.5em 0 0;
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+}
+
+.company-list {
+  list-style: none;
+  margin: var(--spacing-md) 0 0;
+  padding: 0;
+}
+
+.company-list li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.company-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em 0.8em;
+  align-items: baseline;
+  width: 100%;
+  padding: 0.6em 0.8em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-base);
+  font-size: 1em;
+  text-align: left;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.company-choice:hover,
+.company-choice:focus {
+  border-color: var(--color-brand-primary);
+  outline: 2px solid var(--color-focus-ring);
+}
+
+.company-mark {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+}
+
+.company-mark-overdue {
+  font-weight: var(--font-weight-bold);
+  color: #b3261e;
+}
+
+.company-mark-ready {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent-green);
+}
+
+.company-mark-none {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.company-generate {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.company-generate p {
+  margin: 0 0 0.6em;
+}
+
+#company-generate-result h4 {
+  margin: var(--spacing-md) 0 0.3em;
+}
+
+#company-generate-result .btn-download {
+  display: inline-block;
+  margin-top: var(--spacing-sm);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.generate-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.generate-list li {
+  margin-bottom: 0.3em;
+}

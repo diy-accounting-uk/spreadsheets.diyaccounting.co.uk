@@ -77,6 +77,7 @@ const LTD_VIEWS = [
   "year",
   "bank",
   "ledgers",
+  "trial-balance",
   "profit-loss",
   "stock",
   "fixed-assets",

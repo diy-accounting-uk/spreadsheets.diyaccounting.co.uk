@@ -79,6 +79,24 @@
             </select>
           </div>
 
+          <div class="form-group hidden" id="company-lookup" role="search">
+            <label for="company-query">Find your company to see its year ends</label>
+            <div class="company-search-row">
+              <input type="search" id="company-query" autocomplete="off" aria-describedby="company-status" />
+              <button type="button" id="company-search-btn" class="btn-download btn-secondary">Find company</button>
+            </div>
+            <p class="company-hint">Type the company name or number. The dates come from Companies House.</p>
+            <div id="company-matches"></div>
+            <div id="company-periods"></div>
+            <p id="company-status" role="status" aria-live="polite"></p>
+            <div class="company-generate hidden" id="company-generate">
+              <p id="company-generate-prompt"></p>
+              <button type="button" id="company-generate-btn" class="btn-download btn-secondary">Generate</button>
+              <p id="company-generate-status" role="status" aria-live="polite"></p>
+              <div id="company-generate-result"></div>
+            </div>
+          </div>
+
           <div class="download-actions">
             <a href="donate.html" id="download-donate-btn" class="btn-download btn-primary"> Download with optional donation </a>
           </div>
@@ -189,6 +207,9 @@
     <script src="lib/toml-parser.js"></script>
     <script src="lib/ecommerce-events.js"></script>
     <script src="lib/download-submit-step.js"></script>
+    <script src="lib/company-register.js"></script>
+    <script src="lib/company-lookup.js"></script>
+    <script src="lib/generate-package.js"></script>
     <script src="lib/download-page.js"></script>
     <script src="lib/docs-download.js"></script>
     <script type="application/ld+json">

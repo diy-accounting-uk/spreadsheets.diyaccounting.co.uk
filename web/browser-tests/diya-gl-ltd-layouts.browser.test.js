@@ -280,10 +280,14 @@ test.describe("DIYA-GL Ltd books page — keyboard-only traversal (LT-T14)", () 
     await page.keyboard.press("Enter");
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
-    await expect(saveMenu.locator('[role="menuitem"]')).toHaveCount(5);
-    await expect(saveMenu.getByRole("menuitem", { name: "File with DIY Accounting Submit" })).toBeVisible();
-    await expect(saveMenu.getByRole("menuitem", { name: "Save to my account", exact: true })).toBeVisible();
-    await expect(saveMenu.getByRole("menuitem", { name: "Save to my Google Drive" })).toBeVisible();
+    await expect(saveMenu.locator('[role="menuitem"]')).toHaveText([
+      "Download books as diya-gl (.zip)",
+      "Download books as JSON (.json)",
+      "Download as a spreadsheet package (.zip)",
+      "File with DIY Accounting Submit",
+      "Save to my account",
+      "Save to my Google Drive",
+    ]);
     await page.keyboard.press("Escape");
 
     expect(focusRingSamples.length).toBeGreaterThanOrEqual(6);

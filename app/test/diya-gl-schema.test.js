@@ -15,7 +15,17 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "os";
 import { resolve, dirname, join, relative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { validateBook, validateLines, useSchemas, useValidators, generateStandaloneValidatorSource } from "../lib/diya-gl-schema.js";
+import { buildNewBook } from "../lib/diya-gl-new-book.js";
+import { addBankLine } from "../lib/diya-gl-edits.js";
+import { rollForward } from "../lib/diya-gl-roll-forward.js";
+import {
+  validateBook,
+  validateLines,
+  useSchemas,
+  useValidators,
+  generateStandaloneValidatorSource,
+  STANDALONE_VALIDATOR_NAMES,
+} from "../lib/diya-gl-schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -157,22 +167,29 @@ describe("diya-gl schema, proved breakable", () => {
 // ajv.compile() reaches `new Function`, which the production CSP forbids.
 // This proves that path agrees with the runtime-compiled one it replaces:
 // same verdict, same errors, on a book and lines fixture that pass and on
-// one crafted to fail.
+// one crafted to fail, for a v2 book and for a v3 book.
 describe("diya-gl schema, the standalone-generated validators agree with the runtime-compiled ones", () => {
-  const bookSchema = JSON.parse(readFileSync(join(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
-  const linesSchema = JSON.parse(readFileSync(join(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
+  const readSchema = (name) => JSON.parse(readFileSync(join(SCHEMA_DIR, name), "utf8"));
+  const schemas = {
+    v2: { book: readSchema("diya-gl-book-v2.schema.json"), lines: readSchema("diya-gl-lines-v2.schema.json") },
+    v3: { book: readSchema("diya-gl-book-v3.schema.json"), lines: readSchema("diya-gl-lines-v3.schema.json") },
+  };
   const fullDir = join(EXAMPLES_DIR, "precision-code-ltd", "full");
-  const book = readBook(fullDir);
-  const lines = readLines(fullDir);
-  const invalidBook = { ...book, notATable: { anything: 1 } };
-  const invalidLine = { ...lines[0], "diya-gl:notAField": "x" };
+  const v2Book = readBook(fullDir);
+  const v2Lines = readLines(fullDir);
+  const v3Book = {
+    ...v2Book,
+    "documentInfo": { ...v2Book.documentInfo, "diya-gl:formatVersion": "diya-gl/3" },
+    "diya-gl:statementBalances": { [Object.keys(v2Book.accounts.bank)[0]]: [{ date: "2025-04-30", balance: 100 }] },
+  };
+  const v3Lines = v2Lines.map((line) => ({ ...line, entryType: "standard" }));
 
   // generateStandaloneValidatorSource() emits a module with a bare
   // require("ajv-formats/dist/formats") for its format checks - the same
   // thing the books bundle resolves at build time. esbuild does the same
   // resolution here, into a real ES module on disk that import() can load.
   async function loadGeneratedValidators() {
-    const source = generateStandaloneValidatorSource(bookSchema, linesSchema);
+    const source = generateStandaloneValidatorSource(schemas);
     const result = await build({
       stdin: { contents: source, resolveDir: ROOT, loader: "js" },
       bundle: true,
@@ -185,37 +202,96 @@ describe("diya-gl schema, the standalone-generated validators agree with the run
     writeFileSync(file, result.outputFiles[0].text);
     try {
       const generated = await import(pathToFileURL(file).href);
-      return { book: generated.validateBook, lines: generated.validateLines };
+      return Object.fromEntries(
+        Object.entries(STANDALONE_VALIDATOR_NAMES).map(([version, names]) => [
+          version,
+          { book: generated[names.book], lines: generated[names.lines] },
+        ]),
+      );
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   }
 
-  it("validates a book and its lines identically through both paths", async () => {
-    useSchemas(bookSchema, linesSchema);
-    const runtimeValidBook = validateBook(book);
-    const runtimeValidLines = validateLines(lines, book);
-    const runtimeInvalidBook = validateBook(invalidBook);
-    const runtimeInvalidLines = validateLines([invalidLine], book);
+  // Every verdict both paths give: each book and its lines, and the same
+  // book and a line each crafted to fail.
+  function verdicts() {
+    return [
+      [v2Book, v2Lines],
+      [v3Book, v3Lines],
+    ].map(([book, lines]) => ({
+      validBook: validateBook(book),
+      validLines: validateLines(lines, book),
+      invalidBook: validateBook({ ...book, notATable: { anything: 1 } }),
+      invalidLines: validateLines([{ ...lines[0], "diya-gl:notAField": "x" }], book),
+    }));
+  }
+
+  it.each(["v2", "v3"])("the generator exports the %s validators", async (version) => {
+    const generated = await loadGeneratedValidators();
+    expect(typeof generated[version].book).toBe("function");
+    expect(typeof generated[version].lines).toBe("function");
+  });
+
+  it("validates a v2 and a v3 book and their lines identically through both paths", async () => {
+    useSchemas(schemas);
+    const runtime = verdicts();
 
     useValidators(await loadGeneratedValidators());
-    const generatedValidBook = validateBook(book);
-    const generatedValidLines = validateLines(lines, book);
-    const generatedInvalidBook = validateBook(invalidBook);
-    const generatedInvalidLines = validateLines([invalidLine], book);
+    const generated = verdicts();
 
     // Restore the runtime-compiled path, so every other test in this file
     // (and any test file sharing this worker) validates with it.
-    useSchemas(bookSchema, linesSchema);
+    useSchemas(schemas);
 
-    expect(runtimeValidBook.valid, "the fixture book validates").toBe(true);
-    expect(runtimeValidLines.valid, "the fixture lines validate").toBe(true);
-    expect(runtimeInvalidBook.valid, "the crafted book fails").toBe(false);
-    expect(runtimeInvalidLines.valid, "the crafted line fails").toBe(false);
+    for (const [index, version] of ["v2", "v3"].entries()) {
+      expect(runtime[index].validBook.errors, `the ${version} fixture book validates`).toEqual([]);
+      expect(runtime[index].validLines.errors, `the ${version} fixture lines validate`).toEqual([]);
+      expect(runtime[index].invalidBook.valid, `the crafted ${version} book fails`).toBe(false);
+      expect(runtime[index].invalidLines.valid, `the crafted ${version} line fails`).toBe(false);
+    }
+    expect(generated).toEqual(runtime);
+  });
 
-    expect(generatedValidBook).toEqual(runtimeValidBook);
-    expect(generatedValidLines).toEqual(runtimeValidLines);
-    expect(generatedInvalidBook).toEqual(runtimeInvalidBook);
-    expect(generatedInvalidLines).toEqual(runtimeInvalidLines);
+  it("refuses schemas that leave a version out", () => {
+    expect(() => useSchemas({ v2: schemas.v2 })).toThrow("v3 is missing");
+    expect(() => generateStandaloneValidatorSource({ v3: schemas.v3 })).toThrow("v2 is missing");
+  });
+});
+
+describe("diya-gl schema, opening balances below nil", () => {
+  const rates = (name) => parseTOML(readFileSync(resolve(ROOT, "app", "data", `${name}.toml`), "utf8"));
+  const withOpening = (openingBalances) => ({ ...readBook(resolve(EXAMPLES_DIR, "precision-code-ltd", "full")), openingBalances });
+
+  it("accepts the book a roll forward writes after a payment with no invoice behind it", () => {
+    const book = buildNewBook({ product: "ltd", businessName: "Early Payer Ltd", yearEnd: "2023-03-31" }, rates("ltd-2022"));
+    const lines = addBankLine(book, [], {
+      line: {
+        "entryNumber": "TXN-0001",
+        "sourceJournalID": "bank",
+        "postingDate": "2022-04-01",
+        "accountMainID": "1200",
+        "debitCreditCode": "C",
+        "amount": 0.01,
+        "documentType": "bank-statement",
+        "documentReference": "BNK-1",
+        "detailComment": "Supplier",
+        "taxCode": "OS",
+        "taxRate": 0,
+        "diya-gl:bankCode": "CR",
+        "diya-gl:bankAccountID": "1200",
+      },
+    });
+    const rolled = rollForward(book, lines, rates("ltd-2023"));
+    expect(rolled.book.openingBalances.tradeCreditors).toBe(-0.01);
+    expect(validateBook(rolled.book).errors).toEqual([]);
+  });
+
+  it.each(["tradeDebtors", "tradeCreditors", "longTermDebtors"])("accepts a negative %s", (name) => {
+    expect(validateBook(withOpening({ [name]: -25.5 })).errors).toEqual([]);
+  });
+
+  it("still refuses a negative stock figure", () => {
+    expect(validateBook(withOpening({ stock: -1 })).errors).toEqual(["book/openingBalances/stock must be >= 0"]);
   });
 });

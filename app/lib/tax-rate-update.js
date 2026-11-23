@@ -38,6 +38,7 @@ export const RATE_SOURCE_PREFIXES = [
   "capital-allowances-",
   "vat-registration-threshold",
   "vat-standard-rate",
+  "vat-reduced-rate",
   "mileage-rates",
 ];
 
@@ -61,6 +62,7 @@ const MILEAGE_FIELDS = [
 const VAT_FIELDS = [
   ["vat.registration_threshold", AMOUNT, "VAT registration threshold: taxable turnover in a 12-month period"],
   ["vat.standard_rate", RATE, "Standard rate of VAT"],
+  ["vat.reduced_rate", RATE, "Reduced rate of VAT"],
 ];
 
 // The figures the model reads, per kind of data file. A field the file does

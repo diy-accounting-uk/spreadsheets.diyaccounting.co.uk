@@ -598,12 +598,13 @@ export async function readBookSource(bytes, name, deps = {}) {
 export function writeBookJson(book, lines) {
   const product = declaredProductOf(book);
   if (!product) throw new Error(`This book declares no product to write: ${undeclaredProduct(book)}.`);
+  const stamped = stampBook(book);
   const document = {
     format: JSON_FORMAT,
     version: JSON_VERSION,
     product,
-    book: orderedBookTopLevel(stampBook(book)),
-    lines: [...lines].sort(compareLines).map(orderedLine),
+    book: orderedBookTopLevel(stamped),
+    lines: [...lines].sort(compareLines).map((line) => orderedLine(line, stamped)),
   };
   return JSON.stringify(document, null, 2) + "\n";
 }

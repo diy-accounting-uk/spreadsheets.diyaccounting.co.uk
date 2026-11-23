@@ -141,6 +141,12 @@ export { PRODUCTS, productModule } from "./products.js";
 
 export { NEW_BOOK_CHARTS, newBookChart, buildNewBook } from "./diya-gl-new-book.js";
 
+// The book of a company's next period from what Companies House holds.
+export { buildBookFromRegister, RegisterBookError } from "./diya-gl-register-book.js";
+
+// A filed iXBRL accounts document mapped to the figures the register book rolls forward.
+export { mapIxbrlAccounts, IxbrlError } from "./ixbrl-accounts.js";
+
 // Editing it.
 export {
   addSaleLine,
@@ -176,6 +182,15 @@ export { bankBalancesByMonth } from "./book-checks/se.js";
 // The year-at-a-glance headline figures, derived from R.
 export { headlinesFromReport } from "./headlines.js";
 
+// The postings each Company line stands for, the year-end postings from the
+// registers, and the trial balance they sum to over a date range.
+export { POSTING_RULES, POSTING_ACCOUNTS, postingsOf, yearEndPostings, reasonApart } from "./posting-rules.js";
+export { trialBalance, trialBalancePeriods, trialBalanceRange, trialBalanceReport, trialBalanceAccountLines } from "./book-queries.js";
+
+// What kind of account each account of a product's chart is, and for a
+// Company account the filed concept it feeds.
+export { accountClasses, accountClassesOfBook } from "./account-classes.js";
+
 // Saving it back out as a workbook or the package zip.
 export {
   saveWorkbook,
@@ -184,6 +199,7 @@ export {
   productOf,
   taxYearFileName,
   loadTaxDataForBook,
+  isTwelveWholeMonths,
   BookFieldError,
   SingleFileOnlyError,
 } from "./product-workbook.js";
@@ -193,8 +209,9 @@ export {
   nodeResourceLoader,
   resourceRoot,
   resourcePathWithinRoot,
-  BOOK_SCHEMA_RESOURCE,
-  LINES_SCHEMA_RESOURCE,
+  SCHEMA_VERSIONS,
+  SCHEMA_RESOURCES,
+  schemaVersionOf,
   ResourceUnavailableError,
 } from "./app-resources.js";
 

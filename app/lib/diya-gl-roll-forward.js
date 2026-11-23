@@ -22,6 +22,7 @@ import { BANK_ACCOUNT_FILES, BANK_TRANSFER_CODES, isLtdOpeningBankLine } from ".
 import { buildOpeningBalance, toV2OpeningBalances, isOpeningBalanceLine, OPENING_BALANCE_LINES } from "./scenario-extractor.js";
 import { taxTablesForProduct, productIdOf } from "./xlsx-exporter.js";
 import { periodFromYearEnd } from "./diya-gl-new-book.js";
+import { accountClasses } from "./account-classes.js";
 
 const OPENING_DOCUMENT_REFERENCE = "OB-001";
 const OPENING_BANK_REFERENCE = "BNK-BC-001";
@@ -71,8 +72,8 @@ function productOfBook(book) {
 
 // The year's calculated cells, through the same D -> R loop the report runs,
 // so the closing figures read here are the figures the report printed.
-function closingPosition(book, lines, product) {
-  const taxData = extractTaxDataFromBook(book, product);
+function closingPosition(book, lines, product, yearFiles) {
+  const taxData = extractTaxDataFromBook(book, product, yearFiles);
   const scenario = diyaGlToScenario(book, lines, product);
   const results = calculateFromDiyaGl(book, lines, product, taxData, scenario);
   return { taxData, scenario, results };
@@ -229,9 +230,7 @@ function ltdBankClosings(tb, lines, periodStart) {
 // ── Opening entries ────────────────────────────────────────────────────────
 
 const ACCOUNT_OF_OPENING_KEY = Object.fromEntries(Object.entries(OPENING_BALANCE_LINES).map(([account, { key }]) => [key, account]));
-const NORMAL_SIDE_OF_ACCOUNT = Object.fromEntries(
-  Object.entries(OPENING_BALANCE_LINES).map(([account, { normalSide }]) => [account, normalSide]),
-);
+const COMPANY_ACCOUNTS = accountClasses("ltd");
 
 const FIXED_ASSET_ACCOUNT_OF_CLASS = {
   landBuildings: "0000",
@@ -268,13 +267,6 @@ const ACCOUNT_DESCRIPTIONS = {
   "3200": "Dividends",
   "3300": "Capital reserves",
 };
-
-function chartGroupOf(account) {
-  if (/^12[0-3]0$/.test(account)) return "bank";
-  if (account.startsWith("0") || account.startsWith("1")) return "assets";
-  if (account.startsWith("2")) return "liabilities";
-  return "capital";
-}
 
 // One line of the opening journal: the account's balance on its natural
 // side, or on the other side where the balance has turned (an overdrawn
@@ -366,7 +358,10 @@ function ltdOpeningEntries({ results, lines, fixedAssets, periodStart, priorOpen
   }
   for (const [key, balance] of Object.entries(balances)) {
     const account = ACCOUNT_OF_OPENING_KEY[key];
-    entries.push({ journal: "journal", ...journalLine(account, balance, NORMAL_SIDE_OF_ACCOUNT[account], ACCOUNT_DESCRIPTIONS[account]) });
+    entries.push({
+      journal: "journal",
+      ...journalLine(account, balance, COMPANY_ACCOUNTS.get(account).normalSide, ACCOUNT_DESCRIPTIONS[account]),
+    });
   }
   const debits = entries.reduce((sum, entry) => sum + (entry.side === "D" ? entry.amount : -entry.amount), 0);
   entries.push({ journal: "journal", ...journalLine("3100", debits, "C", "Retained earnings brought forward") });
@@ -376,7 +371,7 @@ function ltdOpeningEntries({ results, lines, fixedAssets, periodStart, priorOpen
 // Long term debtors close on the opening figure plus what the bank lent out
 // under LDR less what came back under it; the trial balance row is not among
 // the cells the year reports.
-function longTermDebtorsClosing(lines, periodStart, priorOpening) {
+export function longTermDebtorsClosing(lines, periodStart, priorOpening) {
   let balance = priorOpening.long_term_debtors || 0;
   for (const line of lines) {
     if (line.sourceJournalID !== "bank" || line["diya-gl:bankCode"] !== "LDR") continue;
@@ -454,15 +449,19 @@ function rolledHireAgreements(book, product, startDate) {
   return running.length > 0 ? running : undefined;
 }
 
-function ensureAccounts(accounts, codes) {
+// The chart with every account the opening entries post to declared, each
+// in the chart table its class entry names.
+function ensureAccounts(accounts, codes, product) {
+  const classes = accountClasses(product);
   const chart = structuredClone(accounts || {});
   for (const code of codes) {
-    const group = chartGroupOf(code);
     const declared = Object.values(chart).some((table) => table && Object.hasOwn(table, code));
     if (declared) continue;
-    chart[group] ??= {};
-    chart[group][code] = { accountMainDescription: ACCOUNT_DESCRIPTIONS[code] || code };
-    if (group === "bank") chart[group][code].accountType = "bank";
+    const table = classes.get(code)?.chartTable;
+    if (!table) throw new Error(`The opening entries post to account ${code}, which no chart table of the ${product} chart takes`);
+    chart[table] ??= {};
+    chart[table][code] = { accountMainDescription: ACCOUNT_DESCRIPTIONS[code] || code };
+    if (table === "bank") chart[table][code].accountType = "bank";
   }
   return chart;
 }
@@ -477,11 +476,13 @@ function setOrDelete(target, key, value) {
  * @param {Object} book - the year's book
  * @param {Array} lines - the year's lines
  * @param {Object} rateData - the parsed app/data/<year>.toml the next year end falls in
+ * @param {Object} [deps]
+ * @param {Object} [deps.yearFiles] - the book's own year's tax-year files from loadTaxYearFilesFor; absent, they are read from app/data
  * @returns {{book: Object, lines: Array}}
  */
-export function rollForward(book, lines, rateData) {
+export function rollForward(book, lines, rateData, deps = {}) {
   const product = productOfBook(book);
-  const { taxData, scenario, results } = closingPosition(book, lines, product);
+  const { taxData, scenario, results } = closingPosition(book, lines, product, deps.yearFiles);
   const priorStart = new Date(isoDay(book.documentInfo.periodCoveredStart));
   const priorEnd = isoDay(book.documentInfo.periodCoveredEnd);
   const period = periodFromYearEnd(rolledYearEnd(book));
@@ -525,7 +526,7 @@ export function rollForward(book, lines, rateData) {
     const priorOpening = buildOpeningBalance(lines.filter(isOpeningBalanceLine));
     const { entries, bankBalances } = ltdOpeningEntries({ results, lines, fixedAssets, periodStart: priorStart, priorOpening });
     rolledLines = linesFrom(entries, period.start);
-    rolled.accounts = ensureAccounts(rolled.accounts, [...new Set(entries.map((entry) => entry.account))]);
+    rolled.accounts = ensureAccounts(rolled.accounts, [...new Set(entries.map((entry) => entry.account))], product);
     rolled.openingBalances = toV2OpeningBalances(buildOpeningBalance(rolledLines));
     if (Object.keys(bankBalances).length === 0) delete rolled.openingBalances.bankAccounts;
   } else if (product === "se") {
@@ -535,6 +536,7 @@ export function rollForward(book, lines, rateData) {
     rolled.accounts = ensureAccounts(
       rolled.accounts,
       entries.map((entry) => entry.account),
+      product,
     );
     const openingBalances = {};
     if (entries.length > 0)

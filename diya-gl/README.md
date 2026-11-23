@@ -86,13 +86,15 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   another site. The book stays in the browser (the part of the address after `#` is never sent
   anywhere). The server stays up until Ctrl-C. The workbook templates come from
   spreadsheets.diyaccounting.co.uk the first time a page action needs one.
-- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with ten tools:
-  `extract_book`, `new_book` (the empty book **new-book** writes), `roll_forward` (the next
-  year **roll-forward** writes), `report`, `edit_lines`, `save_workbook`, and four that read every detail of
-  the loaded book: `lines` (filter and group every transaction, e.g. best customer or spend on
-  fuel in June), `chart` (the accounts and the report rows each feeds), `book` (the business,
-  period, tax settings and registers) and `checks` (every book check with the entryNumbers
-  behind it). Point an MCP client at `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
+- **mcp** runs a stdio [MCP](https://modelcontextprotocol.io) server with twelve tools:
+  `extract_book`, `new_book` (the empty book **new-book** writes), `new_book_from_register`
+  (a company's next book from what Companies House holds), `roll_forward` (the next year
+  **roll-forward** writes), `report`, `edit_lines`, `save_workbook`, and five that read every
+  detail of the loaded book: `lines` (filter and group every transaction, e.g. best customer or
+  spend on fuel in June), `chart` (the accounts and the report rows each feeds), `book` (the
+  business, period, tax settings and registers), `checks` (every book check with the
+  entryNumbers behind it) and `trial_balance` (a Company book's trial balance over the year, a
+  month, a VAT quarter or a date range, with one account's lines on request). Point an MCP client at `diya-gl-mcp` (or `diya-gl mcp`) with no arguments.
 
 ## API
 
@@ -123,9 +125,19 @@ The nine VAT return boxes for the three-month period ending `periodEnd` (YYYY-MM
 Limited Company book that declares `diya-gl:vatRegistered = true`. `periodStart`, when given,
 must open that quarter; `periodKey` is echoed back. The answer carries `boxes` (box1 to box9),
 `hmrc` (the same figures under HMRC's field names, boxes 1 to 5 to the penny and 6 to 9 in
-whole pounds), `months`, `dueDate`, `scheme`, and `lines`: the journal lines behind boxes 1, 4,
-6 and 7, each with what it contributes. A book whose lines do not reconcile with its VAT
-interface is refused.
+whole pounds), `months`, `dueDate`, `scheme`, `notes`, and `lines`: the journal lines behind
+boxes 1, 4, 6 and 7, each with its tax code and what it contributes. A book whose lines do not
+reconcile with its VAT interface is refused.
+
+Each line's VAT follows its `taxCode` and `taxRate`, by VAT Notice 700/12: S at the standard rate
+and R at the reduced rate of the book's tax data, unless the line states its own `taxRate`; Z, E,
+OS and NA carry no VAT. Box 6 counts zero-rated, exempt, outside the scope and reverse charge
+sales; box 7 leaves out purchases coded OS or NA. A reverse charge purchase (RC) puts the VAT on
+its amount in boxes 1 and 4 and its amount in box 7, and in box 6 too unless it carries CIS
+fields (the domestic reverse charge for construction). A line with no `taxCode` is standard
+rated. `workbookBoxes` holds the spreadsheet package's own VAT return, which takes 20% off every
+line. When a quarter has a line that is not standard rated, `followsTaxCodes` is true and
+`workbookDifference` states each box that differs from the package's.
 
 ```js
 import { deriveVatReturn } from "@diy-accounting-uk/diya-gl";

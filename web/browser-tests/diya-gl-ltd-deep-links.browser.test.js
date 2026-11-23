@@ -16,7 +16,9 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
+import { encodeBookFragment } from "../../app/lib/diya-gl-link.js";
 
 const publicDir = path.join(process.cwd(), "web/diya-gl.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -114,5 +116,35 @@ test.describe("DIYA-GL page — Ltd deep links load an example on arrival", () =
     await page.locator('.tab-btn[data-view="profit-loss"]').click();
     await expect(page.locator('.tab-btn[data-view="profit-loss"]')).toHaveAttribute("aria-selected", "true");
     expect(new URL(page.url()).search).toBe("");
+  });
+});
+
+test.describe("DIYA-GL page — download=package saves the spreadsheet package", () => {
+  test("a book link with download=package saves the package and leaves the address bar without the parameter", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    const fragment = encodeBookFragment({
+      toml: fs.readFileSync(path.join(process.cwd(), "examples/precision-code-ltd/full/book.toml"), "utf8"),
+      lines: fs.readFileSync(path.join(process.cwd(), "examples/precision-code-ltd/full/lines.jsonl"), "utf8"),
+    }).fragment;
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 60_000 }),
+      page.goto(ltdUrl(`?download=package#book=${fragment}`), { waitUntil: "domcontentloaded" }),
+    ]);
+
+    expect(download.suggestedFilename()).toMatch(/\.zip$/);
+    const stream = await download.createReadStream();
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    const zip = await JSZip.loadAsync(Buffer.concat(chunks));
+    const workbooks = Object.keys(zip.files).filter((name) => name.endsWith(".xlsx"));
+    expect(workbooks.length, "the package holds the Company workbooks").toBeGreaterThan(1);
+    expect(
+      workbooks.some((name) => /OpenAccounts|Accounts/i.test(name)),
+      "the hub workbook is in the package",
+    ).toBe(true);
+
+    await expect(page.locator("#app-title")).toContainText("Precision Code Ltd", { timeout: 30_000 });
+    await expect.poll(() => new URL(page.url()).search).not.toContain("download");
   });
 });

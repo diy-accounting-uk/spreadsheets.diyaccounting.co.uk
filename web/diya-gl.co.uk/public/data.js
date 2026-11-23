@@ -288,8 +288,15 @@
     // the published schemas as it reads them, so the schemas have to be in
     // place before this call.
     var loaded = await loadEngineAndResources();
-    var source = await loaded.engine.readBookSource(fileBytes, file.name);
-    return { kind: source.kind, name: file.name, productId: source.product, book: source.book, lines: source.lines };
+    var source = await loaded.engine.readBookSource(fileBytes, file.name, { resources: loaded.resources });
+    return {
+      kind: source.kind,
+      name: file.name,
+      productId: source.product,
+      book: source.book,
+      lines: source.lines,
+      differences: source.differences || [],
+    };
   }
 
   /**
@@ -323,6 +330,31 @@
     var loaded = await loadEngineAndResources();
     var parsed = loaded.engine.parseDiyaGlData(bookToml, linesRaw);
     return { kind: "link", name: name, productId: await productIdOfBook(parsed.book), book: parsed.book, lines: parsed.lines };
+  }
+
+  /**
+   * The book the register answer builds for a year end, in the shape sniff() gives a file, so
+   * loadSniffed builds the snapshot the same way it does for an upload. The differences are the
+   * builder's sentences, with a sentence for a last filed set that could not be read.
+   * @param {Object} answer - the public register route's answer
+   * @param {string} yearEnd - YYYY-MM-DD
+   * @returns {Promise<{kind: string, name: string, productId: string, book: Object, lines: Array, differences: string[]}>}
+   */
+  async function sniffRegisterBook(answer, yearEnd) {
+    var loaded = await loadEngineAndResources();
+    var built = await global.buildBookFromRegisterAnswer(loaded.engine, answer, yearEnd, loaded.resources);
+    var differences = built.result.differences.map(function (difference) {
+      return difference.text;
+    });
+    if (built.unreadable) differences.push("The last filed accounts could not be read: " + built.unreadable);
+    return {
+      kind: "register",
+      name: built.result.book.entityInformation.organizationIdentifier,
+      productId: await productIdOfBook(built.result.book),
+      book: built.result.book,
+      lines: built.result.lines,
+      differences: differences,
+    };
   }
 
   // ============================== the loaders ==============================
@@ -674,6 +706,7 @@
     sniff: sniff,
     productIdOfBook: productIdOfBook,
     sniffBookText: sniffBookText,
+    sniffRegisterBook: sniffRegisterBook,
     loadSniffed: loadSniffed,
     loadExample: loadExample,
     createNewBook: createNewBook,

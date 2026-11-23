@@ -51,8 +51,9 @@ import {
 } from "../diya-gl-edits.js";
 import { LTD_LINE_EDITS, LTD_BOOK_EDITS } from "../diya-gl-edits-ltd.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
-import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, LINE_GROUPINGS } from "../book-queries.js";
+import { queryLines, chartOfAccounts, bookProfile, checksWithEntries, trialBalanceReport, LINE_GROUPINGS } from "../book-queries.js";
 import { buildNewBook } from "../diya-gl-new-book.js";
+import { buildBookFromRegister } from "../diya-gl-register-book.js";
 import { rollForward, rollForwardChecks, rolledYearEnd } from "../diya-gl-roll-forward.js";
 import { taxYearFileName } from "../tax-year.js";
 
@@ -214,6 +215,26 @@ async function newBook(session, params = {}) {
 }
 
 /**
+ * new_book_from_register: the book of a company's next period from the data
+ * Companies House holds, given as JSON -- the roll forward of its last filed
+ * accounts when they are given, an empty book otherwise, with the company, its
+ * officers and its members written in. Replaces the session's loaded book.
+ * The server calls no Companies House interface; the caller supplies the data.
+ */
+async function newBookFromRegister(session, params = {}) {
+  const { book, lines, differences } = await buildBookFromRegister(params);
+  loadIntoSession(session, book, lines);
+  return {
+    book,
+    lines,
+    differences,
+    bookToml: canonicalBookToml(stampBook(book)),
+    report: reportFor(book, lines),
+    bookChecks: await bookChecksFor(book, lines),
+  };
+}
+
+/**
  * roll_forward: the next year of a book (the session's loaded book, or an
  * explicit {book, lines}) -- the year end moved on a year, that year's tax
  * tables, the closing balances as opening ones and only the opening entries
@@ -352,7 +373,8 @@ function lines(session, params = {}) {
 
 function chart(session, params = {}) {
   const { book, lines: bookLines } = bookAndLines(session, params);
-  return { product: productOf(book), accounts: chartOfAccounts(book, bookLines, reportFor(book, bookLines, true)) };
+  const product = productOf(book);
+  return { product, accounts: chartOfAccounts(book, bookLines, reportFor(book, bookLines, true), product) };
 }
 
 function profile(session, params = {}) {
@@ -363,6 +385,13 @@ function profile(session, params = {}) {
 async function checks(session, params = {}) {
   const { book, lines: bookLines } = bookAndLines(session, params);
   return checksWithEntries(await bookChecksFor(book, bookLines));
+}
+
+async function trialBalanceOf(session, params = {}) {
+  const { book, lines: bookLines } = bookAndLines(session, params);
+  const taxData = await loadTaxDataForBook(book);
+  const { periods, ...report } = trialBalanceReport(book, bookLines, taxData, params);
+  return report;
 }
 
 const BYPASS_PROPERTIES = {
@@ -419,6 +448,36 @@ export const TOOLS = {
       required: ["product", "businessName", "yearEnd"],
     },
     handler: newBook,
+  },
+  new_book_from_register: {
+    name: "new_book_from_register",
+    description:
+      "Start the book of a limited company's next accounting period from the data Companies House holds, which you supply as JSON: the company profile, its officers, and optionally the statement of capital with the shareholdings and the result of reading its last filed iXBRL accounts. With the filed accounts the book is the roll forward of them and its opening balance sheet equals the filed closing one; without them it is empty. The company, its directors and secretaries and its members are written in. Returns the book, its lines, the differences the builder found between the register and the book, its report and its book checks. Calls no Companies House interface. Replaces the session's loaded book. Answers: How do I start next year's books for my company from Companies House? What does the register not tell the book?",
+    inputSchema: {
+      type: "object",
+      properties: {
+        profile: {
+          type: "object",
+          description:
+            "companyNumber, companyName, dateOfCreation, registeredOffice (addressLine1 to addressLine3, cityOrTown, postalCode), accountsNextPeriodStart, accountsNextPeriodEnd, accountsLastPeriodEnd",
+        },
+        officers: { type: "array", description: "Each officer: name, officerRole, appointedOn, resignedOn" },
+        capital: {
+          type: "object",
+          description:
+            "The statement of capital: shareCurrency, totalAggregateNominalValue, shares[] of shareClass, numShares, aggregateNominalValue (strings)",
+        },
+        shareholdings: {
+          type: "array",
+          description: "Each holding: shareClass, numberHeld, shareholders[] of forename and surname, or amalgamatedName",
+        },
+        capitalDate: { type: "string", description: "The date the shareholdings are stated as at, YYYY-MM-DD" },
+        lastAccounts: { type: "object", description: "The result of reading the last filed iXBRL accounts for this company" },
+        periodEnd: { type: "string", description: "Optional: the year end chosen, YYYY-MM-DD, on or after the register's next period end" },
+      },
+      required: ["profile"],
+    },
+    handler: newBookFromRegister,
   },
   roll_forward: {
     name: "roll_forward",
@@ -515,7 +574,7 @@ export const TOOLS = {
   chart: {
     name: "chart",
     description:
-      "The loaded book's chart of accounts: each account's id, name, group (sales, purchases, bank, capital, assets, liabilities), its declared fields (the workbook column it lands in), how many lines post to it and their total in pence, and feeds, the report rows (key and printed label) its lines reach. Answers: Which account is fuel? Where does rent show in my accounts? What accounts can I post to? Which accounts have no activity this year?",
+      "The loaded book's chart of accounts: each account's id, name, group (sales, purchases, bank, capital, assets, liabilities), its class (asset, liability, equity, income or expense) and normal side (D or C), for a Company book the FRS 102 concept and the FRS 105 line it feeds, its declared fields (the workbook column it lands in), how many lines post to it and their total in pence, and feeds, the report rows (key and printed label) its lines reach. Answers: Which account is fuel? Where does rent show in my accounts? What accounts can I post to? Which accounts have no activity this year? Is this account an asset or an expense? Which line of the filed accounts does this account reach?",
     inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
     handler: chart,
   },
@@ -532,5 +591,32 @@ export const TOOLS = {
       "Every book check and warning over the loaded book, each with its verdict (pass, warn or fail), what it means, and the entryNumbers of the lines that fail it, plus the pass/warn/fail summary. Answers: Is anything wrong with my books? Which entries are dated outside the year? Which sales have no invoice number? Are there duplicate entries? Am I near the VAT threshold?",
     inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
     handler: checks,
+  },
+  trial_balance: {
+    name: "trial_balance",
+    description:
+      "The trial balance of the loaded Company book: every account's balance in the debit or the credit column and the two column totals, which are equal, over the year, one month, one VAT quarter or a date range. The balances sum each line's postings and the year-end postings of the registers (fixed assets, stock, hire purchase, dividends, the corporation tax charge), so a month shows its own movement and the year-end postings fall in the year and in the month that holds the year end. `apart` lists the lines that post to nothing, with the reason (an in-year journal line, a VAT-straddling line). Name an account to also get accountLines: each line and register posting behind that account's balance, in date order. Answers: Does my trial balance balance? What is the balance on 1300 debtors at the year end? What moved in the bank account in June? What makes up the VAT quarter's creditors? Company books only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        period: {
+          type: "string",
+          enum: ["year", "month", "vatQuarter", "custom"],
+          description: "Optional: year (the default), month, vatQuarter, or custom with from and to",
+        },
+        month: {
+          type: "string",
+          description: "Optional: YYYY-MM of the month, or of the VAT quarter's last month; needed for month and vatQuarter",
+        },
+        from: { type: "string", description: "Optional: first day, YYYY-MM-DD inclusive, for a custom range" },
+        to: { type: "string", description: "Optional: last day, YYYY-MM-DD inclusive, for a custom range" },
+        account: {
+          type: "string",
+          description: "Optional: an account id (for example 1300); adds accountLines with that account's postings",
+        },
+        ...BYPASS_PROPERTIES,
+      },
+    },
+    handler: trialBalanceOf,
   },
 };

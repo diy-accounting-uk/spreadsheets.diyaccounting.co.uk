@@ -34,7 +34,7 @@
 //    the same fixed absolute URL the import map already answers; the
 //    checked-in file on disk is untouched.
 //
-// Every other resource the page reads -- the two published schemas, the
+// Every other resource the page reads -- the published schemas, the
 // tax year data, the HMRC form layouts and filing data, and the product's
 // own workbook templates -- goes through the ordinary fetch() the page
 // already calls (either bundle-resources.js's loader or, for the form
@@ -47,6 +47,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "f
 import { resolve, dirname, join, basename, extname } from "path";
 import { fileURLToPath } from "url";
 import { provenanceStamps } from "../app/lib/provenance.js";
+import { SCHEMA_RESOURCES, SCHEMA_VERSIONS, resourcePathWithinRoot } from "../app/lib/app-resources.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
@@ -292,7 +293,7 @@ function resourceEntry(path) {
   return { text: readText(path), type };
 }
 
-// Every URL this product's runner answers offline: the two published
+// Every URL this product's runner answers offline: the published v2 and v3
 // schemas (shared), every tax year file the resource loader might be asked
 // for (248 KiB total across every product -- cheaper to carry all of them
 // than to work out which one a loaded book's own dates will name), this
@@ -301,7 +302,7 @@ function resourceEntry(path) {
 function buildResourceMap(product) {
   const resources = new Map();
 
-  for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
+  for (const name of SCHEMA_VERSIONS.flatMap((version) => Object.values(SCHEMA_RESOURCES[version]).map(resourcePathWithinRoot))) {
     resources.set(`${ORIGIN}/schema/${name}`, resourceEntry(resolve(SCHEMA_DIR, name)));
   }
 

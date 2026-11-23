@@ -149,6 +149,7 @@ test.describe("DIYA-GL page — Ltd page boots on a real package (LT-T7)", () =>
       "year",
       "bank",
       "ledgers",
+      "trial-balance",
       "profit-loss",
       "stock",
       "fixed-assets",

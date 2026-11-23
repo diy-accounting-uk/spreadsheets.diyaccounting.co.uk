@@ -52,6 +52,10 @@ web/spreadsheets.diyaccounting.co.uk/public/references.toml
 # and donate-links.toml by scripts/build-donate-page.mjs)
 web/spreadsheets.diyaccounting.co.uk/public/donate.html
 
+# The engine and the Company package templates scripts/build-diya-gl-bundle.mjs
+# copies into the spreadsheets site for the download page's generate option
+web/spreadsheets.diyaccounting.co.uk/public/generate/
+
 # Files scripts/build-diya-gl-bundle.mjs and scripts/build-donate-page.mjs
 # copy or generate into the diya-gl.co.uk site root: the DIYA-GL donation
 # config, the books engine bundle and its assets, the two published JSON

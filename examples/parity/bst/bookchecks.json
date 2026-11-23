@@ -18,6 +18,15 @@
     "offenders": []
   },
   {
+    "id": "book-currency-not-gbp",
+    "tier": "warning",
+    "label": "Every entry is in pounds sterling",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
     "id": "book-dates-in-period",
     "tier": "check",
     "label": "Every entry is dated inside the accounting period",
@@ -66,6 +75,15 @@
     "id": "book-negative-amount",
     "tier": "warning",
     "label": "Every sale and purchase amount is zero or more",
+    "result": "pass",
+    "actual": 0,
+    "consequence": null,
+    "offenders": []
+  },
+  {
+    "id": "book-posting-status-counted",
+    "tier": "warning",
+    "label": "Every entry is posted",
     "result": "pass",
     "actual": 0,
     "consequence": null,

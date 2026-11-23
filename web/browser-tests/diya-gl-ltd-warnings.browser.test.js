@@ -441,7 +441,8 @@ test.describe("DIYA-GL Ltd page — E2: each of T5's Ltd rules flips on its own 
 // (account 2500) carries no account-specific echo check of its own the way
 // stock's opening figure does, so moving it by more than E37/D91's own
 // tolerance (1) flips exactly these three engine checks, the published
-// balance sheet's own balance check, and no book check.
+// balance sheet's own balance check, and one book check: the opening journal
+// entry no longer balances, so book-journal-balances warns.
 
 test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through the opening lines", () => {
   test("E37 and D91: the directors loan's OB-001 line moved off balance", async ({ page }) => {
@@ -466,10 +467,11 @@ test.describe("DIYA-GL Ltd page — E2: the two editable engine checks, through 
       "Trial Balance: opening balances audit check (D91)",
     ]);
 
-    // No book check moved: this is an engine-only defect, not one
-    // book-checks.js's own rules catch.
+    // The one book check that moves is the journal balance warning: OB-001's
+    // debits and credits now part by the amount moved.
     const bookAfter = await bookCheckStates(page);
-    expect(bookAfter).toEqual(bookBefore);
+    expect(bookBefore["book-journal-balances"]).toBe("pass");
+    expect(bookAfter).toEqual({ ...bookBefore, "book-journal-balances": "warn" });
 
     // The downloaded bookchecks.json agrees with the panel on every one of
     // the sixteen ids -- including the full fixture's own one pre-existing

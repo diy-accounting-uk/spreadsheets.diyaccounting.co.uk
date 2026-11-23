@@ -18,6 +18,30 @@
 // one line needs no separate counter-leg entry.
 
 import { validateLines } from "./diya-gl-schema.js";
+import { isOpeningBalanceLine } from "./scenario-extractor.js";
+import { isLtdBookOpeningBankLine } from "./ltd-layout.js";
+
+const COMPANY_PRODUCT = "Company";
+
+// The opening lines: the opening journal (a journal line whose document
+// reference starts "OB-") and, in a Company book, the bank account opening
+// balance lines (coded BC on the first day of the year). The roll forward
+// writes both. The engine reads an opening journal line only by its
+// reference, and an opening bank line only by its code and its day, so an
+// edit that changes either one, or that changes one leg of the opening
+// journal alone, leaves the trial balance out by the line's amount.
+function openingLineKind(book, line) {
+  if (isOpeningBalanceLine(line)) return "opening journal line";
+  if (book?.entityInformation?.["diya-gl:product"] === COMPANY_PRODUCT && isLtdBookOpeningBankLine(book, line)) {
+    return "opening bank balance line";
+  }
+  return undefined;
+}
+
+function refuseOpeningLine(book, line, edit, why) {
+  const kind = openingLineKind(book, line);
+  if (kind) throw new Error(`${edit} refuses ${line.entryNumber}: it is an ${kind}, and ${why}`);
+}
 
 /**
  * Append a sales line. Refuses a line posted to any other journal, so a
@@ -145,7 +169,9 @@ export function addPayrollLine(book, lines, params) {
  * exporter writes carries amount === diya-gl:grossPay (xlsx-exporter.js),
  * and diya-gl-loader.js reads grossPay ahead of amount, so leaving the old
  * grossPay in place would make this edit invisible to the payroll view.
- * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * Refuses an opening journal line: one leg of the opening balances cannot
+ * change alone.
+ * @param {Object} book - parsed book.toml, for its product and period
  * @param {Array} lines - the book's current lines.jsonl entries
  * @param {{entryNumber: string, newAmount: number}} params
  * @returns {Array} a new lines array with the named line's amount changed
@@ -156,6 +182,9 @@ export function changeLineAmount(book, lines, params) {
   const changed = lines.map((line) => {
     if (line.entryNumber !== entryNumber) return line;
     found = true;
+    if (isOpeningBalanceLine(line)) {
+      refuseOpeningLine(book, line, "changeLineAmount", "one leg of the opening balances cannot change alone");
+    }
     const updated = { ...line, amount: newAmount };
     if (line.sourceJournalID === "payroll" && line["diya-gl:grossPay"] !== undefined) {
       updated["diya-gl:grossPay"] = newAmount;
@@ -167,8 +196,9 @@ export function changeLineAmount(book, lines, params) {
 }
 
 /**
- * Remove one existing line, identified by its entryNumber.
- * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * Remove one existing line, identified by its entryNumber. Refuses an
+ * opening journal line: one leg of the opening balances cannot go alone.
+ * @param {Object} book - parsed book.toml, for its product and period
  * @param {Array} lines - the book's current lines.jsonl entries
  * @param {{entryNumber: string}} params
  * @returns {Array} a new lines array with the named line removed
@@ -179,6 +209,7 @@ export function removeLine(book, lines, params) {
   const filtered = lines.filter((line) => {
     if (line.entryNumber !== entryNumber) return true;
     found = true;
+    if (isOpeningBalanceLine(line)) refuseOpeningLine(book, line, "removeLine", "one leg of the opening balances cannot go alone");
     return false;
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
@@ -213,8 +244,10 @@ function declaredAccountCodes(book) {
  * Every other field on the line, including its position in the array, is
  * carried over unchanged -- unlike removing and re-adding the line, which
  * moves it to the end, this keeps the in-memory order the page renders from.
- * @param {Object} book - parsed book.toml, for the chart-honouring precedent's
- *   own shape (unused here; a date carries no chart membership to check)
+ * Refuses an opening line (an opening journal line, or a Company book's
+ * opening bank balance line): an opening balance stays on the first day of
+ * the year.
+ * @param {Object} book - parsed book.toml, for its product and period
  * @param {Array} lines - the book's current lines.jsonl entries
  * @param {{entryNumber: string, newPostingDate: string}} params
  * @returns {Array} a new lines array with the named line's posting date changed
@@ -228,6 +261,7 @@ export function changeLinePostingDate(book, lines, params) {
   const changed = lines.map((line) => {
     if (line.entryNumber !== entryNumber) return line;
     found = true;
+    refuseOpeningLine(book, line, "changeLinePostingDate", "an opening balance stays on the first day of the year");
     return { ...line, postingDate: newPostingDate };
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
@@ -322,8 +356,9 @@ export function changeLineDetail(book, lines, params) {
  * Set one existing line's document reference, identified by its entryNumber:
  * the invoice, receipt or statement number the entry is filed under. Every
  * other field, including the line's position in the array and its
- * entryNumber, is carried over unchanged.
- * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * entryNumber, is carried over unchanged. Refuses to take an opening journal
+ * line's OB- reference away, or to give one to an in-year journal line.
+ * @param {Object} book - parsed book.toml, for its product and period
  * @param {Array} lines - the book's current lines.jsonl entries
  * @param {{entryNumber: string, documentReference: string}} params
  * @returns {Array} a new lines array with the named line's reference set
@@ -337,6 +372,14 @@ export function setLineReference(book, lines, params) {
   const changed = lines.map((line) => {
     if (line.entryNumber !== entryNumber) return line;
     found = true;
+    if (isOpeningBalanceLine(line)) {
+      refuseOpeningLine(book, line, "setLineReference", "its OB- reference is what makes it part of the opening balances");
+    }
+    if (line.sourceJournalID === "journal" && isOpeningBalanceLine({ ...line, documentReference })) {
+      throw new Error(
+        `setLineReference refuses ${line.entryNumber}: an OB- reference would make one leg of an in-year journal an opening balance`,
+      );
+    }
     return { ...line, documentReference };
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);

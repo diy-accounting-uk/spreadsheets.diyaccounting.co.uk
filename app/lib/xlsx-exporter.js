@@ -16,6 +16,7 @@ import {
   LTD_SALES_CODE_MAP,
 } from "./scenario-extractor.js";
 import { calculateMileageAllowance } from "./tax/mileage.js";
+import { accountClassesOfBook } from "./account-classes.js";
 import { ltdBankEntryOfRow } from "./ltd-layout.js";
 import {
   PAYSLIPS_ENTRY_COLUMNS,
@@ -1917,17 +1918,6 @@ export function productIdOf(schemaName) {
   return PRODUCT_IDS_BY_SCHEMA_NAME.get(schemaName);
 }
 
-// The section of the chart of accounts a four-digit code belongs to. The
-// leading digit is the division the templates' own code ranges follow.
-function accountSection(code) {
-  if (code.startsWith("4")) return "sales";
-  if (code.startsWith("5")) return "purchases";
-  if (code.startsWith("12")) return "bank";
-  if (code.startsWith("3")) return "capital";
-  if (code.startsWith("2")) return "liabilities";
-  return "assets";
-}
-
 async function openSheet(zip, sheetName) {
   const sheetMap = await buildSheetMap(zip);
   const path = sheetMap.get(sheetName);
@@ -1993,11 +1983,13 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
     accounts[section][code] = account;
   };
 
+  // A Basic Sole Trader workbook may be kept on the Taxi Driver chart, which
+  // the purchase accounts its lines carry say, as a book's declared chart does.
+  const purchaseAccounts = lines.filter((line) => line.sourceJournalID === "purchases").map((line) => [String(line.accountMainID), {}]);
+  const classes = accountClassesOfBook({ accounts: { purchases: Object.fromEntries(purchaseAccounts) } }, product);
   for (const code of new Set(lines.map((line) => String(line.accountMainID)))) {
-    // The chart a product codes its purchases from says which accounts are
-    // purchases, whatever range they sit in: the Taxi Driver chart keeps its
-    // fixed assets at 7000 where the other three keep them at 5900.
-    const section = purchaseCodes[code] ? "purchases" : accountSection(code);
+    const section = classes.get(code)?.chartTable;
+    if (!section) throw new Error(`Account ${code} has no chart table on the ${product} chart`);
     const analysis =
       section === "sales" ? salesHeadings[salesCodes[code]] : section === "purchases" ? purchaseHeadings[purchaseCodes[code]] : null;
     const name =

@@ -748,6 +748,17 @@
         },
       },
       {
+        id: "trial-balance",
+        label: "Trial balance",
+        sheets: TRIAL_BALANCE_SHEET,
+        render: function (snap, state, helpers) {
+          return global.DiyaGlLtdLedger.renderTrialBalance(snap, state, helpers);
+        },
+        bind: function (root, state, helpers) {
+          return global.DiyaGlLtdLedger.bindTrialBalance(root, state, helpers);
+        },
+      },
+      {
         id: "profit-loss",
         label: "P&L",
         sheets: PL_SHEET,
@@ -917,6 +928,7 @@
       },
     },
     snapshot: snapshot,
+    newBookFromCompany: true,
     newBook: {
       fields: [
         { id: "new-book-name", name: "businessName", label: "Company name", type: "text", required: "Enter a company name." },

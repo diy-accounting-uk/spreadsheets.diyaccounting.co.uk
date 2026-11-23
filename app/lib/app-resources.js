@@ -4,8 +4,8 @@
 // app-resources.js — the one resource loader the engine reads its own data
 // files through.
 //
-// The engine needs four kinds of file it does not compute: the two published
-// v2 JSON Schemas, the app/data/<year>.toml a book's dates name, the BST
+// The engine needs four kinds of file it does not compute: the published v2
+// and v3 JSON Schemas, the app/data/<year>.toml a book's dates name, the BST
 // template xlsx, and the template meta.toml beside it. Every one of those
 // reads goes through a loader with this interface, so a caller outside Node
 // can supply its own:
@@ -21,7 +21,7 @@
 
 import { packageVersion } from "./package-version.js";
 
-// The resource space is app/ with one named exception. The two v2 schemas are
+// The resource space is app/ with one named exception. The schemas are
 // published by the site, not carried in app/, and the site serves them at
 // /schema/ — so "schema/" is a root of its own rather than a directory under
 // app/. A browser loader maps the same two roots onto its own URLs.
@@ -161,5 +161,28 @@ export function resourcePathWithinRoot(path) {
   return path.startsWith(SCHEMA_PREFIX) ? path.slice(SCHEMA_PREFIX.length) : path;
 }
 
-export const BOOK_SCHEMA_RESOURCE = `${SCHEMA_PREFIX}diya-gl-book-v2.schema.json`;
-export const LINES_SCHEMA_RESOURCE = `${SCHEMA_PREFIX}diya-gl-lines-v2.schema.json`;
+/** The schema versions the engine reads, each a book schema and a lines schema. */
+export const SCHEMA_VERSIONS = ["v2", "v3"];
+
+/** Each schema version's book and lines schema, as resource paths. */
+export const SCHEMA_RESOURCES = Object.fromEntries(
+  SCHEMA_VERSIONS.map((version) => [
+    version,
+    {
+      book: `${SCHEMA_PREFIX}diya-gl-book-${version}.schema.json`,
+      lines: `${SCHEMA_PREFIX}diya-gl-lines-${version}.schema.json`,
+    },
+  ]),
+);
+
+/**
+ * The schema version a book is read against. A book marked "diya-gl/3" reads
+ * against v3. Every other book reads against v2: the older engines wrote
+ * "diya-gl/1", "diya-gl/2" and "diya-gl-books/1", and some books carry no
+ * marker at all.
+ * @param {Object} [book] - parsed book.toml
+ * @returns {"v2"|"v3"}
+ */
+export function schemaVersionOf(book) {
+  return book?.documentInfo?.["diya-gl:formatVersion"] === "diya-gl/3" ? "v3" : "v2";
+}

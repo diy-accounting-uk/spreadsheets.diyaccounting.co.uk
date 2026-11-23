@@ -253,8 +253,9 @@ describe("the builders' small company accounts, read back", () => {
     closeTo(results["PubP&L"].F49 - results["PubP&L"].F46, 100);
   });
 
-  it("registers an asset for each class of the fixed asset note, with the rate that gives the tagged charge", async () => {
+  it("registers an asset for each class of the fixed asset note, and for each class's additions, with the rate that gives the tagged charge", async () => {
     const source = await readBookSource(fixture("builder-small-consistent.xhtml"), "x");
+    // The note's charge of 500 on computers falls on the 5,000 held and the 1,000 bought at one rate.
     expect(source.book.fixedAssets).toEqual([
       {
         assetID: "FA-IXBRL-landBuildings",
@@ -270,16 +271,29 @@ describe("the builders' small company accounts, read back", () => {
         description: "Computer equipment",
         cost: 5000,
         accumulatedDepreciation: 1500,
-        depreciationRate: 0.08,
+        depreciationRate: 0.083333,
+      },
+      {
+        assetID: "FA-IXBRL-computerEquipment-additions",
+        class: "computerTechnology",
+        description: "Computer equipment, bought in the year",
+        cost: 1000,
+        accumulatedDepreciation: 0,
+        depreciationRate: 0.083333,
+        acquiredDate: "2025-12-31",
       },
     ]);
-    // The addition of 1,000 is bought in the year and takes the plant rate (10%), so the computers held take the other 400.
     const addition = source.lines.find((line) => line.documentReference === "IXBRL-PropertyPlantEquipmentAdditions");
-    expect(addition).toMatchObject({ sourceJournalID: "purchases", accountMainID: "5900", amount: 1000 });
+    expect(addition).toMatchObject({
+      "sourceJournalID": "purchases",
+      "accountMainID": "5900",
+      "amount": 1000,
+      "diya-gl:assetID": "FA-IXBRL-computerEquipment-additions",
+    });
     const notes = (await resultsOf(source.book, source.lines)).PubNotes;
     expect(notes.G15).toBeCloseTo(500, 2);
-    expect(notes.E15).toBeCloseTo(400, 2);
-    expect(notes.C15).toBeCloseTo(100, 2);
+    expect(notes.E15).toBeCloseTo(500, 2);
+    expect(notes.C15).toBeCloseTo(0, 2);
   });
 
   it("reads the register's own depreciationRate in the Company calculator, and the class rate where it states none", async () => {
@@ -343,6 +357,15 @@ describe("the builders' other accounts, read back", () => {
     });
   });
 
+  it("gives a micro-entity file's year its filed reserves to the penny, the tax worked until it settles", async () => {
+    const source = await readBookSource(fixture("builder-micro.xhtml"), "x");
+    const sheet = (await resultsOf(source.book, source.lines)).PubBalSht;
+    expect(Math.abs(sheet.E13 - 5000)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - sheet.F36 - 3900)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - 4000)).toBeLessThan(0.01);
+    expect(source.differences).toEqual([]);
+  });
+
   it("reads the dormant accounts as a book with no postings beyond the opening balance sheet", async () => {
     const source = await readBookSource(fixture("builder-micro-dormant.xhtml"), "x");
     expect(source.lines.every((line) => line.documentReference === "OB-001" || line.documentReference.startsWith("IXBRL-"))).toBe(true);
@@ -370,8 +393,8 @@ describe("another vendor's files", () => {
     // reserves that only grew by the profit, so its net assets are the file's less that tax.
     expect(Math.round(results["PubP&L"].F50)).toBe(1425);
     expect(source.differences).toEqual([
-      "Current year: the book's profit and loss account is 85643.01 and the file's 87068.",
-      "Current year: the book's net assets are 85643.01 and the file's 87069.",
+      "Current year: the book's profit and loss account is 85643 and the file's 87068.",
+      "Current year: the book's net assets are 85644 and the file's 87069.",
     ]);
   });
 });
@@ -432,6 +455,39 @@ describe("a Format 2 small company file", () => {
         ].join(""),
       }),
     );
+
+  it("declares the interest payable account it posts, so the book passes the published schemas", async () => {
+    const source = await readBookSource(
+      nature([
+        money("core:TotalInventories", "CY_END", "50"),
+        money("core:TotalInventories", "PY_END", "20"),
+        money("core:InterestPayableSimilarChargesFinanceCosts", "CY", "60"),
+      ]),
+      "x",
+    );
+    const interest = source.lines.find((line) => line.documentReference === "IXBRL-InterestPayableSimilarChargesFinanceCosts");
+    expect(interest).toMatchObject({ sourceJournalID: "purchases", accountMainID: "5803", amount: 60 });
+    expect(source.book.accounts.purchases["5803"]).toBeDefined();
+    closeTo((await resultsOf(source.book, source.lines))["PubP&L"].F49, 940);
+  });
+
+  it("reproduces each year's profit before tax when the file states its change in stocks", async () => {
+    const source = await readBookSource(
+      nature([
+        money("core:TotalInventories", "CY_END", "50"),
+        money("core:TotalInventories", "PY_END", "20"),
+        money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "CY", "30"),
+        money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "PY", "10", 'sign="-"'),
+        money("core:RawMaterialsConsumablesUsed", "CY", "300"),
+        money("core:RawMaterialsConsumablesUsed", "PY", "200"),
+      ]),
+      "x",
+    );
+    // 1,000 turnover, 30 more stock and 300 of materials; 900 turnover, 10 less stock and 200 of materials.
+    closeTo((await resultsOf(source.book, source.lines))["PubP&L"].F49, 730);
+    closeTo((await resultsOf(source.comparative.book, source.comparative.lines))["PubP&L"].F49, 690);
+    expect(source.differences.join(" ")).not.toMatch(/profit before tax/);
+  });
 
   it("names the difference when the file's change in stocks is not the movement of its stock", async () => {
     const source = await readBookSource(
@@ -560,6 +616,337 @@ describe("fixed asset disposals", () => {
   });
 });
 
+describe("every filed balance sheet line, read back from the summary books", () => {
+  // Each line of the published balance sheet the book reproduces, by the figure name the mapping reads.
+  const BOOK_LINES = {
+    fixedAssets: (sheet) => sheet.F6,
+    stocks: (sheet) => sheet.E10,
+    debtors: (sheet) => sheet.E11,
+    cashAtBank: (sheet) => sheet.E12,
+    currentAssets: (sheet) => sheet.E13,
+    corporationTax: (sheet) => sheet.E17,
+    creditorsWithinOneYear: (sheet) => sheet.E20,
+    netCurrentAssets: (sheet) => sheet.F22,
+    totalAssetsLessCurrentLiabilities: (sheet) => sheet.F26,
+    creditorsAfterOneYear: (sheet) => sheet.F31,
+    netAssets: (sheet) => sheet.F33,
+    calledUpShareCapital: (sheet) => sheet.F36,
+    profitAndLossAccount: (sheet) => sheet.F39 - sheet.F36,
+    capitalAndReserves: (sheet) => sheet.F39,
+  };
+  // The mapping posts these to 1300, 2100 or 2600, so the book states each only inside its debtors or creditors total.
+  const IN_A_TOTAL = [
+    "prepaymentsAccruedIncome",
+    "calledUpShareCapitalNotPaid",
+    "accrualsDeferredIncome",
+    "tradeCreditors",
+    "otherCreditors",
+    "taxationSocialSecurity",
+    "accruals",
+    "bankLoansOverdrafts",
+    "bankLoansAfterOneYear",
+    "provisionsForLiabilities",
+  ];
+
+  function mismatches(filed, sheet) {
+    const found = [];
+    for (const [line, value] of Object.entries(filed)) {
+      if (IN_A_TOTAL.includes(line)) continue;
+      if (!BOOK_LINES[line]) found.push(`${line}: no line in the book`);
+      else if (!(Math.abs(BOOK_LINES[line](sheet) - value) < 0.01)) found.push(`${line}: filed ${value}, book ${BOOK_LINES[line](sheet)}`);
+    }
+    return found;
+  }
+
+  async function expectFiledLines(bytes) {
+    const source = await readBookSource(bytes, "x");
+    for (const [label, filed, book, lines] of [
+      ["current year", source.accounts.balanceSheet.currentYear, source.book, source.lines],
+      ["prior year", source.accounts.balanceSheet.priorYear, source.comparative.book, source.comparative.lines],
+    ]) {
+      const sheet = (await resultsOf(book, lines)).PubBalSht;
+      expect(mismatches(filed, sheet), label).toEqual([]);
+    }
+  }
+
+  // builder-small.xhtml is left out because its reserves move by more than its profit, and
+  // adp-small-full.xhtml because it states no Corporation Tax; their tests name those differences.
+  it.each([
+    "diya-2025-accounts.xhtml",
+    "adp-micro.xhtml",
+    "adp-dormant.xhtml",
+    "adp-small-filleted.xhtml",
+    "adp-small-format2.xhtml",
+    "builder-micro.xhtml",
+    "builder-micro-dormant.xhtml",
+    "builder-small-consistent.xhtml",
+    "builder-small-filleted.xhtml",
+    "builder-small-bank-lines.xhtml",
+  ])("%s", async (name) => {
+    await expectFiledLines(fixture(name));
+  });
+
+  it("a Format 2 file with stock, a change in stocks and interest payable", async () => {
+    const bytes = new TextEncoder().encode(
+      ixbrlDocument({
+        contexts: [
+          context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+          context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+          context("CY_END", { instant: "2025-03-31" }),
+          context("PY_END", { instant: "2024-03-31" }),
+        ].join(""),
+        hidden: "",
+        body: [
+          words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+          words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+          money("core:FixedAssets", "CY_END", "100"),
+          money("core:FixedAssets", "PY_END", "100"),
+          money("core:TotalInventories", "CY_END", "50"),
+          money("core:TotalInventories", "PY_END", "20"),
+          money("core:CashBankOnHand", "CY_END", "700"),
+          money("core:CashBankOnHand", "PY_END", "300"),
+          money("core:Equity", "CY_END", "850"),
+          money("core:Equity", "PY_END", "420"),
+          money("core:TurnoverRevenue", "CY", "1,000"),
+          money("core:TurnoverRevenue", "PY", "900"),
+          money("core:IncreaseDecreaseInStocksInventoriesFinishedGoodsWorkInProgress", "CY", "30"),
+          money("core:RawMaterialsConsumablesUsed", "CY", "300"),
+          money("core:RawMaterialsConsumablesUsed", "PY", "200"),
+          money("core:InterestPayableSimilarChargesFinanceCosts", "CY", "60"),
+        ].join(""),
+      }),
+    );
+    await expectFiledLines(bytes);
+  });
+});
+
+describe("a year's additions depreciated faster than the plant rate", () => {
+  const PPE = "core:PropertyPlantEquipmentClassesDimension";
+  // A filleted file whose company buys 1,200 of computers in its first year with fixed assets and
+  // depreciates them by 400, so the balance sheet carries them at 800.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("COMP_CY", { start: "2024-04-01", end: "2025-03-31", members: [[PPE, "core:ComputerEquipment"]] }),
+        context("COMP_CY_END", { instant: "2025-03-31", members: [[PPE, "core:ComputerEquipment"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:PropertyPlantEquipmentGrossCost", "COMP_CY_END", "1,200"),
+        money("core:AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment", "COMP_CY", "1,200"),
+        money("core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment", "COMP_CY", "400"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "COMP_CY_END", "400"),
+        money("core:FixedAssets", "CY_END", "800"),
+        money("core:FixedAssets", "PY_END", "0"),
+        money("core:CashBankOnHand", "CY_END", "1,500"),
+        money("core:CashBankOnHand", "PY_END", "1,000"),
+        money("core:CurrentAssets", "CY_END", "1,500"),
+        money("core:CurrentAssets", "PY_END", "1,000"),
+        money("core:Equity", "CY_END", "2,300"),
+        money("core:Equity", "PY_END", "1,000"),
+      ].join(""),
+    }),
+  );
+
+  it("gives back the filed fixed assets and cash, the additions bought as computers at the note's rate", async () => {
+    const source = await readBookSource(bytes, "x");
+    const sheet = (await resultsOf(source.book, source.lines)).PubBalSht;
+    expect(Math.abs(sheet.F6 - 800)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.E12 - 1500)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - 2300)).toBeLessThan(0.01);
+    expect(source.differences).toEqual([]);
+    expect(source.book.fixedAssets).toEqual([
+      expect.objectContaining({ assetID: "FA-IXBRL-computerEquipment-additions", class: "computerTechnology", cost: 1200 }),
+    ]);
+  });
+
+  it("depreciates a purchase at its register entry's own class and rate, and one whose entry states no rate on the plant rows at the plant rate", async () => {
+    const source = await readBookSource(bytes, "x");
+    const rated = (await resultsOf(source.book, source.lines)).PubNotes;
+    expect(rated.E15).toBeCloseTo(400, 1);
+    expect(rated.C15).toBeCloseTo(0, 2);
+    const unrated = structuredClone(source.book);
+    delete unrated.fixedAssets[0].depreciationRate;
+    const plant = (await resultsOf(unrated, source.lines)).PubNotes;
+    expect(plant.E15).toBeCloseTo(0, 2);
+    expect(plant.C15).toBeCloseTo(120, 2);
+  });
+});
+
+describe("a fixed asset note that opens above the prior-year balance sheet", () => {
+  const PPE = "core:PropertyPlantEquipmentClassesDimension";
+  // The note opens with plant at 2,000 cost and 700 depreciation, 1,300 net, and the prior-year
+  // balance sheet states fixed assets of 1,000. The note's closing 1,170 is the balance sheet's.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("PLANT_CY", { start: "2024-04-01", end: "2025-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+        context("PLANT_CY_END", { instant: "2025-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+        context("PLANT_PY_END", { instant: "2024-03-31", members: [[PPE, "core:PlantMachinery"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:PropertyPlantEquipmentGrossCost", "PLANT_PY_END", "2,000"),
+        money("core:PropertyPlantEquipmentGrossCost", "PLANT_CY_END", "2,000"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "PLANT_PY_END", "700"),
+        money("core:AccumulatedDepreciationImpairmentPropertyPlantEquipment", "PLANT_CY_END", "830"),
+        money("core:IncreaseFromDepreciationChargeForYearPropertyPlantEquipment", "PLANT_CY", "130"),
+        money("core:FixedAssets", "CY_END", "1,170"),
+        money("core:FixedAssets", "PY_END", "1,000"),
+        money("core:CashBankOnHand", "CY_END", "800"),
+        money("core:CashBankOnHand", "PY_END", "500"),
+        money("core:CurrentAssets", "CY_END", "800"),
+        money("core:CurrentAssets", "PY_END", "500"),
+        money("core:Equity", "CY_END", "1,970"),
+        money("core:Equity", "PY_END", "1,500"),
+      ].join(""),
+    }),
+  );
+
+  it("keeps the note's figures and balances the opening journal with a line that states the gap and both figures", async () => {
+    const source = await readBookSource(bytes, "x");
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    const side = (code) => opening.filter((line) => line.debitCreditCode === code).reduce((total, line) => total + line.amount, 0);
+    expect(Math.abs(side("D") - side("C"))).toBeLessThan(0.01);
+    expect(opening).toContainEqual(
+      expect.objectContaining({
+        accountMainID: "3100",
+        debitCreditCode: "C",
+        amount: 300,
+        lineItemComment: expect.stringMatching(/1300.*1000/),
+      }),
+    );
+    expect(source.book.fixedAssets).toEqual([
+      expect.objectContaining({ assetID: "FA-IXBRL-plantMachinery", cost: 2000, accumulatedDepreciation: 700 }),
+    ]);
+    expect(source.differences.join(" ")).toMatch(/net book value of 1300 .* fixed assets of 1000/);
+    const sheet = (await resultsOf(source.book, source.lines)).PubBalSht;
+    expect(Math.abs(sheet.F6 - 1170)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.E12 - 800)).toBeLessThan(0.01);
+    expect(Math.abs(sheet.F39 - 1970)).toBeLessThan(0.01);
+  });
+});
+
+describe("a micro-entity file with the headings outside the totals", () => {
+  const MATURITY = "core:MaturitiesOrExpirationPeriodsDimension";
+  // Called up share capital not paid 50 and 40, prepayments 200 and 120, accruals and deferred income
+  // 150 and 90, beside fixed assets, current assets and creditors within one year.
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("WITHIN_CY", { instant: "2025-03-31", members: [[MATURITY, "core:WithinOneYear"]] }),
+        context("WITHIN_PY", { instant: "2024-03-31", members: [[MATURITY, "core:WithinOneYear"]] }),
+        context("STANDARDS", {
+          start: "2024-04-01",
+          end: "2025-03-31",
+          members: [["uk-bus:AccountingStandardsDimension", "uk-bus:Micro-entities"]],
+        }),
+      ].join(""),
+      hidden: words("uk-bus:AccountingStandardsApplied", "STANDARDS", "", 'format="ixt2:nocontent"'),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", "CY_END", "50"),
+        money("core:CalledUpShareCapitalNotPaidNotExpressedAsCurrentAsset", "PY_END", "40"),
+        money("core:FixedAssets", "CY_END", "800"),
+        money("core:FixedAssets", "PY_END", "800"),
+        money("core:CurrentAssets", "CY_END", "6,000"),
+        money("core:CurrentAssets", "PY_END", "3,000"),
+        money("core:PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", "CY_END", "200"),
+        money("core:PrepaymentsAccruedIncomeNotExpressedWithinCurrentAssetSubtotal", "PY_END", "120"),
+        money("core:Creditors", "WITHIN_CY", "1,968"),
+        money("core:Creditors", "WITHIN_PY", "1,500"),
+        money("core:NetCurrentAssetsLiabilities", "CY_END", "4,232"),
+        money("core:NetCurrentAssetsLiabilities", "PY_END", "1,620"),
+        money("core:TotalAssetsLessCurrentLiabilities", "CY_END", "5,082"),
+        money("core:TotalAssetsLessCurrentLiabilities", "PY_END", "2,460"),
+        money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "CY_END", "150"),
+        money("core:AccruedLiabilitiesNotExpressedWithinCreditorsSubtotal", "PY_END", "90"),
+        money("core:NetAssetsLiabilities", "CY_END", "4,932"),
+        money("core:NetAssetsLiabilities", "PY_END", "2,370"),
+        money("core:Equity", "CY_END", "4,932"),
+        money("core:Equity", "PY_END", "2,370"),
+      ].join(""),
+    }),
+  );
+
+  it("posts the headings as a debtor and a trade creditor, so each year's book has the file's net assets", async () => {
+    const source = await readBookSource(bytes, "x");
+    for (const [book, lines, netAssets] of [
+      [source.book, source.lines, 4932],
+      [source.comparative.book, source.comparative.lines, 2370],
+    ]) {
+      const sheet = (await resultsOf(book, lines)).PubBalSht;
+      expect(Math.abs(sheet.F33 - netAssets)).toBeLessThan(0.01);
+      expect(Math.abs(sheet.F39 - netAssets)).toBeLessThan(0.01);
+    }
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "1300", debitCreditCode: "D", amount: 160 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "1200", debitCreditCode: "D", amount: 3000 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 1590 }));
+    expect(source.differences.join(" ")).not.toMatch(/net assets/);
+  });
+});
+
+describe("a file with provisions for liabilities", () => {
+  const MATURITY = "core:MaturitiesOrExpirationPeriodsDimension";
+  const bytes = new TextEncoder().encode(
+    ixbrlDocument({
+      contexts: [
+        context("CY", { start: "2024-04-01", end: "2025-03-31" }),
+        context("PY", { start: "2023-04-01", end: "2024-03-31" }),
+        context("CY_END", { instant: "2025-03-31" }),
+        context("PY_END", { instant: "2024-03-31" }),
+        context("AFTER_CY", { instant: "2025-03-31", members: [[MATURITY, "core:AfterOneYear"]] }),
+        context("AFTER_PY", { instant: "2024-03-31", members: [[MATURITY, "core:AfterOneYear"]] }),
+      ].join(""),
+      body: [
+        words("uk-bus:StartDateForPeriodCoveredByReport", "CY_END", "2024-04-01"),
+        words("uk-bus:EndDateForPeriodCoveredByReport", "CY_END", "2025-03-31"),
+        money("core:CashBankOnHand", "CY_END", "5,000"),
+        money("core:CashBankOnHand", "PY_END", "4,000"),
+        money("core:CurrentAssets", "CY_END", "5,000"),
+        money("core:CurrentAssets", "PY_END", "4,000"),
+        money("core:Creditors", "AFTER_CY", "1,700"),
+        money("core:Creditors", "AFTER_PY", "1,500"),
+        money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "CY_END", "300"),
+        money("core:ProvisionsForLiabilitiesBalanceSheetSubtotal", "PY_END", "200"),
+        money("core:NetAssetsLiabilities", "CY_END", "3,000"),
+        money("core:NetAssetsLiabilities", "PY_END", "2,300"),
+        money("core:Equity", "CY_END", "3,000"),
+        money("core:Equity", "PY_END", "2,300"),
+      ].join(""),
+    }),
+  );
+
+  it("posts the provisions with the creditors after one year, so each year's book has the file's net assets", async () => {
+    const source = await readBookSource(bytes, "x");
+    expect(source.accounts.balanceSheet.currentYear).toMatchObject({ creditorsAfterOneYear: 1700, provisionsForLiabilities: 300 });
+    for (const [book, lines, afterOneYear, netAssets] of [
+      [source.book, source.lines, 2000, 3000],
+      [source.comparative.book, source.comparative.lines, 1700, 2300],
+    ]) {
+      const sheet = (await resultsOf(book, lines)).PubBalSht;
+      expect(Math.abs(sheet.F31 - afterOneYear)).toBeLessThan(0.01);
+      expect(Math.abs(sheet.F33 - netAssets)).toBeLessThan(0.01);
+    }
+  });
+});
+
 describe("a plain XBRL instance", () => {
   const instance = xbrlInstance(
     `<uk-bus:UKCompaniesHouseRegisteredNumber contextRef="CY">12345678</uk-bus:UKCompaniesHouseRegisteredNumber>
@@ -617,5 +1004,96 @@ describe("a year diya-gl has no tax tables for", () => {
     await expect(readBookSource(new TextEncoder().encode(ixbrlDocument({ contexts, body })), "x")).rejects.toThrow(
       /no tax tables for the year ending 2041-03-31/,
     );
+  });
+});
+
+describe("readBookSource on the FRS 105 filing tool's accounts from the register", () => {
+  it("keeps the net assets the document states, with the accruals and deferred income taken off once, in both years", async () => {
+    const source = await readBookSource(fixture("register/register-micro-entity-filing-tool-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), { fixedAssets: 29615, netAssets: 8606, capitalAndReserves: 8606 });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      fixedAssets: 34841,
+      netAssets: 13871,
+      capitalAndReserves: 13871,
+    });
+  });
+});
+
+describe("readBookSource on register accounts whose creditors total is above the lines they tag", () => {
+  // IRIS: the 2024 creditors of 313,304 hold trade creditors 104,422, corporation tax 676, other taxes
+  // 1,314, other creditors 160 and accruals 3,325, and directors' current accounts of 203,407 that carry
+  // no tag. Less the corporation tax, 312,628 is the opening trade creditor.
+  it("posts IRIS's untagged directors' current accounts as a trade creditor, and keeps its net assets in both years", async () => {
+    const source = await readBookSource(fixture("register/register-small-company-filleted-iris-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      fixedAssets: 4834,
+      currentAssets: 304337,
+      creditorsWithinOneYear: 188412,
+      netAssets: 120759,
+      capitalAndReserves: 120759,
+    });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      fixedAssets: 6445,
+      currentAssets: 442560,
+      creditorsWithinOneYear: 313304,
+      netAssets: 135701,
+      capitalAndReserves: 135701,
+    });
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 312628 }));
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2300", debitCreditCode: "C", amount: 676 }));
+  });
+
+  // Acorah: the 2025 creditors of 11,293 hold trade creditors 576, taxation and social security 0 and
+  // other creditors of 10,717 that carry no tag, all of it the opening trade creditor.
+  it("posts Acorah's untagged other creditors as a trade creditor, and keeps its net liabilities in both years", async () => {
+    const source = await readBookSource(fixture("register/register-small-company-filleted-acorah-both-years.xhtml"), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      currentAssets: 4850,
+      creditorsWithinOneYear: 13859,
+      netAssets: -9009,
+      capitalAndReserves: -9009,
+    });
+    expectTotals(totals(await resultsOf(source.comparative.book, source.comparative.lines)), {
+      currentAssets: 7197,
+      creditorsWithinOneYear: 11293,
+      netAssets: -4096,
+      capitalAndReserves: -4096,
+    });
+    const opening = source.lines.filter((line) => line.documentReference === "OB-001");
+    expect(opening).toContainEqual(expect.objectContaining({ accountMainID: "2100", debitCreditCode: "C", amount: 11293 }));
+  });
+});
+
+describe("readBookSource on Digita's first accounts from the register", () => {
+  // 40,948 total assets less current liabilities, less creditors after one year of 17,087 and the
+  // accruals and deferred income of 1,200, give the stated net assets of 22,661.
+  it("keeps the net assets the document states, with the accruals it tags with a minus sign taken off", async () => {
+    const source = await readBookSource(fixture("register/register-micro-entity-filleted-digita-current-year-only.xhtml"), "x", {
+      expect: { companyNumber: "16140216", firstAccounts: true },
+    });
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      fixedAssets: 28562,
+      currentAssets: 38642,
+      netAssets: 22661,
+      capitalAndReserves: 22661,
+    });
+    expect(source.accounts.notes.join(" ")).toMatch(/accrualsDeferredIncome is tagged as -1200/);
+  });
+});
+
+describe("readBookSource on accounts whose taxation and social security include the corporation tax", () => {
+  it("states the corporation tax once, so the book keeps the creditors and net assets the document states", async () => {
+    const text = fixture("builder-small-bank-lines.xhtml").toString("utf-8");
+    const asTotal = text.replace(/(name="core:TaxationSocialSecurityPayable" contextRef="e2026-within-one-year"[^>]*>)200</, "$11,700<");
+    expect(asTotal).not.toBe(text);
+    const source = await readBookSource(new TextEncoder().encode(asTotal), "x");
+    expectTotals(totals(await resultsOf(source.book, source.lines)), {
+      currentAssets: 5000,
+      creditorsWithinOneYear: 3700,
+      creditorsAfterOneYear: 2000,
+      netAssets: 9300,
+      capitalAndReserves: 9300,
+    });
   });
 });

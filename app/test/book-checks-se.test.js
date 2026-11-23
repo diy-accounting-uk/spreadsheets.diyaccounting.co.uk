@@ -27,6 +27,8 @@ const SHARED_IDS = [
   "book-missing-document-reference",
   "book-negative-amount",
   "book-empty-month",
+  "book-posting-status-counted",
+  "book-currency-not-gbp",
 ];
 const SE_IDS = [
   "book-bank-account-has-workbook",
@@ -58,11 +60,11 @@ function brickworkNonVat() {
 // Read as they stand, not as they are hoped to be.
 
 describe("the three Self Employed example books", () => {
-  it("BrickWork Pro not registered: all seventeen rules pass, turnover under the threshold", () => {
+  it("BrickWork Pro not registered: all nineteen rules pass, turnover under the threshold", () => {
     const { results, summary } = runBookChecks(brickworkNonVat());
 
     expect(results.map((r) => r.id).sort()).toEqual(ALL_IDS.slice().sort());
-    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 19, warn: 0, fail: 0 });
     expect(resultFor(results, "book-vat-threshold").label).toBe(
       "Turnover for the year is £75,000.00, against a £90,000.00 VAT registration threshold.",
     );
@@ -71,7 +73,7 @@ describe("the three Self Employed example books", () => {
   it("BrickWork Pro registered: turnover is measured net of VAT and the threshold warning passes", () => {
     const { results, summary } = runBookChecks(loadSe("examples/brickwork-pro/se-vat"));
 
-    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 19, warn: 0, fail: 0 });
     const vat = resultFor(results, "book-vat-threshold");
     expect(vat.result).toBe("pass");
     expect(vat.label).toBe(
@@ -83,7 +85,7 @@ describe("the three Self Employed example books", () => {
   it("Precision Code advanced: two bank accounts, three employees, five new assets and two agreements all fit", () => {
     const { results, summary } = runBookChecks(loadSe("examples/precision-code-ltd/advanced"));
 
-    expect(summary).toEqual({ pass: 17, warn: 0, fail: 0 });
+    expect(summary).toEqual({ pass: 19, warn: 0, fail: 0 });
     expect(resultFor(results, "book-vat-threshold").label).toBe(
       "Turnover for the year is £353,483.33 net of VAT, against a £90,000.00 VAT registration threshold; the book says the business is registered.",
     );

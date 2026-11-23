@@ -56,6 +56,7 @@ lower_rate_pence = 0.25
 [vat]
 registration_threshold = 90000
 standard_rate = 0.20
+reduced_rate = 0.05
 
 [employer_ni]
 rate = 0.138

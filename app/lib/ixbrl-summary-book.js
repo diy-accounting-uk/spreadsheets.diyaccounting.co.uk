@@ -43,6 +43,7 @@ const ADDITIONS_CLASS = "plantMachinery";
 const ADDITIONS_RATE_KEY = "plant_and_machinery";
 
 const money = (value) => Math.round(value * 100) / 100;
+const boughtAssetID = (className) => `FA-IXBRL-${className}-additions`;
 const n = (value) => value ?? 0;
 const sum = (values) => values.reduce((total, value) => total + value, 0);
 
@@ -65,10 +66,13 @@ const addYears = (isoDay, years) => {
 // The figures a book needs from one balance sheet. What no tagged line
 // explains stays in the account it belongs to: the part of current assets no
 // line explains is cash, and the part of the creditors within one year no
-// line explains is a trade creditor.
+// line explains is a trade creditor. The headings outside the totals post as
+// a debtor (prepayments and accrued income, called up share capital not paid)
+// and as a trade creditor (accruals and deferred income).
 function sheetOf(balanceSheet) {
   const stocks = n(balanceSheet.stocks);
   const debtors = n(balanceSheet.debtors);
+  const outsideDebtors = n(balanceSheet.prepaymentsAccruedIncome) + n(balanceSheet.calledUpShareCapitalNotPaid);
   const currentAssets = balanceSheet.currentAssets ?? stocks + debtors + n(balanceSheet.cashAtBank);
   const lineCreditors =
     n(balanceSheet.bankLoansOverdrafts) +
@@ -81,14 +85,18 @@ function sheetOf(balanceSheet) {
   const corporationTax = n(balanceSheet.corporationTax);
   const calledUp = n(balanceSheet.calledUpShareCapital);
   const fixedAssets = n(balanceSheet.fixedAssets);
-  const afterOneYear = n(balanceSheet.creditorsAfterOneYear);
-  const equity = balanceSheet.capitalAndReserves ?? balanceSheet.netAssets ?? fixedAssets + currentAssets - within - afterOneYear;
+  const afterOneYear = n(balanceSheet.creditorsAfterOneYear) + n(balanceSheet.provisionsForLiabilities);
+  const accrualsDeferredIncome = n(balanceSheet.accrualsDeferredIncome);
+  const equity =
+    balanceSheet.capitalAndReserves ??
+    balanceSheet.netAssets ??
+    fixedAssets + currentAssets + outsideDebtors - within - afterOneYear - accrualsDeferredIncome;
   return {
     fixedAssets,
     stock: stocks,
-    debtors,
+    debtors: debtors + outsideDebtors,
     cash: currentAssets - stocks - debtors,
-    creditors: within - corporationTax,
+    creditors: within - corporationTax + accrualsDeferredIncome,
     corporationTax,
     afterOneYear,
     shareCapital: calledUp,
@@ -102,9 +110,10 @@ function sheetOf(balanceSheet) {
 // ============================================================================
 
 // The register for a year: each class's cost, depreciation brought forward and
-// the rate that gives the tagged charge, the cost of the year's additions,
-// bought as one fixed asset purchase, and the assets disposed of, each sold
-// for its net book value plus its share of the tagged gain on disposal.
+// the rate that gives the tagged charge, the year's additions, bought as one
+// fixed asset purchase a class (or one plant purchase when the note does not
+// give them by class), and the assets disposed of, each sold for its net book
+// value plus its share of the tagged gain on disposal.
 function fixedAssetPlan({
   openingNetBookValue,
   closingNetBookValue,
@@ -132,6 +141,17 @@ function fixedAssetPlan({
     else classes.push({ className: ADDITIONS_CLASS, cost: openingNetBookValue - noteNetBookValue, depreciation: 0, charge: 0 });
   }
   const openingValue = sum(classes.map((entry) => entry.cost - entry.depreciation));
+  // A note that opens above the prior-year balance sheet keeps its own figures;
+  // the opening journal states the gap on a line of its own.
+  const openingGap =
+    note && noteNetBookValue - openingNetBookValue > 0.5
+      ? { noteNetBookValue: money(noteNetBookValue), balanceSheetValue: money(openingNetBookValue) }
+      : null;
+  if (openingGap) {
+    differences.push(
+      `${label}: the fixed asset note opens at a net book value of ${openingGap.noteNetBookValue} and the prior-year balance sheet states fixed assets of ${openingGap.balanceSheetValue}; the opening journal posts the gap of ${money(noteNetBookValue - openingNetBookValue)} to the profit and loss account.`,
+    );
+  }
 
   // The assets disposed of leave the held entries as entries of their own, at
   // no charge: the note's cost and depreciation on disposals when the file has
@@ -160,17 +180,54 @@ function fixedAssetPlan({
   for (const entry of disposed) entry.taxWrittenDownValue = entry.cost - entry.depreciation;
 
   // The gross cost of the additions: the closing net book value less the
-  // held one, with the tagged charge put back. The additions take their own
-  // charge at the class rate, and the assets already held take the rest of
-  // the tagged charge. When the additions' own charge is more than the tagged
-  // one, the additions are sized to the closing net book value and the charge
-  // is theirs alone.
+  // held one, with the tagged charge put back.
   const netChange = closingNetBookValue - (openingValue - disposedNetBookValue);
   if (netChange + totalCharge < -0.5) {
     differences.push(
       `${label}: fixed assets fall by ${money(-(netChange + totalCharge))} more than the charge and the disposals in the fixed asset note.`,
     );
   }
+
+  // A note whose additions by class come to that cost buys each class's
+  // additions as an asset of that class. Each class's charge then falls on
+  // its held and bought assets at one rate, the class's charge over their
+  // cost, and each bought asset's register entry states that rate.
+  const noteAdditions = note
+    ? FIXED_ASSET_CLASSES.filter((className) => note[className]?.additions > 0).map((className) => ({
+        className,
+        cost: note[className].additions,
+      }))
+    : [];
+  if (noteAdditions.length > 0 && Math.abs(sum(noteAdditions.map((entry) => entry.cost)) - (netChange + totalCharge)) <= 0.5) {
+    for (const entry of classes) {
+      const bought = sum(noteAdditions.filter((addition) => addition.className === entry.className).map((addition) => addition.cost));
+      entry.rate = entry.cost + bought > 0 ? Math.min(Math.round((entry.charge / (entry.cost + bought)) * 1e6) / 1e6, 1) : 0;
+    }
+    const purchases = noteAdditions.map((addition) => ({
+      ...addition,
+      rate: classes.find((entry) => entry.className === addition.className)?.rate ?? 0,
+    }));
+    const engineCharge =
+      sum(classes.map((entry) => Math.min(entry.cost * entry.rate, entry.cost - entry.depreciation))) +
+      sum(purchases.map((purchase) => purchase.cost * purchase.rate));
+    return planWithSales({
+      classes,
+      disposed,
+      disposedNetBookValue,
+      gainOnDisposal,
+      differences,
+      label,
+      purchases,
+      engineCharge,
+      openingGap,
+    });
+  }
+
+  // Otherwise the additions are one purchase on the New Plant & Machinery
+  // rows. They take their own charge at the plant rate, and the assets already
+  // held take the rest of the tagged charge. When the additions' own charge is
+  // more than the tagged one, the additions are sized to the closing net book
+  // value and the charge is theirs alone.
   let additions = Math.max(netChange + totalCharge, 0);
   let heldCharge = totalCharge - additions * additionsRate;
   if (heldCharge < 0) {
@@ -188,7 +245,32 @@ function fixedAssetPlan({
   if (totalCharge > 0 && totalCost === 0 && additions * additionsRate < totalCharge - 0.5) {
     differences.push(`${label}: a depreciation charge of ${money(totalCharge)} falls on no asset held at the start of the year.`);
   }
+  const purchases = additions > 0 ? [{ className: null, cost: additions, rate: additionsRate }] : [];
+  return planWithSales({
+    classes,
+    disposed,
+    disposedNetBookValue,
+    gainOnDisposal,
+    differences,
+    label,
+    purchases,
+    engineCharge,
+    openingGap,
+  });
+}
 
+// The register's held and disposed entries, the purchases and the sales.
+function planWithSales({
+  classes,
+  disposed,
+  disposedNetBookValue,
+  gainOnDisposal,
+  differences,
+  label,
+  purchases,
+  engineCharge,
+  openingGap,
+}) {
   // Each disposal is a sale of the asset for its net book value, and the
   // tagged gain (a loss when negative) is shared over the assets by value. A
   // disposal with no proceeds is not a sale, so its asset stays on the register.
@@ -206,11 +288,13 @@ function fixedAssetPlan({
   }
   return {
     classes: [...sold.map((sale) => sale.entry), ...unsold, ...classes.filter((entry) => entry.cost > 0 || entry.depreciation > 0)],
-    additions: money(additions),
+    purchases: purchases.map((purchase) => ({ ...purchase, cost: money(purchase.cost) })),
+    additions: money(sum(purchases.map((purchase) => purchase.cost))),
     engineCharge: money(engineCharge),
     sales: sold.map((sale) => ({ className: sale.entry.className, proceeds: sale.proceeds })),
     disposalResult: unsold.length === 0 ? result : 0,
     disposalProceeds: money(sum(sold.map((sale) => sale.proceeds))),
+    openingGap,
   };
 }
 
@@ -252,9 +336,10 @@ class LineWriter {
     });
   }
 
-  invoice(journal, date, reference, account, amount, comment) {
+  invoice(journal, date, reference, account, amount, comment, assetID) {
     if (!(amount > 0)) return;
     this.add({
+      ...(assetID ? { "diya-gl:assetID": assetID } : {}),
       sourceJournalID: journal,
       postingDate: date,
       accountMainID: account,
@@ -291,7 +376,7 @@ class LineWriter {
 }
 
 // The opening journal: the balance sheet at the start of the year.
-function openingJournal(writer, date, opening, assetClasses) {
+function openingJournal(writer, date, opening, assetClasses, openingGap) {
   const reference = "OB-001";
   for (const entry of assetClasses) {
     writer.journal(date, reference, FIXED_ASSET_ACCOUNTS[entry.className], "D", entry.cost, `${CLASS_LABEL[entry.className]}, cost`);
@@ -312,6 +397,16 @@ function openingJournal(writer, date, opening, assetClasses) {
   writer.journal(date, reference, "2600", "C", opening.afterOneYear, "Creditors falling due after more than one year");
   writer.journal(date, reference, "3000", "C", opening.shareCapital, "Called up share capital");
   writer.journal(date, reference, "3100", opening.retained >= 0 ? "C" : "D", Math.abs(opening.retained), "Profit and loss account");
+  if (openingGap) {
+    writer.journal(
+      date,
+      reference,
+      "3100",
+      "C",
+      openingGap.noteNetBookValue - openingGap.balanceSheetValue,
+      `Fixed asset note opening net book value ${openingGap.noteNetBookValue} above the prior-year balance sheet's fixed assets of ${openingGap.balanceSheetValue}`,
+    );
+  }
 }
 
 // ============================================================================
@@ -330,8 +425,10 @@ function profitAndLossLines(profitAndLoss, { stockMovement, depreciation, tagged
   add("OwnWorkCapitalised", "sales", "4003", profitAndLoss.ownWorkCapitalised, "Own work capitalised");
   const costOfSales = profitAndLoss.costOfSales !== undefined ? profitAndLoss.costOfSales : profitAndLoss.rawMaterialsConsumables;
   const costConcept = profitAndLoss.costOfSales !== undefined ? "CostSales" : "RawMaterialsConsumablesUsed";
-  if (costOfSales !== undefined || stockMovement !== 0)
-    add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement, "Cost of sales");
+  // The engine takes the stock movement off the purchases; a stated change in stocks is that movement already.
+  const changeInStocks = n(profitAndLoss.changeInStocks);
+  if (costOfSales !== undefined || stockMovement !== 0 || changeInStocks !== 0)
+    add(costConcept, "purchases", "5000", n(costOfSales) + stockMovement - changeInStocks, "Cost of sales");
   add("OtherExternalCharges", "purchases", "5001", profitAndLoss.otherExternalCharges, "Other external charges");
   add("StaffCostsEmployeeBenefitsExpense", "purchases", "5101", profitAndLoss.staffCosts, "Staff costs");
   add("InterestPayableSimilarChargesFinanceCosts", "purchases", "5803", profitAndLoss.interestPayable, "Interest payable");
@@ -383,6 +480,7 @@ function bookShell(accounts, period, taxData, extras) {
   book.accounts.purchases["5001"] = { "accountMainDescription": "Sub contractors", "diya-gl:column": "P" };
   book.accounts.purchases["5101"] = { "accountMainDescription": "Employee wages (non-PAYE)", "diya-gl:column": "S" };
   book.accounts.purchases["5501"] = { "accountMainDescription": "General admin", "diya-gl:column": "AA" };
+  book.accounts.purchases["5803"] = { "accountMainDescription": "Interest payable", "diya-gl:column": "AF" };
   book.accounts.sales["4006"] = { accountMainDescription: "Fixed asset sales" };
   book.accounts.capital = { 3000: { accountMainDescription: "Share capital" }, 3100: { accountMainDescription: "Retained earnings" } };
   book.accounts.assets = {
@@ -481,7 +579,8 @@ async function buildYear(accounts, which, deps) {
           disposalResult: assets.disposalResult,
         })
       : [];
-    const derivedBeforeTax = derivedProfit + (derivedProfit > 0 ? derivedTax : 0) + assets.engineCharge;
+    // The engine takes the stock movement into the profit from the book's opening and closing stock.
+    const derivedBeforeTax = derivedProfit + (derivedProfit > 0 ? derivedTax : 0) + assets.engineCharge - stockMovement;
     if (derivesProfit && derivedBeforeTax !== 0) {
       stated.push({
         concept: "NetAssetsLiabilities",
@@ -521,18 +620,20 @@ async function buildYear(accounts, which, deps) {
         : "Summary of the figures in an iXBRL accounts file: one line for each tagged line of the year before. Its opening balance sheet is worked back from the file's prior-year balance sheet.",
     });
     const writer = new LineWriter(current ? "IXC" : "IXP");
-    openingJournal(writer, period.start, openingSheet, assets.classes);
+    openingJournal(writer, period.start, openingSheet, assets.classes, assets.openingGap);
     for (const post of posted.usable)
       writer.invoice(post.journal, period.end, referenceFor(post.concept), post.account, post.amount, post.label);
-    if (additionsAmount > 0)
+    for (const purchase of assets.purchases) {
       writer.invoice(
         "purchases",
         period.end,
         referenceFor("PropertyPlantEquipmentAdditions", "AdditionsOtherThanThroughBusinessCombinationsPropertyPlantEquipment"),
         "5900",
-        additionsAmount,
-        "Fixed asset additions",
+        purchase.cost,
+        purchase.className ? `${CLASS_LABEL[purchase.className]}, additions` : "Fixed asset additions",
+        purchase.className ? boughtAssetID(purchase.className) : undefined,
       );
+    }
 
     for (const sale of assets.sales)
       writer.invoice("sales", period.end, referenceFor("DisposalsPropertyPlantEquipment"), "4006", sale.proceeds, "Fixed asset sale");
@@ -565,7 +666,18 @@ async function buildYear(accounts, which, deps) {
     if (flow.dividend > 0) book.dividends = [{ boardMeetingDate: period.end, declaredDate: period.end, amount: money(flow.dividend) }];
     if (closingSheet.stock > 0 || openingSheet.stock > 0)
       book.stock = { openingValue: money(openingSheet.stock), closingValue: money(closingSheet.stock) };
-    if (assets.classes.length > 0) {
+    const bought = assets.purchases
+      .filter((purchase) => purchase.className && purchase.cost > 0)
+      .map((purchase) => ({
+        assetID: boughtAssetID(purchase.className),
+        class: REGISTER_CLASS[purchase.className],
+        description: `${CLASS_LABEL[purchase.className]}, bought in the year`,
+        cost: purchase.cost,
+        accumulatedDepreciation: 0,
+        depreciationRate: purchase.rate,
+        acquiredDate: period.end,
+      }));
+    if (assets.classes.length > 0 || bought.length > 0) {
       book.fixedAssets = assets.classes.map((entry, index) => ({
         assetID: entry.disposed ? `FA-IXBRL-${entry.className}-disposed-${index + 1}` : `FA-IXBRL-${entry.className}`,
         class: REGISTER_CLASS[entry.className],
@@ -575,6 +687,7 @@ async function buildYear(accounts, which, deps) {
         depreciationRate: entry.rate,
         ...(entry.taxWrittenDownValue === undefined ? {} : { taxWrittenDownValue: money(entry.taxWrittenDownValue) }),
       }));
+      book.fixedAssets.push(...bought);
     }
     book.openingBalances = toV2OpeningBalances(buildOpeningBalance(writer.lines));
     return { book, lines: writer.lines, openingSheet };
@@ -586,7 +699,7 @@ async function buildYear(accounts, which, deps) {
   let first;
   let results;
   let derivedTax = 0;
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < 25; attempt += 1) {
     posted = postsFor(derivedTax);
     first = build(flows);
     results = await runEngine(first.book, first.lines, taxData);
