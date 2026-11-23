@@ -205,6 +205,24 @@ describe("a run", () => {
     unchangedExcept(["ltd-2027.toml"]);
   });
 
+  it("asks for the reduced rate of VAT where the file carries it, and changes only its line", async () => {
+    const { client } = await run({}, steadyPage());
+    const fieldsFor = (name) => {
+      const call = client.send.mock.calls.find(([command]) => command.input.messages[0].content[0].text.startsWith(`Data file: ${name}`));
+      return call[0].input.toolConfig.tools[0].toolSpec.inputSchema.json.properties.figures.items.properties.field.enum;
+    };
+    expect(fieldsFor("ltd-2027.toml")).toContain("vat.reduced_rate");
+    expect(fieldsFor("se-2027-2028.toml")).not.toContain("vat.reduced_rate");
+
+    const quote = "Reduced rate 6% Some goods and services, for example children's car seats and home energy";
+    const result = await run({ "ltd-2027.toml": { figures: [figure("vat.reduced_rate", 0.06, quote)] } }, page(quote));
+    expect(result.written).toEqual(["ltd-2027.toml"]);
+    expect(changedLines(originals["ltd-2027.toml"], readFileSync(join(dir, "ltd-2027.toml"), "utf8"))).toEqual([
+      ["reduced_rate = 0.05", "reduced_rate = 0.06"],
+    ]);
+    unchangedExcept(["ltd-2027.toml"]);
+  });
+
   it("carries a financial year's corporation tax into the next year's previous-year section", async () => {
     const quote = "Main rate for financial year 2026: 26%";
     const result = await run({ "ltd-2026.toml": { figures: [figure("corporation_tax.main_rate", 0.26, quote)] } }, page(quote));

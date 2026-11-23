@@ -163,8 +163,9 @@ describe("deriveVatReturn", () => {
     });
   }
 
-  it("takes the VAT of Precision Code Ltd's exempt and outside the scope lines out of the workbook's boxes, quarter by quarter", async () => {
+  it("takes the VAT of Precision Code Ltd's exempt, outside the scope and non-supply lines out of the workbook's boxes, quarter by quarter", async () => {
     const { book, lines } = loadDiyaGlData(resolve(EXAMPLES_DIR, "precision-code-ltd", "full"));
+    const notSupplies = [];
     for (const [start, end] of [
       ["2025-04-01", "2025-06-30"],
       ["2025-07-01", "2025-09-30"],
@@ -174,19 +175,24 @@ describe("deriveVatReturn", () => {
       const answer = await deriveVatReturn(book, lines, { periodEnd: end });
       const sales = departingLines(lines, "sales", start, end);
       const purchases = departingLines(lines, "purchases", start, end);
-      expect(sales.every((l) => l.taxCode === "OS")).toBe(true);
+      expect(sales.every((l) => l.taxCode === "OS" || l.taxCode === "NA")).toBe(true);
       expect(purchases.every((l) => l.taxCode === "OS" || l.taxCode === "E")).toBe(true);
       expect(purchases.length).toBeGreaterThan(0);
       const workbook = answer.workbookBoxes;
-      // The workbook takes a sixth of every gross as VAT. An outside the scope
-      // sale counts whole in box 6; an exempt purchase counts whole in box 7;
-      // an outside the scope purchase is in no box.
+      // The workbook takes a sixth of every gross as VAT and the rest as net.
+      // An outside the scope sale counts whole in box 6; a sale that is not a
+      // supply is in no box; an exempt purchase counts whole in box 7; an
+      // outside the scope purchase is in no box.
+      const outsideScope = sales.filter((l) => l.taxCode === "OS");
+      const notSupply = sales.filter((l) => l.taxCode === "NA");
+      notSupplies.push(...notSupply);
       const exempt = purchases.filter((l) => l.taxCode === "E");
       expect(Math.abs(answer.boxes.box1 - (workbook.box1 - grossOf(sales) / 6))).toBeLessThan(0.011);
       expect(Math.abs(answer.boxes.box4 - (workbook.box4 - grossOf(purchases) / 6))).toBeLessThan(0.011);
       expect(answer.boxes.box3).toBe(answer.boxes.box1);
       expect(answer.boxes.box5).toBe(pence(answer.boxes.box3 - answer.boxes.box4));
-      expect(Math.abs(answer.boxes.box6 - (workbook.box6 + grossOf(sales) / 6))).toBeLessThanOrEqual(1);
+      expect(Math.abs(answer.boxes.box6 - (workbook.box6 + grossOf(outsideScope) / 6 - grossOf(notSupply) / 1.2))).toBeLessThanOrEqual(1);
+      expect(answer.lines.box6.some((l) => l.taxCode === "NA")).toBe(false);
       expect(Math.abs(answer.boxes.box7 - (workbook.box7 - grossOf(purchases) / 1.2 + grossOf(exempt)))).toBeLessThanOrEqual(1);
       expect(answer.followsTaxCodes).toBe(true);
       expect(answer.workbookDifference).toMatch(/so the boxes follow each line's tax code and differ from the workbook's VAT return/);
@@ -197,6 +203,9 @@ describe("deriveVatReturn", () => {
       expect(Math.abs(total(answer.lines.box7) - answer.boxes.box7)).toBeLessThanOrEqual(0.5);
       expect(answer.lines.box7.some((l) => l.taxCode === "OS")).toBe(false);
     }
+    expect(notSupplies.map((l) => [l.postingDate, l.accountMainID, l.detailComment, l.amount])).toEqual([
+      ["2025-08-01", "4004", "Innovate UK", 2500],
+    ]);
   });
 
   describe("a book whose lines carry other tax codes", () => {
