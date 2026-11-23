@@ -93,10 +93,16 @@ describe("diya-gl package", () => {
     }
   });
 
-  it("carries the two published v2 schemas at the path app-resources.js expects", () => {
+  it("carries the published v2 and v3 schemas at the path app-resources.js expects", () => {
     const schemaDir = resolve(DIYA_GL_DIR, "dist", "web", "spreadsheets.diyaccounting.co.uk", "public", "schema");
-    expect(existsSync(resolve(schemaDir, "diya-gl-book-v2.schema.json"))).toBe(true);
-    expect(existsSync(resolve(schemaDir, "diya-gl-lines-v2.schema.json"))).toBe(true);
+    for (const name of [
+      "diya-gl-book-v2.schema.json",
+      "diya-gl-lines-v2.schema.json",
+      "diya-gl-book-v3.schema.json",
+      "diya-gl-lines-v3.schema.json",
+    ]) {
+      expect(existsSync(resolve(schemaDir, name)), name).toBe(true);
+    }
   });
 
   it("carries no workbook template", () => {
@@ -175,7 +181,12 @@ describe("the packed diya-gl tarball", () => {
       expect(packedPaths, name).toContain(`dist/app/bin/${name}`);
     }
     expect(packedPaths).toContain("dist/app/lib/derivations/index.js");
-    for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json"]) {
+    for (const name of [
+      "diya-gl-book-v2.schema.json",
+      "diya-gl-lines-v2.schema.json",
+      "diya-gl-book-v3.schema.json",
+      "diya-gl-lines-v3.schema.json",
+    ]) {
       expect(packedPaths, name).toContain(`dist/web/spreadsheets.diyaccounting.co.uk/public/schema/${name}`);
     }
   });

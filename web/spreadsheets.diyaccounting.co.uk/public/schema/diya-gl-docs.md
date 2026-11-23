@@ -934,10 +934,42 @@ The `sourceJournalID` values map to xlsx workbooks in each product:
 
 ## 9. Versioning
 
-This schema is versioned as `v2`. The version is embedded in the JSON Schema `$id` URL.
-An earlier `v1` existed but nothing outside this repository ever read it, so v2 replaced
-it in place rather than being published alongside it.
+The schema is published in two versions, `v2` and `v3`, each a book schema and a lines
+schema. The version is embedded in the JSON Schema `$id` URL:
+`diya-gl-book-v2.schema.json` and `diya-gl-lines-v2.schema.json`,
+`diya-gl-book-v3.schema.json` and `diya-gl-lines-v3.schema.json`. An earlier `v1` existed
+but nothing outside this repository ever read it, so v2 replaced it in place rather than
+being published alongside it.
 The `diya-gl:product` value in `book.toml` determines which subset of the schema is active.
+
+### 9.1 Which version a book is read against
+
+A book is validated against the schema of its own `diya-gl:formatVersion`. A book marked
+`diya-gl/3` is read against v3. Every other book is read against v2: the older engines
+wrote `diya-gl/1`, `diya-gl/2` and `diya-gl-books/1`, and some books carry no marker.
+Reading a book changes nothing in it, so a v2 book saves as the same valid v2 book.
+
+Both versions are closed: every object sets `additionalProperties: false`. A reader that
+holds only v2 refuses a v3 book, because v2 declares none of the fields v3 adds.
+
+The engine reads v2 and v3. It writes v2.
+
+### 9.2 What v3 adds
+
+| Where | Field | Values |
+| --- | --- | --- |
+| `documentInfo` | `diya-gl:formatVersion` | `diya-gl/3` |
+| each account (`accounts.<section>.<code>`) | `diya-gl:accountClass` | `asset`, `liability`, `equity`, `income`, `expense` (XBRL GL `gl-cor:mainAccountType`) |
+| each account | `diya-gl:summaryConcept` | the local name of the FRC taxonomy concept the account feeds, e.g. `TurnoverRevenue` |
+| each account | `diya-gl:labels` | `{ cy = "..." }`: the account's Welsh name; `accountMainDescription` is the English name |
+| book root | `diya-gl:filings` | an array of `{ kind, periodStart, periodEnd, filedDate, reference, figures }`: `kind` is `vat`, `accounts` or `ct600`; `figures` holds numbers keyed by their name on the filing, e.g. `box1` to `box9` |
+| book root | `diya-gl:statementBalances` | `{ <bank account code> = [{ date, balance }] }`: the balances the bank's own statements show |
+| line | `entryType` | `standard`, `adjusting`, `recurring`, `reclassifying`, `other` (XBRL GL `gl-cor:entryType`) |
+| line | `postingStatus` | `posted`, `proposed`, `cancelled` (the XBRL GL words). v2's `draft` is `proposed` in v3, and v2's `voided` is `cancelled` |
+| line | `diya-gl:reversesEntry` | the `entryNumber` of the entry this line reverses |
+
+Every v3 field is optional. Apart from the marker, `postingStatus`'s words and these
+fields, v3 is v2.
 
 ---
 

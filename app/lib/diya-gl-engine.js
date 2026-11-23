@@ -205,8 +205,9 @@ export {
   nodeResourceLoader,
   resourceRoot,
   resourcePathWithinRoot,
-  BOOK_SCHEMA_RESOURCE,
-  LINES_SCHEMA_RESOURCE,
+  SCHEMA_VERSIONS,
+  SCHEMA_RESOURCES,
+  schemaVersionOf,
   ResourceUnavailableError,
 } from "./app-resources.js";
 

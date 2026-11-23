@@ -12,12 +12,12 @@
 // app/lib/app-resources.js, which the page backs with fetch.
 //
 // The other substitution is ajv itself. app/lib/diya-gl-schema.js compiles
-// the two published v2 schemas with ajv.compile(), which reaches `new
+// the published v2 and v3 schemas with ajv.compile(), which reaches `new
 // Function` - forbidden by the production CSP's script-src (no
 // unsafe-eval). Its three ajv imports resolve here to a stub built from
 // generateStandaloneValidatorSource(): ajv's own standalone code generator,
 // run once under Node rather than by the browser. ajv.compile() itself
-// never enters the bundle; only the two functions it already generated do.
+// never enters the bundle; only the four functions it already generated do.
 //
 //   node scripts/build-diya-gl-bundle.mjs
 
@@ -27,7 +27,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import { dirname, resolve, relative, sep } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
-import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
+import { generateStandaloneValidatorSource, STANDALONE_VALIDATOR_NAMES } from "../app/lib/diya-gl-schema.js";
+import { SCHEMA_RESOURCES, SCHEMA_VERSIONS, resourcePathWithinRoot } from "../app/lib/app-resources.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -41,6 +42,21 @@ const ENGINE_DIR = resolve(DIYA_GL_DIR, "engine");
 const ASSETS_DIR = resolve(DIYA_GL_DIR, "assets");
 const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const DIYA_GL_SCHEMA_DIR = resolve(DIYA_GL_DIR, "schema");
+
+// Every published schema file, and the $id each one's precompiled validator
+// answers to in the bundle's ajv stub.
+const SCHEMA_FILES = SCHEMA_VERSIONS.flatMap((version) =>
+  ["book", "lines"].map((kind) => resourcePathWithinRoot(SCHEMA_RESOURCES[version][kind])),
+);
+const SCHEMA_IDS = Object.fromEntries(
+  SCHEMA_VERSIONS.map((version) => [
+    version,
+    {
+      book: `https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-${version}.schema.json`,
+      lines: `https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-${version}.schema.json`,
+    },
+  ]),
+);
 const BUNDLE_FILE = resolve(ENGINE_DIR, "diya-gl-engine.js");
 
 // The spreadsheets site's own copy of the engine and the Company package's templates, which the
@@ -79,7 +95,7 @@ function copySiteFiles() {
   }
 
   mkdirSync(DIYA_GL_SCHEMA_DIR, { recursive: true });
-  for (const name of ["diya-gl-book-v2.schema.json", "diya-gl-lines-v2.schema.json", "diya-gl-docs.md"]) {
+  for (const name of [...SCHEMA_FILES, "diya-gl-docs.md"]) {
     cpSync(resolve(SCHEMA_DIR, name), resolve(DIYA_GL_SCHEMA_DIR, name));
   }
 }
@@ -139,20 +155,25 @@ const nodeAbsent = {
 };
 
 // Ajv itself, absent the same way. Its stub for "ajv/dist/2020.js" carries the
-// two functions generateStandaloneValidatorSource() already generated, and
+// four functions generateStandaloneValidatorSource() already generated, and
 // picks between them by the $id of the schema handed to .compile() - the
 // same call diya-gl-schema.js's compileSchemas() always makes, unchanged.
 function ajvAbsentPlugin(generatedSource) {
   const STUBBED = new Set(["ajv/dist/2020.js", "ajv-formats", "ajv/dist/standalone/index.js"]);
+  const validatorById = SCHEMA_VERSIONS.flatMap((version) =>
+    ["book", "lines"].map((kind) => `    ${JSON.stringify(SCHEMA_IDS[version][kind])}: ${STANDALONE_VALIDATOR_NAMES[version][kind]},`),
+  ).join("\n");
   const stubSources = {
     "ajv/dist/2020.js": `${generatedSource}
+const VALIDATOR_BY_ID = {
+${validatorById}
+};
 class Ajv2020Stub {
   compile(schema) {
     const id = schema && schema.$id;
-    if (id === "${BOOK_SCHEMA_ID}") return validateBook;
-    if (id === "${LINES_SCHEMA_ID}") return validateLines;
+    if (Object.hasOwn(VALIDATOR_BY_ID, id)) return VALIDATOR_BY_ID[id];
     throw new Error(
-      "Ajv2020.compile(): the DIYA-GL bundle only carries the two published diya-gl schemas precompiled, got $id " + id +
+      "Ajv2020.compile(): the DIYA-GL bundle only carries the published diya-gl schemas precompiled, got $id " + id +
       ". ajv's own compiler is not in this bundle: the production CSP allows no unsafe-eval.",
     );
   }
@@ -189,7 +210,7 @@ let EXAMPLE_BOOKS = [];
 
 // The files the engine reads that are not the book itself: the tax year data
 // the save path applies, each product's templates with their meta, and the
-// generated examples.js. The two v2 schemas are left where they are — the site
+// generated examples.js. The published schemas are left where they are — the site
 // already publishes them at /schema/, which is the root the resource loader names
 // them under.
 function generateExamplesJs() {
@@ -387,7 +408,7 @@ function buildPrecacheManifest() {
   for (const absPath of walk(resolve(ASSETS_DIR, "examples"))) relPaths.add(toDiyaGlPath(absPath));
 
   const urls = [...relPaths].sort().map((p) => `/${p}`);
-  urls.push("/schema/diya-gl-book-v2.schema.json", "/schema/diya-gl-lines-v2.schema.json");
+  urls.push(...SCHEMA_FILES.map((name) => `/schema/${name}`));
   urls.push("/manifest.webmanifest", "/icon.svg");
   return urls;
 }
@@ -422,19 +443,29 @@ function writeBuildStamp() {
   return { stamp, count: urls.length };
 }
 
-const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
-const LINES_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json";
-
 async function main() {
   mkdirSync(ENGINE_DIR, { recursive: true });
   mkdirSync(DIYA_GL_DIR, { recursive: true });
 
-  const bookSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
-  const linesSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
-  if (bookSchema.$id !== BOOK_SCHEMA_ID || linesSchema.$id !== LINES_SCHEMA_ID) {
-    throw new Error("the published schemas' $id fields moved; update BOOK_SCHEMA_ID/LINES_SCHEMA_ID in this script to match");
+  const schemas = Object.fromEntries(
+    SCHEMA_VERSIONS.map((version) => [
+      version,
+      Object.fromEntries(
+        ["book", "lines"].map((kind) => [
+          kind,
+          JSON.parse(readFileSync(resolve(SCHEMA_DIR, resourcePathWithinRoot(SCHEMA_RESOURCES[version][kind])), "utf8")),
+        ]),
+      ),
+    ]),
+  );
+  for (const version of SCHEMA_VERSIONS) {
+    for (const kind of ["book", "lines"]) {
+      if (schemas[version][kind].$id !== SCHEMA_IDS[version][kind]) {
+        throw new Error(`the published ${kind} ${version} schema's $id moved; update SCHEMA_IDS in this script to match`);
+      }
+    }
   }
-  const generatedSource = generateStandaloneValidatorSource(bookSchema, linesSchema);
+  const generatedSource = generateStandaloneValidatorSource(schemas);
 
   const result = await build({
     entryPoints: [resolve(ROOT, "app", "lib", "diya-gl-engine.js")],
