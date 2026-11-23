@@ -282,7 +282,9 @@ export function trialBalance(book, lines, { from, to, yearEndPostings = [] } = {
   const inRange = (date) => (!from || date >= from) && (!to || date <= to);
   const balances = new Map();
   const add = (postings) => {
-    for (const { account, debit, credit } of postings) balances.set(account, (balances.get(account) ?? 0) + debit - credit);
+    for (const { account, debit, credit } of postings) {
+      balances.set(account, (balances.get(account) ?? 0) + exactOf(debit) - exactOf(credit));
+    }
   };
   const apart = [];
   for (const line of lines) {
@@ -300,16 +302,43 @@ export function trialBalance(book, lines, { from, to, yearEndPostings = [] } = {
   const names = postingAccountNames(book);
   const accounts = [...balances.keys()]
     .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
-    .map((account) => {
-      const balance = balances.get(account);
-      return { account, name: names[account] ?? null, debit: balance > 0 ? balance : 0, credit: balance < 0 ? -balance : 0 };
-    });
+    .map((account) => ({ account, balance: balances.get(account) }));
   const totals = {
-    debit: accounts.reduce((total, row) => total + row.debit, 0),
-    credit: accounts.reduce((total, row) => total + row.credit, 0),
+    debit: poundsOf(accounts.reduce((total, row) => total + Math.max(row.balance, 0), 0)),
+    credit: poundsOf(accounts.reduce((total, row) => total + Math.max(-row.balance, 0), 0)),
   };
-  return { from: from ?? null, to: to ?? null, accounts, totals, apart };
+  return {
+    from: from ?? null,
+    to: to ?? null,
+    accounts: accounts.map(({ account, balance }) => ({
+      account,
+      name: names[account] ?? null,
+      debit: poundsOf(Math.max(balance, 0)),
+      credit: poundsOf(Math.max(-balance, 0)),
+    })),
+    totals,
+    apart,
+  };
 }
+
+// The trial balance sums in integers, never in floating point pounds, which
+// leave figures such as 7524.799999999999. A posting can fall between pennies
+// (VAT taken out of a gross amount, half a year's depreciation), and the
+// workbook sums those unrounded, so each posting is counted exactly in
+// hundredths of a penny and each figure goes back as pounds from that count.
+const EXACT_PER_POUND = 10000;
+const exactOf = (pounds) => Math.round(pounds * EXACT_PER_POUND);
+const poundsOf = (exact) => exact / EXACT_PER_POUND;
+
+// A figure answered to a reader rounds to the penny, half away from zero, on
+// its exact count. The engine's own figures stay exact, so they tie to the
+// workbook, which carries balances between pennies.
+const EXACT_PER_PENNY = EXACT_PER_POUND / 100;
+const toPenny = (pounds) => {
+  const exact = exactOf(pounds);
+  return (Math.sign(exact) * Math.round(Math.abs(exact) / EXACT_PER_PENNY)) / 100;
+};
+const sidesToPenny = (row) => ({ ...row, debit: toPenny(row.debit), credit: toPenny(row.credit) });
 
 const MONTH_NAMES = [
   "January",
@@ -406,7 +435,8 @@ export function trialBalanceRange(book, { period, month, from, to } = {}) {
 /**
  * The trial balance a reader asks for, with the periods on offer and, when an
  * account is named, the lines and year-end postings behind that account's
- * balance in the same period.
+ * balance in the same period. Each debit and credit is rounded to the penny
+ * from the exact figure trialBalance and trialBalanceAccountLines count.
  * @param {Object} book - a Company book
  * @param {Array} lines
  * @param {Object} taxData - the book's tax year data, for the year-end postings
@@ -417,9 +447,16 @@ export function trialBalanceReport(book, lines, taxData, selection = {}) {
   const range = trialBalanceRange(book, selection);
   const yearEnd = yearEndPostings(book, lines, taxData);
   const balance = trialBalance(book, lines, { from: range.from, to: range.to, yearEndPostings: yearEnd });
-  const report = { ...range, accounts: balance.accounts, totals: balance.totals, apart: balance.apart, periods: trialBalancePeriods(book) };
+  const report = {
+    ...range,
+    accounts: balance.accounts.map(sidesToPenny),
+    totals: sidesToPenny(balance.totals),
+    apart: balance.apart,
+    periods: trialBalancePeriods(book),
+  };
   if (selection.account !== undefined && selection.account !== null && selection.account !== "") {
-    report.accountLines = trialBalanceAccountLines(book, lines, String(selection.account), { ...range, yearEndPostings: yearEnd });
+    const accountLines = trialBalanceAccountLines(book, lines, String(selection.account), { ...range, yearEndPostings: yearEnd });
+    report.accountLines = { ...accountLines, rows: accountLines.rows.map(sidesToPenny), totals: sidesToPenny(accountLines.totals) };
   }
   return report;
 }
@@ -438,6 +475,12 @@ export function trialBalanceReport(book, lines, taxData, selection = {}) {
 export function trialBalanceAccountLines(book, lines, account, { from, to, yearEndPostings: yearEnd = [] } = {}) {
   const inRange = (date) => (!from || date >= from) && (!to || date <= to);
   const rows = [];
+  const exact = { debit: 0, credit: 0 };
+  const amounts = (posting) => {
+    exact.debit += exactOf(posting.debit);
+    exact.credit += exactOf(posting.credit);
+    return { debit: poundsOf(exactOf(posting.debit)), credit: poundsOf(exactOf(posting.credit)) };
+  };
   for (const line of lines) {
     const date = isoDate(line.postingDate);
     if (!inRange(date) || reasonApart(book, line)) continue;
@@ -449,8 +492,7 @@ export function trialBalanceAccountLines(book, lines, account, { from, to, yearE
         journal: line.sourceJournalID,
         postingDate: date,
         description: line.detailComment ?? line.lineItemComment ?? "",
-        debit: posting.debit,
-        credit: posting.credit,
+        ...amounts(posting),
       });
     }
   }
@@ -464,8 +506,7 @@ export function trialBalanceAccountLines(book, lines, account, { from, to, yearE
         journal: null,
         postingDate: entry.date,
         description: entry.description,
-        debit: posting.debit,
-        credit: posting.credit,
+        ...amounts(posting),
       });
     }
   }
@@ -474,7 +515,10 @@ export function trialBalanceAccountLines(book, lines, account, { from, to, yearE
     account,
     name: postingAccountNames(book)[account] ?? null,
     rows,
-    totals: { debit: rows.reduce((t, r) => t + r.debit, 0), credit: rows.reduce((t, r) => t + r.credit, 0) },
+    totals: {
+      debit: poundsOf(exact.debit),
+      credit: poundsOf(exact.credit),
+    },
   };
 }
 

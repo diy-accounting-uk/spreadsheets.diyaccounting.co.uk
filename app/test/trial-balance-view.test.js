@@ -10,7 +10,8 @@ import { describe, it, expect } from "vitest";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { loadDiyaGlData, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
-import { trialBalancePeriods, trialBalanceRange, trialBalanceReport } from "../lib/book-queries.js";
+import { trialBalance, trialBalanceAccountLines, trialBalancePeriods, trialBalanceRange, trialBalanceReport } from "../lib/book-queries.js";
+import { yearEndPostings } from "../lib/posting-rules.js";
 import { TOOLS, createSession, loadIntoSession } from "../lib/mcp/diya-gl-tools.js";
 import { createMethods } from "../lib/mcp/server.js";
 
@@ -75,12 +76,14 @@ describe.each(EXAMPLES)("the trial balance report of %s", (example) => {
     expect(trialBalanceReport(book, lines, taxData, { period: "year" }).totals.debit).toBeGreaterThan(0);
   });
 
-  it("shows, for each account, lines whose debits less credits are the account's balance", () => {
+  it("shows, for each account, lines whose debits less credits are the account's exact balance", () => {
     for (const selection of selections) {
-      const { accounts } = trialBalanceReport(book, lines, taxData, selection);
+      const { from, to } = trialBalanceRange(book, selection);
+      const yearEnd = yearEndPostings(book, lines, taxData);
+      const { accounts } = trialBalance(book, lines, { from, to, yearEndPostings: yearEnd });
       for (const row of accounts) {
-        const { accountLines } = trialBalanceReport(book, lines, taxData, { ...selection, account: row.account });
-        const net = accountLines.totals.debit - accountLines.totals.credit;
+        const { totals } = trialBalanceAccountLines(book, lines, row.account, { from, to, yearEndPostings: yearEnd });
+        const net = totals.debit - totals.credit;
         expect({ selection, account: row.account, ties: toThePenny(net, row.debit - row.credit) }).toEqual({
           selection,
           account: row.account,
@@ -90,8 +93,79 @@ describe.each(EXAMPLES)("the trial balance report of %s", (example) => {
     }
   });
 
+  it("answers every debit and credit, in the balances and in each account's lines, to at most two places", () => {
+    const twoPlaces = (value) => Math.round(value * 100) / 100 === value;
+    for (const selection of selections) {
+      const report = trialBalanceReport(book, lines, taxData, selection);
+      const figures = [report.totals.debit, report.totals.credit, ...report.accounts.flatMap((row) => [row.debit, row.credit])];
+      for (const row of report.accounts) {
+        const { accountLines } = trialBalanceReport(book, lines, taxData, { ...selection, account: row.account });
+        figures.push(
+          accountLines.totals.debit,
+          accountLines.totals.credit,
+          ...accountLines.rows.flatMap((line) => [line.debit, line.credit]),
+        );
+      }
+      expect({ selection, offenders: figures.filter((value) => !twoPlaces(value)) }).toEqual({ selection, offenders: [] });
+    }
+  });
+
+  it("answers equal debit and credit totals, each the penny of the engine's exact total", () => {
+    for (const selection of selections) {
+      const { from, to } = trialBalanceRange(book, selection);
+      const exact = trialBalance(book, lines, { from, to, yearEndPostings: yearEndPostings(book, lines, taxData) });
+      const { totals } = trialBalanceReport(book, lines, taxData, selection);
+      expect({ selection, equal: totals.debit === totals.credit }).toEqual({ selection, equal: true });
+      expect({ selection, debit: totals.debit }).toEqual({ selection, debit: Math.round(exact.totals.debit * 100) / 100 });
+    }
+  });
+
+  it("counts, in the engine, every figure exactly in hundredths of a penny, with column totals that are exactly the sums of their rows", () => {
+    const exactCount = (value) => Math.round(value * 10000) / 10000 === value;
+    for (const selection of selections) {
+      const { from, to } = trialBalanceRange(book, selection);
+      const { accounts, totals } = trialBalance(book, lines, { from, to, yearEndPostings: yearEndPostings(book, lines, taxData) });
+      const sum = (side) => accounts.reduce((exact, row) => exact + Math.round(row[side] * 10000), 0) / 10000;
+      const offenders = [totals.debit, totals.credit, ...accounts.flatMap((row) => [row.debit, row.credit])].filter(
+        (value) => !exactCount(value),
+      );
+      expect({ selection, offenders }).toEqual({ selection, offenders: [] });
+      expect({ selection, debit: totals.debit, credit: totals.credit }).toEqual({ selection, debit: sum("debit"), credit: sum("credit") });
+      expect({ selection, equal: totals.debit === totals.credit }).toEqual({ selection, equal: true });
+    }
+  });
+
   it("carries no account lines unless an account is named", () => {
     expect(trialBalanceReport(book, lines, taxData, { period: "year" }).accountLines).toBeUndefined();
+  });
+});
+
+describe("the trial balance answered to the penny", () => {
+  const { book, lines, taxData } = loaded("precision-code-ltd/full");
+
+  it("answers the June 2025 balance on the current account as 7524.80", () => {
+    const report = trialBalanceReport(book, lines, taxData, { period: "month", month: "2025-06", account: "1200" });
+    expect(report.accounts.find((row) => row.account === "1200")).toMatchObject({ debit: 7524.8, credit: 0 });
+    expect(report.accountLines.totals).toEqual({ debit: 35200, credit: 27675.2 });
+  });
+
+  it("rounds a balance that falls between pennies half away from zero, and keeps the engine's figure exact", () => {
+    const { from, to } = trialBalanceRange(book, { period: "year" });
+    const exact = trialBalance(book, lines, { from, to, yearEndPostings: yearEndPostings(book, lines, taxData) });
+    const halfPenny = exact.accounts.flatMap((row) =>
+      ["debit", "credit"].filter((side) => Math.abs(Math.round(row[side] * 10000) % 100) === 50).map((side) => ({ row, side })),
+    );
+    expect(halfPenny.length).toBeGreaterThan(0);
+    const answered = trialBalanceReport(book, lines, taxData, { period: "year" }).accounts;
+    for (const { row, side } of halfPenny) {
+      const answer = answered.find((candidate) => candidate.account === row.account)[side];
+      expect({ account: row.account, side, answer }).toEqual({
+        account: row.account,
+        side,
+        answer: Math.round(row[side] * 100 + 1e-9) / 100,
+      });
+      expect(answer).toBeGreaterThan(row[side]);
+    }
   });
 });
 
