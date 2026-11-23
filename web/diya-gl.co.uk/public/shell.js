@@ -3402,6 +3402,14 @@
       message.textContent = text;
     }
 
+    // A handoff whose figures differ from what the book's own views show is opened only on a
+    // second press, after the dialog has said how they differ.
+    var confirmedChoice = null;
+    function forgetConfirmation() {
+      confirmedChoice = null;
+      go.textContent = "Open Submit";
+    }
+
     var resourcesPromise = null;
     function loadEngine() {
       if (!resourcesPromise) {
@@ -3415,6 +3423,7 @@
     function refreshPeriod() {
       var kind = kindSelect.value;
       say("");
+      forgetConfirmation();
       periodSelect.innerHTML = "";
       periodSelect.style.display = "none";
       periodDate.style.display = "none";
@@ -3446,6 +3455,12 @@
     }
 
     kindSelect.addEventListener("change", refreshPeriod);
+    [periodSelect, periodDate].forEach(function (input) {
+      input.addEventListener("change", function () {
+        if (confirmedChoice !== null) say("");
+        forgetConfirmation();
+      });
+    });
     go.addEventListener("click", function () {
       var kind = kindSelect.value;
       var choice = kind === "vat" ? periodDate.value : periodSelect.value;
@@ -3453,6 +3468,7 @@
         say("Choose the period first.");
         return;
       }
+      var choiceKey = kind + " " + choice;
       go.disabled = true;
       loadEngine()
         .then(function (loaded) {
@@ -3470,6 +3486,13 @@
               loaded.resources,
             )
             .then(function (built) {
+              if (built.notice && confirmedChoice !== choiceKey) {
+                confirmedChoice = choiceKey;
+                say(built.notice + " Check the figures, then open Submit.");
+                go.textContent = "Open Submit with these figures";
+                go.disabled = false;
+                return;
+              }
               var url = handoff.submitUrl(config.submitOrigin, kind, handoff.encodeFragment(built), {
                 medium: preset ? "book-vat" : "book-save-menu",
                 campaign: active.id,

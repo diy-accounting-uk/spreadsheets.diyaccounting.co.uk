@@ -99,6 +99,35 @@ test.describe("DIYA-GL books: file with DIY Accounting Submit", () => {
     expect(Object.keys(sent.figures)).toHaveLength(7);
   });
 
+  test("a VAT return whose boxes follow the lines' tax codes says how they differ from the workbook before it opens Submit", async ({
+    page,
+  }) => {
+    await openBook(page, "ltd", "ltd-scenario-full");
+    await openSaveMenu(page);
+    await page.getByRole("menuitem", { name: "File with DIY Accounting Submit" }).click();
+    await expect(page.locator("#submit-handoff-period-date")).toBeVisible({ timeout: 30_000 });
+    await page.locator("#submit-handoff-period-date").fill("2025-09-30");
+    await page.locator("#submit-handoff-go").click();
+    await expect(page.locator("#submit-handoff-message")).toContainText("follow each line's tax code", { timeout: 30_000 });
+    await expect(page.locator("#submit-handoff-message")).toContainText("(workbook £");
+    await expect(page.locator("#submit-handoff-go")).toHaveText("Open Submit with these figures");
+    expect(await page.evaluate(() => window.__opened)).toHaveLength(0);
+
+    await page.locator("#submit-handoff-period-date").fill("2025-12-31");
+    await expect(page.locator("#submit-handoff-go")).toHaveText("Open Submit");
+    await page.locator("#submit-handoff-go").click();
+    await expect(page.locator("#submit-handoff-go")).toHaveText("Open Submit with these figures", { timeout: 30_000 });
+    await page.locator("#submit-handoff-go").click();
+    await expect(page.locator("#submit-handoff")).toHaveCount(0, { timeout: 30_000 });
+
+    const opened = await page.evaluate(() => window.__opened);
+    expect(opened).toHaveLength(1);
+    const sent = decodeFragment(opened[0]);
+    expect(sent.period.periodEnd).toBe("2025-12-31");
+    expect(Object.keys(sent).sort()).toEqual(["figures", "kind", "packageVersion", "period", "sourceFileName"]);
+    expect(Object.keys(sent.figures)).toHaveLength(7);
+  });
+
   test("the VAT view of a VAT registered company book files a quarter with its figures and a tagged link", async ({ page }) => {
     await openBook(page, "ltd", "ltd-brickwork-pro-vat");
     await page.locator('.tab-btn[data-view="vat-returns"]').click();

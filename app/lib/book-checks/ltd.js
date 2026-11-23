@@ -409,7 +409,7 @@ function vatCodeNotAppliedWarning(ctx) {
     result: warn ? "warn" : "pass",
     actual: offenders.length,
     consequence: warn
-      ? "The VAT return and the accounts apply 20% VAT to every sales and purchases line and read no tax code, so a line coded exempt, zero rated or outside the scope of VAT is still treated as standard rated."
+      ? "The accounts and the spreadsheet package's VAT returns apply 20% VAT to every sales and purchases line and read no tax code, so a line coded exempt, zero rated or outside the scope of VAT is treated as standard rated there. The VAT return sent to Submit follows each line's tax code, so its boxes differ from the package's."
       : null,
     offenders: offenders.map(offenderOf),
   };

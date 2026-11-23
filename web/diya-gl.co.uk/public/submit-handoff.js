@@ -6,12 +6,15 @@
 // Sends figures the loaded book derives to DIY Accounting Submit. The figures ride in the URL
 // fragment of Submit's filing page as "#books=<base64url of UTF-8 JSON>", which no server or log
 // receives; Submit's widgets/books-import.js and lib/auth-url-builder.js read it and validate it.
-// The JSON is { kind, sourceFileName, packageVersion, period, figures }:
+// The JSON is { kind, sourceFileName, packageVersion, period, figures }; the handoff object can
+// also carry a notice for the reader, which stays on the page and never enters the fragment:
 //   kind "vat"             period { periodStart, periodEnd }
 //                          figures the seven VAT box ids
 //   kind "itsa-quarterly"  period { taxYear, periodStartDate, periodEndDate }
 //                          figures { periodIncome, periodExpenses, periodDisallowableExpenses }
 //   kind "itsa-annual"     period { taxYear }, figures { allowances, adjustments }
+// A VAT handoff carries a notice when the boxes follow the lines' tax codes and so differ from the
+// workbook's VAT return the book's VAT view shows.
 // A manifest names the kinds its product offers in submitActivities.
 
 (function (global) {
@@ -89,10 +92,12 @@
       VAT_BOX_IDS.forEach(function (id) {
         boxes[id] = vat.hmrc[id];
       });
-      return Object.assign(head, {
+      var built = Object.assign(head, {
         period: { periodStart: vat.periodStart, periodEnd: vat.periodEnd },
         figures: numbersOnly(boxes, "the VAT figure"),
       });
+      if (vat.workbookDifference) built.notice = vat.workbookDifference;
+      return built;
     }
     if (kind === "itsa-quarterly") {
       var derived = await engine.deriveItsaQuarterlyUpdate(book, lines, { periodEndDate: choice, resources: resources });
@@ -129,7 +134,14 @@
     });
     handoff.sourceFileName = handoff.sourceFileName.slice(0, MAX_TEXT_LENGTH);
     handoff.packageVersion = handoff.packageVersion.slice(0, MAX_TEXT_LENGTH);
-    var encoded = encodeBase64Url(JSON.stringify(handoff));
+    var sent = {
+      kind: handoff.kind,
+      sourceFileName: handoff.sourceFileName,
+      packageVersion: handoff.packageVersion,
+      period: handoff.period,
+      figures: handoff.figures,
+    };
+    var encoded = encodeBase64Url(JSON.stringify(sent));
     if (encoded.length > MAX_ENCODED_LENGTH) throw new Error("The figures are too large to send in a link.");
     return FRAGMENT_PREFIX + encoded;
   }
