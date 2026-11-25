@@ -100,8 +100,8 @@
     "resources:spreadsheets": "node scripts/generate-aws-resources.js --profile diya-spreadsheets"
   },
   "devDependencies": {
-    "@axe-core/cli": "^4.14.0",
-    "@axe-core/playwright": "^4.14.0",
+    "@axe-core/cli": "^4.14.1",
+    "@axe-core/playwright": "^4.14.1",
     "@playwright/test": "1.65.1",
     "aws-cdk": "^2.1149.0",
     "esbuild": "^0.28.2",
@@ -125,7 +125,7 @@
     "wait-on": "^9.5.1"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1176.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1177.0",
     "@xmldom/xmldom": "^0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
