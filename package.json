@@ -118,14 +118,14 @@
     "pa11y": "^10.0.0",
     "pa11y-ci": "^5.0.0",
     "prettier": "^3.10.1",
-    "retire": "^6.1.1",
+    "retire": "^6.1.2",
     "smol-toml": "^1.9.1",
     "structured-data-testing-tool": "^4.5.0",
-    "vitest": "^5.1.1",
+    "vitest": "^5.1.2",
     "wait-on": "^9.5.1"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.1177.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1178.0",
     "@xmldom/xmldom": "^0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
