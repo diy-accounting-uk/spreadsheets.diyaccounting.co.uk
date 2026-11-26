@@ -400,6 +400,23 @@ jobs:
           echo "Uploading runners to s3://${BUCKET_NAME}/runners/"
           aws s3 sync target/runners/ "s3://${BUCKET_NAME}/runners/" --delete
 
+      - name: Invalidate CloudFront for the zips and runners
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-SpreadsheetsStack"
+          DISTRIBUTION_ID=$(jq -r ".\"${STACK_NAME}\".DistributionId" cdk-spreadsheets.out/cdk-outputs-spreadsheets.json)
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths "/zips/*" "/runners/*" --query Invalidation.Id --output text)
+          echo "Invalidating /zips/* and /runners/* on ${DISTRIBUTION_ID}: ${INVALIDATION_ID}"
+          aws cloudfront wait invalidation-completed --distribution-id "${DISTRIBUTION_ID}" --id "${INVALIDATION_ID}"
+
+      - name: Invalidate CloudFront for the diya-gl runners
+        if: ${{ vars.DIYA_GL_CERTIFICATE_ARN != '' }}
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-DiyaGlSiteStack"
+          DISTRIBUTION_ID=$(jq -r ".\"${STACK_NAME}\".DistributionId" cdk-spreadsheets.out/cdk-outputs-diya-gl.json)
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths "/runners/*" --query Invalidation.Id --output text)
+          echo "Invalidating /runners/* on ${DISTRIBUTION_ID}: ${INVALIDATION_ID}"
+          aws cloudfront wait invalidation-completed --distribution-id "${DISTRIBUTION_ID}" --id "${INVALIDATION_ID}"
+
       - name: Tell IndexNow about the changed pages
         if: ${{ needs.params.outputs.environment-name == 'prod' }}
         run: node scripts/indexnow-submit.mjs
