@@ -23,7 +23,7 @@ Key paths inside the archive:
 | `xl/sharedStrings.xml` | Shared string table (strings referenced by index from cells with `t="s"`) |
 | `xl/externalLinks/externalLinkN.xml` | Cached values from other workbooks |
 | `xl/externalLinks/_rels/externalLinkN.xml.rels` | Maps each external link to its target filename |
-| `xl/calcChain.xml` | Pre-computed calculation order (removed for generated Taxi Sales sheets) |
+| `xl/calcChain.xml` | Pre-computed calculation order (removed for generated Taxi Sales sheets); see "Deleting a Formula Leaves Its calcChain Entry" |
 
 Basic pattern for reading and modifying:
 
@@ -430,6 +430,12 @@ This bites on any sheet whose input grid is a run of empty styled cells. On the 
 - Make the capture lazy, or match only the target cell's own element.
 
 Cells written out of order are re-inserted by `insertCellIntoRow()`, which compares column letters and ignores row numbers -- so once two rows have been merged by a swallowed `</row>`, new cells land in odd positions within the row element. LibreOffice reads cells by their `r` attribute and copes, but the XML is no longer valid OOXML.
+
+### Deleting a Formula Leaves Its calcChain Entry
+
+`xl/calcChain.xml` lists every formula cell. Excel trusts it on open: an entry that names a cell with no formula makes Excel repair the file ("Removed Records: Formula from /xl/calcChain.xml part"), open it as "<name> - Repaired" and force Save As. LibreOffice ignores the calc chain, so no recalculation test sees this.
+
+A template edit that removes a formula must also remove that cell's calc chain entry. `removeStaleCalcChainEntries(zip)` in `app/lib/calc-chain.js` does it and keeps the sheet (`i`) of the entries after it. To drop the whole chain, use `removeCalcChain(zip)`, which also removes its relationship and its content type override. `app/test/calc-chain-guard.test.js` fails on a stale entry or a dangling calc chain reference in any template, committed package or freshly generated package.
 
 ### Shared Formula Flattening Breaks LibreOffice xls Roundtrip
 
