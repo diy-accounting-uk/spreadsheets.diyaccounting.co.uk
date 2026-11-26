@@ -156,10 +156,10 @@ export async function removeCalcChain(zip) {
   const relsPath = "xl/_rels/workbook.xml.rels";
   const relsXml = await zip.file(relsPath).async("string");
   const rels = relsXml.replace(/<Relationship\s[^>]*\/>/g, (rel) => (attr(rel, "Type") === CALC_CHAIN_REL_TYPE ? "" : rel));
-  if (rels !== relsXml) zip.file(relsPath, rels, { date: zip.file(relsPath).date });
+  if (rels !== relsXml) zip.file(relsPath, rels, { date: zip.file(relsPath).date, createFolders: false });
 
   const typesPath = "[Content_Types].xml";
   const typesXml = await zip.file(typesPath).async("string");
   const types = typesXml.replace(/<Override\s[^>]*PartName="\/xl\/calcChain\.xml"[^>]*\/>/g, "");
-  if (types !== typesXml) zip.file(typesPath, types, { date: zip.file(typesPath).date });
+  if (types !== typesXml) zip.file(typesPath, types, { date: zip.file(typesPath).date, createFolders: false });
 }
