@@ -85,7 +85,7 @@ export async function calcChainProblems(zip) {
   const relsXml = await zip.file("xl/_rels/workbook.xml.rels").async("string");
   const typesXml = await zip.file("[Content_Types].xml").async("string");
   const hasPart = Boolean(zip.file(CALC_CHAIN_PART));
-  const hasRel = relsXml.includes(CALC_CHAIN_REL_TYPE);
+  const hasRel = [...relsXml.matchAll(/<Relationship\s[^>]*\/>/g)].some(([rel]) => attr(rel, "Type") === CALC_CHAIN_REL_TYPE);
   const hasOverride = typesXml.includes('PartName="/xl/calcChain.xml"');
   if (hasRel && !hasPart) problems.push("xl/_rels/workbook.xml.rels names a calcChain part the package does not hold");
   if (hasOverride && !hasPart) problems.push("[Content_Types].xml declares a calcChain part the package does not hold");
