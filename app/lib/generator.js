@@ -24,6 +24,7 @@ import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 import { financialYearRatesFor, financialYearNumber } from "./tax/corporation-tax.js";
 import { mainWritingDownPercentForYearEnd } from "./tax/capital-allowances.js";
 import { refreshCachedValues, refreshZipCachedValues } from "./cached-values.js";
+import { removeCalcChain } from "./calc-chain.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -1283,12 +1284,10 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       zip.file(sheetPath, sheetXml, { date: origDate });
     }
 
-    // Remove calcChain.xml — the generated Sales sheets have different formulas
-    // than the template, so the cached chain is stale. fullCalcOnLoad="1" ensures
-    // Excel rebuilds it from scratch on first open.
-    if (zip.file("xl/calcChain.xml")) {
-      zip.remove("xl/calcChain.xml");
-    }
+    // The generated Sales sheets have different formulas than the template,
+    // so the template's calc chain is stale. fullCalcOnLoad="1" makes Excel
+    // build a new one on first open.
+    await removeCalcChain(zip);
   }
 
   // Fix Home sheet HYPERLINKs: replace filename-based links (HYPERLINK(B3&"'Sheet'!Cell"))
