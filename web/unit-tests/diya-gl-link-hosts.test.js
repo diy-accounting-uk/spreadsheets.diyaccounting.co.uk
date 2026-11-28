@@ -52,6 +52,6 @@ describe("checkBookUrl refuses, naming where books open from", () => {
   ])("%j", (url) => {
     const result = checkBookUrl(url);
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("opens books only from");
+    expect(result.message).toContain("opens DIYA-GL books only from");
   });
 });

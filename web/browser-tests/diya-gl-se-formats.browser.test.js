@@ -179,7 +179,7 @@ test.describe("DIYA-GL page — Self Employed round trips (E3)", () => {
   test("a package zip uploaded to the page: its diya-gl download agrees with the CLI's own export of that same zip", async ({ page }) => {
     const packageBytes = await sePackageZipBytes();
     await uploadPackage(page, packageBytes, "se-latest-package.zip");
-    const diyaGl = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const diyaGl = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
 
     const cli = cliExport(packageBytes, "e3-se-package");
     const pageZip = await JSZip.loadAsync(diyaGl.bytes);
@@ -192,7 +192,7 @@ test.describe("DIYA-GL page — Self Employed round trips (E3)", () => {
     await dropFile(page, FIXTURES.diyaGlZip.bytes, FIXTURES.diyaGlZip.name);
     await waitForLoaded(page);
 
-    const roundTripped = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const roundTripped = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(roundTripped.bytes);
     expect(await zip.file("book.toml").async("string")).toBe(advancedStampedBookToml);
     expect(await zip.file("lines.jsonl").async("string")).toBe(advancedLinesJsonl);
@@ -200,7 +200,7 @@ test.describe("DIYA-GL page — Self Employed round trips (E3)", () => {
     await page.goto(seUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.json.bytes, FIXTURES.json.name);
     await waitForLoaded(page);
-    const json = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const json = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     expect(json.bytes.toString("utf-8")).toBe(advancedJsonText);
   });
 });
@@ -267,8 +267,8 @@ test.describe("DIYA-GL page — Self Employed downloads (E5)", () => {
     await page.click("#save-btn");
     const items = await page.getByRole("menuitem").allInnerTexts();
     expect(items).toEqual([
-      "Download books as diya-gl (.zip)",
-      "Download books as JSON (.json)",
+      "Download the book as diya-gl (.zip)",
+      "Download the book as JSON (.json)",
       "Download as a spreadsheet package (.zip)",
       "File with DIY Accounting Submit",
       "Save to my account",
@@ -276,11 +276,11 @@ test.describe("DIYA-GL page — Self Employed downloads (E5)", () => {
     ]);
     await page.keyboard.press("Escape");
 
-    const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const diyaGlZip = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);
     expect(Object.keys(diyaGl.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
-    const json = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const json = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     const document = JSON.parse(json.bytes.toString("utf-8"));
     expect(document.format).toBe("diya-gl");
     expect(document.version).toBe(1);

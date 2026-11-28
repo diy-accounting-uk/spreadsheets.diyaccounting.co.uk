@@ -770,7 +770,7 @@
     multiFile: false,
     emptyState: {
       intro:
-        "Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine.",
+        "Open a Basic Sole Trader workbook as an editable DIYA-GL book in your browser. Nothing is uploaded; the file never leaves your machine.",
     },
     views: [
       { id: "home", label: "Home", sheets: "Home", shared: "home" },

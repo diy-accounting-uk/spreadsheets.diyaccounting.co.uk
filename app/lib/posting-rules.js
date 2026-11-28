@@ -168,7 +168,7 @@ function lineName(line) {
 
 function assertCompany(book) {
   const product = book?.entityInformation?.["diya-gl:product"];
-  if (product !== COMPANY_PRODUCT) throw new Error(`Posting rules cover Company books; this book is "${product}"`);
+  if (product !== COMPANY_PRODUCT) throw new Error(`Posting rules cover Company DIYA-GL books; this book is "${product}"`);
 }
 
 function vatRateOf(book) {

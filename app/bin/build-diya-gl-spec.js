@@ -417,7 +417,7 @@ function buildPage() {
       <p>
         DIYA-GL&trade; is the file format behind DIY Accounting's DIYA-GL pages, its command line tools and the spreadsheets it generates. A whole
         year of a small business's accounts is two text files in a zip. <code>book.toml</code> says who the business is, what period the
-        books cover and what the chart of accounts holds. <code>lines.jsonl</code> holds one transaction per line. A sole trader's year
+        book covers and what the chart of accounts holds. <code>lines.jsonl</code> holds one transaction per line. A sole trader's year
         runs to about 15 KB.
       </p>
       <p>
@@ -484,8 +484,8 @@ function buildPage() {
         ${boxesWithField} of the ${boxes.rows.length} boxes have one.
       </p>
       <p>
-        Self Employed books fill the full pages, SA103F, as well, and both they and Limited Company books fill a VAT return. Limited Company
-        books file a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
+        A Self Employed DIYA-GL book fills the full pages, SA103F, as well, and both it and a Limited Company book fill a VAT return. A Limited Company
+        book files a CT600 and micro-entity accounts rather than SA103S. Every one of those views is on the product's own DIYA-GL page, and
         the figures behind them are on its <a href="https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html">reconciliation scorecard</a>.
       </p>
 ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "MTD API field"], boxes.rows.map(boxRow))}`);
@@ -509,7 +509,7 @@ ${table(["Box", "Label", "Basic Sole Trader", "Taxi Driver", "Self Employed", "M
       </p>
       <p>
         Beside these, the engine runs its reconciliation checks: one for every figure the workbook and the engine both compute, compared to
-        the penny. Those depend on the books in hand rather than on the format, and every one of them is published on the scorecards below.
+        the penny. Those depend on the book in hand rather than on the format, and every one of them is published on the scorecards below.
       </p>
 ${table(["Id", "What it reads", "Severity", "Products"], checks.map(checkRow))}`);
 
@@ -576,7 +576,7 @@ ${table(
   sections.push(`      <h3 id="evidence">Reconciliation evidence</h3>
       <p>
         Every figure this format computes is checked against the same figure in the spreadsheet. For each product, CI generates the
-        package from a set of books, recalculates the workbook in LibreOffice, computes the same figures from the diya-gl data alone, and
+        package from a DIYA-GL book, recalculates the workbook in LibreOffice, computes the same figures from the diya-gl data alone, and
         compares the two to the penny. Each scorecard carries the whole run: its status, the checks, the input transactions, screenshots
         of the recalculated sheets, the accounting statements and the tax review.
       </p>
@@ -588,10 +588,10 @@ ${table(["Product", "Featured scenario"], scorecards.map(scorecardRow))}
         The DIYA-GL pages read and write the format in your browser. Nothing you load leaves the machine.
       </p>
       <ul>
-        <li><a href="bst.html">Basic Sole Trader books</a></li>
-        <li><a href="taxi.html">Taxi Driver books</a></li>
-        <li><a href="se.html">Self Employed books</a></li>
-        <li><a href="ltd.html">Limited Company books</a></li>
+        <li><a href="bst.html">Basic Sole Trader bookkeeping</a></li>
+        <li><a href="taxi.html">Taxi Driver bookkeeping</a></li>
+        <li><a href="se.html">Self Employed bookkeeping</a></li>
+        <li><a href="ltd.html">Limited Company bookkeeping</a></li>
       </ul>
       <p>
         The same engine runs on the command line and as an MCP server, published as the npm package
@@ -620,7 +620,7 @@ docker run --rm ghcr.io/diy-accounting-uk/diya-gl:latest</code></pre>
       </p>
       <p>
         A company book's trial balance is built from its lines: each line posts to its accounts, the registers add their year-end
-        postings, and the debit and credit columns total the same. The Trial balance view on the Company books page and the MCP
+        postings, and the debit and credit columns total the same. The Trial balance view on the Company bookkeeping page and the MCP
         server's <code>trial_balance</code> tool read it over the year, one month, one VAT quarter or a date range, and name the
         lines behind any one account's balance.
       </p>

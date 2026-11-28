@@ -432,7 +432,7 @@ export const TOOLS = {
   new_book: {
     name: "new_book",
     description:
-      "Start an empty book for a new business: the product's starting chart of accounts (sales, purchases and bank accounts), the twelve months to the year end, and that tax year's rates, with no lines yet, its report and its book checks. Replaces the session's loaded book, so edit_lines can add the first sales and purchases straight away. Answers: How do I start books for a new business? What accounts does a new sole trader or company book start with? Which tax rates apply to my first year?",
+      "Start an empty book for a new business: the product's starting chart of accounts (sales, purchases and bank accounts), the twelve months to the year end, and that tax year's rates, with no lines yet, its report and its book checks. Replaces the session's loaded book, so edit_lines can add the first sales and purchases straight away. Answers: How do I start bookkeeping for a new business? What accounts does a new sole trader or company book start with? Which tax rates apply to my first year?",
     inputSchema: {
       type: "object",
       properties: {
@@ -482,7 +482,7 @@ export const TOOLS = {
   roll_forward: {
     name: "roll_forward",
     description:
-      "Start the next year of the loaded book: the year end moves on a year with that year's tax rates, the closing balances become the opening ones (bank accounts, debtors and creditors with their named ledgers, VAT, PAYE and CIS owed, stock, each fixed asset's cost, depreciation and tax written-down value, loans and the retained profit), dividends declared clear, and the lines hold only the opening entries. Returns the new book and lines, its report, its book checks, and rollChecks: each opening figure the new year prints against the closing figure the old year printed for it. Replaces the session's loaded book with the new year's. Answers: How do I start next year's books? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
+      "Start the next year of the loaded book: the year end moves on a year with that year's tax rates, the closing balances become the opening ones (bank accounts, debtors and creditors with their named ledgers, VAT, PAYE and CIS owed, stock, each fixed asset's cost, depreciation and tax written-down value, loans and the retained profit), dividends declared clear, and the lines hold only the opening entries. Returns the new book and lines, its report, its book checks, and rollChecks: each opening figure the new year prints against the closing figure the old year printed for it. Replaces the session's loaded book with the new year's. Answers: How do I start next year's book? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
     inputSchema: { type: "object", properties: { ...BYPASS_PROPERTIES } },
     handler: rollForwardBook,
   },

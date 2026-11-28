@@ -951,7 +951,8 @@
     stylesheet: "taxi.css",
     multiFile: false,
     emptyState: {
-      intro: "Open a Taxi Driver workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine.",
+      intro:
+        "Open a Taxi Driver workbook as an editable DIYA-GL book in your browser. Nothing is uploaded; the file never leaves your machine.",
     },
     // The example books arrive with taxi.html; the bundle carries no Taxi
     // fixture yet, so the empty state offers a file and a new book only.

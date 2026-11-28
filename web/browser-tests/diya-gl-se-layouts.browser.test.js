@@ -231,7 +231,7 @@ test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {
     focusRingSamples.push(await activeElementHasFocusRing(page));
     await expect(
       page.getByRole("button", {
-        name: "Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.",
+        name: "Sign in to save to a 35-day sandbox: your records are kept for 35 days after each save, on any device.",
       }),
     ).toBeFocused();
 
@@ -304,8 +304,8 @@ test.describe("DIYA-GL Self Employed page — keyboard-only run", () => {
     const saveMenu = page.locator("#save-menu");
     await expect(saveMenu).toBeVisible();
     await expect(saveMenu.locator('[role="menuitem"]')).toHaveText([
-      "Download books as diya-gl (.zip)",
-      "Download books as JSON (.json)",
+      "Download the book as diya-gl (.zip)",
+      "Download the book as JSON (.json)",
       "Download as a spreadsheet package (.zip)",
       "File with DIY Accounting Submit",
       "Save to my account",

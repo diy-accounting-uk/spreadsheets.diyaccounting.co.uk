@@ -214,7 +214,7 @@ test.describe("DIYA-GL page — the Self Employed diya-gl download (A1, A2)", ()
   test("A1: the diya-gl zip's book.toml and lines.jsonl equal the served example, byte for byte", async ({ page }) => {
     await openBook(page, FEATURED);
 
-    const { bytes } = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const { bytes } = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
     expect(Object.keys(zip.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
@@ -225,7 +225,7 @@ test.describe("DIYA-GL page — the Self Employed diya-gl download (A1, A2)", ()
   test("A2: the diya-gl zip's report.json equals report.js --package se --data's, byte for byte", async ({ page }) => {
     await openBook(page, FEATURED);
 
-    const { bytes } = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const { bytes } = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
     const pageReportText = await zip.file("report.json").async("string");
 

@@ -21,7 +21,7 @@ import { writeBookDirectory } from "./export.js";
 
 const USAGE = [
   "Usage: diya-gl new-book --product <bst|se|taxi|ltd> --name <business> --year-end <YYYY-MM-DD> [--vat] [--output-dir <dir>]",
-  "Answers: How do I start books for a new business? What accounts does a new sole trader or company book start with? Which tax rates apply to my first year?",
+  "Answers: How do I start bookkeeping for a new business? What accounts does a new sole trader or company book start with? Which tax rates apply to my first year?",
 ].join("\n");
 
 function parseArgs(argv) {

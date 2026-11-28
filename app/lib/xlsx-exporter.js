@@ -2294,7 +2294,7 @@ async function taxiAccountingPeriodFromSheet(set) {
   const end = sheet ? dateAt(sheet.xml, TAXI_PERIOD_END_CELL.cell, sheet.sharedStrings) : undefined;
   if (!end) {
     throw new Error(
-      `${workbookName}: no date in ${TAXI_PERIOD_END_CELL.sheet}!${TAXI_PERIOD_END_CELL.cell}, the date the books are made up to`,
+      `${workbookName}: no date in ${TAXI_PERIOD_END_CELL.sheet}!${TAXI_PERIOD_END_CELL.cell}, the date the accounts are made up to`,
     );
   }
   const [year, month, day] = end.split("-").map(Number);

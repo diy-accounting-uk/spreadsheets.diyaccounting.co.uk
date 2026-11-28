@@ -91,7 +91,7 @@ async function readMoney(page, selector) {
 
 async function downloadDiyaGlReport(page) {
   await page.click("#save-btn");
-  const item = page.getByRole("menuitem", { name: "Download books as diya-gl (.zip)", exact: true });
+  const item = page.getByRole("menuitem", { name: "Download the book as diya-gl (.zip)", exact: true });
   await item.waitFor({ state: "visible" });
   const [download] = await Promise.all([page.waitForEvent("download"), item.click()]);
   const stream = await download.createReadStream();

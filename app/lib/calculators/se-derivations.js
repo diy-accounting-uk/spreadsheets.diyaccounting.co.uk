@@ -423,7 +423,7 @@ export function buildSelfEmploymentQuarterlyUpdates(book, lines, taxData, option
   });
   warnings.push({
     field: "periodExpenses.consolidatedExpenses",
-    reason: "a customer election for turnover at or below the VAT threshold, offered on the filing page; never derived from the books.",
+    reason: "a customer election for turnover at or below the VAT threshold, offered on the filing page; never derived from the book.",
   });
   warnings.push({
     field: disallowableField,

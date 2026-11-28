@@ -876,7 +876,7 @@
   // view this is anyway).
   function renderTopbarTitle() {
     if (!state.loaded) {
-      els.topbarTitle.textContent = "DIYA-GL — " + active.title + " books";
+      els.topbarTitle.textContent = "DIYA-GL — " + active.title + " bookkeeping";
       return;
     }
     var name = SNAPSHOT.businessDetails.organizationIdentifier;
@@ -950,11 +950,11 @@
 
   function renderMobileTabbar() {
     var tabs = [
-      { id: "books", label: "Books" },
+      { id: "books", label: "Book" },
       { id: "checks", label: "Checks" },
     ];
     els.mobileTabbar.innerHTML =
-      '<div class="mobile-tabbar-inner" role="tablist" aria-label="Books sections">' +
+      '<div class="mobile-tabbar-inner" role="tablist" aria-label="Book sections">' +
       tabs
         .map(function (t) {
           return (
@@ -1031,7 +1031,7 @@
   function renderEmptyState() {
     return (
       '<div class="empty-state">' +
-      '<h2 tabindex="-1">View your books in DIYA-GL</h2>' +
+      '<h2 tabindex="-1">View your records in DIYA-GL</h2>' +
       "<p>" +
       esc(active.emptyState.intro) +
       "</p>" +
@@ -3270,8 +3270,8 @@
 
   function saveMenuItems() {
     var items = [
-      { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
-      { label: "Download books as JSON (.json)", format: "json" },
+      { label: "Download the book as diya-gl (.zip)", format: "diya-gl-zip" },
+      { label: "Download the book as JSON (.json)", format: "json" },
       { label: "Download as a spreadsheet package (.zip)", format: "package" },
     ];
     var current = currentBookAndLines();

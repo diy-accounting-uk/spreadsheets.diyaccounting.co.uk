@@ -59,7 +59,7 @@ export const PRODUCT_CONTENT = {
   },
   Company: {
     description:
-      "Excel accounts spreadsheet for UK limited companies. Double-entry books, VAT returns, year-end accounts and CT600 corporation tax figures.",
+      "Excel accounts spreadsheet for UK limited companies. Double-entry bookkeeping, VAT returns, year-end accounts and CT600 corporation tax figures.",
     h1: "Limited Company Accounts Spreadsheet",
     title: "Limited Company Accounts Spreadsheet for Excel (UK)",
     audience: "limited companies, VAT registered or not, with or without employees",

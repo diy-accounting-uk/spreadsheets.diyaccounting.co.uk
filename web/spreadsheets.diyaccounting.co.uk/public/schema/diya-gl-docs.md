@@ -946,7 +946,7 @@ The `diya-gl:product` value in `book.toml` determines which subset of the schema
 
 A book is validated against the schema of its own `diya-gl:formatVersion`. A book marked
 `diya-gl/3` is read against v3. Every other book is read against v2: the older engines
-wrote `diya-gl/1`, `diya-gl/2` and `diya-gl-books/1`, and some books carry no marker.
+wrote `diya-gl/1`, `diya-gl/2` and `diya-gl-books/1`, and some DIYA-GL books carry no marker.
 Reading a book changes nothing in it, so a v2 book saves as the same valid v2 book.
 
 Both versions are closed: every object sets `additionalProperties: false`. A reader that
@@ -1116,12 +1116,12 @@ answers the book, the lines, `differences`, the report and the book checks.
 
 ## 13. The Trial Balance of a Company Book
 
-The Trial balance view on the Company books page and the MCP server's `trial_balance` tool
+The Trial balance view on the Company bookkeeping page and the MCP server's `trial_balance` tool
 read the same trial balance, built from the lines. Each line posts to its accounts by the
 posting rules, and the registers add their year-end postings: fixed assets, stock, hire
 purchase, dividends and the corporation tax charge. Every account's balance sits in the
-debit or the credit column, and the two column totals are equal. The tool reads Company
-books only.
+debit or the credit column, and the two column totals are equal. The tool reads a
+Company DIYA-GL book only.
 
 | Argument | Content |
 |----------|---------|

@@ -194,7 +194,7 @@ test.describe("DIYA-GL page — IndexedDB autosave", () => {
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
-    await expect(page.locator(".empty-state h2")).toHaveText("View your books in DIYA-GL");
+    await expect(page.locator(".empty-state h2")).toHaveText("View your records in DIYA-GL");
     await expect(page.locator(".continue-offer")).toHaveCount(0);
 
     await page.getByRole("button", { name: /bst-sp-sixty/ }).click();

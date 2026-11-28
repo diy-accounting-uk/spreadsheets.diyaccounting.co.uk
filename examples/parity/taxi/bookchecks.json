@@ -50,7 +50,7 @@
     "label": "Every entry names who or what it was with",
     "result": "warn",
     "actual": 179,
-    "consequence": "A blank detail leaves no way to tell what the amount was for when the books are reviewed later.",
+    "consequence": "A blank detail leaves no way to tell what the amount was for when the records are reviewed later.",
     "offenders": [
       {
         "entryNumber": "SAL-0001",

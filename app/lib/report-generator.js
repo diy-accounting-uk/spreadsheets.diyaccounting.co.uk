@@ -102,7 +102,7 @@ export function categoryNettingLines(netting) {
   const lines = ["", `## ${CATEGORY_NETTING_TITLE}`, ""];
   if (netting.rate === 0) {
     lines.push(
-      `The books charge VAT at 0%. Gross equals net for all ${netting.rows.length} journal categories that cross into another statement, and each reaches it at the figure the journal holds.`,
+      `The book charges VAT at 0%. Gross equals net for all ${netting.rows.length} journal categories that cross into another statement, and each reaches it at the figure the journal holds.`,
     );
     return lines;
   }

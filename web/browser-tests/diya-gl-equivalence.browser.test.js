@@ -463,7 +463,7 @@ test.describe("DIYA-GL page — the browser bundle stamps the same as the CLI", 
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
-    const bytes = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const bytes = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
     const bookToml = await zip.file("book.toml").async("string");
     const reportDocument = JSON.parse(await zip.file("report.json").async("string"));

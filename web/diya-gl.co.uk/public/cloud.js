@@ -481,7 +481,7 @@
       return "That book could not be saved: " + error.message + ".";
     }
     if (error.status === 403 && error.code === "book-limit-reached") {
-      return "Your account holds 20 books, the most it keeps. Delete one to save another.";
+      return "Your account holds 20 DIYA-GL books, the most it keeps. Delete one to save another.";
     }
     if (error.status === 404) {
       return "That book is no longer in your account.";
@@ -591,7 +591,7 @@
       accountBtnEl.setAttribute("aria-label", email ? "Account, signed in as " + email : "Account");
       if (label) label.textContent = "Account";
     } else {
-      var signInTitle = "Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.";
+      var signInTitle = "Sign in to save to a 35-day sandbox: your records are kept for 35 days after each save, on any device.";
       accountBtnEl.title = signInTitle;
       accountBtnEl.setAttribute("aria-label", signInTitle);
       if (label) label.textContent = "Sign in";
@@ -774,7 +774,9 @@
     var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     var rowsHtml = sorted.length
       ? sorted.map(renderBookRow).join("")
-      : '<p class="account-empty">No books in your Google Drive folder yet.' + (current ? " Save this book to Google Drive." : "") + "</p>";
+      : '<p class="account-empty">No DIYA-GL books in your Google Drive folder yet.' +
+        (current ? " Save this book to Google Drive." : "") +
+        "</p>";
     return '<div class="account-panel-head">Your Google Drive</div>' + renderPickDriveButton() + rowsHtml;
   }
 
@@ -785,7 +787,7 @@
     var current = window.DiyaGlPage && window.DiyaGlPage.currentBook();
     var rowsHtml = sorted.length
       ? sorted.map(renderBookRow).join("")
-      : '<p class="account-empty">No books in your account yet.' + (current ? " Save this book to my account." : "") + "</p>";
+      : '<p class="account-empty">No DIYA-GL books in your account yet.' + (current ? " Save this book to my account." : "") + "</p>";
     return (
       DEVICE_ROW_SLOT +
       '<div class="account-panel-head">' +
@@ -879,7 +881,7 @@
     if (entitlement && entitlement.residentTier) {
       if (reason === "no-subscription") {
         return (
-          '<div class="account-entitlement"><span class="account-entitlement-label">35-day sandbox. Keep your books for £39 a year.</span>' +
+          '<div class="account-entitlement"><span class="account-entitlement-label">35-day sandbox. Keep your records for £39 a year.</span>' +
           subscribeButton() +
           "</div>"
         );
@@ -890,7 +892,7 @@
         return (
           '<div class="account-entitlement"><span class="account-entitlement-label">Your subscription ended ' +
           expiredOn +
-          ". These books expire " +
+          ". These DIYA-GL books expire " +
           booksExpireOn +
           ".</span>" +
           subscribeButton() +
@@ -904,7 +906,7 @@
   function renderSignedOut() {
     return (
       DEVICE_ROW_SLOT +
-      '<p class="account-panel-head">Sign in to save to a 35-day sandbox: your books are kept for 35 days after each save, on any device.</p>' +
+      '<p class="account-panel-head">Sign in to save to a 35-day sandbox: your records are kept for 35 days after each save, on any device.</p>' +
       '<button type="button" class="btn btn-primary" data-action="sign-in">Sign in</button>'
     );
   }
@@ -1048,7 +1050,7 @@
       return;
     }
     if (panelState.status === "loading") {
-      setPanelContent('<p class="account-panel-head">Loading your books…</p>');
+      setPanelContent('<p class="account-panel-head">Loading your DIYA-GL books…</p>');
       return;
     }
     if (panelState.status === "error") {

@@ -263,7 +263,7 @@ test.describe("DIYA-GL page — every way in", () => {
     await expect(toast).toContainText("Close this book first");
 
     await toast.locator(".toast-action-btn").click();
-    await expect(page.locator(".empty-state h2")).toHaveText("View your books in DIYA-GL");
+    await expect(page.locator(".empty-state h2")).toHaveText("View your records in DIYA-GL");
     await expect(page.locator(".continue-offer")).toBeVisible();
   });
 });
@@ -307,7 +307,7 @@ test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON download
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await waitForLoaded(page);
 
-    const { bytes } = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const { bytes } = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
     expect(Object.keys(zip.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
@@ -322,7 +322,7 @@ test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON download
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await waitForLoaded(page);
 
-    const { bytes } = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const { bytes } = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
     const pageReportText = await zip.file("report.json").async("string");
 
@@ -345,11 +345,11 @@ test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON download
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await waitForLoaded(page);
 
-    const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const diyaGlZip = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);
     expect(Object.keys(diyaGl.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
-    const json = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const json = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     const document = JSON.parse(json.bytes.toString("utf-8"));
     expect(document.format).toBe("diya-gl");
     expect(document.version).toBe(1);
@@ -363,7 +363,7 @@ test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON download
     await dropFile(page, FIXTURES.workbook.bytes, FIXTURES.workbook.name);
     await waitForLoaded(page);
 
-    const pageZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const pageZip = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const pageZipFiles = await JSZip.loadAsync(pageZip.bytes);
     const pageBookToml = await pageZipFiles.file("book.toml").async("string");
     const pageLinesJsonl = await pageZipFiles.file("lines.jsonl").async("string");
@@ -384,7 +384,7 @@ test.describe("DIYA-GL page — every way out: the diya-gl zip and JSON download
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.json.bytes, FIXTURES.json.name);
     await waitForLoaded(page);
-    const jsonOut = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const jsonOut = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     expect(jsonOut.bytes.toString("utf-8")).toBe(precisionJsonText);
   });
 });
@@ -395,7 +395,7 @@ test.describe("DIYA-GL page — breakability", () => {
     await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await waitForLoaded(page);
 
-    const before = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const before = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const beforeReport = JSON.parse(await (await JSZip.loadAsync(before.bytes)).file("report.json").async("string"));
 
     await page.evaluate(async () => {
@@ -404,7 +404,7 @@ test.describe("DIYA-GL page — breakability", () => {
     });
     await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
-    const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const after = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const afterReport = JSON.parse(await (await JSZip.loadAsync(after.bytes)).file("report.json").async("string"));
 
     expect(afterReport).not.toEqual(beforeReport);

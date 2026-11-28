@@ -21,7 +21,7 @@ LABEL org.opencontainers.image.source="https://github.com/diy-accounting-uk/spre
       org.opencontainers.image.title="diya-gl" \
       org.opencontainers.image.documentation="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" \
       org.opencontainers.image.url="https://spreadsheets.diyaccounting.co.uk/diya-gl.html" \
-      org.opencontainers.image.description="Recalculate, read and write diya-gl books: a UK sole trader or company's accounts."
+      org.opencontainers.image.description="Bookkeeping from the command line: recalculate, read and write DIYA-GL books, a UK sole trader's or company's records."
 
 COPY ${TARBALL} /tmp/diya-gl.tgz
 RUN npm install -g --no-audit --no-fund /tmp/diya-gl.tgz \

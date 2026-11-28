@@ -29,7 +29,7 @@ import { writeBookDirectory } from "./export.js";
 
 const USAGE = [
   "Usage: diya-gl roll-forward --data <book directory | diya-gl zip | diya-gl JSON file> --output-dir <dir>",
-  "Answers: How do I start next year's books? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
+  "Answers: How do I start next year's book? What do I bring forward from last year? Does my opening balance sheet agree with last year's closing one?",
 ].join("\n");
 
 function parseArgs(argv) {

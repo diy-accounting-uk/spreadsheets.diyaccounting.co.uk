@@ -97,7 +97,7 @@ test.beforeAll(async ({ browser }) => {
   await page.goto(`${baseUrl}/taxi.html`, { waitUntil: "domcontentloaded" });
   await dropFile(page, FIXTURES.workbook.bytes, FIXTURES.workbook.name);
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
-  const jsonBytes = (await triggerSaveDownload(page, "Download books as JSON (.json)")).bytes;
+  const jsonBytes = (await triggerSaveDownload(page, "Download the book as JSON (.json)")).bytes;
   FIXTURES.json = { bytes: jsonBytes, name: "taxi-diya-gl.json" };
   FIXTURES.jsonZip = { bytes: await zipOf({ "book.json": jsonBytes.toString("utf-8") }), name: "taxi-diya-gl.json.zip" };
   await page.close();
@@ -220,7 +220,7 @@ test.describe("DIYA-GL Taxi books page — the round trip (E3)", () => {
     await page.goto(taxiUrl(), { waitUntil: "domcontentloaded" });
     await dropFile(page, FIXTURES.json.bytes, FIXTURES.json.name);
     await waitForLoaded(page);
-    const jsonOut = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const jsonOut = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     expect(jsonOut.bytes.toString("utf-8")).toBe(FIXTURES.json.bytes.toString("utf-8"));
   });
 });

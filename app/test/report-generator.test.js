@@ -248,7 +248,7 @@ describe("category netting", () => {
   it("says gross equals net in one line when the rate is zero", () => {
     const zeroRated = nettingRows.map((row) => ({ ...row, net: row.gross, downstream: row.gross }));
     const lines = categoryNettingLines(buildCategoryNetting(0, zeroRated)).join("\n");
-    expect(lines).toContain("The books charge VAT at 0%.");
+    expect(lines).toContain("The book charges VAT at 0%.");
     expect(lines).toContain("Gross equals net for all 2 journal categories");
     expect(lines).not.toContain("| Journal category |");
   });

@@ -1,7 +1,7 @@
 {
-  "name": "DIYA-GL Books",
+  "name": "DIYA-GL Bookkeeping",
   "short_name": "DIYA-GL",
-  "description": "View and edit a DIYA-GL workbook as books in your browser, online or off.",
+  "description": "View and edit a workbook as a DIYA-GL book in your browser, online or off.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
