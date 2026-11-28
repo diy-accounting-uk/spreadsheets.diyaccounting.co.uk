@@ -2885,6 +2885,32 @@
           "scorecard": "102730 passed, 0 warnings, 0 failed"
         }
       }
+    },
+    {
+      "tag": "diya-gl-v1.2.102",
+      "date": "2026-11-28",
+      "formatVersion": "diya-gl/2",
+      "engineVersion": "1.2.102+c78eeedba",
+      "taxDataHash": "0e5b6dd83eb2",
+      "reconciledCommit": "5be3f83c0e69ed4cb25bf57d63cf5a384492765f",
+      "templates": {
+        "bst": {
+          "hash": "0d003e10e00c",
+          "scorecard": "818 passed, 0 warnings, 0 failed"
+        },
+        "taxi": {
+          "hash": "484828f78ae5",
+          "scorecard": "706 passed, 0 warnings, 0 failed"
+        },
+        "se": {
+          "hash": "f3e3e403acec",
+          "scorecard": "8189 passed, 0 warnings, 0 failed"
+        },
+        "ltd": {
+          "hash": "4c6dd0825caf",
+          "scorecard": "102730 passed, 0 warnings, 0 failed"
+        }
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@diy-accounting-uk/diya-gl",
-  "version": "1.2.102",
+  "version": "1.2.103",
   "type": "module",
   "description": "Bookkeeping from the command line: recalculate, read and write DIYA-GL books",
   "license": "Apache-2.0",
