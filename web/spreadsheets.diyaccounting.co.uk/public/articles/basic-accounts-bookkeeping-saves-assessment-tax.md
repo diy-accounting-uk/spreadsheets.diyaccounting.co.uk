@@ -9,7 +9,7 @@ The financial benefits of preparing basic accounts bookkeeping records and produ
     **Starting Bookkeeping Home Accounts**
     The first stage in starting bookkeeping is to collect together all documentary records of receipts or sales received. Review the documents and if incomplete use other sources of third party evidence such as bank statements and deposits t achieve an accurate total.
     Stage two to producing the home accounts is a similar process of collecting together the supporting evidence of purchases made and expenses incurred. Again if incomplete examine other potential sources of evidence such as bank and credit card accounts.
-    Bookkeeping home accounts is just that, keeping books at home which is the home accounts. Bookkeeping is a function that many self employed business people can benefit from financially.
+    Bookkeeping home accounts is just that, keeping records at home which is the home accounts. Bookkeeping is a function that many self employed business people can benefit from financially.
     **Basic Accounts Bookkeeping Can Save Accountant Fees**
     A significant proportion of a bookkeepers fee or the accountant fees for small business is the sorting of receipts and listing them in order, in effect doing the basic accounts bookkeeping. Accountant fees are better spent on financial advice and tax matters than producing the basic accounts themselves.
     The basic bookkeeping task of sorting the sales and purchases documents can produce real savings in the accountant fees. Most accountancy firms would actually prefer to receive their client records in a basic accounts presentation to enable the accountant provides a higher level of accountancy services.
