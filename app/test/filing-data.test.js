@@ -55,6 +55,26 @@ describe("filing data", () => {
     expect(new Set(numbers).size).toBe(numbers.length);
   });
 
+  it("every box's xmlPath ends at the element it names", () => {
+    const offenders = ct600.box.filter((box) => box.element && !box.xmlPath.endsWith(`/${box.element}`)).map((box) => box.number);
+    expect(offenders).toEqual([]);
+  });
+
+  // [box, the parent element in HMRC's RIM schema]
+  it.each([
+    [696, "AllowancesAndCharges"],
+    [739, "NotIncluded"],
+  ])("box %i is the 40%% first-year allowance under %s", (number, parent) => {
+    expect(ct600.box.find((box) => box.number === number)).toEqual({
+      number,
+      label: "40% first-year allowance",
+      section: `Capital allowances and balancing charges: ${parent === "NotIncluded" ? "not " : ""}in the calculation of trading profits and losses`,
+      format: "whole",
+      element: "FortyPercentFirstYearAllowance",
+      xmlPath: `/IRenvelope/CompanyTaxReturn/${parent}/FortyPercentFirstYearAllowance`,
+    });
+  });
+
   it("every sheetCell names a cell in CELL_MAP or standardReads()", () => {
     const known = knownCells();
     const offenders = [];
