@@ -100,7 +100,7 @@ export class PackagePartError extends Error {
 export class ProductNotAvailableError extends Error {
   constructor(name, product, available) {
     const reads = available.map((id) => PRODUCT_LABELS[id]).join(", ");
-    super(`${name ? `"${name}"` : "This file"} is a ${PRODUCT_LABELS[product]} package; this build reads ${reads} books only.`);
+    super(`${name ? `"${name}"` : "This file"} is a ${PRODUCT_LABELS[product]} package; this build reads ${reads} DIYA-GL books only.`);
     this.name = "ProductNotAvailableError";
   }
 }

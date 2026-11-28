@@ -65,7 +65,7 @@ test.describe("the DIYA-GL runner — opened from disk, no server", () => {
     await expect(page.locator(".headlines-strip")).toContainText("£409,180.00");
 
     await page.click("#save-btn");
-    await page.click("#save-menu >> text=Download books as diya-gl (.zip)");
+    await page.click("#save-menu >> text=Download the book as diya-gl (.zip)");
     await page.waitForEvent("download", { timeout: 30_000 }).then((d) => (download = d));
 
     expect(download, "the save menu's own download fired").not.toBeNull();

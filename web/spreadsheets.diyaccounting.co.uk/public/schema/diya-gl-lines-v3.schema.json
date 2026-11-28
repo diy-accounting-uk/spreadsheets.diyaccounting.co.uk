@@ -201,7 +201,7 @@
     },
     "diya-gl:hpAgreement": {
       "type": "string",
-      "description": "diya-gl: extension — Reference of the hire purchase agreement that finances this purchase, matching an id on book.toml hpAgreements[]. A purchase carrying one reaches the books as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year."
+      "description": "diya-gl: extension — Reference of the hire purchase agreement that finances this purchase, matching an id on book.toml hpAgreements[]. A purchase carrying one reaches the book as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year."
     },
     "diya-gl:cisRate": {
       "type": "number",

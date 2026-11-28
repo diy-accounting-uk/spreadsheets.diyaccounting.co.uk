@@ -140,7 +140,7 @@ test.describe("DIYA-GL page — empty state", () => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
 
-    await expect(page.locator(".empty-state h2")).toHaveText("View your books in DIYA-GL");
+    await expect(page.locator(".empty-state h2")).toHaveText("View your records in DIYA-GL");
     await expect(page.locator('label[for="file-picker"]')).toBeVisible();
     await expect(page.getByRole("button", { name: "Start a new book" })).toBeVisible();
     await expect(page.getByRole("button", { name: /bst-scenario-basic/ })).toBeEnabled();
@@ -555,7 +555,7 @@ test.describe("DIYA-GL page — four layouts", () => {
     await expect.poll(async () => Number((await salesFigure.innerText()).replace(/[£,]/g, ""))).toBe(before + 250);
   });
 
-  test("mobile portrait: the headlines strip leads the Books tab; the Checks tab opens the drawer without it", async ({ page }) => {
+  test("mobile portrait: the headlines strip leads the Book tab; the Checks tab opens the drawer without it", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
 
     const firstChildId = await page.locator("#view-root > *").first().getAttribute("id");
@@ -574,10 +574,10 @@ test.describe("Spreadsheets download.html — DIYA-GL entry panel", () => {
     return fs.readFileSync(path.join(spreadsheetsPublicDir, filename), "utf-8");
   }
 
-  test("has the View your books in DIYA-GL panel linking to diya-gl.co.uk", async ({ page }) => {
+  test("has the View your records in DIYA-GL panel linking to diya-gl.co.uk", async ({ page }) => {
     await page.setContent(readHtml("download.html"), { waitUntil: "domcontentloaded" });
 
-    const heading = page.locator("h2", { hasText: "View your books in DIYA-GL" });
+    const heading = page.locator("h2", { hasText: "View your records in DIYA-GL" });
     await expect(heading).toBeVisible();
 
     const section = page.locator(".download-section", { has: heading });

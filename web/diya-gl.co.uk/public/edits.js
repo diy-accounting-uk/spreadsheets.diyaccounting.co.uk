@@ -58,7 +58,7 @@
   engine();
 
   function requireEngine() {
-    if (!engineModule) throw new Error("The books engine has not finished loading yet.");
+    if (!engineModule) throw new Error("The bookkeeping engine has not finished loading yet.");
     return engineModule;
   }
 

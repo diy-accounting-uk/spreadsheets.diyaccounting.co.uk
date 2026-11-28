@@ -402,7 +402,7 @@ function emptyDetailWarning(ctx) {
     label: "Every entry names who or what it was with",
     result: warn ? "warn" : "pass",
     actual: offenders.length,
-    consequence: warn ? "A blank detail leaves no way to tell what the amount was for when the books are reviewed later." : null,
+    consequence: warn ? "A blank detail leaves no way to tell what the amount was for when the records are reviewed later." : null,
     offenders: offenders.map(offenderOf),
   };
 }
@@ -421,7 +421,7 @@ function missingDocumentReferenceWarning(ctx) {
     result: warn ? "warn" : "pass",
     actual: offenders.length,
     consequence: warn
-      ? "A sale with no invoice or receipt reference cannot be matched to its document when the books are reviewed later."
+      ? "A sale with no invoice or receipt reference cannot be matched to its document when the records are reviewed later."
       : null,
     offenders: offenders.map(offenderOf),
   };
@@ -541,7 +541,7 @@ function journalHasReasonWarning(ctx) {
     "book-journal-has-reason",
     "Every journal line gives a reason",
     offenders,
-    "A journal line with no reason leaves a reviewer unable to tell why the books were adjusted, which auditors query on every manual journal.",
+    "A journal line with no reason leaves a reviewer unable to tell why the records were adjusted, which auditors query on every manual journal.",
   );
 }
 

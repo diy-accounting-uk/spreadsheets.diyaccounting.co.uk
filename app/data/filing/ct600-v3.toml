@@ -17,6 +17,10 @@
 #   box the schema does not carry standalone, such as 980 the declaration date) get format
 #   "unresolved" rather than a guessed one, or "tick"/"date"/"text" only when the research
 #   note's own Notes column says so.
+# - Boxes 696 and 739 (the 40% first-year allowance, in and outside the trading profit) are new in
+#   HMRC RIM artefacts V1.995 (25 September 2026, the CT600 V3 (2027) artefacts), CT-specDoc-v1-995.xml:
+#   https://assets.publishing.service.gov.uk/media/6ab4f5d1fe72ed1e2b02efed/HMRC-CT-2014-v1-995.zip
+#   Their label is the element's description there; both are CTwholePoundStructure.
 # - sheetCell: the CT600-sheet mapping in "The look-alike forms" section of
 #   PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked against CELL_MAP/standardReads() in
 #   app/products/ltd.js. Only boxes whose cell is already read by the product carry one;
@@ -1600,6 +1604,14 @@ element = "MachineryAndPlantSpecialRatePool"
 xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSpecialRatePool"
 
 [[box]]
+number = 696
+label = "40% first-year allowance"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "whole"
+element = "FortyPercentFirstYearAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/FortyPercentFirstYearAllowance"
+
+[[box]]
 number = 700
 label = "Machinery and plant - special rate pool: balancing charges"
 section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
@@ -1774,6 +1786,14 @@ section = "Capital allowances: not in the trading calculation, with disposal val
 format = "money-composite"
 element = "ElectricChargePoints"
 xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ElectricChargePoints"
+
+[[box]]
+number = 739
+label = "40% first-year allowance"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "whole"
+element = "FortyPercentFirstYearAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/FortyPercentFirstYearAllowance"
 
 [[box]]
 number = 740

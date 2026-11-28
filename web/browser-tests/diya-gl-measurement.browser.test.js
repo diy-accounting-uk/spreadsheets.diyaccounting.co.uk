@@ -83,7 +83,7 @@ test.describe("DIYA-GL page — measurement", () => {
 
   test("a save sends book_saved with the product and the chosen format", async ({ page }) => {
     await loadExample(page);
-    await triggerSave(page, "Download books as JSON (.json)");
+    await triggerSave(page, "Download the book as JSON (.json)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
 
     const events = await gaEvents(page, "book_saved");
@@ -111,7 +111,7 @@ test.describe("DIYA-GL page — measurement", () => {
 
   test("the save donation prompt sends donation_prompt shown after a save completes", async ({ page }) => {
     await loadExample(page);
-    await triggerSave(page, "Download books as diya-gl (.zip)");
+    await triggerSave(page, "Download the book as diya-gl (.zip)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
 
     const events = await gaEvents(page, "donation_prompt");

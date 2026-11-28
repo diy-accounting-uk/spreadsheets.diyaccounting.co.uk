@@ -10,7 +10,7 @@
   "properties": {
     "documentInfo": {
       "type": "object",
-      "description": "gl-cor:documentInfo \u2014 Metadata about this set of books",
+      "description": "gl-cor:documentInfo \u2014 Metadata about this DIYA-GL book",
       "required": ["entriesType", "periodCoveredStart", "periodCoveredEnd", "defaultCurrency"],
       "additionalProperties": false,
       "properties": {
@@ -888,7 +888,7 @@
             },
             "adjustments": {
               "type": "object",
-              "description": "Adjustments to the net profit the books do not compute: box 60 goods and services for own use (goodsAndServicesOwnUse, Business Details!O50, read by SE Full!D169 and SE Short!D94), box 62 income included but not taxable as business profits (includedNonTaxableProfits, SE Full!D179) and box 71 adjustment for change of accounting practice (accountingAdjustment, SE Full!D210; the sheet carries it into box 77 only, so the derivation warns when it is set).",
+              "description": "Adjustments to the net profit the book does not compute: box 60 goods and services for own use (goodsAndServicesOwnUse, Business Details!O50, read by SE Full!D169 and SE Short!D94), box 62 income included but not taxable as business profits (includedNonTaxableProfits, SE Full!D179) and box 71 adjustment for change of accounting practice (accountingAdjustment, SE Full!D210; the sheet carries it into box 77 only, so the derivation warns when it is set).",
               "additionalProperties": false,
               "properties": {
                 "goodsAndServicesOwnUse": {

@@ -1747,7 +1747,8 @@
     submitActivities: ["vat", "itsa-quarterly", "itsa-annual"],
     hub: HUB_FILE,
     emptyState: {
-      intro: "Open a Self Employed package as editable books in your browser. Nothing is uploaded; the files never leave your machine.",
+      intro:
+        "Open a Self Employed package as an editable DIYA-GL book in your browser. Nothing is uploaded; the files never leave your machine.",
     },
     views: [
       { id: "home", label: "Home", sheets: "Home", shared: "home" },

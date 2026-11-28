@@ -37,5 +37,5 @@ A download is the blank package for that year. It holds none of your entries. If
 The packages are Excel files. For the options on a Mac, see [using our packages on a Mac](using-our-packages-on-a-mac.html). If the workbooks show blank figures after you move them, see [why linked workbooks show blank figures](linked-workbooks-show-blank-or-wrong-figures.html).
 
 
-**Your books online**
-The download page also links to DIYA-GL, where you can view and edit your books in your browser with a 35-day sandbox when you sign in.
+**Your records online**
+The download page also links to DIYA-GL, where you can view and edit your records in your browser with a 35-day sandbox when you sign in.

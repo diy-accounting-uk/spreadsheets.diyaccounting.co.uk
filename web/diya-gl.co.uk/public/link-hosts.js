@@ -16,7 +16,7 @@
   var LOCAL_HOSTS = ["127.0.0.1", "localhost"];
 
   var REFUSAL =
-    "This page opens books only from the chat-with-diya-gl demo (d2hg4qibpn6ch3.cloudfront.net and its chat-with-diya-gl-data storage on eu-west-2 S3), over https.";
+    "This page opens DIYA-GL books only from the chat-with-diya-gl demo (d2hg4qibpn6ch3.cloudfront.net and its chat-with-diya-gl-data storage on eu-west-2 S3), over https.";
 
   function hostIsAllowed(hostname) {
     return BOOK_LINK_HOSTS.some(function (entry) {

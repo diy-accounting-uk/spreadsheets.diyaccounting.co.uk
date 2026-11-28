@@ -191,8 +191,8 @@ test.describe("DIYA-GL page — signed out", () => {
     await page.click("#save-btn");
     await expect(page.getByRole("menu")).toBeVisible();
     await expect(page.getByRole("menuitem")).toHaveText([
-      "Download books as diya-gl (.zip)",
-      "Download books as JSON (.json)",
+      "Download the book as diya-gl (.zip)",
+      "Download the book as JSON (.json)",
       "Download as a spreadsheet package (.zip)",
     ]);
 
@@ -574,7 +574,7 @@ test.describe("DIYA-GL page — signed in", () => {
     );
 
     await openAccountPanel(page);
-    await expect(page.locator(".account-entitlement")).toContainText("35-day sandbox. Keep your books for £39 a year.");
+    await expect(page.locator(".account-entitlement")).toContainText("35-day sandbox. Keep your records for £39 a year.");
     await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
     await expect(page.locator(".account-entitlement").getByRole("button", { name: "or £3.99 a month" })).toBeVisible();
   });
@@ -597,7 +597,7 @@ test.describe("DIYA-GL page — signed in", () => {
 
     await openAccountPanel(page);
     await expect(page.locator(".account-entitlement")).toContainText(
-      "Your subscription ended February 1, 2026. These books expire March 3, 2026.",
+      "Your subscription ended February 1, 2026. These DIYA-GL books expire March 3, 2026.",
     );
     await expect(page.locator(".account-entitlement").getByRole("button", { name: "Subscribe" })).toBeVisible();
   });

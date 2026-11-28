@@ -107,7 +107,7 @@ test.describe("DIYA-GL page — the save donation prompt", () => {
     await loadExample(page);
     await expect(page.locator("#donation-prompt-save")).toHaveCount(0);
 
-    await triggerSave(page, "Download books as JSON (.json)");
+    await triggerSave(page, "Download the book as JSON (.json)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
 
     const prompt = page.locator("#donation-prompt-save");
@@ -121,19 +121,19 @@ test.describe("DIYA-GL page — the save donation prompt", () => {
     await prompt.locator(".donation-prompt-dismiss").click();
     await expect(prompt).toHaveCount(0);
 
-    await triggerSave(page, "Download books as JSON (.json)");
+    await triggerSave(page, "Download the book as JSON (.json)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
     await expect(page.locator("#donation-prompt-save")).toHaveCount(0);
   });
 
   test("a reload after a save does not bring the prompt back", async ({ page }) => {
     await loadExample(page);
-    await triggerSave(page, "Download books as diya-gl (.zip)");
+    await triggerSave(page, "Download the book as diya-gl (.zip)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
     await expect(page.locator("#donation-prompt-save")).toBeVisible();
 
     await reloadLoadedBook(page);
-    await triggerSave(page, "Download books as diya-gl (.zip)");
+    await triggerSave(page, "Download the book as diya-gl (.zip)");
     await expect(page.locator("#toast")).toContainText("Saved ", { timeout: 30_000 });
     await expect(page.locator("#donation-prompt-save")).toHaveCount(0);
   });

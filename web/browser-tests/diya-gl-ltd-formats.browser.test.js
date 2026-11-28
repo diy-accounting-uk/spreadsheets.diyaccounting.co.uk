@@ -207,7 +207,7 @@ test.describe("DIYA-GL Company books page — nominal value", () => {
     await uploadPackage(page, bytes, "nominal-diya-gl.zip");
     await waitForLoaded(page);
 
-    const saved = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const saved = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const savedBook = parseTOML(await (await JSZip.loadAsync(saved.bytes)).file("book.toml").async("string"));
     expect(savedBook.members.map((member) => member.nominalValue)).toEqual([0.2, 0.2, 0.2]);
   });
@@ -250,7 +250,7 @@ async function roundTrip(page, packageBytes, name) {
   await uploadPackage(page, packageBytes, name);
   await waitForLoaded(page);
 
-  const firstZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+  const firstZip = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
   const firstZipFiles = await JSZip.loadAsync(firstZip.bytes);
   const firstBookToml = await firstZipFiles.file("book.toml").async("string");
   const firstLinesJsonl = await firstZipFiles.file("lines.jsonl").async("string");
@@ -288,7 +288,7 @@ test.describe("DIYA-GL Company books page — breakability", () => {
     await uploadPackage(page, FIXTURES.packageZip.bytes, "march-package-breakability.zip");
     await waitForLoaded(page);
 
-    const before = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const before = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const beforeLines = await (await JSZip.loadAsync(before.bytes)).file("lines.jsonl").async("string");
 
     await page.evaluate(async () => {
@@ -297,7 +297,7 @@ test.describe("DIYA-GL Company books page — breakability", () => {
     });
     await page.waitForFunction(() => window.DIYA_GL_SNAPSHOT.edited === true);
 
-    const after = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const after = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const afterLines = await (await JSZip.loadAsync(after.bytes)).file("lines.jsonl").async("string");
 
     expect(afterLines).not.toBe(beforeLines);
@@ -344,11 +344,11 @@ test.describe("DIYA-GL Company books page — downloads (E5)", () => {
     await uploadPackage(page, FIXTURES.packageZip.bytes, "precision-code-ltd-full-package.zip");
     await waitForLoaded(page);
 
-    const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
+    const diyaGlZip = await triggerSaveDownload(page, "Download the book as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);
     expect(Object.keys(diyaGl.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
-    const json = await triggerSaveDownload(page, "Download books as JSON (.json)");
+    const json = await triggerSaveDownload(page, "Download the book as JSON (.json)");
     const document = JSON.parse(json.bytes.toString("utf-8"));
     expect(document.format).toBe("diya-gl");
     expect(document.version).toBe(1);

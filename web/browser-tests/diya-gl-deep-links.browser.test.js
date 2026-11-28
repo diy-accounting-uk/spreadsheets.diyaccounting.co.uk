@@ -290,7 +290,7 @@ test.describe("DIYA-GL page — ?book=<url> opens a book from an allowed host", 
     });
 
     await expect(page.locator(".empty-state")).toBeVisible();
-    await expect(page.locator("#empty-state-message")).toContainText("This page opens books only from", { timeout: 30_000 });
+    await expect(page.locator("#empty-state-message")).toContainText("This page opens DIYA-GL books only from", { timeout: 30_000 });
     await expect(page.locator("#empty-state-message")).toContainText("d2hg4qibpn6ch3.cloudfront.net");
   });
 

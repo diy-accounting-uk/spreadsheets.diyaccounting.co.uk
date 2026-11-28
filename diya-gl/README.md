@@ -66,7 +66,7 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   Employed or Company book. It writes `book.toml` (the product's starting chart of accounts,
   the twelve months to the year end and that tax year's rates), an empty `lines.jsonl`,
   `report.json` and `bookchecks.json` into `--output-dir`, the current directory by default.
-  It answers: how do I start books for a new business, what accounts does a new sole trader
+  It answers: how do I start bookkeeping for a new business, what accounts does a new sole trader
   or company book start with, and which tax rates apply to the first year?
 - **roll-forward** takes a book (`--data`, the same sources as **link**) and writes the next
   year's into `--output-dir`: the year end a year on with that year's tax rates, the closing
@@ -74,7 +74,7 @@ Each subcommand is also its own command, if you only want one on your `PATH`:
   journal and one brought-forward line per bank account; a Self Employed book's bank lines).
   Beside `book.toml`, `lines.jsonl`, `report.json` and `bookchecks.json` it writes
   `rollchecks.json`, each opening figure the new year prints against the closing figure the old
-  year printed, and exits 1 when one disagrees. It answers: how do I start next year's books,
+  year printed, and exits 1 when one disagrees. It answers: how do I start next year's book,
   what do I bring forward from last year, and does my opening balance sheet agree with last
   year's closing one?
 - **view** takes the same book sources as **link**, serves the full diya-gl pages on

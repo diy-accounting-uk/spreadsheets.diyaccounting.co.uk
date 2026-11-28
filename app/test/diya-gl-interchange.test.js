@@ -338,7 +338,7 @@ describe("a multi-file package, sniffed by the files and sheets it carries", () 
     const bytes = await packageZipOf(SE_PACKAGE_DIR);
     await expect(readBookSource(bytes, "se.zip")).rejects.toThrow(ProductNotAvailableError);
     await expect(readBookSource(bytes, "se.zip")).rejects.toThrow(
-      '"se.zip" is a Self Employed package; this build reads Basic Sole Trader books only.',
+      '"se.zip" is a Self Employed package; this build reads Basic Sole Trader DIYA-GL books only.',
     );
   }, 60000);
 

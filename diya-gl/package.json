@@ -2,7 +2,7 @@
   "name": "@diy-accounting-uk/diya-gl",
   "version": "1.2.102",
   "type": "module",
-  "description": "Recalculate, read and write DIYA-GL books from the command line",
+  "description": "Bookkeeping from the command line: recalculate, read and write DIYA-GL books",
   "license": "Apache-2.0",
   "homepage": "https://diya-gl.co.uk/spec.html",
   "repository": {
